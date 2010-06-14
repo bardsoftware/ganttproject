@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fo:layout-master-set>
+  <fo:simple-page-master master-name="simple"
+                         page-width="29.7cm"
+                         page-height="21cm"
+                         margin-top="1cm"
+                         margin-bottom="1cm"
+                         margin-left="1.75cm"
+                         margin-right="1.75cm">
+    <fo:region-body margin-top="1cm"/>
+    <fo:region-before extent="1cm"/>
+    <fo:region-after extent="1cm"/>
+  </fo:simple-page-master>
+</fo:layout-master-set>
