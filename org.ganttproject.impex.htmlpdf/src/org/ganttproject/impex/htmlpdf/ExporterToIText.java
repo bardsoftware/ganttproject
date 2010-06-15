@@ -108,7 +108,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     private FontSubstitutionModel mySubstitutionModel;
     private Object myFontsMutex = new Object();
     private boolean myFontsReady = false;
-    
+
     public ExporterToIText() {
         registerFonts();
     }
@@ -212,7 +212,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     protected void registerFontDirectories() {
         myFontCache.registerDirectory(System.getProperty("java.home") + "/lib/fonts", false);
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        IConfigurationElement[] configElements = 
+        IConfigurationElement[] configElements =
             extensionRegistry.getConfigurationElementsFor("org.ganttproject.impex.htmlpdf.FontDirectory");
         for (int i=0; i<configElements.length; i++) {
             final String dirName = configElements[i].getAttribute("name");
@@ -222,7 +222,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             else {
                 String namespace = configElements[i].getDeclaringExtension().getNamespace();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
-                assert dirUrl!=null : "Failed to resolve url="+dirName;
+                if (dirUrl==null) {
+                    GPLogger.getLogger(getClass()).warning("Failed to find directory " + dirName + " in plugin " + namespace);
+                    continue;
+                }
                 try {
                     URL resolvedDir = Platform.resolve(dirUrl);
                     myFontCache.registerDirectory(resolvedDir.getPath(), true);
@@ -245,7 +248,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     return Status.CANCEL_STATUS;
                 }
                 assert myStylesheet!=null;
-                OutputStream out = null;                
+                OutputStream out = null;
                 try {
                     out = new FileOutputStream(outputFile);
                     ((ThemeImpl)myStylesheet).run(getProject(), getUIFacade(), out);
@@ -280,18 +283,18 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             myWriter = writer;
             myDoc = doc;
         }
-        
+
         void write() {
             setupChart();
             Dimension d = myModel.getBounds();
             d.height += myModel.getChartUIConfiguration().getHeaderHeight();
-            
+
             PdfTemplate template = myWriter.getDirectContent().createTemplate(d.width, d.height);
 
             Rectangle page = myDoc.getPageSize();
             final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
             final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
-            
+
             final float xscale = width/d.width;
             final float yscale = height/d.height;
             final float minscale = Math.min(xscale, yscale);
@@ -306,14 +309,14 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             g2.dispose();
             float yshift = height - d.height * minscale + myDoc.bottomMargin();
             myWriter.getDirectContent().addTemplate(template, minscale, 0, 0, minscale, myDoc.leftMargin(), yshift);
-            
+
         }
 
         protected void setupChart() {
             myModel.setBounds(myModel.getMaxBounds());
-        }        
+        }
     }
-    
+
     static class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
         static List ourSizes = new ArrayList();
         static {
@@ -344,8 +347,8 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private boolean isColontitleEnabled = false;
         private Properties myProperties;
         private FontSubstitutionModel mySubstitutionModel;
-        
-        ThemeImpl(URL url, String localizedName) {           
+
+        ThemeImpl(URL url, String localizedName) {
             super(url, localizedName);
             myProperties = new Properties();
             try {
@@ -357,7 +360,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
             myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption)+".yes", "yes");
             myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption)+".no", "no");
-            
+
             myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(myPageOptions), "choosePaperFormat");
             myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myLandscapeOption)+".yes", "landscape");
             myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myLandscapeOption)+".no", "portrait");
@@ -379,13 +382,13 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         protected IGanttProject getProject() {
             return myProject;
         }
-        
+
         protected UIFacade getUIFacade() {
             return myUIFacade;
         }
-        
+
         ///////////////////////////////////////
-        // ITextStylesheet        
+        // ITextStylesheet
         public List getFontFamilies() {
             return Collections.singletonList(getOriginalFontName());
         }
@@ -397,20 +400,20 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private String getOriginalFontName() {
             return myProperties.getProperty("font-family");
         }
-        
+
         private String getFontName() {
-            return mySubstitutionModel.getSubstitution(getOriginalFontName()).getSubstitutionFamily();   
+            return mySubstitutionModel.getSubstitution(getOriginalFontName()).getSubstitutionFamily();
         }
 
-        protected Font getSansRegular(float size) {            
-            return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);             
+        protected Font getSansRegular(float size) {
+            return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);
         }
-        
+
         protected Font getSansItalic(float size) {
             return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.ITALIC);
         }
         protected Font getSansRegularBold(float size) {
-            return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.BOLD);                        
+            return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.BOLD);
         }
         protected Font getSansRegularBold() {
             return getSansRegularBold(12);
@@ -438,7 +441,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 myDoc.close();
             }
         }
-        
+
         public void writeProject() throws Exception {
             writeTitlePage();
             myDoc.newPage();
@@ -476,11 +479,11 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             Rectangle page = myDoc.getPageSize();
             PdfPTable head = new PdfPTable(1);
             PdfPTable colontitleTable = createColontitleTable(
-                    getProject().getProjectName(), 
-                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), 
-                    getProject().getOrganization(), 
+                    getProject().getProjectName(),
+                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
+                    getProject().getOrganization(),
                     getProject().getWebLink());
-            
+
             head.setTotalWidth(page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin());
             {
                 PdfPCell cell = new PdfPCell(colontitleTable);
@@ -511,7 +514,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 cell.setVerticalAlignment(PdfPCell.ALIGN_CENTER);
                 head.addCell(cell);
             }
-                
+
             myDoc.add(head);
         }
 
@@ -539,17 +542,17 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         private String buildProjectDatesString() {
             DateFormat dateFormat = GanttLanguage.getInstance().getMediumDateFormat();
-            return MessageFormat.format("{0} - {1}\n", new Object[] { 
+            return MessageFormat.format("{0} - {1}\n", new Object[] {
                     dateFormat.format(getProject().getTaskManager().getProjectStart()),
-                    dateFormat.format(getProject().getTaskManager().getProjectEnd())});            
+                    dateFormat.format(getProject().getTaskManager().getProjectEnd())});
         }
-        
+
         private void writeGanttChart() {
             isColontitleEnabled = false;
             writeColontitle(
-                    getProject().getProjectName(), 
-                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), 
-                    GanttLanguage.getInstance().getText("ganttChart"), 
+                    getProject().getProjectName(),
+                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
+                    GanttLanguage.getInstance().getText("ganttChart"),
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc) {
                 protected void setupChart() {
@@ -563,9 +566,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private void writeResourceChart() {
             isColontitleEnabled = false;
             writeColontitle(
-                    getProject().getProjectName(), 
-                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), 
-                    GanttLanguage.getInstance().getText("resourcesChart"), 
+                    getProject().getProjectName(),
+                    GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
+                    GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter resourceChartWriter = new ChartWriter(myUIFacade.getResourceChart(), myWriter, myDoc) {
                 protected void setupChart() {
@@ -576,9 +579,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             resourceChartWriter.write();
         }
 
-        
+
         protected PdfPTable createTableHeader(
-                TableHeaderUIFacade tableHeader, ArrayList orderedColumns) throws DocumentException {            
+                TableHeaderUIFacade tableHeader, ArrayList orderedColumns) throws DocumentException {
             for (int i=0; i<tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c.isVisible()) {
@@ -594,12 +597,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     }
                     return lhs.getOrder()-rhs.getOrder();
                 }
-            });     
+            });
             float[] widths = new float[orderedColumns.size()];
             for (int i=0; i<orderedColumns.size(); i++) {
                 TableHeaderUIFacade.Column column = (Column) orderedColumns.get(i);
                 widths[i] = (float)column.getWidth();
-            }       
+            }
 
             PdfPTable table = new PdfPTable(widths);
             table.setWidthPercentage(95);
@@ -617,19 +620,19 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     cell.setBorderColor(new Color(0x66, 0x99, 0x99));
                     table.addCell(cell);
                 }
-            }       
+            }
             table.setHeaderRows(1);
             return table;
         }
-        
+
         protected void addEmptyRow(PdfPTable table, float height) {
             PdfPCell emptyCell = new PdfPCell(new Paragraph("  ", getSansRegular(height)));
             emptyCell.setBorderWidth(0);
             for (int i=0; i<table.getNumberOfColumns(); i++) {
                 table.addCell(emptyCell);
-            }            
+            }
         }
-        
+
         protected void writeProperties(
                 ArrayList orderedColumns, Map id2value, PdfPTable table, Map id2cell) {
             for (int i=0; i<orderedColumns.size(); i++) {
@@ -646,18 +649,18 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     cell.setPaddingLeft(5);
                 }
                 table.addCell(cell);
-            }                               
+            }
         }
-        
+
         private void writeTasks() throws Exception {
             TableHeaderUIFacade visibleFields = getUIFacade().getTaskTree().getVisibleFields();
             final ArrayList orderedColumns = new ArrayList();
             final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
-            
+
             TaskVisitor taskVisitor = new TaskVisitor() {
                 int myPreviousChildTaskCount = 0;
                 int myPreviousChildlessTaskCount = 0;
-                
+
                 PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());
                 protected String serializeTask(Task t, int depth) throws Exception {
                     boolean addEmptyRow = false;
@@ -672,7 +675,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                             else {
                                 myPreviousChildlessTaskCount++;
                             }
-                            
+
                         }
                         myPreviousChildTaskCount=0;
                     }
@@ -686,7 +689,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     HashMap id2value = new HashMap();
                     myTaskProperty.getTaskAttributes(t, id2value);
                     HashMap id2cell = new HashMap();
-                    
+
                     PdfPCell nameCell;
                     if (myShowNotesOption.isChecked() && t.getNotes()!=null && !"".equals(t.getNotes())) {
                         nameCell = new PdfPCell(createNameCellContent(t));
@@ -695,12 +698,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     }
                     nameCell.setBorderWidth(0);
                     nameCell.setPaddingLeft(5 + depth*10);
-                    
+
                     id2cell.put("tpd3", nameCell);
                     writeProperties(orderedColumns, id2value, table, id2cell);
                     return "";
                 }
-                
+
                 private PdfPTable createNameCellContent(Task t) throws BadElementException {
                     PdfPTable table = new PdfPTable(1);
                     Paragraph p = new Paragraph(t.getName(), getSansRegular(12));
@@ -709,7 +712,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     cell1.setPhrase(p);
                     cell1.setPaddingLeft(0);
                     table.addCell(cell1);
-                    
+
                     Paragraph notes = new Paragraph(t.getNotes(), getSansItalic(8));
                     PdfPCell cell2 = new PdfPCell();
                     cell2.setBorder(PdfPCell.NO_BORDER);
@@ -722,8 +725,8 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             taskVisitor.visit(getProject().getTaskManager());
             myDoc.add(table);
         }
-        
-        
+
+
         private void writeResources() throws Exception {
             TableHeaderUIFacade visibleFields = getUIFacade().getResourceTree().getVisibleFields();
             final ArrayList orderedColumns = new ArrayList();
@@ -739,29 +742,29 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 writeProperties(orderedColumns, id2value, table, id2cell);
             }
             myDoc.add(table);
-            
+
         }
 
         PdfPTable createColontitleTable(String topLeft, String topRight, String bottomLeft, String bottomRight) {
             PdfPTable head = new PdfPTable(2);
             {
-                PdfPCell cell = new PdfPCell();            
-                cell.setBorder(Rectangle.NO_BORDER);    
+                PdfPCell cell = new PdfPCell();
+                cell.setBorder(Rectangle.NO_BORDER);
                 Paragraph p = new Paragraph(topLeft, getSansRegularBold(18));
                 p.setAlignment(Paragraph.ALIGN_LEFT);
                 //colontitle.setLeading(0);
                 cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                cell.setVerticalAlignment(Element.ALIGN_BOTTOM);                
+                cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
                 //cell.setPaddingLeft(2);
                 cell.setPaddingBottom(6);
                 cell.setPhrase(p);
                 head.addCell(cell);
-            }            
+            }
             {
                 PdfPCell cell = new PdfPCell();
-                cell.setBorder(Rectangle.NO_BORDER);    
+                cell.setBorder(Rectangle.NO_BORDER);
                 Paragraph p = new Paragraph(
-                        topRight, 
+                        topRight,
                         getSansRegularBold(10));
                 p.setAlignment(Paragraph.ALIGN_RIGHT);
                 cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -813,11 +816,11 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             final PdfWriter writer = myWriter;
             Rectangle page = document.getPageSize();
             PdfPTable colontitleTable = createColontitleTable(topLeft, topRight, bottomLeft, bottomRight);
-            colontitleTable.writeSelectedRows(0, -1, 
-                    document.leftMargin(), 
+            colontitleTable.writeSelectedRows(0, -1,
+                    document.leftMargin(),
                     page.getHeight() - document.topMargin() + colontitleTable.getTotalHeight(),
-                writer.getDirectContent());            
-            
+                writer.getDirectContent());
+
         }
         public void onChapter(PdfWriter arg0, Document arg1, float arg2, Paragraph arg3) {
         }
@@ -829,8 +832,8 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             if (isColontitleEnabled) {
                 writeColontitle(
                         getProject().getProjectName(),
-                        GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), 
-                        myLeftSubcolontitle, 
+                        GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
+                        myLeftSubcolontitle,
                         String.valueOf(writer.getPageNumber()));
             }
         }
