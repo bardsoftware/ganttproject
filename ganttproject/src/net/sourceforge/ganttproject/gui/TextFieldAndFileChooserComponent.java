@@ -155,14 +155,14 @@ public class TextFieldAndFileChooserComponent {
 
     private void examineFile(File f) {
         if (!f.exists()) {
-            showFileStatus(new Status(IStatus.ERROR, "foo", "File does not exist"));
+            showFileStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File does not exist", null));
             return;
         }
         if (!f.canRead()) {
-            showFileStatus(new Status(IStatus.ERROR, "foo", "File read error"));
+            showFileStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File read error", null));
             return;
         }
-        showFileStatus(new Status(IStatus.OK, "foo", "  "));
+        showFileStatus(new Status(IStatus.OK, "foo", IStatus.OK, "  ", null));
     }
     protected void showFileStatus(IStatus status) {
 

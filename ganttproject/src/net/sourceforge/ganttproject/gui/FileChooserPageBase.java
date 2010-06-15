@@ -312,8 +312,10 @@ public abstract class FileChooserPageBase implements WizardPage {
                           total += r;
                         }
                         myFetchedFile = tempFile;
-                        setStatus(new Status(IStatus.OK, "foo",
-                                MessageFormat.format("Successfully fetched from {0}", myUrl)));
+                        setStatus(new Status(
+                                IStatus.OK, "foo", IStatus.OK,
+                                MessageFormat.format("Successfully fetched from {0}", new Object[] {myUrl}),
+                                null));
                     }
                     finally {
                         to.flush();
@@ -325,8 +327,12 @@ public abstract class FileChooserPageBase implements WizardPage {
                 }
             }
             catch (IOException e) {
-                setStatus(new Status(IStatus.ERROR, "foo",
-                        MessageFormat.format("Failed to fetch from {0}\n{1}", myUrl, e.getMessage())));
+                setStatus(new Status(
+                        IStatus.ERROR, "foo", IStatus.ERROR,
+                        MessageFormat.format("Failed to fetch from {0}\n{1}", new Object[] {
+                                myUrl, e.getMessage()
+                        }),
+                        e));
             }
             finally {
                 isFetching = false;
