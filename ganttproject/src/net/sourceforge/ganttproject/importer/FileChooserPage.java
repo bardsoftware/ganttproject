@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -42,36 +43,19 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
     }
 
-    public void setActive(boolean b) {
-        if (b == false) {
-            super.setActive(b);
-        } else {
-            if (myState.getUrl() != null) {
-                setSelectedUrl(myState.getUrl());
-            }
-            super.setActive(b);
-        }
-    }
-
-
     protected FileFilter createFileFilter() {
         return new ExtensionBasedFileFilter(
-                myState.myImporter.getFileNamePattern(), myState.myImporter
-                        .getFileTypeDescription());
+                myState.myImporter.getFileNamePattern(), myState.myImporter.getFileTypeDescription());
     }
 
     protected GPOptionGroup[] getOptionGroups() {
         return myState.myImporter==null ? new GPOptionGroup[0] : myState.myImporter.getSecondaryOptions();
     }
 
-    protected void onFileChosen(File file) {
-        try {
-            myState.setUrl(file==null ? null : file.toURL());
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        super.onFileChosen(file);
+    protected void onSelectedUrlChange(URL selectedUrl) {
+        myState.setUrl(selectedUrl);
+        super.onSelectedUrlChange(selectedUrl);
     }
+
 
 }

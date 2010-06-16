@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * @author bard
  */
-public class TextFieldAndFileChooserComponent {
+public abstract class TextFieldAndFileChooserComponent {
     private JButton myChooserButton;
 
     private JTextField myTextField;
@@ -49,6 +49,8 @@ public class TextFieldAndFileChooserComponent {
     private Component myParentComponent;
 
     private int myFileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES;
+
+    private boolean myProcessTextEventEnabled = true;
 
     public TextFieldAndFileChooserComponent(final Component parentComponent,
             String dialogCaption) {
@@ -87,7 +89,9 @@ public class TextFieldAndFileChooserComponent {
                 onChange();
             }
             private void onChange() {
-                examineFile(new File(myTextField.getText()));
+                if (myProcessTextEventEnabled) {
+                    onFileChosen(new File(myTextField.getText()));
+                }
             }
         });
         Box box = Box.createHorizontalBox();
@@ -106,8 +110,10 @@ public class TextFieldAndFileChooserComponent {
     }
 
     public void setFile(File file) {
+        myProcessTextEventEnabled = false;
         myFile = file;
         myTextField.setText(file == null ? "" : file.getAbsolutePath());
+        myProcessTextEventEnabled = true;
     }
 
     public void setFileFilter(FileFilter filter) {
@@ -129,16 +135,13 @@ public class TextFieldAndFileChooserComponent {
         int returnVal = fc.showDialog(myParentComponent, GanttLanguage
                 .getInstance().getText("ok"));
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            onFileChosen(fc.getSelectedFile());
+            myFile = fc.getSelectedFile();
+            myTextField.setText(myFile.getAbsolutePath());
+            onFileChosen(myFile);
         }
     }
 
-    protected void onFileChosen(File file) {
-        examineFile(file);
-        myFile = file;
-        myTextField.setText(myFile.getAbsolutePath());
-
-    }
+    protected abstract void onFileChosen(File file);
 
     public void setFileSelectionMode(int mode) {
         myFileSelectionMode = mode;

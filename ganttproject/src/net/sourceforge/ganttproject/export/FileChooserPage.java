@@ -4,9 +4,12 @@ import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 
 import javax.swing.filechooser.FileFilter;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.osgi.service.prefs.Preferences;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -21,8 +24,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class FileChooserPage extends FileChooserPageBase {
 
-    private static URL ourLastSelectedUrl;
-
     private final State myState;
 
     private final IGanttProject myProject;
@@ -35,7 +36,6 @@ class FileChooserPage extends FileChooserPageBase {
         myProject = project;
         myWebPublishingGroup = new GPOptionGroup("exporter.webPublishing", new GPOption[]{state.getPublishInWebOption()});
         myWebPublishingGroup.setTitled(false);
-        //myOptionsBuilder = new OptionsPageBuilder();
     }
 
     protected String getFileChooserTitle() {
@@ -46,43 +46,46 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
 
-    protected void onFileChosen(File file) {
-        String proposedExtension = myState.getExporter()
-                .proposeFileExtension();
-        if(proposedExtension != null) {
-            if (false == file.getName().toLowerCase().endsWith(
-                    proposedExtension)) {
-                file = new File(file.getAbsolutePath() + "."
-                        + proposedExtension);
+    protected void loadPreferences() {
+        super.loadPreferences();
+        if (getPreferences().get(PREF_SELECTED_FILE, null) == null) {
+            getChooser().setFile(proposeOutputFile(myProject, myState.getExporter()));
+        } else {
+            String proposedExtension = myState.getExporter().proposeFileExtension();
+            if(proposedExtension != null) {
+                String selectedFile = getPreferences().get(PREF_SELECTED_FILE, null);
+                int lastDot = selectedFile.lastIndexOf('.');
+                String extension = lastDot >=0 ? selectedFile.substring(lastDot + 1) : "";
+                if (!extension.equals(proposedExtension)) {
+                    getChooser().setFile(new File(selectedFile.substring(0, lastDot+1) + proposedExtension));
+                    return;
+                }
             }
+            getChooser().setFile(new File(getPreferences().get(PREF_SELECTED_FILE, null)));
         }
-        try {
-            myState.setUrl(file.toURI().toURL());
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        super.onFileChosen(file);
     }
 
-    public void setActive(boolean b) {
-        if (b == false) {
-            URL url = getSelectedUrl();
-            myState.setUrl(url);
-            FileChooserPage.ourLastSelectedUrl = url;
-            super.setActive(b);
-        } else {
-            super.setActive(b);
-            URL proposedUrl = proposeOutputUrl(myProject);
-            if (proposedUrl == null) {
-                setSelectedUrl(myState.getUrl());
-                return;
-            }
-            if (false == proposedUrl.equals(getSelectedUrl())) {
-                setSelectedUrl(proposedUrl);
-                myState.setUrl(proposedUrl);
+    protected void onSelectedUrlChange(URL selectedUrl) {
+        myState.setUrl(selectedUrl);
+        super.onSelectedUrlChange(selectedUrl);
+    }
+
+    protected IStatus onSelectedFileChange(File file) {
+        if (file.exists() && !file.canWrite()) {
+            return new Status(IStatus.ERROR, "foo", "Can't write to file");
+        }
+        if (!file.exists() && !file.getParentFile().canWrite()) {
+            return new Status(IStatus.ERROR, "foo", "Can't write to directory");
+        }
+        IStatus result = new Status(IStatus.OK, "foo", "");
+        String proposedExtension = myState.getExporter().proposeFileExtension();
+        if(proposedExtension != null) {
+            if (false == file.getName().toLowerCase().endsWith(proposedExtension)) {
+                result = new Status(IStatus.OK, "foo", MessageFormat.format("Note that the extension is not {0}", proposedExtension));
             }
         }
+        IStatus setStatus = setSelectedFile(file);
+        return setStatus.isOK() ? result : setStatus;
     }
 
     protected Component createSecondaryOptionsPanel() {
@@ -90,32 +93,7 @@ class FileChooserPage extends FileChooserPageBase {
         return customUI == null ? super.createSecondaryOptionsPanel() : customUI;
     }
 
-    public URL proposeOutputUrl(IGanttProject project) {
-        return FileChooserPage.proposeOutputUrl(project, myState.getExporter());
-    }
-
-    static URL proposeOutputUrl(IGanttProject project, Exporter exporter) {
-        String proposedExtension = exporter.proposeFileExtension();
-        if (proposedExtension == null) {
-            return null;
-        }
-        if (FileChooserPage.ourLastSelectedUrl != null) {
-            String name = FileChooserPage.ourLastSelectedUrl.getPath();
-            int lastDot = name.lastIndexOf('.');
-            String extension = lastDot >=0 ? name.substring(lastDot + 1) : "";
-            if (extension.equals(proposedExtension)) {
-                return FileChooserPage.ourLastSelectedUrl;
-            }
-        }
-        try {
-            return FileChooserPage.proposeOutputFile(project, exporter).toURI().toURL();
-        } catch (MalformedURLException e) {
-            return null;
-        }
-
-    }
-
-    static File proposeOutputFile(IGanttProject project, Exporter exporter) {
+    private static File proposeOutputFile(IGanttProject project, Exporter exporter) {
         String proposedExtension = exporter.proposeFileExtension();
         if (proposedExtension == null) {
             return null;
@@ -141,6 +119,7 @@ class FileChooserPage extends FileChooserPageBase {
         }
         return result;
     }
+
     protected FileFilter createFileFilter() {
         return new ExtensionBasedFileFilter(
                 myState.getExporter().getFileNamePattern(), myState.getExporter()
