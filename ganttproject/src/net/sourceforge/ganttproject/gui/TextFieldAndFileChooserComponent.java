@@ -11,6 +11,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -20,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -79,6 +82,9 @@ public abstract class TextFieldAndFileChooserComponent {
         myTextField = new JTextField();
         //myTextField.setColumns(40);
         myTextField.getDocument().addDocumentListener(new DocumentListener() {
+            private final Timer myTimer = new Timer();
+            private TimerTask myTimerTask = null;
+
             public void removeUpdate(DocumentEvent e) {
                 onChange();
             }
@@ -89,8 +95,18 @@ public abstract class TextFieldAndFileChooserComponent {
                 onChange();
             }
             private void onChange() {
-                if (myProcessTextEventEnabled) {
-                    onFileChosen(new File(myTextField.getText()));
+                if (myTimerTask == null) {
+                    myTimerTask = new TimerTask() {
+                        public void run() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    onFileChosen(new File(myTextField.getText()));
+                                }
+                            });
+                            myTimerTask = null;
+                        }
+                    };
+                    myTimer.schedule(myTimerTask, 1000);
                 }
             }
         });
