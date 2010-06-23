@@ -93,7 +93,7 @@ class FileChooserPage extends FileChooserPageBase {
         return customUI == null ? super.createSecondaryOptionsPanel() : customUI;
     }
 
-    private static File proposeOutputFile(IGanttProject project, Exporter exporter) {
+    static File proposeOutputFile(IGanttProject project, Exporter exporter) {
         String proposedExtension = exporter.proposeFileExtension();
         if (proposedExtension == null) {
             return null;
