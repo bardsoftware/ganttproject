@@ -93,6 +93,8 @@ public abstract class FileChooserPageBase implements WizardPage {
                 IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
                 if (status.isOK()) {
                     setFile(file);
+                } else {
+                    onSelectedUrlChange(null);
                 }
                 FileChooserPageBase.setStatus(myFileLabel, status);
             }
@@ -142,6 +144,7 @@ public abstract class FileChooserPageBase implements WizardPage {
                     ourSelectedSource = URL_SOURCE;
                     urlFetcher.setStatusLabel(myUrlLabel);
                     urlFetcher.setUrl(getSelectedUrl());
+                    onSelectedUrlChange(getSelectedUrl());
                 }
             };
             Action[] importSourceActions = new Action[] {fileSourceAction, urlSourceAction};
@@ -265,7 +268,7 @@ public abstract class FileChooserPageBase implements WizardPage {
 
     protected IStatus setSelectedFile(File file) {
         try {
-            onSelectedUrlChange(file.toURI().toURL());
+            onSelectedUrlChange(new URL("file://" + file.getAbsolutePath()));
             return new Status(IStatus.OK, "foo", "  ");
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -274,10 +277,13 @@ public abstract class FileChooserPageBase implements WizardPage {
     }
 
     protected IStatus onSelectedFileChange(File file) {
-        if (file.exists()) {
+        if (file == null) {
             return new Status(IStatus.ERROR, "foo", "File does not exist");
         }
-        if (file.canRead()) {
+        if (!file.exists()) {
+            return new Status(IStatus.ERROR, "foo", "File does not exist");
+        }
+        if (!file.canRead()) {
             return new Status(IStatus.ERROR, "foo", "File read error");
         }
         return setSelectedFile(file);
@@ -294,7 +300,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         label.setText(status.getMessage());
     }
 
-    static class UrlFetcher {
+    class UrlFetcher {
         private DefaultBooleanOption myProgressOption = new DefaultBooleanOption("");
         private JLabel myStatusLabel;
         private Timer myTimer = new Timer();
@@ -384,6 +390,9 @@ public abstract class FileChooserPageBase implements WizardPage {
         }
 
         protected void onFetchComplete(File file) {
+            if (!onSelectedFileChange(file).isOK()) {
+                onSelectedUrlChange(null);
+            }
         }
 
         private void reschedule() {
