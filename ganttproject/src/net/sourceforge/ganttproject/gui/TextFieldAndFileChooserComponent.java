@@ -95,7 +95,7 @@ public abstract class TextFieldAndFileChooserComponent {
                 onChange();
             }
             private void onChange() {
-                if (myTimerTask == null) {
+                if (myTimerTask == null && myProcessTextEventEnabled) {
                     myTimerTask = new TimerTask() {
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
@@ -126,10 +126,8 @@ public abstract class TextFieldAndFileChooserComponent {
     }
 
     public void setFile(File file) {
-        myProcessTextEventEnabled = false;
         myFile = file;
         myTextField.setText(file == null ? "" : file.getAbsolutePath());
-        myProcessTextEventEnabled = true;
     }
 
     public void setFileFilter(FileFilter filter) {
@@ -158,7 +156,9 @@ public abstract class TextFieldAndFileChooserComponent {
     }
 
     public void tryFile() {
+        myProcessTextEventEnabled = false;
         onFileChosen(new File(myTextField.getText()));
+        myProcessTextEventEnabled = true;
     }
 
     protected abstract void onFileChosen(File file);
