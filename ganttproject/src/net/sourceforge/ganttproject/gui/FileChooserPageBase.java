@@ -128,7 +128,7 @@ public abstract class FileChooserPageBase implements WizardPage {
             Action fileSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("file")) {
                 public void actionPerformed(ActionEvent e) {
                     ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
-                    onSelectedUrlChange(getSelectedUrl());
+                    myChooser.tryFile();
                 }
             };
             Action urlSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("url")) {

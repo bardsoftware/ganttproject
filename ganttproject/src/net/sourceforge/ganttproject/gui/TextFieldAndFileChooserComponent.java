@@ -100,7 +100,7 @@ public abstract class TextFieldAndFileChooserComponent {
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    onFileChosen(new File(myTextField.getText()));
+                                    tryFile();
                                 }
                             });
                             myTimerTask = null;
@@ -155,6 +155,10 @@ public abstract class TextFieldAndFileChooserComponent {
             myTextField.setText(myFile.getAbsolutePath());
             onFileChosen(myFile);
         }
+    }
+
+    public void tryFile() {
+        onFileChosen(new File(myTextField.getText()));
     }
 
     protected abstract void onFileChosen(File file);
