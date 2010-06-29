@@ -72,16 +72,20 @@ class FileChooserPage extends FileChooserPageBase {
 
     protected IStatus onSelectedFileChange(File file) {
         if (file.exists() && !file.canWrite()) {
-            return new Status(IStatus.ERROR, "foo", "Can't write to file");
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to file", null);
         }
         if (!file.exists() && !file.getParentFile().canWrite()) {
-            return new Status(IStatus.ERROR, "foo", "Can't write to directory");
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to directory", null);
         }
-        IStatus result = new Status(IStatus.OK, "foo", "");
+        IStatus result = new Status(IStatus.OK, "foo", IStatus.OK, "", null);
         String proposedExtension = myState.getExporter().proposeFileExtension();
         if(proposedExtension != null) {
             if (false == file.getName().toLowerCase().endsWith(proposedExtension)) {
-                result = new Status(IStatus.OK, "foo", MessageFormat.format("Note that the extension is not {0}", proposedExtension));
+                result = new Status(
+                    IStatus.OK, "foo", IStatus.OK, 
+                    MessageFormat.format("Note that the extension is not {0}",
+                                         new Object[] {proposedExtension}),
+                    null);
             }
         }
         IStatus setStatus = setSelectedFile(file);

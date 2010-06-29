@@ -248,22 +248,22 @@ public abstract class FileChooserPageBase implements WizardPage {
     protected IStatus setSelectedFile(File file) {
         try {
             onSelectedUrlChange(new URL("file://" + file.getAbsolutePath()));
-            return new Status(IStatus.OK, "foo", "  ");
+            return new Status(IStatus.OK, "foo", IStatus.OK, "  ", null);
         } catch (MalformedURLException e) {
             e.printStackTrace();
-            return new Status(IStatus.ERROR, "foo", e.getMessage());
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, e.getMessage(), null);
         }
     }
 
     protected IStatus onSelectedFileChange(File file) {
         if (file == null) {
-            return new Status(IStatus.ERROR, "foo", "File does not exist");
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File does not exist", null);
         }
         if (!file.exists()) {
-            return new Status(IStatus.ERROR, "foo", "File does not exist");
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File does not exist", null);
         }
         if (!file.canRead()) {
-            return new Status(IStatus.ERROR, "foo", "File read error");
+            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File read error", null);
         }
         return setSelectedFile(file);
     }
