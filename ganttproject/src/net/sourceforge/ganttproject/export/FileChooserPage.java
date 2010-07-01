@@ -102,9 +102,8 @@ class FileChooserPage extends FileChooserPageBase {
         if (proposedExtension == null) {
             return null;
         }
-        File userHome = new File(System.getProperty("user.home"));
-        File result = new File(userHome, project.getProjectName() + "."
-                + proposedExtension);
+
+        File result = null;
         Document projectDocument = project.getDocument();
         if (projectDocument != null) {
             File localFile = new File(projectDocument.getFilePath());
@@ -120,6 +119,11 @@ class FileChooserPage extends FileChooserPageBase {
                             + proposedExtension);
                 }
             }
+        }
+        if (result == null) {
+            File userHome = new File(System.getProperty("user.home"));
+            result = new File(userHome, project.getProjectName() + "."
+                    + proposedExtension);
         }
         return result;
     }

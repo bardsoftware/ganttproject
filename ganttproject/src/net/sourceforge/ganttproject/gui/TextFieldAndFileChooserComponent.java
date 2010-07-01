@@ -15,6 +15,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -31,6 +33,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
@@ -55,17 +60,22 @@ public abstract class TextFieldAndFileChooserComponent {
 
     private boolean myProcessTextEventEnabled = true;
 
-    public TextFieldAndFileChooserComponent(final Component parentComponent,
-            String dialogCaption) {
-        myDialogCaption = dialogCaption;
-        myParentComponent = parentComponent;
-        initComponents();
-    }
+    private UIFacade myUiFacade;
 
-    public TextFieldAndFileChooserComponent(String label, String dialogCaption) {
+//    public TextFieldAndFileChooserComponent(final Component parentComponent,
+//            UIFacade uiFacade,
+//            String dialogCaption) {
+//        myDialogCaption = dialogCaption;
+//        myParentComponent = parentComponent;
+//        myUiFacade = uiFacade;
+//        initComponents();
+//    }
+
+    public TextFieldAndFileChooserComponent(UIFacade uiFacade, String label, String dialogCaption) {
         Box innerBox = Box.createHorizontalBox();
 //        innerBox.add(new JLabel(label));
 //        innerBox.add(Box.createHorizontalStrut(5));
+        myUiFacade = uiFacade;
         myParentComponent = innerBox;
         myDialogCaption = dialogCaption;
         initComponents();
@@ -135,8 +145,9 @@ public abstract class TextFieldAndFileChooserComponent {
     }
 
     public void showFileChooser() {
-        JFileChooser fc = new JFileChooser(new File(myTextField.getText()));
+        final JFileChooser fc = new JFileChooser(new File(myTextField.getText()));
         fc.setDialogTitle(myDialogCaption);
+        fc.setControlButtonsAreShown(false);
         fc.setApproveButtonToolTipText(myDialogCaption);
         fc.setFileSelectionMode(myFileSelectionMode);
         // Remove the possibility to use a file filter for all files
@@ -146,13 +157,35 @@ public abstract class TextFieldAndFileChooserComponent {
         }
 
         fc.addChoosableFileFilter(myFileFilter);
-        int returnVal = fc.showDialog(myParentComponent, GanttLanguage
-                .getInstance().getText("ok"));
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            myFile = fc.getSelectedFile();
-            myTextField.setText(myFile.getAbsolutePath());
-            onFileChosen(myFile);
-        }
+
+        Action[] actions = new Action[] {
+                new AbstractAction("Your project file directory") {
+                    public void actionPerformed(ActionEvent e) {
+                    }
+                },
+                new AbstractAction("Last used location") {
+                    public void actionPerformed(ActionEvent e) {
+                    }
+                },
+                new AbstractAction("Select a new file") {
+                    public void actionPerformed(ActionEvent arg0) {
+                    }
+                }};
+        JComponent[] components = new JComponent[] {new JLabel("/foo/bar"), new JLabel("/tmp/foo"), fc};
+        GPOptionChoicePanel filePanel = new GPOptionChoicePanel();
+
+        JComponent filePanelComponent = filePanel.getComponent(actions, components, 0);
+        filePanelComponent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        myUiFacade.showDialog(
+                filePanelComponent,
+                new Action[] {new OkAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                myFile = fc.getSelectedFile();
+                myTextField.setText(myFile.getAbsolutePath());
+                onFileChosen(myFile);
+            }
+        }});
     }
 
     public void tryFile() {

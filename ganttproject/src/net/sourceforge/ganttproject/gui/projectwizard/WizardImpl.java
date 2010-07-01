@@ -152,7 +152,7 @@ public abstract class WizardImpl {
         return (WizardPage) myPages.get(myCurrentPage);
     }
 
-    protected UIFacade getUIFacade() {
+    public UIFacade getUIFacade() {
         return myUIFacade;
     }
 

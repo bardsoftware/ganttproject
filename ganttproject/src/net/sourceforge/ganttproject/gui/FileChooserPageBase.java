@@ -80,7 +80,7 @@ public abstract class FileChooserPageBase implements WizardPage {
     public Component getComponent() {
         myComponent = new JPanel(new BorderLayout());
         myChooser = new TextFieldAndFileChooserComponent(
-                GanttLanguage.getInstance().getText("file")+":", getFileChooserTitle()) {
+                myWizard.getUIFacade(), GanttLanguage.getInstance().getText("file")+":", getFileChooserTitle()) {
             protected void onFileChosen(File file) {
                 IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
                 if (status.isOK()) {
