@@ -65,6 +65,7 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -356,15 +357,16 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
-            myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
-            myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption)+".yes", "yes");
-            myDataOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myShowNotesOption)+".no", "no");
+            I18N i18n = new OptionsPageBuilder.I18N();
+            myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
+            myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
+            myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption)+".yes", "yes");
+            myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption)+".no", "no");
 
-            myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(myPageOptions), "choosePaperFormat");
-            myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myLandscapeOption)+".yes", "landscape");
-            myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myLandscapeOption)+".no", "portrait");
-            myPageOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myPageSizeOption), "paperSize");
+            myPageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myPageOptions), "choosePaperFormat");
+            myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption)+".yes", "landscape");
+            myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption)+".no", "portrait");
+            myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myPageSizeOption), "paperSize");
 
             myPageOptions.lock();
             myDataOptions.lock();
