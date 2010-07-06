@@ -177,6 +177,13 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                 dc.setOrder(viewIndex);
                 dc.setWidth(getColumn(name).getPreferredWidth());
             }
+            else {
+            	// Set the Order to "-1" if the column is not 
+            	// set as "visible"
+            	// NOTE: Without this, there will be multiple columns 
+            	// marked with the same "Order" value
+            	dc.setOrder(-1);
+            }            
         }
     }
 

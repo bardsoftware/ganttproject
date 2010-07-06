@@ -12,12 +12,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.ImageIcon;
+import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import net.sourceforge.ganttproject.GanttTreeTable.DisplayedColumn;
+import net.sourceforge.ganttproject.GanttTreeTable.DisplayedColumnsList;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.BlankLineNode;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
@@ -63,7 +68,6 @@ class TaskTreeImageGenerator {
         myUIConfiguration.getChartMainFont().deriveFont(12f));
         int fourEmWidth = fmetric.stringWidth("mmmm");
         
-        int width = 0;
         int height = getTree().getTreeTable().getRowHeight()*3 + HEADER_OFFSET;
         for (Iterator tasks = myItemsToConsider.iterator(); tasks.hasNext();) {
             DefaultMutableTreeNode nextTreeNode = (DefaultMutableTreeNode) tasks
@@ -80,17 +84,14 @@ class TaskTreeImageGenerator {
             }
             if (isVisible(next)) {
                 height += getTree().getTreeTable().getRowHeight();
-                int nbchar = fmetric.stringWidth(next.getName())+next.getManager().getTaskHierarchy().getDepth(next)*fourEmWidth;
-                if (nbchar > width) {
-                    width = nbchar;
-                }
             }
         }
 
-        width += 10;
-        myWidth = width;
+        // Get the entire witdth of the Task Tree table for the graphical 
+        // area to be considered
+        myWidth = getTree().getTreeTable().getWidth();
         
-        BufferedImage image2 = new BufferedImage(width, height,
+        BufferedImage image2 = new BufferedImage(getWidth(), height,
                 BufferedImage.TYPE_INT_RGB);
         // setSize(sizeTOC, getHeight());
         Graphics g2 = image2.getGraphics();
@@ -98,13 +99,20 @@ class TaskTreeImageGenerator {
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, width, height);
+        g2.fillRect(0, 0, getWidth(), height);
         printTasks(g2, myItemsToConsider);
         
         GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         g2.setColor(new Color(102, 153, 153));
-        g2.fillRect(0,0, width, but.getHeight());
+        g2.fillRect(0,0, getWidth(), but.getHeight());
         but.paintComponent(g2);        
+        
+        // Insert a bitmap of the Table Header region to complete the 
+        // generation of the Task tree image.
+        JTableHeader ganttTaskHeader = getTree().getTable().getTableHeader();
+        g2.translate(0, HEADER_OFFSET);
+        ganttTaskHeader.paint(g2);        
+        
         return image2;
     }
     
@@ -131,10 +139,24 @@ class TaskTreeImageGenerator {
         int rowCount=0;
         final int h = getTree().getTreeTable().getRowHeight();
         Stack nestingStack = new Stack();
-        //int x = 5;
-        final int fourEmWidth = new TextLengthCalculatorImpl(g).getTextLength("mmmm");
-        int y = getTree().getTable().getTableHeader().getHeight()
-        + HEADER_OFFSET;
+        
+        // Generic object for calculating the graphical length of a text string
+        final TextLengthCalculatorImpl lengthCalculator = new TextLengthCalculatorImpl(g);
+        
+        final int fourEmWidth = lengthCalculator.getTextLength("mmmm");
+        int y = getTree().getTable().getTableHeader().getHeight() + HEADER_OFFSET;
+        
+        FontMetrics fmetric = g.getFontMetrics(myUIConfiguration.getChartMainFont().deriveFont(12f));        
+        
+        // The list of column object which are currently being used or referenced 
+        // to by the code
+		DisplayedColumnsList dispCols = getTree().getTreeTable().getDisplayColumns();
+		
+        // Total number of columns displayed in the tree (this is required to iterate 
+        // through the different columns whose order, width and type can be dynamically 
+        // changed by a user)
+        int numDispCols = dispCols.size();
+        
         for (Iterator tasks = child.iterator(); tasks.hasNext();) {
             DefaultMutableTreeNode nextTreeNode = (DefaultMutableTreeNode) tasks
                     .next();
@@ -156,23 +178,136 @@ class TaskTreeImageGenerator {
                 if (rowCount % 2 == 1) {
                     g.setColor(new Color((float) 0.933, (float) 0.933,
                             (float) 0.933));
-                    g.fillRect(0, y, getWidth() - h / 2, h);
+                    g.fillRect(0, y, getWidth() - 2, h);
                 }
                 g.setColor(Color.black);
-                g.drawRect(0, y, getWidth() - h / 2, h);
+                g.drawRect(0, y, getWidth() - 2, h);
+                
                 if (!blankline) {
-                    int charH = (int) g.getFontMetrics().getLineMetrics(
-                            next.getName(), g).getAscent();
-                    int x = (nestingStack.size()-1)*fourEmWidth+5;
-                    g.drawString(next.getName(), x, y + charH
-                                    + (h - charH) / 2);
+                    int charH = (int) g.getFontMetrics().getLineMetrics(next.getName(), g).getAscent();
 
+                    // Use the Task Hierarchy indentation only for the Task name, 
+                    // and not for all the other columns also
+                    int xOfs = (nestingStack.size()-1)*fourEmWidth/2; //+5;
+                    
+                    // A small constant offset for the X Co-ords
+                    int x = 2;
+                    
+                    // The primary loop works based on the "Order" value of each 
+                    // column entry because the column number does not correspond to 
+                    // the physical location of that entry in the table but the order does
+                    for(int colOrd = 0; colOrd < numDispCols; colOrd++) {
+                    	
+                    	// Extract the name of the column from the order value
+                    	String colName = dispCols.getNameForOrder(colOrd);
+
+                    	if(colName == null)
+                    	{
+                    		continue;
+                    	}
+                    	
+                    	// Only worry about columns which are actually displayed in the 
+                    	// current view
+                    	if(!dispCols.isDisplayed(colName))
+                    	{
+                    		continue;
+                    	}
+   
+                    	// Local width of the current column being processed
+                    	int currWidth = getTree().getTreeTable().getColumn(colName).getWidth();                    	
+                    	
+						TaskNode currTaskNode = new TaskNode(next);
+						
+						
+						// Now do the actual work of recognising the type of column, and 
+						// extracting the relevant data from the Task entries in each row
+						// (NOTE: There should be a better way to do this!!)
+						// The length of the text in the column is clipped based on the actual 
+						// width of each column as set in the main java
+						if(colName.equalsIgnoreCase(GanttTreeTableModel.strColName)) {
+							String strToDraw = (String)getTree().getModel().getValueAt(currTaskNode, 3);
+							if((lengthCalculator.getTextLength(strToDraw) + xOfs) > currWidth) {
+								strToDraw = strToDraw.substring(0, ((currWidth - xOfs)/NAME_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+                    		g.drawString(strToDraw, x + xOfs, y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColBegDate)) {
+							String strToDraw = getTree().getModel().getValueAt(currTaskNode, 4).toString();
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/DATE_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+							
+                    		g.drawString(strToDraw, (x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2), y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColEndDate)) {
+							String strToDraw = getTree().getModel().getValueAt(currTaskNode, 5).toString();
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/DATE_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+                    		g.drawString(strToDraw, (x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2), y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColDuration)) {
+							String strToDraw = getTree().getModel().getValueAt(currTaskNode, 6).toString();
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/NUM_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+                    		g.drawString(strToDraw, (x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2), y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColCompletion)) {
+							String strToDraw = getTree().getModel().getValueAt(currTaskNode, 7).toString();
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/NUM_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+	                		g.drawString(strToDraw, (x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2), y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColCoordinator)) {
+							String strToDraw = (String)getTree().getModel().getValueAt(currTaskNode, 8);
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/NAME_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+                    		g.drawString(strToDraw,(x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2),y + charH + (h - charH) / 2);
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColInfo)) {
+                    		ImageIcon infoIcon = (ImageIcon)(getTree().getModel().getValueAt(currTaskNode, 2));
+                    		if(infoIcon != null) {
+                        		g.drawImage(infoIcon.getImage(), x + (currWidth - infoIcon.getIconWidth())/2, y + (h - infoIcon.getIconHeight())/2, infoIcon.getImageObserver());                    			
+                    		}
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColPriority)) {
+                    		ImageIcon infoIcon = (ImageIcon)(getTree().getModel().getValueAt(currTaskNode, 1));
+                    		if(infoIcon != null) {
+                        		g.drawImage(infoIcon.getImage(), x + (currWidth - infoIcon.getIconWidth())/2, y + (h - infoIcon.getIconHeight())/2, infoIcon.getImageObserver());                    									
+                    		}
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColType)) {
+                    		ImageIcon infoIcon = (ImageIcon)(getTree().getModel().getValueAt(currTaskNode, 0));
+                    		if(infoIcon != null) {
+                        		g.drawImage(infoIcon.getImage(), x + (currWidth - infoIcon.getIconWidth())/2, y + (h - infoIcon.getIconHeight())/2, infoIcon.getImageObserver());                    									
+                    		}
+                    	}
+                    	else if(colName.equalsIgnoreCase(GanttTreeTableModel.strColID)) {
+							String strToDraw = getTree().getModel().getValueAt(currTaskNode, 10).toString();
+							if(lengthCalculator.getTextLength(strToDraw) > currWidth) {
+								strToDraw = strToDraw.substring(0, (currWidth/NUM_STR_DIVIDER) - 5);
+								strToDraw += "... ";								
+							}
+                    		g.drawString(strToDraw, (x + (currWidth - lengthCalculator.getTextLength(strToDraw))/2), y + charH + (h - charH) / 2);                									
+                   		}
+           			
+						x += currWidth;
+                    }                    
                 }
 
                 g.setColor(new Color((float) 0.807, (float) 0.807,
                         (float) 0.807));
 
-                g.drawLine(1, y + h-1, getWidth() - 11, y + h-1);
+                g.drawLine(1, y + h-1, getWidth(), y + h-1);
                 y += h;
 
                 rowCount++;
@@ -206,5 +341,7 @@ class TaskTreeImageGenerator {
     }
     
     private static final int HEADER_OFFSET = 44;
-    
+    private static final int DATE_STR_DIVIDER = 4;
+    private static final int NAME_STR_DIVIDER = 6;    
+    private static final int NUM_STR_DIVIDER = 4;
 }
