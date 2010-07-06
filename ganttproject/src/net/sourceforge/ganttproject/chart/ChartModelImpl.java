@@ -131,10 +131,10 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         myDependencyOptions = new GPOptionGroup("dependency", new GPOption[] {myDependencyHardnessOption});
         myDependencyOptions.setTitled(true);
         myDependencyOptions.setI18Nkey(
-                OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(myDependencyOptions),
+                new OptionsPageBuilder.I18N().getCanonicalOptionGroupLabelKey(myDependencyOptions),
                 "link");
         myDependencyOptions.setI18Nkey(
-                OptionsPageBuilder.I18N.getCanonicalOptionLabelKey(myDependencyHardnessOption),
+                new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(myDependencyHardnessOption),
                 "hardness");
         myDependencyOptions.setI18Nkey(
                 OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
@@ -273,24 +273,24 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             if(taskRect.myLeftX + 4 >= rect.getRightX()) {
                 // Task completion bar is near left boundary
                 if (rect.getRightX() >= x - 10 && rect.getRightX() <= x - 2) {
-					foundResult = true;
-				}
+                    foundResult = true;
+                }
             } else if(taskRect.getRightX() - 4 <= rect.getRightX()) {
                 // Task completion bar is near right boundary
                 if (rect.getRightX() >= x + 2 && rect.getRightX() <= x + 10) {
-					foundResult = true;
-				}
+                    foundResult = true;
+                }
             } else {
                 // Progress bar is away from left and right boundaries
                 if (rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-					foundResult = true;
-				}
+                    foundResult = true;
+                }
             }
         }
         if(foundResult) {
-			return new TaskProgressChartItem(x, getBottomUnitWidth(),
+            return new TaskProgressChartItem(x, getBottomUnitWidth(),
                     getBottomUnit(), (Task) primitive.getModelObject());
-		}
+        }
         return null;
     }
 
@@ -418,8 +418,8 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             rowHeight = 20;
         }
         if (isPreviousState) {
-			rowHeight = rowHeight + 8;
-		}
+            rowHeight = rowHeight + 8;
+        }
         return rowHeight;
     }
 
@@ -458,10 +458,10 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     public int setPreviousStateTasks(ArrayList tasks) {
         if (tasks == null) {
-			isPreviousState = false;
-		} else {
-			isPreviousState = true;
-		}
+            isPreviousState = false;
+        } else {
+            isPreviousState = true;
+        }
         myTaskRendererImpl.setPreviousStateTasks(tasks);
         return setRowHeight();
     }

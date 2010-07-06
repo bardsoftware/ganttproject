@@ -265,11 +265,11 @@ public class OptionsPageBuilder {
     }
 
     private boolean isCheckboxOption(GPOptionGroup group, GPOption option) {
-        String yesKey = I18N.getCanonicalOptionLabelKey(option)+".yes";
+        String yesKey = myi18n.getCanonicalOptionLabelKey(option)+".yes";
         if (group.getI18Nkey(yesKey)==null && myi18n.getValue(yesKey)==null) {
             return true;
         }
-        String noKey = I18N.getCanonicalOptionLabelKey(option)+".no";
+        String noKey = myi18n.getCanonicalOptionLabelKey(option)+".no";
         if (group.getI18Nkey(noKey)==null && myi18n.getValue(noKey)==null) {
             return true;
         }
@@ -286,7 +286,7 @@ public class OptionsPageBuilder {
                 }
             }
         });
-        yesButton.setText(myi18n.getValue(group, I18N.getCanonicalOptionLabelKey(option)+".yes"));
+        yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option)+".yes"));
         yesButton.setSelected(option.isChecked());
 
         JRadioButton noButton = new JRadioButton(new AbstractAction("") {
@@ -298,7 +298,7 @@ public class OptionsPageBuilder {
                 }
             }
         });
-        noButton.setText(myi18n.getValue(group, I18N.getCanonicalOptionLabelKey(option)+".no"));
+        noButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option)+".no"));
         noButton.setSelected(!option.isChecked());
 
         ButtonGroup buttonGroup = new ButtonGroup();
@@ -378,9 +378,9 @@ public class OptionsPageBuilder {
     }
 
     public static class I18N {
-        private static String myOptionKeyPrefix = "option.";
-        private static String myOptionGroupKeyPrefix = "optionGroup.";
-        private static String myOptionPageKeyPrefix = "optionPage.";
+        private String myOptionKeyPrefix = "option.";
+        private String myOptionGroupKeyPrefix = "optionGroup.";
+        private String myOptionPageKeyPrefix = "optionPage.";
 
         public I18N() {
         }
@@ -414,10 +414,10 @@ public class OptionsPageBuilder {
             return getValue(group, canonicalKey);
         }
 
-        public static final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
+        public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
             return myOptionGroupKeyPrefix + group.getID() + ".label";
         }
-        public static final String getCanonicalOptionLabelKey(GPOption option) {
+        public final String getCanonicalOptionLabelKey(GPOption option) {
             return myOptionKeyPrefix + option.getID() + ".label";
         }
         public static final String getCanonicalOptionValueLabelKey(String valueID) {
