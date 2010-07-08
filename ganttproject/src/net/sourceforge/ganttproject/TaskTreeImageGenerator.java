@@ -1,6 +1,7 @@
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -29,13 +30,13 @@ class TaskTreeImageGenerator {
     TaskTreeImageGenerator(GanttTree2 treeView, UIConfiguration uiConfiguration) {
         myTreeView = treeView;
         myUIConfiguration = uiConfiguration;
-        
+
     }
-    
+
     private GanttTree2 getTree() {
         return myTreeView;
     }
-    
+
     List getPrintableNodes(GanttExportSettings settings) {
         List myItemsToConsider;
         if (settings.isOnlySelectedItem()) {
@@ -53,19 +54,18 @@ class TaskTreeImageGenerator {
             }
         }
         return myItemsToConsider;
-        
+
     }
-    Image createImage(List myItemsToConsider) {
-        BufferedImage tmpImage = new BufferedImage(10, 10,
-                BufferedImage.TYPE_INT_RGB);
+
+    protected Dimension calculateDimension(List/*<DefaultMutableTreeNode>*/ taskNodes) {
+        BufferedImage tmpImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
 
         FontMetrics fmetric = tmpImage.getGraphics().getFontMetrics(
-        myUIConfiguration.getChartMainFont().deriveFont(12f));
+                myUIConfiguration.getChartMainFont().deriveFont(12f));
         int fourEmWidth = fmetric.stringWidth("mmmm");
-        
         int width = 0;
         int height = getTree().getTreeTable().getRowHeight()*3 + HEADER_OFFSET;
-        for (Iterator tasks = myItemsToConsider.iterator(); tasks.hasNext();) {
+        for (Iterator tasks = taskNodes.iterator(); tasks.hasNext();) {
             DefaultMutableTreeNode nextTreeNode = (DefaultMutableTreeNode) tasks
                     .next();
 
@@ -86,108 +86,104 @@ class TaskTreeImageGenerator {
                 }
             }
         }
-
         width += 10;
-        myWidth = width;
-        
-        BufferedImage image2 = new BufferedImage(width, height,
+        return new Dimension(width, height);
+    }
+
+    Image createImage(List/*<DefaultMutableTreeNode>*/ taskNodes) {
+        Dimension d = calculateDimension(taskNodes);
+        myWidth = d.width;
+
+        BufferedImage image = new BufferedImage(getWidth(), d.height,
                 BufferedImage.TYPE_INT_RGB);
-        // setSize(sizeTOC, getHeight());
-        Graphics g2 = image2.getGraphics();
+        paint(image, d, taskNodes);
+        return image;
+    }
+
+    protected void paint(Image image, Dimension d, List taskNodes) {
+        Graphics g2 = image.getGraphics();
         ((Graphics2D) g2).setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, width, height);
-        printTasks(g2, myItemsToConsider);
-        
+        g2.fillRect(0, 0, getWidth(), d.height);
+        printTasks(g2, taskNodes);
+
         GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         g2.setColor(new Color(102, 153, 153));
-        g2.fillRect(0,0, width, but.getHeight());
-        but.paintComponent(g2);        
-        return image2;
+        g2.fillRect(0,0, getWidth(), but.getHeight());
+        but.paintComponent(g2);
     }
-    
+
     private int getWidth() {
         return myWidth;
     }
-    
-    private void printTasks(Graphics g, List taskNodes) {
 
-        g.setColor(Color.black);
-
-        // g.setFont(myUIConfiguration.getChartMainFont().deriveFont(12f));
-        g.setFont(Fonts.PRINT_CHART_FONT);
-
-        // JA Changed 42 to 66
-        // This is related to the hardcoded headerheight
-        // TODO: Fix hard-coded part
-        // printTask(g,5,66,getTree().getAllChildTask(getTree().getRoot()));
-        printTask(g,taskNodes);
-
+    static class PaintState {
+        int y;
+        int rowCount = 0;
+        Stack nestingStack = new Stack();
+        int rowHeight;
+        int indent;
     }
 
-    private int printTask(Graphics g, List child) {
-        int rowCount=0;
-        final int h = getTree().getTreeTable().getRowHeight();
-        Stack nestingStack = new Stack();
+    private int printTasks(Graphics g, List taskNodes) {
+        g.setColor(Color.black);
+        g.setFont(Fonts.PRINT_CHART_FONT);
+
+        PaintState state = new PaintState();
+        state.y = getTree().getTable().getTableHeader().getHeight() + HEADER_OFFSET;
+        state.rowHeight = getTree().getTreeTable().getRowHeight();
         //int x = 5;
-        final int fourEmWidth = new TextLengthCalculatorImpl(g).getTextLength("mmmm");
-        int y = getTree().getTable().getTableHeader().getHeight()
-        + HEADER_OFFSET;
-        for (Iterator tasks = child.iterator(); tasks.hasNext();) {
-            DefaultMutableTreeNode nextTreeNode = (DefaultMutableTreeNode) tasks
-                    .next();
+        state.indent = new TextLengthCalculatorImpl(g).getTextLength("mmmm");
+        for (Iterator tasks = taskNodes.iterator(); tasks.hasNext();) {
+            DefaultMutableTreeNode nextTreeNode = (DefaultMutableTreeNode) tasks.next();
 
             boolean blankline = nextTreeNode instanceof BlankLineNode;
             Task next = null;
             if (!blankline) {
                 next = (Task) nextTreeNode.getUserObject();
-                while (!nestingStack.isEmpty()) {
-                	DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) nestingStack.pop();
-                	if (nextTreeNode.getParent()==topStackNode) {
-                		nestingStack.push(topStackNode);
-                		break;
-                	}
+                while (!state.nestingStack.isEmpty()) {
+                    DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) state.nestingStack.pop();
+                    if (nextTreeNode.getParent()==topStackNode) {
+                        state.nestingStack.push(topStackNode);
+                        break;
+                    }
                 }
-        		nestingStack.push(nextTreeNode);
+                state.nestingStack.push(nextTreeNode);
             }
             if (blankline || isVisible(next)) {
-                if (rowCount % 2 == 1) {
+                if (state.rowCount % 2 == 1) {
                     g.setColor(new Color((float) 0.933, (float) 0.933,
                             (float) 0.933));
-                    g.fillRect(0, y, getWidth() - h / 2, h);
+                    g.fillRect(0, state.y, getWidth() - state.rowHeight / 2, state.rowHeight);
                 }
                 g.setColor(Color.black);
-                g.drawRect(0, y, getWidth() - h / 2, h);
+                g.drawRect(0, state.y, getWidth() - state.rowHeight / 2, state.rowHeight);
                 if (!blankline) {
-                    int charH = (int) g.getFontMetrics().getLineMetrics(
-                            next.getName(), g).getAscent();
-                    int x = (nestingStack.size()-1)*fourEmWidth+5;
-                    g.drawString(next.getName(), x, y + charH
-                                    + (h - charH) / 2);
-
+                    paintTask(g, state, next);
                 }
 
                 g.setColor(new Color((float) 0.807, (float) 0.807,
                         (float) 0.807));
 
-                g.drawLine(1, y + h-1, getWidth() - 11, y + h-1);
-                y += h;
+                g.drawLine(1, state.y + state.rowHeight-1, getWidth() - 11, state.y + state.rowHeight-1);
+                state.y += state.rowHeight;
 
-                rowCount++;
-
-                // if (nextTreeNode.getChildCount() != 0) {
-                // y = printTask(g, x + (h / 2), y, getTree().getAllChildTask(
-                // nextTreeNode));
-                // }
+                state.rowCount++;
             }
         }
-        return y;
+        return state.y;
     }
 
-    
-    
+    protected void paintTask(Graphics g, PaintState state, Task t) {
+        int charH = (int) g.getFontMetrics().getLineMetrics(t.getName(), g).getAscent();
+        int x = (state.nestingStack.size()-1)*state.indent+5;
+        g.drawString(t.getName(), x, state.y + charH + (state.rowHeight - charH) / 2);
+    }
+
+
+
     private boolean isVisible(Task thetask) {
         boolean res = true;
         DefaultMutableTreeNode father = getTree().getFatherNode(thetask);
@@ -204,7 +200,7 @@ class TaskTreeImageGenerator {
         }
         return res;
     }
-    
+
     private static final int HEADER_OFFSET = 44;
-    
+
 }
