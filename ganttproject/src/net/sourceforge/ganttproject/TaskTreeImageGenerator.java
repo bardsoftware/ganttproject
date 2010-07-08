@@ -63,6 +63,7 @@ class TaskTreeImageGenerator {
         FontMetrics fmetric = tmpImage.getGraphics().getFontMetrics(
                 myUIConfiguration.getChartMainFont().deriveFont(12f));
         int fourEmWidth = fmetric.stringWidth("mmmm");
+
         int width = 0;
         int height = getTree().getTreeTable().getRowHeight()*3 + HEADER_OFFSET;
         for (Iterator tasks = taskNodes.iterator(); tasks.hasNext();) {
