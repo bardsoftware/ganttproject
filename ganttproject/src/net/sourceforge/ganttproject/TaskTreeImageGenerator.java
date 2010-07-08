@@ -29,13 +29,13 @@ class TaskTreeImageGenerator {
     TaskTreeImageGenerator(GanttTree2 treeView, UIConfiguration uiConfiguration) {
         myTreeView = treeView;
         myUIConfiguration = uiConfiguration;
-        
+
     }
-    
+
     private GanttTree2 getTree() {
         return myTreeView;
     }
-    
+
     List getPrintableNodes(GanttExportSettings settings) {
         List myItemsToConsider;
         if (settings.isOnlySelectedItem()) {
@@ -53,7 +53,7 @@ class TaskTreeImageGenerator {
             }
         }
         return myItemsToConsider;
-        
+
     }
     Image createImage(List myItemsToConsider) {
         BufferedImage tmpImage = new BufferedImage(10, 10,
@@ -62,7 +62,7 @@ class TaskTreeImageGenerator {
         FontMetrics fmetric = tmpImage.getGraphics().getFontMetrics(
         myUIConfiguration.getChartMainFont().deriveFont(12f));
         int fourEmWidth = fmetric.stringWidth("mmmm");
-        
+
         int width = 0;
         int height = getTree().getTreeTable().getRowHeight()*3 + HEADER_OFFSET;
         for (Iterator tasks = myItemsToConsider.iterator(); tasks.hasNext();) {
@@ -89,7 +89,7 @@ class TaskTreeImageGenerator {
 
         width += 10;
         myWidth = width;
-        
+
         BufferedImage image2 = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_RGB);
         // setSize(sizeTOC, getHeight());
@@ -100,18 +100,18 @@ class TaskTreeImageGenerator {
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, width, height);
         printTasks(g2, myItemsToConsider);
-        
+
         GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         g2.setColor(new Color(102, 153, 153));
         g2.fillRect(0,0, width, but.getHeight());
-        but.paintComponent(g2);        
+        but.paintComponent(g2);
         return image2;
     }
-    
+
     private int getWidth() {
         return myWidth;
     }
-    
+
     private void printTasks(Graphics g, List taskNodes) {
 
         g.setColor(Color.black);
@@ -144,13 +144,13 @@ class TaskTreeImageGenerator {
             if (!blankline) {
                 next = (Task) nextTreeNode.getUserObject();
                 while (!nestingStack.isEmpty()) {
-                	DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) nestingStack.pop();
-                	if (nextTreeNode.getParent()==topStackNode) {
-                		nestingStack.push(topStackNode);
-                		break;
-                	}
+                    DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) nestingStack.pop();
+                    if (nextTreeNode.getParent()==topStackNode) {
+                        nestingStack.push(topStackNode);
+                        break;
+                    }
                 }
-        		nestingStack.push(nextTreeNode);
+                nestingStack.push(nextTreeNode);
             }
             if (blankline || isVisible(next)) {
                 if (rowCount % 2 == 1) {
@@ -186,8 +186,8 @@ class TaskTreeImageGenerator {
         return y;
     }
 
-    
-    
+
+
     private boolean isVisible(Task thetask) {
         boolean res = true;
         DefaultMutableTreeNode father = getTree().getFatherNode(thetask);
@@ -204,7 +204,7 @@ class TaskTreeImageGenerator {
         }
         return res;
     }
-    
+
     private static final int HEADER_OFFSET = 44;
-    
+
 }
