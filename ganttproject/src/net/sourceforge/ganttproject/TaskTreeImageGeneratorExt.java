@@ -17,25 +17,26 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
-    TaskTreeImageGeneratorExt(GanttTree2 treeView, UIConfiguration uiConfiguration) {
-        super(treeView, uiConfiguration);
-    }
+  TaskTreeImageGeneratorExt(GanttTree2 treeView, UIConfiguration uiConfiguration) {
+    super(treeView, uiConfiguration);
+  }
 
-    @Override
-    protected Dimension calculateDimension(List taskNodes) {
-        Dimension d = super.calculateDimension(taskNodes);
-        return new Dimension(getTree().getTreeTable().getWidth(), d.height);
-    }
+  @Override
+  protected Dimension calculateDimension(List taskNodes) {
+    Dimension d = super.calculateDimension(taskNodes);
+    return new Dimension(getTree().getTreeTable().getWidth(), d.height);
+  }
 
-    @Override
-    protected void paint(Image image, Dimension d, List taskNodes) {
-        super.paint(image, d, taskNodes);
-        // Insert a bitmap of the Table Header region to complete the
-        // generation of the Task tree image.
-        JTableHeader ganttTaskHeader = getTree().getTable().getTableHeader();
-        image.getGraphics().translate(0, HEADER_OFFSET);
-        ganttTaskHeader.paint(image.getGraphics());
-    }
+  @Override
+  protected void paint(Image image, Dimension d, List taskNodes) {
+    super.paint(image, d, taskNodes);
+    // Insert a bitmap of the Table Header region to complete the
+    // generation of the Task tree image.
+    JTableHeader ganttTaskHeader = getTree().getTable().getTableHeader();
+    Graphics g = image.getGraphics();
+    g.translate(0, HEADER_OFFSET);
+    ganttTaskHeader.paint(g);
+  }
 
   @Override
   protected void paintTask(Graphics g, PaintState state, Task t) {
@@ -78,7 +79,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
       if (colName.equalsIgnoreCase(GanttTreeTableModel.strColName)) {
         String strToDraw = (String) getTree().getModel().getValueAt(currTaskNode, 3);
         int nameIndent = (state.nestingStack.size() - 1) * state.indent / 2;
-        paintString(g, lengthCalculator, strToDraw, state, x, currWidth - nameIndent);
+        paintString(g, lengthCalculator, strToDraw, state, x + nameIndent, currWidth - nameIndent);
       } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColBegDate)) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 4).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
@@ -112,23 +113,20 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
     }
   }
 
-    private static void paintString(
-        Graphics g, TextLengthCalculator lengthCalculator, String s, PaintState paintState,
-        int xpos, int widthLimit) {
-        if (lengthCalculator.getTextLength(s) > widthLimit) {
-            s = s.substring(0, (widthLimit/lengthCalculator.getTextLength("m")) - 5);
-            s += "... ";
-        }
-        int textHeight = lengthCalculator.getTextHeight(s);
-        g.drawString(s, xpos, paintState.y + textHeight + (paintState.rowHeight - textHeight) / 2);
+  private static void paintString(Graphics g, TextLengthCalculator lengthCalculator, String s, PaintState paintState,
+      int xpos, int widthLimit) {
+    if (lengthCalculator.getTextLength(s) > widthLimit) {
+      s = s.substring(0, (widthLimit / lengthCalculator.getTextLength("m")) - 5);
+      s += "... ";
     }
+    int textHeight = lengthCalculator.getTextHeight(s);
+    g.drawString(s, xpos, paintState.y + textHeight + (paintState.rowHeight - textHeight) / 2);
+  }
 
-    private static void paintIcon(Graphics g, ImageIcon icon, PaintState paintState, int xpos, int widthLimit) {
-        if(icon != null) {
-            g.drawImage(icon.getImage(), xpos + (widthLimit - icon.getIconWidth())/2,
-                paintState.y + (paintState.rowHeight - icon.getIconHeight())/2,
-                icon.getImageObserver());
-        }
-
+  private static void paintIcon(Graphics g, ImageIcon icon, PaintState paintState, int xpos, int widthLimit) {
+    if (icon != null) {
+      g.drawImage(icon.getImage(), xpos + (widthLimit - icon.getIconWidth()) / 2, paintState.y
+              + (paintState.rowHeight - icon.getIconHeight()) / 2, icon.getImageObserver());
     }
+  }
 }
