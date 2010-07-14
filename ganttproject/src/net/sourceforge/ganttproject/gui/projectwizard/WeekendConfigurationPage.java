@@ -36,10 +36,6 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
 
     private final JPanel myPanel;
 
-    private final JLabel choosePublicHoliday;
-
-    private final JLabel chooseWeekend;
-
     private final JComboBox JCCalendar;
 
     private final I18N myI18N;
@@ -47,33 +43,42 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
     private final URL[] calendars;
     private final GanttProject myProject;
 
-    WeekendConfigurationPage(GPCalendar calendar, I18N i18n,
-            IGanttProject project) throws Exception {
+    public WeekendConfigurationPage(GPCalendar calendar, I18N i18n,
+            IGanttProject project, boolean showPublicHolidays) throws Exception {
+        JLabel choosePublicHoliday;
+        JLabel chooseWeekend;
+
         myCalendar = calendar;
         myCalendar.getPublicHolidays().clear();
         myProject = (GanttProject) project;
         myI18N = i18n;
         String[] dayNames = myI18N.getDayNames();
         myPanel = new JPanel(new BorderLayout());
-        choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText(
+        if(showPublicHolidays)
+        {
+        	choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText(
                 "choosePublicHoliday"));
-        chooseWeekend = new JLabel(GanttLanguage.getInstance().getText(
-                "chooseWeekend"));
-        JCCalendar = new JComboBox();
-        JCCalendar.addItem(GanttLanguage.getInstance().getText("none"));
-        XMLCalendarOpen open = new XMLCalendarOpen();
-        open.setCalendars();
-        String[] labels = open.getLabels();
-        calendars = open.getCalendarResources();
-        for (int i = 0; i < labels.length; i++)
-            JCCalendar.addItem(labels[i]);
-        JCCalendar.addActionListener(this);
+        	JCCalendar = new JComboBox();
+        	JCCalendar.addItem(GanttLanguage.getInstance().getText("none"));
+	        XMLCalendarOpen open = new XMLCalendarOpen();
+	        open.setCalendars();
+	        String[] labels = open.getLabels();
+	        calendars = open.getCalendarResources();
+	        for (int i = 0; i < labels.length; i++)
+	            JCCalendar.addItem(labels[i]);
+	        JCCalendar.addActionListener(this);
 
-        JPanel publicHolidayPanel = new JPanel(new BorderLayout());
-        publicHolidayPanel.add(choosePublicHoliday, BorderLayout.WEST);
-        publicHolidayPanel.add(JCCalendar);
-        myBox.add(publicHolidayPanel);
-        myBox.add(new JPanel());
+	        JPanel publicHolidayPanel = new JPanel(new BorderLayout());
+	        publicHolidayPanel.add(choosePublicHoliday, BorderLayout.WEST);
+	        publicHolidayPanel.add(JCCalendar);
+	        myBox.add(publicHolidayPanel);
+	        myBox.add(new JPanel());
+        }
+        else
+        {
+        	JCCalendar = null;
+        	calendars = null;
+        }
 
         Box cb = Box.createVerticalBox();
         /* 
@@ -83,6 +88,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
          * 
          * If you know better solution, do not hesitate to replace this code.
          */
+        chooseWeekend = new JLabel(GanttLanguage.getInstance().getText("chooseWeekend"));
         JCheckBox[] allCheckBoxes = new JCheckBox[7];
         cb.add(chooseWeekend);
         int nextDay = Calendar.MONDAY;
@@ -144,9 +150,8 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
                 // If all days of the week are marked as weekend unmark selected the last.
                 myModel.setSelected(false);
             } else {
-                WeekendConfigurationPage.this.myCalendar.setWeekDayType(myDay,
-                        myModel.isSelected() ? GPCalendar.DayType.WEEKEND
-                                : GPCalendar.DayType.WORKING);
+                myCalendar.setWeekDayType(myDay, myModel.isSelected() ? 
+                		GPCalendar.DayType.WEEKEND : GPCalendar.DayType.WORKING);
             }
         }
 
@@ -160,6 +165,9 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
     }
 
     public URL getProjectCalendar() {
+    	if(JCCalendar == null)
+    		return null;
+
         int index = JCCalendar.getSelectedIndex();
         if (index == 0)
             return null;
