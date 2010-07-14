@@ -141,8 +141,8 @@ extends JPanel {
 
     private JCheckBox projectTaskCheckBox1;
 
-    private boolean isColorChanged;
-
+    private boolean isTaskColorChanged;
+    
     private JButton colorButton;
 
     private JButton defaultColorButton;
@@ -389,7 +389,7 @@ extends JPanel {
         shapePanel.add(shapeComboBox, BorderLayout.CENTER);
 
         colorButton = new JButton(language.getText("colorButton"));
-        colorButton.setBackground(selectedTasks[0].getColor());
+        colorButton.setBackground(selectedTasks[0].getTaskColor());
         final String colorChooserTitle = language.getText("selectColor");
         colorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -401,7 +401,7 @@ extends JPanel {
                                 colorButton
                                         .setBackground(GanttDialogProperties.colorChooser
                                                 .getColor());
-                                isColorChanged = true;
+                                isTaskColorChanged = true;
                             }
                         }
 
@@ -431,7 +431,7 @@ extends JPanel {
         defaultColorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
-                isColorChanged = true;
+                isTaskColorChanged = true;
             }
         });
 
@@ -783,8 +783,8 @@ extends JPanel {
 //                returnTask[i].setStartFixed(isStartFixed);
 //            if (this.taskIsFinishFixed != isFinishFixed)
 //                returnTask[i].setFinishFixed(isFinishFixed);
-            if (isColorChanged) {
-                returnTask[i].setColor(colorButton.getBackground());
+            if (isTaskColorChanged) {
+                returnTask[i].setTaskColor(colorButton.getBackground());
             }
             if (this.taskShape == null && shapeComboBox.getSelectedIndex() != 0
                     || this.taskShape != null && !this.taskShape
@@ -792,11 +792,11 @@ extends JPanel {
                                     .getSelectedPaint())) {
                 returnTask[i].setShape(new ShapePaint(
                         (ShapePaint) shapeComboBox.getSelectedPaint(),
-                        Color.white, returnTask[i].getColor()));
+                        Color.white, returnTask[i].getTaskColor()));
             }
             if (returnTask[i].getShape() != null) {
                 returnTask[i].setShape(new ShapePaint(returnTask[i].getShape(),
-                        Color.white, returnTask[i].getColor()));
+                        Color.white, returnTask[i].getTaskColor()));
             }
 
             mutator.commit();

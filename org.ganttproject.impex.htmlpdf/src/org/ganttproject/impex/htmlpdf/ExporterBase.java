@@ -407,8 +407,8 @@ abstract class ExporterBase {
                 if (t.getNotes()!=null && t.getNotes().length()>0) {
 	                textElement("notes", myAttrs, t.getNotes(), handler);
                 }
-                if (t.getColor()!=null) {
-                    textElement("color", myAttrs, getHexaColor(t.getColor()),
+                if (t.getTaskColor()!=null) {
+                    textElement("color", myAttrs, getHexColor(t.getTaskColor()),
                             handler);
                 }
                 {
@@ -481,7 +481,7 @@ abstract class ExporterBase {
 
     }
 
-    protected static String getHexaColor(java.awt.Color color) {
+    protected static String getHexColor(java.awt.Color color) {
         StringBuffer out = new StringBuffer();
         out.append("#");
         if (color.getRed() <= 15) {

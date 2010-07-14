@@ -39,7 +39,19 @@ public interface Task extends MutableTask {
 
     ShapePaint getShape();
 
-    Color getColor();
+    /**
+     * @return the color of the task, if not set the default color will be returned
+     */
+    Color getTaskColor();
+
+    /**
+     * @return the color of the milestone, if not set the default color will be returned
+     */
+    Color getMilestoneColor();
+    
+    boolean taskColorDefined();
+    
+    boolean milestoneColorDefined();
 
     String getNotes();
 

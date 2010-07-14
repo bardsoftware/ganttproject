@@ -92,8 +92,10 @@ public class TaskImpl implements Task {
 
     private ShapePaint myShape;
 
-    private Color myColor;
+    private Color myTaskColor;
 
+    private Color myMilestoneColor;
+    
     private String myNotes;
 
     private MutatorImpl myMutator;
@@ -131,7 +133,8 @@ public class TaskImpl implements Task {
         myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
         myNotes = "";
         bExpand = true;
-        myColor = null;
+        myTaskColor = null;
+        myMilestoneColor = null;
 
         customValues = new CustomColumnsValues(myManager.getCustomColumnStorage());
     }
@@ -160,7 +163,8 @@ public class TaskImpl implements Task {
         myCompletionPercentage = copy.myCompletionPercentage;
         myLength = copy.myLength;
         myShape = copy.myShape;
-        myColor = copy.myColor;
+        myTaskColor = copy.myTaskColor;
+        myMilestoneColor = copy.myMilestoneColor;
         myNotes = copy.myNotes;
         bExpand = copy.bExpand;
         //
@@ -370,18 +374,30 @@ public class TaskImpl implements Task {
         return myShape;
     }
 
-    public Color getColor() {
-        Color result = myColor;
+    public Color getTaskColor() {
+        Color result = myTaskColor;
         if (result == null) {
-            if (isMilestone() || getNestedTasks().length > 0) {
-                result = Color.BLACK;
+            // TODO Remove check for milestone color? Should call getMilestoneColor() directly!
+            if (isMilestone()) {
+                result = getMilestoneColor();
+            } else if(getNestedTasks().length > 0) {
+                result = Color.black;
             } else {
-                result = myManager.getConfig().getDefaultColor();
+                result = myManager.getConfig().getDefaultTaskColor();
             }
         }
         return result;
     }
 
+    public Color getMilestoneColor()
+    {
+        Color result = myMilestoneColor;
+        if (result == null) {
+            result = myManager.getConfig().getDefaultMilestoneColor();
+        }
+        return result;        
+    }
+    
     public String getNotes() {
         return myNotes;
     }
@@ -615,7 +631,6 @@ public class TaskImpl implements Task {
             	GanttCalendar oldEnd = (GanttCalendar) (myEndChange==null ? TaskImpl.this.getEnd() : myEndChange.myOldValue);
                 myManager.fireTaskScheduleChanged(TaskImpl.this, oldStart, oldEnd);
             }
-
         }
 
         public GanttCalendar getThird() {
@@ -703,11 +718,9 @@ public class TaskImpl implements Task {
             }
             myThirdChange.setValue(third);
             myActivities = null;
-
         }
 
         public void setDuration(final TaskLength length) {
-
             // If duration of task was set to 0 or less do not change it
             if (length.getLength() <= 0) {
                 return;
@@ -802,10 +815,18 @@ public class TaskImpl implements Task {
             });
         }
 
-        public void setColor(final Color color) {
+        public void setTaskColor(final Color color) {
             myCommands.add(new Runnable() {
                 public void run() {
-                    TaskImpl.this.setColor(color);
+                    TaskImpl.this.setTaskColor(color);
+                }
+            });
+        }
+
+        public void setMilestoneColor(final Color color) {
+            myCommands.add(new Runnable() {
+                public void run() {
+                    TaskImpl.this.setMilestoneColor(color);
                 }
             });
         }
@@ -848,7 +869,6 @@ public class TaskImpl implements Task {
         }
 
         public void shift(float unitCount) {
-
             Task result = getPrecomputedShift(unitCount);
             if (result == null) {
                 result = TaskImpl.this.shift(unitCount);
@@ -883,18 +903,15 @@ public class TaskImpl implements Task {
 
         public void setTaskInfo(TaskInfo taskInfo) {
             myTaskInfo = taskInfo;
-
         }
 
     }
 
     public void setName(String name) {
-
         myName = name;
     }
 
     public void setWebLink(String webLink) {
-
         myWebLink = webLink;
     }
 
@@ -1012,8 +1029,6 @@ public class TaskImpl implements Task {
 //                myManager.fireTaskScheduleChanged(this, myStart.Clone(),
 //                        oldFinish);
 //            }
-
-
     }
 
     private Date shiftDate(Date input, TaskLength duration) {
@@ -1104,8 +1119,18 @@ public class TaskImpl implements Task {
         myShape = shape;
     }
 
-    public void setColor(Color color) {
-        myColor = color;
+    /**
+     * Sets the task color of this task
+     */
+    public void setTaskColor(Color color) {
+        myTaskColor = color;
+    }
+
+    /**
+     * Sets the milestone color of this task
+     */
+    public void setMilestoneColor(Color color) {
+        myMilestoneColor = color;
     }
 
     public void setNotes(String notes) {
@@ -1142,11 +1167,17 @@ public class TaskImpl implements Task {
      *
      * @return true, if this task has its own color defined.
      */
+    public boolean taskColorDefined() {
+        return (myTaskColor != null);
+    }
 
-    public boolean colorDefined() {
-
-        return (myColor != null);
-
+    /**
+     * Allows to determine, if a special color is defined for this task.
+     *
+     * @return true, if this task has its own color defined.
+     */
+    public boolean milestoneColorDefined() {
+        return (myMilestoneColor != null);
     }
 
     public String toString() {

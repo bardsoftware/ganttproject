@@ -63,7 +63,8 @@ public class GanttProjectImpl implements IGanttProject {
         myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole());
         myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
         myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
-        myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT, Color.BLUE, true);
+        myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT,
+                new Color(140, 182, 206), Color.BLACK, true);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
     }
@@ -197,8 +198,13 @@ public class GanttProjectImpl implements IGanttProject {
             myTimeUnitStack = new GPTimeUnitStack(i18n);
             myCalendar = new WeekendCalendarImpl();
         }
-        public Color getDefaultColor() {
-            return Color.BLUE;
+
+        public Color getDefaultTaskColor() {
+            return GanttGraphicArea.taskDefaultColor;
+        }
+
+        public Color getDefaultMilestoneColor() {
+            return GanttGraphicArea.milestoneDefaultColor;
         }
 
         public GPCalendar getCalendar() {

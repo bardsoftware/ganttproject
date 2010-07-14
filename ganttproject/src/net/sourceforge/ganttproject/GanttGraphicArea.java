@@ -121,7 +121,7 @@ import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
- * Class for the graphic part of the soft
+ * Class for the graphic part of the application
  */
 public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         CustomColumsListener, ProjectEventListener {
@@ -146,23 +146,18 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private static final int HEADER_OFFSET = 44;
 
     /** Begin of display. */
-
 //    public GanttCalendar date;
 
     /** Reference to the GanttTree */
-
     public GanttTree2 tree;
 
     /** Default color for tasks */
+    public static Color taskDefaultColor = new Color(140, 182, 206);
 
-    public static Color taskDefaultColor
-
-    // = new Color( (float) 0.549, (float) 0.713, (float) 0.807);
-
-    = new Color(140, 182, 206);
+    /** Default color for milestones */
+    public static Color milestoneDefaultColor = Color.BLACK;
 
     /** This value is connected to the GanttTRee Scrollbar to move up or down */
-
     private int margY;
 
     /* ! The main application */
@@ -261,24 +256,29 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
     }
 
-    /** Return the color of the task */
-
+    /** @return the color of the task */
     public Color getTaskColor() {
         return myUIConfiguration.getTaskColor();
     }
 
-    /** Change the color of the task */
-
+    /** Changes the color of the task */
     public void setProjectLevelTaskColor(Color c) {
         myUIConfiguration.setProjectLevelTaskColor(c);
     }
 
+    /** @return the color of the task */
+    public Color getMilestoneColor() {
+        return myUIConfiguration.getMilestoneColor();
+    }
+
+    /** Changes the color of the milestone */ 
+    public void setProjectLevelMilestoneColor(Color c) {
+        myUIConfiguration.setProjectLevelTaskColor(c);
+    }
+    
     /** The size of the panel. */
-
     public Dimension getPreferredSize() {
-
         return new Dimension(465, 600);
-
     }
 
     public void paintComponent(Graphics g) {
@@ -297,16 +297,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 getHeight() + 18);
     }
 
-    /** Change the velue connected to the JTree's Scrollbar */
-
+    /** Change the value connected to the JTree's Scrollbar */
     public void setScrollBar(int v) {
-
         margY = v;
-
     }
 
-    /** Return the value of the JTree's Scrollbar */
-
+    /** @return the value of the JTree's Scrollbar */
     public int getScrollBar() {
         return margY;
     }
@@ -331,9 +327,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return end.getTime();
     }
 
-    /** Return an image with the gantt chart */
-    // TODO: 1.11 take into account flags "render this and don't render that"
-
+    /** Return an image with the gantt chart
+     *  TODO: 1.11 take into account flags "render this and don't render that" 
+     */
     public BufferedImage getChart(GanttExportSettings settings) {
         RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
         BufferedImage result = renderedImage.getWholeImage();
@@ -377,9 +373,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     private GanttTree2 getTree() {
-
         return this.tree;
-
     }
 
     IGanttProject getProject() {
@@ -408,7 +402,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         // actions.add(createMenuAction(GanttProject.correctLabel(language
         // .getText("editPublicHolidays")), "));
     }
-
 
     public void repaint() {
         try {
@@ -807,7 +800,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     doFinish();
                 }
             });
-
         }
 
         private void doFinish() {
@@ -820,7 +812,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
             GanttGraphicArea.this.repaint();
         }
-
     }
 
     class MoveTaskInteractions extends MouseInteractionBase implements
@@ -872,7 +863,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     doFinish();
                 }
             });
-
         }
 
         private void doFinish() {
@@ -1316,7 +1306,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void setTaskManager(TaskManager taskManager) {
         // TODO Auto-generated method stub
-
     }
 
     public void reset() {
@@ -1357,8 +1346,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         }
 
         void refresh() {
-
         }
+
         private void addToDispatchers() {
             List dispatchers = Mediator.getChangeValueDispatchers();
             for (int i = 0; i < dispatchers.size(); i++) {
@@ -1491,17 +1480,16 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void projectModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectSaved() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectClosed() {
         repaint();
         setProjectLevelTaskColor(null);
+        setProjectLevelMilestoneColor(null);
         setPreviousStateTasks(null);
     }
 

@@ -182,13 +182,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** The differents menus */
+    /** The different menus */
     public JMenu mProject, mMRU, mEdit, mTask, mHuman, mHelp, mServer,
             mCalendar;
 
     // public JMenu mView;
 
-    /** The differetns menuitem */
+    /** The different menuitems */
     public JMenuItem
             miPreview,/* miCut, miCopy, miPaste,*/ miOptions,
             miDeleteTask,  /*miUp, miDown,*/ miDelHuman,
@@ -201,7 +201,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
-    /** The differents button of toolbar */
+    /** The different buttons of toolbar */
     private TestGanttRolloverButton bNew, bOpen, bSave,
             bExport, bImport, bPrint, bPreviewPrint, bCopy, bCut, bPaste,
             bNewTask, bDelete, bProperties,/* bUnlink, bLink,  bUp,
@@ -325,7 +325,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.setLookAndFeel(lookAndFeel);
         if (options.load()) {
             language = options.getLanguage();
-            GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
+            GanttGraphicArea.taskDefaultColor = options.getDefaultTaskColor();
 
             lookAndFeel = options.getLnfInfos();
             HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
@@ -343,8 +343,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         TaskSelectionManager taskSelectionManager = new TaskSelectionManager();
         Mediator.registerTaskSelectionManager(taskSelectionManager);
         /*
-         * [bbaranne] I add a Mediator object so that we can get the GanttProject
-         * singleton whereever we are in the source code. Perhaps some of you
+         * [bbaranne] I added a Mediator object so that we can get the GanttProject
+         * singleton where ever we are in the source code. Perhaps some of you
          * don't like this, but I believe that it is practical...
          */
         Mediator.registerGanttProject(this);
@@ -360,8 +360,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
         myUIConfiguration = options.getUIConfiguration();
         class TaskManagerConfigImpl implements TaskManagerConfig {
-            public Color getDefaultColor() {
+            public Color getDefaultTaskColor() {
                 return myUIConfiguration.getTaskColor();
+            }
+
+            public Color getDefaultMilestoneColor() {
+                return myUIConfiguration.getMilestoneColor();
             }
 
             public GPCalendar getCalendar() {
@@ -1568,7 +1572,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getTaskManager().registerTask(task);// create a new task in the tab
         // paneneed to register it
         task.setName(nameOfTask + "_" + task.getTaskID());
-        task.setColor(area.getTaskColor());
         // if (current != null) {
         // if (current.colorDefined()) {
         // task.setColor(current.getColor());
