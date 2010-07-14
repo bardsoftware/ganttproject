@@ -284,6 +284,8 @@ class ProxyDocument implements Document {
                     .getContext());
             DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(
                     getActiveCalendar());
+            OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(
+                    getActiveCalendar());
             ViewTagHandler viewHandler = new ViewTagHandler(getUIFacade());
 
             TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getCustomColumnsStorage());
@@ -315,6 +317,7 @@ class ProxyDocument implements Document {
             opener.addTagHandler(previousStateHandler);
             opener.addTagHandler(rolesHandler);
             opener.addTagHandler(weekHandler);
+            opener.addTagHandler(onlyShowWeekendsHandler);
             opener.addTagHandler(viewHandler);
             opener.addParsingListener(dependencyHandler);
             opener.addParsingListener(resourceHandler);
@@ -416,5 +419,23 @@ class ProxyDocument implements Document {
             }        
         }
         
+    }
+    
+    private class OnlyShowWeekendsTagHandler implements TagHandler {
+
+        private final GPCalendar calendar;
+        
+        public OnlyShowWeekendsTagHandler(GPCalendar calendar) {
+            this.calendar = calendar;
+        }
+        
+        public void startElement(String namespaceURI, String sName,
+                String qName, Attributes attrs) {
+            if ("only-show-weekends".equals(qName))
+                calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
+        }
+
+        public void endElement(String namespaceURI, String sName, String qName) {
+        }
     }
 }

@@ -2615,6 +2615,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
         super.repaint();
     }
+    
+    public void repaintResourcePanel()
+    {
+        if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX)
+            getResourcePanel().repaint();
+    }
 
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {

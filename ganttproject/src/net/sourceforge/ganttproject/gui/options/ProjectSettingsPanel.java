@@ -124,7 +124,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and ask for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         if (myProject.getProjectName().equals(tfName.getText())
                 && myProject.getOrganization().equals(tfOrganization.getText())

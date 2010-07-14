@@ -7,9 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 import javax.swing.AbstractAction;
@@ -47,6 +45,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
             IGanttProject project, boolean showPublicHolidays) throws Exception {
         JLabel choosePublicHoliday;
         JLabel chooseWeekend;
+        JCheckBox renderWeekend;
 
         myCalendar = calendar;
         myCalendar.getPublicHolidays().clear();
@@ -104,15 +103,26 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
                 nextDay = 1;
             }
         }
+        
+        cb.add(Box.createVerticalStrut(15));
+        
+        renderWeekend = new JCheckBox();
+        renderWeekend.setSelected(myCalendar.getOnlyShowWeekends());
+        renderWeekend.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                myCalendar.setOnlyShowWeekends(((JCheckBox ) e.getSource()).isSelected());
+            }
+        });
+        renderWeekend.setText(GanttLanguage.getInstance().getText("onlyShowWeekends"));
+        cb.add(renderWeekend);
+        
         JPanel weekendPanel = new JPanel(new BorderLayout());
         weekendPanel.add(cb, BorderLayout.WEST);
         myBox.add(weekendPanel);
-        myBox.add(new JPanel());
 
         JPanel projectPanel = new JPanel(new BorderLayout());
         projectPanel.add(myBox, BorderLayout.NORTH);
         myPanel.add(projectPanel);
-        // addUsingGBL(myPanel, myBox, gbc, 0, 1, 4, 4);
     }
 
     public String getTitle() {
