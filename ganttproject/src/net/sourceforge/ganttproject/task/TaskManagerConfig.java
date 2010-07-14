@@ -21,7 +21,11 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * Created by IntelliJ IDEA. User: bard
  */
 public interface TaskManagerConfig {
-    Color getDefaultColor();
+    // TODO Interface method is unused and it seems that it can be removed
+    Color getDefaultTaskColor();
+
+    // TODO Interface method is unused and it seems that it can be removed
+    Color getDefaultMilestoneColor();
 
     GPCalendar getCalendar();
 

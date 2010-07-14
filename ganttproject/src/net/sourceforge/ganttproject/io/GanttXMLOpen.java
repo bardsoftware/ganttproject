@@ -52,7 +52,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Class allow the programm to load a gantt file from xml format Use Sax parser
+ * Class allow the application to load a gantt file from xml format using the Sax parser
  */
 public class GanttXMLOpen implements GPParser {
 
@@ -311,8 +311,13 @@ public class GanttXMLOpen implements GPParser {
 
                     } else if (eName.equals("tasks")) {
                         if (aName.equals("color")) {
-                            myUIConfig.setProjectLevelTaskColor(determineColor(attrs
-                                    .getValue(i)));
+                            myUIConfig.setProjectLevelTaskColor(
+                                    determineColor(attrs.getValue(i)));
+                        }
+                    } else if (eName.equals("milestones")) {
+                        if (aName.equals("color")) {
+                            myUIConfig.setProjectLevelMilestoneColor(
+                                    determineColor(attrs.getValue(i)));
                         }
                     }
                 }

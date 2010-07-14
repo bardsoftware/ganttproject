@@ -203,8 +203,10 @@ public class GanttXFIGSaver {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.next();
             if (!node.isRoot()) {
                 GanttTask task = (GanttTask) (node.getUserObject());
-                Color color = task.getColor();
-                String hexaColor = getHexaColor(color);
+                Color taskColor = task.getTaskColor();
+                String hexTaskColor = getHexColor(taskColor);
+                Color milestoneColor = task.getMilestoneColor();
+                String hexMilestoneColor = getHexColor(milestoneColor);
             }
         }
         if (debug)
@@ -546,7 +548,7 @@ public class GanttXFIGSaver {
     }
 
     /** @return a color as a string like #00FF00 for green color. */
-    private String getHexaColor(Color color) {
+    private String getHexColor(Color color) {
         if (debug)
             System.out.println("getHexaColor begin");
         String sColor = "#"; // result string

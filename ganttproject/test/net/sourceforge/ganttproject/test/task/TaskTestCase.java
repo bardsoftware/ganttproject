@@ -40,7 +40,12 @@ public abstract class TaskTestCase extends TestCase {
             myResourceManager = new HumanResourceManager(myRoleManager
                     .getDefaultRole());
         }
-        public Color getDefaultColor() {
+
+        public Color getDefaultTaskColor() {
+            return null;
+        }
+
+        public Color getDefaultMilestoneColor() {
             return null;
         }
 

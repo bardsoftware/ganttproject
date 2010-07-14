@@ -70,7 +70,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * The class aible to load and save options on the file
+ * This class is able to load and save options on the file
  */
 public class GanttOptions {
 
@@ -293,8 +293,14 @@ public class GanttOptions {
         handler.endElement("", name, name);
     }
 
+    /**
+     * Adds an attribute to the given attr list if the given value is not null or empty
+     * @param name is the attribute name
+     * @param value is the attribute value
+     * @param attrs is the list of attributes the new attribute will added to
+     */
     private void addAttribute(String name, String value, AttributesImpl attrs) {
-        if (value != null) {
+        if (value != null && value != "") {
             attrs.addAttribute("", name, name, "CDATA", value);
         } else {
             System.err.println("[GanttOptions] attribute '" + name
@@ -302,7 +308,13 @@ public class GanttOptions {
         }
     }
 
-    private void emptyElement(String name, AttributesImpl attrs,
+    /**
+     * Adds an empty element (ie no sub elements included) to the file.
+     * The attr list is also emptied afterwards
+     * @param name is the element name
+     * @param attrs is the list of attributes which needs to be added to the element
+     */
+    private void addEmptyElement(String name, AttributesImpl attrs,
             TransformerHandler handler) throws SAXException {
         startElement(name, attrs, handler);
         endElement(name, handler);
@@ -346,74 +358,73 @@ public class GanttOptions {
             //
             attrs.addAttribute("", "selection", "selection", "CDATA", language
                     .getText("shortLanguage"));
-            handler.startElement("", "language", "language", attrs);
-            handler.endElement("", "language", "language");
-            attrs.clear();
-            // write the task Color
-            /*
-             * Color color = getUIConfiguration().getTaskColor();
-             * attrs.addAttribute("", "red", "red", "CDATA", ""+color.getRed());
-             * attrs.addAttribute("", "green", "green", "CDATA",
-             * ""+color.getGreen()); attrs.addAttribute("", "blue", "blue",
-             * "CDATA", ""+color.getBlue()); handler.startElement("",
-             * "task-color", "task-color", attrs); handler.endElement("",
-             * "task-color", "task-color"); attrs.clear();
-             */
+            addEmptyElement("language", attrs, handler);
+
+            // write the task details
+            // TODO Check if color is default color
+            Color taskColor = getUIConfiguration().getTaskColor();
+            attrs.addAttribute("", "color", "color", "CDTATA", 
+                    ColorConvertion.getColor(taskColor));
+            addAttribute("name-prefix", sTaskNamePrefix, attrs);
+            addEmptyElement("task", attrs, handler);
+
+            // write the milestone details
+            // TODO Check if color is default color
+            Color milestoneColor = getUIConfiguration().getMilestoneColor();
+            attrs.addAttribute("", "color", "color", "CDTATA", 
+                    ColorConvertion.getColor(milestoneColor));
+            addEmptyElement("milestone", attrs, handler);
 
             Color resourceColor = myUIConfig.getResourceColor();
             if (resourceColor != null)
-                attrs.addAttribute("", "resources", "resources", "CDATA", ""
-                        + ColorConvertion.getColor(resourceColor));
+                attrs.addAttribute("", "resources", "resources", "CDATA",
+                        ColorConvertion.getColor(resourceColor));
             Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();
             if (resourceOverloadColor != null)
                 attrs.addAttribute("", "resourcesOverload",
-                        "resourcesOverload", "CDATA", ""
-                                + ColorConvertion
-                                        .getColor(resourceOverloadColor));
+                        "resourcesOverload", "CDATA",
+                        ColorConvertion.getColor(resourceOverloadColor));
             Color resourceUnderloadColor = myUIConfig
                     .getResourceUnderloadColor();
             if (resourceUnderloadColor != null)
                 attrs.addAttribute("", "resourcesUnderload",
-                        "resourcesUnderload", "CDATA", ""
-                                + ColorConvertion
-                                        .getColor(resourceUnderloadColor));
+                        "resourcesUnderload", "CDATA", 
+                        ColorConvertion.getColor(resourceUnderloadColor));
             Color weekEndColor = myUIConfig.getWeekEndColor();
             if (weekEndColor != null)
-                attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA", ""
-                        + ColorConvertion.getColor(weekEndColor));
+                attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA",
+                        ColorConvertion.getColor(weekEndColor));
             Color daysOffColor = myUIConfig.getDayOffColor();
             if (daysOffColor != null)
-                attrs.addAttribute("", "daysOff", "daysOff", "CDATA", ""
-                        + ColorConvertion.getColor(daysOffColor));
-            handler.startElement("", "colors", "colors", attrs);
-            handler.endElement("", "colors", "colors");
-            attrs.clear();
+                attrs.addAttribute("", "daysOff", "daysOff", "CDATA",
+                        ColorConvertion.getColor(daysOffColor));
+            addEmptyElement("colors", attrs, handler);
 
             // Geometry of the window
             addAttribute("x", "" + x, attrs);
             addAttribute("y", "" + y, attrs);
             addAttribute("width", "" + width, attrs);
             addAttribute("height", "" + height, attrs);
-            emptyElement("geometry", attrs, handler);
+            addEmptyElement("geometry", attrs, handler);
             // look'n'feel
             addAttribute("name", lookAndFeel.getName(), attrs);
             addAttribute("class", lookAndFeel.getClassName(), attrs);
-            emptyElement("looknfeel", attrs, handler);
+            addEmptyElement("looknfeel", attrs, handler);
 
             // ToolBar position
             addAttribute("position", "" + toolBarPosition, attrs);
             addAttribute("icon-size", "" + iconSize, attrs);
             addAttribute("show", "" + buttonsshow, attrs);
-            emptyElement("toolBar", attrs, handler);
+            addEmptyElement("toolBar", attrs, handler);
             addAttribute("show", "" + bShowStatusBar, attrs);
-            emptyElement("statusBar", attrs, handler);
+            addEmptyElement("statusBar", attrs, handler);
 
             // Export options
             addAttribute("name", "" + bExportName, attrs);
             addAttribute("complete", "" + bExportComplete, attrs);
             addAttribute("border3d", "" + bExport3DBorders, attrs);
             addAttribute("relations", "" + bExportRelations, attrs);
-            emptyElement("export", attrs, handler);
+            addEmptyElement("export", attrs, handler);
 
             // csv export options
             startElement("csv-export", attrs, handler);
@@ -421,7 +432,7 @@ public class GanttOptions {
             addAttribute("separatedChar", "" + csvOptions.sSeparatedChar, attrs);
             addAttribute("separatedTextChar", ""
                     + csvOptions.sSeparatedTextChar, attrs);
-            emptyElement("csv-general", attrs, handler);
+            addEmptyElement("csv-general", attrs, handler);
 
             addAttribute("id", "" + csvOptions.bExportTaskID, attrs);
             addAttribute("name", "" + csvOptions.bExportTaskName, attrs);
@@ -434,39 +445,36 @@ public class GanttOptions {
             addAttribute("resources", "" + csvOptions.bExportTaskResources,
                     attrs);
             addAttribute("notes", "" + csvOptions.bExportTaskNotes, attrs);
-            emptyElement("csv-tasks", attrs, handler);
+            addEmptyElement("csv-tasks", attrs, handler);
 
             addAttribute("id", "" + csvOptions.bExportResourceID, attrs);
             addAttribute("name", "" + csvOptions.bExportResourceName, attrs);
             addAttribute("mail", "" + csvOptions.bExportResourceMail, attrs);
             addAttribute("phone", "" + csvOptions.bExportResourcePhone, attrs);
             addAttribute("role", "" + csvOptions.bExportResourceRole, attrs);
-            emptyElement("csv-resources", attrs, handler);
+            addEmptyElement("csv-resources", attrs, handler);
 
             endElement("csv-export", handler);
 
             // automatic popup launch
             addAttribute("value", "" + automatic, attrs);
-            emptyElement("automatic-launch", attrs, handler);
+            addEmptyElement("automatic-launch", attrs, handler);
             // automaticdrag time on the chart
             // addAttribute("value", ""+dragTime, attrs);
-            emptyElement("dragTime", attrs, handler);
+            addEmptyElement("dragTime", attrs, handler);
             // automatic tips of the day launch
             // Should WebDAV resources be locked, when opening them?
             addAttribute("value", "" + lockDAVMinutes, attrs);
-            emptyElement("lockdavminutes", attrs, handler);
+            addEmptyElement("lockdavminutes", attrs, handler);
             // write the xsl directory
             addAttribute("dir", xslDir, attrs);
-            emptyElement("xsl-dir", attrs, handler);
+            addEmptyElement("xsl-dir", attrs, handler);
             // write the xslfo directory
             addAttribute("file", xslFo, attrs);
-            emptyElement("xsl-fo", attrs, handler);
+            addEmptyElement("xsl-fo", attrs, handler);
             // write the working directory directory
             addAttribute("dir", workingDir, attrs);
-            emptyElement("working-dir", attrs, handler);
-            // write the task name prefix
-            addAttribute("prefix", sTaskNamePrefix, attrs);
-            emptyElement("task-name", attrs, handler);
+            addEmptyElement("working-dir", attrs, handler);
             // The last opened files
             {
                 startElement("files", attrs, handler);
@@ -474,36 +482,39 @@ public class GanttOptions {
                         .hasNext();) {
                     Document document = (Document) iterator.next();
                     addAttribute("path", document.getPath(), attrs);
-                    emptyElement("file", attrs, handler);
+                    addEmptyElement("file", attrs, handler);
                 }
                 endElement("files", handler);
             }
             addAttribute("category", "menu", attrs);
             addAttribute("spec",
                     getFontSpec(getUIConfiguration().getMenuFont()), attrs);
-            emptyElement("font", attrs, handler);
+            addEmptyElement("font", attrs, handler);
             //
             addAttribute("category", "chart-main", attrs);
             addAttribute("spec", getFontSpec(getUIConfiguration()
                     .getChartMainFont()), attrs);
-            emptyElement("font", attrs, handler);
+            addEmptyElement("font", attrs, handler);
             //
 
             saveIconPositions(handler);
             saveRoleSets(handler);
+
+            // TODO This adds quite a few redundant elements (ie resourceChartColors.resourceChartColors)
             for (Iterator options = myGPOptions.entrySet().iterator(); options.hasNext();) {
                 Map.Entry nextEntry = (Entry) options.next();
                 GPOption nextOption = (GPOption)nextEntry.getValue();
                 if (nextOption.getPersistentValue()!=null) {
                     addAttribute("id", nextEntry.getKey().toString(), attrs);
                     addAttribute("value", nextOption.getPersistentValue(), attrs);
-                    emptyElement("option", attrs, handler);
+                    addEmptyElement("option", attrs, handler);
                 }
             }
+
             savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
             savePreferences(myPluginPreferencesRootNode.node("/instance"), handler);
+
             endElement("ganttproject-options", handler);
-            //
             GPLogger.log("[GanttOptions] save(): finished!!");
             handler.endDocument();
         } catch (Exception e) {
@@ -521,7 +532,7 @@ public class GanttOptions {
         for (int i=0; i<keys.length; i++) {
             addAttribute("name", keys[i], attrs);
             addAttribute("value", node.get(keys[i], ""), attrs);
-            emptyElement("option", attrs, handler);
+            addEmptyElement("option", attrs, handler);
         }
         String[] children = node.childrenNames();
         for (int i=0; i<children.length; i++) {
@@ -664,7 +675,7 @@ public class GanttOptions {
             Role next = roles[i];
             addAttribute("id", "" + next.getID(), attrs);
             addAttribute("name", next.getName(), attrs);
-            emptyElement("role", attrs, handler);
+            addEmptyElement("role", attrs, handler);
         }
 
     }
@@ -675,13 +686,13 @@ public class GanttOptions {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("icons-list", iconListAsString, attrs);
         addAttribute("deletedIcons-list", deletedIconListAsString, attrs);
-        emptyElement("positions", attrs, handler);
+        addEmptyElement("positions", attrs, handler);
     }
 
     public UIConfiguration getUIConfiguration() {
         if (myUIConfig == null) {
             myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
-                    206), redline) {
+                    206), Color.BLACK, redline) {
 
                 public Font getMenuFont() {
                     return myMenuFont == null ? super.getMenuFont()
@@ -917,11 +928,18 @@ public class GanttOptions {
                             if (new File(value).exists())
                                 workingDir = value;
                         }
-                    }
-
-                    else if (qName.equals("task-name")) {
+                    } else if (qName.equals("task-name")) {
+                        // Support for old format
                         if (aName.equals("prefix"))
                             sTaskNamePrefix = value;
+                    } else if (qName.equals("task")) {
+                        if (aName.equals("name-prefix"))
+                            sTaskNamePrefix = value;
+                        else if (aName.equals("color"))
+                            setDefaultTaskColor(ColorConvertion.determineColor(value));
+                    } else if (qName.equals("milestone")) {
+                        if (aName.equals("color"))
+                            setDefaultMilestoneColor(ColorConvertion.determineColor(value));
                     } else if (qName.equals("toolBar")) {
                         if (aName.equals("position"))
                             toolBarPosition = (new Integer(value)).intValue();
@@ -1030,10 +1048,7 @@ public class GanttOptions {
 
             // old version of the color version
             if (qName.equals("task-color")) {
-                // Color color = new Color(r, g, b);
-                // getUIConfiguration().setTaskColor(color);
                 setDefaultTaskColor(new Color(r, g, b));
-
             }
 
             if (qName.equals("font")) {
@@ -1080,7 +1095,7 @@ public class GanttOptions {
     }
 
     /** @return the default color for tasks. */
-    public Color getDefaultColor() {
+    public Color getDefaultTaskColor() {
         return getUIConfiguration().getTaskColor();
     }
 
@@ -1324,6 +1339,11 @@ public class GanttOptions {
     /** set a new default tasks color. */
     public void setDefaultTaskColor(Color color) {
         getUIConfiguration().setTaskColor(color);
+    }
+
+    /** set a new default milestones color. */
+    public void setDefaultMilestoneColor(Color color) {
+        getUIConfiguration().setMilestoneColor(color);
     }
 
     /** set a new default resources color. */

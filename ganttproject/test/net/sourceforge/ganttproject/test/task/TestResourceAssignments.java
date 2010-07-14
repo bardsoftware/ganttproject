@@ -121,7 +121,11 @@ public class TestResourceAssignments extends TestCase {
     private TaskManager newTaskManager() {
         return TaskManager.Access.newInstance(null, new TaskManagerConfig() {
 
-            public Color getDefaultColor() {
+            public Color getDefaultTaskColor() {
+                return null;
+            }
+
+            public Color getDefaultMilestoneColor() {
                 return null;
             }
 

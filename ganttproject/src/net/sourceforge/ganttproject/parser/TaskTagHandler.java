@@ -28,7 +28,7 @@ public class TaskTagHandler implements TagHandler {
         }
     }
 
-    /** Method when finish to parse an attibute */
+    /** Method when finish to parse an attribute */
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("task")) {
             myStack.pop();
@@ -108,9 +108,14 @@ public class TaskTagHandler implements TagHandler {
             }
         }
 
-        String color = attrs.getValue("color");
-        if (color != null) {
-            task.setColor(ColorValueParser.parseString(color));
+        String taskColor = attrs.getValue("color");
+        if (taskColor != null) {
+            task.setTaskColor(ColorValueParser.parseString(taskColor));
+        }
+
+        String milestoneColor = attrs.getValue("milestone-color");
+        if (milestoneColor != null) {
+            task.setMilestoneColor(ColorValueParser.parseString(milestoneColor));
         }
 
         String fixedStart = attrs.getValue("fixed-start");
@@ -172,7 +177,7 @@ public class TaskTagHandler implements TagHandler {
                 count++;
             }
             task.setShape(new ShapePaint(4, 4, array, Color.white, task
-                    .getColor()));
+                    .getTaskColor()));
         }
 
         getManager().registerTask(task);

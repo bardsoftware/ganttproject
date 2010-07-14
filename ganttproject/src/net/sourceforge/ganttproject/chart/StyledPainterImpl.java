@@ -42,7 +42,7 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);        
         myConfig = configuration;
         myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
-        myStyle2painter.put("task.milestone", myMilestonePanter);
+        myStyle2painter.put("task.milestone", myMilestonePainter);
         myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
         myStyle2painter.put("task.supertask", myTaskSupertaskRectanglePainter);
         myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
@@ -164,10 +164,7 @@ public class StyledPainterImpl implements Painter {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity)modelObject).getTask();
-            Color c = task.getColor();
-            if (c==null) {
-                c = getDefaultColor();
-            }
+            Color c = task.getTaskColor();
             Graphics2D g = (Graphics2D) myGraphics;
             g.setColor(c);
             ShapePaint shapePaint = task.getShape();
@@ -186,10 +183,7 @@ public class StyledPainterImpl implements Painter {
         protected void drawBorder(Graphics g, Rectangle next) {
             g.drawLine(next.myLeftX-getCorrectionShift(), next.myTopY, next.getRightX()-getCorrectionShift(), next.myTopY);
             g.drawLine(next.myLeftX-getCorrectionShift(), next.getBottomY(), next.getRightX()-getCorrectionShift(), next.getBottomY());
-        }
-        private Color getDefaultColor() {
-            return Color.BLUE;
-        }        
+        }     
         protected int getCorrectionShift() {
             return 0;
         }
@@ -237,12 +231,8 @@ public class StyledPainterImpl implements Painter {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity)modelObject).getTask();
-            Color c = task.getColor();
-            if (c==null) {
-                c = getDefaultColor();
-            }
             Graphics2D g = (Graphics2D) myGraphics;
-            g.setColor(c);            
+            g.setColor(task.getTaskColor());            
             Composite was = g.getComposite();
             g.setComposite(myAlphaComposite);
             g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
@@ -253,11 +243,6 @@ public class StyledPainterImpl implements Painter {
             
             g.setComposite(was);
         }
-        private Color getDefaultColor() {
-            return Color.BLUE;
-        }
-
-
     };
     
 //    
@@ -364,7 +349,7 @@ public class StyledPainterImpl implements Painter {
         }
     };
 
-    private RectanglePainter myMilestonePanter = new RectanglePainter() {
+    private RectanglePainter myMilestonePainter = new RectanglePainter() {
         private int[] myXPoints = new int[4];
 
         private int[] myYPoints = new int[4];
@@ -376,7 +361,7 @@ public class StyledPainterImpl implements Painter {
                         "Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity) modelObject).getTask();
-            Color c = task.getColor();
+            Color c = task.getMilestoneColor();
             Graphics g = myGraphics;
             if (myConfig.isCriticalPathOn()
                     && ((TaskActivity) next.getModelObject()).getTask()
@@ -599,7 +584,6 @@ public class StyledPainterImpl implements Painter {
                 g.fillPolygon(new int[] { rightx - 3, rightx, rightx },
                         new int[] { topy, topy, topy + 3 }, 3);
             } else {
-
                 g.fillRect(next.myLeftX, next.myTopY, next.myWidth,
                         next.myHeight);
                 g.setColor(Color.black);

@@ -125,6 +125,10 @@ public class ChartUIConfiguration {
         return myProjectConfig.getTaskColor();
     }
 
+    public Color getDefaultMilestoneColor() {
+        return myProjectConfig.getMilestoneColor();
+    }
+
     public Color getWeekEndColor() {
         return myProjectConfig.getWeekEndColor();
     }

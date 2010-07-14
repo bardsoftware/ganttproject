@@ -29,12 +29,15 @@ public class UIConfiguration {
 
     private Color myTaskColor;
     private Color myProjectLevelTaskColor;
+
+    private Color myMilestoneColor;
+    private Color myProjectLevelMilestoneColor;
     
     private Color myResColor; // default resource color
 
-    private Color myResOverColor; // overload resoure color
+    private Color myResOverColor; // overload resource color
 
-    private Color myResUnderColor; // underload resoure color
+    private Color myResUnderColor; // underload resource color
 	
 	private Color myEarlierPreviousTaskColor;
 	
@@ -55,12 +58,13 @@ public class UIConfiguration {
     private BooleanOption myProjectDatesOption = new DefaultBooleanOption(
     "showProjectDates");
     public UIConfiguration(Font menuFont, Font chartMainFont, Color taskColor,
-            boolean isRedlineOn) {
+            Color milestoneColor, boolean isRedlineOn) {
         myMenuFont = menuFont == null ? Fonts.DEFAULT_MENU_FONT
                 : menuFont;
         myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
         this.isRedlineOn = isRedlineOn;
         setTaskColor(taskColor);
+        setMilestoneColor(milestoneColor);
         myResColor = new Color(140, 182, 206);
         myResOverColor = new Color(229, 50, 50);
         myResUnderColor = new Color(50, 229, 50);
@@ -89,8 +93,21 @@ public class UIConfiguration {
     }
 
     public void setProjectLevelTaskColor(Color color) {
-    	myProjectLevelTaskColor = color;
+        myProjectLevelTaskColor = color;
     }
+
+    public Color getMilestoneColor() {
+        return myProjectLevelMilestoneColor==null ? myMilestoneColor : myProjectLevelMilestoneColor;
+    }
+
+    public void setMilestoneColor(Color milestoneColor) {
+        this.myMilestoneColor = milestoneColor;
+    }
+
+    public void setProjectLevelMilestoneColor(Color milestoneColor) {
+        myProjectLevelTaskColor = milestoneColor;
+    }
+
     public Color getResourceColor() {
         return myResColor;
     }

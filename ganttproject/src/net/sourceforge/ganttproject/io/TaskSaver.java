@@ -24,12 +24,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 class TaskSaver extends SaverBase {
-    void save(IGanttProject project, TransformerHandler handler, Color defaultColor) throws SAXException, IOException {
-        AttributesImpl attrs = new AttributesImpl();
-        if (defaultColor!=null) {
-        	addAttribute("color", ColorConvertion.getColor(defaultColor), attrs);
+    void save(IGanttProject project, TransformerHandler handler, Color defaultTaskColor, Color defaultMilestoneColor) throws SAXException, IOException {
+        AttributesImpl taskAttrs = new AttributesImpl();
+        if (defaultTaskColor!=null) {
+        	addAttribute("color", ColorConvertion.getColor(defaultTaskColor), taskAttrs);
         }
-        startElement("tasks", attrs, handler);
+        
+        startElement("tasks", taskAttrs, handler);
 
         startElement("taskproperties", handler);
         writeTaskProperties(handler, project.getCustomColumnsStorage());
@@ -40,6 +41,14 @@ class TaskSaver extends SaverBase {
             writeTask(handler, (GanttTask) tasks[i], project.getCustomColumnsStorage());
         }
         endElement("tasks", handler);
+        
+        if (defaultMilestoneColor!=null) {
+            // Store default milestone color
+            AttributesImpl milestoneAttrs = new AttributesImpl();
+            addAttribute("color", ColorConvertion.getColor(defaultTaskColor), milestoneAttrs);
+            startElement("milestones", milestoneAttrs, handler);
+            endElement("milestones", handler);
+        }
     }
 
     private void writeTask(TransformerHandler handler, GanttTask task, CustomColumnsStorage customColumns) throws SAXException, IOException {
@@ -49,8 +58,11 @@ class TaskSaver extends SaverBase {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("id", String.valueOf(task.getTaskID()), attrs);
         addAttribute("name", task.getName(), attrs);
-        if (task.colorDefined()) {
-            addAttribute("color", ColorConvertion.getColor(task.getColor()), attrs);
+        if (task.taskColorDefined()) {
+            addAttribute("color", ColorConvertion.getColor(task.getTaskColor()), attrs);
+        }
+        if (task.milestoneColorDefined()) {
+            addAttribute("milestone-color", ColorConvertion.getColor(task.getMilestoneColor()), attrs);
         }
         if (task.shapeDefined()) {
             addAttribute("shape", task.getShape().getArray(), attrs);
