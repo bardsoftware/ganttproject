@@ -57,10 +57,7 @@ public class TaskTagHandler implements TagHandler {
             task.setName(taskName);
         }
 
-        String meeting = attrs.getValue("meeting");
-        if (meeting != null) {
-            task.setMilestone(meeting.equals("true"));
-        }
+        task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
 		
 		String project = attrs.getValue("project");
 		if (project != null)
@@ -118,10 +115,7 @@ public class TaskTagHandler implements TagHandler {
             myContext.addTaskWithLegacyFixedStart(task);
         }
 
-//        String fixedFinish = attrs.getValue("fixed-finish");
-//        if ("true".equals(fixedFinish)) {
-//            task.setFinishFixed(true);
-//        }
+//        task.setFinishFixed(Boolean.parseBoolean(attrs.getValue("fixed-finish")));
 
         String third = attrs.getValue("thirdDate");
         if (third != null) {
@@ -154,10 +148,7 @@ public class TaskTagHandler implements TagHandler {
             task.setWebLink(webLink);
         }
 
-        String expand = attrs.getValue("expand");
-        if (expand != null) {
-            task.setExpand("true".equals(expand));
-        }
+        task.setExpand(Boolean.parseBoolean(attrs.getValue("expand")));
 
         String shape = attrs.getValue("shape");
         if (shape != null) {
