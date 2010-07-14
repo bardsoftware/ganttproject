@@ -183,13 +183,20 @@ public class StyledPainterImpl implements Painter {
             g.setColor(Color.black);
             drawBorder(g, next);
         }
+
+        protected void drawBorder(Graphics g, int x1, int y1, int x2, int y2) {
+            g.drawLine(x1, y1, x2, y1);
+            g.drawLine(x1, y2, x2, y2);
+        }        
+        
         protected void drawBorder(Graphics g, Rectangle next) {
-            g.drawLine(next.myLeftX-getCorrectionShift(), next.myTopY, next.getRightX()-getCorrectionShift(), next.myTopY);
-            g.drawLine(next.myLeftX-getCorrectionShift(), next.getBottomY(), next.getRightX()-getCorrectionShift(), next.getBottomY());
+        	drawBorder(g, next.myLeftX-getCorrectionShift(), next.myTopY - 1, next.getRightX()-getCorrectionShift() - 1, next.getBottomY());
         }
+
         private Color getDefaultColor() {
             return Color.BLUE;
-        }        
+        }
+
         protected int getCorrectionShift() {
             return 0;
         }
@@ -198,8 +205,8 @@ public class StyledPainterImpl implements Painter {
     private RectanglePainter myTaskRectanglePainter = new TaskRectanglePainter();
     private RectanglePainter myTaskStartRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
-            super.drawBorder(g, next);
-            g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
+            super.drawBorder(g, next.myLeftX-getCorrectionShift(), next.myTopY - 1, next.getRightX()-getCorrectionShift() - 2, next.getBottomY());
+            g.drawLine(next.myLeftX, next.myTopY - 1, next.myLeftX, next.getBottomY());
         }
         protected int getCorrectionShift() {
             return -1;
@@ -208,8 +215,8 @@ public class StyledPainterImpl implements Painter {
     };
     private RectanglePainter myTaskEndRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
-            super.drawBorder(g, next);
-            g.drawLine(next.getRightX()-1, next.myTopY, next.getRightX()-1, next.getBottomY());
+            super.drawBorder(g, next.myLeftX-getCorrectionShift() + 1, next.myTopY - 1, next.getRightX()-getCorrectionShift() - 1, next.getBottomY());
+            g.drawLine(next.getRightX() - 1, next.myTopY - 1, next.getRightX() - 1, next.getBottomY());
         }
         protected int getCorrectionShift() {
             return 1;
@@ -218,8 +225,8 @@ public class StyledPainterImpl implements Painter {
     private RectanglePainter myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
-            g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
-            g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());
+            g.drawLine(next.myLeftX, next.myTopY - 1, next.myLeftX, next.getBottomY());
+            g.drawLine(next.getRightX(), next.myTopY - 1, next.getRightX(), next.getBottomY());
         }
     };
 
@@ -248,7 +255,7 @@ public class StyledPainterImpl implements Painter {
             g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
             g.setColor(Color.black);
             g.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
-            g.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
+            g.drawLine(next.myLeftX, next.getBottomY() + 1, next.getRightX(), next.getBottomY() + 1);
             //g.drawRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
             
             g.setComposite(was);

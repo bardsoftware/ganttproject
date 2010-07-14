@@ -176,8 +176,8 @@ public class ChartGridImpl extends ChartRendererBase implements TimeUnitVisitor 
             redLineOffset=0;
         }
         if (redLineOffset>=0) {
-            Line redLine = getPrimitiveContainer().createLine(myPosX + redLineOffset+horizontalOffset,
-                    0, myPosX + redLineOffset+horizontalOffset, getHeight());
+            Line redLine = getPrimitiveContainer().createLine(myPosX + redLineOffset+horizontalOffset - 2,
+                    0, myPosX + redLineOffset+horizontalOffset - 2, getHeight());
             redLine.setForegroundColor(color);
         }
         
