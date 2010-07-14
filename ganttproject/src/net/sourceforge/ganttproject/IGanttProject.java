@@ -94,5 +94,8 @@ public interface IGanttProject {
 
     List/*<GanttPreviousState*/ getBaselines();
 
-
+    /**
+     * Repaints the complete Resource panel
+     */
+    void repaintResourcePanel();
 }

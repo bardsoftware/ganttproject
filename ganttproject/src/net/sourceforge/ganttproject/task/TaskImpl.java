@@ -847,6 +847,10 @@ public class TaskImpl implements Task {
                     : (TaskLength) myDurationChange.myFieldValue;
         }
 
+        public void updateGanttAndResources() {
+            TaskImpl.this.updateGanttAndResources();
+        }
+
         public void shift(float unitCount) {
 
             Task result = getPrecomputedShift(unitCount);
@@ -885,7 +889,6 @@ public class TaskImpl implements Task {
             myTaskInfo = taskInfo;
 
         }
-
     }
 
     public void setName(String name) {
@@ -962,9 +965,22 @@ public class TaskImpl implements Task {
         myThirdDateConstraint = thirdDateConstraint;
     }
 
+    public void updateGanttAndResources() {
+        Task resultTask = shift(0);
+        GanttCalendar oldStart = myStart;
+        GanttCalendar oldEnd = myEnd;
+        myStart = resultTask.getStart();
+        myLength = resultTask.getDuration();
+        myEnd = resultTask.getEnd();
+        if (areEventsEnabled()) {
+            myManager.fireTaskScheduleChanged(this, oldStart, oldEnd);
+        }
+        recalculateActivities();
+    }
+    
     public void shift(TaskLength shift) {
         float unitCount = shift.getLength(myLength.getTimeUnit());
-        if (unitCount != 0f) {
+        if (unitCount != 0) {
             Task resultTask = shift(unitCount);
             GanttCalendar oldStart = myStart;
             GanttCalendar oldEnd = myEnd;
@@ -980,7 +996,7 @@ public class TaskImpl implements Task {
 
     public Task shift(float unitCount) {
         Task clone = unpluggedClone();
-        if (unitCount > 0) {
+        if (unitCount >= 0) {
             TaskLength length = myManager.createLength(myLength.getTimeUnit(),
                     unitCount);
             // clone.setDuration(length);
