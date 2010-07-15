@@ -86,8 +86,7 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
         while (!taskSet.isEmpty()) {
             recalculateSupertaskScheduleBottomUp(taskSet, containmentFacade);
             taskSet.clear();
-            for (Iterator modified = myModifiedTasks.iterator(); modified
-                    .hasNext();) {
+            for (Iterator modified = myModifiedTasks.iterator(); modified.hasNext();) {
                 Task nextTask = (Task) modified.next();
                 Task supertask = containmentFacade.getContainer(nextTask);
                 if (supertask != null) {
@@ -96,9 +95,7 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
             }
             myModifiedTasks.clear();
         }
-        myModifiedTasks.clear();
     }
-    
 
     private void recalculateSupertaskScheduleBottomUp(Set supertasks,
             TaskContainmentHierarchyFacade containmentFacade) {
