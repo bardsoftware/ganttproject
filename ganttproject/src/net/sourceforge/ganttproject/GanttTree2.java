@@ -407,7 +407,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
 
             public void mouseClicked(MouseEvent e) {
-                // TODO Auto-generated method stub
                 if (e.getClickCount()==2 && e.getButton() == MouseEvent.BUTTON1) {
                     TreePath selPath = treetable.getTreeTable().getPathForLocation(e.getX(), e.getY());
                     if (selPath!=null) {
@@ -480,10 +479,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
      */
     public void setEditingTask(Task t) {
         selectTask(t, false);
-        TreePath tp = new TreePath(getSelectedTaskNode().getPath());
-        int c = getTable().convertColumnIndexToView(
-                getTable().getColumn(GanttTreeTableModel.strColName)
-                        .getModelIndex());
         treetable.getTreeTable().editingStopped(
                 new ChangeEvent(treetable.getTreeTable()));
         treetable.editNewTask(t);
@@ -553,16 +548,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     }
 
-    /** Create a popup menu when mous click */
+    /** Create a popup menu when mouse click */
     private void createPopupMenu(int x, int y, boolean all) {
-        JPopupMenu menu = new JPopupMenu();
         Action[] popupMenuActions = getPopupMenuActions();
         myUIFacade.showPopupMenu(this, popupMenuActions, x - hbar.getValue()
                 + (vbar.isVisible() ? vbar.getWidth() : 0), y - vbar.getValue()
                 + 20);
     }
 
-    /** Change grpahic part */
+    /** Change graphic part */
     public void setGraphicArea(GanttGraphicArea area) {
         this.area = area;
     }
@@ -2351,16 +2345,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private GPUndoManager getUndoManager() {
         return myUIFacade.getUndoManager();
     }
+
     ///////////////////////////////////////////////////////////////////////////
     // ProjectEventListener
     public void projectModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectSaved() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectClosed() {
@@ -2371,9 +2364,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public Component getTreeComponent() {
         return this;
     }
+
     public Action getIndentAction() {
         return myIndentAction;
     }
+
     public Action getUnindentAction() {
         return myDedentAction;
     }
@@ -2389,13 +2384,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public void setLinkTasksAction(Action action) {
         myLinkTasksAction = action;
     }
+
     private Action getLinkTasksAction() {
         return myLinkTasksAction;
     }
-    //
+
     public void setUnlinkTasksAction(Action action) {
         myUnlinkTasksAction = action;
     }
+
     private Action getUnlinkTasksAction() {
         return myUnlinkTasksAction;
     }

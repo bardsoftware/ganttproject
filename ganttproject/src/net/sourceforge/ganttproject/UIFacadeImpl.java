@@ -208,7 +208,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             GanttDialogInfo gdi = new GanttDialogInfo(myMainFrame,
                     GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, errorMessage,
                     getLanguage().getText("error"));
-            gdi.show();
+            gdi.setVisible(true);
         } else {
             System.err.println("[GanttProjectBase] showErrorDialog:\n "+errorMessage);
         }
