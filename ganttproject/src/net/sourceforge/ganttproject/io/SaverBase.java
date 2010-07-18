@@ -33,7 +33,7 @@ class SaverBase {
     }
 
     protected void addAttribute(String name, boolean value, AttributesImpl attrs) {
-        addAttribute(name, Boolean.valueOf(value), attrs);
+        addAttribute(name, Boolean.toString(value), attrs);
     }
 
     protected void emptyElement(String name, AttributesImpl attrs,
@@ -50,9 +50,9 @@ class SaverBase {
         handler.endCDATA();
         endElement(name, handler);
     }
+
     protected void emptyComment(TransformerHandler handler) throws SAXException {
         handler.comment(new char[] { ' ' }, 0, 1);
-
     }
 
     private static AttributesImpl ourEmptyAttributes = new AttributesImpl();
