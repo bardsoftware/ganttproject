@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
@@ -96,7 +97,7 @@ public abstract class ChartModelBase implements ChartViewState.Listener {
 
     private final BackgroundRendererImpl myBackgroundRenderer;
 
-    private final StyledPainterImpl myPainter;
+    private final Painter myPainter;
 
     private final List myOptionListeners = new ArrayList();
 
@@ -109,7 +110,11 @@ public abstract class ChartModelBase implements ChartViewState.Listener {
         myTaskManager = taskManager;
         myProjectConfig = projectConfig;
         myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
-        myPainter = new StyledPainterImpl(myChartUIConfiguration);
+        if(GanttProject.isRunningOnOpenJDK()) {
+            myPainter = new StyledPainterOpenJDKImpl(myChartUIConfiguration);
+        } else {
+            myPainter = new StyledPainterImpl(myChartUIConfiguration);
+        }
         myTimeUnitStack = timeUnitStack;
         myChartHeader = new ChartHeaderImpl(this, projectConfig);
         myChartGrid = new ChartGridImpl(this, projectConfig);
@@ -210,6 +215,7 @@ public abstract class ChartModelBase implements ChartViewState.Listener {
 //        }
         return result;
     }
+
     public void paint(Graphics g) {
         int height = (int) getBounds().getHeight()
                 - getChartUIConfiguration().getHeaderHeight();
@@ -243,7 +249,7 @@ public abstract class ChartModelBase implements ChartViewState.Listener {
         myChartHeader.getPrimitiveContainer().paint(getPainter(), g);
     }
 
-    protected StyledPainterImpl getPainter() {
+    protected Painter getPainter() {
         return myPainter;
     }
 

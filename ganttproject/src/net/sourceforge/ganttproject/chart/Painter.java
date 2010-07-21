@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Graphics;
+
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 
 /**
@@ -9,4 +11,6 @@ public interface Painter {
     void paint(GraphicPrimitiveContainer.Rectangle rectangle);
 
     void paint(Text next);
+    
+    void setGraphics(Graphics g);
 }
