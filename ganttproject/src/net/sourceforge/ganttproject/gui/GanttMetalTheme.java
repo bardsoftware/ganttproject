@@ -1,16 +1,13 @@
 package net.sourceforge.ganttproject.gui;
 
-//import java.awt.Font;
-
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 
 /**
- * Un nouveau thème Metal.
+ * A new Metal theme. Providing one font for all components.
  */
-
 public class GanttMetalTheme extends DefaultMetalTheme {
-    // cette fonte sera utilisée pour TOUS nos composants
+    // This font will be used for ALL of our components
     private final FontUIResource font;
 
     public GanttMetalTheme(UIConfiguration config) {

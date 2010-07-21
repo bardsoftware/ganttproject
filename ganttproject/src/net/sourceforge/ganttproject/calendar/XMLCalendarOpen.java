@@ -136,7 +136,6 @@ public class XMLCalendarOpen {
                 next.endElement(namespaceURI, sName, qName);
             }
         }
-
     }
 
     public void setCalendars() throws Exception {
@@ -185,7 +184,7 @@ public class XMLCalendarOpen {
         public Filter(String extension) {
             if (extension == null) {
                 throw new NullPointerException(
-                        "La description (ou extension) ne peut être null.");
+                        "The description (or extension) can not be null.");
             }
             this.extension = extension;
         }
