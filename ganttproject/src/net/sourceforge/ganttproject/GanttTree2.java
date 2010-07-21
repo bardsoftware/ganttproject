@@ -737,7 +737,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return tru if the Project has tasks and false is no tasks on the project */
+    /** @return true if the Project has tasks and false is no tasks on the project */
     public boolean hasTasks() {
         Enumeration e = (rootNode).preorderEnumeration();
         while (e.hasMoreElements()) {
@@ -750,7 +750,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return false;
     }
 
-    /** Returnan ArrayList with all tasks. */
+    /** @return an ArrayList with all tasks. */
     public ArrayList getAllTasks() {
         ArrayList res = new ArrayList();
         Enumeration enumeration = rootNode.preorderEnumeration();
@@ -776,7 +776,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return all sub task for the tree node base */
+    /** @return all sub task for the tree node base */
     public ArrayList getAllChildTask(Task task) {
         ArrayList res = new ArrayList();
         if (task == null)
@@ -792,7 +792,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return all sub task for the tree node base */
+    /** @return all sub task for the tree node base */
     public ArrayList getAllChildTask(DefaultMutableTreeNode base) {
         ArrayList res = new ArrayList();
         if (base == null || !(base instanceof TaskNode))
@@ -806,12 +806,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return the last default tree node */
+    /** @return the last default tree node */
     public DefaultMutableTreeNode getLastNode() {
         return rootNode.getLastLeaf();
     }
 
-    /** Remove the current node.
+    /** Removes the current node.
      * @param current */
     void removeCurrentNode(DefaultMutableTreeNode currentNode) {
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode) (currentNode
@@ -1033,7 +1033,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     /**
-     * Retores the expand state of the node and its children.
+     * Restores the expand state of the node and its children.
      *
      * @param node
      */
@@ -1057,7 +1057,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return rootNode;
     }
 
-    /** Function to put up the selected tasks */
+    /** Function to move the selected tasks up */
     public void upCurrentNodes() {
 
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
@@ -1124,10 +1124,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         //treetable.getTree().setSelectionPaths(selectedPaths);
 
+        appli.setAskForSave(true);
         area.repaint();
     }
 
-    /** Function to put down the selected tasks */
+    /** Function to move the selected tasks down */
     public void downCurrentNodes() {
 
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
@@ -1196,6 +1197,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
         });
 
+        appli.setAskForSave(true);
         area.repaint();
     }
 
@@ -2373,10 +2375,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myDedentAction;
     }
 
+    // FIXME naming of method and returned variable seems wrong!
     public Action getMoveDownAction() {
         return myMoveUpAction;
     }
 
+    // FIXME naming of method and returned variable seems wrong!
     public Action getMoveUpAction() {
         return myMoveDownAction;
     }
