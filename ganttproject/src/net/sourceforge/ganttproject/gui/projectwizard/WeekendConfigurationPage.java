@@ -34,7 +34,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
 
     private final JPanel myPanel;
 
-    private final JComboBox JCCalendar;
+    private final JComboBox myCalendarField;
 
     private final I18N myI18N;
 
@@ -53,38 +53,35 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
         myI18N = i18n;
         String[] dayNames = myI18N.getDayNames();
         myPanel = new JPanel(new BorderLayout());
-        if(showPublicHolidays)
-        {
-        	choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText(
-                "choosePublicHoliday"));
-        	JCCalendar = new JComboBox();
-        	JCCalendar.addItem(GanttLanguage.getInstance().getText("none"));
-	        XMLCalendarOpen open = new XMLCalendarOpen();
-	        open.setCalendars();
-	        String[] labels = open.getLabels();
-	        calendars = open.getCalendarResources();
-	        for (int i = 0; i < labels.length; i++)
-	            JCCalendar.addItem(labels[i]);
-	        JCCalendar.addActionListener(this);
+        if(showPublicHolidays) {
+            choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText("choosePublicHoliday"));
+            myCalendarField = new JComboBox();
+            myCalendarField.addItem(GanttLanguage.getInstance().getText("none"));
+            XMLCalendarOpen open = new XMLCalendarOpen();
+            open.setCalendars();
+            String[] labels = open.getLabels();
+            calendars = open.getCalendarResources();
+            for (int i = 0; i < labels.length; i++) {
+                myCalendarField.addItem(labels[i]);
+            }
+            myCalendarField.addActionListener(this);
 
-	        JPanel publicHolidayPanel = new JPanel(new BorderLayout());
-	        publicHolidayPanel.add(choosePublicHoliday, BorderLayout.WEST);
-	        publicHolidayPanel.add(JCCalendar);
-	        myBox.add(publicHolidayPanel);
-	        myBox.add(new JPanel());
-        }
-        else
-        {
-        	JCCalendar = null;
-        	calendars = null;
+            JPanel publicHolidayPanel = new JPanel(new BorderLayout());
+            publicHolidayPanel.add(choosePublicHoliday, BorderLayout.WEST);
+            publicHolidayPanel.add(myCalendarField);
+            myBox.add(publicHolidayPanel);
+            myBox.add(new JPanel());
+        } else {
+            myCalendarField = null;
+            calendars = null;
         }
 
         Box cb = Box.createVerticalBox();
-        /* 
+        /*
          * Table to keep all the JCheckBoxes with days of the week.
-         * It is used to check if in project creation dialog all days are marked as weekend. If they are, day selected 
+         * It is used to check if in project creation dialog all days are marked as weekend. If they are, day selected
          * last will be unmarked. See class CheckBoxAction.
-         * 
+         *
          * If you know better solution, do not hesitate to replace this code.
          */
         chooseWeekend = new JLabel(GanttLanguage.getInstance().getText("chooseWeekend"));
@@ -103,9 +100,9 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
                 nextDay = 1;
             }
         }
-        
+
         cb.add(Box.createVerticalStrut(15));
-        
+
         renderWeekend = new JCheckBox();
         renderWeekend.setSelected(myCalendar.getOnlyShowWeekends());
         renderWeekend.setAction(new AbstractAction() {
@@ -115,7 +112,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
         });
         renderWeekend.setText(GanttLanguage.getInstance().getText("onlyShowWeekends"));
         cb.add(renderWeekend);
-        
+
         JPanel weekendPanel = new JPanel(new BorderLayout());
         weekendPanel.add(cb, BorderLayout.WEST);
         myBox.add(weekendPanel);
@@ -138,13 +135,13 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
 
     private class CheckBoxAction extends AbstractAction {
         private int myDay;
-        private ButtonModel myModel;
+        private ButtonModel myModelButton;
         private JCheckBox[] myCheckBoxes;
 
         CheckBoxAction(int day, String dayName, ButtonModel model, JCheckBox[] allCheckBoxes) {
             super(dayName);
             myDay = day;
-            myModel = model;
+            myModelButton = model;
             myCheckBoxes = allCheckBoxes;
         }
 
@@ -158,10 +155,10 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
             }
             if (count == myCheckBoxes.length) {
                 // If all days of the week are marked as weekend unmark selected the last.
-                myModel.setSelected(false);
+                myModelButton.setSelected(false);
             } else {
-                myCalendar.setWeekDayType(myDay, myModel.isSelected() ? 
-                		GPCalendar.DayType.WEEKEND : GPCalendar.DayType.WORKING);
+                WeekendConfigurationPage.this.myCalendar.setWeekDayType(myDay, myModelButton.isSelected() ?
+                        GPCalendar.DayType.WEEKEND : GPCalendar.DayType.WORKING);
             }
         }
 
@@ -169,20 +166,24 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
 
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JComboBox) {
-            if (evt.getSource() == JCCalendar)
-                myCalendar.setPublicHolidays(getProjectCalendar(), myProject);
+            if (evt.getSource() == WeekendConfigurationPage.this.myCalendarField) {
+                WeekendConfigurationPage.this.myCalendar.setPublicHolidays(getProjectCalendar(),
+                        WeekendConfigurationPage.this.myProject);
+            }
         }
     }
 
     public URL getProjectCalendar() {
-    	if(JCCalendar == null)
-    		return null;
-
-        int index = JCCalendar.getSelectedIndex();
-        if (index == 0)
+        if(WeekendConfigurationPage.this.myCalendarField == null) {
             return null;
-        else
-            return (calendars[index - 1]);
+        }
+
+        int index = WeekendConfigurationPage.this.myCalendarField.getSelectedIndex();
+        if (index == 0) {
+            return null;
+        } else {
+            return (WeekendConfigurationPage.this.calendars[index - 1]);
+        }
     }
 
 }
