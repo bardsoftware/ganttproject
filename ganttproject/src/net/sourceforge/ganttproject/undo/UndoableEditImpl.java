@@ -20,8 +20,6 @@ import net.sourceforge.ganttproject.io.GPSaver;
 class UndoableEditImpl extends AbstractUndoableEdit {
     private String myPresentationName;
 
-    private Runnable myEditImpl;
-
     private Document myDocumentBefore;
 
     private Document myDocumentAfter;
@@ -33,7 +31,6 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         // System.out.println ("UndoableEditImpl : " + localizedName);
         myManager = manager;
         myPresentationName = localizedName;
-        myEditImpl = editImpl;
         myDocumentBefore = saveFile();
         editImpl.run();
         myDocumentAfter = saveFile();
