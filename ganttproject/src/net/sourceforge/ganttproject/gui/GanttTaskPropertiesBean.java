@@ -353,7 +353,7 @@ extends JPanel {
         finishDatePanel.add(finishDateLabel1);
         myEndDatePicker = createDatePicker(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
+                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(1), false);
             }
         });
         finishDatePanel.add(myEndDatePicker);
@@ -1006,7 +1006,7 @@ extends JPanel {
 
     /** Change the end date of the task */
     public void setEnd(GanttCalendar dend, boolean test) {
-        myEndDatePicker.setDate(dend.getTime());
+        myEndDatePicker.setDate(dend.newAdd(-1).getTime());    	
         this.end = dend;
         if (test == true) {
             return;
