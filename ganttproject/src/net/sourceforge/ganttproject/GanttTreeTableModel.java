@@ -301,12 +301,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			else
 				res = new ImageIcon(getClass().getResource("/icons/tasks2.png"));
 			break;
-		case 1:
-			Task task = (Task) tn.getUserObject();
-			String path = (task.getPriority() == 0 ? "/icons/task1.gif" : task
-					.getPriority() == 1 ? "/icons/task.gif"
-					: "/icons/task2.gif");
-			res = new ImageIcon(getClass().getResource(path));
+		case 1: // Priority
+			GanttTask task = (GanttTask) tn.getUserObject();
+			res = new ImageIcon(getClass().getResource(
+			        "/icons/task_" + task.getPriorityString() + ".gif"));
 			break;
 		case 2: // info
 			TaskInfo info = t.getTaskInfo();
@@ -388,7 +386,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			return;
 		}
 		if (isCellEditable(node, column)) {
-//			System.out.println("undoable colonne: " + column);
+//			System.out.println("undoable column: " + column);
 			Mediator.getGanttProjectSingleton().getUndoManager().undoableEdit(
 					"Change properties column", new Runnable() {
 						public void run() {
@@ -396,11 +394,11 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 						}
 					});
 		} else {
-//			System.out.println("NOT undoable colonne: " + column);
+//			System.out.println("NOT undoable column: " + column);
 			setValue(value, node, column);
 		}
 		// System.out.println("node : " + node);
-		// System.out.println("valeur : " + value);
+		// System.out.println("value : " + value);
 		Mediator.getGanttProjectSingleton().repaint();
 		Mediator.getGanttProjectSingleton().setAskForSave(true);
 	}
