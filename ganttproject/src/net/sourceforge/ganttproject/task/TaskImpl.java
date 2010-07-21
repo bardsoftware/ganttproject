@@ -856,6 +856,7 @@ public class TaskImpl implements Task {
             }
             // System.err.println("[MutatorImpl] shift(): result="+result);
             setStart(result.getStart());
+            setDuration(result.getDuration());
             setEnd(result.getEnd());
         }
 
