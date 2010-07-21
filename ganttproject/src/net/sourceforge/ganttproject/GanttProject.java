@@ -170,6 +170,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
 
+    /** When true GanttProject is running on OpenJDK */
+    private static boolean runsOnOpenJDK;
+
     /** The language use */
     private GanttLanguage language = GanttLanguage.getInstance();
 
@@ -2015,6 +2018,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return this.resp;
     }
 
+    public static boolean isRunningOnOpenJDK()
+    {
+        return runsOnOpenJDK;
+    }
+    
     public GanttLanguage getLanguage() {
         return this.language;
     }
@@ -2052,6 +2060,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** The main */
     public static void main(String[] arg) {
+        runsOnOpenJDK = System.getProperty("java.vm.name").toLowerCase().startsWith("openjdk");
+
         URL logConfig = GanttProject.class.getResource("/logging.properties");
         if (logConfig!=null) {
             try {
