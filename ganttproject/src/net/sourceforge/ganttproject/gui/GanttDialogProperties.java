@@ -84,7 +84,6 @@ public class GanttDialogProperties {
 					uiFacade.getUndoManager().undoableEdit("Properties changed",
 	                        new Runnable() {
 	                            public void run() {
-
 	                                Task[] returnTask = taskPropertiesBean
 	                                        .getReturnTask();
 	                                // System.err.println("[GanttDialogProperties]
@@ -104,7 +103,6 @@ public class GanttDialogProperties {
 //	                                        father = tree.getFatherNode(father);
 //	                                    }
 //	                                }
-
 	                            }
 	                        });
 				}
@@ -125,9 +123,7 @@ public class GanttDialogProperties {
         uiFacade.showDialog(taskPropertiesBean, actions, title);
     }
 
-
     /** When click on date button, it open the dialog to select date. */
-
 //    public void actionPerformed(ActionEvent evt) {
 //        if (evt.getSource() instanceof JButton) {
 //
