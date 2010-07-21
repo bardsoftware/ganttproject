@@ -400,7 +400,6 @@ public class TaskImpl implements Task {
         return myAssignments;
     }
 
-    //
     public Task getSupertask() {
         TaskHierarchyItem container = myTaskHierarchyItem.getContainerItem();
         return container.getTask();
@@ -553,7 +552,11 @@ public class TaskImpl implements Task {
 
         private FieldChange myStartChange;
 
+        private GanttCalendar oldStart = TaskImpl.this.getStart();
+
         private FieldChange myEndChange;
+
+        private GanttCalendar oldEnd = TaskImpl.this.getStart();
 
         private FieldChange myThirdChange;
 
@@ -604,24 +607,44 @@ public class TaskImpl implements Task {
             if (myStartChange!=null && TaskImpl.this.isSupertask()) {
                 TaskImpl.this.adjustNestedTasks();
             }
-            if (myStartChange!=null || myEndChange!=null || myDurationChange!=null)
-            {
+            if (myStartChange!=null || myEndChange!=null || myDurationChange!=null) {
                 GanttCalendar start = TaskImpl.this.getStart();
                 GanttCalendar end = TaskImpl.this.getEnd();
-                GanttCalendar oldStart = (GanttCalendar) (myStartChange==null ? start : myStartChange.myOldValue);
-                GanttCalendar oldEnd = (GanttCalendar) (myEndChange==null ? end : myEndChange.myOldValue);
                 if(areEventsEnabled()) {
                     myManager.fireTaskScheduleChanged(TaskImpl.this, oldStart, oldEnd);
                 }
-                if ((TaskImpl.this.getDependencies().toArray().length > 0)
-                        && (oldEnd.getTime().compareTo(end.getTime()) != 0 
-                        || oldStart.getTime().compareTo(start.getTime()) != 0)) {
-                    // If we got dependencies and end or start are changed recalculate dependencies
-                    try {
-                        myManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run(TaskImpl.this);
-                    } catch (TaskDependencyException e) {
-                        if (!GPLogger.log(e)) {
-                            e.printStackTrace(System.err);
+                
+                // During application initialization oldEnd/oldStart are null...
+                if ((oldEnd != null && oldEnd.getTime().compareTo(end.getTime()) != 0) 
+                        || (oldStart != null && oldStart.getTime().compareTo(start.getTime()) != 0)) {
+                    oldStart = start.Clone();
+                    oldEnd = end.Clone();
+                    // Start or end dates are changed, check if we or our parent tasks have dependencies
+                    // FIXME For some reason getSupertask() returns null?!
+                    // Task1
+                    //   Task2 -> getSuperTask() should return Task1??
+                    // Task3
+                    // Temporarily set hasDependencies to true to always run the algorithm
+                    boolean hasDependencies = false;
+                    Task t = TaskImpl.this;
+                    while(t != null && hasDependencies == false)
+                    {
+                        // TODO Is there a nicer way to find if there are dependencies?
+                        if (t.getDependencies().toArray().length > 0) {
+                            hasDependencies = true;
+                        } else {
+                            t = t.getSupertask();
+                        }
+                    }
+
+                    if(hasDependencies) {
+                        // t has dependencies, so run algorithm starting at t
+                        try {
+                            myManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run(t);
+                        } catch (TaskDependencyException e) {
+                            if (!GPLogger.log(e)) {
+                                e.printStackTrace(System.err);
+                            }
                         }
                     }
                 }

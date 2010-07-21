@@ -208,7 +208,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             public void taskScheduleChanged(TaskScheduleEvent e) {
                 boolean needRepaint = !isRepaintPending;
                 isRepaintPending = true;
-                adjustDependencies((Task) e.getSource());
                 if (needRepaint) {
                     repaint();
                     isRepaintPending = false;
@@ -224,6 +223,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 repaint();
             }
 
+            /**
+             * This runs the RecalculateTaskScheduleAlgorithm()
+             */
             private void adjustDependencies(Task task) {
                 RecalculateTaskScheduleAlgorithm alg = myTaskManager
                         .getAlgorithmCollection()
@@ -491,7 +493,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                             doFinish(mutator);
                         }
                     });
-
         }
 
         private void doFinish(TaskMutator mutator) {
