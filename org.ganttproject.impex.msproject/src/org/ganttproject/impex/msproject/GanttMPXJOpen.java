@@ -258,20 +258,24 @@ public abstract class GanttMPXJOpen {
         Priority prio = task.getPriority();
         if (prio != null) {
             int priority = prio.getValue();
-            int p;
+            net.sourceforge.ganttproject.task.Task.Priority p;
             switch (priority) {
             case Priority.HIGHEST:
-            case Priority.HIGHER:
             case Priority.VERY_HIGH:
-                p = 2;
+                p = net.sourceforge.ganttproject.task.Task.Priority.HIGHEST;
+                break;
+            case Priority.HIGHER:
+                p = net.sourceforge.ganttproject.task.Task.Priority.HIGH;
+                break;
+            case Priority.LOWER:
+                p = net.sourceforge.ganttproject.task.Task.Priority.LOW;
                 break;
             case Priority.LOWEST:
-            case Priority.LOWER:
             case Priority.VERY_LOW:
-                p = 0;
+                p = net.sourceforge.ganttproject.task.Task.Priority.LOWEST;
                 break;
             default:
-                p = 1;
+                p = net.sourceforge.ganttproject.task.Task.Priority.NORMAL;
             }
 
             gtask.setPriority(p);
