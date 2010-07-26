@@ -67,7 +67,7 @@ class TaskSaver extends SaverBase {
             addAttribute("thirdDate-constraint", String.valueOf(task.getThirdDateConstraint()), attrs);
         }
         if(task.getPriority() != Task.DEFAULT_PRIORITY) {
-            addAttribute("priority", task.getPriorityString(), attrs);
+            addAttribute("priority", task.getPriority().getLowerString(), attrs);
         }
         final String sWebLink = task.getWebLink();
         if (sWebLink != null && !sWebLink.equals("")

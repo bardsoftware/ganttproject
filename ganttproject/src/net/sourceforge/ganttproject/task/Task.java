@@ -21,23 +21,26 @@ public interface Task extends MutableTask {
         LOWEST, LOW, NORMAL, HIGH, HIGHEST;
 
         /**
-         * @return the Priority value for the given int value, or NORMAL if unknown
+         * @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown
          */
         public static Priority getPriority(int value) {
-            if(value == LOWEST.ordinal())
-                return LOWEST;
-            if(value == LOW.ordinal())
-                return LOW;
-            if(value == HIGHEST.ordinal())
-                return HIGHEST;
-            if(value == HIGH.ordinal())
-                return HIGH;
-            return NORMAL;
+            for (Task.Priority p: Task.Priority.values()) {
+                if (p.ordinal() == value)
+                    return p;
+            }
+            return DEFAULT_PRIORITY;
+        }
+
+        /**
+         * @return the priority as a lower-case String
+         */
+        public String getLowerString() {
+            return this.toString().toLowerCase();
         }
     }
 
     /**
-     * Default priority for new tasks
+     * Default priority (for new tasks)
      */
     public static final Priority DEFAULT_PRIORITY = Priority.NORMAL; 
 
@@ -51,11 +54,6 @@ public interface Task extends MutableTask {
     boolean isMilestone();
 
     Priority getPriority();
-
-    /**
-     * @return the priority as a lower-case String
-     */
-    String getPriorityString();
 
     TaskActivity[] getActivities();
 

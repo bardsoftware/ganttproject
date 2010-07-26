@@ -29,7 +29,7 @@ class PropertyFetcher {
         return myProject.getCustomColumnsStorage();
     }    
     void getTaskAttributes(Task t, Map id2value) {
-        id2value.put("tpd1", i18n(t.getPriorityString()));
+        id2value.put("tpd1", i18n("priority." + t.getPriority().getLowerString()));
         
         DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
         id2value.put("tpd3", t.getName());

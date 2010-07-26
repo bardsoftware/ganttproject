@@ -297,10 +297,6 @@ public class TaskImpl implements Task {
     public Priority getPriority() {
         return myPriority;
     }
-    
-    public String getPriorityString() {
-        return myPriority.toString().toLowerCase();
-    }
 
     public GanttCalendar getStart() {
         if (myMutator != null
