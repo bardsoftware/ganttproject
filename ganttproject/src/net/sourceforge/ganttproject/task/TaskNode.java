@@ -5,7 +5,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
- * This class is the class to use to discribe the tasks hierarchy.
+ * This class is used to describe the hierarchy of the tasks.
  * 
  * @author bbaranne (Benoit Baranne)
  */
@@ -32,16 +32,14 @@ public class TaskNode extends DefaultMutableTreeNode {
      * @param priority
      *            The priority to be set.
      */
-    public void setPriority(int priority) {
+    public void setPriority(Task.Priority priority) {
         task.setPriority(priority);
     }
 
     /**
-     * Returns the priority of the task.
-     * 
-     * @return The priority of the task.
+     * @return the priority of the task.
      */
-    public int getPriority() {
+    public Task.Priority getPriority() {
         return task.getPriority();
     }
 
@@ -56,9 +54,7 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns the name of the task.
-     * 
-     * @return The name of the task.
+     * @return the name of the task.
      */
     public String getName() {
         return task.getName();
@@ -77,9 +73,7 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns the start date of the task.
-     * 
-     * @return The start date of the task.
+     * @return the start date of the task.
      */
     public GanttCalendar getStart() {
         return task.getStart();
@@ -98,9 +92,7 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns the end date of the task.
-     * 
-     * @return The end date of the task.
+     * @return the end date of the task.
      */
     public GanttCalendar getEnd() {
         return task.getEnd();
@@ -119,9 +111,7 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns the duration of the task.
-     * 
-     * @return The duration of the task.
+     * @return the duration of the task.
      */
     public int getDuration() {
         return (int) task.getDuration().getValue();
@@ -138,9 +128,7 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns the completion percentage of the task.
-     * 
-     * @return The completion percentage of the task.
+     * @return the completion percentage of the task.
      */
     public int getCompletionPercentage() {
         return task.getCompletionPercentage();

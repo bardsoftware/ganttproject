@@ -100,11 +100,28 @@ public class TaskTagHandler implements TagHandler {
         String priority = attrs.getValue("priority");
         if (priority != null) {
             try {
-                task.setPriority(Integer.parseInt(priority));
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Failed to parse the value '"
+                int old_p = Integer.parseInt(priority);
+                // old_p contains old priority values, so convert them
+                Task.Priority p;
+                switch(old_p) {
+                    case 0:
+                        p = Task.Priority.LOW;
+                        break;
+                    case 2:
+                        p = Task.Priority.HIGH;
+                        break;
+                    default:
+                        p = Task.Priority.NORMAL;
+                }
+                task.setPriority(p);
+            } catch (NumberFormatException nfe) {
+                try {
+                    task.setPriority(Task.Priority.valueOf(priority.toUpperCase()));
+                } catch(IllegalArgumentException e) {
+                    throw new RuntimeException("Failed to parse the value '"
                         + priority + "' of attribute 'priority' of tag <task>",
                         e);
+                }
             }
         }
 
