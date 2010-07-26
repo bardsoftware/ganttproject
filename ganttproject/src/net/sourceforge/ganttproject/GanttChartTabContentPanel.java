@@ -42,19 +42,18 @@ class GanttChartTabContentPanel implements IAdaptable {
         myTaskTree = treeFacade.getTreeComponent();
         myGanttChart = ganttChart;
     }
+
     Component getComponent() {
     	if (myTabContentPanel==null) {
 	        JPanel left = new JPanel(new BorderLayout());
 	        Box treeHeader = Box.createVerticalBox();
-	        GanttImagePanel but = new GanttImagePanel("big.png", 300,
-	                42);
+	        GanttImagePanel but = new GanttImagePanel("big.png", 300, 42);
 	        treeHeader.add(but);
 	        left.add(treeHeader, BorderLayout.NORTH);
 	        left.add(myTaskTree, BorderLayout.CENTER);
 	        left.setPreferredSize(new Dimension(315, 600));
 	        left.setBackground(new Color(102, 153, 153));
-	
-	        
+
 	        JPanel right = new JPanel(new BorderLayout());
 	        right.add(myGanttChart, BorderLayout.CENTER);
 	        // A splitpane is use
@@ -62,16 +61,14 @@ class GanttChartTabContentPanel implements IAdaptable {
 	        if (GanttLanguage.getInstance().getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
 	            mySplitPane.setLeftComponent(left);
 	            mySplitPane.setRightComponent(right);
-	            mySplitPane
-	                    .applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+	            mySplitPane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 	        } else {
 	            mySplitPane.setRightComponent(left);
 	            mySplitPane.setLeftComponent(right);
 	            mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit()
 	                    .getScreenSize().getWidth() - left.getPreferredSize()
 	                    .getWidth()));
-	            mySplitPane
-	                    .applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+	            mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 	        }
 	        mySplitPane.setOneTouchExpandable(true);
 	        mySplitPane.setPreferredSize(new Dimension(800, 500));
@@ -80,10 +77,9 @@ class GanttChartTabContentPanel implements IAdaptable {
 	        myTabContentPanel.add(mySplitPane, BorderLayout.CENTER);
     	}
         return myTabContentPanel;
-        
     }
-    
-    private Component createButtonPanel() {
+
+    private JPanel createButtonPanel() {
         Box buttonBar = Box.createHorizontalBox();
         //JToolBar buttonBar = new JToolBar();
         //buttonBar.setFloatable(false);
@@ -93,30 +89,30 @@ class GanttChartTabContentPanel implements IAdaptable {
 			}        
         };
         buttonBar.add(unindentButton);
-        
+
         TestGanttRolloverButton indentButton = new TestGanttRolloverButton(myTreeFacade.getIndentAction()) {
 			public String getText() {
 				return null;
 			}                	
         };
         buttonBar.add(indentButton);
-        //
+
         buttonBar.add(Box.createHorizontalStrut(3));
-        //
+
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
 			public String getText() {
 				return null;
 			}                	
         };
         buttonBar.add(upButton);
-        //
+
         TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction()) {
 			public String getText() {
 				return null;
 			}                	
         };
         buttonBar.add(downButton);
-        //
+
         buttonBar.add(Box.createHorizontalStrut(8));
         Action linkAction = new LinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setLinkTasksAction(linkAction);
@@ -126,7 +122,7 @@ class GanttChartTabContentPanel implements IAdaptable {
 			}                	
         };
         buttonBar.add(linkButton);
-        //
+
         Action unlinkAction = new UnlinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setUnlinkTasksAction(unlinkAction);
         TestGanttRolloverButton unlinkButton = new TestGanttRolloverButton(unlinkAction) {
@@ -135,17 +131,20 @@ class GanttChartTabContentPanel implements IAdaptable {
 			}                	
         };
         buttonBar.add(unlinkButton);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;
     }
+
     int getDividerLocation() {
         return mySplitPane.getDividerLocation();
     }
+
     void setDividerLocation(int location) {
         mySplitPane.setDividerLocation(location);
     }
+
 	public Object getAdapter(Class adapter) {
 		if (Container.class.equals(adapter)) {
 			return getComponent();

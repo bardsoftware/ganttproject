@@ -78,9 +78,7 @@ import org.jdesktop.swing.JXDatePicker;
 /**
  * Real panel for editing task properties
  */
-public class GanttTaskPropertiesBean
-
-extends JPanel {
+public class GanttTaskPropertiesBean extends JPanel {
 
     private JXDatePicker myStartDatePicker;
     private JXDatePicker myEndDatePicker;
@@ -489,7 +487,6 @@ extends JPanel {
 
         gbc.gridy = 4;
         generalPanel.add(webLinkPanel, gbc);
-
     }
 
     /** Add the different action listeners on the different widgets */
@@ -730,7 +727,6 @@ extends JPanel {
                     copyValues(myAllocationsPanel[0].getTableModel(),
                             myAllocationsPanel[i].getTableModel());
                 }
-
             }
             myAllocationsPanel[i].getTableModel().commit();
             returnTask[i] = selectedTasks[i];
@@ -807,7 +803,6 @@ extends JPanel {
         }
 
         return returnTask;
-
     }
 
     /** as the name indicates */

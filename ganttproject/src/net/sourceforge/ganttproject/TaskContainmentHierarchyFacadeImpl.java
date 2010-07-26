@@ -147,18 +147,15 @@ class TaskContainmentHierarchyFacadeImpl implements
             boolean wasSelected = (myTree.getJTree().getSelectionModel()
                     .isPathSelected(movedPath));
             if (wasSelected) {
-                myTree.getJTree().getSelectionModel().removeSelectionPath(
-                        movedPath);
+                myTree.getJTree().getSelectionModel().removeSelectionPath(movedPath);
             }
             myTree.getModel().removeNodeFromParent(movedNode);
             myTree.getModel().insertNodeInto(movedNode, targetNode,
                     targetNode.getChildCount());
             if (wasSelected) {
                 movedPath = new TreePath(movedNode.getPath());
-                myTree.getJTree().getSelectionModel().addSelectionPath(
-                        movedPath);
+                myTree.getJTree().getSelectionModel().addSelectionPath(movedPath);
             }
-
         } else {
             myTree.addObjectWithExpand(whatMove, targetNode);
         }
