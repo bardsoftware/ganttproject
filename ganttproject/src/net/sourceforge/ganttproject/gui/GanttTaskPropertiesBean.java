@@ -302,7 +302,7 @@ extends JPanel {
         secondRowPanel1.add(priorityLabel1);
         priorityComboBox = new JComboBox();
         for (Task.Priority p: Task.Priority.values()) {
-            priorityComboBox.addItem(language.getText(p.toString().toLowerCase()));
+            priorityComboBox.addItem(language.getText("priority." + p.getLowerString()));
         }
         priorityComboBox.setEditable(false);
 
@@ -330,6 +330,7 @@ extends JPanel {
             }
         });
 
+        // TODO this is unused... Shouldn't it get used somewhere??
         ImageIcon icon = new ImageIcon(getClass().getResource(
                 "/icons/calendar_16.gif"));
 

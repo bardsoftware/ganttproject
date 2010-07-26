@@ -23,7 +23,6 @@ import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -63,7 +62,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
 	public static String strColID = null;
 
-	/** The colums titles */
+	/** The columns titles */
 	public List titles = null;
 
 	/**
@@ -303,8 +302,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			break;
 		case 1: // Priority
 			GanttTask task = (GanttTask) tn.getUserObject();
-			res = new ImageIcon(getClass().getResource(
-			        "/icons/task_" + task.getPriorityString() + ".gif"));
+			res = new ImageIcon(getClass().getResource("/icons/task_" + 
+			        task.getPriority().getLowerString() + ".gif"));
 			break;
 		case 2: // info
 			TaskInfo info = t.getTaskInfo();

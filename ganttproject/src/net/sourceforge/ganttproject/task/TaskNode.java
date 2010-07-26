@@ -27,16 +27,6 @@ public class TaskNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Sets the priority of the task.
-     * 
-     * @param priority
-     *            The priority to be set.
-     */
-    public void setPriority(Task.Priority priority) {
-        task.setPriority(priority);
-    }
-
-    /**
      * @return the priority of the task.
      */
     public Task.Priority getPriority() {
