@@ -11,8 +11,6 @@ import java.net.URI;
 
 import org.xml.sax.Attributes;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -421,7 +419,7 @@ class ProxyDocument implements Document {
         
     }
     
-    private class OnlyShowWeekendsTagHandler implements TagHandler {
+    private static class OnlyShowWeekendsTagHandler implements TagHandler {
 
         private final GPCalendar calendar;
         

@@ -3,14 +3,12 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,8 +81,9 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     }
 
     public boolean isWeekend(Date curDayStart) {
-        if(myOnlyShowWeekends)
+        if(myOnlyShowWeekends) {
             return false;
+        }
 
         myCalendar.setTime(curDayStart);
         int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
@@ -190,10 +189,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     
     private int getWeekendDaysCount()
     {
-        if(myOnlyShowWeekends)
-            return 0;
-        else
-            return myWeekendDaysCount;
+        return myOnlyShowWeekends ? 0 : myWeekendDaysCount;
     }
 
     public Date findClosestWorkingTime(Date time) {

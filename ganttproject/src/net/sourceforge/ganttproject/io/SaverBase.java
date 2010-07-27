@@ -32,7 +32,7 @@ class SaverBase {
 		addAttribute(name, String.valueOf(value), attrs);
 	}
 
-   protected void addAttribute(String name, Boolean value, AttributesImpl attrs) {
+    protected void addAttribute(String name, Boolean value, AttributesImpl attrs) {
         addAttribute(name, value.toString(), attrs);
     }
 
