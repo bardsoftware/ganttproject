@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.Long;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,12 +19,10 @@ import java.net.URLEncoder;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
-import net.sourceforge.ganttproject.action.NewTaskAction;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -34,7 +31,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * Created by IntelliJ IDEA.
@@ -847,10 +843,6 @@ public class TaskImpl implements Task {
                     : (TaskLength) myDurationChange.myFieldValue;
         }
 
-        public void updateGanttAndResources() {
-            TaskImpl.this.updateGanttAndResources();
-        }
-
         public void shift(float unitCount) {
 
             Task result = getPrecomputedShift(unitCount);
@@ -965,22 +957,9 @@ public class TaskImpl implements Task {
         myThirdDateConstraint = thirdDateConstraint;
     }
 
-    public void updateGanttAndResources() {
-        Task resultTask = shift(0);
-        GanttCalendar oldStart = myStart;
-        GanttCalendar oldEnd = myEnd;
-        myStart = resultTask.getStart();
-        myLength = resultTask.getDuration();
-        myEnd = resultTask.getEnd();
-        if (areEventsEnabled()) {
-            myManager.fireTaskScheduleChanged(this, oldStart, oldEnd);
-        }
-        recalculateActivities();
-    }
-    
     public void shift(TaskLength shift) {
         float unitCount = shift.getLength(myLength.getTimeUnit());
-        if (unitCount != 0) {
+        if (unitCount != 0f) {
             Task resultTask = shift(unitCount);
             GanttCalendar oldStart = myStart;
             GanttCalendar oldEnd = myEnd;
@@ -996,16 +975,16 @@ public class TaskImpl implements Task {
 
     public Task shift(float unitCount) {
         Task clone = unpluggedClone();
-        if (unitCount >= 0) {
-            TaskLength length = myManager.createLength(myLength.getTimeUnit(),
-                    unitCount);
-            // clone.setDuration(length);
-            Date shiftedDate = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-            clone.setStart(new GanttCalendar(shiftedDate));
-            clone.setDuration(myLength);
-        } else {
-            Date newStart = shiftDate(clone.getStart().getTime(),
-            		                  getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
+        if (unitCount != 0) {
+            Date newStart;
+            if (unitCount > 0) {
+                TaskLength length = myManager.createLength(myLength.getTimeUnit(), unitCount);
+                // clone.setDuration(length);
+                newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
+            } else {
+                newStart = shiftDate(clone.getStart().getTime(), getManager().createLength(
+                        clone.getDuration().getTimeUnit(), (long) unitCount));
+            }
             clone.setStart(new GanttCalendar(newStart));
             clone.setDuration(myLength);
         }

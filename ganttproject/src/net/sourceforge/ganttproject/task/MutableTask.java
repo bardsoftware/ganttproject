@@ -25,12 +25,6 @@ public interface MutableTask {
 
     void shift(TaskLength shift);
     
-    /**
-     * Reschedules Task and its Resources.
-     * To be used when weekend days are changed for example.
-     */
-    void updateGanttAndResources();
-
     void setCompletionPercentage(int percentage);
 
 //    void setStartFixed(boolean isFixed);

@@ -117,7 +117,7 @@ class RegularFrameOffsetBuilder {
             for (int i=0; i<bottomUnitCount; i++) {
                 Date startDate = currentFrame.getUnitStart(getBottomUnit(), i);
                 Date endDate = currentFrame.getUnitFinish(getBottomUnit(), i);
-              GPCalendar.DayType dayType = getCalendar().getDayTypeDate(startDate);
+                GPCalendar.DayType dayType = getCalendar().getDayTypeDate(startDate);
                 if (getCalendar().isNonWorkingDay(startDate)) {
                     offsetEnd += offsetStep / myWeekendDecreaseFactor;
                     bottomUnitOffsets.add(new Offset(
