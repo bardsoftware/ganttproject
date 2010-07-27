@@ -28,7 +28,7 @@ public class NewProjectWizardWindow extends WizardImpl {
         WizardPage weekendPage;
         try {
             weekendPage = new WeekendConfigurationPage(calendar, myI18n,
-                    project);
+                    project, true);
             addPage(weekendPage);
         } catch (Exception e) {
             getUIFacade().showErrorDialog(e);
