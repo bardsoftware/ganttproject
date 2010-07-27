@@ -300,7 +300,7 @@ public class GanttOptions {
      * @param attrs is the list of attributes the new attribute will added to
      */
     private void addAttribute(String name, String value, AttributesImpl attrs) {
-        if (value != null && value != "") {
+        if (value != null && value.equals("") == false) {
             attrs.addAttribute("", name, name, "CDATA", value);
         } else {
             System.err.println("[GanttOptions] attribute '" + name
