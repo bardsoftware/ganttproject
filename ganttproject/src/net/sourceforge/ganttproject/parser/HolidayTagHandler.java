@@ -4,7 +4,6 @@
 package net.sourceforge.ganttproject.parser;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 
 import org.xml.sax.Attributes;

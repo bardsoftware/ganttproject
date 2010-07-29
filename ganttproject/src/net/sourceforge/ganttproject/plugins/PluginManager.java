@@ -2,9 +2,6 @@ package net.sourceforge.ganttproject.plugins;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.Exporter;

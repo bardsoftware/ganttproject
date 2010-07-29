@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.Long;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,12 +19,10 @@ import java.net.URLEncoder;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
-import net.sourceforge.ganttproject.action.NewTaskAction;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -34,7 +31,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * Created by IntelliJ IDEA.

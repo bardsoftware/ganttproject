@@ -16,7 +16,6 @@
  ***************************************************************************/
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -43,7 +42,6 @@ import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 
 /**
  * @author athomas Simulate a status bar under the main frame

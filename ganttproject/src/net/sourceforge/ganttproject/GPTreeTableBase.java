@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.text.AttributedCharacterIterator;
 import java.text.DateFormat;
@@ -18,11 +17,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomColumn;
-import net.sourceforge.ganttproject.util.DateUtils;
-
 import org.jdesktop.jdnc.JNTreeTable;
 import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.table.TableColumnExt;

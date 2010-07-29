@@ -1,7 +1,6 @@
 package net.sourceforge.ganttproject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -10,7 +9,6 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;

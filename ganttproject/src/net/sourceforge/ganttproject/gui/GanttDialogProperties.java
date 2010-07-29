@@ -31,23 +31,14 @@
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
-import java.util.Hashtable;
-
 import javax.swing.Action;
 import javax.swing.JColorChooser;
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Dialog to edit the properties of a task

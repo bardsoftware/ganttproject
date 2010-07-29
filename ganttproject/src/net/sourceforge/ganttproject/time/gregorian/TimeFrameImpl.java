@@ -7,7 +7,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;

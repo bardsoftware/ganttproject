@@ -3,7 +3,6 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;

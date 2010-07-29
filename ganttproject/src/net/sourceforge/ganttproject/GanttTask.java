@@ -18,12 +18,9 @@
 package net.sourceforge.ganttproject;
 
 import java.io.Serializable;
-import java.util.Vector;
-
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskMutator;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 /**
  * Class that generate a task

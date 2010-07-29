@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.roles.RoleManager.Listener;
 
 /**
  * @author athomas

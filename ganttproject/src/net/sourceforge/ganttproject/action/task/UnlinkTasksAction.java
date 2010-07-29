@@ -3,10 +3,8 @@
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.awt.event.ActionEvent;
 import java.util.List;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;

@@ -1,6 +1,5 @@
 package net.sourceforge.ganttproject.parser;
 
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.chart.GanttChart;
 
 import org.xml.sax.Attributes;
