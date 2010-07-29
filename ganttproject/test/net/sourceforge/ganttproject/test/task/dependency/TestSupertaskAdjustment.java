@@ -1,14 +1,10 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
-import java.util.Calendar;
-
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -31,9 +27,8 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         supertask.setStart(new GanttCalendar(2000, 01, 01));
         supertask.setEnd(new GanttCalendar(2000, 01, 04));
         //
-        TaskDependency dep = taskManager
-                .getDependencyCollection()
-                .createDependency(task2, task1, new FinishStartConstraintImpl());
+        taskManager.getDependencyCollection().createDependency(
+                task2, task1, new FinishStartConstraintImpl());
         //
         task1.setEnd(new GanttCalendar(2000, 01, 04));
         RecalculateTaskScheduleAlgorithm alg = taskManager

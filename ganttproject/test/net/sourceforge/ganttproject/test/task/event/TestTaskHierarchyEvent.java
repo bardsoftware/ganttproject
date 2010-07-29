@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject.test.task.event;
 
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 
@@ -15,7 +14,7 @@ public class TestTaskHierarchyEvent extends TaskTestCase {
             }
         };
         taskManager.addTaskListener(listener);
-        Task task = taskManager.createTask();
+        taskManager.createTask();
         assertTrue("Event taskAdded() is expected to be sent", listener
                 .hasBeenCalled());
     }
