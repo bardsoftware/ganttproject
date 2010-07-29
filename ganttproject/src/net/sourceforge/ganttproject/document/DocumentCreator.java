@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;

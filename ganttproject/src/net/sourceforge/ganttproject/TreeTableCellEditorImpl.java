@@ -5,12 +5,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
 class TreeTableCellEditorImpl  implements TableCellEditor {

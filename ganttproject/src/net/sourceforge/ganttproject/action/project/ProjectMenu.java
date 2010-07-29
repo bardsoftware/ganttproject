@@ -4,8 +4,6 @@
 package net.sourceforge.ganttproject.action.project;
 
 import javax.swing.Action;
-import javax.swing.JMenuItem;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;

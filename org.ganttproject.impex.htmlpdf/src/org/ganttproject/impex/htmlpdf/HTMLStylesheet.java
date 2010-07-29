@@ -5,10 +5,7 @@ package org.ganttproject.impex.htmlpdf;
 
 import java.io.File;
 
-import javax.xml.transform.Result;
 import javax.xml.transform.sax.TransformerHandler;
-
-import org.xml.sax.ContentHandler;
 
 public interface HTMLStylesheet extends Stylesheet {
     interface InputVersion {

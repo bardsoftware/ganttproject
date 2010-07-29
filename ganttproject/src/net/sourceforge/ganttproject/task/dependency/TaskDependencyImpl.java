@@ -1,7 +1,6 @@
 package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 /**
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 15:28:59 To

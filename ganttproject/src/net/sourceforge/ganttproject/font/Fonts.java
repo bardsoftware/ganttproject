@@ -2,8 +2,6 @@ package net.sourceforge.ganttproject.font;
 
 import java.awt.Font;
 
-import javax.swing.JFrame;
-
 /**
  * 
  * @author bbaranne

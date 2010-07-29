@@ -19,7 +19,6 @@ import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.BlankLineNode;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 class TaskTreeImageGenerator {

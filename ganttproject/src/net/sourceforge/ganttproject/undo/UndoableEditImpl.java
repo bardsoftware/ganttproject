@@ -12,7 +12,6 @@ import javax.swing.undo.CannotUndoException;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.io.GPSaver;
 
 /**
  * @author bard

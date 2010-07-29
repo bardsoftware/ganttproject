@@ -4,13 +4,9 @@
 package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
-import java.util.ResourceBundle;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;

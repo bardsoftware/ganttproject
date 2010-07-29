@@ -27,8 +27,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 
 import com.tapsterrock.mpx.MPXException;

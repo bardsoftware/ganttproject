@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.io;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.transform.sax.TransformerHandler;

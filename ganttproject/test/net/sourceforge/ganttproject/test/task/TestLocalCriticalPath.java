@@ -24,7 +24,6 @@ import java.util.Set;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 public class TestLocalCriticalPath extends TaskTestCase {
     /*

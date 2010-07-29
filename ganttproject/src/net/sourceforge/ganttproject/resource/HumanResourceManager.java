@@ -20,21 +20,14 @@ package net.sourceforge.ganttproject.resource;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 

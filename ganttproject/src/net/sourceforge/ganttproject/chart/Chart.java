@@ -3,8 +3,6 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.Date;
-import java.util.Map;
-
 import javax.swing.Icon;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
@@ -13,7 +11,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 public interface Chart extends IAdaptable {
 	public RenderedImage getRenderedImage(GanttExportSettings settings);

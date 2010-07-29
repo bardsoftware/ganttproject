@@ -4,12 +4,10 @@
  */
 package net.sourceforge.ganttproject.document;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
 
 /**
  * This interface abstracts the details of file access. Implementations of this

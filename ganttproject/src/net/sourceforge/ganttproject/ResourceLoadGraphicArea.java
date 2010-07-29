@@ -29,8 +29,6 @@ import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JTable;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -52,7 +50,6 @@ import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 
 /**
  * Classe for the graphic part of the soft
