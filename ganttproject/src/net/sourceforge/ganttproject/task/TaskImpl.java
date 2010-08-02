@@ -956,7 +956,7 @@ public class TaskImpl implements Task {
     public void setThirdDateConstraint(int thirdDateConstraint) {
         myThirdDateConstraint = thirdDateConstraint;
     }
-
+    
     public void shift(TaskLength shift) {
         float unitCount = shift.getLength(myLength.getTimeUnit());
         if (unitCount != 0f) {
