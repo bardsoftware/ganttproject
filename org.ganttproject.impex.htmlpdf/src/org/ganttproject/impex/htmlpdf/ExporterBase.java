@@ -336,7 +336,7 @@ abstract class ExporterBase {
                 startPrefixedElement("task", myAttrs, handler);
                 {
                 	addAttribute("id", "tpd1", myAttrs);
-                	textElement("priority", myAttrs, i18n("priority." + t.getPriority().getLowerString()), handler);
+                	textElement("priority", myAttrs, i18n(t.getPriority().getI18nKey()), handler);
                 }
 
                 addAttribute("id", "tpd3", myAttrs);
