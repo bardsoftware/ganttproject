@@ -87,7 +87,10 @@ public interface Task extends MutableTask {
 
     Task unpluggedClone();
 
-    // Color DEFAULT_COLOR = new Color( 140, 182, 206); not used
+    /**
+     * Default (blue-ish) color for tasks
+     */
+    static final Color DEFAULT_COLOR = new Color(140, 182, 206);
 
     CustomColumnsValues getCustomValues();
 

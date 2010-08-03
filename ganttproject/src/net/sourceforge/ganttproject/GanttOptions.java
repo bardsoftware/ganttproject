@@ -59,6 +59,7 @@ import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleSet;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.util.ColorConvertion;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -691,8 +692,8 @@ public class GanttOptions {
 
     public UIConfiguration getUIConfiguration() {
         if (myUIConfig == null) {
-            myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
-                    206), Color.BLACK, redline) {
+            myUIConfig = new UIConfiguration(null, null, Task.DEFAULT_COLOR,
+                    Color.BLACK, redline) {
 
                 public Font getMenuFont() {
                     return myMenuFont == null ? super.getMenuFont()

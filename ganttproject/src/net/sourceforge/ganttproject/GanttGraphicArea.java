@@ -100,6 +100,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.CustomColumEvent;
 import net.sourceforge.ganttproject.task.CustomColumsListener;
 import net.sourceforge.ganttproject.task.Task;
@@ -152,7 +153,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     public GanttTree2 tree;
 
     /** Default color for tasks */
-    public static Color taskDefaultColor = new Color(140, 182, 206);
+    public static Color taskDefaultColor = Task.DEFAULT_COLOR;
 
     /** Default color for milestones */
     public static Color milestoneDefaultColor = Color.BLACK;
@@ -1400,7 +1401,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                         .getWidth() / 2 - width / 2);
                 y = (int) (ChartOptionsPreviewPanel.this.getPreferredSize()
                         .getHeight() / 2 - height / 2);
-                color = new Color(140, 182, 206);
+                color = Task.DEFAULT_COLOR;
             }
 
             void paintMe(Graphics g) {

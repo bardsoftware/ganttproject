@@ -14,6 +14,8 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.resource.ResourceView;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.util.ColorConvertion;
@@ -76,7 +78,7 @@ public class ChartModelResource extends ChartModelBase {
                 }
             };
             myResourceNormalLoadOption.lock();
-            myResourceNormalLoadOption.setValue(new Color(140, 182, 206));
+            myResourceNormalLoadOption.setValue(ResourceView.DEFAULT_RESOURCE_COLOR);
             myResourceNormalLoadOption.commit();
         }
         {
@@ -87,7 +89,7 @@ public class ChartModelResource extends ChartModelBase {
                 }
             };
             myResourceOverloadOption.lock();
-            myResourceOverloadOption.setValue(new Color(229, 50, 50));
+            myResourceOverloadOption.setValue(ResourceView.OVERLOAD_RESOURCE_COLOR);
             myResourceOverloadOption.commit();
         }
         {
@@ -98,7 +100,7 @@ public class ChartModelResource extends ChartModelBase {
                 }
             };
             myResourceUnderloadOption.lock();
-            myResourceUnderloadOption.setValue(new Color(50, 229, 50));
+            myResourceUnderloadOption.setValue(ResourceView.UNDERLOAD_RESOURCE_COLOR);
             myResourceUnderloadOption.commit();
         }
         {
@@ -109,7 +111,7 @@ public class ChartModelResource extends ChartModelBase {
                 }
             };
             myDayOffOption.lock();
-            myDayOffOption.setValue(new Color(0.9f, 1f, 0.17f));
+            myDayOffOption.setValue(ResourceView.DEFAULT_DAYOFF_COLOR);
             myDayOffOption.commit();
         }
         myColorOptions = new GPOptionGroup("resourceChartColors", new GPOption[] {myResourceNormalLoadOption, myResourceOverloadOption, myResourceUnderloadOption, myDayOffOption});
