@@ -53,7 +53,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
         myI18N = i18n;
         String[] dayNames = myI18N.getDayNames();
         myPanel = new JPanel(new BorderLayout());
-        if(showPublicHolidays) {
+        if (showPublicHolidays) {
             choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText("choosePublicHoliday"));
             myCalendarField = new JComboBox();
             myCalendarField.addItem(GanttLanguage.getInstance().getText("none"));
@@ -174,7 +174,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
     }
 
     public URL getProjectCalendar() {
-        if(WeekendConfigurationPage.this.myCalendarField == null) {
+        if (WeekendConfigurationPage.this.myCalendarField == null) {
             return null;
         }
 
