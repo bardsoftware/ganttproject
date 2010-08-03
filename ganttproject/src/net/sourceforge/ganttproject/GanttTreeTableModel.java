@@ -302,8 +302,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			break;
 		case 1: // Priority
 			GanttTask task = (GanttTask) tn.getUserObject();
-			res = new ImageIcon(getClass().getResource("/icons/task_" + 
-			        task.getPriority().getLowerString() + ".gif"));
+			res = new ImageIcon(getClass().getResource(task.getPriority().getIconPath()));
 			break;
 		case 2: // info
 			TaskInfo info = t.getTaskInfo();

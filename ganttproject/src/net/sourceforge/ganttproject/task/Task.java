@@ -25,8 +25,9 @@ public interface Task extends MutableTask {
          */
         public static Priority getPriority(int value) {
             for (Task.Priority p: Task.Priority.values()) {
-                if (p.ordinal() == value)
+                if (p.ordinal() == value) {
                     return p;
+                }
             }
             return DEFAULT_PRIORITY;
         }
@@ -36,6 +37,20 @@ public interface Task extends MutableTask {
          */
         public String getLowerString() {
             return this.toString().toLowerCase();
+        }
+
+        /**
+         * @return the key to get the I18n value for the priority
+         */
+        public String getI18nKey() {
+            return "priority." + this.toString().toLowerCase();
+        }
+
+        /**
+         * @return the path to the icon representing the priority
+         */
+        public String getIconPath() {
+            return "/icons/task_" + getLowerString() + ".gif";
         }
     }
 
