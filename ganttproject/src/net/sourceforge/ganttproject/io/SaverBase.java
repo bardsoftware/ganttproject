@@ -31,7 +31,11 @@ class SaverBase {
 	protected void addAttribute(String name, int value, AttributesImpl attrs) {
 		addAttribute(name, String.valueOf(value), attrs);
 	}
-    
+
+    protected void addAttribute(String name, Boolean value, AttributesImpl attrs) {
+        addAttribute(name, value.toString(), attrs);
+    }
+
     protected void emptyElement(String name, AttributesImpl attrs,
             TransformerHandler handler) throws SAXException {
         startElement(name, attrs, handler);

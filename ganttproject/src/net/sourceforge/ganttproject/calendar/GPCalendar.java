@@ -26,6 +26,18 @@ public interface GPCalendar {
 
     DayType getWeekDayType(int day);
 
+    /** 
+     * @return true when weekends are only shown and taken into
+     *  account for the task scheduling.
+     */
+    public boolean getOnlyShowWeekends();
+
+    /** 
+     * @param onlyShowWeekends must be set to true if weekends are
+     *  only shown and not taken into account for the task scheduling
+     */
+    public void setOnlyShowWeekends(boolean onlyShowWeekends);
+
     void setPublicHoliDayType(int month, int date);
 
     public void setPublicHoliDayType(Date curDayStart);
