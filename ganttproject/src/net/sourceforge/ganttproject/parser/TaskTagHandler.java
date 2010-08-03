@@ -57,15 +57,12 @@ public class TaskTagHandler implements TagHandler {
             task.setName(taskName);
         }
 
-        String meeting = attrs.getValue("meeting");
-        if (meeting != null) {
-            task.setMilestone(meeting.equals("true"));
-        }
-		
-		String project = attrs.getValue("project");
-		if (project != null)
-			task.setProjectTask(true);
-		
+        task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
+
+        String project = attrs.getValue("project");
+        if (project != null)
+            task.setProjectTask(true);
+
         String start = attrs.getValue("start");
         if (start != null) {
             task.setStart(GanttCalendar.parseXMLDate(start));
@@ -118,11 +115,6 @@ public class TaskTagHandler implements TagHandler {
             myContext.addTaskWithLegacyFixedStart(task);
         }
 
-//        String fixedFinish = attrs.getValue("fixed-finish");
-//        if ("true".equals(fixedFinish)) {
-//            task.setFinishFixed(true);
-//        }
-
         String third = attrs.getValue("thirdDate");
         if (third != null) {
             task.setThirdDate(GanttCalendar.parseXMLDate(third));
@@ -146,18 +138,15 @@ public class TaskTagHandler implements TagHandler {
             try {
                 webLink = URLDecoder.decode(webLink_enc, "ISO-8859-1");
             } catch (UnsupportedEncodingException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         if (webLink != null) {
             task.setWebLink(webLink);
         }
 
-        String expand = attrs.getValue("expand");
-        if (expand != null) {
-            task.setExpand("true".equals(expand));
-        }
+        task.setExpand(Boolean.parseBoolean(attrs.getValue("expand")));
 
         String shape = attrs.getValue("shape");
         if (shape != null) {
