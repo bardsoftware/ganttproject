@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="France" type="country">
+	<date year="" month="12" date="25"/>
+	<date year="" month="01" date="01"/>
+	<date year="" month="05" date="01"/>
+	<date year="" month="05" date="08"/>
+	<date year="" month="07" date="14"/>
+	<date year="" month="08" date="15"/>
+	<date year="" month="11" date="01"/>
+	<date year="" month="11" date="11"/>
+	<date year="2005" month="3" date="28"/>
+</calendar >

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Deutschland/alle" type="country">
+	<date year="" month="01" date="01"/> 
+	<date year="" month="01" date="06"/> #nur BW,BY,ST
+	<date year="" month="05" date="01"/>
+	<date year="" month="08" date="15"/> #nur BW,SL
+	<date year="" month="10" date="03"/>
+	<date year="" month="10" date="31"/> #nur BB,MV,SN,ST,TH
+	<date year="" month="11" date="01"/> #nur BW,BY,NW,RP,SL
+	<date year="" month="12" date="25"/>
+	<date year="" month="12" date="26"/>
+	<date year="2006" month="04" date="14"/>
+	<date year="2006" month="04" date="17"/>
+	<date year="2006" month="05" date="25"/>
+	<date year="2006" month="06" date="05"/>
+	<date year="2006" month="06" date="15"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2006" month="11" date="22"/> #nur SN
+	<date year="2007" month="04" date="06"/>
+	<date year="2007" month="04" date="09"/>
+	<date year="2007" month="05" date="17"/>
+	<date year="2007" month="05" date="28"/>
+	<date year="2007" month="06" date="07"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2007" month="11" date="21"/> #nur SN
+	<date year="2008" month="03" date="21"/>
+	<date year="2008" month="03" date="24"/>
+	<date year="2008" month="05" date="12"/>
+	<date year="2008" month="05" date="22"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2008" month="11" date="19"/> #nur SN
+	<date year="2009" month="04" date="10"/>
+	<date year="2009" month="04" date="13"/>
+	<date year="2009" month="05" date="21"/>
+	<date year="2009" month="06" date="1"/>
+	<date year="2009" month="06" date="11"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2009" month="11" date="18"/> #nur SN
+</calendar >
+ 
+
