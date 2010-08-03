@@ -1,7 +1,7 @@
 /*
  * ProjectResource.java
  *
- * Created on 27. Mai 2003, 08:11
+ * Created on 27.05.2003
  */
 
 package net.sourceforge.ganttproject.resource;
@@ -80,9 +80,10 @@ public abstract class ProjectResource {
     }
 
     public void setId(int id) {
-        if (this.id == -1) // setting the id is only allowed when id is not
-            // assigned
+        if (this.id == -1) {
+            // setting the id is only allowed when id is not assigned
             this.id = id;
+        }
     }
 
     public int getId() {
@@ -109,7 +110,7 @@ public abstract class ProjectResource {
         for (int i = 0; i < myAssignments.size(); i++) {
             if (((ResourceAssignment) myAssignments.get(i)).getTask().equals(
                     assignmentToTask.getTask())) {
-                // throw new IllegalStateException("An attemp to assign resource
+                // throw new IllegalStateException("An attempt to assign resource
                 // to the same task twice");
             }
         }
