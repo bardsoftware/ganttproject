@@ -1,2 +1,3 @@
 syntax: glob
 bin
+dist-bin
