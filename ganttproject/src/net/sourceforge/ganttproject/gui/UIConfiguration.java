@@ -18,6 +18,7 @@ import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.resource.ResourceView;
 
 /**
  * Created by IntelliJ IDEA. User: bard
@@ -65,14 +66,14 @@ public class UIConfiguration {
         this.isRedlineOn = isRedlineOn;
         setTaskColor(taskColor);
         setMilestoneColor(milestoneColor);
-        myResColor = new Color(140, 182, 206);
-        myResOverColor = new Color(229, 50, 50);
-        myResUnderColor = new Color(50, 229, 50);
+        myResColor = ResourceView.DEFAULT_RESOURCE_COLOR;
+        myResOverColor = ResourceView.OVERLOAD_RESOURCE_COLOR;
+        myResUnderColor = ResourceView.UNDERLOAD_RESOURCE_COLOR;
 		myEarlierPreviousTaskColor = new Color(50, 229, 50);
 		myLaterPreviousTaskColor = new Color(229, 50, 50);
 		myPreviousTaskColor = Color.LIGHT_GRAY;
         myWeekEndColor = Color.GRAY;
-        myDayOffColor = new Color(0.9f, 1f, 0.17f);
+        myDayOffColor = ResourceView.DEFAULT_DAYOFF_COLOR;
         myWeekendAlphaRenderingOption = new AlphaRenderingOption(this);
     }
 

@@ -64,7 +64,7 @@ public class GanttProjectImpl implements IGanttProject {
         myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
         myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
         myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT,
-                new Color(140, 182, 206), Color.BLACK, true);
+                Task.DEFAULT_COLOR, Color.BLACK, true);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
     }

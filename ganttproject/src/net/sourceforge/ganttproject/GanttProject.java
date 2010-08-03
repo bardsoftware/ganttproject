@@ -839,14 +839,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         deletedIconList = initDeletedIconList();
         addButtons();
         myUIConfiguration = options.getUIConfiguration();
-        GanttGraphicArea.taskDefaultColor = new Color(140, 182, 206);
+        GanttGraphicArea.taskDefaultColor = Task.DEFAULT_COLOR;
         area.repaint();
     }
-
-    /** @return the status Bar of the main frame. */
-//    public GanttStatusBar getStatusBar() {
-//        return statusBar;
-//    }
 
     public String getXslFo() {
         return options.getXslFo();
