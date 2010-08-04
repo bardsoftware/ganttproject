@@ -37,6 +37,7 @@ import javax.swing.Action;
 import javax.swing.JColorChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTree2;
@@ -48,6 +49,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * Dialog to edit the properties of a task
@@ -57,7 +59,7 @@ public class GanttDialogProperties {
     /** Boolean to say if the task has child */
 
 	public boolean change = false;
-	
+
     /** true if the ok button was pressed */
 
     static JColorChooser colorChooser = new JColorChooser();
@@ -72,7 +74,7 @@ public class GanttDialogProperties {
     public GanttDialogProperties(GanttTask[] tasks) {
     	myTasks = tasks;
     }
-    public void show(IGanttProject project, final UIFacade uiFacade) {
+    public void show(final IGanttProject project, final UIFacade uiFacade) {
 
 //        super(parent, GanttLanguage.getInstance().getText("propertiesFor")
 //                + " '" + tasksNames + "'", true);
@@ -85,8 +87,16 @@ public class GanttDialogProperties {
 	                        new Runnable() {
 	                            public void run() {
 
-	                                Task[] returnTask = taskPropertiesBean
-	                                        .getReturnTask();
+	                                taskPropertiesBean.getReturnTask();
+	                                try {
+										project.getTaskManager().getAlgorithmCollection()
+										.getRecalculateTaskScheduleAlgorithm().run();
+									} catch (TaskDependencyException e) {
+										if (!GPLogger.log(e)) {
+											e.printStackTrace();
+										}
+									}
+
 	                                // System.err.println("[GanttDialogProperties]
 	                                // returnTask="+returnTask);
 	                                // returnTask.setTaskID(this.task.getTaskID());
@@ -155,7 +165,7 @@ public class GanttDialogProperties {
 //
 //        }
 //
-//    
+//
 //    }
 //
 //    private TaskManager getTaskManager() {
