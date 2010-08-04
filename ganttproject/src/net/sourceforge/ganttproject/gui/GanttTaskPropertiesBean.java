@@ -78,9 +78,9 @@ import org.jdesktop.swing.JXDatePicker;
 /**
  * Real panel for editing task properties
  */
-public class GanttTaskPropertiesBean
+public class GanttTaskPropertiesBean extends JPanel {
 
-extends JPanel {
+    private static final JColorChooser colorChooser = new JColorChooser();
 
     private JXDatePicker myStartDatePicker;
     private JXDatePicker myEndDatePicker;
@@ -392,12 +392,10 @@ extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog;
                 dialog = JColorChooser.createDialog(GanttTaskPropertiesBean.this, colorChooserTitle,
-                        true, GanttDialogProperties.colorChooser,
+                        true, colorChooser,
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                colorButton
-                                        .setBackground(GanttDialogProperties.colorChooser
-                                                .getColor());
+                                colorButton.setBackground(colorChooser.getColor());
                                 isColorChanged = true;
                             }
                         }
@@ -415,8 +413,7 @@ extends JPanel {
                  * GanttDialogProperties.colorChooser.addChooserPanel(panels[0]);
                  */
 
-                GanttDialogProperties.colorChooser.setColor(colorButton
-                        .getBackground());
+                colorChooser.setColor(colorButton.getBackground());
                 dialog.setVisible(true);
             }
         });
@@ -1003,7 +1000,7 @@ extends JPanel {
 
     /** Change the end date of the task */
     public void setEnd(GanttCalendar dend, boolean test) {
-        myEndDatePicker.setDate(dend.newAdd(-1).getTime());    	
+        myEndDatePicker.setDate(dend.newAdd(-1).getTime());
         this.end = dend;
         if (test == true) {
             return;
