@@ -1532,7 +1532,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Create a new task */
-
     public Task newTask() {
 
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
