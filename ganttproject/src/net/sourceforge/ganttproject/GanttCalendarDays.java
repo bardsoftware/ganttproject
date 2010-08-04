@@ -24,15 +24,15 @@ import java.util.ArrayList;
  */
 public class GanttCalendarDays {
     /** List of non working days */
-    private ArrayList dayList = null;
+    private ArrayList<GanttCalendar> dayList = null;
 
     /* Default constructor */
     public GanttCalendarDays() {
-        dayList = new ArrayList();
+        dayList = new ArrayList<GanttCalendar>();
     }
 
     /* constructor */
-    public GanttCalendarDays(ArrayList dayList) {
+    public GanttCalendarDays(ArrayList<GanttCalendar> dayList) {
         this.dayList = dayList;
     }
 

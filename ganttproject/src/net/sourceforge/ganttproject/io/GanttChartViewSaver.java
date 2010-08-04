@@ -20,8 +20,8 @@ class GanttChartViewSaver extends SaverBase {
                 GanttTreeTable.DisplayedColumn dc = (GanttTreeTable.DisplayedColumn)displayedColumns.get(i);
                 if (dc.isDisplayed()) {
                     addAttribute("property-id", dc.getID(), attrs);
-                    addAttribute("order", String.valueOf(dc.getOrder()), attrs);
-                    addAttribute("width", String.valueOf(dc.getWidth()), attrs);
+                    addAttribute("order", dc.getOrder(), attrs);
+                    addAttribute("width", dc.getWidth(), attrs);
                     emptyElement("displaycolumn", attrs, handler);
                 }
             }

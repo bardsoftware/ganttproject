@@ -201,6 +201,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         myWorkbenchFacade.setWorkbenchTitle(i18n.getText("appliTitle"));
         getUndoManager().die();
     }
+
     public void createProject(final IGanttProject project) {
         if (false==ensureProjectSaved(project)) {
             return;
@@ -218,7 +219,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     private void showNewProjectWizard(IGanttProject project) {
         NewProjectWizard wizard = new NewProjectWizard();
         wizard.createNewProject(project, myWorkbenchFacade);
-
     }
     
     public GPOptionGroup getOptionGroup() {
