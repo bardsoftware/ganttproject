@@ -31,24 +31,16 @@
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
-import java.util.Hashtable;
 
 import javax.swing.Action;
 import javax.swing.JColorChooser;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
@@ -56,29 +48,17 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  */
 
 public class GanttDialogProperties {
-    /** Boolean to say if the task has child */
-
 	public boolean change = false;
 
-    /** true if the ok button was pressed */
+    static final JColorChooser colorChooser = new JColorChooser();
 
-    static JColorChooser colorChooser = new JColorChooser();
-
-    //private GanttTaskPropertiesBean taskPropertiesBean;
-
-    private GanttTask[] myTasks;
-
-
-    /** Constructor */
+    private final GanttTask[] myTasks;
 
     public GanttDialogProperties(GanttTask[] tasks) {
     	myTasks = tasks;
     }
+
     public void show(final IGanttProject project, final UIFacade uiFacade) {
-
-//        super(parent, GanttLanguage.getInstance().getText("propertiesFor")
-//                + " '" + tasksNames + "'", true);
-
         final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
         final Action[] actions = new Action[] {
         	new OkAction() {
@@ -86,7 +66,6 @@ public class GanttDialogProperties {
 					uiFacade.getUndoManager().undoableEdit("Properties changed",
 	                        new Runnable() {
 	                            public void run() {
-
 	                                taskPropertiesBean.getReturnTask();
 	                                try {
 										project.getTaskManager().getAlgorithmCollection()
@@ -96,25 +75,6 @@ public class GanttDialogProperties {
 											e.printStackTrace();
 										}
 									}
-
-	                                // System.err.println("[GanttDialogProperties]
-	                                // returnTask="+returnTask);
-	                                // returnTask.setTaskID(this.task.getTaskID());
-	                                // getTaskManager().setTask(returnTask);
-
-//	                                DefaultMutableTreeNode father;
-//	                                for (int i = 0; i < returnTask.length; i++) {
-//	                                    tree.getNode(myTasks[i].getTaskID())
-//	                                            .setUserObject(returnTask[i]);
-//	                                    // Refresh all father
-//	                                    father = tree.getFatherNode(tree
-//	                                            .getNode(myTasks[i].getTaskID()));
-//	                                    while (father != null) {
-//	                                        tree.forwardScheduling();
-//	                                        father = tree.getFatherNode(father);
-//	                                    }
-//	                                }
-
 	                            }
 	                        });
 				}
@@ -134,42 +94,4 @@ public class GanttDialogProperties {
         final String title = GanttLanguage.getInstance().getText("propertiesFor")+" '"+taskNames+"'";
         uiFacade.showDialog(taskPropertiesBean, actions, title);
     }
-
-
-    /** When click on date button, it open the dialog to select date. */
-
-//    public void actionPerformed(ActionEvent evt) {
-//        if (evt.getSource() instanceof JButton) {
-//
-//            JButton button = (JButton) evt.getSource();
-//
-//            if (button.getName().equals("ok")) {
-//
-//                this.setVisible(false);
-//                dispose();
-//
-//                tree.getJTree().repaint();
-//
-//                tree.getJTree().updateUI();
-//                tree.getTable().setRowHeight(20);
-//                area.repaint();
-//                change = true;
-//            }
-//
-//            else if (button.getName().equals("cancel")) {
-//
-//                this.setVisible(false);
-//                dispose();
-//
-//            }
-//
-//        }
-//
-//
-//    }
-//
-//    private TaskManager getTaskManager() {
-//        return this.task.getManager();
-//    }
-//
 }
