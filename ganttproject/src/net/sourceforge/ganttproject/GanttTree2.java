@@ -407,7 +407,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
 
             public void mouseClicked(MouseEvent e) {
-                // TODO Auto-generated method stub
                 if (e.getClickCount()==2 && e.getButton() == MouseEvent.BUTTON1) {
                     TreePath selPath = treetable.getTreeTable().getPathForLocation(e.getX(), e.getY());
                     if (selPath!=null) {
@@ -480,10 +479,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
      */
     public void setEditingTask(Task t) {
         selectTask(t, false);
-        TreePath tp = new TreePath(getSelectedTaskNode().getPath());
-        int c = getTable().convertColumnIndexToView(
-                getTable().getColumn(GanttTreeTableModel.strColName)
-                        .getModelIndex());
         treetable.getTreeTable().editingStopped(
                 new ChangeEvent(treetable.getTreeTable()));
         treetable.editNewTask(t);
@@ -553,16 +548,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     }
 
-    /** Create a popup menu when mous click */
+    /** Create a popup menu when mouse click */
     private void createPopupMenu(int x, int y, boolean all) {
-        JPopupMenu menu = new JPopupMenu();
         Action[] popupMenuActions = getPopupMenuActions();
         myUIFacade.showPopupMenu(this, popupMenuActions, x - hbar.getValue()
                 + (vbar.isVisible() ? vbar.getWidth() : 0), y - vbar.getValue()
                 + 20);
     }
 
-    /** Change grpahic part */
+    /** Change graphic part */
     public void setGraphicArea(GanttGraphicArea area) {
         this.area = area;
     }
@@ -743,7 +737,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return tru if the Project has tasks and false is no tasks on the project */
+    /** @return true if the Project has tasks and false is no tasks on the project */
     public boolean hasTasks() {
         Enumeration e = (rootNode).preorderEnumeration();
         while (e.hasMoreElements()) {
@@ -756,7 +750,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return false;
     }
 
-    /** Returnan ArrayList with all tasks. */
+    /** @return an ArrayList with all tasks. */
     public ArrayList getAllTasks() {
         ArrayList res = new ArrayList();
         Enumeration enumeration = rootNode.preorderEnumeration();
@@ -782,7 +776,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return all sub task for the tree node base */
+    /** @return all sub task for the tree node base */
     public ArrayList getAllChildTask(Task task) {
         ArrayList res = new ArrayList();
         if (task == null)
@@ -798,7 +792,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return all sub task for the tree node base */
+    /** @return all sub task for the tree node base */
     public ArrayList getAllChildTask(DefaultMutableTreeNode base) {
         ArrayList res = new ArrayList();
         if (base == null || !(base instanceof TaskNode))
@@ -812,12 +806,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** Return the last default tree node */
+    /** @return the last default tree node */
     public DefaultMutableTreeNode getLastNode() {
         return rootNode.getLastLeaf();
     }
 
-    /** Remove the current node.
+    /** Removes the current node.
      * @param current */
     void removeCurrentNode(DefaultMutableTreeNode currentNode) {
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode) (currentNode
@@ -1039,7 +1033,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     /**
-     * Retores the expand state of the node and its children.
+     * Restores the expand state of the node and its children.
      *
      * @param node
      */
@@ -1063,7 +1057,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return rootNode;
     }
 
-    /** Function to put up the selected tasks */
+    /** Function to move the selected tasks up */
     public void upCurrentNodes() {
 
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
@@ -1130,10 +1124,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         //treetable.getTree().setSelectionPaths(selectedPaths);
 
+        appli.setAskForSave(true);
         area.repaint();
     }
 
-    /** Function to put down the selected tasks */
+    /** Function to move the selected tasks down */
     public void downCurrentNodes() {
 
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
@@ -1202,6 +1197,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
         });
 
+        appli.setAskForSave(true);
         area.repaint();
     }
 
@@ -2351,16 +2347,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private GPUndoManager getUndoManager() {
         return myUIFacade.getUndoManager();
     }
+
     ///////////////////////////////////////////////////////////////////////////
     // ProjectEventListener
     public void projectModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectSaved() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectClosed() {
@@ -2371,17 +2366,21 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public Component getTreeComponent() {
         return this;
     }
+
     public Action getIndentAction() {
         return myIndentAction;
     }
+
     public Action getUnindentAction() {
         return myDedentAction;
     }
 
+    // FIXME naming of method and returned variable seems wrong!
     public Action getMoveDownAction() {
         return myMoveUpAction;
     }
 
+    // FIXME naming of method and returned variable seems wrong!
     public Action getMoveUpAction() {
         return myMoveDownAction;
     }
@@ -2389,13 +2388,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public void setLinkTasksAction(Action action) {
         myLinkTasksAction = action;
     }
+
     private Action getLinkTasksAction() {
         return myLinkTasksAction;
     }
-    //
+
     public void setUnlinkTasksAction(Action action) {
         myUnlinkTasksAction = action;
     }
+
     private Action getUnlinkTasksAction() {
         return myUnlinkTasksAction;
     }

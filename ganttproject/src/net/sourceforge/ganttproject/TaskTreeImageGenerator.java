@@ -33,7 +33,7 @@ class TaskTreeImageGenerator {
 
     }
 
-    private GanttTree2 getTree() {
+    protected GanttTree2 getTree() {
         return myTreeView;
     }
 
@@ -202,6 +202,6 @@ class TaskTreeImageGenerator {
         return res;
     }
 
-    private static final int HEADER_OFFSET = 44;
+    protected static final int HEADER_OFFSET = 44;
 
 }

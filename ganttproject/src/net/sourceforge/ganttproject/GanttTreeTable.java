@@ -1085,8 +1085,6 @@ private void createPopupMenu() {
     }
 
     /**
-     * Returns the vertical scrollbar.
-     *
      * @return The vertical scrollbar.
      */
     public JScrollBar getVerticalScrollBar() {
