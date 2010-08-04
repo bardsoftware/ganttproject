@@ -39,12 +39,6 @@ public class TaskPropertiesAction extends TaskActionBase {
         GanttDialogProperties pd = new GanttDialogProperties(tasks);
         mySelectionManager.setUserInputConsumer(pd);
         pd.show(myProject, getUIFacade());
-        if (pd.change) {
-            myProject.setModified(true);
-//            setRowHeight(rowHeight);
-//            getResourcePanel().getResourceTreeTableModel()
-//                    .updateResources();
-        }
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				mySelectionManager.clear();
