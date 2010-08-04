@@ -186,7 +186,7 @@ extends JPanel {
 
     private int taskCompletionPercentage;
 
-    private int taskPriority;
+    private Task.Priority taskPriority;
 
     private ShapePaint taskShape;
 
@@ -301,9 +301,9 @@ extends JPanel {
         priorityLabel1 = new JLabel(language.getText("priority"));
         secondRowPanel1.add(priorityLabel1);
         priorityComboBox = new JComboBox();
-        priorityComboBox.addItem(language.getText("low"));
-        priorityComboBox.addItem(language.getText("normal"));
-        priorityComboBox.addItem(language.getText("hight"));
+        for (Task.Priority p: Task.Priority.values()) {
+            priorityComboBox.addItem(language.getText(p.getI18nKey()));
+        }
         priorityComboBox.setEditable(false);
 
         secondRowPanel1.add(priorityComboBox);
@@ -329,9 +329,6 @@ extends JPanel {
                 }
             }
         });
-
-        ImageIcon icon = new ImageIcon(getClass().getResource(
-                "/icons/calendar_16.gif"));
 
         thirdRowPanel1 = new JPanel(flowL);
         thirdRowPanel1.setBorder(new TitledBorder(new EtchedBorder(), language
@@ -830,7 +827,7 @@ extends JPanel {
         percentCompleteSlider.setValue(new Integer(selectedTasks[0]
                 .getCompletionPercentage()));
 
-        priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority());
+        priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority().ordinal());
 
         if (selectedTasks[0].getThird() != null) {
             setThird(selectedTasks[0].getThird().Clone(), true);
@@ -954,8 +951,8 @@ extends JPanel {
     }
 
     /** @return the priority level of the task */
-    public int getPriority() {
-        return priorityComboBox.getSelectedIndex();
+    public Task.Priority getPriority() {
+        return Task.Priority.getPriority(priorityComboBox.getSelectedIndex());
     }
 
 //    public void setStartFixed(boolean startFixed) {

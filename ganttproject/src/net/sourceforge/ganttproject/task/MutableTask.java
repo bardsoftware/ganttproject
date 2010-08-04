@@ -15,7 +15,7 @@ public interface MutableTask {
 
     void setMilestone(boolean isMilestone);
 
-    void setPriority(int priority);
+    void setPriority(Task.Priority priority);
 
     void setStart(GanttCalendar start);
 

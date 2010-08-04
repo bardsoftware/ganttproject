@@ -14,6 +14,51 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
  * @author bard Date: 27.01.2004
  */
 public interface Task extends MutableTask {
+    /**
+     * Available task priorities
+     */
+    public enum Priority {
+        LOWEST, LOW, NORMAL, HIGH, HIGHEST;
+
+        /**
+         * @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown
+         */
+        public static Priority getPriority(int value) {
+            for (Task.Priority p: Task.Priority.values()) {
+                if (p.ordinal() == value) {
+                    return p;
+                }
+            }
+            return DEFAULT_PRIORITY;
+        }
+
+        /**
+         * @return the priority as a lower-case String
+         */
+        public String getLowerString() {
+            return this.toString().toLowerCase();
+        }
+
+        /**
+         * @return the key to get the I18n value for the priority
+         */
+        public String getI18nKey() {
+            return "priority." + this.toString().toLowerCase();
+        }
+
+        /**
+         * @return the path to the icon representing the priority
+         */
+        public String getIconPath() {
+            return "/icons/task_" + getLowerString() + ".gif";
+        }
+    }
+
+    /**
+     * Default priority (for new tasks)
+     */
+    public static final Priority DEFAULT_PRIORITY = Priority.NORMAL; 
+
     TaskMutator createMutator();
     TaskMutator createMutatorFixingDuration();
     // main properties
@@ -23,7 +68,7 @@ public interface Task extends MutableTask {
 
     boolean isMilestone();
 
-    int getPriority();
+    Priority getPriority();
 
     TaskActivity[] getActivities();
 

@@ -47,7 +47,7 @@ class TaskSaver extends SaverBase {
             throw new IllegalArgumentException("Is it a fake root task? Task="+task);
         }
         AttributesImpl attrs = new AttributesImpl();
-        addAttribute("id", task.getTaskID(), attrs);
+        addAttribute("id", String.valueOf(task.getTaskID()), attrs);
         addAttribute("name", task.getName(), attrs);
         if (task.colorDefined()) {
             addAttribute("color", ColorConvertion.getColor(task.getColor()), attrs);
@@ -55,24 +55,26 @@ class TaskSaver extends SaverBase {
         if (task.shapeDefined()) {
             addAttribute("shape", task.getShape().getArray(), attrs);
         }
-        addAttribute("meeting", task.isMilestone(), attrs);
+        addAttribute("meeting", Boolean.valueOf(task.isMilestone()).toString(), attrs);
         if (task.isProjectTask()) {
             addAttribute("project", Boolean.TRUE.toString(), attrs);
         }
         addAttribute("start", task.getStart().toXMLString(), attrs);
-        addAttribute("duration", task.getLength(), attrs);
-        addAttribute("complete", task.getCompletionPercentage(), attrs);
+        addAttribute("duration", String.valueOf(task.getLength()), attrs);
+        addAttribute("complete", String.valueOf(task.getCompletionPercentage()), attrs);
         if (task.getThird() != null) {
             addAttribute("thirdDate", task.getThird().toXMLString(), attrs);
-            addAttribute("thirdDate-constraint", task.getThirdDateConstraint(), attrs);
+            addAttribute("thirdDate-constraint", String.valueOf(task.getThirdDateConstraint()), attrs);
         }
-        addAttribute("priority", task.getPriority(), attrs);
+        if(task.getPriority() != Task.DEFAULT_PRIORITY) {
+            addAttribute("priority", task.getPriority().getLowerString(), attrs);
+        }
         final String sWebLink = task.getWebLink();
         if (sWebLink != null && !sWebLink.equals("")
                 && !sWebLink.equals("http://")) {
             addAttribute("webLink", URLEncoder.encode(sWebLink, "ISO-8859-1"), attrs);
         }
-        addAttribute("expand", task.getExpand(), attrs);
+        addAttribute("expand", String.valueOf(task.getExpand()), attrs);
 
         startElement("task", attrs, handler);
 
@@ -90,9 +92,9 @@ class TaskSaver extends SaverBase {
         final TaskDependency[] depsAsDependee = task.getDependenciesAsDependee().toArray();
         for (int i = 0; i < depsAsDependee.length; i++) {
             TaskDependency next = depsAsDependee[i];
-            addAttribute("id", next.getDependant().getTaskID(), attrs);
-            addAttribute("type", next.getConstraint().getID(), attrs);
-            addAttribute("difference", next.getDifference(), attrs);
+            addAttribute("id", String.valueOf(next.getDependant().getTaskID()), attrs);
+            addAttribute("type", String.valueOf(next.getConstraint().getID()), attrs);
+            addAttribute("difference", String.valueOf(next.getDifference()), attrs);
             addAttribute("hardness", next.getHardness().getIdentifier(), attrs);
             emptyElement("depend", attrs, handler);
         }

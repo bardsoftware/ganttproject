@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
@@ -335,12 +336,7 @@ abstract class ExporterBase {
                 startPrefixedElement("task", myAttrs, handler);
                 {
                 	addAttribute("id", "tpd1", myAttrs);
-                	int priority = t.getPriority();
-                	if (priority<0 || priority>2) {
-                		priority = 1;
-                	}
-                	final String[] priorities = new String[] {i18n("low"), i18n("normal"), i18n("hight")};
-                	textElement("priority", myAttrs, priorities[priority], handler);
+                	textElement("priority", myAttrs, i18n(t.getPriority().getI18nKey()), handler);
                 }
 
                 addAttribute("id", "tpd3", myAttrs);
