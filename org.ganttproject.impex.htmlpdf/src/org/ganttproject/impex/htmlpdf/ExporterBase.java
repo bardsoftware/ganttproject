@@ -407,9 +407,8 @@ abstract class ExporterBase {
                 if (t.getNotes()!=null && t.getNotes().length()>0) {
 	                textElement("notes", myAttrs, t.getNotes(), handler);
                 }
-                if (t.getTaskColor()!=null) {
-                    textElement("color", myAttrs, getHexColor(t.getTaskColor()),
-                            handler);
+                if (t.colorDefined()) {
+                    textElement("color", myAttrs, getHexColor(t.getColor()), handler);
                 }
                 {
                 	AttributesImpl attrs = new AttributesImpl();

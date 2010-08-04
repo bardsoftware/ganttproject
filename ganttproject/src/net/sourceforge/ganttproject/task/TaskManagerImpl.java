@@ -702,11 +702,8 @@ public class TaskManagerImpl implements TaskManager {
             nextImported.setStart(nested[i].getStart().Clone());
             nextImported.setDuration(nested[i].getDuration());
             nextImported.setMilestone(nested[i].isMilestone());
-            if(nested[i].taskColorDefined()) {
-                nextImported.setTaskColor(nested[i].getTaskColor());
-            }
-            if(nested[i].milestoneColorDefined()) {
-                nextImported.setMilestoneColor(nested[i].getMilestoneColor());                
+            if(nested[i].colorDefined()) {
+                nextImported.setColor(nested[i].getColor());
             }
             nextImported.setShape(nested[i].getShape());
             nextImported.setCompletionPercentage(nested[i]

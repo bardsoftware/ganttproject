@@ -33,9 +33,10 @@ public interface MutableTask {
 
     void setShape(ShapePaint shape);
 
-    void setTaskColor(Color color);
-
-    void setMilestoneColor(Color color);
+    /**
+     * Sets the color of this task
+     */
+    void setColor(Color color);
 
     void setNotes(String notes);
 

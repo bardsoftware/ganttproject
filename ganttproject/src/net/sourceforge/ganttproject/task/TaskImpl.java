@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -88,9 +89,11 @@ public class TaskImpl implements Task {
 
     private ShapePaint myShape;
 
-    private Color myTaskColor;
-
-    private Color myMilestoneColor;
+    /**
+     * Color of the task even when it is a milestone.
+     * If the value is null the default (milestone) color is used
+     */
+    private Color myColor;
     
     private String myNotes;
 
@@ -129,8 +132,7 @@ public class TaskImpl implements Task {
         myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
         myNotes = "";
         bExpand = true;
-        myTaskColor = null;
-        myMilestoneColor = null;
+        myColor = null;
 
         customValues = new CustomColumnsValues(myManager.getCustomColumnStorage());
     }
@@ -159,8 +161,7 @@ public class TaskImpl implements Task {
         myCompletionPercentage = copy.myCompletionPercentage;
         myLength = copy.myLength;
         myShape = copy.myShape;
-        myTaskColor = copy.myTaskColor;
-        myMilestoneColor = copy.myMilestoneColor;
+        myColor = copy.myColor;
         myNotes = copy.myNotes;
         bExpand = copy.bExpand;
         //
@@ -370,12 +371,12 @@ public class TaskImpl implements Task {
         return myShape;
     }
 
-    public Color getTaskColor() {
-        Color result = myTaskColor;
+    public Color getColor() {
+        Color result = myColor;
         if (result == null) {
-            // TODO Remove check for milestone color? Should call getMilestoneColor() directly!
+            // No task color is set, return default color depending on task type
             if (isMilestone()) {
-                result = getMilestoneColor();
+                result = myManager.getConfig().getDefaultMilestoneColor();
             } else if(getNestedTasks().length > 0) {
                 result = Color.black;
             } else {
@@ -383,15 +384,6 @@ public class TaskImpl implements Task {
             }
         }
         return result;
-    }
-
-    public Color getMilestoneColor()
-    {
-        Color result = myMilestoneColor;
-        if (result == null) {
-            result = myManager.getConfig().getDefaultMilestoneColor();
-        }
-        return result;        
     }
     
     public String getNotes() {
@@ -811,18 +803,10 @@ public class TaskImpl implements Task {
             });
         }
 
-        public void setTaskColor(final Color color) {
+        public void setColor(final Color color) {
             myCommands.add(new Runnable() {
                 public void run() {
-                    TaskImpl.this.setTaskColor(color);
-                }
-            });
-        }
-
-        public void setMilestoneColor(final Color color) {
-            myCommands.add(new Runnable() {
-                public void run() {
-                    TaskImpl.this.setMilestoneColor(color);
+                    TaskImpl.this.setColor(color);
                 }
             });
         }
@@ -1114,18 +1098,20 @@ public class TaskImpl implements Task {
         myShape = shape;
     }
 
-    /**
-     * Sets the task color of this task
-     */
-    public void setTaskColor(Color color) {
-        myTaskColor = color;
-    }
-
-    /**
-     * Sets the milestone color of this task
-     */
-    public void setMilestoneColor(Color color) {
-        myMilestoneColor = color;
+    public void setColor(Color color) {
+        // Check if a default color is used, 
+        // so we can set the task color to null
+        if (isMilestone()) {
+            if (color.equals(GanttGraphicArea.milestoneDefaultColor)) {
+                myColor = null;
+            }
+        } 
+        else if (color.equals(GanttGraphicArea.taskDefaultColor)) {
+            myColor = null;
+        }
+        else {
+            myColor = color;
+        }
     }
 
     public void setNotes(String notes) {
@@ -1158,21 +1144,12 @@ public class TaskImpl implements Task {
     }
 
     /**
-     * Allows to determine, if a special color is defined for this task.
+     * Allows to determine, if a custom color is defined for this task.
      *
      * @return true, if this task has its own color defined.
      */
-    public boolean taskColorDefined() {
-        return (myTaskColor != null);
-    }
-
-    /**
-     * Allows to determine, if a special color is defined for this task.
-     *
-     * @return true, if this task has its own color defined.
-     */
-    public boolean milestoneColorDefined() {
-        return (myMilestoneColor != null);
+    public boolean colorDefined() {
+        return (myColor != null);
     }
 
     public String toString() {
@@ -1185,8 +1162,6 @@ public class TaskImpl implements Task {
     }
 
     /**
-     * Returns the CustomColumnValues.
-     *
      * @return The CustomColumnValues.
      */
     public CustomColumnsValues getCustomValues() {

@@ -156,7 +156,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     public static Color taskDefaultColor = Task.DEFAULT_COLOR;
 
     /** Default color for milestones */
-    public static Color milestoneDefaultColor = Color.BLACK;
+    public static Color milestoneDefaultColor = Task.DEFAULT_MILESTONE_COLOR;
 
     /** This value is connected to the GanttTRee Scrollbar to move up or down */
     private int margY;
