@@ -77,10 +77,19 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public DayType getDayTypeDate(Date curDayStart) {
-        // TODO Auto-generated method stub
         return GPCalendar.DayType.WORKING;
     }
-
+    
+    public boolean getOnlyShowWeekends() {
+        // Weekends are always working days for this calendar
+        return true;
+    }
+    
+    public void setOnlyShowWeekends(boolean onlyShowWeekends) {
+        // Ignore onlyShowWeekends, since weekends are always 
+        // working days for this calendar
+    }
+    
     public void setPublicHoliDayType(Date curDayStart) {
         // TODO Auto-generated method stub
 
