@@ -58,11 +58,8 @@ class TaskSaver extends SaverBase {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("id", task.getTaskID(), attrs);
         addAttribute("name", task.getName(), attrs);
-        if (task.taskColorDefined()) {
-            addAttribute("color", ColorConvertion.getColor(task.getTaskColor()), attrs);
-        }
-        if (task.milestoneColorDefined()) {
-            addAttribute("milestone-color", ColorConvertion.getColor(task.getMilestoneColor()), attrs);
+        if (task.colorDefined()) {
+            addAttribute("color", ColorConvertion.getColor(task.getColor()), attrs);
         }
         if (task.shapeDefined()) {
             addAttribute("shape", task.getShape().getArray(), attrs);

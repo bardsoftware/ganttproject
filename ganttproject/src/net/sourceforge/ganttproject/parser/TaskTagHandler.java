@@ -107,12 +107,7 @@ public class TaskTagHandler implements TagHandler {
 
         String taskColor = attrs.getValue("color");
         if (taskColor != null) {
-            task.setTaskColor(ColorValueParser.parseString(taskColor));
-        }
-
-        String milestoneColor = attrs.getValue("milestone-color");
-        if (milestoneColor != null) {
-            task.setMilestoneColor(ColorValueParser.parseString(milestoneColor));
+            task.setColor(ColorValueParser.parseString(taskColor));
         }
 
         String fixedStart = attrs.getValue("fixed-start");
@@ -166,7 +161,7 @@ public class TaskTagHandler implements TagHandler {
                 count++;
             }
             task.setShape(new ShapePaint(4, 4, array, Color.white, task
-                    .getTaskColor()));
+                    .getColor()));
         }
 
         getManager().registerTask(task);

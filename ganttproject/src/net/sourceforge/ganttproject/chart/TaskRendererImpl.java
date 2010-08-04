@@ -466,7 +466,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         }
         if (!"task.holiday".equals(nextRectangle.getStyle())
                 && !"task.supertask".equals(nextRectangle.getStyle())) {
-            nextRectangle.setBackgroundColor(nextStarted.getTask().getTaskColor());
+            nextRectangle.setBackgroundColor(nextStarted.getTask().getColor());
         }
         container.bind(nextRectangle, nextStarted);
         return nextRectangle;

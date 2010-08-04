@@ -389,7 +389,7 @@ extends JPanel {
         shapePanel.add(shapeComboBox, BorderLayout.CENTER);
 
         colorButton = new JButton(language.getText("colorButton"));
-        colorButton.setBackground(selectedTasks[0].getTaskColor());
+        colorButton.setBackground(selectedTasks[0].getColor());
         final String colorChooserTitle = language.getText("selectColor");
         colorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -425,12 +425,12 @@ extends JPanel {
         });
 
         defaultColorButton = new JButton(language.getText("defaultColor"));
-        defaultColorButton.setBackground(GanttGraphicArea.taskDefaultColor);
         defaultColorButton.setToolTipText(GanttProject.getToolTip(language
                 .getText("resetColor")));
         defaultColorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
+                colorButton.setBackground(taskIsMilestone ? GanttGraphicArea.milestoneDefaultColor
+                                : GanttGraphicArea.taskDefaultColor);
                 isTaskColorChanged = true;
             }
         });
@@ -784,7 +784,7 @@ extends JPanel {
 //            if (this.taskIsFinishFixed != isFinishFixed)
 //                returnTask[i].setFinishFixed(isFinishFixed);
             if (isTaskColorChanged) {
-                returnTask[i].setTaskColor(colorButton.getBackground());
+                returnTask[i].setColor(colorButton.getBackground());
             }
             if (this.taskShape == null && shapeComboBox.getSelectedIndex() != 0
                     || this.taskShape != null && !this.taskShape
@@ -792,11 +792,11 @@ extends JPanel {
                                     .getSelectedPaint())) {
                 returnTask[i].setShape(new ShapePaint(
                         (ShapePaint) shapeComboBox.getSelectedPaint(),
-                        Color.white, returnTask[i].getTaskColor()));
+                        Color.white, returnTask[i].getColor()));
             }
             if (returnTask[i].getShape() != null) {
                 returnTask[i].setShape(new ShapePaint(returnTask[i].getShape(),
-                        Color.white, returnTask[i].getTaskColor()));
+                        Color.white, returnTask[i].getColor()));
             }
 
             mutator.commit();
@@ -870,6 +870,9 @@ extends JPanel {
     void enableMilestoneUnfriendlyControls(boolean enable) {
         myEndDatePicker.setEnabled(enable);
         durationField1.setEnabled(enable);
+        defaultColorButton.setBackground((enable 
+                ? GanttGraphicArea.taskDefaultColor
+                : GanttGraphicArea.milestoneDefaultColor));
     }
     // Output methods
 

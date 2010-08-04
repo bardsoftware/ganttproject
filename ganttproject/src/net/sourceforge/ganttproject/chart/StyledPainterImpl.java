@@ -164,7 +164,7 @@ public class StyledPainterImpl implements Painter {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity)modelObject).getTask();
-            Color c = task.getTaskColor();
+            Color c = task.getColor();
             Graphics2D g = (Graphics2D) myGraphics;
             g.setColor(c);
             ShapePaint shapePaint = task.getShape();
@@ -232,7 +232,7 @@ public class StyledPainterImpl implements Painter {
             }
             Task task = ((TaskActivity)modelObject).getTask();
             Graphics2D g = (Graphics2D) myGraphics;
-            g.setColor(task.getTaskColor());            
+            g.setColor(task.getColor());            
             Composite was = g.getComposite();
             g.setComposite(myAlphaComposite);
             g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
@@ -361,7 +361,7 @@ public class StyledPainterImpl implements Painter {
                         "Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity) modelObject).getTask();
-            Color c = task.getMilestoneColor();
+            Color c = task.getColor();
             Graphics g = myGraphics;
             if (myConfig.isCriticalPathOn()
                     && ((TaskActivity) next.getModelObject()).getTask()

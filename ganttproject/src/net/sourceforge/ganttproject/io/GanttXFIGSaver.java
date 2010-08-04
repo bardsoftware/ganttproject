@@ -203,10 +203,8 @@ public class GanttXFIGSaver {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.next();
             if (!node.isRoot()) {
                 GanttTask task = (GanttTask) (node.getUserObject());
-                Color taskColor = task.getTaskColor();
+                Color taskColor = task.getColor();
                 String hexTaskColor = getHexColor(taskColor);
-                Color milestoneColor = task.getMilestoneColor();
-                String hexMilestoneColor = getHexColor(milestoneColor);
             }
         }
         if (debug)

@@ -40,18 +40,16 @@ public interface Task extends MutableTask {
     ShapePaint getShape();
 
     /**
-     * @return the color of the task, if not set the default color will be returned
+     * @return the (milestone) color of the task, if not set the default color will be returned
      */
-    Color getTaskColor();
-
+    Color getColor();
+    
     /**
-     * @return the color of the milestone, if not set the default color will be returned
+     * Allows to determine, if a custom color is defined for this task.
+     *
+     * @return true, if this task has its own color defined.
      */
-    Color getMilestoneColor();
-    
-    boolean taskColorDefined();
-    
-    boolean milestoneColorDefined();
+    boolean colorDefined();
 
     String getNotes();
 
@@ -91,6 +89,11 @@ public interface Task extends MutableTask {
      * Default (blue-ish) color for tasks
      */
     static final Color DEFAULT_COLOR = new Color(140, 182, 206);
+    
+    /**
+     * Default (black) color for milestones
+     */
+    static final Color DEFAULT_MILESTONE_COLOR = Color.BLACK;
 
     CustomColumnsValues getCustomValues();
 
