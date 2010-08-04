@@ -36,7 +36,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -57,10 +56,8 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -77,9 +74,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.GanttProjectBase.RowHeightAligner;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
-import net.sourceforge.ganttproject.action.DeleteAssignmentAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.NewArtefactAction;
@@ -104,12 +99,10 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.ToggleChartAction;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.export.ExportFileAction;
 import net.sourceforge.ganttproject.gui.GanttDialogCalendar;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
@@ -127,8 +120,6 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.importer.ImportFileAction;
-import net.sourceforge.ganttproject.importer.ImportFileWizardImpl;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
@@ -138,7 +129,6 @@ import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
-import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
@@ -148,7 +138,6 @@ import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.BlankLineNode;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -1984,7 +1973,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         System.out
                 .println("         -xsl-dir [xsl_directory]                        localisation of the xsl directory for html export");
         System.out
-                .println("    -pdf  [project_file_name] [pdf_file_name],         export directly a ganttproject file to web pages");
+                .println("    -pdf  [project_file_name] [pdf_file_name],         export directly a ganttproject file to a PDF file");
         System.out
                 .println("         -xsl-fo [xsl_fo_file]                           localisation of the xsl-fo file for pdf export");
         System.out
@@ -2138,48 +2127,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    /**
-     * The class able to export directly by command line From Dmitry Barashev
-     * @deprecated Use exporter extension point
-     */
-    public static class ExportFileInfo {
-        private static final String[] FILE_EXTENSIONS=new String[] {
-            "html", "png", "jpg", "pdf", "xfig", "csv", "mpx"
-        };
-        public final File myFile;
-
-        public final int myFormat;
-
-        public final GanttExportSettings myStorageOptions;
-
-        public static final int FORMAT_HTML = 1;
-
-        public static final int FORMAT_PNG = 2;
-
-        public static final int FORMAT_JPG = 3;
-
-        public static final int FORMAT_PDF = 4;
-
-        public static final int FORMAT_XFIG = 5;
-
-        public static final int FORMAT_CSV = 6;
-
-        public static final int FORMAT_MSPROJECT = 7;
-
-        public static final ExportFileInfo EMPTY = new ExportFileInfo(null, -1,
-                null);
-
-        public ExportFileInfo(File file, int format, GanttExportSettings options) {
-            myFile = file;
-            myFormat = format;
-            myStorageOptions = options;
-        }
-
-        public String getFileExtension() {
-            return FILE_EXTENSIONS[myFormat];
-        }
-    }
-
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
 
     public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
@@ -2187,8 +2134,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
 
     // private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-    private DocumentManager myDocumentManager;
-
+    
     private ParserFactory myParserFactory;
 
     private static WindowListener ourWindowListener;
@@ -2643,7 +2589,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public static void setWindowListener(WindowListener windowListener) {
         ourWindowListener = windowListener;
     }
-
 
     public void refresh() {
         getTaskManager().processCriticalPath((TaskNode) tree.getRoot());

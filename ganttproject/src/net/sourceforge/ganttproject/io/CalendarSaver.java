@@ -1,7 +1,6 @@
 package net.sourceforge.ganttproject.io;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;

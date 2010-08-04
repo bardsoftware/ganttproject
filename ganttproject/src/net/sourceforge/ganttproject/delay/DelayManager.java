@@ -15,7 +15,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;

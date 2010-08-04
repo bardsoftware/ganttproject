@@ -3,9 +3,6 @@
  */
 package net.sourceforge.ganttproject.gui.options.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 public class DefaultEnumerationOption extends GPAbstractOption implements

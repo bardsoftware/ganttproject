@@ -27,9 +27,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
-import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 
 public class TestCriticalPath extends TaskTestCase {

@@ -6,26 +6,15 @@ package net.sourceforge.ganttproject.gui;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.PrjInfos;
-import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
-import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
-import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;

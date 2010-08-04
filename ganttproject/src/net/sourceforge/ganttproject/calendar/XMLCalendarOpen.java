@@ -8,7 +8,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -136,7 +135,6 @@ public class XMLCalendarOpen {
                 next.endElement(namespaceURI, sName, qName);
             }
         }
-
     }
 
     public void setCalendars() throws Exception {
@@ -185,7 +183,7 @@ public class XMLCalendarOpen {
         public Filter(String extension) {
             if (extension == null) {
                 throw new NullPointerException(
-                        "La description (ou extension) ne peut être null.");
+                        "The description (or extension) can not be null.");
             }
             this.extension = extension;
         }

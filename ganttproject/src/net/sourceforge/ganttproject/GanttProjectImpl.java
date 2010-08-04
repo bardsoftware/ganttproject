@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;

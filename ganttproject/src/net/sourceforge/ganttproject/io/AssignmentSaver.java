@@ -13,7 +13,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
 
 class AssignmentSaver extends SaverBase {
     void save(IGanttProject project, TransformerHandler handler) throws SAXException {

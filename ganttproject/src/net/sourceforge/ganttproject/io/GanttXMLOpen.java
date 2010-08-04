@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
-import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,7 +34,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.PrjInfos;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;

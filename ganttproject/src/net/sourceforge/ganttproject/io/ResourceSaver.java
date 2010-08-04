@@ -1,9 +1,6 @@
 package net.sourceforge.ganttproject.io;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
@@ -14,9 +11,7 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.resource.ResourceColumn;
 
 class ResourceSaver extends SaverBase {
 

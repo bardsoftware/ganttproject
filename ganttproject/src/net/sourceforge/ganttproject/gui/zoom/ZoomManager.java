@@ -6,7 +6,6 @@ package net.sourceforge.ganttproject.gui.zoom;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.time.TimeUnitPair;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 

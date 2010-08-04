@@ -3,8 +3,6 @@ package net.sourceforge.ganttproject.test.task;
 import java.awt.Color;
 import java.net.URL;
 
-import org.apache.commons.httpclient.methods.GetMethod;
-
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
