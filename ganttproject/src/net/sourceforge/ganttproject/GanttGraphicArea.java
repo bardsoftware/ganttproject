@@ -258,7 +258,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myTableHeader = tree.getTreeTable().getTable().getTableHeader();
 
         getProject().getTaskCustomColumnManager().addCustomColumnsListener(this);
-        myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
+        myTaskImageGenerator = new TaskTreeImageGeneratorExt(ttree, app.getUIConfiguration());
     }
 
     /** Return the color of the task */
@@ -1198,12 +1198,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 TaskBoundaryChartItem taskBoundary = (TaskBoundaryChartItem) itemUnderPoint;
                 if(taskBoundary.getTask().isMilestone() == false && taskBoundary.getTask().isSupertask() == false)
                 {
-	                if (taskBoundary.isStartBoundary()) {
-	                    getChartImplementation().beginChangeTaskStartInteraction(e, taskBoundary);
-	                }
-	                else {
-	                    getChartImplementation().beginChangeTaskEndInteraction(e, taskBoundary);
-	                }
+                  if (taskBoundary.isStartBoundary()) {
+                      getChartImplementation().beginChangeTaskStartInteraction(e, taskBoundary);
+                  }
+                  else {
+                      getChartImplementation().beginChangeTaskEndInteraction(e, taskBoundary);
+                  }
                 }
             }
             else if (itemUnderPoint instanceof TaskProgressChartItem) {

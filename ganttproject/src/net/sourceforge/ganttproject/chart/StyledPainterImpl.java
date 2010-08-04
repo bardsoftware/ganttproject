@@ -384,13 +384,11 @@ public class StyledPainterImpl implements Painter {
                 c = Color.RED;
 
             g.setColor(c);
-            int middleX = (next.myWidth <= next.myHeight) ? next.getRightX()
-                    - next.myWidth / 2 : next.myLeftX + next.myHeight / 2;
+            int middleX = next.getRightX() - next.myWidth / 2;
             int middleY = next.getBottomY() - next.myHeight / 2;
-            myXPoints[0] = next.myLeftX;
+            myXPoints[0] = middleX - next.myHeight / 2;
             myXPoints[1] = middleX;
-            myXPoints[2] = (next.myWidth <= next.myHeight) ? next.getRightX()
-                    : next.myLeftX + next.myHeight;
+            myXPoints[2] = middleX + next.myHeight / 2;
             myXPoints[3] = middleX;
             myYPoints[0] = middleY;
             myYPoints[1] = next.myTopY;

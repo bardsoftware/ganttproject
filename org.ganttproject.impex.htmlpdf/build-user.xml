@@ -42,7 +42,7 @@
     <target depends="init" name="build">
         <ant antfile="${ganttproject-2.0.location}/build.xml" inheritAll="false"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac destdir="bin" source="1.4" target="1.4" debug="${debug}">
+        <javac destdir="bin" source="1.5" target="1.5" debug="${debug}">
             <src path="src/"/>
             <classpath refid="project.classpath"/>
         </javac>

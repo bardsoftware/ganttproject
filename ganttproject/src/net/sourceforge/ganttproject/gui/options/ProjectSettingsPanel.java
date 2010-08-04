@@ -43,13 +43,13 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     // JTextField tfFile;
-    JTextField tfName;
+    private final JTextField tfName;
 
-    JTextField tfOrganization;
+    private final JTextField tfOrganization;
 
-    JTextField tfWebLink;
+    private final JTextField tfWebLink;
 
-    JTextArea taDescr;
+    private final JTextArea taDescr;
 
     private final IGanttProject myProject;
 
@@ -94,7 +94,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
                     GanttDialogInfo gdi = new GanttDialogInfo(null,
                             GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION,
                             language.getText("msg4"), language.getText("error"));
-                    gdi.show();
+                    gdi.setVisible(true);
                 }
             }
         });
@@ -124,7 +124,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         if (myProject.getProjectName().equals(tfName.getText())
                 && myProject.getOrganization().equals(tfOrganization.getText())
@@ -164,7 +164,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         return tfName.getText();
     }
 
-    /** Return the ogranisation */
+    /** Return the organization */
     public String getProjectOrganization() {
         return tfOrganization.getText();
     }

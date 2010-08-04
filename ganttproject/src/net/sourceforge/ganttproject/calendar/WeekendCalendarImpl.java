@@ -3,14 +3,12 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +31,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     private final FramerImpl myFramer = new FramerImpl(Calendar.DAY_OF_WEEK);
 
     private DayType[] myTypes = new DayType[7];
+    
+    private boolean myOnlyShowWeekends = false;
 
     private int myWeekendDaysCount;
 
@@ -52,7 +52,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     public List/* <GPCalendarActivity> */getActivities(Date startDate,
             final Date endDate) {
-        if (myWeekendDaysCount == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
+        if (getWeekendDaysCount() == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
             return myRestlessCalendar.getActivities(startDate, endDate);
         }
         List result = new ArrayList();
@@ -81,6 +81,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     }
 
     public boolean isWeekend(Date curDayStart) {
+        if(myOnlyShowWeekends) {
+            return false;
+        }
+
         myCalendar.setTime(curDayStart);
         int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
         return myTypes[dayOfWeek - 1] == GPCalendar.DayType.WEEKEND;
@@ -91,7 +95,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         if (!(changeToWeekend ^ isNonWorkingDay(nextDayStart))) {
             return nextDayStart;
         } else {
-            if (myWeekendDaysCount>0 || limitDate != null && limitDate.compareTo(nextDayStart) > 0) {
+            if (getWeekendDaysCount() > 0 || limitDate != null && limitDate.compareTo(nextDayStart) > 0) {
                 return getStateChangeDate(nextDayStart, limitDate, changeToWeekend);
             }
             else {
@@ -174,9 +178,22 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     public DayType getWeekDayType(int day) {
         return myTypes[day - 1];
     }
+    
+    public boolean getOnlyShowWeekends() {
+        return myOnlyShowWeekends;
+    }
+    
+    public void setOnlyShowWeekends(boolean onlyShowWeekends) {
+        myOnlyShowWeekends = onlyShowWeekends;
+    }
+    
+    private int getWeekendDaysCount()
+    {
+        return myOnlyShowWeekends ? 0 : myWeekendDaysCount;
+    }
 
     public Date findClosestWorkingTime(Date time) {
-        if (myWeekendDaysCount == 0) {
+        if (getWeekendDaysCount() == 0) {
             return time;
         }
         if (!isNonWorkingDay(time)) {
@@ -204,14 +221,11 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     public DayType getDayTypeDate(Date curDayStart) {
         myCalendar.setTime(curDayStart);
-        int dayOfYear = myCalendar.get(Calendar.DAY_OF_YEAR);
-        myCalendar.setTime(curDayStart);
         int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
-        if ((!isPublicHoliDay(curDayStart))
-                && (getWeekDayType(dayOfWeek) == GPCalendar.DayType.WORKING))
-            return GPCalendar.DayType.WORKING;
-        else if (isPublicHoliDay(curDayStart))
+        if (isPublicHoliDay(curDayStart))
             return GPCalendar.DayType.HOLIDAY;
+        else if (getWeekDayType(dayOfWeek) == GPCalendar.DayType.WORKING)
+            return GPCalendar.DayType.WORKING;
         else
             return GPCalendar.DayType.WEEKEND;
     }

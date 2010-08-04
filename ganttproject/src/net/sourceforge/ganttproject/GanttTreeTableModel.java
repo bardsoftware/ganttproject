@@ -329,7 +329,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			res = tn.getStart();
 			break;
 		case 5:
-			res = tn.getEnd();
+			res = tn.getEnd().newAdd(-1);
 			break;
 		case 6:
 			res = new Integer(tn.getDuration());
@@ -428,7 +428,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			((TaskNode) node).applyThirdDateConstraint();
 			break;
 		case 5:
-			((TaskNode) node).setEnd((GanttCalendar) value);
+			((TaskNode) node).setEnd(((GanttCalendar) value).newAdd(1));
 			break;
 		case 6:
             Task task = (Task) ((TaskNode) node).getUserObject();
