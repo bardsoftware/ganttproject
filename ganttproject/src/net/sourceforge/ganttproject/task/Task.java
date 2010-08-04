@@ -43,7 +43,7 @@ public interface Task extends MutableTask {
          * @return the key to get the I18n value for the priority
          */
         public String getI18nKey() {
-            return "priority." + this.toString().toLowerCase();
+            return "priority." + getLowerString();
         }
 
         /**
