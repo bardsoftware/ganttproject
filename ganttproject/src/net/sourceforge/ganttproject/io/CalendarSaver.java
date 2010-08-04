@@ -41,6 +41,8 @@ public class CalendarSaver extends SaverBase {
             addAttribute(getShortDayName(i), holiday ? "1" : "0", attrs);
         }
         emptyElement("default-week", attrs, handler);
+        addAttribute("value", project.getActiveCalendar().getOnlyShowWeekends(), attrs);
+        emptyElement("only-show-weekends", attrs, handler);
         emptyElement("overriden-day-types", attrs, handler);
         emptyElement("days", attrs, handler);
         endElement("calendar", handler);

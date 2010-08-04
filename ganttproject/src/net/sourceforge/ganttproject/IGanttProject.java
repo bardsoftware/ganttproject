@@ -91,6 +91,4 @@ public interface IGanttProject {
     CustomColumnsStorage getCustomColumnsStorage();
 
     List/*<GanttPreviousState*/ getBaselines();
-
-
 }

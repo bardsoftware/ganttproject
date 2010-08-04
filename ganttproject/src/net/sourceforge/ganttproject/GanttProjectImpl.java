@@ -138,17 +138,14 @@ public class GanttProjectImpl implements IGanttProject {
 
     public void setModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void setModified(boolean modified) {
         // TODO Auto-generated method stub
-
     }
 
     public void close() {
         // TODO Auto-generated method stub
-
     }
 
     public Document getDocument() {
@@ -174,9 +171,7 @@ public class GanttProjectImpl implements IGanttProject {
 
     public void open(Document document) throws IOException {
         // TODO Auto-generated method stub
-
     }
-
 
     public DocumentManager getDocumentManager() {
         // TODO Auto-generated method stub
@@ -220,11 +215,17 @@ public class GanttProjectImpl implements IGanttProject {
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
     }
+
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
+
     public List getBaselines() {
         return myBaselines;
+    }
+
+    public void repaintResourcePanel() {
+        // TODO Auto-generated method stub
     }
 
 }

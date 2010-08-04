@@ -22,7 +22,7 @@ class ResourceSaver extends SaverBase {
         ProjectResource[] resources = project.getHumanResourceManager().getResourcesArray();
         for (int i = 0; i < resources.length; i++) {
             HumanResource p = (HumanResource) resources[i];
-            addAttribute("id", String.valueOf(p.getId()), attrs);
+            addAttribute("id", p.getId(), attrs);
             addAttribute("name", p.getName(), attrs);
             addAttribute("function", p.getRole().getPersistentID(), attrs);
             addAttribute("contacts", p.getMail(), attrs);

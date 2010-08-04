@@ -881,7 +881,6 @@ public class TaskImpl implements Task {
             myTaskInfo = taskInfo;
 
         }
-
     }
 
     public void setName(String name) {
@@ -957,7 +956,7 @@ public class TaskImpl implements Task {
     public void setThirdDateConstraint(int thirdDateConstraint) {
         myThirdDateConstraint = thirdDateConstraint;
     }
-
+    
     public void shift(TaskLength shift) {
         float unitCount = shift.getLength(myLength.getTimeUnit());
         if (unitCount != 0f) {
@@ -976,16 +975,16 @@ public class TaskImpl implements Task {
 
     public Task shift(float unitCount) {
         Task clone = unpluggedClone();
-        if (unitCount > 0) {
-            TaskLength length = myManager.createLength(myLength.getTimeUnit(),
-                    unitCount);
-            // clone.setDuration(length);
-            Date shiftedDate = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-            clone.setStart(new GanttCalendar(shiftedDate));
-            clone.setDuration(myLength);
-        } else {
-            Date newStart = shiftDate(clone.getStart().getTime(),
-            		                  getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
+        if (unitCount != 0) {
+            Date newStart;
+            if (unitCount > 0) {
+                TaskLength length = myManager.createLength(myLength.getTimeUnit(), unitCount);
+                // clone.setDuration(length);
+                newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
+            } else {
+                newStart = shiftDate(clone.getStart().getTime(), getManager().createLength(
+                        clone.getDuration().getTimeUnit(), (long) unitCount));
+            }
             clone.setStart(new GanttCalendar(newStart));
             clone.setDuration(myLength);
         }

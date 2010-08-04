@@ -26,11 +26,11 @@ class HistorySaver extends SaverBase {
             // ((GanttPreviousState)previous.get(i)).getTasks();
             for (int j=0; j<stateTasks.size(); j++) {
                 GanttPreviousStateTask task = (GanttPreviousStateTask)stateTasks.get(j);
-                addAttribute("id", String.valueOf(task.getId()), attrs);
+                addAttribute("id", task.getId(), attrs);
                 addAttribute("start", task.getStart().toXMLString(), attrs);
-                addAttribute("duration", String.valueOf(task.getDuration()), attrs);
-                addAttribute("meeting", String.valueOf(task.isMilestone()), attrs);
-                addAttribute("super", String.valueOf(task.hasNested()), attrs);
+                addAttribute("duration", task.getDuration(), attrs);
+                addAttribute("meeting", task.isMilestone(), attrs);
+                addAttribute("super", task.hasNested(), attrs);
                 emptyElement("previous-task", attrs, handler);
 
             }

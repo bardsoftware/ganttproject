@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -111,15 +112,15 @@ public class ChartGridImpl extends ChartRendererBase implements TimeUnitVisitor 
             int prevOffset = 0;
             //DayTypeAlternance next=null;
             for (int i = 0; i < alternance.length; i++) {
-                DayTypeAlternance next = alternance[i];
+                DayTypeAlternance day = alternance[i];
                 int alternanceEndOffset = getChartModel().getBottomUnitWidth();
                 for (int j=0; j<offsets.length; j++) {
-                    if (offsets[j].getOffsetEnd().equals(next.getEnd())) {
+                    if (offsets[j].getOffsetEnd().equals(day.getEnd())) {
                         alternanceEndOffset = offsets[j].getOffsetPixels();
                         break;
                     }
                 }
-                //System.err.println("[ChartGridImpl] nextTimeUnit(): lternance="+next);
+                //System.err.println("[ChartGridImpl] nextTimeUnit(): lternance="+day);
                 //int width = (int)(next.getDuration().getLength(myCurrentUnit)*getChartModel().getBottomUnitWidth()); 
                 
 //                posX = (int) (myPosX + delta * i);
@@ -127,25 +128,26 @@ public class ChartGridImpl extends ChartRendererBase implements TimeUnitVisitor 
 //                        * (i + 1))
 //                        : myPosX + getChartModel().getBottomUnitWidth();
                 //width = nextPosX - posX;
-                if (GPCalendar.DayType.WEEKEND == next.getDayType()) {
-                    //System.err.println("[ChartGridImpl] nextTimeUnit(): prevOffset="+prevOffset+" endOffset="+alternanceEndOffset);
-                    //System.err.println("[ChartGridImpl] nextTimeUnit(): end="+next.getEnd()+" offset="+alternanceEndOffset+" bottom width="+getChartModel().getBottomUnitWidth());
-                    GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer()
-                            .createRectangle(myPosX+prevOffset, 0, alternanceEndOffset-prevOffset, getHeight());
-                    r.setBackgroundColor(getConfig()
-                            .getHolidayTimeBackgroundColor());
-                    r.setStyle("calendar.holiday");
-                    getPrimitiveContainer().bind(r, next.getDayType());
-                }
-
-                if (GPCalendar.DayType.HOLIDAY == next.getDayType()) {
+                DayType dayType = day.getDayType();
+                if (GPCalendar.DayType.HOLIDAY == dayType) {
                     GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer()
                             .createRectangle(myPosX+prevOffset, 0, alternanceEndOffset-prevOffset, getHeight());
                     r.setBackgroundColor(getConfig()
                             .getPublicHolidayTimeBackgroundColor());
                     r.setStyle("calendar.holiday");
-                    getPrimitiveContainer().bind(r, next.getDayType());
+                    getPrimitiveContainer().bind(r, dayType);
                 }
+                else if (GPCalendar.DayType.WEEKEND == dayType) {
+                    //System.err.println("[ChartGridImpl] nextTimeUnit(): prevOffset="+prevOffset+" endOffset="+alternanceEndOffset);
+                    //System.err.println("[ChartGridImpl] nextTimeUnit(): end="+day.getEnd()+" offset="+alternanceEndOffset+" bottom width="+getChartModel().getBottomUnitWidth());
+                    GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer()
+                            .createRectangle(myPosX+prevOffset, 0, alternanceEndOffset-prevOffset, getHeight());
+                    r.setBackgroundColor(getConfig()
+                            .getHolidayTimeBackgroundColor());
+                    r.setStyle("calendar.holiday");
+                    getPrimitiveContainer().bind(r, dayType);
+                }
+
                 prevOffset = alternanceEndOffset;
                 //posX = myPosX+width;                 
             }
