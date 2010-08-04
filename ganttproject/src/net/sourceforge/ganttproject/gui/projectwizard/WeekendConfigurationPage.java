@@ -166,23 +166,22 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
 
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JComboBox) {
-            if (evt.getSource() == WeekendConfigurationPage.this.myCalendarField) {
-                WeekendConfigurationPage.this.myCalendar.setPublicHolidays(getProjectCalendar(),
-                        WeekendConfigurationPage.this.myProject);
+            if (evt.getSource() == myCalendarField) {
+                myCalendar.setPublicHolidays(getProjectCalendar(), myProject);
             }
         }
     }
 
     public URL getProjectCalendar() {
-        if (WeekendConfigurationPage.this.myCalendarField == null) {
+        if (myCalendarField == null) {
             return null;
         }
 
-        int index = WeekendConfigurationPage.this.myCalendarField.getSelectedIndex();
+        int index = myCalendarField.getSelectedIndex();
         if (index == 0) {
             return null;
         } else {
-            return (WeekendConfigurationPage.this.calendars[index - 1]);
+            return (calendars[index - 1]);
         }
     }
 
