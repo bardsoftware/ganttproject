@@ -3,7 +3,6 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -16,7 +15,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
-import net.sourceforge.ganttproject.util.ColorConvertion;
 
 public class ChartModelResource extends ChartModelBase {
 

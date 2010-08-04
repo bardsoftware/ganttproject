@@ -6,8 +6,6 @@ package org.ganttproject.impex.msproject;
 import java.awt.Component;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Locale;
-
 import org.osgi.service.prefs.Preferences;
 
 import net.sourceforge.ganttproject.IGanttProject;

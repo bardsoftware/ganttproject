@@ -24,7 +24,6 @@ import java.util.Set;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 public class TestLocalCriticalPath extends TaskTestCase {
     /*
@@ -102,9 +101,9 @@ public class TestLocalCriticalPath extends TaskTestCase {
         Task t3 = createTask();
         t3.setDuration(getTaskManager().createLength(3));
         
-        TaskDependency d_11_12 = createDependency(t12, t11);
-        TaskDependency d_2_11 = createDependency(t2, t11);
-        TaskDependency d_3_1 = createDependency(t3, t1);
+        createDependency(t12, t11);
+        createDependency(t2, t11);
+        createDependency(t3, t1);
 
         TaskManager mgr = getTaskManager();
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();

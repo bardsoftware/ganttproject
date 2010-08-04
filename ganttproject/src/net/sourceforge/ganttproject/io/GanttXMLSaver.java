@@ -35,7 +35,6 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;

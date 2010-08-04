@@ -47,18 +47,13 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.ExportFinalizationJob;
 import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -85,7 +80,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
-import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 import com.lowagie.text.BadElementException;

@@ -3,8 +3,6 @@
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.JFileChooser;
