@@ -21,6 +21,7 @@ import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
@@ -61,7 +62,7 @@ public class TaskManagerImpl implements TaskManager {
 
     private final AlgorithmCollection myAlgorithmCollection;
 
-    private final List myListeners = new ArrayList();
+    private final List<TaskListener> myListeners = new ArrayList<TaskListener>();
 
     private int myMaxID = -1;
 
@@ -72,12 +73,10 @@ public class TaskManagerImpl implements TaskManager {
 
     private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
-    private TaskContainmentHierarchyFacade myTaskContainment;
-
 	private boolean areEventsEnabled = true;
 
     private static class TaskMap {
-        private final Map myId2task = new HashMap();
+        private final Map<Integer,Task> myId2task = new HashMap<Integer,Task>();
 		private TaskDocumentOrderComparator myComparator;
 		private boolean isModified = true;
 		private Task[] myArray;
@@ -93,9 +92,9 @@ public class TaskManagerImpl implements TaskManager {
     	Task getTask(int id) {
     		return (Task) myId2task.get(new Integer(id));
     	}
-		public Task[] getTasks() {
+        public Task[] getTasks() {
 			if (isModified) {
-				myArray = (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
+				myArray = myId2task.values().toArray(new Task[myId2task.size()]);
 				Arrays.sort(myArray, myComparator);
 				isModified = false;
 			}
@@ -509,7 +508,7 @@ public class TaskManagerImpl implements TaskManager {
             TaskContainmentHierarchyFacade {
         //private final Task myRoot;
 
-        private List myPathBuffer = new ArrayList();
+        private List<Task> myPathBuffer = new ArrayList<Task>();
 
 //        public FacadeImpl(Task root) {
 //            myRoot = root;
@@ -520,12 +519,12 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         public Task[] getDeepNestedTasks(Task container) {
-            ArrayList result = new ArrayList();
+            ArrayList<Task> result = new ArrayList<Task>();
             addDeepNestedTasks(container, result);
-            return (Task[]) result.toArray(new Task[result.size()]);
+            return result.toArray(new Task[result.size()]);
         }
 
-        private void addDeepNestedTasks(Task container, ArrayList result) {
+        private void addDeepNestedTasks(Task container, ArrayList<Task> result) {
             Task[] nested = container.getNestedTasks();
             result.addAll(Arrays.asList(nested));
             for (int i = 0; i < nested.length; i++) {
@@ -580,11 +579,11 @@ public class TaskManagerImpl implements TaskManager {
         	if (task1==task2) {
         		return 0;
         	}
-        	List buffer1 = new ArrayList();
+        	List<Task> buffer1 = new ArrayList<Task>();
             for (Task container = task1; container != null; container = getContainer(container)) {
                 buffer1.add(0,container);
             }
-        	List buffer2 = new ArrayList();
+        	List<Task> buffer2 = new ArrayList<Task>();
             for (Task container = task2; container != null; container = getContainer(container)) {
                 buffer2.add(0,container);
             }
@@ -595,7 +594,6 @@ public class TaskManagerImpl implements TaskManager {
             	return 1;
             }
 
-            int result = 0;
         	int i=0;
         	Task commonRoot = null;
         	while (true) {
@@ -656,18 +654,17 @@ public class TaskManagerImpl implements TaskManager {
         return new TaskManagerImpl(null, myConfig, null);
     }
 
-    public Map importData(TaskManager taskManager) {
+    public Map<Task,Task> importData(TaskManager taskManager) {
         Task importRoot = taskManager.getRootTask();
-        Map original2imported = new HashMap();
+        Map<Task,Task> original2imported = new HashMap<Task,Task>();
         importData(importRoot, getRootTask(), original2imported);
         TaskDependency[] deps = taskManager.getDependencyCollection()
                 .getDependencies();
         for (int i = 0; i < deps.length; i++) {
             Task nextDependant = deps[i].getDependant();
             Task nextDependee = deps[i].getDependee();
-            Task importedDependant = (Task) original2imported
-                    .get(nextDependant);
-            Task importedDependee = (Task) original2imported.get(nextDependee);
+            Task importedDependant = original2imported.get(nextDependant);
+            Task importedDependee = original2imported.get(nextDependee);
             try {
                 TaskDependency dependency = getDependencyCollection()
                         .createDependency(importedDependant, importedDependee,
@@ -684,7 +681,7 @@ public class TaskManagerImpl implements TaskManager {
         return original2imported;
     }
 
-    private void importData(Task importRoot, Task root, Map original2imported) {
+    private void importData(Task importRoot, Task root, Map<Task,Task> original2imported) {
         Task[] nested = importRoot.getManager().getTaskHierarchy()
                 .getNestedTasks(importRoot);
         for (int i = nested.length - 1; i >= 0; i--) {
@@ -709,9 +706,9 @@ public class TaskManagerImpl implements TaskManager {
 
             myCustomColumnStorage.processNewTask(nextImported);
             CustomColumnsValues customValues = nested[i].getCustomValues();
-            Collection customColums = myCustomColumnStorage.getCustomColums();
-            for (Iterator it=customColums.iterator(); it.hasNext();) {
-            	CustomColumn nextColumn = (CustomColumn) it.next();
+            Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
+            for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
+            	CustomColumn nextColumn = it.next();
             	Object value = customValues.getValue(nextColumn.getName());
             	if (value!=null) {
             		try {
@@ -764,18 +761,17 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public void importAssignments(TaskManager importedTaskManager,
-            ResourceManager hrManager, Map original2importedTask,
-            Map original2importedResource) {
+            ResourceManager hrManager, Map<Task, Task> original2importedTask,
+            Map<ProjectResource, HumanResource> original2importedResource) {
         Task[] tasks = importedTaskManager.getTasks();
         for (int i = 0; i < tasks.length; i++) {
             ResourceAssignment[] assignments = tasks[i].getAssignments();
             for (int j = 0; j < assignments.length; j++) {
-                Task task = getTask(((Task) original2importedTask.get(tasks[i]))
+                Task task = getTask(original2importedTask.get(tasks[i])
                         .getTaskID());
                 ResourceAssignment assignment = task.getAssignmentCollection()
-                        .addAssignment(
-                                (HumanResource) original2importedResource
-                                        .get(assignments[j].getResource()));
+                        .addAssignment(original2importedResource.get(
+                                assignments[j].getResource()));
                 assignment.setLoad(assignments[j].getLoad());
                 assignment.setCoordinator(assignments[j].isCoordinator());
             }

@@ -42,15 +42,15 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 public class TaskRendererImpl extends ChartRendererBase implements
         TimeUnitVisitor {
 
-    private List/* <TaskActivity> */myVisibleActivities;
+    private List<TaskActivity> myVisibleActivities;
 
     private static final SortTasksAlgorithm ourAlgorithm = new SortTasksAlgorithm();
 
-    private List/* <TaskActivity> */myCurrentlyProcessed = new ArrayList();
+    private List<TaskActivity> myCurrentlyProcessed = new ArrayList<TaskActivity>();
 
-    private Map/* <TaskActivity,Integer> */myActivity2ordinalNumber = new HashMap();
+    private Map<TaskActivity, Integer> myActivity2ordinalNumber = new HashMap<TaskActivity, Integer>();
 
-    private Map/* <Task, Integer> */myTask_WorkingRectanglesLength = new HashMap();
+    private Map<Task, Long> myTask_WorkingRectanglesLength = new HashMap<Task, Long>();
 
     private int myPosX;
 
@@ -85,16 +85,16 @@ public class TaskRendererImpl extends ChartRendererBase implements
 
     public static final int RIGHT = 3;
 
-    private ArrayList myTasks;
+    private ArrayList<GanttPreviousStateTask> myTasks;
 
-    private ArrayList myPreviousStateTasks;
+    private ArrayList<GanttPreviousStateTask> myPreviousStateTasks;
 
-    private List myPreviousStateCurrentlyProcessed = new ArrayList();
+    private List<GanttPreviousStateTask> myPreviousStateCurrentlyProcessed = new ArrayList<GanttPreviousStateTask>();
 
-    private static List ourInfoList;
+    private static List<String> ourInfoList;
 
     static {
-        ourInfoList = new ArrayList();
+        ourInfoList = new ArrayList<String>();
         ourInfoList.add("");
         ourInfoList.add("id");
         ourInfoList.add("taskDates");
@@ -211,15 +211,15 @@ public class TaskRendererImpl extends ChartRendererBase implements
         return result;
     }
     
-    private List/* <Task> */getSortedTaskActivities() {
-        List visibleTasks = ((ChartModelImpl) getChartModel())
+    private List<TaskActivity> getSortedTaskActivities() {
+        List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
-        List visibleActivities = new ArrayList();
+        List<TaskActivity> visibleActivities = new ArrayList<TaskActivity>();
         myActivity2ordinalNumber.clear();
         for (int i = 0; i < visibleTasks.size(); i++) {
             if (visibleTasks.get(i).equals(BlankLineNode.BLANK_LINE))
                 continue; // todo a revoir...
-            Task nextTask = (Task) visibleTasks.get(i);
+            Task nextTask = visibleTasks.get(i);
 
             Integer nextOrdinal = new Integer(i);
             if (nextTask == null) {
@@ -250,11 +250,11 @@ public class TaskRendererImpl extends ChartRendererBase implements
                         - invisibleWorkingLength); 
             myTask_WorkingRectanglesLength.put(nextTask, new Long(progressBarLength));
         }
-        Set hashedVisible = new HashSet(visibleActivities);
+        Set<TaskActivity> hashedVisible = new HashSet<TaskActivity>(visibleActivities);
         Integer maxOrdinal = new Integer(hashedVisible.size()+1);
         Integer minOrdinal = new Integer(-2);
         for (int i=0; i<visibleTasks.size(); i++) {
-            Task next = (Task)visibleTasks.get(i);
+            Task next = visibleTasks.get(i);
             TaskDependency[] dependencies = next.getDependenciesAsDependant().toArray();
             for (int j=0; j<dependencies.length; j++) {
                 TaskDependency nextDependency = dependencies[j];
@@ -334,10 +334,9 @@ public class TaskRendererImpl extends ChartRendererBase implements
             // System.err.println("[TaskRendererImpl] nextTimeUnit():
             // processing:"+myCurrentlyProcessed);
             // }
-            for (Iterator startedActivities = myCurrentlyProcessed.iterator(); startedActivities
+            for (Iterator<TaskActivity> startedActivities = myCurrentlyProcessed.iterator(); startedActivities
                     .hasNext(); startedActivities.remove()) {
-                TaskActivity nextStarted = (TaskActivity) startedActivities
-                        .next();
+                TaskActivity nextStarted = startedActivities.next();
                 processActivity(nextStarted);
             }
             if (myModel.isPrevious()) {
@@ -349,7 +348,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                         drawPreviousStateTask(previousTask, i);
                     }
                 }
-                myPreviousStateCurrentlyProcessed = new ArrayList();
+                myPreviousStateCurrentlyProcessed = new ArrayList<GanttPreviousStateTask>();
             }
             myPosX += getChartModel().getBottomUnitWidth();
         }
@@ -475,7 +474,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         }
         Task nextTask = nextStarted.getTask();
         int nextLength = nextActivityRectangle.myWidth;
-        Long workingRectanglesLength = (Long) myTask_WorkingRectanglesLength
+        Long workingRectanglesLength = myTask_WorkingRectanglesLength
                 .get(nextTask);
         if (workingRectanglesLength != null) {
             long nextProgressLength = nextLength;
@@ -630,7 +629,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         int length = (int) (tl.getLength(myCurrentUnit) * getChartModel()
                 .getBottomUnitWidth());
 
-        Integer nextOrdNumber = (Integer) myActivity2ordinalNumber.get(task);
+        Integer nextOrdNumber = myActivity2ordinalNumber.get(task);
         GraphicPrimitiveContainer container = getPrimitiveContainer();
 
         Rectangle rect = container.createRectangle(posX, topy, length, 6);
@@ -764,14 +763,14 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private void createDependencyLines() {
-        List/* <DependencyDrawData> */dependencyDrawData = prepareDependencyDrawData();
+        List<DependencyDrawData> dependencyDrawData = prepareDependencyDrawData();
         drawDependencies(dependencyDrawData);
     }
 
     /**
      * @param dependencyDrawData
      */
-    private void drawDependencies(List dependencyDrawData) {
+    private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
         // if(dependencyDrawData.size() == 0)
         // System.out.println("VIDE");
 
@@ -779,8 +778,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                 .getLayer(2);
         int arrowLength = 7;
         for (int i = 0; i < dependencyDrawData.size(); i++) {
-            DependencyDrawData next = (DependencyDrawData) dependencyDrawData
-                    .get(i);
+            DependencyDrawData next = dependencyDrawData.get(i);
             if (next.myDependeeVector
                     .reaches(next.myDependantVector.getPoint())) {
                 // when dependee.end <= dependant.start && dependency.type is
@@ -879,21 +877,21 @@ public class TaskRendererImpl extends ChartRendererBase implements
     /**
      * @return
      */
-    private List prepareDependencyDrawData() {
-        List result = new ArrayList();
-        List/* <Task> */visibleTasks = ((ChartModelImpl) getChartModel())
+    private List<DependencyDrawData> prepareDependencyDrawData() {
+        List<DependencyDrawData> result = new ArrayList<DependencyDrawData>();
+        List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
         for (int i = 0; i < visibleTasks.size(); i++) {
             if (visibleTasks.get(i).equals(BlankLineNode.BLANK_LINE))
                 continue; // todo a revoir...
-            Task nextTask = (Task) visibleTasks.get(i);
+            Task nextTask = visibleTasks.get(i);
             if (nextTask != null)
                 prepareDependencyDrawData(nextTask, result);
         }
         return result;
     }
 
-    private void prepareDependencyDrawData(Task task, List result) {
+    private void prepareDependencyDrawData(Task task, List<DependencyDrawData> result) {
         TaskDependency[] deps = task.getDependencies().toArray();
         for (int i = 0; i < deps.length; i++) {
             TaskDependency next = deps[i];
@@ -953,13 +951,13 @@ public class TaskRendererImpl extends ChartRendererBase implements
         return myModel.getRowHeight();
     }
 
-    private List myActivitiesOutOfView = new ArrayList();
+    private List<TaskActivity> myActivitiesOutOfView = new ArrayList<TaskActivity>();
     
     private void pullQueue(Date unitStart, Date unitFinish) {
     	
-        for (Iterator activities = myVisibleActivities.iterator(); activities
+        for (Iterator<TaskActivity> activities = myVisibleActivities.iterator(); activities
                 .hasNext();) {
-            TaskActivity next = (TaskActivity) activities.next();
+            TaskActivity next = activities.next();
             if (next.getEnd().before(getChartModel().getStartDate())) {
                 myActivitiesOutOfView.add(next);
                 activities.remove();
@@ -988,15 +986,15 @@ public class TaskRendererImpl extends ChartRendererBase implements
         // the previous task is not between unitStart & unitFinish
 
         if (myModel.isPrevious()) {
-            List visibleTasks = ((ChartModelImpl) getChartModel())
+            List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
                     .getVisibleTasks();
 
             for (int i = 0; i < visibleTasks.size(); i++) {
-                Task task = (Task) visibleTasks.get(i);
+                Task task = visibleTasks.get(i);
                 int index = getPreviousStateTaskIndex(task);
                 GPCalendar calendar = myModel.getTaskManager().getCalendar();
                 if (index != -1) {
-                    GanttPreviousStateTask previousStateTask = (GanttPreviousStateTask) myPreviousStateTasks
+                    GanttPreviousStateTask previousStateTask = myPreviousStateTasks
                             .get(index);
                     previousStateTask.setState(task, calendar);
                     if (previousStateTask.getStart().after(unitFinish)) {
@@ -1012,8 +1010,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                     // calendar)
                     // .getTime().compareTo(unitFinish) < 0)
                     {
-                        myPreviousStateCurrentlyProcessed
-                                .add(previousStateTask);
+                        myPreviousStateCurrentlyProcessed.add(previousStateTask);
                         myPreviousStateTasks.remove(index);
                     }
                     // if just a part of the previous task is visible
@@ -1056,8 +1053,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         if (myPreviousStateTasks == null)
             return -1;
         for (int i = 0; i < myPreviousStateTasks.size(); i++) {
-            if (task.getTaskID() == ((GanttPreviousStateTask) myPreviousStateTasks
-                    .get(i)).getId())
+            if (task.getTaskID() == myPreviousStateTasks.get(i).getId())
                 return i;
         }
         return -1;
@@ -1164,7 +1160,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         return myOptionGroups;
     }
 
-    public void setPreviousStateTasks(ArrayList tasks) {
+    public void setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
         myTasks = tasks;
     }
 

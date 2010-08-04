@@ -101,7 +101,7 @@ abstract class ExporterBase {
     public void run(final File outputFile, final ExportFinalizationJob finalizationJob)
     throws Exception {
         final IJobManager jobManager = Platform.getJobManager();
-        final List resultFiles = new ArrayList();
+        final List<File> resultFiles = new ArrayList<File>();
         final Job[] jobs = createJobs(outputFile, resultFiles);
         final IProgressMonitor monitor = jobManager.createProgressGroup();
         final IProgressMonitor familyMonitor = new IProgressMonitor() {
@@ -170,7 +170,7 @@ abstract class ExporterBase {
         starting.schedule();
     }
 
-    protected abstract Job[] createJobs(File outputFile, List resultFiles);
+    protected abstract Job[] createJobs(File outputFile, List<File> resultFiles);
 
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myGanttChart= uiFacade.getGanttChart();
@@ -360,9 +360,9 @@ abstract class ExporterBase {
                 addAttribute("id", "tpd6", myAttrs);
                 textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
 
-                final List attachments = t.getAttachments();
+                final List<Document> attachments = t.getAttachments();
                 for (int i=0; i<attachments.size(); i++) {
-                	Document nextAttachment = (Document)attachments.get(i);
+                	Document nextAttachment = attachments.get(i);
                 	URI nextUri = nextAttachment.getURI();
                 	if (nextUri!=null) {
                 		String strUri = URLDecoder.decode(nextUri.toString(), "utf-8");
@@ -413,9 +413,9 @@ abstract class ExporterBase {
                 {
                 	AttributesImpl attrs = new AttributesImpl();
 	                CustomColumnsValues customValues = t.getCustomValues();
-	                for (Iterator it = getCustomColumnStorage().getCustomColums().iterator();
+	                for (Iterator<CustomColumn> it = getCustomColumnStorage().getCustomColums().iterator();
 	                     it.hasNext();) {
-	                	CustomColumn nextColumn = (CustomColumn) it.next();
+	                	CustomColumn nextColumn = it.next();
 	                	Object value = customValues.getValue(nextColumn.getName());
 	                	String valueAsString = value==null ? "" : value.toString();
 	                	addAttribute("id", nextColumn.getId(), attrs);
@@ -465,9 +465,9 @@ abstract class ExporterBase {
                 addAttribute("id", "3", attrs);
                 textElement("phone", attrs, p.getPhone(), handler);
 
-                List/*<CustomProperty>*/ customFields = p.getCustomProperties();
+                List<CustomProperty> customFields = p.getCustomProperties();
                 for (int j=0; j<customFields.size(); j++) {
-                	CustomProperty nextProperty = (CustomProperty) customFields.get(j);
+                	CustomProperty nextProperty = customFields.get(j);
                 	addAttribute("id", nextProperty.getDefinition().getID(), attrs);
                 	String value = nextProperty.getValueAsString();
                 	textElement("custom-field", attrs, value, handler);

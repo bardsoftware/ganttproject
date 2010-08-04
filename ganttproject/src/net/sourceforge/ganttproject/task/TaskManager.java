@@ -9,6 +9,8 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade.Factory;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
@@ -81,14 +83,14 @@ public interface TaskManager {
 
     public TaskManager emptyClone();
 
-    public Map importData(TaskManager taskManager);
+    public Map<Task, Task> importData(TaskManager taskManager);
 
     public void importAssignments(TaskManager importedTaskManager,
-            ResourceManager hrManager, Map original2importedTask,
-            Map original2importedResource);
+            ResourceManager hrManager, Map<Task, Task> original2importedTask,
+            Map<ProjectResource, HumanResource> original2importedResource);
 
     /**
-     * Processes the critical path findind on <code>root</code> tasks.
+     * Processes the critical path finding on <code>root</code> tasks.
      * 
      * @param root
      *            The root of the tasks to consider in the critical path

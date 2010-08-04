@@ -149,9 +149,9 @@ class TaskSaver extends SaverBase {
         writeTaskProperty(handler, "tpd7", "completion", "default", "int");
         writeTaskProperty(handler, "tpd8", "coordinator", "default", "text");
         writeTaskProperty(handler, "tpd9", "predecessorsr", "default", "text");
-        Iterator/*<CustomColumn>*/ it = customCol.getCustomColums().iterator();
+        Iterator<CustomColumn> it = customCol.getCustomColums().iterator();
         while (it.hasNext()) {
-            final CustomColumn cc = (CustomColumn) it.next();
+            final CustomColumn cc = it.next();
             Object defVal = cc.getDefaultValue();
             final Class cla = cc.getType();
             final String valueType = encodeFieldType(cla);

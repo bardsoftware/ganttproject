@@ -58,7 +58,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return "html";
     }
 
-    protected Job[] createJobs(File outputFile, List resultFiles) {
+    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         Job generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
         Job generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
         Job generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
@@ -68,7 +68,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         };
     }
     
-    private Job createGenerateGanttChartJob(final File outputFile, final List resultFiles) {
+    private Job createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("generate gantt chart") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
@@ -97,7 +97,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return result;
     }
     
-    private Job createGenerateResourceChartJob(final File outputFile, final List resultFiles) {
+    private Job createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate resource chart") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
@@ -125,7 +125,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return result;
     }
     
-    private Job createGeneratePagesJob(final File outputFile, final List resultFiles) {
+    private Job createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate HTML pages") {
 
             protected IStatus run(IProgressMonitor monitor) {
@@ -188,7 +188,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return result;
     }
     
-    private Job createCopyImagesJob(final File outputFile, final List resultFiles) {
+    private Job createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Copying images") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {

@@ -100,19 +100,18 @@ public class GanttPreviousState {
     }
 
     private void writeTasks() {
-        Enumeration children = ((DefaultMutableTreeNode) myTree.getJTree()
+        Enumeration<DefaultMutableTreeNode> children = ((DefaultMutableTreeNode) myTree.getJTree()
                 .getModel().getRoot()).children();
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
 
         while (children.hasMoreElements()) {
-            DefaultMutableTreeNode element = (DefaultMutableTreeNode) children
-                    .nextElement();
+            DefaultMutableTreeNode element = children.nextElement();
             writeTask(os, /* lot.indexOf(element) */element);
         }
         write(s + "</previous-tasks>");
     }
 
-    public void saveFilesFromLoaded(ArrayList tasks) {
+    public void saveFilesFromLoaded(ArrayList<GanttPreviousStateTask> tasks) {
         try {
             AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(os);
@@ -137,23 +136,15 @@ public class GanttPreviousState {
         }
     }
 
-    public void writeTasksFromLoaded(ArrayList tasks) throws IOException {
+    public void writeTasksFromLoaded(ArrayList<GanttPreviousStateTask> tasks)
+            throws IOException {
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
         for (int i = 0; i < tasks.size(); i++) {
-            os.write(s + s + "<previous-task id=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getId() + "\"");
-            os.write(" start=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getStart()
-                            .toXMLString() + "\"");
-            os.write(" duration=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getDuration()
-                    + "\"");
-            os.write(" meeting=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).isMilestone()
-                    + "\"");
-            os.write(" super=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).hasNested()
-                    + "\"");
+            os.write(s + s + "<previous-task id=\"" + tasks.get(i).getId() + "\"");
+            os.write(" start=\"" + tasks.get(i).getStart().toXMLString() + "\"");
+            os.write(" duration=\"" + tasks.get(i).getDuration() + "\"");
+            os.write(" meeting=\"" + tasks.get(i).isMilestone() + "\"");
+            os.write(" super=\"" + tasks.get(i).hasNested() + "\"");
             os.write("/>\n");
         }
         write(s + "</previous-tasks>");
@@ -189,6 +180,7 @@ public class GanttPreviousState {
 
     /** Simple write information of tasks */
     public void writeTask(Writer fout, DefaultMutableTreeNode node) {
+        // TODO there is never put data in lot... Remove?
         ArrayList lot = new ArrayList();
         try {
             GanttTask task = (GanttTask) node.getUserObject();
@@ -205,10 +197,9 @@ public class GanttPreviousState {
 
             boolean haschild = false;
 
-            ArrayList child = myTree.getAllChildTask(node);
+            ArrayList<DefaultMutableTreeNode> child = myTree.getAllChildTask(node);
             if (child.size() != 0) {
                 haschild = true;
-
             }
 
             // Writes data of task
@@ -227,8 +218,7 @@ public class GanttPreviousState {
             // Write the child of the task
             if (haschild) {
                 for (int i = 0; i < child.size(); i++) {
-                    Task task2 = (Task) ((DefaultMutableTreeNode) child.get(i))
-                            .getUserObject();
+                    Task task2 = (Task) child.get(i).getUserObject();
                     int newid = -1; // lot.lastIndexOf(task2);
 
                     for (int j = 0; j < lot.size(); j++) {
@@ -245,7 +235,6 @@ public class GanttPreviousState {
                 }
 
             }
-
             // end of task section
 
         } catch (Exception e) {
@@ -255,7 +244,7 @@ public class GanttPreviousState {
         }
     }
 
-    /** Correct the charcters to be compatible with xml format */
+    /** Correct the characters to be compatible with xml format */
     public String correct(String s) {
         String res;
         if (s != null) {
@@ -273,8 +262,8 @@ public class GanttPreviousState {
         return notes.replaceAll(s1, s2);
     }
 
-    public ArrayList load() throws ParserConfigurationException, SAXException, IOException {
-        ArrayList tasks = null;
+    public ArrayList<GanttPreviousStateTask> load() throws ParserConfigurationException, SAXException, IOException {
+        ArrayList<GanttPreviousStateTask> tasks = null;
         PreviousStateTasksTagHandler handler = new PreviousStateTasksTagHandler(
                 null);
         SAXParserFactory factory = SAXParserFactory.newInstance();

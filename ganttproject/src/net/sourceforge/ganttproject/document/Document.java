@@ -11,7 +11,7 @@ import java.net.URI;
 
 /**
  * This interface abstracts the details of file access. Implementations of this
- * interface provide methods to open streams to a project file, indepent of
+ * interface provide methods to open streams to a project file, independent of
  * storage location (filesystem / WebDAV).
  * 
  * @author Michael Haeusler (michael at akatose.de)
@@ -27,21 +27,21 @@ public interface Document {
     public String getDescription();
 
     /**
-     * Checks, wether the document is readable.
+     * Checks, whether the document is readable.
      * 
      * @return readability
      */
     public boolean canRead();
 
     /**
-     * Checks, wether the document is writable.
+     * Checks, whether the document is writable.
      * 
      * @return writability
      */
     public boolean canWrite();
 
     /**
-     * Checks, wether the document should appear in the MRU (list of <b>m</b>ost
+     * Checks, whether the document should appear in the MRU (list of <b>m</b>ost
      * <b>r</b>ecently <b>u</b>sed files).
      * 
      * @return validity for MRU
@@ -53,7 +53,7 @@ public interface Document {
      * This method is optional. Storage containers, for which locking is
      * inappropriate, should always return true.
      * 
-     * @return wether a lock could be successfully acquired
+     * @return whether a lock could be successfully acquired
      * @see #releaseLock()
      */
     public boolean acquireLock();

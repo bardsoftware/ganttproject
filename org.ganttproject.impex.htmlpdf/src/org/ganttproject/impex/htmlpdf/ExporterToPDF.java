@@ -68,7 +68,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         return new String[]{"pdf"};
     }
 
-    protected Job[] createJobs(File outputFile, List resultFiles) {
+    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         ExportState state = new ExportState(outputFile);
         Job generateGanttChart = createGenerateGanttChartJob(state);
         Job generateResourceChart = createGenerateResourcechartJob(state);
@@ -170,7 +170,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         return result;
     }
 
-    private Job createTransformationJob(final ExportState state, final List resultFiles) {
+    private Job createTransformationJob(final ExportState state, final List<File> resultFiles) {
         Job result = new ExportJob("Generating PDF") {
             protected IStatus run(IProgressMonitor monitor) {
             	if (monitor.isCanceled()) {

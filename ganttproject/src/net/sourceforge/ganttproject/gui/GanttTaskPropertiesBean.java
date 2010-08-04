@@ -328,9 +328,6 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
         });
 
-        ImageIcon icon = new ImageIcon(getClass().getResource(
-                "/icons/calendar_16.gif"));
-
         thirdRowPanel1 = new JPanel(flowL);
         thirdRowPanel1.setBorder(new TitledBorder(new EtchedBorder(), language
                 .getText("date")));

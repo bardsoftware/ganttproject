@@ -47,10 +47,11 @@ public class GanttXFIGSaver {
     // private GanttGraphicArea area;
     // private PrjInfos prjInfos;
 
+    // TODO lot is used as a list of DefaultMutableTreeNodes and as a list of Tasks, seems inconsistent in this class...
     List lot = new ArrayList(); // list of tasks
 
     // ArrayList lots = new ArrayList();
-    ArrayList loc = new ArrayList(); // list of colors
+    ArrayList<Color> loc = new ArrayList<Color>(); // list of colors
 
     ArrayList atl = new ArrayList(); // list of text object
 
@@ -135,9 +136,9 @@ public class GanttXFIGSaver {
             System.out.println("getProjectTextWidth begin");
 
         float res = 0.0f;
-        for (Iterator it = lot.iterator(); it.hasNext();) {
+        for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
             // get the name of the task
-            Task task = (Task) it.next();
+            Task task = it.next();
             float taskTextWidth = getTaskTextWidth(task);
             if (taskTextWidth > res) {
                 res = taskTextWidth;

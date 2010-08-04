@@ -26,7 +26,7 @@ public class CustomColumn {
     private Class type = null;
 
     /**
-     * Teh default value.
+     * The default value.
      */
     private Object defaultValue = null;
 
@@ -43,7 +43,7 @@ public class CustomColumn {
      * @param colName
      *            The column name.
      * @param colType
-     *            The colmun type.
+     *            The column type.
      * @param colDefaultValue
      *            The default value.
      */
@@ -75,9 +75,7 @@ public class CustomColumn {
     }
 
     /**
-     * Returns the default value.
-     * 
-     * @return The defautl value.
+     * @return The default value.
      */
     public Object getDefaultValue() {
         return defaultValue;
@@ -94,8 +92,6 @@ public class CustomColumn {
     }
 
     /**
-     * Returns the column name.
-     * 
      * @return The column name.
      */
     public String getName() {
@@ -113,8 +109,6 @@ public class CustomColumn {
     }
 
     /**
-     * Returns the column type.
-     * 
      * @return The column type.
      */
     public Class getType() {
@@ -132,8 +126,6 @@ public class CustomColumn {
     }
 
     /**
-     * Returns a string representation of the CustomColumn.
-     * 
      * @return A string representation of the CustomColumn.
      */
     public String toString() {

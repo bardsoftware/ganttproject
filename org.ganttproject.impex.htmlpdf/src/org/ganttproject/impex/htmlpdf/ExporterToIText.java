@@ -231,7 +231,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
         }
     }
-    protected Job[] createJobs(File outputFile, List resultFiles) {
+    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         waitRegisterFonts();
         return new Job[] {createTransformationJob(outputFile)};
     }
@@ -313,7 +313,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     }
 
     static class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
-        static List ourSizes = new ArrayList();
+        static List<String> ourSizes = new ArrayList<String>();
         static {
             {
                 Field[] fields = PageSize.class.getDeclaredFields();
@@ -385,7 +385,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         ///////////////////////////////////////
         // ITextStylesheet
-        public List getFontFamilies() {
+        public List<String> getFontFamilies() {
             return Collections.singletonList(getOriginalFontName());
         }
 
@@ -453,21 +453,20 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             writeResourceChart();
         }
 
-        private void writeAttributes(PdfPTable table, LinkedHashMap attrs) {
-            for (Iterator entries = attrs.entrySet().iterator(); entries.hasNext();) {
-                Map.Entry nextEntry = (Entry) entries.next();
-
+        private void writeAttributes(PdfPTable table, LinkedHashMap<String,String> attrs) {
+            for (Iterator<Entry<String, String>> entries = attrs.entrySet().iterator(); entries.hasNext();) {
+                Map.Entry<String, String> nextEntry = entries.next();
                 {
-                Paragraph p = new Paragraph(String.valueOf(nextEntry.getKey()), getSansRegularBold(12));
-                PdfPCell cell = new PdfPCell(p);
-                cell.setBorder(PdfPCell.NO_BORDER);
-                table.addCell(cell);
+                    Paragraph p = new Paragraph(String.valueOf(nextEntry.getKey()), getSansRegularBold(12));
+                    PdfPCell cell = new PdfPCell(p);
+                    cell.setBorder(PdfPCell.NO_BORDER);
+                    table.addCell(cell);
                 }
                 {
-                Paragraph p = new Paragraph(String.valueOf(nextEntry.getValue()), getSansRegular(12));
-                PdfPCell cell = new PdfPCell(p);
-                cell.setBorder(PdfPCell.NO_BORDER);
-                table.addCell(cell);
+                    Paragraph p = new Paragraph(String.valueOf(nextEntry.getValue()), getSansRegular(12));
+                    PdfPCell cell = new PdfPCell(p);
+                    cell.setBorder(PdfPCell.NO_BORDER);
+                    table.addCell(cell);
                 }
             }
         }
@@ -487,7 +486,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 head.addCell(cell);
             }
             addEmptyRow(head, 20);
-            LinkedHashMap attrs = new LinkedHashMap();
+            LinkedHashMap<String,String> attrs = new LinkedHashMap<String,String>();
             attrs.put("Project managers: ", buildManagerString());
             attrs.put("Dates: ", buildProjectDatesString());
             attrs.put(" ", " ");
@@ -577,17 +576,15 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
 
         protected PdfPTable createTableHeader(
-                TableHeaderUIFacade tableHeader, ArrayList orderedColumns) throws DocumentException {
+                TableHeaderUIFacade tableHeader, ArrayList<Column> orderedColumns) throws DocumentException {
             for (int i=0; i<tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c.isVisible()) {
                     orderedColumns.add(c);
                 }
             }
-            Collections.sort(orderedColumns, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    Column lhs = (Column) o1;
-                    Column rhs = (Column) o2;
+            Collections.sort(orderedColumns, new Comparator<Column>() {
+                public int compare(Column lhs, Column rhs) {
                     if (lhs==null || rhs==null) {
                         return 0;
                     }
@@ -629,13 +626,14 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
         }
 
-        protected void writeProperties(
-                ArrayList orderedColumns, Map id2value, PdfPTable table, Map id2cell) {
+        protected void writeProperties(ArrayList<Column> orderedColumns,
+                Map<String, String> id2value, PdfPTable table,
+                Map<String, PdfPCell> id2cell) {
             for (int i=0; i<orderedColumns.size(); i++) {
-                Column column = (Column) orderedColumns.get(i);
-                PdfPCell cell = (PdfPCell) id2cell.get(column.getID());
+                Column column = orderedColumns.get(i);
+                PdfPCell cell = id2cell.get(column.getID());
                 if (cell==null) {
-                    String value = (String) id2value.get(column.getID());
+                    String value = id2value.get(column.getID());
                     if (value==null) {
                         value = "";
                     }
@@ -650,7 +648,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         private void writeTasks() throws Exception {
             TableHeaderUIFacade visibleFields = getUIFacade().getTaskTree().getVisibleFields();
-            final ArrayList orderedColumns = new ArrayList();
+            final ArrayList<Column> orderedColumns = new ArrayList<Column>();
             final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
 
             TaskVisitor taskVisitor = new TaskVisitor() {
@@ -682,9 +680,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     if (addEmptyRow) {
                         addEmptyRow(table, 10);
                     }
-                    HashMap id2value = new HashMap();
+                    HashMap<String, String> id2value = new HashMap<String,String>();
                     myTaskProperty.getTaskAttributes(t, id2value);
-                    HashMap id2cell = new HashMap();
+                    HashMap<String, PdfPCell> id2cell = new HashMap<String,PdfPCell>();
 
                     PdfPCell nameCell;
                     if (myShowNotesOption.isChecked() && t.getNotes()!=null && !"".equals(t.getNotes())) {
@@ -725,16 +723,16 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         private void writeResources() throws Exception {
             TableHeaderUIFacade visibleFields = getUIFacade().getResourceTree().getVisibleFields();
-            final ArrayList orderedColumns = new ArrayList();
+            final ArrayList<Column> orderedColumns = new ArrayList<Column>();
             final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
             List resources = getProject().getHumanResourceManager().getResources();
 
             PropertyFetcher propFetcher = new PropertyFetcher(getProject());
             for (int i = 0; i < resources.size(); i++) {
                 HumanResource resource = (HumanResource) resources.get(i);
-                HashMap id2value = new HashMap();
+                HashMap<String, String> id2value = new HashMap<String, String>();
                 propFetcher.getResourceAttributes(resource, id2value);
-                HashMap id2cell = new HashMap();
+                HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
                 writeProperties(orderedColumns, id2value, table, id2cell);
             }
             myDoc.add(table);

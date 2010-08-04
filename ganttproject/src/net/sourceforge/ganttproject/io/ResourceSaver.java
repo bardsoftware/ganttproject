@@ -39,9 +39,9 @@ class ResourceSaver extends SaverBase {
 	private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler) throws SAXException {
 		//CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
 		AttributesImpl attrs = new AttributesImpl();
-		List properties = resource.getCustomProperties();
+		List<CustomProperty> properties = resource.getCustomProperties();
 		for (int i=0; i<properties.size(); i++) {
-			CustomProperty nextProperty = (CustomProperty) properties.get(i);
+			CustomProperty nextProperty = properties.get(i);
 			CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
             if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
     			addAttribute("definition-id", nextDefinition.getID(), attrs);
@@ -53,7 +53,7 @@ class ResourceSaver extends SaverBase {
 
 	private void saveCustomColumnDefinitions(IGanttProject project, TransformerHandler handler) throws SAXException {
 		CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
-		List/*<CustomPropertyDefinition>*/ definitions = customPropsManager.getDefinitions();
+		List<CustomPropertyDefinition> definitions = customPropsManager.getDefinitions();
 //		HumanResourceManager hrManager = (HumanResourceManager) project.getHumanResourceManager();
 //		Map customFields = hrManager.getCustomFields();
 //		if (customFields.size()==0) {
@@ -63,7 +63,7 @@ class ResourceSaver extends SaverBase {
         //startElement("custom-properties-definition", handler);
 		for (int i=0; i<definitions.size(); i++) {
 			//ResourceColumn nextField = (ResourceColumn) fields.next();
-			CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) definitions.get(i);
+			CustomPropertyDefinition nextDefinition = definitions.get(i);
 			addAttribute("id", nextDefinition.getID(), attrs);
 			addAttribute("name", nextDefinition.getName(), attrs);
 			addAttribute("type", nextDefinition.getTypeAsString(), attrs);
