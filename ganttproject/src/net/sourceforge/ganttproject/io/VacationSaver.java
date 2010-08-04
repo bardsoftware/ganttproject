@@ -26,7 +26,7 @@ class VacationSaver extends SaverBase {
                             .getElementAt(j);
                     addAttribute("start", gdo.getStart().toXMLString(), attrs);
                     addAttribute("end", gdo.getFinish().toXMLString(), attrs);
-                    addAttribute("resourceid", String.valueOf(p.getId()), attrs);
+                    addAttribute("resourceid", p.getId(), attrs);
                     emptyElement("vacation", attrs, handler);
                 }
         }
