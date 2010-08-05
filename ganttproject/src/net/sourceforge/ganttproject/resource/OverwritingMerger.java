@@ -1,0 +1,99 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.resource;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.calendar.GanttDaysOff;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
+
+public class OverwritingMerger implements HumanResourceMerger {
+    private final EnumerationOption myMergeOption;
+    private final Map/*<String,HumanResource>*/ myCache = new HashMap();
+
+    public OverwritingMerger(EnumerationOption mergeOption) {
+        myMergeOption = mergeOption;
+    }
+    public void merge(Map foreign2native) {
+        for (Iterator entries = foreign2native.entrySet().iterator(); entries.hasNext();) {
+            Map.Entry entry = (Entry) entries.next();
+            merge((HumanResource)entry.getKey(), (HumanResource)entry.getValue());
+        }
+    }
+
+    private void merge(HumanResource mergeFrom, HumanResource mergeTo) {
+        if (mergeFrom.getDaysOff() != null) {
+            for (int i = 0; i < mergeFrom.getDaysOff().size(); i++) {
+                mergeTo.addDaysOff(GanttDaysOff.create((GanttDaysOff) mergeFrom.getDaysOff().get(i)));
+            }
+        }
+        mergeTo.setName(mergeFrom.getName());
+        mergeTo.setDescription(mergeFrom.getDescription());
+        mergeTo.setMail(mergeFrom.getMail());
+        mergeTo.setPhone(mergeFrom.getPhone());
+        mergeTo.setRole(mergeFrom.getRole());
+        List/*<CustomProperty>*/ customProperties = mergeFrom.getCustomProperties();
+        for (int i=0; i<customProperties.size(); i++) {
+            CustomProperty nextProperty = (CustomProperty) customProperties.get(i);
+            mergeTo.addCustomProperty(nextProperty.getDefinition(), nextProperty.getValueAsString());
+        }
+    }
+    public HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr) {
+        if (MergeResourcesOption.NO.equals(myMergeOption.getValue())) {
+            return null;
+        }
+        if (MergeResourcesOption.BY_ID.equals(myMergeOption.getValue())) {
+            return (HumanResource) nativeMgr.getById(foreign.getId());
+        }
+        if (MergeResourcesOption.BY_EMAIL.equals(myMergeOption.getValue())) {
+            if (myCache.isEmpty()) {
+                buildEmailCache(nativeMgr);
+            }
+            return (HumanResource) myCache.get(foreign.getMail());
+        }
+        if (MergeResourcesOption.BY_NAME.equals(myMergeOption.getValue())) {
+            if (myCache.isEmpty()) {
+                buildNameCache(nativeMgr);
+            }
+            return (HumanResource) myCache.get(foreign.getName());
+        }
+        assert false : "We should not be here. Option ID=" + myMergeOption.getValue();
+        return null;
+    }
+    private void buildNameCache(HumanResourceManager nativeMgr) {
+        List resources = nativeMgr.getResources();
+        for (int i=0; i<resources.size(); i++) {
+            HumanResource hr = (HumanResource) resources.get(i);
+            myCache.put(hr.getName(), hr);
+        }
+    }
+    private void buildEmailCache(HumanResourceManager nativeMgr) {
+        List resources = nativeMgr.getResources();
+        for (int i=0; i<resources.size(); i++) {
+            HumanResource hr = (HumanResource) resources.get(i);
+            myCache.put(hr.getMail(), hr);
+        }
+    }
+
+}
