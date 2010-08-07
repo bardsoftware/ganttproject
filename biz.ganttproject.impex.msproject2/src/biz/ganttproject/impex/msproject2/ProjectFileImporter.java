@@ -31,23 +31,32 @@ public class ProjectFileImporter {
     }
 
     private void importTasks(ProjectFile foreignProject) {
-        for (Task t: foreignProject.getAllTasks()) {
-            GanttTask nativeTask = myNativeProject.getTaskManager().createTask();
-            nativeTask.setName(t.getName());
-            nativeTask.setStart(new GanttCalendar(t.getStart()));
+        for (Task t: foreignProject.getChildTasks()) {
+            importTask(foreignProject, t, myNativeProject.getTaskManager().getRootTask());
+        }
+    }
+
+    private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask) {
+        GanttTask nativeTask = myNativeProject.getTaskManager().createTask();
+        myNativeProject.getTaskContainment().move(nativeTask, supertask);
+        nativeTask.setName(t.getName());
+        nativeTask.setStart(new GanttCalendar(t.getStart()));
+        nativeTask.setNotes(t.getNotes());
+        nativeTask.setWebLink(t.getHyperlink());
+        nativeTask.setPriority(convertPriority(t));
+        if (t.getChildTasks().isEmpty()) {
             if (t.getPhysicalPercentComplete() != null) {
                 nativeTask.setCompletionPercentage(t.getPhysicalPercentComplete());
             }
             nativeTask.setMilestone(t.getMilestone());
-            nativeTask.setNotes(t.getNotes());
-            nativeTask.setWebLink(t.getHyperlink());
             nativeTask.setDuration(convertDuration(t));
-            nativeTask.setPriority(convertPriority(t));
-            myNativeProject.getTaskContainment().move(
-                nativeTask, myNativeProject.getTaskManager().getRootTask());
+        }
+        else {
+            for (Task child: t.getChildTasks()) {
+                importTask(foreignProject, child, nativeTask);
+            }
         }
     }
-
 
     private Priority convertPriority(Task t) {
         net.sf.mpxj.Priority priority = t.getPriority();
