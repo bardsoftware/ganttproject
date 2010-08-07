@@ -27,7 +27,16 @@ public class ProjectFileImporter {
 
     public void run() throws MPXJException {
         ProjectFile pf = myReader.read(myForeignFile);
+        importCalendar(pf);
+        importResources(pf);
         importTasks(pf);
+        importResourceAssignments(pf);
+    }
+
+    private void importCalendar(ProjectFile pf) {
+    }
+
+    private void importResources(ProjectFile pf) {
     }
 
     private void importTasks(ProjectFile foreignProject) {
@@ -87,4 +96,9 @@ public class ProjectFileImporter {
         return myNativeProject.getTaskManager().createLength(
             myNativeProject.getTimeUnitStack().getDefaultTimeUnit(), t.getStart(), t.getFinish());
     }
+
+    private void importResourceAssignments(ProjectFile pf) {
+    }
+
+
 }
