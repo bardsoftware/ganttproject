@@ -8,6 +8,8 @@ import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.Relation;
 import net.sf.mpxj.RelationType;
+import net.sf.mpxj.Resource;
+import net.sf.mpxj.ResourceAssignment;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.TimeUnit;
 import net.sf.mpxj.mpp.MPPReader;
@@ -16,6 +18,7 @@ import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
@@ -45,21 +48,29 @@ public class ProjectFileImporter {
     public void run() throws MPXJException {
         ProjectFile pf = myReader.read(myForeignFile);
         Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
+        Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
         importCalendar(pf);
-        importResources(pf);
+        importResources(pf, foreignId2nativeResource);
         importTasks(pf, foreignId2nativeTask);
         try {
             importDependencies(pf, foreignId2nativeTask);
         } catch (TaskDependencyException e) {
             e.printStackTrace();
         }
-        importResourceAssignments(pf);
+        importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
     }
 
     private void importCalendar(ProjectFile pf) {
     }
 
-    private void importResources(ProjectFile pf) {
+    private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
+        for (Resource r: pf.getAllResources()) {
+            HumanResource nativeResource = myNativeProject.getHumanResourceManager().newHumanResource();
+            nativeResource.setName(r.getName());
+            nativeResource.setMail(r.getEmailAddress());
+            myNativeProject.getHumanResourceManager().add(nativeResource);
+            foreignId2humanResource.put(r.getID(), nativeResource);
+        }
     }
 
     private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask) {
@@ -158,7 +169,15 @@ public class ProjectFileImporter {
         }
     }
 
-    private void importResourceAssignments(ProjectFile pf) {
+    private void importResourceAssignments(ProjectFile pf,
+            Map<Integer, GanttTask> foreignId2nativeTask, Map<Integer, HumanResource> foreignId2nativeResource) {
+        for (ResourceAssignment ra: pf.getAllResourceAssignments()) {
+            GanttTask nativeTask = foreignId2nativeTask.get(ra.getTask().getID());
+            HumanResource nativeResource = foreignId2nativeResource.get(ra.getResource().getID());
+            net.sourceforge.ganttproject.task.ResourceAssignment nativeAssignment =
+                nativeTask.getAssignmentCollection().addAssignment(nativeResource);
+            nativeAssignment.setLoad(ra.getUnits().floatValue());
+        }
     }
 
 
