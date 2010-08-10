@@ -158,7 +158,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** Coonstruct the menu settings. */
+    /** Construct the menu settings. */
     public abstract void constructSections();
 
     /** Add a sub section. */
