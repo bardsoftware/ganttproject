@@ -178,7 +178,7 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
         // - add the settingPanel into the main Panel
         mainPanel2.add(vb, 0);
         mainPanel2.repaint();
-        mainPanel2.validate(); // valide the changes
+        mainPanel2.validate(); // validate the changes
     }
 
     public void actionPerformed(ActionEvent e) {
