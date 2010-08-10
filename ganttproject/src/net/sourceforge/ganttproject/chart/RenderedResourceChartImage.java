@@ -3,7 +3,7 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
-import net.sourceforge.ganttproject.ChartComponentBase.AbstractChartImplementation;
+import net.sourceforge.ganttproject.AbstractChartImplementation;
 
 public class RenderedResourceChartImage extends RenderedChartImage {
 
@@ -17,7 +17,7 @@ public class RenderedResourceChartImage extends RenderedChartImage {
     }
 
     protected void paintChart(Graphics g) {
-        myChartImplementation.paintComponent(g);
+        myChartImplementation.paintChart(g);
     }
 
 }

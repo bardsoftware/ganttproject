@@ -4,19 +4,16 @@ public class DefaultStringOption extends GPAbstractOption implements StringOptio
 
     private String myLockedValue;
     private String myValue;
-    
+
     public DefaultStringOption(String id) {
         super(id);
     }
 
     public void setValue(String value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         ChangeValueEvent event = new ChangeValueEvent(getID(), myLockedValue,
-                value);        
+                value);
         myLockedValue = value;
-        fireChangeValueEvent(event);        
+        fireChangeValueEvent(event);
     }
 
     public String getValue() {
@@ -26,7 +23,7 @@ public class DefaultStringOption extends GPAbstractOption implements StringOptio
     public String getUncommitedValue() {
         return myLockedValue;
     }
-    
+
     public void commit() {
         super.commit();
         myValue = myLockedValue;
@@ -39,14 +36,4 @@ public class DefaultStringOption extends GPAbstractOption implements StringOptio
     public void loadPersistentValue(String value) {
         setValue(value);
     }
-    
-    public boolean isChanged() {
-        if (isLocked()) {
-            if (myValue!=null) {
-                return false==myValue.equals(myLockedValue);
-            }
-        }
-        return false;
-    }    
-    
 }

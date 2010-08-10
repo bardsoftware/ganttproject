@@ -20,24 +20,29 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.table.JTableHeader;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.RenderedGanttChartImage;
 import net.sourceforge.ganttproject.chart.RenderedResourceChartImage;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.font.Fonts;
@@ -50,12 +55,16 @@ import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 
 /**
  * Classe for the graphic part of the soft
  */
 public class ResourceLoadGraphicArea extends ChartComponentBase implements
         ResourceChart {
+
+    private static final int HEADER_OFFSET = 44;
 
     /** This value is connected to the GanttTRee Scrollbar to move up or down */
     private int margY;
@@ -68,18 +77,21 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private ChartModelResource myChartModel;
 
+    private ChartViewState myViewState;
+
     /** Constructor */
     public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager) {
-        super((IGanttProject) app, (UIFacade) app, zoomManager);
+        super(app.getProject(), app.getUIFacade(), zoomManager);
         this.setBackground(Color.WHITE);
         myChartModel = new ChartModelResource(getTaskManager(),
                 (HumanResourceManager) app.getHumanResourceManager(),
                 getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
-//        getViewState().addStateListener(myChartModel);
-        getViewState().setStartDate(CalendarFactory.newCalendar().getTime());
+        myChartImplementation = new ResourcechartImplementation(app.getProject(), myChartModel, this);
+        myViewState = new ChartViewState(this, app.getUIFacade());
+        super.setStartDate(GregorianCalendar.getInstance().getTime());
         margY = 0;
         appli = app;
-
+        //myTableHeader = app.getResourcePanel().table.getTableHeader();
     }
 
     /** The size of the panel. */
@@ -88,14 +100,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
 
-    /** draw the panel */
-    public void paintComponent(Graphics g) {
-        myChartModel.setBounds(getSize());
-        myChartImplementation.paintComponent(g);
-    }
-
     protected int getHeaderHeight() {
-        return 0;
+        return appli.getResourcePanel().table.getTable().getTableHeader().getHeight() + HEADER_OFFSET;
     }
 
     protected int getRowHeight() {
@@ -137,7 +143,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     /** Return an image with the gantt chart */
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        Date dateStart = settings.getStartDate() == null ? getStartDate()
+
+        /*Date dateStart = settings.getStartDate() == null ? getStartDate()
                 : settings.getStartDate();
         Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings
                 .getEndDate();
@@ -170,6 +177,66 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
         RenderedResourceChartImage renderedImage = new RenderedResourceChartImage(myChartModel, myChartImplementation,  resourceTreeImage, chartWidth, chartHeight);
         return renderedImage;
+        */
+
+        ResourceTreeTable treetable = Mediator.getGanttProjectSingleton().getResourcePanel().getResourceTreeTable();
+        org.jdesktop.swing.JXTreeTable xtreetable = treetable.getTreeTable();
+
+//      I don't know why we need to add 62 to the height to make it fit the real height
+        int tree_height = xtreetable.getHeight()+62;
+
+        GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 40);
+        BufferedImage tree  = new BufferedImage(xtreetable.getWidth(), tree_height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage treeview = new BufferedImage(treetable.getWidth(), treetable.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage logo  = new BufferedImage(xtreetable.getWidth(), 40, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D glogo = logo.createGraphics();
+        logo_panel.paintComponent(glogo);
+
+        Graphics2D gtreeview = treeview.createGraphics();
+        treetable.paintComponents(gtreeview);
+
+        BufferedImage header = treeview.getSubimage(0, 0, treeview.getWidth(), treetable.getRowHeight()+3);
+        treeview.flush();
+
+        Graphics2D gtree = tree.createGraphics();
+        xtreetable.printAll(gtree);
+
+        //create a new image that will contain the logo, the table/tree and the chart
+        BufferedImage resource_image = new BufferedImage(xtreetable.getWidth(), tree_height+logo_panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D gimage = resource_image.createGraphics();
+
+        //draw the logo on the image
+        gimage.drawImage(logo, 0, 0, tree.getWidth(), logo.getHeight(), Color.WHITE, null);
+        //draw the header on the image
+        gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
+        //draw the tree on the image
+        gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
+
+        Date dateStart = null;
+        Date dateEnd = null;
+
+        TimeUnit unit = getViewState().getBottomTimeUnit();
+
+        dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
+        dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
+
+        if (dateStart.after(dateEnd)) {
+            Date tmp = (Date) dateStart.clone();
+            dateStart = (Date) dateEnd.clone();
+            dateEnd = tmp;
+        }
+
+        TaskLength printedLength = getTaskManager().createLength(unit, dateStart, dateEnd);
+
+        int chartWidth = (int) ((printedLength.getLength(getViewState().getBottomTimeUnit()) + 1) * getViewState().getBottomUnitWidth());
+        if (chartWidth<this.getWidth()) {
+            chartWidth = this.getWidth();
+        }
+        int chartHeight = resource_image.getHeight();
+
+        return new RenderedResourceChartImage(myChartModel, myChartImplementation,  resource_image, chartWidth, chartHeight);
     }
 
     private HumanResourceManager getHumanResourceManager() {
@@ -187,13 +254,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     public Date getEndDate() {
-        // return this.end.getTime();
-        TaskLength projectLength = getTaskManager().getProjectLength();
-        GanttCalendar pstart = new GanttCalendar(getTaskManager()
-                .getProjectStart());
-        pstart.add((int) projectLength.getLength());
-        GanttCalendar end = pstart.Clone();
-        return end.getTime();
+        return getTaskManager().getProjectEnd();
     }
 
     protected ChartModelBase getChartModel() {
@@ -231,20 +292,40 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private MouseListener myMouseListener;
 
-    private void setupBeforePaint() {
-        myChartModel.setHeaderHeight(getHeaderHeight());
-        myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-        myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
-        myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
-        myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
+    private final AbstractChartImplementation myChartImplementation;
+
+    public void setTaskManager(TaskManager taskManager) {
+        // TODO Auto-generated method stub
+
     }
-    private AbstractChartImplementation myChartImplementation = new AbstractChartImplementation() {
-        public void paintComponent(Graphics g) {
+
+    public void reset() {
+        // TODO Auto-generated method stub
+
+    }
+
+    public Icon getIcon() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private class ResourcechartImplementation extends AbstractChartImplementation {
+
+        public ResourcechartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
+            super(project, chartModel, chartComponent);
+            // TODO Auto-generated constructor stub
+        }
+        public void paintChart(Graphics g) {
             synchronized (ChartModelBase.STATIC_MUTEX) {
-                super.paintComponent(g);
-                ResourceLoadGraphicArea.super.paintComponent(g);
-                setupBeforePaint();
-                myChartModel.paint(g);
+                // LaboPM
+                // ResourceLoadGraphicArea.super.paintComponent(g);
+                myChartModel.setHeaderHeight(getHeaderHeight());
+                myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
+                myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
+                myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
+                myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
+                //myChartModel.paint(g);
+                super.paintChart(g);
 
                 if (drawVersion) {
                     drawGPVersion(g);
@@ -275,27 +356,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
             appli.getResourcePanel().pasteSelection();
         }
 
-    };
-
-    public void setTaskManager(TaskManager taskManager) {
-        // TODO Auto-generated method stub
 
     }
 
-    public void reset() {
-        // TODO Auto-generated method stub
-
+    @Override
+    public ChartViewState getViewState() {
+        return myViewState;
     }
-
-    public Icon getIcon() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Chart createCopy() {
-        setupBeforePaint();
-        return super.createCopy();
-    }
-
-
 }

@@ -18,6 +18,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
+import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -55,6 +56,8 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public class TaskManagerImpl implements TaskManager {
+    private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+
     private final TaskHierarchyManagerImpl myHierarchyManager;
 
     private final TaskDependencyCollectionImpl myDependencyCollection;
@@ -356,6 +359,11 @@ public class TaskManagerImpl implements TaskManager {
                     + " is not date frameable");
         }
         return result;
+    }
+
+    public Date shift(Date original, TaskLength duration) {
+        GPCalendar calendar = RESTLESS_CALENDAR;
+        return calendar.shiftDate(original, duration);
     }
 
     public TaskDependencyCollection getDependencyCollection() {

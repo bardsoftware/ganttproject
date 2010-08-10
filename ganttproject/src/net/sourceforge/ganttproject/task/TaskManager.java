@@ -44,6 +44,7 @@ public interface TaskManager {
     public TaskLength createLength(TimeUnit timeUnit, Date startDate,
             Date endDate);
 
+    Date shift(Date original, TaskLength duration);
     TaskDependencyCollection getDependencyCollection();
 
     AlgorithmCollection getAlgorithmCollection();
@@ -63,12 +64,12 @@ public interface TaskManager {
             return new TaskManagerImpl(containmentFacadeFactory, config,null);
         }
 
-		public static TaskManager newInstance(
-				Factory factory, 
-				TaskManagerConfig taskConfig, 
-				CustomColumnsStorage customColumnsStorage) {
+        public static TaskManager newInstance(
+                Factory factory,
+                TaskManagerConfig taskConfig,
+                CustomColumnsStorage customColumnsStorage) {
             return new TaskManagerImpl(factory, taskConfig, customColumnsStorage);
-		}
+        }
     }
 
     public TaskLength getProjectLength();
@@ -89,7 +90,7 @@ public interface TaskManager {
 
     /**
      * Processes the critical path findind on <code>root</code> tasks.
-     * 
+     *
      * @param root
      *            The root of the tasks to consider in the critical path
      *            finding.

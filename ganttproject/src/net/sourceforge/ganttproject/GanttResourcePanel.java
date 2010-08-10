@@ -74,7 +74,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private final ResourceTreeTableModel model;
 
-    private final ResourceTreeTable table;
+    final ResourceTreeTable table;
 
     public final GanttProject appli;
 

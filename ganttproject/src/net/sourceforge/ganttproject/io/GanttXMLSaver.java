@@ -85,10 +85,10 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
             addAttribute("name", getProject().getProjectName(), attrs);
             addAttribute("company", getProject().getOrganization(), attrs);
             addAttribute("webLink", getProject().getWebLink(), attrs);
-            addAttribute("view-date", new GanttCalendar(area.getViewState()
+            addAttribute("view-date", new GanttCalendar(area
                     .getStartDate()).toXMLString(), attrs);
             addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
-            //TODO for GP 2.0: move view configurations into <view> tag (see ViewSaver) 
+            //TODO for GP 2.0: move view configurations into <view> tag (see ViewSaver)
             addAttribute("gantt-divider-location", ""
                     + myUIFacade.getGanttDividerLocation(), attrs);
             addAttribute("resource-divider-location", ""
@@ -97,7 +97,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
             startElement("project", attrs, handler);
             //
             cdataElement("description", getProject().getDescription(), attrs, handler);
-            
+
             saveViews(handler);
             emptyComment(handler);
             saveCalendar(handler);
@@ -113,9 +113,9 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
             stream.close();
         } catch (Throwable e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
             IOException propagatedException  = new IOException("Failed to save the project file");
             propagatedException.initCause(e);
             throw propagatedException;
@@ -146,7 +146,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     private void saveCalendar(TransformerHandler handler) throws SAXException {
         new CalendarSaver().save(getProject(), handler);
     }
-    
+
     private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
         new TaskSaver().save(getProject(), handler, area.getTaskColor());
     }

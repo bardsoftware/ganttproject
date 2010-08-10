@@ -1537,8 +1537,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     new ChangeEvent(tree.getTreeTable().getTreeTable()));
         }
 
-        GanttCalendar cal = new GanttCalendar(area.getViewState()
-                .getStartDate());
+        GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
         GanttLanguage lang = GanttLanguage.getInstance();
@@ -2134,7 +2133,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
 
     // private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-    
+
     private ParserFactory myParserFactory;
 
     private static WindowListener ourWindowListener;
@@ -2659,4 +2658,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return getResourcePanel().getResourceTreeTable();
     }
 
+    public IGanttProject getProject() {
+        return this;
+    }
 }

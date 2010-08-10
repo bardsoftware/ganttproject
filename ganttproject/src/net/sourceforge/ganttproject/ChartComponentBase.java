@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -9,29 +10,28 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.ChartRendererBase;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.OptionsDialogAction;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -40,13 +40,14 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
-public abstract class ChartComponentBase extends JPanel {
+public abstract class ChartComponentBase extends JPanel implements TimelineChart {
     private static final Cursor DEFAULT_CURSOR = Cursor
             .getPredefinedCursor(Cursor.HAND_CURSOR);
 
-    protected final ChartViewState myChartViewState;
+    //protected final ChartViewState myChartViewState;
 
     private final IGanttProject myProject;
 
@@ -63,16 +64,7 @@ public abstract class ChartComponentBase extends JPanel {
         myProject = project;
         myUIFacade = uiFacade;
         myZoomManager = zoomManager;
-        myChartViewState = new ChartViewState(project, uiFacade);
-        myChartViewState.addStateListener(new ChartViewState.Listener() {
-            public void startDateChanged(ChartViewState.ViewStateEvent e) {
-                repaint();
-            }
-
-            public void zoomChanged(ZoomEvent e) {
-                getImplementation().zoomChanged(e);
-            }
-        });
+        //myChartViewState = new ChartViewState(this, uiFacade);
         myMouseWheelListener = new MouseWheelListenerBase();
         addMouseListener(getMouseListener());
         addMouseMotionListener(getMouseMotionListener());
@@ -80,23 +72,28 @@ public abstract class ChartComponentBase extends JPanel {
     }
 
     public Object getAdapter(Class adapter) {
+        if (Component.class.isAssignableFrom(adapter)) {
+            return this;
+        }
         return null;
     }
 
-    public ChartViewState getViewState() {
-        return myChartViewState;
-    }
+    public abstract ChartViewState getViewState();
 
     public ZoomListener getZoomListener() {
         return getImplementation();
     }
+    public ZoomManager getZoomManager(){
+        return myZoomManager;
+    }
+
 
     public GPOptionGroup[] getOptionGroups() {
         return getChartModel().getChartOptionGroups();
     }
 
     public Chart createCopy() {
-        return new AbstractChartImplementation(getChartModel().createCopy());
+        return new AbstractChartImplementation(myProject, getChartModel().createCopy(), this);
     }
 
     public ChartSelection getSelection() {
@@ -140,15 +137,23 @@ public abstract class ChartComponentBase extends JPanel {
 
     public Action getOptionsDialogAction() {
         if (myOptionsDialogAction==null) {
-            myOptionsDialogAction = new OptionsDialogAction(getOptionGroups(), getUIFacade());
+            myOptionsDialogAction = new OptionsDialogAction(getOptionGroups(), getUIFacade()) {
+                protected Component createPreviewComponent() {
+                    return ChartComponentBase.this.createPreviewComponent();
+                }
+
+            };
         }
         return myOptionsDialogAction;
     }
 
-    public ChartModelBase getModel() {
-        return getChartModel();
+    protected Component createPreviewComponent() {
+        return null;
     }
 
+    public ChartModel getModel() {
+        return getChartModel();
+    }
     protected abstract ChartModelBase getChartModel();
 
     protected abstract MouseListener getMouseListener();
@@ -195,10 +200,12 @@ public abstract class ChartComponentBase extends JPanel {
         }
 
         public void apply(MouseEvent event) {
-            float absoluteDiff = getLengthDiff(event);
-            float relativeDiff = myPreviousAbsoluteDiff - absoluteDiff;
-            TaskLength diff = getTaskManager().createLength(
-                    getViewState().getBottomTimeUnit(), relativeDiff);
+
+
+           float absoluteDiff = getLengthDiff(event);
+           float relativeDiff = myPreviousAbsoluteDiff - absoluteDiff;
+           TaskLength diff = getTaskManager().createLength(
+                   getViewState().getBottomTimeUnit(), relativeDiff);
 
             float daysF = diff.getLength(getTimeUnitStack()
                     .getDefaultTimeUnit());
@@ -208,14 +215,24 @@ public abstract class ChartComponentBase extends JPanel {
                 return;
             }
             if (days > 0) {
-                getUIFacade().getScrollingManager().scrollRight();
+                getUIFacade().getScrollingManager().scrollLeft();
+
             }
             if (days < 0) {
-                getUIFacade().getScrollingManager().scrollLeft();
+               getUIFacade().getScrollingManager().scrollRight();
+
             }
-            myPreviousAbsoluteDiff = absoluteDiff;
+           myPreviousAbsoluteDiff = absoluteDiff;
+           // moves the block of the chart's scroll bar
+//           Mediator.getGanttProjectSingleton().getMyGanttChartTabContent().getCustomScrollPane().setBlockFromChart();
+           //Mediator.getGanttProjectSingleton().getResourcePanel().getCustomScrollPane().setBlockFromChart();
+
 
         }
+
+
+
+
 
         public void finish() {
         }
@@ -246,6 +263,7 @@ public abstract class ChartComponentBase extends JPanel {
 
         protected void processLeftButton(MouseEvent e) {
             getImplementation().beginScrollViewInteraction(e);
+            ChartComponentBase.this.requestFocus();
         }
 
         public void mouseReleased(MouseEvent e) {
@@ -292,12 +310,14 @@ public abstract class ChartComponentBase extends JPanel {
         private void fireZoomIn() {
             if (myZoomManager.canZoomIn()) {
                 myZoomManager.zoomIn();
+//              reset the block size of the chart scrollbar
             }
         }
 
         private void fireZoomOut() {
             if (myZoomManager.canZoomOut()) {
                 myZoomManager.zoomOut();
+//              reset the block size of the chart scrollbar
             }
         }
 
@@ -308,122 +328,68 @@ public abstract class ChartComponentBase extends JPanel {
 
     protected abstract AbstractChartImplementation getImplementation();
 
-    public class AbstractChartImplementation implements Chart, ZoomListener {
-        private ChartModelBase myChartModel;
-        private Set mySelectionListeners= new LinkedHashSet();
+    public Date getStartDate() {
+        return getImplementation().getStartDate();
+    }
 
-        public AbstractChartImplementation() {
-        }
-        private AbstractChartImplementation(ChartModelBase chartModel) {
-            myChartModel = chartModel;
-        }
+    public void setStartDate(Date startDate) {
+        getImplementation().setStartDate(startDate);
+        repaint();
+    }
 
-        public void beginScrollViewInteraction(MouseEvent e) {
-            setActiveInteraction(new ScrollViewInteraction(e));
-        }
+    public IGanttProject getProject() {
+        return myProject;
+    }
 
-        public MouseInteraction finishInteraction() {
-            try {
-                if (getActiveInteraction() != null) {
-                    getActiveInteraction().finish();
-                }
-                return getActiveInteraction();
-            } finally {
-                setActiveInteraction(null);
-            }
-        }
+    public Date getEndDate() {
+        return getImplementation().getEndDate();
+    }
 
-        protected void setActiveInteraction(MouseInteraction myActiveInteraction) {
-            this.myActiveInteraction = myActiveInteraction;
-        }
+    public void scrollLeft() {
+        getImplementation().scrollLeft();
+        repaint();
+    }
 
-        public MouseInteraction getActiveInteraction() {
-            return myActiveInteraction;
-        }
+    public void scrollRight() {
+        getImplementation().scrollRight();
+        repaint();
+    }
 
-        public void zoomChanged(ZoomEvent e) {
-            invalidate();
-            repaint();
-        }
+    public void setDimensions(int height, int width) {
+        getImplementation().setDimensions(height, width);
+    }
 
-        public void paintComponent(Graphics g) {
+    public void setBottomUnit(TimeUnit bottomUnit) {
+        getImplementation().setBottomUnit(bottomUnit);
+    }
+    public void setTopUnit(TimeUnit topUnit) {
+        getImplementation().setTopUnit(topUnit);
+    }
 
-        }
-        private MouseInteraction myActiveInteraction;
+    public void setBottomUnitWidth(int width) {
+        getImplementation().setBottomUnitWidth(width);
+    }
+    public void paintChart(Graphics g) {
+        getImplementation().paintChart(g);
+    }
+    public void addRenderer(ChartRendererBase renderer) {
+        getImplementation().addRenderer(renderer);
+    }
+//    public void addTimeUnitVisitor(TimeUnitVisitor visitor) {
+//        getImplementation().addTimeUnitVisitor(visitor);
+//    }
+    public void resetRenderers() {
+        getImplementation().resetRenderers();
+    }
+    public TaskLength calculateLength(int x) {
+        return getImplementation().calculateLength(x);
+    }
 
-        private ChartModelBase getChartModel() {
-            return myChartModel==null ? ChartComponentBase.this.getChartModel() : myChartModel;
-        }
-        /////////////////////////////////////////////////////////////
-        // interface Chart
-        public RenderedImage getRenderedImage(GanttExportSettings settings) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-        public BufferedImage getChart(GanttExportSettings settings) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        public Date getStartDate() {
-            return getChartModel().getStartDate();
-        }
-
-        public Date getEndDate() {
-            return getChartModel().getEndDate();
-        }
-
-        public String getName() {
-            return ChartComponentBase.this.getName();
-        }
-
-        public void setTaskManager(TaskManager taskManager) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void reset() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Icon getIcon() {
-            return null;
-        }
-
-        public GPOptionGroup[] getOptionGroups() {
-            return getChartModel().getChartOptionGroups();
-        }
-
-        public Chart createCopy() {
-            return new AbstractChartImplementation(getChartModel().createCopy());
-        }
-
-        public Object getAdapter(Class arg0) {
-            return null;
-        }
-        public ChartSelection getSelection() {
-            throw new UnsupportedOperationException();
-        }
-        public IStatus canPaste(ChartSelection selection) {
-            throw new UnsupportedOperationException();
-        }
-        public void paste(ChartSelection selection) {
-            throw new UnsupportedOperationException();
-        }
-        public void addSelectionListener(ChartSelectionListener listener) {
-            mySelectionListeners.add(listener);
-        }
-        public void removeSelectionListener(ChartSelectionListener listener) {
-            mySelectionListeners.remove(listener);
-        }
-        protected void fireSelectionChanged() {
-            for (Iterator listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
-                ChartSelectionListener nextListener = (ChartSelectionListener) listeners.next();
-                nextListener.selectionChanged();
-            }
-        }
-        public ChartModelBase getModel() {
-            return getChartModel();
-        }
+    /** draw the panel */
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        getChartModel().setBounds(getSize());
+        getImplementation().paintChart(g);
     }
 
     protected static class ChartSelectionImpl implements ChartSelection {
@@ -469,5 +435,9 @@ public abstract class ChartComponentBase extends JPanel {
             isTransactionRunning = false;
         }
 
+    }
+
+    public MouseInteraction newScrollViewInteraction(MouseEvent e) {
+        return new ScrollViewInteraction(e);
     }
 }

@@ -3,27 +3,43 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
@@ -37,26 +53,11 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 
 /**
  * Dialog opened to create a new customColumn.
- * 
+ *
  * @author bbaranne Mar 2, 2005
  */
 public class GanttDialogCustomColumn  {
     private static GanttLanguage language = GanttLanguage.getInstance();
-
-    private static String cardInteger = language.getText("integer");
-
-    private static String cardText = language.getText("text");
-
-    private static String cardDouble = language.getText("double");
-
-    private static String cardDate = language.getText("date");
-
-    private static String cardBoolean = language.getText("boolean");
-
-    /**
-     * Created CustomColumn.
-     */
-    private CustomColumn customColumn = null;
 
     private JPanel panelDefaultValue = null;
 
@@ -70,7 +71,7 @@ public class GanttDialogCustomColumn  {
 
     private Component panelDate = null;
 
-    private JComponent panelBoolean = null;
+    private JPanel panelBoolean = null;
 
     private JTextArea textArea = null;
 
@@ -89,7 +90,7 @@ public class GanttDialogCustomColumn  {
             commit();
             lock();
         }
-        
+
     };
     private StringOption myName = new DefaultStringOption("taskProperties.customColumn.name") {
         public void setValue(String value) {
@@ -99,26 +100,26 @@ public class GanttDialogCustomColumn  {
         }
     };
 
-    private EnumerationOption myType = new DefaultEnumerationOption("taskProperties.customColumn.type", CustomColumnsStorage.availableTypes) {
+    private EnumerationOption myType = new DefaultEnumerationOption("taskProperties.customColumn.type", CustomPropertyClass.values()) {
         public void setValue(String value) {
             super.setValue(value);
             commit();
             int selectedIndex = getSelectedIndex(value);
             switch (selectedIndex) {
             case 0:
-                cardLayoutDefaultValue.show(panelDefaultValue, cardText);
+                cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.TEXT.getJavaClass().getName());
                 break;
             case 1:
-                cardLayoutDefaultValue.show(panelDefaultValue, cardInteger);
+                cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.INTEGER.getJavaClass().getName());
                 break;
             case 2:
-                cardLayoutDefaultValue.show(panelDefaultValue, cardDouble);
+                cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.DOUBLE.getJavaClass().getName());
                 break;
             case 3:
-                cardLayoutDefaultValue.show(panelDefaultValue, cardDate);
+                cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.DATE.getJavaClass().getName());
                 break;
             case 4:
-                cardLayoutDefaultValue.show(panelDefaultValue, cardBoolean);
+                cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.BOOLEAN.getJavaClass().getName());
                 break;
             }
             lock();
@@ -127,51 +128,35 @@ public class GanttDialogCustomColumn  {
             return getSelectedType(value);
         }
     };
-    
+
     private int getSelectedType(String typeName) {
-        for (int i=0; i<CustomColumnsStorage.availableTypes.size(); i++) {
-            if (CustomColumnsStorage.availableTypes.get(i).equals(typeName)) {
-                return i;
+        for (CustomPropertyClass columnClass : CustomPropertyClass.values()) {
+            if (columnClass.getDisplayName().equals(typeName)) {
+                return columnClass.ordinal();
             }
         }
         return -1;
-        
+
     }
-    
-    private BooleanOption myDefaultValue = new DefaultBooleanOption("taskProperties.customColumn.defaultValue") {
-		public void toggle() {
-			super.toggle();
-			commit();
-			lock();
-			GanttDialogCustomColumn.this.setDefaultValuePanelEnabled(isChecked());
-		}
-    	
-    };
     private final UIFacade myUIFacade;
     private final GPOption[] myOptions = new GPOption[] {myName, myType};
     private final GPOptionGroup myOptionGroup = new GPOptionGroup("taskProperties.customColumn", myOptions);
-    private final GPOptionGroup myDefaultValueOptionGroup = 
-        new GPOptionGroup("taskProperties.customColumn.defaultValue", new GPOption[] {myDefaultValue});
-	private boolean isOk;
-    
-    public GanttDialogCustomColumn(UIFacade uiFacade, CustomColumn customCol) {
+    private boolean isOk;
+
+    private CustomPropertyManager myCustomPropertyManager;
+
+    public GanttDialogCustomColumn(UIFacade uiFacade, CustomPropertyManager customPropertyManager) {
+        myCustomPropertyManager = customPropertyManager;
         myUIFacade = uiFacade;
-        customColumn = customCol;
         myOptionGroup.lock();
         myDate.lock();
         myDate.setValue(new Date());
         myName.setValue("");
         myOptionGroup.setTitled(false);
-        myDefaultValueOptionGroup.setTitled(false);
-        myDefaultValueOptionGroup.lock();
         isOk = false;
     }
 
-    protected void setDefaultValuePanelEnabled(boolean enabled) {
-    	UIUtil.setEnabledTree(panelDefaultValue, enabled);
-	}
-
-	public void setVisible(boolean visible) {
+    public void setVisible(boolean visible) {
         Component rootComponent = getComponent();
         getUIFacade().showDialog(rootComponent, new Action[] {
                 new OkAction() {
@@ -179,7 +164,7 @@ public class GanttDialogCustomColumn  {
                         myOptionGroup.commit();
                         myDate.commit();
                         GanttDialogCustomColumn.this.ok();
-                    }}, 
+                    }},
                 new CancelAction() {
                     public void actionPerformed(ActionEvent e) {
                         myOptionGroup.rollback();
@@ -187,24 +172,16 @@ public class GanttDialogCustomColumn  {
                     }
         }});
     }
-    
+
     private UIFacade getUIFacade() {
         return myUIFacade;
     }
     private Component getComponent() {
+        JPanel result = new JPanel();
+        GridBagConstraints constraints = new GridBagConstraints();
+
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
-			public String getOptionLabel(GPOptionGroup group, GPOption option) {
-				if (option==myDefaultValue) { 
-					return language.getText("defaultValue");
-				}
-				if (option==myDate) {
-				    return "";
-				}
-				return super.getOptionLabel(group, option);
-			}
-        };
-        builder.setI18N(i18n);
+
         {
             // Text
             textArea = new JTextArea();
@@ -224,108 +201,108 @@ public class GanttDialogCustomColumn  {
             group.add(radioFalse);
             group.add(radioTrue);
             radioTrue.setSelected(true);
-            
-            Box box = Box.createVerticalBox();
-            box.add(radioTrue);
-            box.add(radioFalse);
-            panelBoolean = box;
+            panelBoolean = new JPanel(new GridBagLayout());
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            panelBoolean.add(radioTrue, constraints);
+            constraints.gridx = 0;
+            constraints.gridy = 1;
+            panelBoolean.add(radioFalse, constraints);
         }
         {
             // Integer
             fieldInteger = new GTextField();
             fieldInteger.setPattern(GTextField.PATTERN_INTEGER);
             fieldInteger.setColumns(10);
-            fieldInteger.setText("0");
-            panelInteger = new JPanel(new BorderLayout());
-            panelInteger.add(fieldInteger, BorderLayout.NORTH);
+            panelInteger = new JPanel(new GridBagLayout());
+            constraints = new GridBagConstraints();
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            panelInteger.add(fieldInteger, constraints);
         }
         {
             // Double
             fieldDouble = new GTextField();
             fieldDouble.setPattern(GTextField.PATTERN_DOUBLE);
             fieldDouble.setColumns(10);
-            fieldDouble.setText("0.0");
-            panelDouble = new JPanel(new BorderLayout());
-            panelDouble.add(fieldDouble, BorderLayout.NORTH);
+            panelDouble = new JPanel(new GridBagLayout());
+            constraints = new GridBagConstraints();
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            panelDouble.add(fieldDouble, constraints);
         }
         {
             panelDate = builder.createStandaloneOptionPanel(myDate);
             cardLayoutDefaultValue = new CardLayout();
             panelDefaultValue = new JPanel(cardLayoutDefaultValue);
-            panelDefaultValue.add(cardText, panelText);
-            panelDefaultValue.add(cardBoolean, panelBoolean);
-            panelDefaultValue.add(cardInteger, panelInteger);
-            panelDefaultValue.add(cardDouble, panelDouble);
-            panelDefaultValue.add(cardDate, panelDate);
+            panelDefaultValue.add(CustomPropertyClass.TEXT.getJavaClass().getName(), panelText);
+            panelDefaultValue.add(CustomPropertyClass.BOOLEAN.getJavaClass().getName(), panelBoolean);
+            panelDefaultValue.add(CustomPropertyClass.INTEGER.getJavaClass().getName(), panelInteger);
+            panelDefaultValue.add(CustomPropertyClass.DOUBLE.getJavaClass().getName(), panelDouble);
+            panelDefaultValue.add(CustomPropertyClass.DATE.getJavaClass().getName(), panelDate);
         }
-        
-        Component optionsComponent = builder.createGroupComponent(myOptionGroup);
-        
-        
-        Box result = Box.createVerticalBox();
-        result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        //result.setLayout(new BorderLayout());
-        result.add(optionsComponent);
-        result.add(Box.createVerticalStrut(10));
-        result.add(builder.createGroupComponent(myDefaultValueOptionGroup));
-        result.add(panelDefaultValue);
-        setDefaultValuePanelEnabled(false);
+
+        Component optionsComponent = builder.buildPlanePage(new GPOptionGroup[] {myOptionGroup});
+        result.setLayout(new BorderLayout());
+        result.add(optionsComponent, BorderLayout.CENTER);
+        result.add(panelDefaultValue, BorderLayout.SOUTH);
         return result;
     } // TODO change the default value for custom columns.
 
     private void ok() {
-        //Mediator.getGanttProjectSingleton().setAskForSave(true);
+        Mediator.getGanttProjectSingleton().setAskForSave(true);
         //String colName = fieldName.getText().trim();
         String colName = myName.getValue();
-        Object defValue = null;
+        String defValue = null;
 
         if (colName.length() != 0) {
             Class colClass;
             int colType = getSelectedType(myType.getValue());
-            switch (colType) {
-            case 0:
-                colClass = String.class;
+            CustomPropertyClass propertyClass = CustomPropertyClass.values()[colType];
+            switch (propertyClass) {
+            case TEXT:
                 defValue = textArea.getText();
                 break;
-            case 1:
-                colClass = Integer.class;
+            case INTEGER:
                 String ti = fieldInteger.getText();
-                if (ti.trim().length() > 0) {
-                    defValue = new Integer(Integer.parseInt(ti));
+                if (ti.trim().length() == 0) {
+                    ti = "0";
                 }
+                defValue = ti;
                 break;
-            case 2:
-                colClass = Double.class;
+            case DOUBLE:
                 String td = fieldDouble.getText();
-                if (td.trim().length() > 0) {
-                    defValue = new Double(Double.parseDouble(td));
+                if (td.trim().length() == 0) {
+                    td = "0.0";
                 }
+                defValue = td;
                 break;
-            case 3:
-                colClass = GregorianCalendar.class;
-                defValue = myDate.getValue()==null ? null : new GanttCalendar(myDate.getValue());
+            case DATE:
+                defValue = myDate.getValue()==null ? null : myDate.getPersistentValue();
                 break;
-            case 4:
-                colClass = Boolean.class;
-                defValue = new Boolean(radioTrue.isSelected());
+            case BOOLEAN:
+                defValue = new Boolean(radioTrue.isSelected()).toString();
                 break;
-            default: // normally never reached.
-                colClass = String.class;
-                defValue = "default";
+            default:
+                throw new IllegalStateException();
             }
 
-            if (customColumn != null) {
-                customColumn.setName(colName);
-                customColumn.setType(colClass);
-                if (myDefaultValue.isChecked() && defValue!=null) {
-                	customColumn.setDefaultValue(defValue);
-                }
-            }
+            CustomPropertyDefinition def = myCustomPropertyManager.createDefinition(propertyClass.getID(), colName, defValue);
+            ok(def);
             isOk = true;
+        }/* else
+        {
+            fieldName.requestFocus();
+            // nothing (the dialog stays opened)
         }
+        */
     }
-    
+
+    protected void ok(CustomPropertyDefinition definition) {
+
+    }
+
     public boolean isOk() {
-    	return isOk;
+        return isOk;
     }
 }
