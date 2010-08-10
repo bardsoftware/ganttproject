@@ -174,23 +174,24 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
 
     /** action performed for listeners. */
     public void actionPerformed(ActionEvent event) {
-        // click the okButton
-        if (event.getSource() == okButton) {
-            settingPanel.applyChanges(false); // ask if the panel has
-            // modifications
-            this.setVisible(false);
-            dispose();
+        if (event.getSource() == okButton || event.getSource() == applyButton) {
+            // Clicked the okButton or applyButton
+            // Update settings and check if there were any modifications
+            if (settingPanel.applyChanges(false)) {
+                // Settings are modified
+                getProject().setModified(true);
+            }
+            if (event.getSource() == okButton) {
+                // Close dialog
+                this.setVisible(false);
+                dispose();
+            }
         }
-        // click the cancel button
         else if (event.getSource() == cancelButton) {
+            // Clicked the cancelButton
             settingPanel.rollback();
             this.setVisible(false);
             dispose();
-        }
-        // click the okButton
-        if (event.getSource() == applyButton) {
-            settingPanel.applyChanges(false); // ask if the panel has
-            // modifications
         }
     }
 
