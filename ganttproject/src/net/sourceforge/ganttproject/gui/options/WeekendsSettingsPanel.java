@@ -13,8 +13,9 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 
 /**
+ * Panel to edit the weekend settings
+ *
  * @author Maarten Bezemer
- * @description Panel to edit the weekend settings
  */
 public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
@@ -38,7 +39,10 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
     public boolean applyChanges(boolean askForApply) {
         GPCalendar projectCalendar = project.getActiveCalendar();
         bHasChange = false;
-        for(int i = 1; i < 8; i++) {
+        if (calendar.getOnlyShowWeekends() != projectCalendar.getOnlyShowWeekends()) {
+            bHasChange = true;
+        }
+        for(int i = 1; i < 8 && !bHasChange; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
                 bHasChange = true;
             }
@@ -50,6 +54,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                 for(int i = 1; i < 8; i++) {
                     projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
                 }
+                projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
 
                 // Update tasks for the new weekends
                 // By setting their end dates to null it gets recalculated
@@ -75,6 +80,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         for(int i = 1; i < 8; i++) {
             calendar.setWeekDayType(i, projectCalendar.getWeekDayType(i));
         }
+        calendar.setOnlyShowWeekends(projectCalendar.getOnlyShowWeekends());
 
         try {
             weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, false);
