@@ -186,7 +186,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
             }
         });
-        getViewState().addStateListener(myChartModel);
+//        getViewState().addStateListener(myChartModel);
         getViewState().setStartDate(CalendarFactory.newCalendar().getTime());
 
         myTaskManager.addTaskListener(new TaskListenerAdapter() {

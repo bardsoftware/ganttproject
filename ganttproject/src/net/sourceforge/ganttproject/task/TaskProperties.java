@@ -1,13 +1,19 @@
 package net.sourceforge.ganttproject.task;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Class with which one can get any properties (even custom) from any task.
- * 
+ *
  * @author bbaranne
- * 
+ *
  */
 public class TaskProperties {
 
@@ -27,9 +33,24 @@ public class TaskProperties {
 
     public static final String ID_TASK_PREDECESSORS = "predecessors";
 
+    private final TimeUnitStack myTimeUnitStack;
+
+    public TaskProperties(TimeUnitStack timeUnitStack) {
+        myTimeUnitStack = timeUnitStack;
+    }
+
+    private void formatDate(Date date, StringBuffer buf) {
+        DateFormat timeFormat = myTimeUnitStack.getTimeFormat();
+        DateFormat[] dateFormats = myTimeUnitStack.getDateFormats();
+        buf.append(dateFormats[dateFormats.length-1].format(date));
+        if (timeFormat!=null) {
+            buf.append(" ").append(timeFormat.format(date));
+        }
+
+    }
     /**
      * Returns the task property specified by <code>propertyID</code>.
-     * 
+     *
      * @param task
      *            The task from which we want the property.
      * @param propertyID
@@ -38,13 +59,15 @@ public class TaskProperties {
      * @return the task property specified by <code>propertyID</code>. The
      *         result may be <code>null</code>.
      */
-    public static Object getProperty(Task task, String propertyID) {
+    public Object getProperty(Task task, String propertyID) {
         Object res = null;
         StringBuffer sb = new StringBuffer();
         if (propertyID != null) {
             if (propertyID.equals(ID_TASK_DATES)) {
                 sb.append(" [ ");
-                sb.append(task.getStart() + " - " + task.getEnd());
+                formatDate(task.getStart().getTime(), sb);
+                sb.append(" - ");
+                formatDate(task.getEnd().getTime(), sb);
                 sb.append(" ] ");
                 res = sb.toString();
             } else if (propertyID.equals(ID_TASK_NAME)) {
@@ -96,14 +119,14 @@ public class TaskProperties {
                         /* Creates list of resources in format {coordinators},resources */
                         if (assignments[i].isCoordinator()) {
                             if (coordinators.length() > 0) {
-                                coordinators.append(",");  
+                                coordinators.append(",");
                             }
                             coordinators.append(assignments[i].getResource().getName());
                         } else {
                             if (resources.length() > 0) {
-                                resources.append(",");  
+                                resources.append(",");
                             }
-                            resources.append(assignments[i].getResource().getName());  
+                            resources.append(assignments[i].getResource().getName());
                         }
                     }
                     if (coordinators.length() > 0) {

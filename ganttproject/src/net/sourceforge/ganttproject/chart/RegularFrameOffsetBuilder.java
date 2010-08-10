@@ -21,9 +21,13 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * number of bottom cells (e.g. week from days)
  */
 class RegularFrameOffsetBuilder {
+    protected static class OffsetStep {
+        public float parrots;
+        public GPCalendar.DayType dayType;
+    }
     // We want weekend units to be less wide than working ones. This constant
     // is a decrease factor
-    public static final int WEEKEND_UNIT_WIDTH_DECREASE_FACTOR = 1;
+    public static final int WEEKEND_UNIT_WIDTH_DECREASE_FACTOR = 10;
     private final TimeUnitStack myTimeUnitStack;
     private final TimeUnit myTopUnit;
     private final TimeUnit myBottomUnit;
@@ -35,8 +39,21 @@ class RegularFrameOffsetBuilder {
     private final Date myEndDate;
 
     RegularFrameOffsetBuilder(
-            TimeUnitStack timeUnitStack, GPCalendar calendar, TimeUnit topUnit,
-            TimeUnit bottomUnit, Date startDate,
+            TimeUnitStack timeUnitStack, GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+            int bottomUnitWidth, int chartWidth, float weekendDecreaseFactor) {
+        myTimeUnitStack = timeUnitStack;
+        myCalendar = calendar;
+        myStartDate = startDate;
+        myTopUnit = topUnit;
+        myBottomUnit = bottomUnit;
+        myBottomUnitWidth = bottomUnitWidth;
+        myChartWidth = chartWidth;
+        myWeekendDecreaseFactor = weekendDecreaseFactor;
+        myEndDate = null;
+    }
+
+    RegularFrameOffsetBuilder(
+            TimeUnitStack timeUnitStack, GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
             int bottomUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
         myTimeUnitStack = timeUnitStack;
         myCalendar = calendar;
@@ -89,53 +106,69 @@ class RegularFrameOffsetBuilder {
         return myTimeUnitStack;
     }
 
-    void constructOffsets(List/*<Offset>*/ topUnitOffsets, List/*<Offset>*/ bottomUnitOffsets) {
+    void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
         constructOffsets(topUnitOffsets, bottomUnitOffsets, 0);
     }
-    void constructOffsets(List/*<Offset>*/ topUnitOffsets, List/*<Offset>*/ bottomUnitOffsets, int initialEnd) {
-        // Number relative to the chart start. It can only be increased.
-        float offsetEnd = 0;
+    void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets, int initialEnd) {
         Date currentDate = myStartDate;
 
+        bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
         // We don't want to create numerous vertical stripes for weekend units (e.g., for 16
         // non-working hours may produce 16 vertical stripes that looks awful). We
         // accumulate consecutive weekend units instead and add just a single block.
+//        Offset accumulatedWeekendOffset = null;
+        int offsetEnd = 0;
+        OffsetStep step = new OffsetStep();
         do {
             TimeFrame currentFrame = getTimeUnitStack().createTimeFrame(
                     currentDate, getTopUnit(currentDate), myBottomUnit);
             int bottomUnitCount = currentFrame.getUnitCount(getBottomUnit());
-            //int bottomUnit
             // This will be true if there is at least one working bottom unit in this time frame
             // If there are only weekend bottom units, we'll merge neighbor top units
             // (like merging two weekend days into one continuous grey stripe)
-            boolean addTopUnitOffset = false;
-            int bottomUnitWidth = getBottomUnitWidth();
-            float offsetStep = getOffsetStep(currentFrame);
-            if (bottomUnitWidth==0) {
-                bottomUnitWidth = 1;
-            }
+//            boolean addTopUnitOffset = false;
             for (int i=0; i<bottomUnitCount; i++) {
+                step.dayType = null;
+//                step.incrementTopUnit = true;
                 Date startDate = currentFrame.getUnitStart(getBottomUnit(), i);
                 Date endDate = currentFrame.getUnitFinish(getBottomUnit(), i);
-                GPCalendar.DayType dayType = getCalendar().getDayTypeDate(startDate);
-                if (getCalendar().isNonWorkingDay(startDate)) {
-                    offsetEnd += offsetStep / myWeekendDecreaseFactor;
-                    bottomUnitOffsets.add(new Offset(
-                            getBottomUnit(), myStartDate, endDate, initialEnd+(int)(offsetEnd*bottomUnitWidth), dayType));
-                    continue;
-                }
-                addTopUnitOffset = true;
-                offsetEnd += offsetStep;
+                calculateNextStep(step, currentFrame, startDate);
+                offsetEnd = (int)(step.parrots*getBottomUnitWidth());
+//                if (!step.incrementTopUnit) {
+//                    accumulatedWeekendOffset = new Offset(
+//                            getBottomUnit(), myStartDate, endDate,
+//                            initialEnd+offsetEnd, step.dayType);
+//                    continue;
+//                }
+//                addTopUnitOffset = true;
+//                if (accumulatedWeekendOffset != null) {
+//                    bottomUnitOffsets.add(accumulatedWeekendOffset);
+//                    accumulatedWeekendOffset = null;
+//                }
                 bottomUnitOffsets.add(new Offset(
-                        getBottomUnit(), myStartDate, endDate, initialEnd+(int)(offsetEnd*bottomUnitWidth), dayType));
+                        getBottomUnit(), myStartDate, endDate, initialEnd+offsetEnd, step.dayType));
             }
+//            if (accumulatedWeekendOffset != null) {
+//                bottomUnitOffsets.add(accumulatedWeekendOffset);
+//                accumulatedWeekendOffset = null;
+//            }
             currentDate = currentFrame.getFinishDate();
-            if (!addTopUnitOffset) {
-                continue;
-            }
+//            if (!addTopUnitOffset) {
+//                continue;
+//            }
             topUnitOffsets.add(new Offset(
-                    getTopUnit(), myStartDate, currentDate, initialEnd+(int)(offsetEnd*bottomUnitWidth), DayType.WORKING));
+                    getTopUnit(), myStartDate, currentDate, initialEnd+offsetEnd, DayType.WORKING));
 
-        } while (offsetEnd*getBottomUnitWidth() <= getChartWidth() && (myEndDate==null || currentDate.before(myEndDate)));
+        } while (offsetEnd <= getChartWidth() && (myEndDate==null || currentDate.before(myEndDate)));
+    }
+
+    protected void calculateNextStep(OffsetStep step, TimeFrame currentFrame, Date startDate) {
+        float offsetStep = getOffsetStep(currentFrame);
+        //step.dayType = getBottomUnit().isWorkingInterval(startDate) ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
+        step.dayType = GPCalendar.DayType.WORKING;
+        if (step.dayType == GPCalendar.DayType.WEEKEND) {
+            offsetStep = offsetStep / myWeekendDecreaseFactor;
+        }
+        step.parrots += offsetStep;
     }
 }

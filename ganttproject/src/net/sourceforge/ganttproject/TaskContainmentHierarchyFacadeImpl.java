@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -65,7 +66,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         return result == null ? new Task[0] : result;
     }
 
-    
+
     public Task[] getDeepNestedTasks(Task container) {
         ArrayList result = new ArrayList();
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode.get(container);
@@ -75,8 +76,8 @@ class TaskContainmentHierarchyFacadeImpl implements
                 assert curNode.getUserObject() instanceof Task;
                 result.add(curNode.getUserObject());
             }
-            
-            // We remove the first task which is == container 
+
+            // We remove the first task which is == container
             assert result.size() > 0;
             result.remove(0);
         }
@@ -86,7 +87,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     /**
      * Purpose: Returns true if the container Task has any nested tasks.
      * This should be a quicker check than using getNestedTasks().
-     * 
+     *
      * @param container
      *            The Task on which to check for children.
      */
@@ -159,17 +160,17 @@ class TaskContainmentHierarchyFacadeImpl implements
         }
         getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);
         try {
-			getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-		} catch (TaskDependencyException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        } catch (TaskDependencyException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private TaskManager getTaskManager() {
-    	return myRootTask.getManager();
+        return myRootTask.getManager();
     }
-    
+
     public int getDepth(Task task) {
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
                 .get(task);
@@ -181,12 +182,26 @@ class TaskContainmentHierarchyFacadeImpl implements
 //        DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) myTask2treeNode.get(task2);
 //        int row1 = myTree.getJTree().getRowForPath(new TreePath(node1.getPath()));
 //        int row2 = myTree.getJTree().getRowForPath(new TreePath(node2.getPath()));
-    	Integer index1 = (Integer) myTask2index.get(task1);
-    	Integer index2 = (Integer) myTask2index.get(task2);
+        Integer index1 = (Integer) myTask2index.get(task1);
+        Integer index2 = (Integer) myTask2index.get(task2);
         return index1.intValue() - index2.intValue();
     }
 
     public boolean contains(Task task) {
         return myTask2treeNode.containsKey(task);
+    }
+
+    public List<Task> getTasksInDocumentOrder() {
+        List<Task> result = new ArrayList<Task>();
+        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) myTask2treeNode.get(getRootTask());
+        Enumeration<TreeNode> nodes = rootNode.preorderEnumeration();
+        if (nodes.hasMoreElements()) {
+            nodes.nextElement();
+        }
+        for (;nodes.hasMoreElements();) {
+            DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
+            result.add((Task) nextNode.getUserObject());
+        }
+        return result;
     }
 }

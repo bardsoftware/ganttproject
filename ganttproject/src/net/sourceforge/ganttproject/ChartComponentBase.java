@@ -100,22 +100,22 @@ public abstract class ChartComponentBase extends JPanel {
     }
 
     public ChartSelection getSelection() {
-    	return getImplementation().getSelection();
+        return getImplementation().getSelection();
     }
 
     public IStatus canPaste(ChartSelection selection) {
-    	return getImplementation().canPaste(selection);
+        return getImplementation().canPaste(selection);
     }
 
     public void paste(ChartSelection selection) {
-    	getImplementation().paste(selection);
+        getImplementation().paste(selection);
     }
 
     public void addSelectionListener(ChartSelectionListener listener) {
-    	getImplementation().addSelectionListener(listener);
+        getImplementation().addSelectionListener(listener);
     }
     public void removeSelectionListener(ChartSelectionListener listener) {
-    	getImplementation().removeSelectionListener(listener);
+        getImplementation().removeSelectionListener(listener);
     }
 
     protected UIFacade getUIFacade() {
@@ -400,26 +400,26 @@ public abstract class ChartComponentBase extends JPanel {
         public Object getAdapter(Class arg0) {
             return null;
         }
-		public ChartSelection getSelection() {
-			throw new UnsupportedOperationException();
-		}
-		public IStatus canPaste(ChartSelection selection) {
-			throw new UnsupportedOperationException();
-		}
-		public void paste(ChartSelection selection) {
-			throw new UnsupportedOperationException();
-		}
-		public void addSelectionListener(ChartSelectionListener listener) {
-			mySelectionListeners.add(listener);
-		}
-		public void removeSelectionListener(ChartSelectionListener listener) {
-			mySelectionListeners.remove(listener);
-		}
+        public ChartSelection getSelection() {
+            throw new UnsupportedOperationException();
+        }
+        public IStatus canPaste(ChartSelection selection) {
+            throw new UnsupportedOperationException();
+        }
+        public void paste(ChartSelection selection) {
+            throw new UnsupportedOperationException();
+        }
+        public void addSelectionListener(ChartSelectionListener listener) {
+            mySelectionListeners.add(listener);
+        }
+        public void removeSelectionListener(ChartSelectionListener listener) {
+            mySelectionListeners.remove(listener);
+        }
         protected void fireSelectionChanged() {
-        	for (Iterator listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
-        		ChartSelectionListener nextListener = (ChartSelectionListener) listeners.next();
-        		nextListener.selectionChanged();
-        	}
+            for (Iterator listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
+                ChartSelectionListener nextListener = (ChartSelectionListener) listeners.next();
+                nextListener.selectionChanged();
+            }
         }
         public ChartModelBase getModel() {
             return getChartModel();
@@ -427,47 +427,47 @@ public abstract class ChartComponentBase extends JPanel {
     }
 
     protected static class ChartSelectionImpl implements ChartSelection {
-    	private List myTasks = new ArrayList();
-    	private List myTasksRO = Collections.unmodifiableList(myTasks);
-    	private List myHumanResources = new ArrayList();
-    	private List myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
-		private boolean isTransactionRunning;
+        private List myTasks = new ArrayList();
+        private List myTasksRO = Collections.unmodifiableList(myTasks);
+        private List myHumanResources = new ArrayList();
+        private List myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
+        private boolean isTransactionRunning;
 
-		public boolean isEmpty() {
-			return myTasks.isEmpty() && myHumanResources.isEmpty();
-		}
+        public boolean isEmpty() {
+            return myTasks.isEmpty() && myHumanResources.isEmpty();
+        }
 
-		public List getTasks() {
-			return myTasksRO;
-		}
+        public List getTasks() {
+            return myTasksRO;
+        }
 
-		public List getHumanResources() {
-			return myHumanResourceRO;
-		}
+        public List getHumanResources() {
+            return myHumanResourceRO;
+        }
 
-		public IStatus isDeletable() {
-			return Status.OK_STATUS;
-		}
+        public IStatus isDeletable() {
+            return Status.OK_STATUS;
+        }
 
-		public void startCopyClipboardTransaction() {
-			if (isTransactionRunning) {
-				throw new IllegalStateException("Transaction is already running");
-			}
-			isTransactionRunning = true;
-		}
-		public void startMoveClipboardTransaction() {
-			if (isTransactionRunning) {
-				throw new IllegalStateException("Transaction is already running");
-			}
-			isTransactionRunning = true;
+        public void startCopyClipboardTransaction() {
+            if (isTransactionRunning) {
+                throw new IllegalStateException("Transaction is already running");
+            }
+            isTransactionRunning = true;
+        }
+        public void startMoveClipboardTransaction() {
+            if (isTransactionRunning) {
+                throw new IllegalStateException("Transaction is already running");
+            }
+            isTransactionRunning = true;
 
-		}
-		public void cancelClipboardTransaction() {
-			isTransactionRunning = false;
-		}
-		public void commitClipboardTransaction() {
-			isTransactionRunning = false;
-		}
+        }
+        public void cancelClipboardTransaction() {
+            isTransactionRunning = false;
+        }
+        public void commitClipboardTransaction() {
+            isTransactionRunning = false;
+        }
 
     }
 }

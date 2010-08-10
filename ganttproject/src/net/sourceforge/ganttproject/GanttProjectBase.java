@@ -421,7 +421,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
 
         public void optionsChanged() {
-            myTreeView.getTable().setRowHeight(myGanttViewModel.setRowHeight());
+            myTreeView.getTable().setRowHeight(myGanttViewModel.calculateRowHeight());
             AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
             model.fireTableStructureChanged();
             myTreeView.updateUI();

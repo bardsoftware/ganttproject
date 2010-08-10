@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.time.gregorian;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 01.02.2004
  */
 public class GregorianTimeUnitStack implements TimeUnitStack {
@@ -95,6 +96,15 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     }
 
     public String getName() {
+        return null;
+    }
+
+    public DateFormat[] getDateFormats() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public DateFormat getTimeFormat() {
         return null;
     }
 }

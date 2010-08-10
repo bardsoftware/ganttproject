@@ -193,7 +193,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             Rectangle rectangle = container.createRectangle(getWidth()+10, topy, 1, getRowHeight());
             container.bind(rectangle, next);
         }
-        
+
         if (myDependenciesRenderingEnabled) {
             createDependencyLines();
         }
@@ -210,7 +210,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         }
         return result;
     }
-    
+
     private List/* <Task> */getSortedTaskActivities() {
         List visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
@@ -230,24 +230,24 @@ public class TaskRendererImpl extends ChartRendererBase implements
             float visibleWorkingLength = 0;
             float totalWorkingLength = 0;
             for (int j = 0; j < activities.length; j++) {
-            	final TaskActivity nextActivity = activities[j];
+                final TaskActivity nextActivity = activities[j];
                 myActivity2ordinalNumber.put(nextActivity, nextOrdinal);
                 visibleActivities.add(nextActivity);
                 if (nextActivity.getIntensity() == 0f) {
                     continue;
                 }
-                final float nextChunk = 
-                    nextActivity.getDuration().getLength(getChartModel().getBottomUnit()) 
-                    * getChartModel().getBottomUnitWidth(); 
-                totalWorkingLength += nextChunk; 
+                final float nextChunk =
+                    nextActivity.getDuration().getLength(getChartModel().getBottomUnit())
+                    * getChartModel().getBottomUnitWidth();
+                totalWorkingLength += nextChunk;
                 if (!nextActivity.getEnd().before(getChartModel().getStartDate())) {
-                	visibleWorkingLength += nextChunk;
+                    visibleWorkingLength += nextChunk;
                 }
             }
             final float invisibleWorkingLength = totalWorkingLength - visibleWorkingLength;
-            final long progressBarLength = 
-                (long)(totalWorkingLength * nextTask.getCompletionPercentage() / 100 
-                        - invisibleWorkingLength); 
+            final long progressBarLength =
+                (long)(totalWorkingLength * nextTask.getCompletionPercentage() / 100
+                        - invisibleWorkingLength);
             myTask_WorkingRectanglesLength.put(nextTask, new Long(progressBarLength));
         }
         Set hashedVisible = new HashSet(visibleActivities);
@@ -448,7 +448,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                 nextRectangle.setStyle("task.startend");
             }
             else if (false==nextStarted.isFirst() ^ nextStarted.isLast()) {
-                nextRectangle.setStyle("task");                
+                nextRectangle.setStyle("task");
             }
             else if (nextStarted.isFirst()) {
                 nextRectangle.setStyle("task.start");
@@ -652,12 +652,13 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private String getTaskLabel(Task task, int position) {
-        String propertyID = myLabelOptions[position].getValue(); 
+        String propertyID = myLabelOptions[position].getValue();
         if (task.isMilestone() && !TaskProperties.ID_TASK_NAME.equals(propertyID)) {
             return null;
         }
         StringBuffer result = new StringBuffer();
-        Object property = TaskProperties.getProperty(task, propertyID);
+        TaskProperties taskProperties = new TaskProperties(getChartModel().getTimeUnitStack());
+        Object property = taskProperties.getProperty(task, propertyID);
         if (property != null) {
             if (property instanceof Boolean)
                 if (((Boolean) property).booleanValue())
@@ -671,31 +672,31 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private long getNegativeOffset(Date offsetDate, Date anchorDate) {
-    	if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
-    		TaskLength length = getChartModel().getTaskManager().createLength(myCurrentUnit, offsetDate, anchorDate);
-    		return -length.getLength()*getChartModel().getBottomUnitWidth();
-    	}
-    	int length = 0;
-    	while(true) {
-    		ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(myCurrentTimeFrame, myCurrentUnit, offsetDate, getChartModel().getTimeUnitStack().getDefaultTimeUnit(), getChartModel().getBottomUnitWidth());
-    		assert offsets.length>0;
-    		Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd(); 
-    		if (lastOffsetEnd.before(anchorDate)) {
-    			offsetDate = lastOffsetEnd;
-    			length += offsets[offsets.length-1].getOffsetPixels();
-    			continue;
-    		}
-			for (int i=offsets.length-1; i>=0; i--) {
-				Offset offset = offsets[i];
-				if (offset.getOffsetEnd().after(anchorDate)) {
-					continue;
-				}
-				length+=offset.getOffsetPixels();
-				break;
-			}
-			break;
-    	}
-    	return -length;
+        if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
+            TaskLength length = getChartModel().getTaskManager().createLength(myCurrentUnit, offsetDate, anchorDate);
+            return -length.getLength()*getChartModel().getBottomUnitWidth();
+        }
+        int length = 0;
+        while(true) {
+            ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(myCurrentTimeFrame, myCurrentUnit, offsetDate, getChartModel().getTimeUnitStack().getDefaultTimeUnit(), getChartModel().getBottomUnitWidth());
+            assert offsets.length>0;
+            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd();
+            if (lastOffsetEnd.before(anchorDate)) {
+                offsetDate = lastOffsetEnd;
+                length += offsets[offsets.length-1].getOffsetPixels();
+                continue;
+            }
+            for (int i=offsets.length-1; i>=0; i--) {
+                Offset offset = offsets[i];
+                if (offset.getOffsetEnd().after(anchorDate)) {
+                    continue;
+                }
+                length+=offset.getOffsetPixels();
+                break;
+            }
+            break;
+        }
+        return -length;
     }
     private long getPositiveOffset(Date offsetDate, Date anchorDate) {
         if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
@@ -705,15 +706,15 @@ public class TaskRendererImpl extends ChartRendererBase implements
         int length = 0;
         while(true) {
             ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(
-                    myCurrentTimeFrame, 
-                    myCurrentUnit, 
-                    anchorDate, 
-                    getChartModel().getTimeUnitStack().getDefaultTimeUnit(), 
+                    myCurrentTimeFrame,
+                    myCurrentUnit,
+                    anchorDate,
+                    getChartModel().getTimeUnitStack().getDefaultTimeUnit(),
                     getChartModel().getBottomUnitWidth());
             if (offsets.length==0) {
                 throw new IllegalStateException("Failed to calculate offsets for anchorDate="+anchorDate);
             }
-            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd(); 
+            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd();
             //System.err.println("[TaskRendererImpl] getPositiveOffset(): |offsets|="+offsets.length+" last offset end="+lastOffsetEnd+" last offset pixels="+offsets[offsets.length-1].getOffsetPixels());
             if (lastOffsetEnd.before(offsetDate)) {
                 anchorDate = lastOffsetEnd;
@@ -731,7 +732,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             break;
         }
         return length;
-        
+
     }
     private java.awt.Rectangle getBoundingRectangle(TaskActivity activity) {
         //System.err.println("[TaskRendererImpl] getBoundingRectangle():\nunit start="+myUnitStart+"\nactivity="+activity);
@@ -740,7 +741,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         if (false==activity.getStart().equals(myUnitStart)) {
             int deltaX = 0;
             if (activity.getStart().before(myUnitStart)) {
-            	deltaX = (int) getNegativeOffset(activity.getStart(), myUnitStart);
+                deltaX = (int) getNegativeOffset(activity.getStart(), myUnitStart);
             }
             else if (activity.getStart().after(myUnitStart)) {
                 deltaX = (int) getPositiveOffset(activity.getStart(), myUnitStart);
@@ -904,7 +905,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle)dependantContainer
                     .getPrimitive(dependant);
             if (dependantRectangle == null) {
-                
+
                 //System.out.println("dependantRectangle == null");
                 continue;
             }
@@ -954,9 +955,9 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private List myActivitiesOutOfView = new ArrayList();
-    
+
     private void pullQueue(Date unitStart, Date unitFinish) {
-    	
+
         for (Iterator activities = myVisibleActivities.iterator(); activities
                 .hasNext();) {
             TaskActivity next = (TaskActivity) activities.next();
@@ -968,7 +969,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             if (next.getStart().before(getChartModel().getStartDate()) && next.getEnd().after(getChartModel().getEndDate())) {
                 myCurrentlyProcessed.add(next);
                 activities.remove();
-                continue;                
+                continue;
             }
             if (next.getStart().after(unitFinish)) {
                 break;

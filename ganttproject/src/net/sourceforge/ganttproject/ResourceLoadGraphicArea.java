@@ -75,7 +75,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         myChartModel = new ChartModelResource(getTaskManager(),
                 (HumanResourceManager) app.getHumanResourceManager(),
                 getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
-        getViewState().addStateListener(myChartModel);
+//        getViewState().addStateListener(myChartModel);
         getViewState().setStartDate(CalendarFactory.newCalendar().getTime());
         margY = 0;
         appli = app;
@@ -97,9 +97,9 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     protected int getHeaderHeight() {
         return 0;
     }
-    
+
     protected int getRowHeight() {
-    	return 20;
+        return 20;
     }
 
     public void drawGPVersion(Graphics g) {
@@ -162,12 +162,12 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 return appli.getResourcePanel().getResourceTreeTable().isVisible(an);
             }
             protected int getRowHeight() {
-            	return ResourceLoadGraphicArea.this.getRowHeight();
+                return ResourceLoadGraphicArea.this.getRowHeight();
             }
         };
         BufferedImage resourceTreeImage = resourceTreeGenerator.createImage();
         final int chartHeight = resourceTreeImage.getHeight();
-        
+
         RenderedResourceChartImage renderedImage = new RenderedResourceChartImage(myChartModel, myChartImplementation,  resourceTreeImage, chartWidth, chartHeight);
         return renderedImage;
     }
@@ -206,7 +206,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 protected Action[] getPopupMenuActions() {
                     return new Action[] { getOptionsDialogAction()};
                 }
-                
+
             };
         }
         return myMouseListener;
@@ -236,7 +236,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
         myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
         myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
-        myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());        
+        myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
     }
     private AbstractChartImplementation myChartImplementation = new AbstractChartImplementation() {
         public void paintComponent(Graphics g) {
@@ -251,32 +251,32 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 }
             }
         }
-		public ChartSelection getSelection() {
-			ChartSelectionImpl result = new ChartSelectionImpl() {
-				public boolean isEmpty() {
-					return false;
-				}
-				public void startCopyClipboardTransaction() {
-					super.startCopyClipboardTransaction();
-					appli.getResourcePanel().copySelection();
-				}
+        public ChartSelection getSelection() {
+            ChartSelectionImpl result = new ChartSelectionImpl() {
+                public boolean isEmpty() {
+                    return false;
+                }
+                public void startCopyClipboardTransaction() {
+                    super.startCopyClipboardTransaction();
+                    appli.getResourcePanel().copySelection();
+                }
 
-				public void startMoveClipboardTransaction() {
-					super.startMoveClipboardTransaction();
-					appli.getResourcePanel().cutSelection();
-				}
-			};
-			return result;
-		}
-		public IStatus canPaste(ChartSelection selection) {
-			return Status.OK_STATUS;
-		}
-		public void paste(ChartSelection selection) {
-			appli.getResourcePanel().pasteSelection();
-		}
-                
+                public void startMoveClipboardTransaction() {
+                    super.startMoveClipboardTransaction();
+                    appli.getResourcePanel().cutSelection();
+                }
+            };
+            return result;
+        }
+        public IStatus canPaste(ChartSelection selection) {
+            return Status.OK_STATUS;
+        }
+        public void paste(ChartSelection selection) {
+            appli.getResourcePanel().pasteSelection();
+        }
+
     };
-    
+
     public void setTaskManager(TaskManager taskManager) {
         // TODO Auto-generated method stub
 
@@ -296,6 +296,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         setupBeforePaint();
         return super.createCopy();
     }
-    
-    
+
+
 }
