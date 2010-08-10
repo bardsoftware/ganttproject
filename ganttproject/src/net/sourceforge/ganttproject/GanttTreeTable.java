@@ -62,6 +62,7 @@ import net.sourceforge.ganttproject.task.CustomColumEvent;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.CustomColumsListener;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -77,7 +78,7 @@ import org.jdesktop.swing.table.TableColumnExt;
  * @author bbaranne
  * @version 1.0 (20050301) (yyyymmdd)
  */
-public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListener {
+public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyListener {
     /**
      * Unique instance of GanttLanguage.
      */
@@ -113,9 +114,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
 
     private Listener myLanguageListener;
 
-	private final UIFacade myUIfacade;
+    private final UIFacade myUIfacade;
 
-	private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
+    private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
 
     /**
      * Creates an instance of GanttTreeTable with the given TreeTableModel.
@@ -361,20 +362,20 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      */
     void initTreeTable() {
         clickPoint = null;
-        getProject().getTaskCustomColumnManager().addCustomColumnsListener(this);
+        getProject().getTaskCustomColumnManager().addListener(this);
         getTreeTableModel().addTreeModelListener(new TreeModelListener() {
-			public void treeNodesChanged(TreeModelEvent arg0) {
-			}
+            public void treeNodesChanged(TreeModelEvent arg0) {
+            }
 
-			public void treeNodesInserted(TreeModelEvent arg0) {
-			}
+            public void treeNodesInserted(TreeModelEvent arg0) {
+            }
 
-			public void treeNodesRemoved(TreeModelEvent arg0) {
+            public void treeNodesRemoved(TreeModelEvent arg0) {
 
-			}
+            }
 
-			public void treeStructureChanged(TreeModelEvent arg0) {
-			}
+            public void treeStructureChanged(TreeModelEvent arg0) {
+            }
 
         });
         getTable().setAutoCreateColumnsFromModel(false);
@@ -490,31 +491,31 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                 AlternateRowHighlighter.quickSilver,
                 new HierarchicalColumnHighlighter() }));
 
-    	getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				onCellSelectionChanged();
-			}
-    	});
-    	getTable().getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				onCellSelectionChanged();
-			}
-    	});
+        getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                onCellSelectionChanged();
+            }
+        });
+        getTable().getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                onCellSelectionChanged();
+            }
+        });
 
         reloadColumns();
     }
 
     protected void onCellSelectionChanged() {
-    	if (!getTable().isEditing()) {
+        if (!getTable().isEditing()) {
             int row = getTable().getSelectedRow();
             int col = getTable().getSelectedColumn();
             Rectangle rect = getTable().getCellRect(row, col, true);
             scrollPane.scrollRectToVisible(rect);
-    	}
-	}
+        }
+    }
 
 
-	void addScrollPaneMouseListener(MouseListener ml) {
+    void addScrollPaneMouseListener(MouseListener ml) {
         this.getTreeTable().getParent().addMouseListener(ml);
     }
 
@@ -620,13 +621,8 @@ private void createPopupMenu() {
                 myUIfacade.getUndoManager()
                         .undoableEdit("PopUpNewColumn", new Runnable() {
                             public void run() {
-                                CustomColumn customColumn = new CustomColumn();
-                                GanttDialogCustomColumn d = new GanttDialogCustomColumn(
-                                		myUIfacade, customColumn);
-                                d.setVisible(true);
-                                if (d.isOk()) {
-                                	getProject().getTaskCustomColumnManager().addNewCustomColumn(customColumn);
-                                }
+                                new GanttDialogCustomColumn(
+                                        myUIfacade, getProject().getTaskCustomColumnManager()).setVisible(true);
                             }
                         });
             }
@@ -661,8 +657,10 @@ private void createPopupMenu() {
                                 // deleteCustomColumn(getTable().getColumnName(getTable().columnAtPoint(clickPoint)));
                                 int ind = getTable().columnAtPoint(clickPoint);
                                 if(ind >=0){
-                                	getProject().getTaskCustomColumnManager()
-                                        .deleteCustomColumn(getTable().getColumnName(ind));
+                                    String columnName = getTable().getColumnName(ind);
+                                    CustomPropertyDefinition def =
+                                        getProject().getTaskCustomColumnManager().getCustomPropertyDefinition(columnName);
+                                    getProject().getTaskCustomColumnManager().deleteDefinition(def);
                                 jmiDeleteColumn.setEnabled(false);
                                 }
                             }
@@ -764,12 +762,6 @@ private void createPopupMenu() {
      * date, integer, double, boolean). A default value is also set.
      */
     public void addNewCustomColumn(CustomColumn customColumn) {
-        if (customColumn == null) {
-            customColumn = new CustomColumn();
-            GanttDialogCustomColumn d = new GanttDialogCustomColumn(myUIfacade, customColumn);
-            d.setVisible(true);
-        }
-
         if (customColumn.getName() != null) // if something has been entered
         {
             GanttTreeTableModel treeTableModel = (GanttTreeTableModel) getTreeTableModel();
@@ -794,9 +786,9 @@ private void createPopupMenu() {
                             getTable().getColumnCount() - 1,
                             getTable().columnAtPoint(clickPoint));
             } catch (IllegalArgumentException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
             int align = SwingConstants.CENTER;
             if (customColumn.getType().equals(GregorianCalendar.class))
@@ -804,7 +796,7 @@ private void createPopupMenu() {
             setColumnHorizontalAlignment(newName, align);
 
             DisplayedColumn dc = new DisplayedColumn(
-            		getProject().getCustomColumnsStorage().getIdFromName(newName));
+                    getProject().getCustomColumnsStorage().getIdFromName(newName));
             dc.setDisplayed(true);
             dc.setOrder(getTable().convertColumnIndexToView(
                     getColumn(newName).getModelIndex()));
@@ -845,7 +837,7 @@ private void createPopupMenu() {
      */
     public void deleteCustomColumn(CustomColumn column) {
 
-    	final String name = column.getName();
+        final String name = column.getName();
         // the column has to be displayed to be removed.
         this.displayColumn(name);
 
@@ -947,18 +939,18 @@ private void createPopupMenu() {
         try {
             root.getCustomValues().setValue(colName, value);
         } catch (CustomColumnsException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
         Task[] tt = facade.getNestedTasks(root);
         for (int i = 0; i < tt.length; i++) {
             try {
                 tt[i].getCustomValues().setValue(colName, value);
             } catch (CustomColumnsException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
             setCustomColumnValueToAllNestedTask(facade, tt[i], colName, value);
         }
@@ -1228,11 +1220,11 @@ private void createPopupMenu() {
             return this.displayed;
         }
         public boolean isVisible() {
-        	return isDisplayed();
+            return isDisplayed();
         }
-		public String getName() {
-			return getNameForId(getID());
-		}
+        public String getName() {
+            return getNameForId(getID());
+        }
         public String getID() {
             return this.id;
         }
@@ -1493,8 +1485,8 @@ private void createPopupMenu() {
 
 
         public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-			final JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-			result.selectAll();
+            final JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
+            result.selectAll();
 //			result.addFocusListener(new FocusAdapter() {
 //				public void focusGained(FocusEvent arg0) {
 //					super.focusGained(arg0);
@@ -1508,17 +1500,17 @@ private void createPopupMenu() {
 //
 //			});
 //
-			return result;
-		}
+            return result;
+        }
 
 //
-		public void requestFocus() {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					field.requestFocus();
-					field.selectAll();
-				}
-			});
+        public void requestFocus() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    field.requestFocus();
+                    field.selectAll();
+                }
+            });
         }
     }
 
@@ -1537,77 +1529,77 @@ private void createPopupMenu() {
         }
     }
 
-	public void editNewTask(Task t) {
-		TreePath selectedPath = getTree().getSelectionPath();
+    public void editNewTask(Task t) {
+        TreePath selectedPath = getTree().getSelectionPath();
         int c = getTable().convertColumnIndexToView(
                 getTable().getColumn(GanttTreeTableModel.strColName)
                         .getModelIndex());
 
         NameCellEditor nameCellEditor = (NameCellEditor) getTable().getCellEditor(-1, c);
-		getTreeTable().editCellAt(getTree().getRowForPath(selectedPath), c);
-		nameCellEditor.requestFocus();
-	}
+        getTreeTable().editCellAt(getTree().getRowForPath(selectedPath), c);
+        nameCellEditor.requestFocus();
+    }
 
 
-	public void customColumsChange(CustomColumEvent event) {
-		switch(event.getType()) {
-		case CustomColumEvent.EVENT_ADD:
-			addNewCustomColumn(event.getColumn());
-			break;
-		case CustomColumEvent.EVENT_REMOVE:
-			deleteCustomColumn(event.getColumn());
-			break;
-		case CustomColumEvent.EVENT_RENAME:
-			renameCustomcolumn(event.getOldName(), event.getColName());
-			break;
-		}
-	}
+    public void customPropertyChange(CustomPropertyEvent event) {
+        switch(event.getType()) {
+        case CustomPropertyEvent.EVENT_ADD:
+            addNewCustomColumn((CustomColumn) event.getDefinition());
+            break;
+        case CustomPropertyEvent.EVENT_REMOVE:
+            deleteCustomColumn((CustomColumn) event.getDefinition());
+            break;
+        case CustomPropertyEvent.EVENT_PROPERTY_CHANGE:
+            renameCustomcolumn(event.getOldName(), event.getColName());
+            break;
+        }
+    }
 
 
-	public TableHeaderUIFacade getVisibleFields() {
-		return myVisibleFields;
-	}
+    public TableHeaderUIFacade getVisibleFields() {
+        return myVisibleFields;
+    }
 
-	class VisibleFieldsImpl implements TableHeaderUIFacade {
-		public void add(String name, int order, int width) {
-			DisplayedColumn newColumn = new DisplayedColumn(name);
-			newColumn.setOrder(order);
-			if (width>=0) {
-				newColumn.setWidth(width);
-			}
-			newColumn.setDisplayed(true);
-			DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
-			clone.add(newColumn);
-			setDisplayedColumns(clone);
-		}
+    class VisibleFieldsImpl implements TableHeaderUIFacade {
+        public void add(String name, int order, int width) {
+            DisplayedColumn newColumn = new DisplayedColumn(name);
+            newColumn.setOrder(order);
+            if (width>=0) {
+                newColumn.setWidth(width);
+            }
+            newColumn.setDisplayed(true);
+            DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
+            clone.add(newColumn);
+            setDisplayedColumns(clone);
+        }
 
-		public void clear() {
-			setDisplayedColumns(new DisplayedColumnsList());
-		}
+        public void clear() {
+            setDisplayedColumns(new DisplayedColumnsList());
+        }
 
-		public Column getField(int index) {
-			return (Column) getDisplayColumns().get(index);
-		}
+        public Column getField(int index) {
+            return (Column) getDisplayColumns().get(index);
+        }
 
-		public int getSize() {
-			return getDisplayColumns().size();
-		}
-	    public void importData(TableHeaderUIFacade source) {
-	    	clear();
-	    	DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
-	    	clone.clear();
-	    	for (int i=0; i<source.getSize(); i++) {
-	    		Column nextField = source.getField(i);
-				DisplayedColumn newColumn = new DisplayedColumn(nextField.getName());
-				newColumn.setID(nextField.getID());
-				newColumn.setOrder(nextField.getOrder());
-				if (nextField.getWidth()>=0) {
-					newColumn.setWidth(nextField.getWidth());
-				}
-				newColumn.setDisplayed(true);
-	    		clone.add(newColumn);
-	    	}
-	    	setDisplayedColumns(clone);
-	    }
-	}
+        public int getSize() {
+            return getDisplayColumns().size();
+        }
+        public void importData(TableHeaderUIFacade source) {
+            clear();
+            DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
+            clone.clear();
+            for (int i=0; i<source.getSize(); i++) {
+                Column nextField = source.getField(i);
+                DisplayedColumn newColumn = new DisplayedColumn(nextField.getName());
+                newColumn.setID(nextField.getID());
+                newColumn.setOrder(nextField.getOrder());
+                if (nextField.getWidth()>=0) {
+                    newColumn.setWidth(nextField.getWidth());
+                }
+                newColumn.setDisplayed(true);
+                clone.add(newColumn);
+            }
+            setDisplayedColumns(clone);
+        }
+    }
 }

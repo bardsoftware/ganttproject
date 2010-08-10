@@ -1,7 +1,12 @@
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyListener;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 
 /**
  * This class has to be used to add or remove new custom columns. It will
@@ -9,9 +14,8 @@ import java.util.List;
  *
  * @author bbaranne (Benoit Baranne) Mar 4, 2005
  */
-public class CustomColumnsManager {
-    private final List myListeners;
-	private final CustomColumnsStorage myStorage;
+public class CustomColumnsManager implements CustomPropertyManager {
+    private final CustomColumnsStorage myStorage;
 
     /**
      * Creates an instance of CustomColumnsManager for the given treetable.
@@ -19,31 +23,15 @@ public class CustomColumnsManager {
      * @param treetable
      */
     public CustomColumnsManager(CustomColumnsStorage storage) {
-        myListeners = new ArrayList();
         myStorage = storage;
-    }
-
-    public CustomColumnsStorage getStorage() {
-        return myStorage;
     }
 
     /**
      * Add a new custom column to the treetable.
      */
-    public void addNewCustomColumn(CustomColumn customColumn) {
-    	assert customColumn!=null;
+    private void addNewCustomColumn(CustomColumn customColumn) {
+        assert customColumn!=null;
         myStorage.addCustomColumn(customColumn);
-    }
-
-    /**
-     * Delete the custom column whose name is given in parameter from the
-     * treetable.
-     *
-     * @param name
-     *            Name of the column to delete.
-     */
-    public void deleteCustomColumn(String name) {
-        myStorage.removeCustomColumn(name);
     }
 
     public void changeCustomColumnName(String oldName, String newName) {
@@ -57,8 +45,41 @@ public class CustomColumnsManager {
         myStorage.changeDefaultValue(colName, newDefaultValue);
     }
 
-    public void addCustomColumnsListener(CustomColumsListener listener) {
+    public void addListener(CustomPropertyListener listener) {
         myStorage.addCustomColumnsListener(listener);
     }
 
+    public List<CustomPropertyDefinition> getDefinitions() {
+        return new ArrayList<CustomPropertyDefinition>(myStorage.getCustomColums());
+    }
+
+    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
+            String defaultValueAsString) {
+        CustomPropertyDefinition stub =
+            CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
+        CustomColumn result = new CustomColumn(this, name, stub.getPropertyClass(), stub.getDefaultValue());
+        result.setId(id);
+        addNewCustomColumn(result);
+        return result;
+    }
+
+    public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
+        return createDefinition("tpc"+getDefinitions().size(),typeAsString, colName, defValue);
+    }
+
+    public void importData(CustomPropertyManager source) {
+    }
+
+
+    public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
+        return myStorage.getCustomColumnByID(id);
+    }
+
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        myStorage.removeCustomColumn(def);
+    }
+
+    void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
+        myStorage.fireDefinitionChanged(def, oldName);
+    }
 }

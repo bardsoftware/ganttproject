@@ -788,4 +788,29 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         }
 
     }
+
+    @Override
+    public void addListener(CustomPropertyListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public CustomPropertyDefinition createDefinition(String typeAsString,
+            String colName, String defValue) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

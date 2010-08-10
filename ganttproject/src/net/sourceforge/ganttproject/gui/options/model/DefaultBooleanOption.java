@@ -39,11 +39,4 @@ public class DefaultBooleanOption extends GPAbstractOption implements
         myLockedValue = Boolean.valueOf(value).booleanValue();
     }
 
-    public boolean isChanged() {
-        if (isLocked()) {
-            return myValue!=myLockedValue;
-        }
-        return false;
-    }
-
 }

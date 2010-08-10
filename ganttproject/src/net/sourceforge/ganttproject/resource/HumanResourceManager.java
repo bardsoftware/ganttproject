@@ -26,9 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
@@ -229,7 +232,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         return result;
     }
 
-    CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
+    public CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
         return (CustomPropertyDefinition) customFields.get(nextName);
     }
 
@@ -251,55 +254,31 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        CustomPropertyDefinition result = new CustomPropertyDefinitionImpl(name, id, stubDefinition);
+        CustomPropertyDefinition result = new DefaultCustomPropertyDefinition(name, id, stubDefinition);
         addCustomField(result);
         return result;
+    }
+
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        removeCustomField(def.getID());
     }
 
     public void importData(CustomPropertyManager source) {
         // TODO Auto-generated method stub
 
+
+}
+
+    @Override
+    public void addListener(CustomPropertyListener listener) {
+        // TODO Auto-generated method stub
+
     }
 
-    static class CustomPropertyDefinitionImpl implements CustomPropertyDefinition {
-        private final String myName;
-        private final String myID;
-        private final Object myDefaultValue;
-        private final String myDefaultValueAsString;
-        private final Class myType;
-        private final String myTypeAsString;
-
-        CustomPropertyDefinitionImpl(String name, String id, CustomPropertyDefinition stub) {
-            myName = name;
-            myID = id;
-            myDefaultValue = stub.getDefaultValue();
-            myDefaultValueAsString = stub.getDefaultValueAsString();
-            myType = stub.getType();
-            myTypeAsString = stub.getTypeAsString();
-        }
-        public Object getDefaultValue() {
-            return myDefaultValue;
-        }
-
-        public String getDefaultValueAsString() {
-            return myDefaultValueAsString;
-        }
-
-        public String getID() {
-            return myID;
-        }
-
-        public String getName() {
-            return myName;
-        }
-
-        public Class getType() {
-            return myType;
-        }
-
-        public String getTypeAsString() {
-            return myTypeAsString;
-        }
-
+    @Override
+    public CustomPropertyDefinition createDefinition(String typeAsString,
+            String colName, String defValue) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

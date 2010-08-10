@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.gui.GanttDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -40,12 +41,12 @@ public class CustomColumnsPanel extends JPanel {
 
     private JButton buttonDel = null;
 
-	private final CustomColumnsManager myColumnManager;
+    private final CustomColumnsManager myColumnManager;
 
-	private final UIFacade myUIfacade;
+    private final UIFacade myUIfacade;
 
     public CustomColumnsPanel(CustomColumnsManager manager, CustomColumnsStorage customColHandler, UIFacade uifacade) {
-    	myColumnManager = manager;
+        myColumnManager = manager;
         customColumnStorage = customColHandler;
         myUIfacade = uifacade;
         this.initComponents();
@@ -78,14 +79,12 @@ public class CustomColumnsPanel extends JPanel {
                 myUIfacade.getUndoManager().undoableEdit("TaskPropertyNewColumn",
                         new Runnable() {
                             public void run() {
-                                CustomColumn customColumn = new CustomColumn();
                                 GanttDialogCustomColumn d = new GanttDialogCustomColumn(
-                                		myUIfacade, customColumn);
+                                        myUIfacade, myColumnManager);
                                 d.setVisible(true);
                                 if (d.isOk()) {
-	                                myColumnManager.addNewCustomColumn(customColumn);
-	                                model.refreshData(customColumnStorage);
-	                                repaint();
+                                    model.refreshData(customColumnStorage);
+                                    repaint();
                                 }
                             }
                         });
@@ -100,8 +99,8 @@ public class CustomColumnsPanel extends JPanel {
                 for (int i = 0; i < selectedRowsIndexes.length; i++) {
                     String nameToDel = (String) model.getValueAt(
                             selectedRowsIndexes[i], 0);
-                    myColumnManager.deleteCustomColumn(
-                            nameToDel);
+                    CustomPropertyDefinition def = myColumnManager.getCustomPropertyDefinition(nameToDel);
+                    myColumnManager.deleteDefinition(def);
                 }
                 model.refreshData(customColumnStorage);
                 repaint();
@@ -207,7 +206,7 @@ public class CustomColumnsPanel extends JPanel {
                             .changeCustomColumnDefaultValue(oldName, o);
                     v.setElementAt(o, col);
                 } catch (CustomColumnsException e) {
-                	myUIfacade.showErrorDialog(e);
+                    myUIfacade.showErrorDialog(e);
                 }
             }
         }
