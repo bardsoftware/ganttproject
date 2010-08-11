@@ -1,7 +1,7 @@
 /*
  * HumanResource.java
  *
- * Created on 27. Mai 2003, 22:19
+ * Created on 27.05.2003
  */
 
 package net.sourceforge.ganttproject.resource;
@@ -34,13 +34,11 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 
     private String email = "";
 
-    private int function;
-
     private Role myRole;
 
     private final DefaultListModel myDaysOffList = new DefaultListModel ();
     
-    /* contains all the custom property values of a resource.
+    /** contains all the custom property values of a resource.
      * the key is the property name and the value is the property value */
     private final Map customFields;
     
@@ -50,7 +48,6 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         this.name = "";
         customFields = new HashMap();
         myManager = manager;
-        // added
     }
 
     /** Creates a new instance of HumanResource */
@@ -117,14 +114,6 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         return phone;
     }
 
-    // public void setFunction (int function) {
-    // this.function=function;
-    // }
-
-    // public int getFunction () {
-    // return myRole==null ? 0 : myRole.getID();
-    // }
-
     public void setRole(Role role) {
         myRole = role;
         fireResourceChanged();
@@ -132,9 +121,9 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 
     public Role getRole() {
         if (myRole == null) {
-            System.err
-                    .println("[HumanResource] getRole(): I have no role :( name="
-                            + getName());
+            System.err.println(
+                    "[HumanResource] getRole(): I have no role :( name="
+                    + getName());
         }
         return myRole;
     }
