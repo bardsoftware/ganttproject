@@ -25,25 +25,19 @@ import net.sourceforge.ganttproject.task.TaskMutator;
 /**
  * Class that generate a task
  */
-
 public class GanttTask extends TaskImpl
 
 implements Serializable {
 
-    public static int LOW = 0;
-
-    public static int NORMAL = 1;
-
-    public static int HIGHT = 2;
-
-    // ///////////////////////////////////////////////////////////////////////////////
-
     /**
      * Constructor
-     * 
-     * @param taskID
+     *
+     * @param name of the new Task
+     * @param start date of the new Task
+     * @param length of the new Task
+     * @param taskManager to use when creating the new task
+     * @param taskID contains the id to be used for the new task, or -1 to generate a unique one.
      */
-
     public GanttTask(String name, GanttCalendar start, long length,
             TaskManager taskManager, int taskID) {
         super(taskManager, taskID);
@@ -55,6 +49,11 @@ implements Serializable {
         enableEvents(true);
     }
 
+    /**
+     * Constructor. Will make a copy of the given GanttTask
+     * 
+     * @param copy task to copy
+     */
     public GanttTask(GanttTask copy) {
         super(copy, false);
         // for (int i = 0; i < getPredecessorsOld().size(); i++) {
@@ -69,7 +68,6 @@ implements Serializable {
         // addSuccessor(tempRel);
         // }
         enableEvents(true);
-
     }
 
     /**
@@ -102,13 +100,12 @@ implements Serializable {
     }
 
     /**
-     * set the task ID. the uniquness of ID should be check before using this
+     * Sets the task ID. the uniqueness of ID should be check before using this
      * method
      * 
      * @param taskID
      */
     public void setTaskID(int taskID) {
         setTaskIDHack(taskID);
-    }
-    
+    }    
 }

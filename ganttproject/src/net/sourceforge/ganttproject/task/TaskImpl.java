@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -50,8 +51,8 @@ public class TaskImpl implements Task {
     private boolean isMilestone;
 
     boolean isProjectTask;
-
-    private int myPriority;
+    
+    private Priority myPriority;
 
     private GanttCalendar myStart;
 
@@ -124,7 +125,7 @@ public class TaskImpl implements Task {
                 myManager.getDependencyCollection());
         myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this,
                 myManager.getDependencyCollection());
-        myPriority = 1;
+        myPriority = DEFAULT_PRIORITY;
         myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
         myNotes = "";
         bExpand = true;
@@ -160,7 +161,7 @@ public class TaskImpl implements Task {
         myColor = copy.myColor;
         myNotes = copy.myNotes;
         bExpand = copy.bExpand;
-        //
+
         myDependencySlice = new TaskDependencySliceImpl(this, myManager
                 .getDependencyCollection());
         myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this,
@@ -290,7 +291,7 @@ public class TaskImpl implements Task {
         return isMilestone;
     }
 
-    public int getPriority() {
+    public Priority getPriority() {
         return myPriority;
     }
 
@@ -648,7 +649,7 @@ public class TaskImpl implements Task {
             });
         }
 
-        public void setPriority(final int priority) {
+        public void setPriority(final Priority priority) {
             myCommands.add(new Runnable() {
                 public void run() {
                     TaskImpl.this.setPriority(priority);
@@ -894,7 +895,7 @@ public class TaskImpl implements Task {
         isMilestone = milestone;
     }
 
-    public void setPriority(int priority) {
+    public void setPriority(Priority priority) {
         myPriority = priority;
     }
 

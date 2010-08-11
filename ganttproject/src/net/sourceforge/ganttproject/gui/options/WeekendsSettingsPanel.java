@@ -40,8 +40,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         bHasChange = false;
         for(int i = 1; i < 8; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
-                bHasChange = true; {
-                }
+                bHasChange = true;
             }
         }
 

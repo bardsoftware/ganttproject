@@ -1800,16 +1800,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                         "/icons/meeting.gif")));
                 type = 1;
             } else if (leaf) {
-                if (task.getPriority() == GanttTask.LOW) {
-                    setIcon(new ImageIcon(getClass().getResource(
-                            "/icons/task1.gif")));
-                } else if (task.getPriority() == GanttTask.NORMAL) {
-                    setIcon(new ImageIcon(getClass().getResource(
-                            "/icons/task.gif")));
-                } else if (task.getPriority() == GanttTask.HIGHT) {
-                    setIcon(new ImageIcon(getClass().getResource(
-                            "/icons/task2.gif")));
-                }
+                setIcon(new ImageIcon(getClass().getResource(
+                        task.getPriority().getIconPath())));
                 type = 2;
             } else {
                 setIcon(new ImageIcon(getClass()
@@ -1836,10 +1828,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 res += "<br>" + language.getText("meetingPoint");
             }
 
-            res += "<br><b>Pri</b> "
-                    + (task.getPriority() == 0 ? language.getText("low") : task
-                            .getPriority() == 1 ? language.getText("normal")
-                            : language.getText("hight"));
+            res += "<br><b>Pri</b> " + language.getText(task.getPriority().getI18nKey());
 
             ResourceAssignment[] assignments = task.getAssignments();
             if (assignments.length > 0) {
