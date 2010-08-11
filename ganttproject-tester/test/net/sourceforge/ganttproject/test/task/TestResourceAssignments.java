@@ -34,9 +34,9 @@ public class TestResourceAssignments extends TestCase {
         ProjectResource res2 = getResourceManager().getById(2);
         task.getAssignmentCollection().addAssignment(res1);
         task.getAssignmentCollection().addAssignment(res2);
-        Set actualResources = extractResources(task);
-        Set expectedResources = new HashSet(Arrays.asList(new Object[] { res1,
-                res2 }));
+        Set<ProjectResource> actualResources = extractResources(task);
+        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
+                Arrays.asList(new ProjectResource[] { res1, res2 }));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
     }
@@ -46,16 +46,15 @@ public class TestResourceAssignments extends TestCase {
         Task task = taskManager.createTask();
         ProjectResource res1 = getResourceManager().getById(1);
         ProjectResource res2 = getResourceManager().getById(2);
-        ResourceAssignment asgn1 = task.getAssignmentCollection()
-                .addAssignment(res1);
+        task.getAssignmentCollection().addAssignment(res1);
         ResourceAssignment asgn2 = task.getAssignmentCollection()
                 .addAssignment(res2);
-        //
+
         asgn2.delete();
-        //
-        Set actualResources = extractResources(task);
-        Set expectedResources = new HashSet(Arrays
-                .asList(new Object[] { res1 }));
+
+        Set<ProjectResource> actualResources = extractResources(task);
+        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
+                Arrays.asList(res1));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
     }
@@ -66,9 +65,9 @@ public class TestResourceAssignments extends TestCase {
         ProjectResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         task.getAssignmentCollection().addAssignment(res1);
-        Set actualResources = extractResources(task);
-        Set expectedResources = new HashSet(Arrays
-                .asList(new Object[] { res1 }));
+        Set<ProjectResource> actualResources = extractResources(task);
+        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
+                Arrays.asList(res1));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
     }
@@ -93,12 +92,12 @@ public class TestResourceAssignments extends TestCase {
         ProjectResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         res1.delete();
-        Set resources = extractResources(task);
+        Set<ProjectResource> resources = extractResources(task);
         assertTrue("It is expecte that after resource deletion assignments disappear", resources.isEmpty());
     }
 
-    private Set extractResources(Task task) {
-        Set result = new HashSet();
+    private Set<ProjectResource> extractResources(Task task) {
+        Set<ProjectResource> result = new HashSet<ProjectResource>();
         ResourceAssignment[] assignments = task.getAssignments();
         for (int i = 0; i < assignments.length; i++) {
             ResourceAssignment next = assignments[i];
@@ -138,7 +137,6 @@ public class TestResourceAssignments extends TestCase {
             }
 
 			public URL getProjectDocumentURL() {
-				// TODO Auto-generated method stub
 				return null;
 			}
         });

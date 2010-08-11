@@ -68,6 +68,5 @@ public class TestTaskScheduleEvent extends TaskTestCase {
         boolean hasBeenCalled() {
             return hasBeenCalled;
         }
-
     }
 }

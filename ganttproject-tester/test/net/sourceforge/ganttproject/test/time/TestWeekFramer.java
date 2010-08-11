@@ -21,7 +21,7 @@ public class TestWeekFramer extends TestCase {
         c.add(Calendar.MILLISECOND, -1);
         assertEquals("Unexpected day of week", Calendar.SUNDAY, c
                 .get(Calendar.DAY_OF_WEEK));
-        //
+
         Date adjustedSunday = framer.adjustLeft(newSunday());
         assertEquals(
                 "Adjusted sunday is expected to be equal to adjusted monday",
@@ -74,6 +74,5 @@ public class TestWeekFramer extends TestCase {
         c.set(Calendar.MONTH, Calendar.NOVEMBER);
         c.set(Calendar.DAY_OF_MONTH, 14);
         return c.getTime();
-
     }
 }

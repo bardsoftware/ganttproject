@@ -16,8 +16,4 @@ public class DependencyTestSuite extends TestSuite{
 		addTestSuite(TestDependencyActivityBinding.class);
 		addTestSuite(TestDependencyCycle.class);
 	}
-	
-	public void testFoo() {
-		
-	}
 }

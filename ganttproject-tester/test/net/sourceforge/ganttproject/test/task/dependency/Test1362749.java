@@ -19,7 +19,7 @@ public class Test1362749 extends TaskTestCase{
         mutator.setDuration(getTaskManager().createLength(3));
         mutator.commit();
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run(t3);
-        //
+
         assertEquals("Task="+t4+" is expected to start when task="+t3+" finishes", t3.getEnd(), t4.getStart());
         assertEquals("Task="+t1+" is expected to finish together with task="+t3, t1.getEnd(), t3.getEnd());
         assertEquals("Task="+t2+" is expected to finish together with task="+t4, t2.getEnd(), t4.getEnd());

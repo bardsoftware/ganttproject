@@ -16,25 +16,25 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         Task supertask = taskManager.createTask();
         Task task1 = taskManager.createTask();
         Task task2 = taskManager.createTask();
-        //
+
         task1.move(supertask);
         task2.move(supertask);
-        //
+
         task1.setStart(new GanttCalendar(2000, 01, 01));
         task1.setEnd(new GanttCalendar(2000, 01, 03));
         task2.setStart(new GanttCalendar(2000, 01, 03));
         task2.setEnd(new GanttCalendar(2000, 01, 04));
         supertask.setStart(new GanttCalendar(2000, 01, 01));
         supertask.setEnd(new GanttCalendar(2000, 01, 04));
-        //
+
         taskManager.getDependencyCollection().createDependency(
                 task2, task1, new FinishStartConstraintImpl());
-        //
+
         task1.setEnd(new GanttCalendar(2000, 01, 04));
         RecalculateTaskScheduleAlgorithm alg = taskManager
                 .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
         alg.run(task1);
-        //
+
         assertEquals("Unexpected start of supertask=" + supertask,
                 new GanttCalendar(2000, 01, 01), supertask.getStart());
         assertEquals("Unexpected end of supertask=" + supertask,
@@ -46,25 +46,25 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         Task supertask = taskManager.createTask();
         Task task1 = taskManager.createTask();
         Task task2 = taskManager.createTask();
-        //
+
         task1.move(supertask);
         task2.move(supertask);
-        //
+
         task1.setStart(new GanttCalendar(2000, 01, 01));
         task1.setEnd(new GanttCalendar(2000, 01, 03));
         task2.setStart(new GanttCalendar(2000, 01, 03));
         task2.setEnd(new GanttCalendar(2000, 01, 04));
         supertask.setStart(new GanttCalendar(2000, 01, 01));
         supertask.setEnd(new GanttCalendar(2000, 01, 04));
-        //
+
         task1.setStart(new GanttCalendar(2000, 01, 02));
         task2.setStart(new GanttCalendar(2000, 01, 02));
         task2.setEnd(new GanttCalendar(2000, 01, 03));
-        //
+
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection()
                 .getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { task1, task2 });
-        //
+
         assertEquals("Unexpected start of supertask=" + supertask,
                 new GanttCalendar(2000, 01, 02), supertask.getStart());
         assertEquals("Unexpected end of supertask=" + supertask,
@@ -75,15 +75,15 @@ public class TestSupertaskAdjustment extends TaskTestCase {
     	TaskManager taskManager = getTaskManager();
     	Task supertask = taskManager.createTask();
     	supertask.move(taskManager.getRootTask());
-    	//
+
     	Task level1task1 = taskManager.createTask();
     	level1task1.move(supertask);
     	Task level1task2 = taskManager.createTask();
     	level1task2.move(supertask);
-    	//
+
     	Task level2task1 = taskManager.createTask();
     	level2task1.move(level1task2);
-    	//
+
     	supertask.setStart(newMonday());
     	supertask.setEnd(newTuesday());
     	level1task1.setStart(newMonday());
@@ -92,12 +92,12 @@ public class TestSupertaskAdjustment extends TaskTestCase {
     	level1task2.setEnd(newTuesday());
     	level2task1.setStart(newMonday());
     	level2task1.setEnd(newTuesday());
-    	//
+
     	level2task1.setEnd(newWendesday());
-    	//
+
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { level2task1 });
-    	//
+
         assertEquals("Unexpected end of the topleveltask="+supertask, newWendesday(), supertask.getEnd());
     }
     

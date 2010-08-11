@@ -39,7 +39,7 @@ public class TestCriticalPath extends TaskTestCase {
         createDependency(t3, t2);
         createDependency(t2, t1);
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -59,7 +59,7 @@ public class TestCriticalPath extends TaskTestCase {
         createDependency(t4, t5);
         createDependency(t5, t1);
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -80,7 +80,7 @@ public class TestCriticalPath extends TaskTestCase {
         createDependency(t3, t1);
 
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -107,7 +107,7 @@ public class TestCriticalPath extends TaskTestCase {
         mu2.setStart(t2.getStart());
         mu2.commit();
         
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -134,7 +134,7 @@ public class TestCriticalPath extends TaskTestCase {
         mgr.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(t2);
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
 
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -154,7 +154,7 @@ public class TestCriticalPath extends TaskTestCase {
         dep.setDifference(2);
         
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
@@ -176,7 +176,7 @@ public class TestCriticalPath extends TaskTestCase {
         createDependency(t6, t2);
 
         mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        Set criticalTasks = new HashSet(Arrays.asList(
+        Set<Task> criticalTasks = new HashSet<Task>(Arrays.asList(
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t3));
         assertTrue(criticalTasks.contains(t4));
@@ -190,7 +190,7 @@ public class TestCriticalPath extends TaskTestCase {
         private final Task t1;
         private final Task t2;
         private final Task t3;
-        private final HashSet criticalTasks;
+        private final HashSet<Task> criticalTasks;
 
         public LaggedDependencyChainCriticalPathTester(TaskDependencyConstraint constraint) throws Exception {
             TaskManager mgr = getTaskManager();
@@ -205,7 +205,7 @@ public class TestCriticalPath extends TaskTestCase {
             dep_2_1.setDifference(2);
             
             mgr.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-            criticalTasks = new HashSet(Arrays.asList(
+            criticalTasks = new HashSet<Task>(Arrays.asList(
                     mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         }
         

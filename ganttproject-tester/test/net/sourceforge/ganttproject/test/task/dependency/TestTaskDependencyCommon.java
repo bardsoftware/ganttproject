@@ -25,7 +25,7 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         TaskDependency dep = taskMgr
                 .getDependencyCollection()
                 .createDependency(task1, task2, new FinishStartConstraintImpl());
-        //
+
         assertDependenciesCollectionContainsDependency(task1, dep);
         assertDependenciesCollectionContainsDependency(task2, dep);
     }
@@ -38,7 +38,7 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         TaskDependency dep = taskMgr
                 .getDependencyCollection()
                 .createDependency(task1, task2, new FinishStartConstraintImpl());
-        //
+
         dep.delete();
         assertDependenciesCollectionDoesntContainDependency(task1, dep);
         assertDependenciesCollectionDoesntContainDependency(task2, dep);
@@ -50,17 +50,16 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         Task task1 = taskMgr.createTask(1);
         Task task2 = taskMgr.createTask(2);
         Task task3 = taskMgr.createTask(3);
-        //
+
         TaskDependency dep1 = taskMgr
                 .getDependencyCollection()
                 .createDependency(task1, task2, new FinishStartConstraintImpl());
         TaskDependency dep2 = taskMgr
                 .getDependencyCollection()
                 .createDependency(task1, task3, new FinishStartConstraintImpl());
-        //
+
         dep1.delete();
         assertDependenciesCollectionContainsDependency(task1, dep2);
-
     }
 
     public void testDependenciesAsDependantDoesntContainDependenciesAsDependee()
@@ -69,14 +68,14 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         Task task1 = taskMgr.createTask(1);
         Task task2 = taskMgr.createTask(2);
         Task task3 = taskMgr.createTask(3);
-        //
+
         TaskDependency dep1 = taskMgr
                 .getDependencyCollection()
                 .createDependency(task1, task2, new FinishStartConstraintImpl());
         TaskDependency dep2 = taskMgr
                 .getDependencyCollection()
                 .createDependency(task2, task3, new FinishStartConstraintImpl());
-        //
+
         assertDependencySliceContainsDependency(task2
                 .getDependenciesAsDependant(), dep2);
         assertDependencySliceDoesntContainDependency(task2
@@ -97,7 +96,7 @@ public class TestTaskDependencyCommon extends TaskTestCase {
 
     protected void assertDependencySliceContainsDependency(
             TaskDependencySlice slice, TaskDependency dependency) {
-        Set deps = new HashSet(Arrays.asList(slice.toArray()));
+        Set<TaskDependency> deps = new HashSet<TaskDependency>(Arrays.asList(slice.toArray()));
         assertTrue("Dependency=" + dependency
                 + " has not been found in dependency slice=" + slice, deps
                 .contains(dependency));
@@ -105,7 +104,7 @@ public class TestTaskDependencyCommon extends TaskTestCase {
 
     protected void assertDependencySliceDoesntContainDependency(
             TaskDependencySlice slice, TaskDependency dependency) {
-        Set deps = new HashSet(Arrays.asList(slice.toArray()));
+        Set<TaskDependency> deps = new HashSet<TaskDependency>(Arrays.asList(slice.toArray()));
         assertTrue("Dependency=" + dependency
                 + " has been found in dependency slice=" + slice, !deps
                 .contains(dependency));
@@ -116,19 +115,14 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         TaskManager taskMgr = getTaskManager();
         Task task1 = taskMgr.createTask(1);
         Task task2 = taskMgr.createTask(2);
-        TaskDependency dep1 = taskMgr
-                .getDependencyCollection()
-                .createDependency(task1, task2, new FinishStartConstraintImpl());
+        taskMgr.getDependencyCollection().createDependency(task1, task2,
+                new FinishStartConstraintImpl());
         TaskDependency dep2 = null;
         try {
             dep2 = taskMgr.getDependencyCollection().createDependency(task1,
                     task2, new FinishStartConstraintImpl());
         } catch (TaskDependencyException e) {
         }
-        assertNull(
-                "Wow, we can create dependency between the same tasks twice!",
-                dep2);
-        //
+        assertNull("Created the dependency between the same tasks twice!", dep2);
     }
-
 }
