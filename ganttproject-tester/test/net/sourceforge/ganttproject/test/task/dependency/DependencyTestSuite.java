@@ -8,12 +8,13 @@ package net.sourceforge.ganttproject.test.task.dependency;
 
 import junit.framework.TestSuite;
 
+// TODO Class can be removed, since running JUnit tests from Eclipse do not require TestSuites?
 public class DependencyTestSuite extends TestSuite{
-	public DependencyTestSuite() {
-		addTestSuite(TestTaskDependencyCommon.class);
-		addTestSuite(TestSupertaskAdjustment.class);
-		addTestSuite(TestRecalculateTaskScheduleAlgorithm.class);
-		addTestSuite(TestDependencyActivityBinding.class);
-		addTestSuite(TestDependencyCycle.class);
-	}
+    public DependencyTestSuite() {
+        addTestSuite(TestTaskDependencyCommon.class);
+        addTestSuite(TestSupertaskAdjustment.class);
+        addTestSuite(TestRecalculateTaskScheduleAlgorithm.class);
+        addTestSuite(TestDependencyActivityBinding.class);
+        addTestSuite(TestDependencyCycle.class);
+    }
 }

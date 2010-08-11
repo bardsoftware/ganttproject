@@ -72,28 +72,28 @@ public class TestSupertaskAdjustment extends TaskTestCase {
     }
     
     public void testTaskDurationChangeIsPropagatedTwoLevelsUp() {
-    	TaskManager taskManager = getTaskManager();
-    	Task supertask = taskManager.createTask();
-    	supertask.move(taskManager.getRootTask());
+        TaskManager taskManager = getTaskManager();
+        Task supertask = taskManager.createTask();
+        supertask.move(taskManager.getRootTask());
 
-    	Task level1task1 = taskManager.createTask();
-    	level1task1.move(supertask);
-    	Task level1task2 = taskManager.createTask();
-    	level1task2.move(supertask);
+        Task level1task1 = taskManager.createTask();
+        level1task1.move(supertask);
+        Task level1task2 = taskManager.createTask();
+        level1task2.move(supertask);
 
-    	Task level2task1 = taskManager.createTask();
-    	level2task1.move(level1task2);
+        Task level2task1 = taskManager.createTask();
+        level2task1.move(level1task2);
 
-    	supertask.setStart(newMonday());
-    	supertask.setEnd(newTuesday());
-    	level1task1.setStart(newMonday());
-    	level1task1.setEnd(newTuesday());
-    	level1task2.setStart(newMonday());
-    	level1task2.setEnd(newTuesday());
-    	level2task1.setStart(newMonday());
-    	level2task1.setEnd(newTuesday());
+        supertask.setStart(newMonday());
+        supertask.setEnd(newTuesday());
+        level1task1.setStart(newMonday());
+        level1task1.setEnd(newTuesday());
+        level1task2.setStart(newMonday());
+        level1task2.setEnd(newTuesday());
+        level2task1.setStart(newMonday());
+        level2task1.setEnd(newTuesday());
 
-    	level2task1.setEnd(newWendesday());
+        level2task1.setEnd(newWendesday());
 
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { level2task1 });
