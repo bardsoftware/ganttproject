@@ -3,7 +3,6 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.util.Calendar;
 import java.util.Date;
-
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
