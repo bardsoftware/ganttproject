@@ -136,9 +136,9 @@ public class TestResourceAssignments extends TestCase {
                 return null;
             }
 
-			public URL getProjectDocumentURL() {
-				return null;
-			}
+            public URL getProjectDocumentURL() {
+                return null;
+            }
         });
     }
 

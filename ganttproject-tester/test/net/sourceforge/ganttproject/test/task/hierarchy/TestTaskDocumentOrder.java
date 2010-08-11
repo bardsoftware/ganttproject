@@ -7,7 +7,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
 public class TestTaskDocumentOrder extends TaskTestCase {
-	public void testTasksAreInDocumentOrder() {
+    public void testTasksAreInDocumentOrder() {
         Task task1 = getTaskManager().createTask();
         task1.setName("1");
         Task task2 = getTaskManager().createTask();
@@ -29,5 +29,5 @@ public class TestTaskDocumentOrder extends TaskTestCase {
         List<Task> expectedOrder = Arrays.asList(new Task[] {task3, task4, task1, task2, task5,});
         List<Task> actualOrder = Arrays.asList(getTaskManager().getTasks());
         assertEquals("Unexpected order of tasks returnedby TaskManager.getTasks()", expectedOrder, actualOrder);
-	}
+    }
 }
