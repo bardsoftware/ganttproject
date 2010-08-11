@@ -31,7 +31,7 @@ public class ImportTasksTestCase extends TaskTestCase {
             importFrom.createTask(2).move(importRoot);
             importFrom.createTask(3).move(importRoot);
         }
-        //
+
         taskManager.importData(importFrom);
         {
             Task root = taskManager.getTaskHierarchy().getRootTask();
@@ -40,13 +40,13 @@ public class ImportTasksTestCase extends TaskTestCase {
             assertEquals(
                     "Unexpected count of the root's children AFTER importing. root="
                             + root, 2, nestedTasks.length);
-            List expectedIDs = Arrays.asList(new Integer[] { new Integer(2),
+            List<Integer> expectedIDs = Arrays.asList(new Integer[] { new Integer(2),
                     new Integer(3) });
-            List actualIds = new ArrayList(2);
+            List<Integer> actualIds = new ArrayList<Integer>(2);
             actualIds.add(new Integer(nestedTasks[0].getTaskID()));
             actualIds.add(new Integer(nestedTasks[1].getTaskID()));
-            assertEquals("Unexpected IDs of the imported tasks", new HashSet(
-                    expectedIDs), new HashSet(actualIds));
+            assertEquals("Unexpected IDs of the imported tasks", new HashSet<Integer>(
+                    expectedIDs), new HashSet<Integer>(actualIds));
         }
     }
 }

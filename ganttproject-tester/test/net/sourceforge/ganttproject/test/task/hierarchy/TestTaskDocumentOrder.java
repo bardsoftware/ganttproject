@@ -14,20 +14,20 @@ public class TestTaskDocumentOrder extends TaskTestCase {
         task2.setName("2");
         task1.move(getTaskManager().getRootTask());
         task2.move(task1);
-        //
+
         Task task3 = getTaskManager().createTask();
         task3.setName("3");
         Task task4 = getTaskManager().createTask();
         task4.setName("4");
         task4.move(task3);
         task3.move(getTaskManager().getRootTask());
-        //
+
         Task task5 = getTaskManager().createTask();
         task5.setName("5");
         task5.move(task2);
-        //
-        List expectedOrder = Arrays.asList(new Task[] {task3, task4, task1, task2, task5,});
-        List actualOrder = Arrays.asList(getTaskManager().getTasks());
+
+        List<Task> expectedOrder = Arrays.asList(new Task[] {task3, task4, task1, task2, task5,});
+        List<Task> actualOrder = Arrays.asList(getTaskManager().getTasks());
         assertEquals("Unexpected order of tasks returnedby TaskManager.getTasks()", expectedOrder, actualOrder);
 	}
 }

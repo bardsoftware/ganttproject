@@ -41,8 +41,8 @@ public class TestDependencyActivityBinding extends TaskTestCase {
     }
 
     private GPCalendar myJanuaryFirstIsHolidayCalendar = new AlwaysWorkingTimeCalendarImpl() {
-        public List getActivities(Date startDate, Date endDate) {
-            List result = new ArrayList();
+        public List<CalendarActivityImpl> getActivities(Date startDate, Date endDate) {
+            List<CalendarActivityImpl> result = new ArrayList<CalendarActivityImpl>();
             if (endDate.before(myJanuaryFirst)
                     || startDate.after(myJanuarySecond)) {
                 result.add(new CalendarActivityImpl(startDate, endDate, true));

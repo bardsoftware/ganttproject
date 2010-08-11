@@ -30,5 +30,4 @@ public class TestTaskHierarchyEvent extends TaskTestCase {
             hasBeenCalled = called;
         }
     }
-
 }

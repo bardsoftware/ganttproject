@@ -18,7 +18,7 @@ public class TestDependencyCycle extends TaskTestCase {
         getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
         assertIsLooping(dependee, dependant);
 	}
-	
+
 	public void testLoopingDependencyTargetedAtSupertask() throws Exception {
 		Task supertask = getTaskManager().createTask();
 		Task nestedTask = getTaskManager().createTask();
@@ -27,13 +27,14 @@ public class TestDependencyCycle extends TaskTestCase {
 		getTaskManager().getDependencyCollection().createDependency(dependantTask, nestedTask);
 		assertIsLooping(supertask, dependantTask);
 	}
-	
+
 	public void testDependencyTargetedToNestedTask() throws Exception {
 		Task supertask = getTaskManager().createTask();
 		Task nestedTask = getTaskManager().createTask();
 		nestedTask.move(supertask);
 		assertIsLooping(supertask, nestedTask);		
 	}
+
 	private void assertIsLooping(Task dependant, Task dependee) {
         boolean success = true;
         try {
@@ -44,6 +45,5 @@ public class TestDependencyCycle extends TaskTestCase {
         	success = false;
         }
         assertFalse("Wow, dependency loop has been successfully created!", success);
-		
 	}
 }
