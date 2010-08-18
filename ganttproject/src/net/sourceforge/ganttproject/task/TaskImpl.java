@@ -18,7 +18,6 @@ import java.net.URLEncoder;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -506,6 +505,7 @@ public class TaskImpl implements Task {
     }
 
     private static class DurationChange extends FieldChange {
+        // FIXME This method is never used locally... delete?
         Date getCachedDate(int length) {
             if (myDates == null) {
                 return null;
@@ -517,6 +517,7 @@ public class TaskImpl implements Task {
             return (Date) myDates.get(index);
         }
 
+        // FIXME This method is never used locally... delete?
         void cacheDate(Date date, int length) {
             if (myDates == null) {
                 myDates = new ArrayList<Date>();
@@ -1050,11 +1051,10 @@ public class TaskImpl implements Task {
 
     private void recalculateActivities(List<TaskActivity> output, Date startDate, Date endDate) {
         GPCalendar calendar = myManager.getConfig().getCalendar();
-        List<TaskActivity> activities = calendar.getActivities(startDate, endDate);
+        List<GPCalendarActivity> activities = calendar.getActivities(startDate, endDate);
         output.clear();
         for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity nextCalendarActivity = (GPCalendarActivity) activities
-                    .get(i);
+            GPCalendarActivity nextCalendarActivity = activities.get(i);
             TaskActivityImpl nextTaskActivity;
             if (nextCalendarActivity.isWorkingTime()) {
                 nextTaskActivity = new TaskActivityImpl(this,

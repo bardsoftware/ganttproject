@@ -13,6 +13,7 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarActivityImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -41,8 +42,8 @@ public class TestDependencyActivityBinding extends TaskTestCase {
     }
 
     private GPCalendar myJanuaryFirstIsHolidayCalendar = new AlwaysWorkingTimeCalendarImpl() {
-        public List<CalendarActivityImpl> getActivities(Date startDate, Date endDate) {
-            List<CalendarActivityImpl> result = new ArrayList<CalendarActivityImpl>();
+        public List<GPCalendarActivity> getActivities(Date startDate, Date endDate) {
+            List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
             if (endDate.before(myJanuaryFirst)
                     || startDate.after(myJanuarySecond)) {
                 result.add(new CalendarActivityImpl(startDate, endDate, true));
@@ -92,7 +93,7 @@ public class TestDependencyActivityBinding extends TaskTestCase {
         dependant.setEnd(new GanttCalendar(2000, Calendar.JANUARY, 3));
         dependee.setStart(new GanttCalendar(1999, Calendar.NOVEMBER, 15));
         dependee.setEnd(new GanttCalendar(1999, Calendar.NOVEMBER, 16));
-        //
+
         TaskDependency dep = getTaskManager().getDependencyCollection()
                 .createDependency(dependant, dependee,
                         new FinishStartConstraintImpl());
@@ -100,7 +101,7 @@ public class TestDependencyActivityBinding extends TaskTestCase {
         assertEquals(binding.getDependantActivity(),
                 dependant.getActivities()[0]);
         assertEquals(binding.getDependeeActivity(), dependee.getActivities()[0]);
-        //
+
         dependant.setStart(new GanttCalendar(2000, Calendar.JANUARY, 4));
         dependant.setEnd(new GanttCalendar(2000, Calendar.JANUARY, 5));
         dependee.setStart(new GanttCalendar(1999, Calendar.DECEMBER, 30));

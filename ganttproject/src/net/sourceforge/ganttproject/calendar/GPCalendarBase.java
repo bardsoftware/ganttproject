@@ -14,7 +14,7 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  */
 abstract class GPCalendarBase {
     public Date shiftDate(Date input, TaskLength shift) {
-        List activities = getActivities(input, shift);
+        List<GPCalendarActivity> activities = getActivities(input, shift);
         if (activities.isEmpty()) {
             throw new RuntimeException(
                     "FIXME: Failed to compute calendar activities in time period="
@@ -34,19 +34,20 @@ abstract class GPCalendarBase {
 
     }
 
-    public List getActivities(Date startDate, TimeUnit timeUnit, long unitCount) {
+    public List<GPCalendarActivity> getActivities(Date startDate,
+            TimeUnit timeUnit, long unitCount) {
         return unitCount > 0 ? getActivitiesForward(startDate, timeUnit,
                 unitCount) : getActivitiesBackward(startDate, timeUnit,
                 -unitCount);
     }
 
-    protected abstract List getActivitiesBackward(Date startDate,
-            TimeUnit timeUnit, long l);
+    protected abstract List<GPCalendarActivity> getActivitiesBackward(
+            Date startDate, TimeUnit timeUnit, long l);
 
-    protected abstract List getActivitiesForward(Date startDate,
-            TimeUnit timeUnit, long l);
+    protected abstract List<GPCalendarActivity> getActivitiesForward(
+            Date startDate, TimeUnit timeUnit, long l);
 
-    public List/* <GPCalendarActivity> */getActivities(Date startingFrom,
+    public List<GPCalendarActivity> getActivities(Date startingFrom,
             TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());
