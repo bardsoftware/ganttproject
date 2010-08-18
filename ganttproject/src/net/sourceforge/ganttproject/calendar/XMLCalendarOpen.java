@@ -35,15 +35,16 @@ public class XMLCalendarOpen {
 
     //private File myCalendarFiles[];
 
-    private List myCalendarResources = new ArrayList();
+    private List<URL> myCalendarResources = new ArrayList<URL>();
     private String myCalendarLabels[];
 
     /** The main frame */
-    private ArrayList myTagHandlers = new ArrayList();
+    private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
-    boolean load(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+    boolean load(InputStream inputStream) throws ParserConfigurationException,
+            SAXException, IOException {
         // Use an instance of ourselves as the SAX event handler
         DefaultHandler handler = new GanttXMLParser();
 
@@ -107,18 +108,17 @@ public class XMLCalendarOpen {
 
         public void endDocument() throws SAXException {
             for (int i = 0; i < myListeners.size(); i++) {
-                ParsingListener l = (ParsingListener) myListeners.get(i);
+                ParsingListener l = myListeners.get(i);
                 l.parsingFinished();
             }
         }
 
-        public void startElement(String namespaceURI, String sName, // simple
-                // name
+        public void startElement(String namespaceURI, String sName, // simple name
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 try {
                     next.startElement(namespaceURI, sName, qName, attrs);
                 } catch (FileFormatException e) {
@@ -129,9 +129,9 @@ public class XMLCalendarOpen {
 
         public void endElement(String namespaceURI, String sName, String qName)
                 throws SAXException {
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 next.endElement(namespaceURI, sName, qName);
             }
         }
@@ -142,16 +142,17 @@ public class XMLCalendarOpen {
         // :
         // - using eclipse where test is a directory
         // - using the built jar archive where test is not a directory
-//        
+    
 //        URL url = getClass().getResource("/calendar");
 //        URL resolvedUrl = Platform.resolve(url);
 //        File test = new File(resolvedUrl.getPath());
 //        File path = new File(URLDecoder.decode(test.getAbsolutePath()));
 
-        // if(test.isDirectory())
-        // path = test;
-        // else
-        // path = new File("calendar");
+        // if(test.isDirectory()) {
+        //     path = test;
+        // } else {
+        //     path = new File("calendar");
+        // }
         myCalendarResources.clear();
         DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
         addTagHandler(th);
@@ -161,7 +162,7 @@ public class XMLCalendarOpen {
         for (int i = 0; i < calendarExtensions.length; i++) {
             Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespace());
             URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
-            if (calendarUrl!=null) {
+            if (calendarUrl != null) {
                 load(calendarUrl.openStream());
                 myCalendarLabels[i] = th.getName();
                 myCalendarResources.add(calendarUrl);
@@ -177,6 +178,7 @@ public class XMLCalendarOpen {
         return myCalendarLabels;
     }
 
+    // Class is never used... delete?
     private static class Filter extends FileFilter implements FilenameFilter {
         private String extension;
 

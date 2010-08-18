@@ -6,15 +6,11 @@ import java.util.List;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
 import net.sourceforge.ganttproject.plugins.PluginManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
- * This class allow the developer to get some useful references. - GanttProject
+ * This class allows the developer to get some useful references. - GanttProject
  * reference; - CustomColumnManager reference; - CustomColumnStorage reference.
  * 
  * @author bbaranne Mar 2, 2005
@@ -28,15 +24,11 @@ public class Mediator {
     /**
      * The unique CustomColumnsManager instance.
      */
-    private static CustomColumnsManager customColumnsManager = null;
-
-    private static CustomColumnsStorage customColumnsStorage = null;
-
     private static TaskSelectionManager taskSelectionManager = null;
 
-    private static RoleManager roleManager = null;
+//    private static RoleManager roleManager = null;
 
-    private static TaskManager taskManager = null;
+//    private static TaskManager taskManager = null;
 
     private static GPUndoManager undoManager = null;
 
@@ -44,11 +36,11 @@ public class Mediator {
 
     private static PluginManager pluginManager = new PluginManager();
     
-    private static List changeValueDispatchers = new ArrayList();
+    private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
 
     /**
-     * Regsiters the unique GanttProject instance.
-     * 
+     * Registers the unique GanttProject instance.
+     *
      * @param gp
      *            The unique GanttProject instance.
      */
@@ -57,8 +49,8 @@ public class Mediator {
     }
 
     /**
-     * Regsiters the unique CustomColumnsManager instance.
-     * 
+     * Registers the unique CustomColumnsManager instance.
+     *
      * @param managerThe
      *            unique CustomColumnsManager instance.
      */
@@ -91,13 +83,13 @@ public class Mediator {
         delayManager = delayMgr;
     }
     
-    public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher){
+    public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher) {
         changeValueDispatchers.add(dispatcher);
     }
 
     /**
      * Returns the unique GanttProject instance.
-     * 
+     *
      * @return The unique GanttProject instance.
      */
     public static GanttProject getGanttProjectSingleton() {
@@ -115,7 +107,7 @@ public class Mediator {
 
     /**
      * Returns the unique CustomColumnsManager instance.
-     * 
+     *
      * @return The unique CustomColumnsManager instance.
      */
 //    public static CustomColumnsManager getCustomColumnsManager() {
@@ -146,7 +138,7 @@ public class Mediator {
         return pluginManager;
     }
     
-    public static List getChangeValueDispatchers(){
+    public static List<ChangeValueDispatcher> getChangeValueDispatchers(){
         return changeValueDispatchers;
     }
 }

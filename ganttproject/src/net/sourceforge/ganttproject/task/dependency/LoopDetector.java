@@ -21,14 +21,14 @@ public class LoopDetector {
 		myTaskManager = taskManager;
 	}
 	public boolean isLooping(TaskDependency dep) {
-		Set checked = new LinkedHashSet();
+		Set<Task> checked = new LinkedHashSet<Task>();
 		checked.add(dep.getDependee());
 		return isLooping(checked, dep.getDependant());
 	}
 
-	private boolean isLooping(Set checked, Task incoming) {
+	private boolean isLooping(Set<Task> checked, Task incoming) {
 		boolean result = false;
-		Set newChecked = new LinkedHashSet(checked);
+		Set<Task> newChecked = new LinkedHashSet<Task>(checked);
 		newChecked.add(incoming);
 		TaskDependency[] nextDeps = incoming.getDependenciesAsDependee().toArray();
 		for (int i=0; !result && i<nextDeps.length; i++) {
