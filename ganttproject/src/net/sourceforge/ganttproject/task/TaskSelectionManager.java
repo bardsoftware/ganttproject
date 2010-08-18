@@ -15,14 +15,14 @@ import net.sourceforge.ganttproject.gui.TaskSelectionContext;
  */
 public class TaskSelectionManager implements TaskSelectionContext {
     public interface Listener {
-        void selectionChanged(List currentSelection);
+        void selectionChanged(List<Task> currentSelection);
 		void userInputConsumerChanged(Object newConsumer);
     }
     /**
      * List of the selected tasks.
      */
-    private final List selectedTasks = new ArrayList();
-    private final List myListeners = new ArrayList();
+    private final List<Task> selectedTasks = new ArrayList<Task>();
+    private final List<Listener> myListeners = new ArrayList<Listener>();
 	private Object myUserInputConsumer;
     /**
      * Creates an instance of TaskSelectionManager
@@ -81,7 +81,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
      *
      * @return The selected tasks list.
      */
-    public List getSelectedTasks() {
+    public List<Task> getSelectedTasks() {
         return Collections.unmodifiableList(selectedTasks);
     }
 
@@ -92,10 +92,10 @@ public class TaskSelectionManager implements TaskSelectionContext {
      */
     public Date getEarliestStart() {
         Date res = null;
-        Iterator it = selectedTasks.iterator();
+        Iterator<Task> it = selectedTasks.iterator();
         while (it.hasNext()) {
 
-            Task task = (Task) it.next();
+            Task task = it.next();
             Date d = task.getStart().getTime();
             if (res == null) {
                 res = d;
@@ -114,9 +114,9 @@ public class TaskSelectionManager implements TaskSelectionContext {
      */
     public Date getLatestEnd() {
         Date res = null;
-        Iterator it = selectedTasks.iterator();
+        Iterator<Task> it = selectedTasks.iterator();
         while (it.hasNext()) {
-            Task task = (Task) it.next();
+            Task task = it.next();
             Date d = task.getEnd().getTime();
             if (res == null) {
                 res = d;

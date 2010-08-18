@@ -49,35 +49,31 @@ public class PublicHolidayDialogAction extends AbstractAction {
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(
                 myProject, myUIFacade);
         Component dialogContent = dialog.getContentPane();
-        myUIFacade.showDialog(dialogContent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        updateHolidays(dialog.getHolidays());
-                        myProject.setModified();
-                        try {
-                            myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                        } catch (TaskDependencyException e1) {
-                            GPLogger.getLogger(PublicHolidayDialogAction.class).log(
-                                    Level.SEVERE, "Exception after changing holidays", e1);
-                        }
-                        myUIFacade.getActiveChart().reset();
-                    }
-            
-                }, 
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                    }
+        myUIFacade.showDialog(dialogContent, new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                updateHolidays(dialog.getHolidays());
+                myProject.setModified();
+                try {
+                    myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+                } catch (TaskDependencyException e1) {
+                    GPLogger.getLogger(PublicHolidayDialogAction.class).log(
+                            Level.SEVERE, "Exception after changing holidays", e1);
                 }
-        });
+                myUIFacade.getActiveChart().reset();
+            }
+
+        }, new CancelAction() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        } });
     }
-    
-    private void updateHolidays(List holidays) {
+
+    private void updateHolidays(List<GanttCalendar> holidays) {
         myProject.getActiveCalendar().getPublicHolidays().clear();
         for (int i = 0; i < holidays.size(); i++) {
             myProject.getActiveCalendar().setPublicHoliDayType(
-                    ((GanttCalendar)holidays.get(i))
-                            .getTime());
+                    holidays.get(i).getTime());
         }
-        
+
     }
 }
