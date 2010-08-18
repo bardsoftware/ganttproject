@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskNode;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -189,24 +190,20 @@ public class GanttPreviousState {
                 throw new RuntimeException(
                         "A task can not has a number equal to -1");
 
-            int id = task.getTaskID();
-
             /*
+             * int id = task.getTaskID();
              * if (id >= lot.size()) { return; }
              */
 
             boolean haschild = false;
 
-            ArrayList<DefaultMutableTreeNode> child = myTree.getAllChildTask(node);
+            ArrayList<TaskNode> child = myTree.getAllChildTask(node);
             if (child.size() != 0) {
                 haschild = true;
             }
 
             // Writes data of task
-            fout.write(s + s + "<previous-task id=\"" + task.getTaskID() + // lots.indexOf(task.toString())
-                    // +
-                    // //By
-                    // CL
+            fout.write(s + s + "<previous-task id=\"" + task.getTaskID() + // lots.indexOf(task.toString()) + //By CL
                     "\"");
             fout.write(" start=\"" + task.getStart().toXMLString() + "\"");
             fout.write(" duration=\"" + task.getLength() + "\"");
@@ -231,7 +228,7 @@ public class GanttPreviousState {
                             newid = j;
                         }
                     }
-                    writeTask(fout, (DefaultMutableTreeNode) child.get(i));
+                    writeTask(fout, child.get(i));
                 }
 
             }

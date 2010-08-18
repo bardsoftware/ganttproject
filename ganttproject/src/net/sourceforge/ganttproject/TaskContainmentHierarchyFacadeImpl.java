@@ -21,22 +21,18 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 class TaskContainmentHierarchyFacadeImpl implements
         TaskContainmentHierarchyFacade {
-    private Map myTask2treeNode = new HashMap();
-    private Map myTask2index = new LinkedHashMap();
+    private Map<Task, TaskNode> myTask2treeNode = new HashMap<Task, TaskNode>();
+    private Map<Task, Integer> myTask2index = new LinkedHashMap<Task, Integer>();
     private Task myRootTask;
 
-    private List myPathBuffer = new ArrayList();
+    private List<Task> myPathBuffer = new ArrayList<Task>();
 
     private GanttTree2 myTree;
 
     public TaskContainmentHierarchyFacadeImpl(GanttTree2 tree) {
-        ArrayList/*<DefaultMutableTreeNode>*/ allTasks = tree.getAllTasks();
-        // comboBox.addItem("no set");
-        // for (int i = 0; i < allTasks.size(); i++) {
-        // DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)
-        // allTasks.get(i);
-        for (int i=0; i<allTasks.size(); i++) {
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)allTasks.get(i);
+        ArrayList<TaskNode> allTasks = tree.getAllTasks();
+        for (int i = 0; i < allTasks.size(); i++) {
+            TaskNode treeNode = allTasks.get(i);
             Task task = (Task) treeNode.getUserObject();
             if (treeNode.isRoot()) {
                 myRootTask = task;
@@ -49,34 +45,30 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public Task[] getNestedTasks(Task container) {
         Task[] result = null;
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
-                .get(container);
+        TaskNode treeNode = myTask2treeNode.get(container);
         if (treeNode != null) {
-            ArrayList list = new ArrayList();
-            for (Enumeration children = treeNode.children(); children
-                    .hasMoreElements();) {
-                DefaultMutableTreeNode next = (DefaultMutableTreeNode) children
-                        .nextElement();
+            ArrayList<Task> list = new ArrayList<Task>();
+            for (Enumeration<TaskNode> children = treeNode.children(); children.hasMoreElements();) {
+                TaskNode next = children.nextElement();
                 if (next instanceof TaskNode)
-                    list.add(next.getUserObject());
+                    list.add((Task) next.getUserObject());
             }
-            result = (Task[]) list.toArray(new Task[0]);
+            result = list.toArray(new Task[0]);
         }
         return result == null ? new Task[0] : result;
     }
 
-    
     public Task[] getDeepNestedTasks(Task container) {
-        ArrayList result = new ArrayList();
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode.get(container);
+        ArrayList<Task> result = new ArrayList<Task>();
+        TaskNode treeNode = myTask2treeNode.get(container);
         if (treeNode != null) {
-            for (Enumeration subtree = treeNode.preorderEnumeration(); subtree.hasMoreElements();) {
-                DefaultMutableTreeNode curNode = (DefaultMutableTreeNode) subtree.nextElement();
+            for (Enumeration<TaskNode> subtree = treeNode.preorderEnumeration(); subtree.hasMoreElements();) {
+                TaskNode curNode = subtree.nextElement();
                 assert curNode.getUserObject() instanceof Task;
-                result.add(curNode.getUserObject());
+                result.add((Task) curNode.getUserObject());
             }
-            
-            // We remove the first task which is == container 
+
+            // We remove the first task which is == container
             assert result.size() > 0;
             result.remove(0);
         }
@@ -86,7 +78,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     /**
      * Purpose: Returns true if the container Task has any nested tasks.
      * This should be a quicker check than using getNestedTasks().
-     * 
+     *
      * @param container
      *            The Task on which to check for children.
      */
@@ -145,7 +137,8 @@ class TaskContainmentHierarchyFacadeImpl implements
             boolean wasSelected = (myTree.getJTree().getSelectionModel()
                     .isPathSelected(movedPath));
             if (wasSelected) {
-                myTree.getJTree().getSelectionModel().removeSelectionPath(movedPath);
+                myTree.getJTree().getSelectionModel().removeSelectionPath(
+                        movedPath);
             }
             myTree.getModel().removeNodeFromParent(movedNode);
             myTree.getModel().insertNodeInto(movedNode, targetNode,
@@ -159,17 +152,17 @@ class TaskContainmentHierarchyFacadeImpl implements
         }
         getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);
         try {
-			getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-		} catch (TaskDependencyException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        } catch (TaskDependencyException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private TaskManager getTaskManager() {
-    	return myRootTask.getManager();
+        return myRootTask.getManager();
     }
-    
+
     public int getDepth(Task task) {
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
                 .get(task);
@@ -177,12 +170,8 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public int compareDocumentOrder(Task task1, Task task2) {
-//        DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) myTask2treeNode.get(task1);
-//        DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) myTask2treeNode.get(task2);
-//        int row1 = myTree.getJTree().getRowForPath(new TreePath(node1.getPath()));
-//        int row2 = myTree.getJTree().getRowForPath(new TreePath(node2.getPath()));
-    	Integer index1 = (Integer) myTask2index.get(task1);
-    	Integer index2 = (Integer) myTask2index.get(task2);
+        Integer index1 = (Integer) myTask2index.get(task1);
+        Integer index2 = (Integer) myTask2index.get(task2);
         return index1.intValue() - index2.intValue();
     }
 
