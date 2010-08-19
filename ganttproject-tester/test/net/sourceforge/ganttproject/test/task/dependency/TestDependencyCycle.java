@@ -20,10 +20,10 @@ public class TestDependencyCycle extends TaskTestCase {
     }
 
     public void testLoopingDependencyTargetedAtSupertask() throws Exception {
-        Task supertask = getTaskManager().createTask();
-        Task nestedTask = getTaskManager().createTask();
+        Task supertask = getTaskManager().createTask(); supertask.setName("supertask");
+        Task nestedTask = getTaskManager().createTask(); nestedTask.setName("nestedtask");
         nestedTask.move(supertask);
-        Task dependantTask = getTaskManager().createTask();
+        Task dependantTask = getTaskManager().createTask(); dependantTask.setName("dependanttask");
         getTaskManager().getDependencyCollection().createDependency(dependantTask, nestedTask);
         assertIsLooping(supertask, dependantTask);
     }

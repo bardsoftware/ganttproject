@@ -36,7 +36,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     }
 
     public TaskDependency[] getDependencies() {
-        return (TaskDependency[]) myDependencies.toArray(new TaskDependency[0]);
+        return myDependencies.toArray(new TaskDependency[0]);
     }
 
     public TaskDependency[] getDependencies(Task task) {
@@ -44,8 +44,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         SearchKey toKey = new RangeSearchToKey(task);
         SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
                 .subMap(fromKey, toKey);
-        return (TaskDependency[]) submap.values()
-                .toArray(new TaskDependency[0]);
+        return submap.values().toArray(new TaskDependency[0]);
     }
 
     public TaskDependency[] getDependenciesAsDependant(Task dependant) {
@@ -55,8 +54,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .getTaskID(), -1);
         SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
                 .subMap(fromKey, toKey);
-        return (TaskDependency[]) submap.values()
-                .toArray(new TaskDependency[0]);
+        return submap.values().toArray(new TaskDependency[0]);
     }
 
     public TaskDependency[] getDependenciesAsDependee(Task dependee) {
@@ -66,8 +64,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 dependee.getTaskID(), -1);
         SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
                 .subMap(fromKey, toKey);
-        return (TaskDependency[]) submap.values()
-                .toArray(new TaskDependency[0]);
+        return submap.values().toArray(new TaskDependency[0]);
     }
 
     public TaskDependency createDependency(Task dependant, Task dependee)
@@ -131,9 +128,9 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             }
             Collections.sort(mutations);
             for (int i = 0; i < mutations.size(); i++) {
-                MutationInfo next = (MutationInfo) mutations.get(i);
+                MutationInfo next = mutations.get(i);
                 switch (next.myOperation) {
-                case MutationInfo.ADD: {
+                case MutationInfo.ADD:
                     try {
                         addDependency(next.myDependency);
                     } catch (TaskDependencyException e) {
@@ -142,15 +139,12 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                         }
                     }
                     break;
-                }
-                case MutationInfo.DELETE: {
+                case MutationInfo.DELETE:
                     delete(next.myDependency);
                     break;
-                }
-                case MutationInfo.CLEAR: {
+                case MutationInfo.CLEAR:
                     doClear();
                     break;
-                }
                 }
             }
         }
@@ -247,6 +241,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         return detector.isLooping(dep);
     }
 
+    // FIXME This method is never used (although it seems to be working, but also more complex...) -> delete?
     boolean _isLooping(TaskDependency dep) {
         Set<Task> tasksInvolved = new HashSet<Task>();
         tasksInvolved.add(dep.getDependee());
@@ -259,7 +254,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             return true;
         }
         for (Iterator<Task> tasks = tasksInvolved.iterator(); tasks.hasNext();) {
-            Task nextInvolved = (Task) tasks.next();
+            Task nextInvolved = tasks.next();
             if (false == getTaskHierarchy().areUnrelated(nextInvolved,
                     dependant)) {
                 return true;
