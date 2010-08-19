@@ -17,34 +17,36 @@ import net.sourceforge.ganttproject.task.TaskManager;
  */
 public class LoopDetector {
 	private final TaskManager myTaskManager;
-	public LoopDetector(TaskManager taskManager) {
-		myTaskManager = taskManager;
-	}
-	public boolean isLooping(TaskDependency dep) {
-		Set<Task> checked = new LinkedHashSet<Task>();
-		checked.add(dep.getDependee());
-		return isLooping(checked, dep.getDependant());
-	}
 
-	private boolean isLooping(Set<Task> checked, Task incoming) {
-		boolean result = false;
-		Set<Task> newChecked = new LinkedHashSet<Task>(checked);
-		newChecked.add(incoming);
-		TaskDependency[] nextDeps = incoming.getDependenciesAsDependee().toArray();
-		for (int i=0; !result && i<nextDeps.length; i++) {
-			if (!newChecked.contains(nextDeps[i].getDependant())) {
-				result = isLooping(newChecked, nextDeps[i].getDependant());
-			}
-			else {
-				result = true;
-			}
-		}
-		if (!result) {
-			Task supertask = myTaskManager.getTaskHierarchy().getContainer(incoming);
-			if (supertask!=null && myTaskManager.getTaskHierarchy().getRootTask()!=supertask) {
-				result = isLooping(newChecked, supertask);
-			}
-		}
-		return result;
+    public LoopDetector(TaskManager taskManager) {
+        myTaskManager = taskManager;
+    }
+
+    public boolean isLooping(TaskDependency dep) {
+        Set<Task> checked = new LinkedHashSet<Task>();
+        checked.add(dep.getDependee());
+        return isLooping(checked, dep.getDependant());
+    }
+
+    private boolean isLooping(Set<Task> checked, Task incoming) {
+        boolean result = false;
+        Set<Task> newChecked = new LinkedHashSet<Task>(checked);
+        newChecked.add(incoming);
+        TaskDependency[] nextDeps = incoming.getDependenciesAsDependee().toArray();
+        for (int i = 0; !result && i < nextDeps.length; i++) {
+            Task dependant = nextDeps[i].getDependant();
+            if (!newChecked.contains(dependant)) {
+                result = isLooping(newChecked, dependant);
+            } else {
+                result = true;
+            }
+        }
+        if (!result) {
+            Task supertask = myTaskManager.getTaskHierarchy().getContainer(incoming);
+            if (supertask != null && myTaskManager.getTaskHierarchy().getRootTask() != supertask) {
+                result = isLooping(newChecked, supertask);
+            }
+        }
+        return result;
 	}
 }
