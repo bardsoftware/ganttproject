@@ -101,7 +101,6 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgori
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
@@ -719,8 +718,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         private void createDependency(final Task dependee) {
             try {
-                TaskDependency dep = getTaskManager().getDependencyCollection().createDependency(
-                        myDependant, dependee, new FinishStartConstraintImpl());
+                TaskDependency dep = getTaskManager().getDependencyCollection()
+                        .createDependency(myDependant, dependee);
                 String defaultHardness = myChartModel.getDependencyHardnessOption().getValue();
                 dep.setHardness(Hardness.parse(defaultHardness));
             } catch (TaskDependencyException e) {

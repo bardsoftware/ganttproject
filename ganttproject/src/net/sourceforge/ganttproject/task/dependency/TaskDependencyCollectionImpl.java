@@ -215,6 +215,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     }
 
     void addDependency(TaskDependency dep) throws TaskDependencyException {
+        // FIXME Same test as can CreateDependency(), except for throwing exceptions instead ofr returning a boolean value
         if (myDependencies.contains(dep)) {
             throw new TaskDependencyException("Dependency=" + dep
                     + " already exists");

@@ -13,24 +13,39 @@ import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
 public class TestDependencyCycle extends TaskTestCase {
     public void testSimpleCycle() throws Exception {
-        Task dependant = getTaskManager().createTask();
-        Task dependee = getTaskManager().createTask();
+        Task dependant = getTaskManager().createTask(); dependant.setName("dependant");
+        Task dependee = getTaskManager().createTask(); dependee.setName("dependee");
         getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
         assertIsLooping(dependee, dependant);
     }
 
-    public void testLoopingDependencyTargetedAtSupertask() throws Exception {
-        Task supertask = getTaskManager().createTask(); supertask.setName("supertask");
+    public void testLoopingDependencyTargetedAtNestedtask() throws Exception {
+        Task superTask = getTaskManager().createTask(); superTask.setName("supertask");
         Task nestedTask = getTaskManager().createTask(); nestedTask.setName("nestedtask");
-        nestedTask.move(supertask);
         Task dependantTask = getTaskManager().createTask(); dependantTask.setName("dependanttask");
+
+        nestedTask.move(superTask);
         getTaskManager().getDependencyCollection().createDependency(dependantTask, nestedTask);
-        assertIsLooping(supertask, dependantTask);
+        assertIsLooping(superTask, dependantTask);
+    }
+
+    /**
+     * Basically the same as testLoopingDependencyTargetedAtNestedtask, but with
+     * the loop the other way around
+     */
+    public void testLoopingDependencyTargetedAtSupertask() throws Exception {
+        Task superTask = getTaskManager().createTask(); superTask.setName("supertask");
+        Task nestedTask = getTaskManager().createTask(); nestedTask.setName("nestedtask");
+        Task dependantTask = getTaskManager().createTask(); dependantTask.setName("dependanttask");
+
+        nestedTask.move(superTask);
+        getTaskManager().getDependencyCollection().createDependency(dependantTask, superTask);
+        assertIsLooping(nestedTask, dependantTask);
     }
 
     public void testDependencyTargetedToNestedTask() throws Exception {
-        Task supertask = getTaskManager().createTask();
-        Task nestedTask = getTaskManager().createTask();
+        Task supertask = getTaskManager().createTask(); supertask.setName("supertask");
+        Task nestedTask = getTaskManager().createTask(); nestedTask.setName("nestedtask");
         nestedTask.move(supertask);
         assertIsLooping(supertask, nestedTask);        
     }
@@ -42,7 +57,7 @@ public class TestDependencyCycle extends TaskTestCase {
             assertNotNull("Either exception is thrown, or result is not null", loopingDependency);
         }
         catch (TaskDependencyException e) {
-            // An exception is thrown if the loop is prevented/detected (which is good behavior)
+            // An exception is thrown if the loop is prevented/detected (which is the expected behavior)
             loopCreated = false;
         }
         assertFalse("Dependency loop has been successfully created...", loopCreated);
