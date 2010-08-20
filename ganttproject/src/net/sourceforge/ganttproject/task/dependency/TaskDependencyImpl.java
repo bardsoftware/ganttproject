@@ -87,8 +87,13 @@ public class TaskDependencyImpl implements TaskDependency {
 	public void setHardness(Hardness hardness) {
 		myHardness = hardness;
 	}
-	
+
+    /**
+     * @return a String with the dependee at the start of the 'arrow' and the
+     *         dependant at the end of the 'arrow' (same as the graphical
+     *         representation)
+     */
 	public String toString() {
-		return myDependant+"->"+myDependee;
+        return myDependee + "->" + myDependant;
 	}
 }
