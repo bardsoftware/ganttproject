@@ -27,7 +27,7 @@ public class StyledPainterOpenJDKImpl extends StyledPainterImpl {
             protected void drawBorder(Graphics g, Rectangle next) {
                 super.drawBorder(g, next.myLeftX - getCorrectionShift(), next.myTopY - 1,
                         next.getRightX() - getCorrectionShift(), next.getBottomY());
-            }        
+            }
         };
 
         myTaskStartRectanglePainter = new TaskRectanglePainter() {
@@ -49,14 +49,6 @@ public class StyledPainterOpenJDKImpl extends StyledPainterImpl {
             }
             protected int getCorrectionShift() {
                 return 1;
-            }
-        };
-
-        myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
-            protected void drawBorder(Graphics g, Rectangle next) {
-                super.drawBorder(g, next);
-                g.drawLine(next.myLeftX, next.myTopY - 1, next.myLeftX, next.getBottomY());
-                g.drawLine(next.getRightX(), next.myTopY - 1, next.getRightX(), next.getBottomY());
             }
         };
 
