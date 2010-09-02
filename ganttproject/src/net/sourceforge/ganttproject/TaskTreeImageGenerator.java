@@ -197,5 +197,4 @@ class TaskTreeImageGenerator {
     }
 
     protected static final int HEADER_OFFSET = 44;
-
 }

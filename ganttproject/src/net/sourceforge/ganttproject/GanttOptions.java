@@ -68,7 +68,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * The class aible to load and save options on the file
+ * This class is able to load and save options on the file
  */
 public class GanttOptions {
 
@@ -223,8 +223,8 @@ public class GanttOptions {
 
     public static final int PREVIEWPRINT = 33;
 
-    private Map/*<String,GPOption>*/ myGPOptions = new LinkedHashMap();
-    private Map/*<String,GP1XOptionConverter>*/ myTagDotAttribute_Converter = new HashMap();
+    private Map<String,GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
+    private Map<String,GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
 
     private final DocumentManager myDocumentManager;
 
@@ -276,7 +276,6 @@ public class GanttOptions {
         iconListAsIntArray = getDefaultIconListIntArray();
         deletedIconListAsString = getDefaultDeletedIconListAsString();
         deletedIconListAsIntArray = getDefaultDeletedIconListIntArray();
-
     }
 
     // iconListAsIntArray = initIconList ();
@@ -468,7 +467,7 @@ public class GanttOptions {
             // The last opened files
             {
                 startElement("files", attrs, handler);
-                for (Iterator iterator = documentsMRU.iterator(); iterator
+                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator
                         .hasNext();) {
                     Document document = (Document) iterator.next();
                     addAttribute("path", document.getPath(), attrs);
@@ -480,20 +479,19 @@ public class GanttOptions {
             addAttribute("spec",
                     getFontSpec(getUIConfiguration().getMenuFont()), attrs);
             emptyElement("font", attrs, handler);
-            //
+
             addAttribute("category", "chart-main", attrs);
             addAttribute("spec", getFontSpec(getUIConfiguration()
                     .getChartMainFont()), attrs);
             emptyElement("font", attrs, handler);
-            //
 
             saveIconPositions(handler);
             saveRoleSets(handler);
-            for (Iterator options = myGPOptions.entrySet().iterator(); options.hasNext();) {
-                Map.Entry nextEntry = (Entry) options.next();
-                GPOption nextOption = (GPOption)nextEntry.getValue();
-                if (nextOption.getPersistentValue()!=null) {
-                    addAttribute("id", nextEntry.getKey().toString(), attrs);
+            for (Iterator<Entry<String, GPOption>> options = myGPOptions.entrySet().iterator(); options.hasNext();) {
+                Map.Entry<String, GPOption> nextEntry = options.next();
+                GPOption nextOption = nextEntry.getValue();
+                if (nextOption.getPersistentValue() != null) {
+                    addAttribute("id", nextEntry.getKey(), attrs);
                     addAttribute("value", nextOption.getPersistentValue(), attrs);
                     emptyElement("option", attrs, handler);
                 }
@@ -501,7 +499,7 @@ public class GanttOptions {
             savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
             savePreferences(myPluginPreferencesRootNode.node("/instance"), handler);
             endElement("ganttproject-options", handler);
-            //
+
             GPLogger.log("[GanttOptions] save(): finished!!");
             handler.endDocument();
         } catch (Exception e) {
@@ -664,7 +662,6 @@ public class GanttOptions {
             addAttribute("name", next.getName(), attrs);
             emptyElement("role", attrs, handler);
         }
-
     }
 
     private void saveIconPositions(TransformerHandler handler)
@@ -707,8 +704,8 @@ public class GanttOptions {
 
         private PluginOptionsHandler myPluginOptionsHandler;
 
-        public void startElement(String namespaceURI, String sName, // simple
-                // name
+        public void startElement(String namespaceURI, 
+                String sName, // simple name
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
 
@@ -915,9 +912,7 @@ public class GanttOptions {
                             if (new File(value).exists())
                                 workingDir = value;
                         }
-                    }
-
-                    else if (qName.equals("task-name")) {
+                    } else if (qName.equals("task-name")) {
                         if (aName.equals("prefix"))
                             sTaskNamePrefix = value;
                     } else if (qName.equals("toolBar")) {
@@ -1031,7 +1026,6 @@ public class GanttOptions {
                 // Color color = new Color(r, g, b);
                 // getUIConfiguration().setTaskColor(color);
                 setDefaultTaskColor(new Color(r, g, b));
-
             }
 
             if (qName.equals("font")) {
@@ -1041,9 +1035,7 @@ public class GanttOptions {
                 } else if ("chart-main".equals(category)) {
                     myChartMainFont = Font.decode(attrs.getValue("spec"));
                 }
-
             }
-
         }
 
         public void endElement(String uri, String localName, String name)
@@ -1052,11 +1044,9 @@ public class GanttOptions {
                 myPluginOptionsHandler = null;
             }
         }
-
-
-
     }
 
+    // TODO Method is never used... delete?
     private String getFilePath(String value) {
         String result = null;
         String filePath;

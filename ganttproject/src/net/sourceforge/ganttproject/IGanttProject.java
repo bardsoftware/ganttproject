@@ -29,29 +29,24 @@ public interface IGanttProject {
 
     void setProjectName(String projectName);
 
-    //
     String getDescription();
 
     void setDescription(String description);
 
-    //
     String getOrganization();
 
     void setOrganization(String organization);
 
-    //
     String getWebLink();
 
     void setWebLink(String webLink);
 
-    //
     /**
      * Creates a new task and performs all necessary initialization procedures
      * such as changing properties of parent task, adjusting schedule, etc.
      */
     Task newTask();
 
-    //
     GanttLanguage getI18n();
 
     UIConfiguration getUIConfiguration();
@@ -90,5 +85,5 @@ public interface IGanttProject {
 
     CustomColumnsStorage getCustomColumnsStorage();
 
-    List/*<GanttPreviousState*/ getBaselines();
+    List<GanttPreviousState> getBaselines();
 }

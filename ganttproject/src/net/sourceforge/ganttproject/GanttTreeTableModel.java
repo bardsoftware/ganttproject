@@ -63,12 +63,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	public static String strColID = null;
 
 	/** The columns titles */
-	public List titles = null;
+	public List<String> titles = null;
 
 	/**
 	 * Custom columns list.
 	 */
-	private Vector customColumns = null;
+	private Vector<String> customColumns = null;
 
 	/**
 	 * Number of columns (presently in the model)
@@ -76,7 +76,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	private int nbCol = 11;
 
 	/**
-	 * Number of columns (at all, even hiden)
+	 * Number of columns (at all, even hidden)
 	 */
 	private int nbColTot = nbCol;
 
@@ -91,8 +91,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public GanttTreeTableModel(TreeNode root, CustomColumnsManager customColumnsManager) {
 		super(root);
-		titles = new ArrayList();
-		customColumns = new Vector();
+		titles = new ArrayList<String>();
+		customColumns = new Vector<String>();
 		changeLanguage(language);
 		myCustomColumnsManager = customColumnsManager;
 	}
@@ -149,8 +149,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	public void removeNodeFromParent(MutableTreeNode node) {
 		MutableTreeNode parent = (MutableTreeNode) node.getParent();
 
-		if (parent == null)
+		if (parent == null) {
 			throw new IllegalArgumentException("node does not have a parent.");
+		}
 
 		int[] childIndex = new int[1];
 		Object[] removedArray = new Object[1];
@@ -234,13 +235,14 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	}
 
 	public String getColumnName(int column) {
-		if (column < titles.size())
-			return (String) titles.get(column);
+		if (column < titles.size()) {
+			return titles.get(column);
+		}
 
 		try {
-			return (String) customColumns.get(column - titles.size());
+			return customColumns.get(column - titles.size());
 		} catch (IndexOutOfBoundsException e) {
-			return (String) customColumns.get(column - titles.size() - 1);
+			return customColumns.get(column - titles.size() - 1);
 		}
 
 	}
@@ -281,17 +283,18 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 * @inheritDoc
 	 */
 	public Object getValueAt(Object node, int column) {
-		Object res = null;
-		if (!(node instanceof TaskNode))
+		if (!(node instanceof TaskNode)) {
 			return null;
+		}
+        Object res = null;
 		TaskNode tn = (TaskNode) node;
 		Task t = (Task) tn.getUserObject();
 		// if(tn.getParent()!=null){
 		switch (column) {
 		case 0:
-			if (((Task) tn.getUserObject()).isProjectTask()) {
-				res = new ImageIcon(getClass().getResource(
-						"/icons/mproject.gif"));
+			if (t.isProjectTask()) {
+                res = new ImageIcon(getClass().getResource(
+                        "/icons/mproject.gif"));
 			} else if (!tn.isLeaf())
 				res = new ImageIcon(getClass().getResource("/icons/mtask.gif"));
 			else if (t.isMilestone())
@@ -301,8 +304,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 				res = new ImageIcon(getClass().getResource("/icons/tasks2.png"));
 			break;
 		case 1: // Priority
-			GanttTask task = (GanttTask) tn.getUserObject();
-			res = new ImageIcon(getClass().getResource(task.getPriority().getIconPath()));
+			res = new ImageIcon(getClass().getResource(t.getPriority().getIconPath()));
 			break;
 		case 2: // info
 			TaskInfo info = t.getTaskInfo();
@@ -335,14 +337,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			break;
 		case 8: {
 			ResourceAssignment[] tAssign = t.getAssignments();
-			StringBuffer sb = new StringBuffer();
-			int nb = 0;
-			for (int i = 0; i < tAssign.length; i++) {
-				ResourceAssignment resAss = tAssign[i];
-				if (resAss.isCoordinator())
-					sb.append(nb++ == 0 ? "" : ", ").append(
-							resAss.getResource().getName());
-			}
+            StringBuffer sb = new StringBuffer();
+            int nb = 0;
+            for (int i = 0; i < tAssign.length; i++) {
+                ResourceAssignment resAss = tAssign[i];
+                if (resAss.isCoordinator()) {
+                    sb.append(nb++ == 0 ? "" : ", ").append(
+                            resAss.getResource().getName());
+                }
+            }
 			// res = "Not implemented";
 			res = sb.toString();
 			break;
@@ -352,8 +355,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			TaskDependency[] dep = t.getDependenciesAsDependant().toArray();
 			int i = 0;
 			if (dep != null && dep.length > 0) {
-				for (i = 0; i < dep.length - 1; i++)
+				for (i = 0; i < dep.length - 1; i++) {
 					resStr += dep[i].getDependee().getTaskID() + ", ";
+				}
 				resStr += dep[i].getDependee().getTaskID() + "";
 			}
 			res = resStr;
@@ -380,7 +384,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public void setValueAt(final Object value, final Object node,
 			final int column) {
-		if (value==null) {
+        if (value == null) {
 			return;
 		}
 		if (isCellEditable(node, column)) {
@@ -436,7 +440,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 			((TaskNode) node).setCompletionPercentage(((Integer) value)
 					.intValue());
 			break;
-		default: // custom colums
+		default: // custom columns
 			try {
 				((Task) ((TaskNode) node).getUserObject()).getCustomValues()
 						.setValue(this.getColumnName(column), value);
@@ -446,7 +450,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	        	}
 			}
 		}
-
 	}
 
 	/**
@@ -468,7 +471,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public void columnMoved(TableColumnModelEvent arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -476,7 +478,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public void columnMarginChanged(ChangeEvent arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -491,15 +492,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public Task[] getNestedTasks(Task container) {
 		TaskNode r = (TaskNode) root;
-		Enumeration e = r.children();
+		Enumeration<TaskNode> e = r.children();
 
-		Vector v = new Vector();
-		while (e.hasMoreElements())
-			v.add((TaskNode) e.nextElement());
+		Vector<TaskNode> v = new Vector<TaskNode>();
+		while (e.hasMoreElements()) {
+			v.add(e.nextElement());
+		}
 		Task[] res = new Task[v.size()];
 		v.toArray(res);
 		return res;
-
 	}
 
 	public Task[] getDeepNestedTasks(Task container) {
@@ -508,9 +509,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     /**
-	 * Purpose: Should return true if this Tasks has any nested subtasks.
+	 * @return true if this Task has any nested subtasks.
 	 */
 	public boolean hasNestedTasks(Task container) {
+	    // TODO container is not used... remove parameter?
 		TaskNode r = (TaskNode) root;
 		if (r.getChildCount() > 0) {
 			return true;
@@ -560,7 +562,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 	 */
 	public void move(Task whatMove, Task whereMove) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**

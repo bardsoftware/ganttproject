@@ -41,11 +41,11 @@ class ResourceChartTabContentPanel implements IAdaptable {
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
         upButton.setTextHidden(true);
         buttonBar.add(upButton);
-        //
+
         TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction());
         downButton.setTextHidden(true);
         buttonBar.add(downButton);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;

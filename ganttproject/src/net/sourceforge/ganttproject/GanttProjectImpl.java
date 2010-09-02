@@ -52,11 +52,11 @@ public class GanttProjectImpl implements IGanttProject {
     private final HumanResourceManager myResourceManager;
     private final TaskManagerConfigImpl myTaskManagerConfig;
     private Document myDocument;
-    private final List myListeners = new ArrayList();
+    private final List<ProjectEventListener> myListeners = new ArrayList<ProjectEventListener>();
     private UIConfiguration myUIConfiguration;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
-    private final List myBaselines = new ArrayList();
+    private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
 
     public GanttProjectImpl() {
         myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole());
@@ -220,12 +220,11 @@ public class GanttProjectImpl implements IGanttProject {
         return myTaskCustomColumnStorage;
     }
 
-    public List getBaselines() {
+    public List<GanttPreviousState> getBaselines() {
         return myBaselines;
     }
 
     public void repaintResourcePanel() {
         // TODO Auto-generated method stub
     }
-
 }

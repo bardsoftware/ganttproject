@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
@@ -23,7 +24,7 @@ public class GPToolBar extends JToolBar {
     };
     
     private final GanttOptions options;
-    private List myButtons;
+    private List<TestGanttRolloverButton> myButtons;
     
     public GPToolBar(String title, int toolBarPosition, GanttOptions options) {
         super(title, toolBarPosition);
@@ -35,26 +36,26 @@ public class GPToolBar extends JToolBar {
     
     void populate(List/*<JButton>*/ buttons) {
         removeAll();
-        myButtons = new ArrayList(buttons.size());
+        myButtons = new ArrayList<TestGanttRolloverButton>(buttons.size());
         for (int i = 0; i < buttons.size(); i++) {
             Object nextButton = buttons.get(i);
             if (GPToolBar.SEPARATOR_OBJECT.equals(nextButton)) {
-                int size = Integer.parseInt(options.getIconSize());
+                // int size = Integer.parseInt(options.getIconSize());
                 // toolBar.addSeparator(new Dimension(size, size));
                 ImageIcon icon;
                 if (getOrientation() == JToolBar.HORIZONTAL) {
-                    icon =  new ImageIcon(getClass().getResource(
-                    "/icons/sepV_16.png"));
+                    icon = new ImageIcon(getClass().getResource(
+                            "/icons/sepV_16.png"));
                 }
                 else {
                     icon = new ImageIcon(getClass().getResource(
-                    "/icons/sepH_16.png"));
+                            "/icons/sepH_16.png"));
                 }
                 add(new JLabel(icon));
             } else {
-                add((AbstractButton)nextButton);
+                add((AbstractButton) nextButton);
                 if (nextButton instanceof TestGanttRolloverButton) {
-                    myButtons.add(nextButton);
+                    myButtons.add((TestGanttRolloverButton) nextButton);
                 }
             }
         }
@@ -62,13 +63,11 @@ public class GPToolBar extends JToolBar {
     }
 
     void updateButtonsLook() {
-        for (int i=0; i<myButtons.size(); i++) {
-            TestGanttRolloverButton nextButton = (TestGanttRolloverButton) myButtons.get(i);
+        for (int i = 0; i < myButtons.size(); i++) {
+            TestGanttRolloverButton nextButton = myButtons.get(i);
             nextButton.setIconHidden(options.getButtonShow() == GanttOptions.TEXT);
             nextButton.setTextHidden(options.getButtonShow() == GanttOptions.ICONS);
         }
         invalidate();
     }
-    
-
 }

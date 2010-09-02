@@ -14,7 +14,7 @@ public interface RoleManager {
     /** Clear the role list */
     public void clear();
 
-    /** Return all roles exept the default roles */
+    /** Return all roles except the default roles */
     // public String [] getRolesShort();
     public Role[] getProjectLevelRoles();
 

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.text.AttributedCharacterIterator;
+import java.text.CharacterIterator;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -83,8 +84,8 @@ class GPTreeTableBase extends JNTreeTable{
                 			AttributedCharacterIterator iter = formats[i].formatToCharacterIterator(typedDate);
                 			int additionalZeroes = -1;
                 			StringBuffer result = new StringBuffer();
-                			for (char c = iter.first(); c!=iter.DONE; c = iter.next()) {
-                				if (iter.getAttribute(DateFormat.Field.YEAR)!=null && additionalZeroes==-1) {
+                            for (char c = iter.first(); c != CharacterIterator.DONE; c = iter.next()) {
+                				if (iter.getAttribute(DateFormat.Field.YEAR) != null && additionalZeroes == -1) {
                         			additionalZeroes = iter.getRunLimit(DateFormat.Field.YEAR) - iter.getIndex();
                 					for (int j=0; j<additionalZeroes; j++) {
                 						result.append('0');
@@ -106,7 +107,6 @@ class GPTreeTableBase extends JNTreeTable{
                 	}
                 }
                 return null;
-
     		}
     	};
     }
