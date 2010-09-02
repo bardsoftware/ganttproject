@@ -7,7 +7,7 @@ import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
 public interface CustomPropertyManager {
-	List/*<CustomPropertyDefinitions>*/ getDefinitions();
+	List<CustomPropertyDefinition> getDefinitions();
 	CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString);
 	void importData(CustomPropertyManager source);
 

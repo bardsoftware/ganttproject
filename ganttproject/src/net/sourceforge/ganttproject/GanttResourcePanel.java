@@ -462,7 +462,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                     GanttDialogInfo.YES_OPTION, GanttLanguage.getInstance()
                             .getText("msg26"),
                     GanttLanguage.getInstance().getText("sendMail"));
-            gdi.show();
+            gdi.setVisible(true);
         }
     }
 
@@ -476,8 +476,9 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         table.downResource();
     }
 
+    // TODO Method is unused... delete?
     /** Return the list of the person */
-    public List getPeople() {
+    public List<ProjectResource> getPeople() {
         return model.getAllResouces();
     }
 
@@ -535,12 +536,10 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     public void projectModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectSaved() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectClosed() {

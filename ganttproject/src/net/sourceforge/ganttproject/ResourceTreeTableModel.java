@@ -56,7 +56,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     public static final int INDEX_RESOURCE_ROLE_TASK = 4;
 
     /** all the columns */
-    private final Map columns = new LinkedHashMap();
+    private final Map<Integer, ResourceColumn> columns = new LinkedHashMap<Integer, ResourceColumn>();
 
     /** Column indexer */
     private static int index = -1;
@@ -101,9 +101,9 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     public ResourceNode getNodeForResource(ProjectResource resource) {
         ResourceNode res = null;
-        Enumeration childs = root.children();
+        Enumeration<ResourceNode> childs = root.children();
         while (childs.hasMoreElements() && res == null) {
-            ResourceNode rn = (ResourceNode) childs.nextElement();
+            ResourceNode rn = childs.nextElement();
             if (resource.equals(rn.getUserObject()))
                 res = rn;
         }
@@ -112,10 +112,10 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     public AssignmentNode getNodeForAssigment(ResourceAssignment assignement) {
         AssignmentNode res = null;
-        Enumeration childs = getNodeForResource(assignement.getResource())
+        Enumeration<AssignmentNode> childs = getNodeForResource(assignement.getResource())
                 .children();
         while (childs.hasMoreElements() && res == null) {
-            AssignmentNode an = (AssignmentNode) childs.nextElement();
+            AssignmentNode an = childs.nextElement();
             if (assignement.equals(an.getUserObject()))
                 res = an;
         }
@@ -125,15 +125,12 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     private ResourceNode buildTree() {
 
         ResourceNode root = new ResourceNode(null);
-        List listResources = myResourceManager.getResources();
-        Iterator itRes = listResources.iterator();
+        List<ProjectResource> listResources = myResourceManager.getResources();
+        Iterator<ProjectResource> itRes = listResources.iterator();
 
         while (itRes.hasNext()) {
-            ProjectResource pr = (ProjectResource) itRes.next();
-
-            ResourceAssignment[] tra = pr.getAssignments();
-            ResourceNode rnRes = new ResourceNode(pr); // the first for the
-            // resource
+            ProjectResource pr = itRes.next();
+            ResourceNode rnRes = new ResourceNode(pr); // the first for the resource
             root.add(rnRes);
         }
         return root;
@@ -167,20 +164,21 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     ResourceNode exists(ProjectResource pr) {
         ResourceNode res = null;
-        Enumeration en = root.children();
+        Enumeration<ResourceNode> en = root.children();
         while (res == null && en.hasMoreElements()) {
-            ResourceNode rn = (ResourceNode) en.nextElement();
+            ResourceNode rn = en.nextElement();
             if (rn.getUserObject().equals(pr))
                 res = rn;
         }
         return res;
     }
 
+    // TODO Method is not used... delete?
     private AssignmentNode exists(ResourceNode rn, ResourceAssignment ra) {
         AssignmentNode res = null;
-        Enumeration en = rn.children();
+        Enumeration<AssignmentNode> en = rn.children();
         while (res == null && en.hasMoreElements()) {
-            AssignmentNode an = (AssignmentNode) en.nextElement();
+            AssignmentNode an = en.nextElement();
             if (an.getUserObject().equals(ra))
                 res = an;
         }
@@ -214,7 +212,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
             if (col != null)
                 col.setTitle(cols[i]);
         }
-
     }
 
     /**
@@ -256,10 +253,10 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    public void changePeople(List peoples) {
-        Iterator it = peoples.iterator();
+    public void changePeople(List<ProjectResource> peoples) {
+        Iterator<ProjectResource> it = peoples.iterator();
         while (it.hasNext())
-            addResource((ProjectResource) it.next());
+            addResource(it.next());
     }
 
     public DefaultMutableTreeNode addResource(ProjectResource people) {
@@ -303,7 +300,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         myResourceManager.clear();
     }
 
-    public List getAllResouces() {
+    public List<ProjectResource> getAllResouces() {
         return myResourceManager.getResources();
     }
 
@@ -314,10 +311,9 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return columns.size();
     }
 
-    public ArrayList getColumns()
+    public ArrayList<ResourceColumn> getColumns()
     {
-        ArrayList res = new ArrayList(columns.values());
-        return res;
+        return new ArrayList<ResourceColumn>(columns.values());
     }
 
     /** Returns the ResourceColumn associated to the given index */
@@ -458,14 +454,13 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     /** deletes a custom column from the datamodel */
     public ResourceColumn deleteCustomColumn(String name){
-        ResourceColumn toDel = null;
-        Collection vals = columns.values();
-        Iterator i = vals.iterator();
+        Collection<ResourceColumn> vals = columns.values();
+        Iterator<ResourceColumn> i = vals.iterator();
 
         while (i.hasNext()) {
-            toDel = (ResourceColumn)i.next();
+            ResourceColumn toDel = i.next();
             if (name.equals( toDel.getTitle() )) {
-                ((HumanResourceManager)myResourceManager).removeCustomField(toDel.getTitle());
+                myResourceManager.removeCustomField(toDel.getTitle());
                 /* this deletes the object from the Hashtable too */
                 vals.remove(toDel);
                 return toDel;
@@ -478,22 +473,22 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     /** checks if the given column is removable */
     public boolean checkRemovableCol(String name) {
         /* only custom columns are removable */
-        return ((HumanResourceManager)myResourceManager).checkCustomField(name);
+        return myResourceManager.checkCustomField(name);
     }
 
     public void resourceChanged(ProjectResource resource) {
         ResourceNode node = getNodeForResource(resource);
-        if (node==null) {
+        if (node == null) {
             return;
         }
         TreeNode parent = node.getParent();
         int index = parent.getIndex(node);
-        assert index>=0;
+        assert index >= 0;
         nodesChanged(parent, new int[] {index});
     }
 
     public void resourceAssignmentsChanged(ProjectResource[] resources) {
-        for (int i=0; i<resources.length; i++) {
+        for (int i = 0; i < resources.length; i++) {
             ResourceNode nextNode = exists(resources[i]);
             SelectionKeeper selectionKeeper = new SelectionKeeper(mySelectionModel, nextNode);
             buildAssignmentsSubtree(nextNode);
@@ -516,7 +511,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
             }
         }
         fireTreeStructureChanged(this, resourceNode.getPath(), indices, children);
-
     }
 
     void decreaseCustomPropertyIndex(int i) {
@@ -549,8 +543,8 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
             if (!hasWork) {
                 return;
             }
-            for (Enumeration subtree = myChangingSubtreeRoot.depthFirstEnumeration(); subtree.hasMoreElements();) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) subtree.nextElement();
+            for (Enumeration<DefaultMutableTreeNode> subtree = myChangingSubtreeRoot.depthFirstEnumeration(); subtree.hasMoreElements();) {
+                DefaultMutableTreeNode node = subtree.nextElement();
                 if (node.getUserObject().equals(myModelObject)) {
                     mySelectionModel.setSelectionPath(new TreePath(node.getPath()));
                     break;

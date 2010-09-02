@@ -17,20 +17,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.DateUtils;
 
 /**
- * TODO Remove tha map Name->customColum to keep only the map Id -> CustomColumn
+ * TODO Remove the map Name->customColum to keep only the map Id -> CustomColumn
  * This class stores the CustomColumns.
  *
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {
-    public static List availableTypes = null;
+    public static List<String> availableTypes = null;
 
     public static GanttLanguage language = GanttLanguage.getInstance();
 
     private static int nextId;
 
     private final static String ID_PREFIX = "tpc";
-    private final List myListeners = new ArrayList();
+    private final List<CustomColumsListener> myListeners = new ArrayList<CustomColumsListener>();
 
     static {
         initTypes();
@@ -40,7 +40,7 @@ public class CustomColumnsStorage {
      * Column name (String) -> CustomColumn
      */
     // private Map customColumns = null;
-    private final Map mapIdCustomColum = new HashMap();
+    private final Map<String, CustomColumn> mapIdCustomColum = new HashMap<String, CustomColumn>();
 
     /**
      * Creates an instance of CustomColumnsStorage.
@@ -63,7 +63,7 @@ public class CustomColumnsStorage {
      * Initialize the available types (text, integer, ...)
      */
     private static void initTypes() {
-        availableTypes = new Vector(6);
+        availableTypes = new Vector<String>(6);
         availableTypes.add(language.getText("text"));
         availableTypes.add(language.getText("integer"));
         availableTypes.add(language.getText("double"));
@@ -145,14 +145,14 @@ public class CustomColumnsStorage {
      * @return A collection containing the names of all the stored custom
      *         columns.
      */
-    public List getCustomColumnsNames() {
+    public List<String> getCustomColumnsNames() {
         // return customColumns.keySet();
         // -----
-        List c = new ArrayList();
-        Iterator it = mapIdCustomColum.keySet().iterator();
+        List<String> c = new ArrayList<String>();
+        Iterator<String> it = mapIdCustomColum.keySet().iterator();
         while (it.hasNext()) {
-            String id = (String) it.next();
-            c.add(((CustomColumn) mapIdCustomColum.get(id)).getName());
+            String id = it.next();
+            c.add(mapIdCustomColum.get(id).getName());
         }
         return c;
     }
@@ -162,7 +162,7 @@ public class CustomColumnsStorage {
      *
      * @return A collection with all the stored custom columns.
      */
-    public Collection getCustomColums() {
+    public Collection<CustomColumn> getCustomColums() {
         // return customColumns.values();
         return mapIdCustomColum.values();
     }
@@ -278,16 +278,15 @@ public class CustomColumnsStorage {
                 } catch (Exception ee) {
                 	throw new CustomColumnsException(ee);
                 }
-
             }
         }
     }
 
     public String getIdFromName(String name) {
         String id = null;
-        Iterator it = mapIdCustomColum.values().iterator();
+        Iterator<CustomColumn> it = mapIdCustomColum.values().iterator();
         while (it.hasNext()) {
-            CustomColumn cc = (CustomColumn) it.next();
+            CustomColumn cc = it.next();
             if (cc.getName().equals(name)) {
                 id = cc.getId();
                 break;
@@ -310,9 +309,9 @@ public class CustomColumnsStorage {
      *            The task to process.
      */
     public void processNewTask(Task task) {
-        Iterator it = mapIdCustomColum.values().iterator();
+        Iterator<CustomColumn> it = mapIdCustomColum.values().iterator();
         while (it.hasNext()) {
-            CustomColumn cc = (CustomColumn) it.next();
+            CustomColumn cc = it.next();
             try {
                 task.getCustomValues().setValue(cc.getName(),
                         cc.getDefaultValue());
@@ -322,7 +321,6 @@ public class CustomColumnsStorage {
             	}
             }
         }
-
     }
 
     public String toString() {
@@ -330,9 +328,9 @@ public class CustomColumnsStorage {
     }
 
 	public void importData(CustomColumnsStorage source) {
-		for (Iterator columns = source.getCustomColums().iterator();
+		for (Iterator<CustomColumn> columns = source.getCustomColums().iterator();
 			 columns.hasNext();) {
-			CustomColumn nextColumn = (CustomColumn) columns.next();
+			CustomColumn nextColumn = columns.next();
 			if (!exists(nextColumn.getName())) {
 				addCustomColumn(nextColumn);
 			}
@@ -344,11 +342,10 @@ public class CustomColumnsStorage {
     }
 
     private void fireCustomColumnsChange(CustomColumEvent event) {
-        Iterator it = myListeners.iterator();
+        Iterator<CustomColumsListener> it = myListeners.iterator();
         while (it.hasNext()) {
-            CustomColumsListener listener = (CustomColumsListener) it.next();
+            CustomColumsListener listener = it.next();
             listener.customColumsChange(event);
         }
     }
-
 }

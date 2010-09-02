@@ -77,7 +77,7 @@ implements Serializable {
         return new GanttTask(this);
     }
 
-    /** @deprecated Use TimeUnit class istead and method getDuration() */ 
+    /** @deprecated Use TimeUnit class instead and method getDuration() */ 
     public int getLength() {
 
         return (int) getDuration().getLength();

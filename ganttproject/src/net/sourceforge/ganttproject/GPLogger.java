@@ -19,14 +19,13 @@ public class GPLogger {
 	private static Logger ourLogger = Logger.getLogger("org.ganttproject");
 	private static Handler ourHandler;
 	private static UIFacade ourUIFacade;
-    private static Map ourClass_Logger = new HashMap();
+    private static Map<Class, Logger> ourClass_Logger = new HashMap<Class, Logger>();
 
 	static {
         ourHandler = new ConsoleHandler();
 		ourLogger.addHandler(ourHandler);
 		ourLogger.setLevel(Level.ALL);
 		ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
-
 	}
 
 	public static boolean log(Throwable e) {

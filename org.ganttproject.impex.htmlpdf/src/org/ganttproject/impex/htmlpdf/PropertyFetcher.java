@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -28,7 +27,7 @@ class PropertyFetcher {
     CustomColumnsStorage getCustomColumnStorage() {
         return myProject.getCustomColumnsStorage();
     }    
-    void getTaskAttributes(Task t, Map id2value) {
+    void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
         
         DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
@@ -44,22 +43,22 @@ class PropertyFetcher {
         }
 
         CustomColumnsValues customValues = t.getCustomValues();
-        for (Iterator it = getCustomColumnStorage().getCustomColums().iterator();
+        for (Iterator<CustomColumn> it = getCustomColumnStorage().getCustomColums().iterator();
         it.hasNext();) {
-            CustomColumn nextColumn = (CustomColumn) it.next();
+            CustomColumn nextColumn = it.next();
             Object value = customValues.getValue(nextColumn.getName());
             String valueAsString = value==null ? "" : value.toString();
             id2value.put(nextColumn.getId(), valueAsString);
         }
     }
 
-    void getResourceAttributes(HumanResource hr, Map id2value) {
+    void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
         id2value.put("0", hr.getName());
         id2value.put("1", hr.getRole().getName());
         id2value.put("2", hr.getMail());
         id2value.put("3", hr.getPhone());
      
-        List/*<CustomProperty>*/ customFields = hr.getCustomProperties();
+        List<CustomProperty> customFields = hr.getCustomProperties();
         for (int j=0; j<customFields.size(); j++) {
             CustomProperty nextProperty = (CustomProperty) customFields.get(j);
             id2value.put(nextProperty.getDefinition().getID(),nextProperty.getValueAsString());

@@ -49,8 +49,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-//import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.ProgressProvider;
 
@@ -60,7 +58,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final ZoomManager myZoomManager;
     private final GanttStatusBar myStatusBar;
     private final UIFacade myFallbackDelegate;
-    private final GanttLanguage i18n = GanttLanguage.getInstance();
     private final ErrorNotifier myErrorNotifier;
     
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
@@ -69,7 +66,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myZoomManager = new ZoomManager(project.getTimeUnitStack());
         myStatusBar = statusBar;
         myFallbackDelegate = fallbackDelegate;
-        Platform.getJobManager().setProgressProvider(this);
+        Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
     }
     public ScrollingManager getScrollingManager() {
@@ -141,11 +138,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public void showDialog(Component content, Action[] buttonActions) {
     	showDialog(content, buttonActions, "");
     }
+
     public void showDialog(Component content, Action[] buttonActions, String title) {
         JDialog result = new JDialog(myMainFrame, true);
         result.setTitle(title);
         final Commiter commiter = new Commiter();
-        Action okAction = null;
         Action cancelAction = null;
         Box buttonBox = Box.createHorizontalBox();
         for (int i = 0; i < buttonActions.length; i++) {
@@ -153,7 +150,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             JButton nextButton = null;
             if (nextAction instanceof OkAction) {
                 nextAction = createOkAction(nextAction, result, commiter);
-                okAction = nextAction;
                 nextButton = new JButton(nextAction);
                 result.getRootPane().setDefaultButton(nextButton);
             }
@@ -183,7 +179,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         result.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
         //
         result.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        final Action localOkAction = okAction;
         final Action localCancelAction = cancelAction;
         result.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {

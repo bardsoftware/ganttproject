@@ -40,13 +40,13 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
     
     /** contains all the custom property values of a resource.
      * the key is the property name and the value is the property value */
-    private final Map customFields;
+    private final Map<String, Object> customFields;
     
     private final HumanResourceManager myManager;
 
     HumanResource(HumanResourceManager manager) {
         this.name = "";
-        customFields = new HashMap();
+        customFields = new HashMap<String, Object>();
         myManager = manager;
     }
 
@@ -54,12 +54,12 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
     HumanResource(String name, int id, HumanResourceManager manager) {
     	super(id);
         this.name = name;
-        customFields = new HashMap();
+        customFields = new HashMap<String, Object>();
         myManager = manager;
     }
 
     void initCustomProperties(){
-    	List/*<CustomPropertyDefinition>*/ defs = myManager.getCustomPropertyManager().getDefinitions();
+    	List<CustomPropertyDefinition> defs = myManager.getCustomPropertyManager().getDefinitions();
     	for (int i=0; i<defs.size(); i++) {
     		CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) defs.get(i);
     		customFields.put(nextDefinition.getName(), nextDefinition.getDefaultValue());
@@ -81,7 +81,7 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 		for (int i=0; i<copyDaysOff.getSize(); i++) {
 			myDaysOffList.addElement(copyDaysOff.get(i));
 		}
-		customFields = new HashMap(copy.customFields);
+		customFields = new HashMap<String, Object>(copy.customFields);
 		areEventsEnabled = true;
     }
  
@@ -176,11 +176,11 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         }        
     }
 
-	public List/*<CustomProperty>*/ getCustomProperties() {
-		List result = new ArrayList(customFields.size());
-		for (Iterator entries = customFields.entrySet().iterator(); entries.hasNext();) {
-			Map.Entry nextEntry = (Entry) entries.next();
-			String nextName = (String) nextEntry.getKey();
+	public List<CustomProperty> getCustomProperties() {
+		List<CustomProperty> result = new ArrayList<CustomProperty>(customFields.size());
+		for (Iterator<Entry<String,Object>> entries = customFields.entrySet().iterator(); entries.hasNext();) {
+			Map.Entry<String,Object> nextEntry = entries.next();
+			String nextName = nextEntry.getKey();
 			Object nextValue = nextEntry.getValue();
 			CustomPropertyDefinition nextDefinition = myManager.getCustomPropertyDefinition(nextName);
 			result.add(new CustomPropertyImpl(nextDefinition, nextValue));

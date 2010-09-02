@@ -10,14 +10,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.font.Fonts;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 class ResourceTreeImageGenerator {
     private HumanResourceManager myResourceManager;
-    private final Color BORDER_COLOR_3D = new Color((float) 0.807, (float) 0.807, (float) 0.807);
+    private final Color BORDER_COLOR_3D = new Color(0.807f, 0.807f, 0.807f);
     private final Color ODD_ROW_COLOR = new Color(0.933f, 0.933f, 0.933f);
     private final int myRowHeight;
     
@@ -50,14 +50,14 @@ class ResourceTreeImageGenerator {
         final BufferedImage testImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         final Graphics g = testImage.getGraphics();
         final int tabSize = 5;
-        final List users = myResourceManager.getResources();
-        for (Iterator user = users.iterator(); user.hasNext();) {
-            HumanResource hr = (HumanResource) user.next();
-            int nameWidth = TextLengthCalculatorImpl.getTextLength(g, hr.getName());
+        final List<ProjectResource> users = myResourceManager.getResources();
+        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
+            ProjectResource pr = user.next();
+            int nameWidth = TextLengthCalculatorImpl.getTextLength(g, pr.getName());
             if (nameWidth > width) {
                 width = nameWidth;
             }
-            ResourceAssignment[] assignments = hr.getAssignments();
+            ResourceAssignment[] assignments = pr.getAssignments();
             if (assignments != null) {
                 for (int i = 0; i < assignments.length; i++) {
                     if (isAssignmentVisible(assignments[i])) {
@@ -72,7 +72,7 @@ class ResourceTreeImageGenerator {
             }
         }
         width += 20;
-        int height = (assignmentsCount+users.size())*getRowHeight()+90;
+        int height = (assignmentsCount + users.size()) * getRowHeight() + 90;
         return new Dimension(width, height);
     }
     
@@ -83,36 +83,36 @@ class ResourceTreeImageGenerator {
         g.setColor(Color.black);
         g.setFont(Fonts.RESSOURCE_FONT);
 
-        List users = myResourceManager.getResources();
+        List<ProjectResource> users = myResourceManager.getResources();
 
         int y = 67;
 
         final int nameLinePadding = 3;
         final int nameLineHeight = getRowHeight();
         boolean isOddRow = false;
-        for (Iterator user = users.iterator(); user.hasNext();) {
-            HumanResource hr = (HumanResource) user.next();
+        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
+            ProjectResource pr = user.next();
             {
                 // paint resource name here
-                String nameOfRes = hr.toString();
+                String nameOfRes = pr.toString();
     
                 if (isOddRow) {
                     g.setColor(ODD_ROW_COLOR);
                     g.fillRect(0, y, width, nameLineHeight);
                 }
                 g.setColor(Color.black);
-                //
+
                 g.drawRect(0, y, width, nameLineHeight);
                 
-                g.drawString(nameOfRes, 5, y+nameLineHeight-nameLinePadding);
+                g.drawString(nameOfRes, 5, y + nameLineHeight - nameLinePadding);
                 g.setColor(BORDER_COLOR_3D);
-                g.drawLine(1, y+nameLineHeight-1, width-1, y+nameLineHeight-1);
+                g.drawLine(1, y + nameLineHeight - 1, width - 1, y + nameLineHeight - 1);
                 y += nameLineHeight;
                 isOddRow = !isOddRow;
             }
             {
                 //paint assigned task names
-                ResourceAssignment[] assignments = hr.getAssignments();
+                ResourceAssignment[] assignments = pr.getAssignments();
                 if (assignments != null) {
                     for (int i = 0; i < assignments.length; i++) {
                         if (isAssignmentVisible(assignments[i])) {
@@ -125,7 +125,7 @@ class ResourceTreeImageGenerator {
                             g.drawString("  " + assignments[i].getTask().getName(),
                                     5, y+nameLineHeight-nameLinePadding);
                             g.setColor(BORDER_COLOR_3D);
-                            g.drawLine(1, y+nameLineHeight, width-1, y+nameLineHeight-1);
+                            g.drawLine(1, y + nameLineHeight, width - 1, y + nameLineHeight-1);
                             y += nameLineHeight;
                             isOddRow = !isOddRow;
                         }
@@ -139,6 +139,4 @@ class ResourceTreeImageGenerator {
     protected boolean isAssignmentVisible(ResourceAssignment assignment) {
         return true;
     }
-
-    
 }

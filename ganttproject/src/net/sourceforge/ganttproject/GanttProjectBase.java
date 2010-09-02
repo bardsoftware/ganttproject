@@ -80,13 +80,13 @@ import org.eclipse.core.runtime.IAdaptable;
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
     private final ViewManagerImpl myViewManager;
-    private final List myModifiedStateChangeListeners = new ArrayList();
+    private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
     private final UIFacadeImpl myUIFacade;
     private final GanttStatusBar statusBar;
     private final TimeUnitStack myTimeUnitStack;
     private final ProjectUIFacadeImpl myProjectUIFacade;
     private final DocumentManager myDocumentManager;
-    /** The tabbed pane with the differents parts of the project */
+    /** The tabbed pane with the different parts of the project */
     private GanttTabbedPane myTabPane;
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
@@ -238,7 +238,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     private class ViewManagerImpl implements GPViewManager, ProjectEventListener {
         private GanttTabbedPane myTabs;
-        private List myViews = new ArrayList();
+        private List<GPView> myViews = new ArrayList<GPView>();
         private GPViewImpl mySelectedView;
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;
@@ -246,10 +246,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
                 public void stateChanged(ChangeEvent e) {
                     GPViewImpl selectedView = (GPViewImpl) myTabs.getSelectedUserObject();
-                    if (mySelectedView==selectedView) {
+                    if (mySelectedView == selectedView) {
                         return;
                     }
-                    if (mySelectedView!=null) {
+                    if (mySelectedView != null) {
                         mySelectedView.setActive(false);
                     }
                     mySelectedView = selectedView;
@@ -411,9 +411,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
         private GanttTree2 myTreeView;
 
-        // TODO: 1.12 refactor and get rid of using concrete implementations of
-        // gantt view model
-        // and tree view
+        // TODO: 1.12 refactor and get rid of using concrete implementations of gantt view model and tree view
         public RowHeightAligner(GanttTree2 treeView,
                 ChartModelImpl ganttViewModel) {
             myGanttViewModel = ganttViewModel;
@@ -426,7 +424,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             model.fireTableStructureChanged();
             myTreeView.updateUI();
         }
-
     }
 
     public GanttTabbedPane getTabs() {
