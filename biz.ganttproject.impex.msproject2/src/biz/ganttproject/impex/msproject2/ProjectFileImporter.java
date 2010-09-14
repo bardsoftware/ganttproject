@@ -2,9 +2,12 @@ package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.mpxj.MPXJException;
+import net.sf.mpxj.ProjectCalendar;
+import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.Relation;
 import net.sf.mpxj.RelationType;
@@ -37,7 +40,7 @@ public class ProjectFileImporter {
 
     public ProjectFileImporter(IGanttProject nativeProject, File foreignProjectFile) {
         myNativeProject = nativeProject;
-        myReader = new MPPReader();
+        myReader = new MSPDIReader();
         myForeignFile = foreignProjectFile;
     }
 
@@ -61,6 +64,13 @@ public class ProjectFileImporter {
     }
 
     private void importCalendar(ProjectFile pf) {
+        ProjectCalendar defaultCalendar = pf.getCalendar();
+        List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
+        for (ProjectCalendarException e: exceptions) {
+            if (!e.getWorking()) {
+                myNativeProject.getActiveCalendar().setPublicHoliDayType(e.getFromDate());
+            }
+        }
     }
 
     private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
