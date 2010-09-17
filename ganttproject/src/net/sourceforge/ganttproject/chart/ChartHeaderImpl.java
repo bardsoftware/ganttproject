@@ -5,10 +5,15 @@
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.util.Calendar;
 import java.util.Date;
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
+import java.util.GregorianCalendar;
+
+import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -27,8 +32,9 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     private GPOptionGroup myOptions;
     private final FramerImpl myDayFramer = new FramerImpl(Calendar.DAY_OF_MONTH);
     private Date myToday;
+    private GraphicPrimitiveContainer myTimelineContainer;
 
-    ChartHeaderImpl(ChartModelBase model, final UIConfiguration projectConfig) {
+    ChartHeaderImpl(ChartModel model, final UIConfiguration projectConfig) {
         super(model);
         myRedlineOption = projectConfig.getRedlineOption();
         myProjectDatesOption= projectConfig.getProjectBoundariesOption();
@@ -38,7 +44,6 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
                 model.getOptionEventDispatcher());
         myPrimitiveContainer = new GraphicPrimitiveContainer();
     }
-
     GPOptionGroup getOptions() {
         return myOptions;
     }
@@ -48,13 +53,17 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     }
 
     public void beforeProcessingTimeFrames() {
-        myPrimitiveContainer = new GraphicPrimitiveContainer();
-        myPrimitiveContainer.clear();
+        myPrimitiveContainer = new GraphicPrimitiveContainer(0, 0);
+        myPrimitiveContainer.newLayer();
+        myPrimitiveContainer.newLayer();
+        myTimelineContainer = myPrimitiveContainer.newLayer();
         createGreyRectangleWithNiceBorders();
-        myToday = myDayFramer.adjustLeft(CalendarFactory.newCalendar().getTime());
-
+        myToday = myDayFramer.adjustRight(GregorianCalendar.getInstance().getTime());
     }
 
+    private GraphicPrimitiveContainer getTimelineContainer() {
+        return myTimelineContainer;
+    }
     /** Draws the timeline box
      */
     private void createGreyRectangleWithNiceBorders() {
@@ -62,43 +71,43 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
                 .getSpanningHeaderHeight();
 
-        GraphicPrimitiveContainer.Rectangle headerRectangle = myPrimitiveContainer
+        GraphicPrimitiveContainer.Rectangle headerRectangle = getTimelineContainer()
                 .createRectangle(0, 0, sizex, spanningHeaderHeight * 2);
         headerRectangle.setBackgroundColor(getChartModel()
                 .getChartUIConfiguration().getSpanningHeaderBackgroundColor());
         //
-        GraphicPrimitiveContainer.Rectangle spanningHeaderBorder = myPrimitiveContainer
-                .createRectangle(0, 0, sizex - 1, spanningHeaderHeight);
-        spanningHeaderBorder.setForegroundColor(getChartModel()
-                .getChartUIConfiguration().getHeaderBorderColor());
+//        GraphicPrimitiveContainer.Rectangle spanningHeaderBorder = myPrimitiveContainer
+//                .createRectangle(0, 0, sizex - 1, spanningHeaderHeight);
+//        spanningHeaderBorder.setForegroundColor(getChartModel()
+//                .getChartUIConfiguration().getHeaderBorderColor());
         //
-        GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = myPrimitiveContainer
+        GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = getTimelineContainer()
                 .createRectangle(0, spanningHeaderHeight, sizex - 1,
                         spanningHeaderHeight);
         timeunitHeaderBorder.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHeaderBorderColor());
         //
-        GraphicPrimitiveContainer.Line middleGutter1 = myPrimitiveContainer
+        GraphicPrimitiveContainer.Line middleGutter1 = getTimelineContainer()
                 .createLine(1, spanningHeaderHeight - 1, sizex - 2,
                         spanningHeaderHeight - 1);
         middleGutter1.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHorizontalGutterColor1());
         //
-        GraphicPrimitiveContainer.Line bottomGutter = myPrimitiveContainer
-                .createLine(0, spanningHeaderHeight * 2 - 2, sizex - 2,
-                        spanningHeaderHeight * 2 - 2);
+        GraphicPrimitiveContainer.Line bottomGutter = getTimelineContainer()
+                .createLine(0, spanningHeaderHeight * 2, sizex - 2,
+                        spanningHeaderHeight * 2);
         bottomGutter.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHorizontalGutterColor1());
         //
-        GraphicPrimitiveContainer.Line topGutter = myPrimitiveContainer
-                .createLine(1, 1, sizex - 2, 1);
-        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
-                .getHorizontalGutterColor2());
+//        GraphicPrimitiveContainer.Line topGutter = myPrimitiveContainer
+//                .createLine(1, 1, sizex - 2, 1);
+//        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
+//                .getHorizontalGutterColor2());
         //
-        myPrimitiveContainer.createLine(
-                0, spanningHeaderHeight + 1, sizex - 2, spanningHeaderHeight + 1);
-        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
-                .getHorizontalGutterColor2());
+//        myPrimitiveContainer.createLine(
+//                0, spanningHeaderHeight + 1, sizex - 2, spanningHeaderHeight + 1);
+//        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
+//                .getHorizontalGutterColor2());
     }
 
     public GraphicPrimitiveContainer paint() {
@@ -117,16 +126,15 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         int curX = 0;
         Date curDate = getChartModel().getStartDate();
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        for (int i=0; i<getChartModel().getTopUnitOffsets().size(); i++) {
-        	Offset nextOffset = (Offset) getChartModel().getTopUnitOffsets().get(i);
+        for (Offset nextOffset : getChartModel().getTopUnitOffsets()) {
             TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
             String unitText = timeUnitText.getText(-1);
             int posY = topUnitHeight - 5;
-            GraphicPrimitiveContainer.Text text = myPrimitiveContainer.createText(curX + 2, posY, unitText);
-            myPrimitiveContainer.bind(text, timeUnitText);
-            text.setMaxLength(nextOffset.getOffsetPixels() - curX);
+            GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);
+            getTimelineContainer().bind(text, timeUnitText);
+            text.setMaxLength(nextOffset.getOffsetPixels() - curX -5 );
             text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-            myPrimitiveContainer.createLine(curX, 0, curX, topUnitHeight);
+            getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
         }
@@ -135,27 +143,45 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     /** Draws cells of the bottom line in the time line
      */
     private void renderBottomUnits() {
+        BottomUnitLineRendererImpl bottomUnitLineRenderer =
+            new BottomUnitLineRendererImpl(getChartModel(), getTimelineContainer(), getPrimitiveContainer());
+        bottomUnitLineRenderer.setHeight(getHeight());
+        bottomUnitLineRenderer.render();
         int curX = 0;
+        int prevX = 0;
         Date curDate = getChartModel().getStartDate();
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        boolean firstWeekendDay = true;
-        for (int i=0; i<getChartModel().getBottomUnitOffsets().size(); i++) {
-        	Offset nextOffset = (Offset) getChartModel().getBottomUnitOffsets().get(i);
-            TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
-            String unitText = timeUnitText.getText(-1);
-            int posY = 2*topUnitHeight - 5;
-            GraphicPrimitiveContainer.Text text = myPrimitiveContainer.createText(curX + 2, posY, unitText);
-            myPrimitiveContainer.bind(text, timeUnitText);
-            text.setMaxLength(nextOffset.getOffsetPixels() - curX);
-            text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-            myPrimitiveContainer.createLine(curX, topUnitHeight, curX, 2*topUnitHeight);
-            firstWeekendDay = true;
+        //boolean firstWeekendDay = true;
+        Date now = getChartModel().getBottomUnit().adjustLeft(new Date());
+        for (Offset nextOffset : getChartModel().getDefaultUnitOffsets()) {
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
+
+//            if (nextOffset.getDayType()==GPCalendar.DayType.WEEKEND) {
+//                Rectangle r = getPrimitiveContainer().createRectangle(
+//                        curX, topUnitHeight*2, alternanceEndOffset-prevOffset, getHeight());
+//        r.setBackgroundColor(getConfig()
+//                .getHolidayTimeBackgroundColor());
+//        r.setStyle("calendar.holiday");
+//        getPrimitiveContainer().bind(r, next.getDayType());
+//
+//            }
+            if (curDate.equals(now) && myRedlineOption.isChecked()) {
+                Line redLine = getPrimitiveContainer().createLine(
+                        prevX+2, topUnitHeight*2, prevX+2, getHeight()+topUnitHeight*2);
+                redLine.setForegroundColor(Color.RED);
+            }
+            if ((curDate.equals(getChartModel().getTaskManager().getProjectStart()) ||
+                    curDate.equals(getChartModel().getTaskManager().getProjectEnd())) &&
+                isProjectBoundariesOptionOn()) {
+                Line blueLine = getPrimitiveContainer().createLine(
+                        curX, topUnitHeight*2, curX, getHeight()+topUnitHeight*2);
+                blueLine.setForegroundColor(Color.BLUE);
+            }
+            prevX = curX;
         }
     }
     private boolean isProjectBoundariesOptionOn() {
         return myProjectDatesOption.isChecked();
     }
-
 }
