@@ -115,7 +115,7 @@ public class ProjectFileImporter {
         TaskLength oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
         for (Date dayStart = start; !dayStart.after(end);) {
             myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
-            dayStart = getTaskManager().shift(dayStart, oneDay);
+            dayStart = GPCalendar.PLAIN.shiftDate(dayStart, oneDay);
         }
     }
 
