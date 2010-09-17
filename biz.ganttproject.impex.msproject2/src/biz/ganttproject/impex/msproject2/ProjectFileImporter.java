@@ -1,13 +1,18 @@
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.mpxj.DateRange;
+import net.sf.mpxj.Day;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
+import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.Relation;
 import net.sf.mpxj.RelationType;
@@ -21,6 +26,8 @@ import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -32,6 +39,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
+import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 public class ProjectFileImporter {
     private final IGanttProject myNativeProject;
@@ -65,13 +73,52 @@ public class ProjectFileImporter {
 
     private void importCalendar(ProjectFile pf) {
         ProjectCalendar defaultCalendar = pf.getCalendar();
+        importWeekends(defaultCalendar);
         List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
         for (ProjectCalendarException e: exceptions) {
             if (!e.getWorking()) {
-                myNativeProject.getActiveCalendar().setPublicHoliDayType(e.getFromDate());
+                importHolidays(e);
             }
         }
     }
+
+    private void importWeekends(ProjectCalendar calendar) {
+        importDayType(calendar, Day.MONDAY, Calendar.MONDAY);
+        importDayType(calendar, Day.TUESDAY, Calendar.TUESDAY);
+        importDayType(calendar, Day.WEDNESDAY, Calendar.WEDNESDAY);
+        importDayType(calendar, Day.THURSDAY, Calendar.THURSDAY);
+        importDayType(calendar, Day.FRIDAY, Calendar.FRIDAY);
+        importDayType(calendar, Day.SATURDAY, Calendar.SATURDAY);
+        importDayType(calendar, Day.SUNDAY, Calendar.SUNDAY);
+    }
+
+    private void importDayType(ProjectCalendar foreignCalendar, Day foreignDay, int nativeDay) {
+        getNativeCalendar().setWeekDayType(
+                nativeDay, foreignCalendar.isWorkingDay(foreignDay) ? DayType.WORKING : DayType.WEEKEND);
+    }
+
+    private GPCalendar getNativeCalendar() {
+        return myNativeProject.getActiveCalendar();
+    }
+
+    private void importHolidays(ProjectCalendarException e) {
+        if (e.getRangeCount() > 0) {
+            for (DateRange range : e) {
+                importHolidays(range.getStart(), range.getEnd());
+            }
+        } else {
+            importHolidays(e.getFromDate(), e.getToDate());
+        }
+    }
+
+    private void importHolidays(Date start, Date end) {
+        TaskLength oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
+        for (Date dayStart = start; !dayStart.after(end);) {
+            myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
+            dayStart = getTaskManager().shift(dayStart, oneDay);
+        }
+    }
+
 
     private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
         for (Resource r: pf.getAllResources()) {
