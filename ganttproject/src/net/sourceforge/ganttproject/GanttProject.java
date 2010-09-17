@@ -533,7 +533,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(),tree, area);
         GPView ganttView = getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
-        myResourceChartTabContent = new ResourceChartTabContentPanel(getResourcePanel(), getResourcePanel().area);
+        myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(), getResourcePanel().area);
         GPView resourceView = getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
         getTabs().setSelectedIndex(0);
