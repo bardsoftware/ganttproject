@@ -164,8 +164,8 @@ class RegularFrameOffsetBuilder {
 
     protected void calculateNextStep(OffsetStep step, TimeFrame currentFrame, Date startDate) {
         float offsetStep = getOffsetStep(currentFrame);
-        //step.dayType = getBottomUnit().isWorkingInterval(startDate) ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
-        step.dayType = GPCalendar.DayType.WORKING;
+        step.dayType = getCalendar().getDayTypeDate(startDate);// ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
+        //step.dayType = GPCalendar.DayType.WORKING;
         if (step.dayType == GPCalendar.DayType.WEEKEND) {
             offsetStep = offsetStep / myWeekendDecreaseFactor;
         }
