@@ -46,39 +46,52 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         boolean firstWeekendDay = true;
         for (Offset nextOffset : getOffsets()) {
 
-            if (nextOffset.getDayType() == GPCalendar.DayType.WEEKEND) {
-                GraphicPrimitiveContainer.Rectangle r =
-                    getPrimitiveContainer().createRectangle(
-                            curX,
-                            getLineBottomPosition()+1,
-                            nextOffset.getOffsetPixels() - curX,
-                            getHeight());
-                r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
-                r.setStyle("calendar.holiday");
-                getPrimitiveContainer().bind(r, nextOffset.getDayType());
+            if (nextOffset.getDayType() == GPCalendar.DayType.WORKING) {
+                renderWorkingDay(curX, curDate, nextOffset);
+                firstWeekendDay = true;
+            }
+            else {
+                renderNonWorkingDay(curX, nextOffset);
                 if (firstWeekendDay) {
                     myTimelineContainer.createLine(
                             curX, getLineTopPosition(), curX, getLineTopPosition()+10);
                     firstWeekendDay = false;
                 }
             }
-            else {
-                TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
-                String unitText = timeUnitText.getText(-1);
-                int posY = getTextBaselinePosition();
-                GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
-                        curX + 2, posY, unitText);
-                myTimelineContainer.bind(text, timeUnitText);
-                text.setMaxLength(nextOffset.getOffsetPixels() - curX);
-                text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-                myTimelineContainer.createLine(
-                        curX, getLineTopPosition(), curX, getLineTopPosition()+10);
-                firstWeekendDay = true;
-            }
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
             //System.err.println("curDate="+curDate+" curX="+curX);
         }
+    }
+
+    private void renderNonWorkingDay(int curX, Offset curOffset) {
+        GraphicPrimitiveContainer.Rectangle r =
+            getPrimitiveContainer().createRectangle(
+                    curX,
+                    getLineBottomPosition()+1,
+                    curOffset.getOffsetPixels() - curX,
+                    getHeight());
+        if (curOffset.getDayType() == GPCalendar.DayType.WEEKEND) {
+            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
+        }
+        else if (curOffset.getDayType() == GPCalendar.DayType.HOLIDAY) {
+            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
+        }
+        r.setStyle("calendar.holiday");
+        getPrimitiveContainer().bind(r, curOffset.getDayType());
+    }
+
+    private void renderWorkingDay(int curX, Date curDate, Offset curOffset) {
+        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
+        String unitText = timeUnitText.getText(-1);
+        int posY = getTextBaselinePosition();
+        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
+                curX + 2, posY, unitText);
+        myTimelineContainer.bind(text, timeUnitText);
+        text.setMaxLength(curOffset.getOffsetPixels() - curX);
+        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+        myTimelineContainer.createLine(
+                curX, getLineTopPosition(), curX, getLineTopPosition()+10);
     }
 
     protected int getLineTopPosition() {
