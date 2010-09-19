@@ -42,15 +42,13 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     public void render() {
         int curX = 0;
         Date curDate = getChartModel().getStartDate();
-        final int topUnitHeight = getLineTopPosition();
         boolean firstWeekendDay = true;
         for (Offset nextOffset : getOffsets()) {
-
-            if (nextOffset.getDayType() == GPCalendar.DayType.WORKING) {
+            if (!getChartModel().getTaskManager().getCalendar().isNonWorkingDay(nextOffset.getOffsetStart())) {
                 renderWorkingDay(curX, curDate, nextOffset);
                 firstWeekendDay = true;
             }
-            else {
+            if (nextOffset.getDayType() != GPCalendar.DayType.WORKING){
                 renderNonWorkingDay(curX, nextOffset);
                 if (firstWeekendDay) {
                     myTimelineContainer.createLine(
@@ -60,7 +58,6 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             }
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
-            //System.err.println("curDate="+curDate+" curX="+curX);
         }
     }
 

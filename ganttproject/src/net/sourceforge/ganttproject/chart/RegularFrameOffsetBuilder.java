@@ -112,7 +112,7 @@ class RegularFrameOffsetBuilder {
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets, int initialEnd) {
         Date currentDate = myStartDate;
 
-        bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
+        bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
         // We don't want to create numerous vertical stripes for weekend units (e.g., for 16
         // non-working hours may produce 16 vertical stripes that looks awful). We
         // accumulate consecutive weekend units instead and add just a single block.
@@ -146,7 +146,7 @@ class RegularFrameOffsetBuilder {
 //                    accumulatedWeekendOffset = null;
 //                }
                 bottomUnitOffsets.add(new Offset(
-                        getBottomUnit(), myStartDate, endDate, initialEnd+offsetEnd, step.dayType));
+                        getBottomUnit(), myStartDate, startDate, endDate, initialEnd+offsetEnd, step.dayType));
             }
 //            if (accumulatedWeekendOffset != null) {
 //                bottomUnitOffsets.add(accumulatedWeekendOffset);
@@ -157,7 +157,7 @@ class RegularFrameOffsetBuilder {
 //                continue;
 //            }
             topUnitOffsets.add(new Offset(
-                    getTopUnit(), myStartDate, currentDate, initialEnd+offsetEnd, DayType.WORKING));
+                    getTopUnit(), myStartDate, currentFrame.getStartDate(), currentDate, initialEnd+offsetEnd, DayType.WORKING));
 
         } while (offsetEnd <= getChartWidth() && (myEndDate==null || currentDate.before(myEndDate)));
     }
@@ -166,7 +166,7 @@ class RegularFrameOffsetBuilder {
         float offsetStep = getOffsetStep(currentFrame);
         step.dayType = getCalendar().getDayTypeDate(startDate);// ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
         //step.dayType = GPCalendar.DayType.WORKING;
-        if (step.dayType == GPCalendar.DayType.WEEKEND) {
+        if (getCalendar().isNonWorkingDay(startDate)) {
             offsetStep = offsetStep / myWeekendDecreaseFactor;
         }
         step.parrots += offsetStep;

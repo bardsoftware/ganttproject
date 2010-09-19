@@ -494,9 +494,11 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         private int myOffsetPixels;
         private TimeUnit myOffsetUnit;
         private GPCalendar.DayType myDayType;
+        private Date myOffsetStart;
 
-        Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetEnd, int offsetPixels, GPCalendar.DayType dayType) {
+        Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels, GPCalendar.DayType dayType) {
             myOffsetAnchor = offsetAnchor;
+            myOffsetStart = offsetStart;
             myOffsetEnd = offsetEnd;
             myOffsetPixels = offsetPixels;
             myOffsetUnit = offsetUnit;
@@ -504,6 +506,9 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         Date getOffsetAnchor() {
             return myOffsetAnchor;
+        }
+        Date getOffsetStart() {
+            return myOffsetStart;
         }
         public Date getOffsetEnd() {
             return myOffsetEnd;

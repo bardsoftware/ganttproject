@@ -90,6 +90,7 @@ class SkewedFrameOffsetBuilder {
                         new Offset(
                                 bottomUnit,
                                 myStartDate,
+                                currentFrame.getStartDate(),
                                 endDate,
                                 offsetEnd,
                                 null));
@@ -113,6 +114,7 @@ class SkewedFrameOffsetBuilder {
                         new Offset(
                                 topUnit,
                                 myStartDate,
+                                currentFrame.getStartDate(),
                                 endDate,
                                 offsetEnd,
                                 null));
