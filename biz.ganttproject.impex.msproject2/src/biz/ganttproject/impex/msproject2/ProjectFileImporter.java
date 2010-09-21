@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -187,8 +188,9 @@ public class ProjectFileImporter {
         if (t.getMilestone()) {
             return getTaskManager().createLength(1);
         }
-        return myNativeProject.getTaskManager().createLength(
-            myNativeProject.getTimeUnitStack().getDefaultTimeUnit(), t.getStart(), t.getFinish());
+        WorkingUnitCounter unitCounter = new WorkingUnitCounter(
+                getNativeCalendar(), myNativeProject.getTimeUnitStack().getDefaultTimeUnit());
+        return unitCounter.run(t.getStart(), t.getFinish());
     }
 
     private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask)
