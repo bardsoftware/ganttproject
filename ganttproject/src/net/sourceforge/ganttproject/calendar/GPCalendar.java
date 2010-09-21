@@ -16,6 +16,10 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface GPCalendar {
+    public enum MoveDirection {
+        FORWARD, BACKWARD
+    }
+
     List getActivities(Date startDate, Date endDate);
 
     List getActivities(Date startDate, TimeUnit timeUnit, long l);
@@ -24,13 +28,13 @@ public interface GPCalendar {
 
     DayType getWeekDayType(int day);
 
-    /** 
+    /**
      * @return true when weekends are only shown and taken into
      *  account for the task scheduling.
      */
     public boolean getOnlyShowWeekends();
 
-    /** 
+    /**
      * @param onlyShowWeekends must be set to true if weekends are
      *  only shown and not taken into account for the task scheduling
      */
@@ -50,12 +54,8 @@ public interface GPCalendar {
 
     public Collection getPublicHolidays();
 
-    final class DayType {
-        public static final DayType WORKING = new DayType();
-
-        public static final DayType WEEKEND = new DayType();
-
-        public static final DayType HOLIDAY = new DayType();
+    public enum DayType {
+        WORKING, NON_WORKING, WEEKEND, HOLIDAY
     }
 
     Date findClosestWorkingTime(Date time);
@@ -68,6 +68,8 @@ public interface GPCalendar {
      * midnight of the next monday
      */
     Date shiftDate(Date input, TaskLength shift);
+
+    Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
 
     GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
     String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
