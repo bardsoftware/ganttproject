@@ -21,12 +21,14 @@ import net.sf.mpxj.ResourceAssignment;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.TimeUnit;
 import net.sf.mpxj.mpp.MPPReader;
+import net.sf.mpxj.mpx.MPXReader;
 import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -47,9 +49,29 @@ public class ProjectFileImporter {
     private final ProjectReader myReader;
     private final File myForeignFile;
 
+    private static ProjectReader createReader(File file) {
+        int lastDot = file.getName().lastIndexOf('.');
+        if (lastDot == file.getName().length() - 1) {
+            return null;
+        }
+        String fileExt = file.getName().substring(lastDot+1).toLowerCase();
+        if ("mpp".equals(fileExt)) {
+            return new MPPReader();
+        } else if ("xml".equals(fileExt)) {
+            return new MSPDIReader();
+        } else if ("mpx".equals(fileExt)) {
+            return new MPXReader();
+        }
+        return null;
+    }
+
+    private static interface HolidayAdder {
+        void addHoliday(Date date);
+    }
+
     public ProjectFileImporter(IGanttProject nativeProject, File foreignProjectFile) {
         myNativeProject = nativeProject;
-        myReader = new MSPDIReader();
+        myReader = createReader(foreignProjectFile);
         myForeignFile = foreignProjectFile;
     }
 
@@ -78,7 +100,11 @@ public class ProjectFileImporter {
         List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
         for (ProjectCalendarException e: exceptions) {
             if (!e.getWorking()) {
-                importHolidays(e);
+                importHolidays(e, new HolidayAdder() {
+                    public void addHoliday(Date date) {
+                        getNativeCalendar().setPublicHoliDayType(date);
+                    }
+                });
             }
         }
     }
@@ -102,20 +128,21 @@ public class ProjectFileImporter {
         return myNativeProject.getActiveCalendar();
     }
 
-    private void importHolidays(ProjectCalendarException e) {
+    private void importHolidays(ProjectCalendarException e, HolidayAdder adder) {
         if (e.getRangeCount() > 0) {
             for (DateRange range : e) {
-                importHolidays(range.getStart(), range.getEnd());
+                importHolidays(range.getStart(), range.getEnd(), adder);
             }
         } else {
-            importHolidays(e.getFromDate(), e.getToDate());
+            importHolidays(e.getFromDate(), e.getToDate(), adder);
         }
     }
 
-    private void importHolidays(Date start, Date end) {
+    private void importHolidays(Date start, Date end, HolidayAdder adder) {
         TaskLength oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
         for (Date dayStart = start; !dayStart.after(end);) {
-            myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
+            //myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
+            adder.addHoliday(dayStart);
             dayStart = GPCalendar.PLAIN.shiftDate(dayStart, oneDay);
         }
     }
@@ -127,7 +154,23 @@ public class ProjectFileImporter {
             nativeResource.setName(r.getName());
             nativeResource.setMail(r.getEmailAddress());
             myNativeProject.getHumanResourceManager().add(nativeResource);
+            importDaysOff(r, nativeResource);
             foreignId2humanResource.put(r.getID(), nativeResource);
+        }
+    }
+
+    private void importDaysOff(Resource r, final HumanResource nativeResource) {
+        ProjectCalendar c = r.getResourceCalendar();
+        if (c == null) {
+            return;
+        }
+        for (ProjectCalendarException e: c.getCalendarExceptions()) {
+            importHolidays(e, new HolidayAdder() {
+                public void addHoliday(Date date) {
+                    nativeResource.addDaysOff(new GanttDaysOff(
+                            date, GregorianTimeUnitStack.DAY.adjustRight(date)));
+                }
+            });
         }
     }
 
@@ -238,6 +281,4 @@ public class ProjectFileImporter {
             nativeAssignment.setLoad(ra.getUnits().floatValue());
         }
     }
-
-
 }
