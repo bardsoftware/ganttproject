@@ -19,6 +19,7 @@ import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceAssignment;
 import net.sf.mpxj.Task;
+import net.sf.mpxj.TaskField;
 import net.sf.mpxj.TimeUnit;
 import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
@@ -202,7 +203,17 @@ public class ProjectFileImporter {
                 importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
             }
         }
+        importCustomFields(t, nativeTask);
         foreignId2nativeTask.put(t.getID(), nativeTask);
+    }
+
+    private void importCustomFields(Task t, GanttTask nativeTask) {
+
+        for (TaskField tf : TaskField.values()) {
+            if (t.getCurrentValue(tf) != null) {
+                System.err.println("custom field="+t.getParentFile().getTaskFieldAlias(tf)+" value="+t.getCurrentValue(tf));
+            }
+        }
     }
 
     private Priority convertPriority(Task t) {
