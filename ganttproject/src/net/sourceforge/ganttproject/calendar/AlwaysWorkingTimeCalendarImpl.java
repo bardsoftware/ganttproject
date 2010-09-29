@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -78,17 +79,17 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     public DayType getDayTypeDate(Date curDayStart) {
         return GPCalendar.DayType.WORKING;
     }
-    
+
     public boolean getOnlyShowWeekends() {
         // Weekends are always working days for this calendar
         return true;
     }
-    
+
     public void setOnlyShowWeekends(boolean onlyShowWeekends) {
-        // Ignore onlyShowWeekends, since weekends are always 
+        // Ignore onlyShowWeekends, since weekends are always
         // working days for this calendar
     }
-    
+
     public void setPublicHoliDayType(Date curDayStart) {
         // TODO Auto-generated method stub
 
