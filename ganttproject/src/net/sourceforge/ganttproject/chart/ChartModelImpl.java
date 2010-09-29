@@ -92,7 +92,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         myTaskRendererImpl = new TaskRendererImpl2(this);
         myTaskGridRendererImpl = new TaskGridRendererImpl(this);
         addRenderer(myTaskRendererImpl);
-        addRenderer(myTaskGridRendererImpl);
+        //addRenderer(myTaskGridRendererImpl);
         //myResourcesRendererImpl = new ResourcesRendererImpl(this);
         // myTaskProgressRendererImpl = new TaskProgressRendererImpl(this);
         //myTimeUnitVisitors.add(myTaskGridRendererImpl);

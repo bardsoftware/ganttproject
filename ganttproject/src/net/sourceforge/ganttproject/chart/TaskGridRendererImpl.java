@@ -13,16 +13,19 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public class TaskGridRendererImpl extends ChartRendererBase {
+    private ChartModelImpl myModel;
+
     public TaskGridRendererImpl(ChartModelImpl model) {
         super(model);
-        getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight());
+        myModel = model;
+        getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight()-model.getVerticalOffset());
     }
 
     @Override
     public void render() {
         getPrimitiveContainer().clear();
 
-        int rowHeight = getConfig().getRowHeight();
+        int rowHeight = myModel.getRowHeight();
         int ypos = rowHeight;
         List/* <Task> */tasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
