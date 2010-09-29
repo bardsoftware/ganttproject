@@ -10,7 +10,7 @@ import net.sourceforge.ganttproject.importer.ImporterBase;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
     public ImporterFromMsProjectFile() {
-        super("msproject2");
+        super("impex.msproject2");
     }
 
     public String getFileNamePattern() {
