@@ -5,6 +5,7 @@
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
         collectTasksAboveAndBelowViewport(getVisibleTasks(), tasksAboveViewport, tasksBelowViewport);
         List<Offset> defaultUnitOffsets = getChartModel().getDefaultUnitOffsets();
+
         renderVisibleTasks(getVisibleTasks(), defaultUnitOffsets);
         renderTasksAboveAndBelowViewport(tasksAboveViewport, tasksBelowViewport, defaultUnitOffsets);
         renderDependencies();
@@ -98,6 +100,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                     new TaskActivity[] {new MilestoneTaskFakeActivity(nextTask)} :
                     nextTask.getActivities();
             renderActivities(rowNum++, activities, defaultUnitOffsets);
+            GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(
+                    0, rowNum*getRowHeight(), (int) getChartModel().getBounds().getWidth(), rowNum*getRowHeight());
+            nextLine.setForegroundColor(Color.GRAY);
         }
     }
 
