@@ -52,8 +52,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         protected void calculateNextStep(OffsetStep step, TimeFrame currentFrame, Date startDate) {
             float offsetStep = getOffsetStep(currentFrame);
-            //boolean isBottomUnitWorking = ChartModelBase.this.getBottomUnit().isWorkingInterval(startDate);
-            boolean isBottomUnitWorking = true;
+            boolean isBottomUnitWorking =! ChartModelBase.this.getTaskManager().getCalendar().isNonWorkingDay(startDate);
             if (!isBottomUnitWorking) {
                 step.dayType = GPCalendar.DayType.WEEKEND;
 //                step.incrementTopUnit = false;
