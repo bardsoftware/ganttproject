@@ -80,7 +80,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      */
     private int nbColTot = nbCol;
 
-    private final CustomColumnsManager myCustomColumnsManager;
+    private final CustomPropertyManager myCustomColumnsManager;
 
     /**
      * Creates an instance of GanttTreeTableModel with a root.
@@ -89,7 +89,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      *            The root.
      * @param customColumnsManager
      */
-    public GanttTreeTableModel(TreeNode root, CustomColumnsManager customColumnsManager) {
+    public GanttTreeTableModel(TreeNode root, CustomPropertyManager customColumnsManager) {
         super(root);
         titles = new ArrayList();
         customColumns = new Vector();

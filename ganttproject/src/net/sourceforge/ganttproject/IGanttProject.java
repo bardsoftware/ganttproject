@@ -86,7 +86,7 @@ public interface IGanttProject {
 
     CustomPropertyManager getResourceCustomPropertyManager();
 
-    CustomColumnsManager getTaskCustomColumnManager();
+    CustomPropertyManager getTaskCustomColumnManager();
 
     CustomColumnsStorage getCustomColumnsStorage();
 
