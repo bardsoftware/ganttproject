@@ -6,16 +6,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
-import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Rate;
 import net.sf.mpxj.Relation;
-import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceAssignment;
 import net.sf.mpxj.Task;
@@ -25,6 +25,8 @@ import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
 import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -33,6 +35,7 @@ import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
@@ -72,7 +75,7 @@ public class ProjectFileImporter {
 
     public ProjectFileImporter(IGanttProject nativeProject, File foreignProjectFile) {
         myNativeProject = nativeProject;
-        myReader = createReader(foreignProjectFile);
+        myReader = ProjectFileImporter.createReader(foreignProjectFile);
         myForeignFile = foreignProjectFile;
     }
 
@@ -190,7 +193,7 @@ public class ProjectFileImporter {
         nativeTask.setStart(new GanttCalendar(t.getStart()));
         nativeTask.setNotes(t.getNotes());
         nativeTask.setWebLink(t.getHyperlink());
-        nativeTask.setPriority(convertPriority(t));
+        nativeTask.setPriority(convertPriority(t.getPriority()));
         if (t.getChildTasks().isEmpty()) {
             if (t.getPhysicalPercentComplete() != null) {
                 nativeTask.setCompletionPercentage(t.getPhysicalPercentComplete());
@@ -208,16 +211,93 @@ public class ProjectFileImporter {
     }
 
     private void importCustomFields(Task t, GanttTask nativeTask) {
-
+        Map<TaskField, CustomPropertyDefinition> foreign2native =
+            new HashMap<TaskField, CustomPropertyDefinition>();
         for (TaskField tf : TaskField.values()) {
-            if (t.getCurrentValue(tf) != null) {
-                System.err.println("custom field="+t.getParentFile().getTaskFieldAlias(tf)+" value="+t.getCurrentValue(tf));
+            if (t.getCurrentValue(tf) == null || !isCustomField(tf)) {
+                continue;
+            }
+            CustomPropertyDefinition def = foreign2native.get(tf);
+            if (def == null) {
+                String typeAsString = convertDataType(tf);
+                String name = t.getParentFile().getTaskFieldAlias(tf);
+                if (name == null) {
+                    name = tf.getName();
+                }
+                def = myNativeProject.getTaskCustomColumnManager().createDefinition(
+                        typeAsString, name, null);
+            }
+            try {
+                nativeTask.getCustomValues().setValue(
+                        def.getName(), convertDataValue(tf, t.getCurrentValue(tf)));
+            } catch (CustomColumnsException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
     }
 
-    private Priority convertPriority(Task t) {
-        net.sf.mpxj.Priority priority = t.getPriority();
+    private static Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
+    private boolean isCustomField(TaskField tf) {
+        return ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
+    }
+
+    private String convertDataType(TaskField tf) {
+        switch (tf.getDataType()) {
+        case ACCRUE:
+        case CONSTRAINT:
+        case DURATION:
+        case PRIORITY:
+        case RELATION_LIST:
+        case RESOURCE_TYPE:
+        case STRING:
+        case TASK_TYPE:
+        case UNITS:
+            return CustomPropertyClass.TEXT.name().toLowerCase();
+        case BOOLEAN:
+            return CustomPropertyClass.BOOLEAN.name().toLowerCase();
+        case DATE:
+            return CustomPropertyClass.DATE.name().toLowerCase();
+        case CURRENCY:
+        case NUMERIC:
+        case PERCENTAGE:
+        case RATE:
+            return CustomPropertyClass.DOUBLE.name().toLowerCase();
+        }
+        return null;
+    }
+
+    private Object convertDataValue(TaskField tf, Object value) {
+        switch (tf.getDataType()) {
+        case ACCRUE:
+        case CONSTRAINT:
+        case DURATION:
+        case PRIORITY:
+        case RELATION_LIST:
+        case RESOURCE_TYPE:
+        case STRING:
+        case TASK_TYPE:
+        case UNITS:
+            return String.valueOf(value);
+        case BOOLEAN:
+            assert value instanceof Boolean;
+            return value;
+        case DATE:
+            assert value instanceof Date;
+            return new GanttCalendar((Date)value);
+        case CURRENCY:
+        case NUMERIC:
+        case PERCENTAGE:
+            assert value instanceof Number;
+            return ((Number)value).doubleValue();
+        case RATE:
+            assert value instanceof Rate;
+            return ((Rate)value).getAmount();
+        }
+        return null;
+    }
+
+    private Priority convertPriority(net.sf.mpxj.Priority priority) {
         switch (priority.getValue()) {
         case net.sf.mpxj.Priority.HIGHEST:
         case net.sf.mpxj.Priority.VERY_HIGH:
