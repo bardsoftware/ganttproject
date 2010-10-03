@@ -72,6 +72,10 @@ public abstract class EditableList<T>  {
         return myTableAndActions.getActionsComponent();
     }
 
+    public AbstractTableAndActionsComponent<T> getTableAndActions() {
+        initComponent();
+        return myTableAndActions;
+    }
     private void initComponent() {
         if (myTableAndActions==null) {
             JNTable jnTable = new JNTable(myTableModel);
@@ -279,7 +283,9 @@ public abstract class EditableList<T>  {
         protected void onSelectionChanged() {
             mySelectedRows = resourcesTable.getSelectedRows();
             List<T> selectedObjects = getSelectedObjects();
-            setSelection(selectedObjects);
+            if (!selectedObjects.isEmpty()) {
+                setSelection(selectedObjects);
+            }
         }
 
     }
