@@ -328,6 +328,118 @@ public class TaskManagerImpl implements TaskManager {
     public int getProjectCompletion() {
         return myRoot.getCompletionPercentage();
     }
+
+    public String encode(TaskLength taskLength) {
+        StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
+        result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
+        return result.toString();
+    }
+
+    public TaskLength createLength(String lengthAsString) throws DurationParsingException {
+        int state = 0;
+        StringBuffer valueBuffer = new StringBuffer();
+        Integer currentValue = null;
+        TaskLength currentLength = null;
+        lengthAsString += " ";
+        for (int i=0; i<lengthAsString.length(); i++) {
+            char nextChar = lengthAsString.charAt(i);
+            if (Character.isDigit(nextChar)) {
+                switch (state) {
+                    case 0:
+                        if (currentValue!=null) {
+                            throw new DurationParsingException();
+                        }
+                        state = 1;
+                        valueBuffer.setLength(0);
+                    case 1:
+                        valueBuffer.append(nextChar);
+                        break;
+                    case 2:
+                        TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+                        if (timeUnit==null) {
+                            throw new DurationParsingException(valueBuffer.toString());
+                        }
+                        assert currentValue!=null;
+                        TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+                        if (currentLength==null) {
+                            currentLength = localResult;
+                        }
+                        else {
+                            if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                                float recalculatedLength = currentLength.getLength(timeUnit);
+                                currentLength = createLength(timeUnit, localResult.getValue()+recalculatedLength);
+                            }
+                            else {
+                                throw new DurationParsingException();
+                            }
+                        }
+                        state = 1;
+                        currentValue = null;
+                        valueBuffer.setLength(0);
+                        valueBuffer.append(nextChar);
+                        break;
+                }
+            }
+            else if(Character.isWhitespace(nextChar)) {
+                switch (state) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentValue = Integer.valueOf(valueBuffer.toString());
+                        state = 0;
+                        break;
+                    case 2:
+                        TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+                        if (timeUnit==null) {
+                            throw new DurationParsingException(valueBuffer.toString());
+                        }
+                        assert currentValue!=null;
+                        TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+                        if (currentLength==null) {
+                            currentLength = localResult;
+                        }
+                        else {
+                            if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                                float recalculatedLength = currentLength.getLength(timeUnit);
+                                currentLength = createLength(timeUnit, localResult.getValue()+recalculatedLength);
+                            }
+                            else {
+                                throw new DurationParsingException();
+                            }
+                        }
+                        state = 0;
+                        currentValue = null;
+                        break;
+                }
+            }
+            else {
+                switch (state) {
+                    case 1:
+                        currentValue = Integer.valueOf(valueBuffer.toString());
+                    case 0:
+                        if (currentValue==null) {
+                            throw new DurationParsingException();
+                        }
+                        state = 2;
+                        valueBuffer.setLength(0);
+                    case 2:
+                        valueBuffer.append(nextChar);
+                        break;
+                }
+            }
+        }
+        if (currentValue!=null) {
+            currentValue = Integer.valueOf(valueBuffer.toString());
+            TimeUnit dayUnit = findTimeUnit("d");
+            currentLength = createLength(dayUnit, currentValue.floatValue());
+        }
+        return currentLength;
+    }
+
+    private TimeUnit findTimeUnit(String code) {
+        return myConfig.getTimeUnitStack().findTimeUnit(code);
+    }
+
     public TaskLength createLength(TimeUnit unit, float length) {
         return new TaskLengthImpl(unit, length);
     }
@@ -379,32 +491,33 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public TaskDependencyConstraint createConstraint(final int constraintID) {
+        return createConstraint(TaskDependencyConstraint.Type.getType(constraintID));
+    }
+    public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
         TaskDependencyConstraint result;
-        switch (constraintID) {
-        case GanttTaskRelationship.FS: {
+        switch (type) {
+        case finishstart: {
             result = new FinishStartConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.FF: {
+        case finishfinish: {
             result = new FinishFinishConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.SF: {
+        case startfinish: {
             result = new StartFinishConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.SS: {
+        case startstart: {
             result = new StartStartConstraintImpl();
             break;
         }
         default: {
-            throw new IllegalArgumentException("Unknown constraint ID="
-                    + constraintID);
+            throw new IllegalArgumentException("Unknown constraint type="+type);
         }
         }
         return result;
     }
-
     public int getMaxID() {
         return myMaxID;
     }

@@ -21,4 +21,6 @@ public interface TimeUnitStack {
 
     DateFormat[] getDateFormats();
     DateFormat getTimeFormat();
+    TimeUnit findTimeUnit(String code);
+    String encode(TimeUnit timeUnit);
 }

@@ -107,4 +107,16 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     public DateFormat getTimeFormat() {
         return null;
     }
+
+    @Override
+    public String encode(TimeUnit timeUnit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public TimeUnit findTimeUnit(String code) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

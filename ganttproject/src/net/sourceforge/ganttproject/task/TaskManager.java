@@ -37,6 +37,9 @@ public interface TaskManager {
 
     public GanttTask createTask(int taskId);
 
+    String encode(TaskLength duration);
+    TaskLength createLength(String lengthAsString);
+
     public TaskLength createLength(long length);
 
     TaskLength createLength(TimeUnit unit, float length);
@@ -50,7 +53,7 @@ public interface TaskManager {
     AlgorithmCollection getAlgorithmCollection();
 
     TaskDependencyConstraint createConstraint(int constraintID);
-
+    TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
     GPCalendar getCalendar();
 
     TaskContainmentHierarchyFacade getTaskHierarchy();
