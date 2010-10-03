@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -152,7 +153,7 @@ public abstract class TextFieldAndFileChooserComponent {
         }
 
         fc.addChoosableFileFilter(myFileFilter);
-
+        /*
         Action[] actions = new Action[] {
                 new AbstractAction("Your project file directory") {
                     public void actionPerformed(ActionEvent e) {
@@ -171,16 +172,23 @@ public abstract class TextFieldAndFileChooserComponent {
 
         JComponent filePanelComponent = filePanel.getComponent(actions, components, 0);
         filePanelComponent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        myUiFacade.showDialog(
-                filePanelComponent,
-                new Action[] {new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                myFile = fc.getSelectedFile();
-                myTextField.setText(myFile.getAbsolutePath());
-                onFileChosen(myFile);
-            }
-        }});
+        */
+        Action[] dialogActions = new Action [] {
+        		new OkAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        myFile = fc.getSelectedFile();
+                        myTextField.setText(myFile.getAbsolutePath());
+                        onFileChosen(myFile);
+                    }
+                },
+                new CancelAction() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+					}
+				}
+        };
+        myUiFacade.showDialog(fc, dialogActions);
     }
 
     public void tryFile() {
