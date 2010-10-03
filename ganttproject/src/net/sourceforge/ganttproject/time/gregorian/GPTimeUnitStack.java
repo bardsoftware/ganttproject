@@ -122,4 +122,44 @@ public class GPTimeUnitStack implements TimeUnitStack {
         return null;
     }
 
+    public TimeUnit findTimeUnit(String code) {
+        assert code!=null;
+        code = code.trim();
+        if (isHour(code)) {
+            return HOUR;
+        }
+        if (isDay(code)) {
+            return DAY;
+        }
+        if (isWeek(code)) {
+            return WEEK_AS_BOTTOM_UNIT;
+        }
+        return null;
+    }
+
+    private boolean isWeek(String code) {
+        return "w".equalsIgnoreCase(code);
+    }
+
+    private boolean isDay(String code) {
+        return "d".equalsIgnoreCase(code);
+    }
+
+    private boolean isHour(String code) {
+        return "h".equalsIgnoreCase(code);
+    }
+
+    public String encode(TimeUnit timeUnit) {
+        if (timeUnit==HOUR) {
+            return "h";
+        }
+        if (timeUnit==DAY) {
+            return "d";
+        }
+        if (timeUnit==WEEK_AS_BOTTOM_UNIT) {
+            return "w";
+        }
+        throw new IllegalArgumentException();
+    }
+
 }
