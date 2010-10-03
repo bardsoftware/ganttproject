@@ -37,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -115,7 +116,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private JPanel generalPanel;
 
-    private JPanel predecessorsPanel;
+    private JComponent predecessorsPanel;
 
     private JPanel resourcesPanel;
 
@@ -209,6 +210,8 @@ public class GanttTaskPropertiesBean extends JPanel {
     private final TaskManager myTaskManager;
     private final IGanttProject myProject;
     private final UIFacade myUIfacade;
+
+    private TaskMutator mutator;
 
     /** add a component to container by using GridBagConstraints. */
     private void addUsingGBL(Container container, Component component,
@@ -502,9 +505,9 @@ public class GanttTaskPropertiesBean extends JPanel {
         if (nameField1 != null && nameFieldNotes != null) {
             String nameOfTask = nameField1.getText().trim();
             nameField1.setText(nameOfTask);
-            if (onlyOneTask) {
-                myDependenciesPanel.nameChanged(nameOfTask);
-            }
+//            if (onlyOneTask) {
+//                myDependenciesPanel.nameChanged(nameOfTask);
+//            }
             myAllocationsPanel[0].nameChanged(nameOfTask);
             nameFieldNotes.setText(nameOfTask);
         }
@@ -517,7 +520,8 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     /** Construct the predecessors tabbed pane */
     private void constructPredecessorsPanel() {
-        myDependenciesPanel = new TaskDependenciesPanel(selectedTasks[0]);
+        myDependenciesPanel = new TaskDependenciesPanel();
+        myDependenciesPanel.init(selectedTasks[0]);
         predecessorsPanel = myDependenciesPanel.getComponent();
     }
 
@@ -729,8 +733,7 @@ public class GanttTaskPropertiesBean extends JPanel {
             returnTask[i] = selectedTasks[i];
 
             // returnTask.setTaskID(selectedTask.getTaskID());
-            TaskMutator mutator = returnTask[i].createMutator();
-
+            mutator = selectedTasks[0].createMutator();
             if (onlyOneTask) {
                 mutator.setName(getTaskName()); // getName()
                 mutator.setProjectTask (false);
@@ -793,9 +796,10 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
 
             mutator.commit();
-            if (onlyOneTask) {
-                myDependenciesPanel.getTableModel().commit();
-            }
+            myDependenciesPanel.commit();
+//            if (onlyOneTask) {
+//                myDependenciesPanel.getTableModel().commit();
+//            }
             returnTask[i].applyThirdDateConstraint();
         }
 
@@ -805,7 +809,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     /** as the name indicates */
     public void setSelectedTask() {
-
         // this.selectedTask = selectedTask;
 
         nameField1.setText(selectedTasks[0].getName());
@@ -911,9 +914,9 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
 
         durationField1.setText(_length + "");
-        if (onlyOneTask) {
-            myDependenciesPanel.durationChanged(_length);
-        }
+//        if (onlyOneTask) {
+//            myDependenciesPanel.durationChanged(_length);
+//        }
         myAllocationsPanel[0].durationChanged(_length);
         durationFieldNotes.setText(_length + "");
 
