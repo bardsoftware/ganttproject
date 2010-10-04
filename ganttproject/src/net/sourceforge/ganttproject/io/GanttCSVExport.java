@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -44,7 +45,7 @@ public class GanttCSVExport {
 
     private final Task[] myTasks;
 
-    List resources = new ArrayList();
+    List<ProjectResource> resources = new ArrayList<ProjectResource>();
 
     int iMaxSize = 0;
 
@@ -123,7 +124,7 @@ public class GanttCSVExport {
         if (csvOptions.bExportTaskNotes) {
         	writeCell(out, i18n("notes"));        	        	
         }
-        List/*<String>*/ customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List/*<String>*/<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         for (int i=0; i<customFields.size(); i++) {
         	writeCell(out, String.valueOf(customFields.get(i)));
         }
@@ -137,7 +138,7 @@ public class GanttCSVExport {
 	/** Write all tasks. */
     private void writeTasks(OutputStreamWriter out) throws IOException {
     	writeTaskHeaders(out);
-        List/*<String>*/ customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List/*<String>*/<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
             // ID
@@ -237,9 +238,9 @@ public class GanttCSVExport {
                 String sRoleID = role==null ? "0":role.getPersistentID();
                 writeTextCell(out, sRoleID);
             }
-            List customProps = p.getCustomProperties();
+            List<CustomProperty> customProps = p.getCustomProperties();
             for (int j=0; j<customProps.size(); j++) {
-            	CustomProperty nextProperty = (CustomProperty) customProps.get(j);
+            	CustomProperty nextProperty = customProps.get(j);
             	writeTextCell(out, nextProperty.getValueAsString());
             }
             out.write("\n");
@@ -249,7 +250,7 @@ public class GanttCSVExport {
 
 	/** set the maximum size for all strings. */
     void getMaxSize() {
-        List/*<String>*/ customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List/*<String>*/<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         iMaxSize = 0;
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
@@ -351,9 +352,9 @@ public class GanttCSVExport {
                 if (s.length() > iMaxSize)
                     iMaxSize = s.length();
             }
-            List customProps = p.getCustomProperties();
+            List<CustomProperty> customProps = p.getCustomProperties();
             for (int j=0; j<customProps.size(); j++) {
-            	CustomProperty nextProperty = (CustomProperty) customProps.get(j);
+            	CustomProperty nextProperty = customProps.get(j);
             	if (nextProperty.getValueAsString().length() > iMaxSize) {
             		iMaxSize = nextProperty.getValueAsString().length();
             	}

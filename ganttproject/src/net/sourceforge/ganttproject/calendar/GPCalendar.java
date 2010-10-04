@@ -20,7 +20,7 @@ public interface GPCalendar {
         FORWARD, BACKWARD
     }
 
-    List getActivities(Date startDate, Date endDate);
+    List<CalendarActivityImpl> getActivities(Date startDate, Date endDate);
 
     List getActivities(Date startDate, TimeUnit timeUnit, long l);
 
@@ -52,7 +52,7 @@ public interface GPCalendar {
 
     public void setPublicHolidays(URL calendar, GanttProject gp);
 
-    public Collection getPublicHolidays();
+    public Collection<Date> getPublicHolidays();
 
     public enum DayType {
         WORKING, NON_WORKING, WEEKEND, HOLIDAY

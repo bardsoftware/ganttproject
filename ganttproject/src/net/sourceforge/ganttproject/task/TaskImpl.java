@@ -21,9 +21,11 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
+import net.sourceforge.ganttproject.calendar.CalendarActivityImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -223,9 +225,9 @@ public class TaskImpl implements Task {
         return myWebLink;
     }
 
-    public List/*<Document>*/ getAttachments() {
+    public List<Document> getAttachments() {
     	if (getWebLink()!= null && !"".equals(getWebLink())) {
-	    	return Collections.singletonList(new AbstractURLDocument() {
+	    	return Collections.singletonList((Document)new AbstractURLDocument() {
 				public boolean canRead() {
 					return true;
 				}
@@ -517,12 +519,12 @@ public class TaskImpl implements Task {
             if (index < 0 || index >= myDates.size()) {
                 return null;
             }
-            return (Date) myDates.get(index);
+            return myDates.get(index);
         }
 
         void cacheDate(Date date, int length) {
             if (myDates == null) {
-                myDates = new ArrayList();
+                myDates = new ArrayList<Date>();
             }
             int index = length - myMinLength;
             while (index <= -1) {
@@ -543,7 +545,7 @@ public class TaskImpl implements Task {
 
         private int myMinLength = 0;
 
-        private List myDates;
+        private List<Date> myDates;
 
     }
 
@@ -564,7 +566,7 @@ public class TaskImpl implements Task {
 
         private List myActivities;
 
-        private final List myCommands = new ArrayList();
+        private final List<Runnable> myCommands = new ArrayList<Runnable>();
 
         private int myIsolationLevel;
 
@@ -595,7 +597,7 @@ public class TaskImpl implements Task {
                     TaskImpl.this.setThirdDate(third);
                 }
                 for (int i = 0; i < myCommands.size(); i++) {
-                    Runnable next = (Runnable) myCommands.get(i);
+                    Runnable next = myCommands.get(i);
                     next.run();
                 }
                 myCommands.clear();
@@ -1057,10 +1059,10 @@ public class TaskImpl implements Task {
 
     private void recalculateActivities(List output, Date startDate, Date endDate) {
         GPCalendar calendar = myManager.getConfig().getCalendar();
-        List activities = calendar.getActivities(startDate, endDate);
+        List<CalendarActivityImpl> activities = calendar.getActivities(startDate, endDate);
         output.clear();
         for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity nextCalendarActivity = (GPCalendarActivity) activities
+            GPCalendarActivity nextCalendarActivity = activities
                     .get(i);
             TaskActivityImpl nextTaskActivity;
             if (nextCalendarActivity.isWorkingTime()) {

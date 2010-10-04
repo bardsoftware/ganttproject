@@ -198,6 +198,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
 
     private RoleManager myRoleManager;
 
-    private final HashMap myLateAssigmnent2roleBinding = new HashMap();
+    private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
 
 }

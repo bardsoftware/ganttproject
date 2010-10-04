@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class RoleSetImpl implements RoleSet {
     private final String myName;
 
-    private final ArrayList myRoles = new ArrayList();
+    private final ArrayList<RoleImpl> myRoles = new ArrayList<RoleImpl>();
 
     private boolean isEnabled;
 
@@ -28,7 +28,7 @@ public class RoleSetImpl implements RoleSet {
     }
 
     public Role[] getRoles() {
-        return (Role[]) myRoles.toArray(new Role[0]);
+        return myRoles.toArray(new Role[0]);
     }
 
     public Role createRole(String name, int persistentID) {
@@ -53,7 +53,7 @@ public class RoleSetImpl implements RoleSet {
     public Role findRole(int roleID) {
         Role result = null;
         for (int i = 0; i < myRoles.size(); i++) {
-            Role next = (Role) myRoles.get(i);
+            Role next = myRoles.get(i);
             if (next.getID() == roleID) {
                 result = next;
                 break;

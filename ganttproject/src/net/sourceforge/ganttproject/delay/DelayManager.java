@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.Mediator;
@@ -33,7 +34,7 @@ public class DelayManager implements GPUndoListener {
 
     private Date myToday;
 
-    private List myObservers;
+    private List<DelayObserver> myObservers;
 
     private TaskManager myTaskManager;
 
@@ -42,7 +43,7 @@ public class DelayManager implements GPUndoListener {
 	private GanttTree2 myTree;
 
     public DelayManager(TaskManager taskManager, GanttTree2 tree) {
-        myObservers = new ArrayList();
+        myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
         myRoot = (TaskNode) tree.getRoot();
 		myTree = tree;
@@ -64,20 +65,20 @@ public class DelayManager implements GPUndoListener {
         if (ourCriticProcess) {
         	ourCriticProcess = false;
 			myTaskManager.processCriticalPath(myRoot);
-			ArrayList projectTasks = myTree.getProjectTasks();
+			ArrayList<DefaultMutableTreeNode> projectTasks = myTree.getProjectTasks();
 	        if (projectTasks.size() != 0)
 				for (int i = 0 ; i < projectTasks.size() ; i++)
 					myTaskManager.processCriticalPath((TaskNode) projectTasks.get(i));
 
 //            System.out.println("critical path processed");
         }
-        Iterator itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
+        Iterator<Task> itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
         while (itTasks.hasNext()) {
-            Task task = (Task) itTasks.next();
+            Task task = itTasks.next();
             Delay delay = calculateDelay(task);
-            Iterator itObservers = myObservers.iterator();
+            Iterator<DelayObserver> itObservers = myObservers.iterator();
             while (itObservers.hasNext()) {
-                DelayObserver observer = (DelayObserver) itObservers.next();
+                DelayObserver observer = itObservers.next();
                 observer.setDelay(task, delay);
 //                System.out.println("delay " + delay.getType() + " (critical = "+delay.CRITICAL+")");
             }

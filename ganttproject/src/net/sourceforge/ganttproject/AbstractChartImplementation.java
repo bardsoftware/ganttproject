@@ -35,7 +35,7 @@ import org.eclipse.core.runtime.IStatus;
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
     private final ChartModelBase myChartModel;
     private final IGanttProject myProject;
-    private Set mySelectionListeners= new LinkedHashSet();
+    private Set<ChartSelectionListener> mySelectionListeners= new LinkedHashSet<ChartSelectionListener>();
     private final ChartComponentBase myChartComponent;
 
     public AbstractChartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
@@ -210,8 +210,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         mySelectionListeners.remove(listener);
     }
     protected void fireSelectionChanged() {
-        for (Iterator listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
-            ChartSelectionListener nextListener = (ChartSelectionListener) listeners.next();
+        for (Iterator<ChartSelectionListener> listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
+            ChartSelectionListener nextListener = listeners.next();
             nextListener.selectionChanged();
         }
     }

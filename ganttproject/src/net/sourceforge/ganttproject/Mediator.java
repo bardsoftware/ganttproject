@@ -44,7 +44,7 @@ public class Mediator {
 
     private static PluginManager pluginManager = new PluginManager();
     
-    private static List changeValueDispatchers = new ArrayList();
+    private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
 
     /**
      * Regsiters the unique GanttProject instance.
@@ -146,7 +146,7 @@ public class Mediator {
         return pluginManager;
     }
     
-    public static List getChangeValueDispatchers(){
+    public static List<ChangeValueDispatcher> getChangeValueDispatchers(){
         return changeValueDispatchers;
     }
 }

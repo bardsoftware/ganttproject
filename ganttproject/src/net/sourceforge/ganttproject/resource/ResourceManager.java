@@ -77,7 +77,7 @@ public interface ResourceManager {
      * @return ArrayList filled with ProjectResource ancestors.
      * @see ProjectResource
      */
-    public List getResources();
+    public List<ProjectResource> getResources();
 
     public ProjectResource[] getResourcesArray();
 

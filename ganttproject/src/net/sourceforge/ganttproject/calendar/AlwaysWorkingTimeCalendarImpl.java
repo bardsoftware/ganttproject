@@ -19,23 +19,23 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  */
 public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         GPCalendar {
-    public List getActivities(Date startDate, Date endDate) {
+    public List<CalendarActivityImpl> getActivities(Date startDate, Date endDate) {
         return Collections.singletonList(new CalendarActivityImpl(startDate,
                 endDate, true));
     }
 
-    protected List getActivitiesForward(Date startDate, TimeUnit timeUnit,
+    protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
             long l) {
         Date activityStart = timeUnit.adjustLeft(startDate);
         Date activityEnd = activityStart;
         for (; l > 0; l--) {
             activityEnd = timeUnit.adjustRight(activityEnd);
         }
-        return Collections.singletonList(new CalendarActivityImpl(
+        return Collections.singletonList((GPCalendarActivity)new CalendarActivityImpl(
                 activityStart, activityEnd, true));
     }
 
-    protected List getActivitiesBackward(Date startDate, TimeUnit timeUnit,
+    protected List<CalendarActivityImpl> getActivitiesBackward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
         Date activityEnd = timeUnit.adjustLeft(startDate);
         Date activityStart = activityEnd;
@@ -100,7 +100,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
 
     }
 
-    public Collection getPublicHolidays() {
+    public Collection<Date> getPublicHolidays() {
         // TODO Auto-generated method stub
         return null;
     }

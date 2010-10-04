@@ -39,9 +39,9 @@ class ResourceSaver extends SaverBase {
 	private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler) throws SAXException {
 		//CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
 		AttributesImpl attrs = new AttributesImpl();
-		List properties = resource.getCustomProperties();
+		List<CustomProperty> properties = resource.getCustomProperties();
 		for (int i=0; i<properties.size(); i++) {
-			CustomProperty nextProperty = (CustomProperty) properties.get(i);
+			CustomProperty nextProperty = properties.get(i);
 			CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
             if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
     			addAttribute("definition-id", nextDefinition.getID(), attrs);

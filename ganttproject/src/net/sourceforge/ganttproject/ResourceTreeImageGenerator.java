@@ -12,6 +12,7 @@ import java.util.List;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
@@ -50,8 +51,8 @@ class ResourceTreeImageGenerator {
         final BufferedImage testImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         final Graphics g = testImage.getGraphics();
         final int tabSize = 5;
-        final List users = myResourceManager.getResources();
-        for (Iterator user = users.iterator(); user.hasNext();) {
+        final List<ProjectResource> users = myResourceManager.getResources();
+        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
             HumanResource hr = (HumanResource) user.next();
             int nameWidth = TextLengthCalculatorImpl.getTextLength(g, hr.getName());
             if (nameWidth > width) {
@@ -83,14 +84,14 @@ class ResourceTreeImageGenerator {
         g.setColor(Color.black);
         g.setFont(Fonts.RESSOURCE_FONT);
 
-        List users = myResourceManager.getResources();
+        List<ProjectResource> users = myResourceManager.getResources();
 
         int y = 67;
 
         final int nameLinePadding = 3;
         final int nameLineHeight = getRowHeight();
         boolean isOddRow = false;
-        for (Iterator user = users.iterator(); user.hasNext();) {
+        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
             HumanResource hr = (HumanResource) user.next();
             {
                 // paint resource name here

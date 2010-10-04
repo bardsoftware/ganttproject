@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -16,7 +17,7 @@ import net.sourceforge.ganttproject.task.Task;
 public class VisibleNodesFilter {
     public List/* <Task> */getVisibleNodes(JTree jtree, int minHeight,
             int maxHeight, int nodeHeight) {
-        List preorderedNodes = Collections.list(((DefaultMutableTreeNode) jtree
+        List<TreeNode> preorderedNodes = Collections.list(((DefaultMutableTreeNode) jtree
                 .getModel().getRoot()).preorderEnumeration());
         List result = new ArrayList();
         int currentHeight = 0;

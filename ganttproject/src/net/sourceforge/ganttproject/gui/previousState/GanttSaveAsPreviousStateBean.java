@@ -36,7 +36,7 @@ public class GanttSaveAsPreviousStateBean extends JPanel {
 
     private JComboBox nameComboBox;
 
-    private ArrayList myPreviousStates;
+    private ArrayList<GanttPreviousState> myPreviousStates;
 
     private GanttLanguage lang = GanttLanguage.getInstance();
 
@@ -98,8 +98,8 @@ public class GanttSaveAsPreviousStateBean extends JPanel {
                     30, 20));
             previousStateLabel = new JLabel(lang.getText("previousStates"));
             for (int i = 0; i < myPreviousStates.size(); i++)
-                nameComboBox.addItem(((GanttPreviousState) myPreviousStates
-                        .get(i)).getName());
+                nameComboBox.addItem(myPreviousStates
+                        .get(i).getName());
             nameComboBox.setName("nameComboBox");
             nameComboBox.setSelectedIndex(-1);
             previousStatePanel.add(previousStateLabel);

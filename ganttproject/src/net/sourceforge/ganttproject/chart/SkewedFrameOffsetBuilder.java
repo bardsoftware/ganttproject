@@ -75,7 +75,7 @@ class SkewedFrameOffsetBuilder {
     protected TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
-    void constructOffsets(List topUnitOffsets, List bottomUnitOffsets) {
+    void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
         {
             int offsetEnd = 0;
             Date currentDate = myStartDate;

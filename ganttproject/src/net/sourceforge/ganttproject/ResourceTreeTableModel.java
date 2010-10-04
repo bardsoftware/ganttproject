@@ -56,7 +56,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     public static final int INDEX_RESOURCE_ROLE_TASK = 4;
 
     /** all the columns */
-    private final Map columns = new LinkedHashMap();
+    private final Map<Integer, ResourceColumn> columns = new LinkedHashMap<Integer, ResourceColumn>();
 
     /** Column indexer */
     private static int index = -1;
@@ -125,11 +125,11 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     private ResourceNode buildTree() {
 
         ResourceNode root = new ResourceNode(null);
-        List listResources = myResourceManager.getResources();
-        Iterator itRes = listResources.iterator();
+        List<ProjectResource> listResources = myResourceManager.getResources();
+        Iterator<ProjectResource> itRes = listResources.iterator();
 
         while (itRes.hasNext()) {
-            ProjectResource pr = (ProjectResource) itRes.next();
+            ProjectResource pr = itRes.next();
 
             ResourceAssignment[] tra = pr.getAssignments();
             ResourceNode rnRes = new ResourceNode(pr); // the first for the
@@ -210,7 +210,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         cols[INDEX_RESOURCE_ROLE_TASK] = strResourceRoleForTask;
         for (int i = 0; i < cols.length; i++)
         {
-            ResourceColumn col = (ResourceColumn)columns.get(new Integer(i));
+            ResourceColumn col = columns.get(new Integer(i));
             if (col != null)
                 col.setTitle(cols[i]);
         }
@@ -303,7 +303,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         myResourceManager.clear();
     }
 
-    public List getAllResouces() {
+    public List<ProjectResource> getAllResouces() {
         return myResourceManager.getResources();
     }
 
@@ -314,15 +314,15 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return columns.size();
     }
 
-    public ArrayList getColumns()
+    public ArrayList<ResourceColumn> getColumns()
     {
-        ArrayList res = new ArrayList(columns.values());
+        ArrayList<ResourceColumn> res = new ArrayList<ResourceColumn>(columns.values());
         return res;
     }
 
     /** Returns the ResourceColumn associated to the given index */
     public ResourceColumn getColumn(int index) {
-        return (ResourceColumn)columns.get(new Integer(index));
+        return columns.get(new Integer(index));
     }
 
     /**
@@ -332,12 +332,12 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         if (colIndex == 0) {
             return hierarchicalColumnClass;
         }
-        ResourceColumn column = (ResourceColumn)columns.get(new Integer(colIndex));
+        ResourceColumn column = columns.get(new Integer(colIndex));
         return column==null ? String.class : column.getType();
     }
 
     public String getColumnName(int column) {
-        return ((ResourceColumn)columns.get(new Integer(column))).getTitle();
+        return columns.get(new Integer(column)).getTitle();
     }
 
     /**
@@ -459,11 +459,11 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     /** deletes a custom column from the datamodel */
     public ResourceColumn deleteCustomColumn(String name){
         ResourceColumn toDel = null;
-        Collection vals = columns.values();
-        Iterator i = vals.iterator();
+        Collection<ResourceColumn> vals = columns.values();
+        Iterator<ResourceColumn> i = vals.iterator();
 
         while (i.hasNext()) {
-            toDel = (ResourceColumn)i.next();
+            toDel = i.next();
             if (name.equals( toDel.getTitle() )) {
                 ((HumanResourceManager)myResourceManager).removeCustomField(toDel.getTitle());
                 /* this deletes the object from the Hashtable too */

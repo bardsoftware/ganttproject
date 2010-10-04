@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -283,7 +284,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     }
 
     GraphicPrimitiveContainer.Rectangle[] getTaskActivityRectangles(Task task) {
-        List result = new ArrayList();
+        List<Rectangle> result = new ArrayList<Rectangle>();
         TaskActivity[] activities = task.getActivities();
         for (int i = 0; i < activities.length; i++) {
             GraphicPrimitiveContainer.Rectangle nextRectangle = (GraphicPrimitiveContainer.Rectangle) myTaskRendererImpl
@@ -292,7 +293,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
                 result.add(nextRectangle);
             }
         }
-        return (Rectangle[]) result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
+        return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
     }
 
     java.util.List<Task> getVisibleTasks() {
@@ -342,17 +343,17 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     public GPOptionGroup[] getChartOptionGroups() {
         GPOptionGroup[] superGroups = super.getChartOptionGroups();
         GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
-        List result = new ArrayList();
+        List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
         result.addAll(Arrays.asList(superGroups));
         result.addAll(Arrays.asList(rendererGroups));
         result.add(myDependencyOptions);
         result.add(myDefaultColorOptions);
         result.add(myStateDiffOptions);
-        return (GPOptionGroup[]) result.toArray(new GPOptionGroup[result.size()]);
+        return result.toArray(new GPOptionGroup[result.size()]);
     }
 
 
-    public int setPreviousStateTasks(ArrayList tasks) {
+    public int setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
         if (tasks == null)
             isPreviousState = false;
         else

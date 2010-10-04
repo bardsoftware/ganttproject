@@ -26,7 +26,7 @@ import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 public class StyledPainterImpl implements Painter {
     private Graphics myGraphics;
 
-    private final Map myStyle2painter = new HashMap();
+    private final Map<String,RectanglePainter> myStyle2painter = new HashMap<String, RectanglePainter>();
 
     private final TextLengthCalculatorImpl myTextLengthCalculator;
 
@@ -113,7 +113,7 @@ public class StyledPainterImpl implements Painter {
             throw new RuntimeException("Graphics is null");
         }
         Graphics g = myGraphics;
-        RectanglePainter painter = (RectanglePainter) myStyle2painter.get(next
+        RectanglePainter painter = myStyle2painter.get(next
                 .getStyle());
         if (painter != null) {
             painter.paint(next);

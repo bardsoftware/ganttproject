@@ -404,7 +404,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     /** Return the list of the person */
-    public List getPeople() {
+    public List<ProjectResource> getPeople() {
         return model.getAllResouces();
     }
 

@@ -26,9 +26,9 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
 
     private Set myMarkedTasks = new HashSet();
 
-    private SortedMap myDistance2dependencyList = new TreeMap();
+    private SortedMap<Integer, List> myDistance2dependencyList = new TreeMap<Integer, List>();
 
-    private Set myModifiedTasks = new HashSet();
+    private Set<Task> myModifiedTasks = new HashSet<Task>();
 
     private final AdjustTaskBoundsAlgorithm myAdjuster;
 
@@ -51,7 +51,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         fulfilDependencies();
         myDistance2dependencyList.clear();
         myModifiedTasks.add(changedTask);
-        myAdjuster.run((Task[]) myModifiedTasks.toArray(new Task[0]));
+        myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
         myDistance2dependencyList.clear();
         myModifiedTasks.clear();
         myEntranceCounter--;
@@ -59,21 +59,21 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         isRunning = false;
     }
 
-	public void run(Set taskSet) throws TaskDependencyException {
+	public void run(Set<Task> taskSet) throws TaskDependencyException {
         if (!isEnabled()) {
             return;
         }
         isRunning = true;
         myEntranceCounter++;
         myMarkedTasks.clear();
-        for (Iterator tasks = taskSet.iterator(); tasks.hasNext();) {
-        	Task nextTask = (Task) tasks.next();
+        for (Iterator<Task> tasks = taskSet.iterator(); tasks.hasNext();) {
+        	Task nextTask = tasks.next();
 	        buildDistanceGraph(nextTask);
 	        fulfilDependencies();
 	        myDistance2dependencyList.clear();
 	        myModifiedTasks.add(nextTask);
         }
-        myAdjuster.run((Task[]) myModifiedTasks.toArray(new Task[0]));
+        myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
         myDistance2dependencyList.clear();
         myModifiedTasks.clear();
         myEntranceCounter--;
@@ -89,10 +89,10 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     	myDistance2dependencyList.clear();
         isRunning = true;
         TaskContainmentHierarchyFacade facade = createContainmentFacade();
-        Set independentTasks = new HashSet();
+        Set<Task> independentTasks = new HashSet<Task>();
         traverse(facade, facade.getRootTask(), independentTasks);
-        for (Iterator it = independentTasks.iterator(); it.hasNext();) {
-            Task next = (Task) it.next();
+        for (Iterator<Task> it = independentTasks.iterator(); it.hasNext();) {
+            Task next = it.next();
             buildDistanceGraph(next);
         }
         fulfilDependencies();
@@ -105,7 +105,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     }
 
     private void traverse(TaskContainmentHierarchyFacade facade, Task root,
-            Set independentTasks) {
+            Set<Task> independentTasks) {
         TaskDependency[] asDependant = root.getDependenciesAsDependant()
                 .toArray();
         if (asDependant.length == 0) {
@@ -147,9 +147,9 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         TaskDependency[] depsAsDependant = dependant
                 .getDependenciesAsDependant().toArray();
         if (depsAsDependant.length > 0) {
-            ArrayList startLaterVariations = new ArrayList();
-            ArrayList startEarlierVariations = new ArrayList();
-            ArrayList noVariations = new ArrayList();
+            ArrayList<GanttCalendar> startLaterVariations = new ArrayList<GanttCalendar>();
+            ArrayList<GanttCalendar> startEarlierVariations = new ArrayList<GanttCalendar>();
+            ArrayList<GanttCalendar> noVariations = new ArrayList<GanttCalendar>();
             //
             for (int i = 0; i < depsAsDependant.length; i++) {
                 TaskDependency next = depsAsDependant[i];
@@ -205,7 +205,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
                 }
             }
             if (noVariations.size() > 0) {
-                GanttCalendar notVariableStart = (GanttCalendar) noVariations
+                GanttCalendar notVariableStart = noVariations
                         .get(0);
                 if (notVariableStart.compareTo(earliestStart) < 0
                         || notVariableStart.compareTo(latestStart) > 0) {
@@ -240,9 +240,9 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
             return;
         }
         Integer key = new Integer(distance);
-        List depsList = (List) myDistance2dependencyList.get(key);
+        List<TaskDependency> depsList = myDistance2dependencyList.get(key);
         if (depsList == null) {
-            depsList = new ArrayList();
+            depsList = new ArrayList<TaskDependency>();
             myDistance2dependencyList.put(key, depsList);
         }
         depsList.addAll(Arrays.asList(deps));

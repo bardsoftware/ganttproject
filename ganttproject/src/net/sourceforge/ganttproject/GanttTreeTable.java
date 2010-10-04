@@ -103,7 +103,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      * stores the tableColum associated with there ColumnKeeper. it is used to
      * retore the column at the same index it has been removed.
      */
-    private final Map mapTableColumnColumnKeeper = new LinkedHashMap();
+    private final Map<TableColumnExt, ColumnKeeper> mapTableColumnColumnKeeper = new LinkedHashMap<TableColumnExt, ColumnKeeper>();
 
     /**
      * Menu item to delete columns.
@@ -467,8 +467,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
                             DefaultTableColumnModel o = (DefaultTableColumnModel) e
                                     .getSource();
                             TableColumn tc = o.getColumn(e.getFromIndex());
-                            ColumnKeeper ck = ((ColumnKeeper) mapTableColumnColumnKeeper
-                                    .get(tc));
+                            ColumnKeeper ck = mapTableColumnColumnKeeper
+                                    .get(tc);
                             if (ck != null)
                                 ck.setInitIndex(e.getToIndex());
                             if (Mediator.getGanttProjectSingleton() != null)
@@ -680,9 +680,9 @@ private void createPopupMenu() {
      * Displays all the table columns.
      */
     private void displayAllColumns() {
-        Iterator it = mapTableColumnColumnKeeper.values().iterator();
+        Iterator<ColumnKeeper> it = mapTableColumnColumnKeeper.values().iterator();
         while (it.hasNext()) {
-            ColumnKeeper ck = (ColumnKeeper) it.next();
+            ColumnKeeper ck = it.next();
             if (!ck.isShown)
                 ck.show();
         }
@@ -693,9 +693,9 @@ private void createPopupMenu() {
      * Displays all the table columns.
      */
     private void hideAllColumns() {
-        Iterator it = mapTableColumnColumnKeeper.values().iterator();
+        Iterator<ColumnKeeper> it = mapTableColumnColumnKeeper.values().iterator();
         while (it.hasNext()) {
-            ColumnKeeper ck = (ColumnKeeper) it.next();
+            ColumnKeeper ck = it.next();
             if (ck.isShown)
                 ck.hide();
         }
@@ -720,12 +720,12 @@ private void createPopupMenu() {
             }
         }
 
-        Iterator it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
-            TableColumn c = (TableColumn) it.next();
+            TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = (ColumnKeeper) mapTableColumnColumnKeeper
+                ColumnKeeper ck = mapTableColumnColumnKeeper
                         .get(c);
                 if (indexView != -1)
                     ck.index = indexView;
@@ -741,12 +741,12 @@ private void createPopupMenu() {
     }
 
     private void hideColumn(String name) {
-        Iterator it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
-            TableColumn c = (TableColumn) it.next();
+            TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = (ColumnKeeper) mapTableColumnColumnKeeper
+                ColumnKeeper ck = mapTableColumnColumnKeeper
                         .get(c);
                 if (ck.isShown)
                     ck.hide();
@@ -878,9 +878,9 @@ private void createPopupMenu() {
         ttModel.deleteCustomColumn(name);
 
         // newBB
-        Iterator it2 = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumnExt> it2 = mapTableColumnColumnKeeper.keySet().iterator();
         while (it2.hasNext()) {
-            TableColumn c = (TableColumn) it2.next();
+            TableColumn c = it2.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
                 mapTableColumnColumnKeeper.remove(c);
@@ -903,12 +903,12 @@ private void createPopupMenu() {
         ttModel.renameCustomColumn(name, newName);
 
         // newBB
-        Iterator it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
-            TableColumn c = (TableColumn) it.next();
+            TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = (ColumnKeeper) mapTableColumnColumnKeeper
+                ColumnKeeper ck = mapTableColumnColumnKeeper
                         .get(c);
                 ((TableColumnExt) c).setTitle(newName);
                 break;

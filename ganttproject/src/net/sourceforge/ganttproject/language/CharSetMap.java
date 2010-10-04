@@ -284,9 +284,9 @@ public class CharSetMap
     public synchronized void setCharSet(String key,
                                         String charset)
     {
-        HashMap mapper = (HashMap) mappers[MAP_PROG];
+        HashMap<String, String> mapper = (HashMap<String, String>) mappers[MAP_PROG];
         mapper = mapper != null ?
-            (HashMap) mapper.clone() : new HashMap();
+            (HashMap<String, String>) mapper.clone() : new HashMap();
         mapper.put(key,charset);
         mappers[MAP_PROG] = mapper;
         mappers[MAP_CACHE].clear();
@@ -535,7 +535,7 @@ public class CharSetMap
     protected synchronized void setCommonCharSet(String key,
                                                  String charset)
     {
-        HashMap mapper = (HashMap) ((HashMap) mappers[MAP_COM]).clone();
+        HashMap<String, String> mapper = (HashMap<String, String>) ((HashMap<String, String>) mappers[MAP_COM]).clone();
         mapper.put(key,charset);
         mappers[MAP_COM] = mapper;
         mappers[MAP_CACHE].clear();

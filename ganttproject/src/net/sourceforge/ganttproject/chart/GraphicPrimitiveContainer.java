@@ -17,13 +17,13 @@ import java.util.WeakHashMap;
  * @author bard
  */
 public class GraphicPrimitiveContainer {
-    private ArrayList myRectangles = new ArrayList();
+    private ArrayList<Rectangle> myRectangles = new ArrayList<Rectangle>();
 
-    private ArrayList myLines = new ArrayList();
+    private ArrayList<Line> myLines = new ArrayList<Line>();
 
-    private ArrayList myTexts = new ArrayList();
+    private ArrayList<Text> myTexts = new ArrayList<Text>();
 
-    private Map myModelObject2primitive = new WeakHashMap();
+    private Map<Object, GraphicPrimitive> myModelObject2primitive = new WeakHashMap<Object, GraphicPrimitive>();
 
     private List<GraphicPrimitiveContainer> myLayers = new ArrayList<GraphicPrimitiveContainer>();
 
@@ -260,13 +260,13 @@ public class GraphicPrimitiveContainer {
 
     void paint(Painter painter, Graphics g) {
         for (int i = 0; i < myRectangles.size(); i++) {
-            Rectangle next = (Rectangle) myRectangles.get(i);
+            Rectangle next = myRectangles.get(i);
             if (next.isVisible()) {
                 painter.paint(next);
             }
         }
         for (int i = 0; i < myLines.size(); i++) {
-            Line next = (Line) myLines.get(i);
+            Line next = myLines.get(i);
             Color foreColor = next.getForegroundColor();
             if (foreColor == null) {
                 foreColor = Color.BLACK;
@@ -276,7 +276,7 @@ public class GraphicPrimitiveContainer {
                     next.myFinishY);
         }
         for (int i = 0; i < myTexts.size(); i++) {
-            Text next = (Text) myTexts.get(i);
+            Text next = myTexts.get(i);
             painter.paint(next);
         }
     }
@@ -294,7 +294,7 @@ public class GraphicPrimitiveContainer {
     }
 
     GraphicPrimitive getPrimitive(Object modelObject) {
-        return (GraphicPrimitive) myModelObject2primitive.get(modelObject);
+        return myModelObject2primitive.get(modelObject);
     }
 
     public GraphicPrimitive getPrimitive(int x, int y) {
@@ -313,7 +313,7 @@ public class GraphicPrimitiveContainer {
 
     public GraphicPrimitive getPrimitive(int x, int xThreshold, int y, int yThreshold) {
         for (int i = 0; i < myRectangles.size(); i++) {
-            Rectangle next = (Rectangle) myRectangles.get(i);
+            Rectangle next = myRectangles.get(i);
             // System.err.println(" next rectangle="+next);
             if (next.myLeftX <= x+xThreshold && next.myLeftX + next.myWidth >= x-xThreshold
                     && next.myTopY <= y+yThreshold && next.myTopY + next.myHeight >= y-yThreshold) {
@@ -331,7 +331,7 @@ public class GraphicPrimitiveContainer {
         if (layer < 0 || layer >= myLayers.size()) {
             throw new IllegalArgumentException();
         }
-        return (GraphicPrimitiveContainer) myLayers.get(layer);
+        return myLayers.get(layer);
     }
 
     public GraphicPrimitiveContainer newLayer() {

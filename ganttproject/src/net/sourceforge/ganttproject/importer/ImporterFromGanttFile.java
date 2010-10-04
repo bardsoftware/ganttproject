@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -45,10 +46,12 @@ import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.resource.OverwritingMerger;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
@@ -133,7 +136,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
 
     }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
-        private final List myFields = new ArrayList();
+        private final List<Column> myFields = new ArrayList<Column>();
         public void add(String name, int order, int width) {
             myFields.add(new TaskFieldImpl(name, order, width));
         }
@@ -141,7 +144,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             myFields.clear();
         }
         public Column getField(int index) {
-            return (Column) myFields.get(index);
+            return myFields.get(index);
         }
         public int getSize() {
             return myFields.size();
@@ -211,7 +214,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                 CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
                 targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
             }
-            Map original2ImportedResource =
+            Map<HumanResource, HumanResource> original2ImportedResource =
                 targetProject.getHumanResourceManager().importData(
                         bufferProject.getHumanResourceManager(), new OverwritingMerger(myMergeResourcesOption));
 
@@ -222,7 +225,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
             try {
                 origTaskManager.setEventsEnabled(false);
-                Map original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager());
+                Map<Task, Task> original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager());
                 origTaskManager.importAssignments(
                         bufferProject.getTaskManager(),
                         targetProject.getHumanResourceManager(),

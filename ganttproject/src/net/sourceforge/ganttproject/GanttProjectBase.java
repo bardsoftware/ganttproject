@@ -80,7 +80,7 @@ import org.eclipse.core.runtime.IAdaptable;
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
     private final ViewManagerImpl myViewManager;
-    private final List myModifiedStateChangeListeners = new ArrayList();
+    private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
     private final UIFacadeImpl myUIFacade;
     private final GanttStatusBar statusBar;
     private final TimeUnitStack myTimeUnitStack;
@@ -137,7 +137,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectModified(boolean isModified){
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             try {
                 if (isModified) {
                     next.projectModified();
@@ -154,7 +154,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectClosed() {
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             next.projectClosed();
         }
     }
@@ -238,7 +238,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     private class ViewManagerImpl implements GPViewManager, ProjectEventListener {
         private GanttTabbedPane myTabs;
-        private List myViews = new ArrayList();
+        private List<GPView> myViews = new ArrayList<GPView>();
         private GPViewImpl mySelectedView;
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;

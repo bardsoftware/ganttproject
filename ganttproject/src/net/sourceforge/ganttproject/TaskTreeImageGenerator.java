@@ -36,8 +36,8 @@ class TaskTreeImageGenerator {
         return myTreeView;
     }
 
-    List getPrintableNodes(GanttExportSettings settings) {
-        List myItemsToConsider;
+    List<DefaultMutableTreeNode> getPrintableNodes(GanttExportSettings settings) {
+        List<DefaultMutableTreeNode> myItemsToConsider;
         if (settings.isOnlySelectedItem()) {
             myItemsToConsider = Arrays.asList(getTree().getSelectedNodes());
         }
@@ -47,7 +47,7 @@ class TaskTreeImageGenerator {
         System.out.println("TaskToConsider.size = " + myItemsToConsider.size());
 
         for (int i = 0; i < myItemsToConsider.size(); i++) {
-            if (((DefaultMutableTreeNode) myItemsToConsider.get(i)).isRoot()) {
+            if (myItemsToConsider.get(i).isRoot()) {
                 myItemsToConsider.remove(i);
                 break;
             }
@@ -122,7 +122,7 @@ class TaskTreeImageGenerator {
     static class PaintState {
         int y;
         int rowCount = 0;
-        Stack nestingStack = new Stack();
+        Stack<DefaultMutableTreeNode> nestingStack = new Stack<DefaultMutableTreeNode>();
         int rowHeight;
         int indent;
     }
@@ -144,7 +144,7 @@ class TaskTreeImageGenerator {
             if (!blankline) {
                 next = (Task) nextTreeNode.getUserObject();
                 while (!state.nestingStack.isEmpty()) {
-                    DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) state.nestingStack.pop();
+                    DefaultMutableTreeNode topStackNode = state.nestingStack.pop();
                     if (nextTreeNode.getParent()==topStackNode) {
                         state.nestingStack.push(topStackNode);
                         break;

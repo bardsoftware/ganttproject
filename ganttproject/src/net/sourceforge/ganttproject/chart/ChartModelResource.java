@@ -123,16 +123,16 @@ public class ChartModelResource extends ChartModelBase {
 //    }
 
     public ProjectResource[] getVisibleResources() {
-        return (ProjectResource[]) myManager.getResources().toArray(
+        return myManager.getResources().toArray(
                 new ProjectResource[0]);
     }
 
 
     public GPOptionGroup[] getChartOptionGroups() {
-        List result = new ArrayList();
+        List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
         GPOptionGroup[] superGroups = super.getChartOptionGroups();
         result.add(myColorOptions);
-        return (GPOptionGroup[]) result.toArray(new GPOptionGroup[result.size()]);
+        return result.toArray(new GPOptionGroup[result.size()]);
     }
 
     @Override

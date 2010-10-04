@@ -24,7 +24,7 @@ public class ResourcesTableModel extends AbstractTableModel {
 
     private final ResourceAssignmentCollection myAssignmentCollection;
 
-    private final List myAssignments;
+    private final List<ResourceAssignment> myAssignments;
 
     private static final int MAX_ROW_COUNT = 100;
 
@@ -34,7 +34,7 @@ public class ResourcesTableModel extends AbstractTableModel {
 
     public ResourcesTableModel(ResourceAssignmentCollection assignmentCollection) {
         myAssignmentCollection = assignmentCollection;
-        myAssignments = new ArrayList(Arrays.asList(assignmentCollection
+        myAssignments = new ArrayList<ResourceAssignment>(Arrays.asList(assignmentCollection
                 .getAssignments()));
         myMutator = assignmentCollection.createMutator();
     }
@@ -71,7 +71,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         Object result;
         if (row >= 0) {
             if (row < myAssignments.size()) {
-                ResourceAssignment assignment = (ResourceAssignment) myAssignments
+                ResourceAssignment assignment = myAssignments
                         .get(row);
                 switch (col) {
                 case 0:
@@ -159,7 +159,7 @@ public class ResourcesTableModel extends AbstractTableModel {
     }
 
     private void updateAssignment(Object value, int row, int col) {
-        ResourceAssignment updateTarget = (ResourceAssignment) myAssignments
+        ResourceAssignment updateTarget = myAssignments
                 .get(row);
         switch (col) {
         case 4: {
@@ -219,7 +219,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         }
     }
 
-    public List getResourcesAssignments() {
+    public List<ResourceAssignment> getResourcesAssignments() {
         return myAssignments;
     }
 

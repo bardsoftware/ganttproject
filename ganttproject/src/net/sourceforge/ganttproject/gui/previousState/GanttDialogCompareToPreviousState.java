@@ -14,6 +14,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 
 import net.sourceforge.ganttproject.GanttPreviousState;
+import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.DialogAligner;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
@@ -50,9 +51,9 @@ public class GanttDialogCompareToPreviousState extends JDialog implements
             if (button.getName().equals("ok")) {
                 if (compareToPreviousBean.getSelected() != 0) {
                     try {
-                        ArrayList tasks = ((GanttPreviousState) myProject
+                        ArrayList<GanttPreviousStateTask> tasks = myProject
                                 .getPreviouStates()
-                                .get(compareToPreviousBean.getSelected() - 1))
+                                .get(compareToPreviousBean.getSelected() - 1)
                                 .load();
                         myProject.getArea().setPreviousStateTasks(tasks);
                         myProject.getArea().repaint();

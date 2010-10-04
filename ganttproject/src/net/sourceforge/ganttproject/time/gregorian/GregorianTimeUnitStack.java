@@ -54,7 +54,7 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     private static final TimeUnit ATOM_UNIT;
 
-    private static final HashMap ourUnit2field = new HashMap();
+    private static final HashMap<TimeUnit, Integer> ourUnit2field = new HashMap<TimeUnit, Integer>();
     static {
         SECOND = ourGraph.createAtomTimeUnit("second");
         MINUTE = ourGraph.createDateFrameableTimeUnit("minute", SECOND, 60,

@@ -71,11 +71,11 @@ public class PublicHolidayDialogAction extends AbstractAction {
         });
     }
     
-    private void updateHolidays(List holidays) {
+    private void updateHolidays(List<GanttCalendar> holidays) {
         myProject.getActiveCalendar().getPublicHolidays().clear();
         for (int i = 0; i < holidays.size(); i++) {
             myProject.getActiveCalendar().setPublicHoliDayType(
-                    ((GanttCalendar)holidays.get(i))
+                    holidays.get(i)
                             .getTime());
         }
         

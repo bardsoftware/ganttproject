@@ -7,16 +7,17 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.roles.RoleManager.Listener;
 
 /**
  * @author athomas
  */
 public class RoleManagerImpl implements RoleManager {
-	private final List myListeners = new ArrayList();
+	private final List<Listener> myListeners = new ArrayList<Listener>();
 
     private RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);
 
-    private ArrayList myRoleSets = new ArrayList();
+    private ArrayList<RoleSet> myRoleSets = new ArrayList<RoleSet>();
     
     final private RoleSetImpl SOFTWARE_DEVELOPMENT_ROLE_SET;
     final private RoleSetImpl DEFAULT_ROLE_SET;
@@ -42,7 +43,7 @@ public class RoleManagerImpl implements RoleManager {
     public void clear() {
         myProjectRoleSet = new RoleSetImpl(null, this);
         for (int i = 0; i < myRoleSets.size(); i++) {
-            RoleSet next = (RoleSet) myRoleSets.get(i);
+            RoleSet next = myRoleSets.get(i);
             next.setEnabled(false);
         }
         myProjectRoleSet.setEnabled(true);
@@ -61,7 +62,7 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     public RoleSet[] getRoleSets() {
-        return (RoleSet[]) myRoleSets.toArray(new RoleSet[0]);
+        return myRoleSets.toArray(new RoleSet[0]);
     }
 
     public RoleSet createRoleSet(String name) {
@@ -89,7 +90,7 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     public Role[] getEnabledRoles() {
-        ArrayList result = new ArrayList();
+        ArrayList<Role> result = new ArrayList<Role>();
         RoleSet[] roleSets = getRoleSets();
         for (int i = 0; i < roleSets.length; i++) {
             if (roleSets[i].isEnabled()) {
@@ -97,7 +98,7 @@ public class RoleManagerImpl implements RoleManager {
             }
         }
         result.addAll(Arrays.asList(getProjectRoleSet().getRoles()));
-        return (Role[]) result.toArray(new Role[0]);
+        return result.toArray(new Role[0]);
     }
 
     public Role getDefaultRole() {
@@ -117,9 +118,9 @@ public class RoleManagerImpl implements RoleManager {
     public void importData(RoleManager original) {
         myProjectRoleSet.importData(original.getProjectRoleSet());
         RoleSet[] originalRoleSets = original.getRoleSets();
-        HashSet thisNames = new HashSet();
+        HashSet<String> thisNames = new HashSet<String>();
         for (int i = 0; i < myRoleSets.size(); i++) {
-            RoleSet next = (RoleSet) myRoleSets.get(i);
+            RoleSet next = myRoleSets.get(i);
             thisNames.add(next.getName());
         }
         for (int i = 0; i < originalRoleSets.length; i++) {
@@ -143,7 +144,7 @@ public class RoleManagerImpl implements RoleManager {
 	void fireRolesChanged(RoleSet changedRoleSet) {
 		RoleEvent event = new RoleEvent(this, changedRoleSet);
 		for (int i=0; i<myListeners.size(); i++) {
-			Listener next = (Listener) myListeners.get(i);
+			Listener next = myListeners.get(i);
 			next.rolesChanged(event);
 		}
 	}

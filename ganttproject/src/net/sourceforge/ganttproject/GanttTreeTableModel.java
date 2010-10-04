@@ -63,12 +63,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     public static String strColID = null;
 
     /** The columns titles */
-    public List titles = null;
+    public List<String> titles = null;
 
     /**
      * Custom columns list.
      */
-    private Vector customColumns = null;
+    private Vector<String> customColumns = null;
 
     /**
      * Number of columns (presently in the model)
@@ -91,8 +91,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      */
     public GanttTreeTableModel(TreeNode root, CustomPropertyManager customColumnsManager) {
         super(root);
-        titles = new ArrayList();
-        customColumns = new Vector();
+        titles = new ArrayList<String>();
+        customColumns = new Vector<String>();
         changeLanguage(language);
         myCustomColumnsManager = customColumnsManager;
     }
@@ -235,12 +235,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     public String getColumnName(int column) {
         if (column < titles.size())
-            return (String) titles.get(column);
+            return titles.get(column);
 
         try {
-            return (String) customColumns.get(column - titles.size());
+            return customColumns.get(column - titles.size());
         } catch (IndexOutOfBoundsException e) {
-            return (String) customColumns.get(column - titles.size() - 1);
+            return customColumns.get(column - titles.size() - 1);
         }
 
     }
@@ -493,7 +493,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         TaskNode r = (TaskNode) root;
         Enumeration e = r.children();
 
-        Vector v = new Vector();
+        Vector<TaskNode> v = new Vector<TaskNode>();
         while (e.hasMoreElements())
             v.add((TaskNode) e.nextElement());
         Task[] res = new Task[v.size()];
@@ -534,7 +534,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      * @return The corresponding task node according to the given task.
      */
     public TaskNode getTaskNodeForTask(Task task) {
-        Enumeration enumeration = ((TaskNode) getRoot()).preorderEnumeration();
+        Enumeration<TreeNode> enumeration = ((TaskNode) getRoot()).preorderEnumeration();
         while (enumeration.hasMoreElements()) {
             Object next = enumeration.nextElement();
             if (!(next instanceof TaskNode))

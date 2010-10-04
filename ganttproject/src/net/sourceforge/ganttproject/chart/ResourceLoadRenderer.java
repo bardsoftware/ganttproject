@@ -157,7 +157,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
         List<Offset> offsets = getDefaultOffsets();
         Iterator<Load> loads = partition.iterator();
         while (loads.hasNext()) {
-            final Load nextLoad = (Load) loads.next();
+            final Load nextLoad = loads.next();
             final Date nextStart = nextLoad.startDate;
             final Date nextEnd = nextLoad.endDate;
 
