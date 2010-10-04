@@ -64,10 +64,7 @@ import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 public class ResourceLoadGraphicArea extends ChartComponentBase implements
         ResourceChart {
 
-    private static final int HEADER_OFFSET = 44;
-
-    /** This value is connected to the GanttTRee Scrollbar to move up or down */
-    private int margY;
+    private static final int HEADER_OFFSET = 47;
 
     /* Render the ganttproject version */
     private boolean drawVersion = false;
@@ -89,7 +86,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         myChartImplementation = new ResourcechartImplementation(app.getProject(), myChartModel, this);
         myViewState = new ChartViewState(this, app.getUIFacade());
         super.setStartDate(GregorianCalendar.getInstance().getTime());
-        margY = 0;
         appli = app;
         //myTableHeader = app.getResourcePanel().table.getTableHeader();
     }
@@ -125,7 +121,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     /** Change the velue connected to the JTree's Scrollbar */
     public void setScrollBar(int v) {
-        margY = v;
         getChartModel().getChartUIConfiguration().setYOffSet(v);
     }
 

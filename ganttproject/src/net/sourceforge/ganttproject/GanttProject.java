@@ -2304,11 +2304,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public int getResourceDividerLocation() {
-        return getResourcePanel().getDividerLocation();
+        return myResourceChartTabContent.getDividerLocation();
+//        return getResourcePanel().getDividerLocation();
     }
 
     public void setResourceDividerLocation(int location) {
-        getResourcePanel().setDividerLocation(location);
+        myResourceChartTabContent.setDividerLocation(location);
     }
 
     public TaskTreeUIFacade getTaskTree() {
