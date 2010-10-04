@@ -33,6 +33,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
             ResourceChart resourceChart) {
         super(model);
         myResourcechart = resourceChart;
+        getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight());
     }
 
     /**

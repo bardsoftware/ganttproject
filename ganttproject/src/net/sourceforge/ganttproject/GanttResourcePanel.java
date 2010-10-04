@@ -16,10 +16,7 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -31,16 +28,12 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -80,22 +73,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private GanttLanguage lang = GanttLanguage.getInstance();
 
-    private JScrollBar vbar;
-
     private ResourceActionSet myResourceActionSet;
 
     public ResourceLoadGraphicArea area;
 
     private JScrollPane scrollpane;
 
-    private JPanel left;
-
-    private JPanel myImagePanel;
-
     private final ResourceContext myContext = (ResourceContext) this;
-
-    private JSplitPane mySplitPane = null;
-
     private ProjectResource [] clipboard = null;
     private boolean isCut = false;
 
@@ -163,7 +147,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     private final DeleteAssignmentAction myDeleteAssignmentAction;
 
     public GanttResourcePanel(final GanttProject prj, GanttTree2 tree, UIFacade uiFacade) {
-        super();
+        super(new BorderLayout());
         myUIFacade = uiFacade;
         myDeleteAssignmentAction = new DeleteAssignmentAction(
                 prj.getProject().getHumanResourceManager(),
@@ -173,55 +157,17 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager());
         table = new ResourceTreeTable(appli.getProject(), model);
-
-        setLayout(new BorderLayout());
-
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 42);
-        myImagePanel = but;
-        left = new JPanel(new BorderLayout());
         table.setRowHeight(20);
-        left.add(but, "North");
-        left.setBackground(new Color(102, 153, 153));
+        table.setBackground(new Color(1.0f, 1.0f, 1.0f));
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         scrollpane = new JScrollPane();
-        setLayout(new BorderLayout());
         add(scrollpane, BorderLayout.CENTER);
         scrollpane.getViewport().add(table);
-        scrollpane
-                .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-
-        vbar = table.getVerticalScrollBar();
-        final JPanel jp = new JPanel(new BorderLayout());
-        jp.add(vbar, BorderLayout.CENTER);
-        // jp.setBorder(BorderFactory.createEmptyBorder(2,1,2,0));
-        // jp.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        jp.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        jp.setVisible(false);
-        vbar.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                if (table.getSize().getHeight() - 20 < e.getAdjustable()
-                        .getMaximum())
-                    jp.setVisible(true);
-                else
-                    jp.setVisible(false);
-                repaint();
-            }
-        });
-        left.add(jp, BorderLayout.WEST);
-
-        vbar.addAdjustmentListener(new GanttAdjustmentListener());
-
-        left.add(scrollpane, "Center");
-
-        // A splitpane is use
-        mySplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        scrollpane.getViewport().setBackground(new Color(1.0f, 1.0f, 1.0f));
 
         area = new ResourceLoadGraphicArea(prj, prj
                 .getZoomManager()) {
-            protected int getHeaderHeight() {
-                return myImagePanel.getHeight()
-                        + table.getTable().getTableHeader().getHeight();
-            }
 
             public boolean isExpanded(ProjectResource pr) {
                 return getResourceTreeTable().isExpanded(pr);
@@ -233,25 +179,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         };
         prj.getZoomManager().addZoomListener(area.getZoomListener());
         area.getChartModel().setRowHeight(table.getRowHeight());
-        if (lang.getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
-            mySplitPane.setLeftComponent(left);
-            mySplitPane.setRightComponent(area);
-        } else {
-            mySplitPane.setRightComponent(left);
-            mySplitPane.setLeftComponent(area);
-            mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit()
-                    .getScreenSize().getWidth() - left.getPreferredSize()
-                    .getWidth()));
-
-        }
-        mySplitPane.setOneTouchExpandable(true);
-        mySplitPane.setPreferredSize(new Dimension(800, 500));
-
-        add(mySplitPane, BorderLayout.CENTER);
-        scrollpane.getViewport().setBackground(new Color(1.0f, 1.0f, 1.0f));
-        left.setBackground(new Color(1.0f, 1.0f, 1.0f));
-        table.setBackground(new Color(1.0f, 1.0f, 1.0f));
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
         applyComponentOrientation(lang.getComponentOrientation());
@@ -338,10 +265,10 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
-        final int x = popupTriggerEvent.getX() - scrollpane.getHorizontalScrollBar().getValue()
-        + (vbar.isVisible() ? vbar.getWidth() : 0);
-        final int y = popupTriggerEvent.getY() + table.getRowHeight() +
-        + myImagePanel.getHeight();
+        final int x = popupTriggerEvent.getX() - scrollpane.getHorizontalScrollBar().getValue()/*
+        + (vbar.isVisible() ? vbar.getWidth() : 0)*/;
+        final int y = popupTriggerEvent.getY() + table.getRowHeight()/* +
+        + myImagePanel.getHeight()*/;
         return new Point(x,y);
     }
     /* Create the popup menu */
@@ -525,13 +452,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         return res;
     }
 
-    public void setDividerLocation(int location) {
-        mySplitPane.setDividerLocation(location);
-    }
-
-    public int getDividerLocation() {
-        return mySplitPane.getDividerLocation();
-    }
+//    public void setDividerLocation(int location) {
+//        mySplitPane.setDividerLocation(location);
+//    }
+//
+//    public int getDividerLocation() {
+//        return mySplitPane.getDividerLocation();
+//    }
 
     public void projectModified() {
         // TODO Auto-generated method stub
