@@ -101,7 +101,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     protected int getRowHeight() {
-        return 20;
+        return appli.getResourcePanel().table.getRowHeight();
     }
 
     public void drawGPVersion(Graphics g) {

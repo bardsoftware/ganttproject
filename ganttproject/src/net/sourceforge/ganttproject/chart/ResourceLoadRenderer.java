@@ -33,7 +33,6 @@ class ResourceLoadRenderer extends ChartRendererBase {
             ResourceChart resourceChart) {
         super(model);
         myResourcechart = resourceChart;
-        getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight());
     }
 
     /**
@@ -41,6 +40,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * If some resource is expanded, calls rendering of the load details
      */
     public void render() {
+       getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight());
        beforeProcessingTimeFrames();
        int ypos = 0 - getConfig().getYOffSet();
        for (int i=0; i<myDistributions.size(); i++) {
