@@ -1,8 +1,20 @@
-/*
- * This code is provided under the terms of GPL version 2.
- * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
- */
+/* LICENSE: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
@@ -227,43 +239,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         }
     }
 
-    private int findOffset(Date date, int start, int end, List<Offset> offsets) {
-        for (int compare = date.compareTo(offsets.get(start).getOffsetEnd()); compare != 0; compare = date.compareTo(offsets.get(start).getOffsetEnd())) {
-            if (end == start) {
-                if (start!=0 && end!=offsets.size()-1) {
-                    throw new IllegalStateException("end="+end+" start="+start+" date="+date+" offset="+offsets.get(start)+" #offsets="+offsets.size());
-                }
-                break;
-            }
-            if (end < start) {
-                throw new IllegalStateException("end="+end+" start="+start+" date="+date+" offset="+offsets.get(start));
-            }
-            int diff = end - start;
-            if (compare == 1) {
-                start += diff == 1 ? 1 : diff/2;
-            }
-            else {
-                end = start;
-                start -= diff == 1 ? 1 : diff/2;
-            }
-        }
-        return start;
-    }
-
     private java.awt.Rectangle getBoundingRectangle(int rowNum, TaskActivity activity, List<Offset> offsets) {
-        int end = offsets.size()-1;
-        int start = 0;
-
-        if (activity.getStart().compareTo(offsets.get(start).getOffsetEnd()) > 0) {
-            start = findOffset(activity.getStart(), start, end, offsets);
-        }
-        int leftX = offsets.get(start).getOffsetPixels();
-
-        end = offsets.size()-1;
-        if (activity.getEnd().compareTo(offsets.get(end).getOffsetEnd()) < 0) {
-            end = findOffset(activity.getEnd(), 0, end, offsets);
-        }
-        int rightX = offsets.get(end).getOffsetPixels();
+    	OffsetLookup offsetLookup = new OffsetLookup();
+    	int[] bounds = offsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
+    	int leftX = bounds[0];
+    	int rightX = bounds[1];
         if (activity.getTask().isMilestone()) {
             rightX += 10;
         }
