@@ -30,12 +30,12 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 
 public class OverwritingMerger implements HumanResourceMerger {
     private final EnumerationOption myMergeOption;
-    private final Map/*<String,HumanResource>*/ myCache = new HashMap();
+    private final Map/*<String,HumanResource>*/<String, HumanResource> myCache = new HashMap<String, HumanResource>();
 
     public OverwritingMerger(EnumerationOption mergeOption) {
         myMergeOption = mergeOption;
     }
-    public void merge(Map foreign2native) {
+    public void merge(Map<HumanResource, HumanResource> foreign2native) {
         for (Iterator entries = foreign2native.entrySet().iterator(); entries.hasNext();) {
             Map.Entry entry = (Entry) entries.next();
             merge((HumanResource)entry.getKey(), (HumanResource)entry.getValue());
@@ -53,9 +53,9 @@ public class OverwritingMerger implements HumanResourceMerger {
         mergeTo.setMail(mergeFrom.getMail());
         mergeTo.setPhone(mergeFrom.getPhone());
         mergeTo.setRole(mergeFrom.getRole());
-        List/*<CustomProperty>*/ customProperties = mergeFrom.getCustomProperties();
+        List<CustomProperty>  customProperties = mergeFrom.getCustomProperties();
         for (int i=0; i<customProperties.size(); i++) {
-            CustomProperty nextProperty = (CustomProperty) customProperties.get(i);
+            CustomProperty nextProperty = customProperties.get(i);
             mergeTo.addCustomProperty(nextProperty.getDefinition(), nextProperty.getValueAsString());
         }
     }
@@ -70,26 +70,26 @@ public class OverwritingMerger implements HumanResourceMerger {
             if (myCache.isEmpty()) {
                 buildEmailCache(nativeMgr);
             }
-            return (HumanResource) myCache.get(foreign.getMail());
+            return myCache.get(foreign.getMail());
         }
         if (MergeResourcesOption.BY_NAME.equals(myMergeOption.getValue())) {
             if (myCache.isEmpty()) {
                 buildNameCache(nativeMgr);
             }
-            return (HumanResource) myCache.get(foreign.getName());
+            return myCache.get(foreign.getName());
         }
         assert false : "We should not be here. Option ID=" + myMergeOption.getValue();
         return null;
     }
     private void buildNameCache(HumanResourceManager nativeMgr) {
-        List resources = nativeMgr.getResources();
+        List<ProjectResource> resources = nativeMgr.getResources();
         for (int i=0; i<resources.size(); i++) {
             HumanResource hr = (HumanResource) resources.get(i);
             myCache.put(hr.getName(), hr);
         }
     }
     private void buildEmailCache(HumanResourceManager nativeMgr) {
-        List resources = nativeMgr.getResources();
+        List<ProjectResource> resources = nativeMgr.getResources();
         for (int i=0; i<resources.size(); i++) {
             HumanResource hr = (HumanResource) resources.get(i);
             myCache.put(hr.getMail(), hr);

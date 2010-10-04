@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ErrorNotifier implements Runnable {
-	private final List myErrors = new ArrayList();
+	private final List<String> myErrors = new ArrayList<String>();
 	private final UIFacadeImpl myUIFacade;
 
 	ErrorNotifier(UIFacadeImpl uiFacade) {

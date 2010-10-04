@@ -22,16 +22,16 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 class TaskContainmentHierarchyFacadeImpl implements
         TaskContainmentHierarchyFacade {
-    private Map myTask2treeNode = new HashMap();
-    private Map myTask2index = new LinkedHashMap();
+    private Map<Task, DefaultMutableTreeNode> myTask2treeNode = new HashMap<Task, DefaultMutableTreeNode>();
+    private Map<Task, Integer> myTask2index = new LinkedHashMap<Task, Integer>();
     private Task myRootTask;
 
-    private List myPathBuffer = new ArrayList();
+    private List<Task> myPathBuffer = new ArrayList<Task>();
 
     private GanttTree2 myTree;
 
     public TaskContainmentHierarchyFacadeImpl(GanttTree2 tree) {
-        ArrayList/*<DefaultMutableTreeNode>*/ allTasks = tree.getAllTasks();
+        ArrayList/*<DefaultMutableTreeNode>*/<Object> allTasks = tree.getAllTasks();
         // comboBox.addItem("no set");
         // for (int i = 0; i < allTasks.size(); i++) {
         // DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)
@@ -50,7 +50,7 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public Task[] getNestedTasks(Task container) {
         Task[] result = null;
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(container);
         if (treeNode != null) {
             ArrayList list = new ArrayList();
@@ -69,9 +69,9 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public Task[] getDeepNestedTasks(Task container) {
         ArrayList result = new ArrayList();
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode.get(container);
+        DefaultMutableTreeNode treeNode = myTask2treeNode.get(container);
         if (treeNode != null) {
-            for (Enumeration subtree = treeNode.preorderEnumeration(); subtree.hasMoreElements();) {
+            for (Enumeration<TreeNode> subtree = treeNode.preorderEnumeration(); subtree.hasMoreElements();) {
                 DefaultMutableTreeNode curNode = (DefaultMutableTreeNode) subtree.nextElement();
                 assert curNode.getUserObject() instanceof Task;
                 result.add(curNode.getUserObject());
@@ -92,7 +92,7 @@ class TaskContainmentHierarchyFacadeImpl implements
      *            The Task on which to check for children.
      */
     public boolean hasNestedTasks(Task container) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(container);
         if (treeNode != null) {
             if (treeNode.children().hasMoreElements()) {
@@ -107,7 +107,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public Task getContainer(Task nestedTask) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(nestedTask);
         if (treeNode == null) {
             return null;
@@ -137,9 +137,9 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public void move(Task whatMove, Task whereMove) {
-        DefaultMutableTreeNode targetNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode targetNode = myTask2treeNode
                 .get(whereMove);
-        DefaultMutableTreeNode movedNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode movedNode = myTask2treeNode
                 .get(whatMove);
         if (movedNode != null) {
             TreePath movedPath = new TreePath(movedNode.getPath());
@@ -172,7 +172,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public int getDepth(Task task) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(task);
         return treeNode.getLevel();
     }
@@ -182,8 +182,8 @@ class TaskContainmentHierarchyFacadeImpl implements
 //        DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) myTask2treeNode.get(task2);
 //        int row1 = myTree.getJTree().getRowForPath(new TreePath(node1.getPath()));
 //        int row2 = myTree.getJTree().getRowForPath(new TreePath(node2.getPath()));
-        Integer index1 = (Integer) myTask2index.get(task1);
-        Integer index2 = (Integer) myTask2index.get(task2);
+        Integer index1 = myTask2index.get(task1);
+        Integer index2 = myTask2index.get(task2);
         return index1.intValue() - index2.intValue();
     }
 
@@ -193,7 +193,7 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public List<Task> getTasksInDocumentOrder() {
         List<Task> result = new ArrayList<Task>();
-        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) myTask2treeNode.get(getRootTask());
+        DefaultMutableTreeNode rootNode = myTask2treeNode.get(getRootTask());
         Enumeration<TreeNode> nodes = rootNode.preorderEnumeration();
         if (nodes.hasMoreElements()) {
             nodes.nextElement();

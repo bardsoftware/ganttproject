@@ -461,7 +461,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     protected void fireOptionsChanged() {
         for (int i = 0; i < myOptionListeners.size(); i++) {
-            GPOptionChangeListener next = (GPOptionChangeListener) myOptionListeners
+            GPOptionChangeListener next = myOptionListeners
                     .get(i);
             next.optionsChanged();
         }

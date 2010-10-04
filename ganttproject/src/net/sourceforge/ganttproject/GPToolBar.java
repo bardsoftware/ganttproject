@@ -23,7 +23,7 @@ public class GPToolBar extends JToolBar {
     };
     
     private final GanttOptions options;
-    private List myButtons;
+    private List<Object> myButtons;
     
     public GPToolBar(String title, int toolBarPosition, GanttOptions options) {
         super(title, toolBarPosition);
@@ -33,9 +33,9 @@ public class GPToolBar extends JToolBar {
         this.options = options;
     }
     
-    void populate(List/*<JButton>*/ buttons) {
+    void populate(List/*<JButton>*/<Object> buttons) {
         removeAll();
-        myButtons = new ArrayList(buttons.size());
+        myButtons = new ArrayList<Object>(buttons.size());
         for (int i = 0; i < buttons.size(); i++) {
             Object nextButton = buttons.get(i);
             if (GPToolBar.SEPARATOR_OBJECT.equals(nextButton)) {

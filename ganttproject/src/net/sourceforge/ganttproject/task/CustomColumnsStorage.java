@@ -33,7 +33,7 @@ public class CustomColumnsStorage {
      * Column name (String) -> CustomColumn
      */
     // private Map customColumns = null;
-    private final Map mapIdCustomColum = new HashMap();
+    private final Map<String, CustomPropertyDefinition> mapIdCustomColum = new HashMap<String, CustomPropertyDefinition>();
 
     /**
      * Creates an instance of CustomColumnsStorage.
@@ -125,13 +125,13 @@ public class CustomColumnsStorage {
      * @return A collection containing the names of all the stored custom
      *         columns.
      */
-    public List getCustomColumnsNames() {
+    public List<String> getCustomColumnsNames() {
         // return customColumns.keySet();
         // -----
-        List c = new ArrayList();
-        Iterator it = mapIdCustomColum.keySet().iterator();
+        List<String> c = new ArrayList<String>();
+        Iterator<String> it = mapIdCustomColum.keySet().iterator();
         while (it.hasNext()) {
-            String id = (String) it.next();
+            String id = it.next();
             c.add(((CustomColumn) mapIdCustomColum.get(id)).getName());
         }
         return c;
@@ -142,7 +142,7 @@ public class CustomColumnsStorage {
      *
      * @return A collection with all the stored custom columns.
      */
-    public Collection getCustomColums() {
+    public Collection<CustomPropertyDefinition> getCustomColums() {
         // return customColumns.values();
         return mapIdCustomColum.values();
     }
@@ -246,7 +246,7 @@ public class CustomColumnsStorage {
 
     public String getIdFromName(String name) {
         String id = null;
-        Iterator it = mapIdCustomColum.values().iterator();
+        Iterator<CustomPropertyDefinition> it = mapIdCustomColum.values().iterator();
         while (it.hasNext()) {
             CustomColumn cc = (CustomColumn) it.next();
             if (cc.getName().equals(name)) {
@@ -270,7 +270,7 @@ public class CustomColumnsStorage {
      *            The task to process.
      */
     public void processNewTask(Task task) {
-        Iterator it = mapIdCustomColum.values().iterator();
+        Iterator<CustomPropertyDefinition> it = mapIdCustomColum.values().iterator();
         while (it.hasNext()) {
             CustomColumn cc = (CustomColumn) it.next();
             try {
@@ -292,7 +292,7 @@ public class CustomColumnsStorage {
     }
 
     public void importData(CustomColumnsStorage source) {
-        for (Iterator columns = source.getCustomColums().iterator();
+        for (Iterator<CustomPropertyDefinition> columns = source.getCustomColums().iterator();
              columns.hasNext();) {
             CustomColumn nextColumn = (CustomColumn) columns.next();
             if (!exists(nextColumn.getName())) {
@@ -306,9 +306,9 @@ public class CustomColumnsStorage {
     }
 
     private void fireCustomColumnsChange(CustomPropertyEvent event) {
-        Iterator it = myListeners.iterator();
+        Iterator<CustomPropertyListener> it = myListeners.iterator();
         while (it.hasNext()) {
-            CustomPropertyListener listener = (CustomPropertyListener) it.next();
+            CustomPropertyListener listener = it.next();
             listener.customPropertyChange(event);
         }
     }

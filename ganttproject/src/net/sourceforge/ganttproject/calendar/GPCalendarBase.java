@@ -42,10 +42,10 @@ abstract class GPCalendarBase {
                 -unitCount);
     }
 
-    protected abstract List getActivitiesBackward(Date startDate,
+    protected abstract List<CalendarActivityImpl> getActivitiesBackward(Date startDate,
             TimeUnit timeUnit, long l);
 
-    protected abstract List getActivitiesForward(Date startDate,
+    protected abstract List<GPCalendarActivity> getActivitiesForward(Date startDate,
             TimeUnit timeUnit, long l);
 
     public List/* <GPCalendarActivity> */getActivities(Date startingFrom,

@@ -37,9 +37,9 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     private int myWeekendDaysCount;
 
-    private Set publicHolidaysArray = new LinkedHashSet();
+    private Set<Date> publicHolidaysArray = new LinkedHashSet<Date>();
 
-    private final Set myStableHolidays = new LinkedHashSet();
+    private final Set<Date> myStableHolidays = new LinkedHashSet<Date>();
 
     private AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
@@ -51,12 +51,12 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
     }
 
-    public List/* <GPCalendarActivity> */getActivities(Date startDate,
+    public List/* <GPCalendarActivity> */<CalendarActivityImpl> getActivities(Date startDate,
             final Date endDate) {
         if (getWeekendDaysCount() == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
             return myRestlessCalendar.getActivities(startDate, endDate);
         }
-        List result = new ArrayList();
+        List<CalendarActivityImpl> result = new ArrayList<CalendarActivityImpl>();
         Date curDayStart = myFramer.adjustLeft(startDate);
         boolean isWeekendState = isNonWorkingDay(curDayStart);
         // System.err.println("getActivities(): start="+startDate+"
@@ -112,7 +112,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
                 changeToWeekend ? DayType.NON_WORKING : DayType.WORKING);
     }
 
-    protected List getActivitiesForward(Date startDate, TimeUnit timeUnit,
+    protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
             final long unitCount) {
         final List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
         new ForwardTimeWalker(this, timeUnit) {
@@ -134,9 +134,9 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return result;
     }
 
-    protected List getActivitiesBackward(Date startDate, TimeUnit timeUnit,
+    protected List<CalendarActivityImpl> getActivitiesBackward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
-        List result = new LinkedList();
+        List<CalendarActivityImpl> result = new LinkedList<CalendarActivityImpl>();
         Date unitStart = timeUnit.adjustLeft(startDate);
         while (unitCount > 0) {
             Date prevUnitStart = timeUnit.jumpLeft(unitStart);
@@ -247,7 +247,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     }
 
-    public Collection getPublicHolidays() {
+    public Collection<Date> getPublicHolidays() {
         return publicHolidaysArray;
     }
 

@@ -10,6 +10,7 @@ import net.sourceforge.ganttproject.gui.GanttDialogProperties;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class TaskPropertiesAction extends TaskActionBase {
@@ -27,11 +28,11 @@ public class TaskPropertiesAction extends TaskActionBase {
 		myRoleManager = project.getRoleManager();
 	}
 
-	protected boolean isEnabled(List selection) {
+	protected boolean isEnabled(List<Task> selection) {
 		return selection.size()==1;
 	}
 
-	protected void run(List/*<Task>*/ selection) throws Exception {
+	protected void run(List/*<Task>*/<Task> selection) throws Exception {
         if (selection.size()!=1) {
             return;
         }

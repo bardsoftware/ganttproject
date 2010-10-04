@@ -35,13 +35,13 @@ public class XMLCalendarOpen {
 
     //private File myCalendarFiles[];
 
-    private List myCalendarResources = new ArrayList();
+    private List<URL> myCalendarResources = new ArrayList<URL>();
     private String myCalendarLabels[];
 
     /** The main frame */
-    private ArrayList myTagHandlers = new ArrayList();
+    private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
     boolean load(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
         // Use an instance of ourselves as the SAX event handler
@@ -107,7 +107,7 @@ public class XMLCalendarOpen {
 
         public void endDocument() throws SAXException {
             for (int i = 0; i < myListeners.size(); i++) {
-                ParsingListener l = (ParsingListener) myListeners.get(i);
+                ParsingListener l = myListeners.get(i);
                 l.parsingFinished();
             }
         }
@@ -116,9 +116,9 @@ public class XMLCalendarOpen {
                 // name
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 try {
                     next.startElement(namespaceURI, sName, qName, attrs);
                 } catch (FileFormatException e) {
@@ -129,9 +129,9 @@ public class XMLCalendarOpen {
 
         public void endElement(String namespaceURI, String sName, String qName)
                 throws SAXException {
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 next.endElement(namespaceURI, sName, qName);
             }
         }
@@ -170,7 +170,7 @@ public class XMLCalendarOpen {
     }
 
     public URL[] getCalendarResources() {
-        return (URL[]) myCalendarResources.toArray(new URL[0]);
+        return myCalendarResources.toArray(new URL[0]);
     }
 
     public String[] getLabels() {

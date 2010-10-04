@@ -43,7 +43,7 @@ public class ZoomManager {
 
     private int myZooming = 2;
 
-    private List myListeners = new ArrayList();
+    private List<ZoomListener> myListeners = new ArrayList<ZoomListener>();
 
     private TimeUnitStack myTimeUnitStack;
 
@@ -100,7 +100,7 @@ public class ZoomManager {
     private void fireZoomingChanged(int oldZoomValue, int newZoomValue) {
         ZoomEvent e = new ZoomEvent(this, myZoomStates[newZoomValue]);
         for (int i = 0; i < myListeners.size(); i++) {
-            ZoomListener nextListener = (ZoomListener) myListeners.get(i);
+            ZoomListener nextListener = myListeners.get(i);
             nextListener.zoomChanged(e);
         }
     }

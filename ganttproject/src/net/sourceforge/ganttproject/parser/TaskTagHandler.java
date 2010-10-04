@@ -186,7 +186,7 @@ public class TaskTagHandler implements TagHandler {
                 .getTaskHierarchy();
         myContext.setTaskID(task.getTaskID());
         Task lastTask = myStack.isEmpty() ? taskHierarchy.getRootTask()
-                : (Task) myStack.peek();
+                : myStack.peek();
         taskHierarchy.move(task, lastTask);
         myStack.push(task);
     }
@@ -199,5 +199,5 @@ public class TaskTagHandler implements TagHandler {
 
     private final TaskManager myManager;
 
-    private final Stack myStack = new Stack();
+    private final Stack<GanttTask> myStack = new Stack<GanttTask>();
 }

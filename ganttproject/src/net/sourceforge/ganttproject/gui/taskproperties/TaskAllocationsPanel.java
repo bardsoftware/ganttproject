@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.ResourcesTableModel;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
@@ -140,7 +141,7 @@ public class TaskAllocationsPanel extends CommonPanel {
     }
 
     private void setUpResourcesComboColumn(final JTable resourceTable) {
-        List resources = myHRManager.getResources();
+        List<ProjectResource> resources = myHRManager.getResources();
         final JComboBox comboBox = new JComboBox();
         for (int i = 0; i < resources.size(); i++) {
             comboBox.addItem(resources.get(i));

@@ -226,7 +226,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public boolean isOnlyViewer;
 
     /** The list of all managers installed in this project */
-    private Hashtable managerHash = new Hashtable();
+    private Hashtable<String, Object> managerHash = new Hashtable<String, Object>();
 
     private ResourceActionSet myResourceActions;
 
@@ -269,9 +269,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
 
-    private List myRolloverActions = new ArrayList();
+    private List<Action> myRolloverActions = new ArrayList<Action>();
 
-    private ArrayList myPreviousStates = new ArrayList();
+    private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
     private MouseListener myStopEditingMouseListener = null;
 
@@ -799,10 +799,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private void updateMenuMRU() {
         mMRU.removeAll();
         int index = 0;
-        Iterator iterator = documentsMRU.iterator();
+        Iterator<Document> iterator = documentsMRU.iterator();
         while (iterator.hasNext()) {
             index++;
-            Document document = (Document) iterator.next();
+            Document document = iterator.next();
             JMenuItem mi = new JMenuItem(new OpenDocumentAction(index,
                     document, this));
             mMRU.add(mi);
@@ -1385,11 +1385,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     }
 
-    public ArrayList getPreviouStates() {
+    public ArrayList<GanttPreviousState> getPreviouStates() {
         return myPreviousStates;
     }
 
-    public List getBaselines() {
+    public List<GanttPreviousState> getBaselines() {
         return getPreviouStates();
     }
 
@@ -1614,7 +1614,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         if (choice==Choice.YES) {
             getUndoManager().undoableEdit("Task removed", new Runnable() {
                 public void run() {
-                    ArrayList fathers = new ArrayList();
+                    ArrayList<DefaultMutableTreeNode> fathers = new ArrayList<DefaultMutableTreeNode>();
                     tree.stopEditing();
                     for (int i = 0; i < cdmtn.length; i++) {
                         if (cdmtn[i] != null && cdmtn[i] instanceof TaskNode) {
@@ -1645,7 +1645,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                     }
                     for (int i = 0; i < fathers.size(); i++) {
-                        DefaultMutableTreeNode father = (DefaultMutableTreeNode) fathers
+                        DefaultMutableTreeNode father = fathers
                                 .get(i);
                         if (father.getChildCount() == 0)
                             ((Task) father.getUserObject())
@@ -2049,7 +2049,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
-        HashMap parsedArgs = new HashMap();
+        HashMap<String, List> parsedArgs = new HashMap<String, List>();
         String argName = "";
         for (int i=0; i<arg.length; i++) {
             String nextWord = arg[i];
@@ -2059,9 +2059,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
                 argName = nextWord.toLowerCase();
             } else {
-                List values = (List) parsedArgs.get(argName);
+                List<String> values = parsedArgs.get(argName);
                 if (values==null || values==Collections.EMPTY_LIST) {
-                    values = new ArrayList();
+                    values = new ArrayList<String>();
                     parsedArgs.put(argName, values);
                 }
                 values.add(nextWord);
@@ -2079,7 +2079,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
         if (parsedArgs.containsKey("-log")) {
             try {
-                List values = (List) parsedArgs.get("-log");
+                List values = parsedArgs.get("-log");
                 String logFileName = values.isEmpty() ?
                         System.getProperty("user.home") +"/.ganttproject.log" :
                         String.valueOf(values.get(0));
@@ -2101,10 +2101,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 System.err.println("Main frame created");
                 String startupDocument = null;
                 if (parsedArgs.containsKey("")) {
-                   List values = (List) parsedArgs.get("");
+                   List values = parsedArgs.get("");
                    startupDocument = (String) values.get(0);
                 } else if (parsedArgs.containsKey("-open")) {
-                   List values = (List) parsedArgs.get("-open");
+                   List values = parsedArgs.get("-open");
                    startupDocument = values.isEmpty() ? null : (String) values.get(0);
                 }
                 if (startupDocument!=null) {
@@ -2242,9 +2242,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getCustomColumnsStorage().reset();
 
         for (int i = 0; i < myPreviousStates.size(); i++) {
-            ((GanttPreviousState) myPreviousStates.get(i)).remove();
+            myPreviousStates.get(i).remove();
         }
-        myPreviousStates = new ArrayList();
+        myPreviousStates = new ArrayList<GanttPreviousState>();
 
         //TODO [dbarashev] implement ProjectEventListener in bComparePrev action
         bComparePrev.setEnabled(false);
@@ -2537,7 +2537,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     private void addButtons() {
-        List buttons = new ArrayList(iconList.getSize());
+        List<Object> buttons = new ArrayList<Object>(iconList.getSize());
         for (int i=0; i<iconList.getSize(); i++) {
             buttons.add(iconList.get(i));
         }
@@ -2564,7 +2564,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
             getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-            ArrayList projectTasks = tree.getProjectTasks();
+            ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
             if (projectTasks.size() != 0) {
                 for (int i = 0; i < projectTasks.size(); i++)
                     getTaskManager().processCriticalPath(
@@ -2592,7 +2592,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void refresh() {
         getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-        ArrayList projectTasks = tree.getProjectTasks();
+        ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
         if (projectTasks.size() != 0) {
             for (int i = 0; i < projectTasks.size(); i++)
                 getTaskManager().processCriticalPath(

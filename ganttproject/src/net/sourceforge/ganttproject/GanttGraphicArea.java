@@ -68,6 +68,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.table.JTableHeader;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -381,7 +382,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             chartWidth = this.getWidth();
         }
         int chartHeight = task_image.getHeight();
-        List myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
+        List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
 
         return new RenderedGanttChartImage(myChartModel, myChartComponentImpl, GanttTree2.convertNodesListToItemList(myItemsToConsider), task_image, chartWidth, chartHeight);
     }
@@ -848,20 +849,20 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     class MoveTaskInteractions extends MouseInteractionBase implements
             MouseInteraction {
 
-        private List myTasks; // of Task
+        private List<Task> myTasks; // of Task
 
-        private List myMutators; // of TaskMutator
+        private List<TaskMutator> myMutators; // of TaskMutator
 
-        private List myInitialStarts; // of GanttCalendar
+        private List<GanttCalendar> myInitialStarts; // of GanttCalendar
 
-        MoveTaskInteractions(MouseEvent e, List tasks) {
+        MoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             super(e);
             myTasks = tasks;
-            myMutators = new ArrayList(myTasks.size());
-            myInitialStarts = new ArrayList(myTasks.size());
-            Iterator itTasks = myTasks.iterator();
+            myMutators = new ArrayList<TaskMutator>(myTasks.size());
+            myInitialStarts = new ArrayList<GanttCalendar>(myTasks.size());
+            Iterator<Task> itTasks = myTasks.iterator();
             while (itTasks.hasNext()) {
-                Task t = (Task) itTasks.next();
+                Task t = itTasks.next();
                 myMutators.add(t.createMutator());
                 myInitialStarts.add(t.getStart());
             }
@@ -873,20 +874,20 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     getViewState().getBottomTimeUnit(), diff);
 
             for (int i = 0; i < myTasks.size(); i++) {
-                Task task = (Task) myTasks.get(i);
+                Task task = myTasks.get(i);
                 TaskLength taskLength = task
                         .translateDuration(bottomUnitLength);
                 int dayDiff = (int) (taskLength.getValue());
                 if (dayDiff != 0) {
-                    ((TaskMutator) myMutators.get(i)).shift(dayDiff);
+                    myMutators.get(i).shift(dayDiff);
                 }
             }
         }
 
         public void finish() {
-            Iterator itMutators = myMutators.iterator();
+            Iterator<TaskMutator> itMutators = myMutators.iterator();
             while (itMutators.hasNext())
-                ((TaskMutator) itMutators.next())
+                itMutators.next()
                         .setIsolationLevel(TaskMutator.READ_COMMITED);
 
             getUndoManager().undoableEdit("Task moved", new Runnable() {
@@ -898,9 +899,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         }
 
         private void doFinish() {
-            Iterator itMutators = myMutators.iterator();
+            Iterator<TaskMutator> itMutators = myMutators.iterator();
             while (itMutators.hasNext())
-                ((TaskMutator) itMutators.next()).commit();
+                itMutators.next().commit();
 
             try {
                 getTaskManager().getAlgorithmCollection()
@@ -909,9 +910,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 getUIFacade().showErrorDialog(e);
             }
 
-            Iterator itTasks = myTasks.iterator();
+            Iterator<Task> itTasks = myTasks.iterator();
             while (itTasks.hasNext()) {
-                Task t = ((Task) itTasks.next());
+                Task t = itTasks.next();
                 t.applyThirdDateConstraint();
             }
 
@@ -947,7 +948,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         void beginMoveTaskInteraction(MouseEvent e, Task task);
 
-        void beginMoveTaskInteractions(MouseEvent e, List tasks);
+        void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
 
         void beginScrollViewInteraction(MouseEvent e);
 
@@ -987,7 +988,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             setActiveInteraction(new MoveTaskInteraction(e, task));
         }
 
-        public void beginMoveTaskInteractions(MouseEvent e, List tasks) {
+        public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks));
         }
 
@@ -1097,7 +1098,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return myScrollCenterAction;
     }
 
-    public void setPreviousStateTasks(ArrayList tasks) {
+    public void setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setPreviousStateTasks(tasks);
         ((GanttTree2) appli.getTree()).getTable().setRowHeight(rowHeight);
     }
@@ -1129,7 +1130,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             GanttCalendar max = null;
             Date scrollDate = null;
 
-            Iterator it = null;
+            Iterator<Task> it = null;
             if (myTaskSelectionManager.getSelectedTasks().isEmpty()) {
                 // scrollDate = getTaskManager().getProjectStart();
                 it = Arrays.asList(getTaskManager().getTasks()).iterator();
@@ -1137,7 +1138,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 it = myTaskSelectionManager.getSelectedTasks().iterator();
             }
             while (it.hasNext()) {
-                Task t = (Task) it.next();
+                Task t = it.next();
                 GanttCalendar dStart = t.getStart();
                 GanttCalendar dEnd = t.getEnd();
 
@@ -1262,7 +1263,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 if (!Mediator.getTaskSelectionManager().isTaskSelected(
                         taskUnderPointer))
                     tree.selectTask(taskUnderPointer, false);
-                List l = Mediator.getTaskSelectionManager().getSelectedTasks();
+                List<Task> l = Mediator.getTaskSelectionManager().getSelectedTasks();
                 getChartImplementation().beginMoveTaskInteractions(e, l);
             }
         }
@@ -1373,9 +1374,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         }
         private void addToDispatchers() {
-            List dispatchers = Mediator.getChangeValueDispatchers();
+            List<ChangeValueDispatcher> dispatchers = Mediator.getChangeValueDispatchers();
             for (int i = 0; i < dispatchers.size(); i++) {
-                ((ChangeValueDispatcher) dispatchers.get(i))
+                dispatchers.get(i)
                         .addChangeValueListener(this);
             }
         }

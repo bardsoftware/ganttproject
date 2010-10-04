@@ -5,6 +5,8 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
+import net.sourceforge.ganttproject.document.AbstractURLDocument;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
@@ -142,6 +144,6 @@ public interface Task extends MutableTask {
 	
 	boolean isSupertask();
 
-	List/*<Document>*/ getAttachments();
+	List<Document> getAttachments();
 
 }

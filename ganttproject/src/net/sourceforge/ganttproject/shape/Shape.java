@@ -24,7 +24,7 @@ public class Shape extends JPanel implements ActionListener,
 
     public static final boolean LIST = false;
 
-    protected ArrayList listeners = new ArrayList();
+    protected ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
 
     protected boolean compactDisplay;
 
@@ -168,10 +168,10 @@ public class Shape extends JPanel implements ActionListener,
     public void fireActionEvent() {
         ActionEvent event = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
                 "Pattern");
-        ArrayList list = (ArrayList) listeners.clone();
+        ArrayList<ActionListener> list = (ArrayList<ActionListener>) listeners.clone();
         ActionListener listener;
         for (int i = 0; i < list.size(); i++) {
-            listener = (ActionListener) list.get(i);
+            listener = list.get(i);
             listener.actionPerformed(event);
         }
     }

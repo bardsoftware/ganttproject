@@ -22,7 +22,7 @@ public class CommandLineExportApplication {
         Exporter[] exporters = Mediator.getPluginManager().getExporters();
         for (int i=0; i<exporters.length; i++) {
             Exporter next = exporters[i];
-            List nextExtensions = Arrays.asList(next.getFileExtensions());
+            List<String> nextExtensions = Arrays.asList(next.getFileExtensions());
             for (int j=0; j<nextExtensions.size(); j++) {
                 myFlag2exporter.put("-" + nextExtensions.get(j), next);
             }
@@ -32,7 +32,7 @@ public class CommandLineExportApplication {
     public Collection getCommandLineFlags() {
         return myFlag2exporter.keySet();
     }
-    public boolean export(Map parsedArgs) {
+    public boolean export(Map<String, List> parsedArgs) {
         if (parsedArgs.isEmpty()) {
             return false;
         }
@@ -83,13 +83,13 @@ public class CommandLineExportApplication {
         return false;
     }
 
-    private Exporter findExporter(Map args, List outputParams) {
+    private Exporter findExporter(Map<String, List> args, List outputParams) {
         for (Iterator exporters = myFlag2exporter.entrySet().iterator();
              exporters.hasNext();) {
             Map.Entry nextEntry = (Entry) exporters.next();
             String flag = (String) nextEntry.getKey();
             if (args.containsKey(flag)) {
-                outputParams.addAll((Collection) args.get(flag));
+                outputParams.addAll(args.get(flag));
                 return (Exporter) nextEntry.getValue();
             }
         }

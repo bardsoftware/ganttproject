@@ -36,7 +36,7 @@ public class PluginManager {
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(extensionPointID);
         
-        ArrayList extensions = new ArrayList();
+        ArrayList<Object> extensions = new ArrayList<Object>();
         for (int i = 0; i < configElements.length; i++) {
             try {
                 Object nextExtension = configElements[i]

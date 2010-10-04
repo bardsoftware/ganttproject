@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
+import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTree2;
@@ -123,7 +124,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     }
 
     private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-        List history = ((GanttProject) myProject).getPreviouStates();
+        List<GanttPreviousState> history = ((GanttProject) myProject).getPreviouStates();
         new HistorySaver().save(history, handler);
     }
 

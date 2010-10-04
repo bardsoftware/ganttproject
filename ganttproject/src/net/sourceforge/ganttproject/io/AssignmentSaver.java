@@ -18,9 +18,9 @@ class AssignmentSaver extends SaverBase {
     void save(IGanttProject project, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         startElement("allocations", handler);
-        List resources = project.getHumanResourceManager().getResources();
+        List<ProjectResource> resources = project.getHumanResourceManager().getResources();
         for (int i=0; i<resources.size(); i++) {
-            ProjectResource resource = (ProjectResource) resources.get(i);
+            ProjectResource resource = resources.get(i);
             ResourceAssignment[] assignments = resource.getAssignments();
             for (int j=0; j<assignments.length; j++) {
                 saveAssignment(handler, assignments[j]);

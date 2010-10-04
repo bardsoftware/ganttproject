@@ -57,7 +57,7 @@ public class GanttLanguage {
 
     private static GanttLanguage ganttLanguage = null;
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<Listener> myListeners = new ArrayList<Listener>();
 
     public static GanttLanguage getInstance() {
         if (ganttLanguage == null) {
@@ -217,7 +217,7 @@ public class GanttLanguage {
     private void fireLanguageChanged() {
         Event event = new Event(this);
         for (int i = 0; i < myListeners.size(); i++) {
-            Listener next = (Listener) myListeners.get(i);
+            Listener next = myListeners.get(i);
             next.languageChanged(event);
         }
     }

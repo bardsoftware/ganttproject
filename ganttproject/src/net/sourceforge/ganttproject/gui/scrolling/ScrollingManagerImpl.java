@@ -18,7 +18,7 @@ public class ScrollingManagerImpl implements ScrollingManager {
 
     public void scrollLeft() {
         for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = (ScrollingListener) myListeners
+            ScrollingListener nextListener = myListeners
                     .get(i);
             nextListener.scrollLeft();
         }
@@ -26,7 +26,7 @@ public class ScrollingManagerImpl implements ScrollingManager {
 
     public void scrollRight() {
         for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = (ScrollingListener) myListeners
+            ScrollingListener nextListener = myListeners
                     .get(i);
             nextListener.scrollRight();
         }
@@ -34,7 +34,7 @@ public class ScrollingManagerImpl implements ScrollingManager {
 
     public void scrollLeft(Date date) {
         for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = (ScrollingListener) myListeners
+            ScrollingListener nextListener = myListeners
                     .get(i);
             nextListener.scrollLeft(date);
         }
@@ -48,5 +48,5 @@ public class ScrollingManagerImpl implements ScrollingManager {
         myListeners.remove(listener);
     }
 
-    List myListeners = new ArrayList();
+    List<ScrollingListener> myListeners = new ArrayList<ScrollingListener>();
 }
