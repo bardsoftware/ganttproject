@@ -1,15 +1,26 @@
-/*
- * This code is provided under the terms of GPL version 2.
- * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
- */
+/* LICENSE: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -88,9 +99,9 @@ class ResourceLoadRenderer extends ChartRendererBase {
     private void renderLoads(List<Load> loads, int ypos) {
         Load prevLoad = null;
         Load curLoad = null;
-        LinkedList<Offset> offsets = getOffsets();
+        List<Offset> offsets = getDefaultOffsets();
         String suffix = "";
-        for (int curIndex=1; curIndex<loads.size() && offsets.getFirst()!=null; curIndex++) {
+        for (int curIndex=1; curIndex<loads.size(); curIndex++) {
             curLoad = loads.get(curIndex);
             prevLoad = loads.get(curIndex-1);
             if (prevLoad.load!=0) {
@@ -107,7 +118,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * Renders prevLoad, with curLoad serving as a load right border marker and style hint
      */
     private void renderLoads(
-            Load prevLoad, Load curLoad, LinkedList<Offset> offsets, int ypos, String suffix) {
+            Load prevLoad, Load curLoad, List<Offset> offsets, int ypos, String suffix) {
         final Date prevEnd = curLoad.startDate;
         final Date prevStart = prevLoad.startDate;
 
@@ -143,9 +154,9 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * by their time values
      */
     private void buildTasksLoadsRectangles(List<Load> partition, int ypos) {
-        LinkedList<Offset> offsets = getOffsets();
+        List<Offset> offsets = getDefaultOffsets();
         Iterator<Load> loads = partition.iterator();
-        while (loads.hasNext() && offsets.getFirst()!=null) {
+        while (loads.hasNext()) {
             final Load nextLoad = (Load) loads.next();
             final Date nextStart = nextLoad.startDate;
             final Date nextEnd = nextLoad.endDate;
@@ -170,70 +181,14 @@ class ResourceLoadRenderer extends ChartRendererBase {
         }
     }
 
-    private Rectangle createRectangle(LinkedList<Offset> offsets, Date start, Date end, int ypos) {
+    private Rectangle createRectangle(List<Offset> offsets, Date start, Date end, int ypos) {
         if (start.after(getChartEndDate()) || end.compareTo(getChartStartDate())<=0) {
             return null;
         }
-        Date lastOffsetEnd = offsets.getLast().getOffsetEnd();
-        if (end.after(lastOffsetEnd)) {
-        	end = lastOffsetEnd;
-        }
-        Offset offsetBefore = null;
-        Offset offsetAfter = null;
-
-        LinkedList<Offset> buffer = new LinkedList<Offset>();
-        while (offsets.getFirst()!=null) {
-            Offset offset = offsets.getFirst();
-            if (offset.getOffsetEnd().compareTo(start)<=0) {
-                offsetBefore = offset;
-                buffer.clear();
-            }
-            if (offset.getOffsetEnd().compareTo(end)>=0) {
-                offsetAfter = offset;
-                if (offset.getOffsetEnd().after(end)) {
-                	offsets.addAll(0, buffer);
-                }
-                break;
-            }
-            buffer.addLast(offset);
-            offsets.removeFirst();
-        }
-
-        int rectStart;
-        int rectEnd;
-        if (offsetAfter==null) {
-            rectEnd = getChartModel().getBounds().width;
-        }
-        else if (offsetAfter.getOffsetEnd().equals(end)) {
-            rectEnd = offsetAfter.getOffsetPixels();
-        }
-        else {
-            rectEnd = -1;
-        }
-        if (offsetBefore == null) {
-            rectStart = 0;
-        }
-        else if (offsetBefore.getOffsetEnd().equals(start)) {
-            rectStart = offsetBefore.getOffsetPixels();
-        }
-        else {
-            rectStart = -1;
-        }
-        if (rectStart==-1 || rectEnd==-1) {
-            return createRectangle(getDefaultOffsetsInRange(offsetBefore, offsetAfter), start, end, ypos);
-        }
-        Rectangle nextRect = getPrimitiveContainer().createRectangle(
-                rectStart, ypos, rectEnd-rectStart, getConfig().getRowHeight());
-        return nextRect;
-    }
-
-    private LinkedList<Offset> getDefaultOffsetsInRange(Offset offsetBefore, Offset offsetAfter) {
-        LinkedList<Offset> result = new LinkedList<Offset>(
-                getChartModel().getDefaultUnitOffsetsInRange(offsetBefore, offsetAfter));
-        if (offsetBefore!=null) {
-            result.addFirst(offsetBefore);
-        }
-        return result;
+        OffsetLookup offsetLookup = new OffsetLookup();
+        int[] bounds = offsetLookup.getBounds(start, end, offsets);
+        return getPrimitiveContainer().createRectangle(
+                bounds[0], ypos, bounds[1]-bounds[0], getConfig().getRowHeight());
     }
 
     private Date getChartStartDate() {
@@ -244,8 +199,8 @@ class ResourceLoadRenderer extends ChartRendererBase {
         return ((Offset) getChartModel().getBottomUnitOffsets().get(getChartModel().getBottomUnitOffsets().size()-1)).getOffsetEnd();
     }
 
-    private LinkedList<Offset> getOffsets() {
-        return new LinkedList<Offset>(getChartModel().getBottomUnitOffsets());
+    private List<Offset> getDefaultOffsets() {
+        return getChartModel().getDefaultUnitOffsets();
     }
 
     public void beforeProcessingTimeFrames() {
