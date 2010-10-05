@@ -22,7 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,9 +39,6 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 
 import org.jdesktop.jdnc.JNTable;
-import org.jdesktop.swing.decorator.AlternateRowHighlighter;
-import org.jdesktop.swing.decorator.Highlighter;
-import org.jdesktop.swing.decorator.HighlighterPipeline;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -63,16 +59,16 @@ public class TaskDependenciesPanel {
     public JPanel getComponent() {
         myModel = new DependencyTableModel(myTask);
         myTable = new JNTable(myModel);
-        myTable.setPreferredVisibleRowCount(10);
-        myTable.setHighlighters(new HighlighterPipeline(new Highlighter[] {
-                AlternateRowHighlighter.floralWhite,
-                AlternateRowHighlighter.quickSilver }));
-        myTable.getTable().setSortable(false);
+        CommonPanel.setupTableUI(myTable);
         setUpPredecessorComboColumn(
                 DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(myTable.getTable()),
                 myTable.getTable());
-        setUpTypeComboColumn(DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(myTable.getTable()));
-        setUpHardnessColumnEditor(DependencyTableModel.MyColumn.HARDNESS.getTableColumn(myTable.getTable()));
+        CommonPanel.setupComboBoxEditor(
+        		DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(myTable.getTable()), 
+        		CONSTRAINTS);
+        CommonPanel.setupComboBoxEditor(
+        		DependencyTableModel.MyColumn.HARDNESS.getTableColumn(myTable.getTable()), 
+        		HARDNESS);
         AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
             new AbstractTableAndActionsComponent<TaskDependency>(myTable.getTable()) {
                 @Override
@@ -139,21 +135,5 @@ public class TaskDependenciesPanel {
 
     private TaskManager getTaskManager() {
         return getTask().getManager();
-    }
-
-    private void setUpTypeComboColumn(TableColumn typeColumn) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(TaskDependenciesPanel.CONSTRAINTS);
-        JComboBox comboBox = new JComboBox(model);
-        comboBox.setSelectedIndex(0);
-        comboBox.setEditable(false);
-        typeColumn.setCellEditor(new DefaultCellEditor(comboBox));
-    }
-
-    private void setUpHardnessColumnEditor(TableColumn hardnessColumn) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(TaskDependenciesPanel.HARDNESS);
-        JComboBox comboBox = new JComboBox(model);
-        comboBox.setSelectedIndex(0);
-        comboBox.setEditable(false);
-        hardnessColumn.setCellEditor(new DefaultCellEditor(comboBox));
     }
 }
