@@ -1,113 +1,50 @@
+/* 
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.Locale;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.table.TableColumn;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
+import org.jdesktop.jdnc.JNTable;
+import org.jdesktop.swing.decorator.AlternateRowHighlighter;
+import org.jdesktop.swing.decorator.Highlighter;
+import org.jdesktop.swing.decorator.HighlighterPipeline;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * @author dbarashev (Dmitry Barashev)
  */
-abstract class CommonPanel implements InternalStateListener {
-    private final GanttLanguage language;
-
-    private JLabel nameLabel3;
-
-    private JLabel durationLabel3;
-
-    private JTextField nameField3;
-
-    private JTextField durationField3;
-
-    private JPanel firstRowPanel3;
-
-    private FlowLayout flowL = new FlowLayout(FlowLayout.LEFT, 10, 10);
-
-    private GridBagConstraints gbc = new GridBagConstraints();
-
-    private final Task myTask;
-
-    public CommonPanel(Task task) {
-        language = GanttLanguage.getInstance();
-        myTask = task;
-    }
-
-    protected void addUsingGBL(Container container, Component component,
-
-    GridBagConstraints gbc, int x,
-
-    int y, int w, int h) {
-        gbc.gridx = x;
-        gbc.gridy = y;
-        gbc.gridwidth = w;
-        gbc.gridheight = h;
-        gbc.weighty = 0;
-        container.add(component, gbc);
-        container.applyComponentOrientation(ComponentOrientation
-                .getOrientation(Locale.getDefault()));
-    }
-
-    /** set the first row in all the tabbed pane. thus give them a common look */
-
-    protected void setFirstRow(Container container, GridBagConstraints gbc,
-            JLabel nameLabel, JTextField nameField, JLabel durationLabel,
-            JTextField durationField) {
-        container.setLayout(new GridBagLayout());
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets.right = 15;
-        gbc.insets.left = 10;
-        gbc.insets.top = 10;
-        addUsingGBL(container, nameLabel, gbc, 0, 0, 1, 1);
-        addUsingGBL(container, nameField, gbc, 1, 0, 1, 1);
-        addUsingGBL(container, durationLabel, gbc, 2, 0, 1, 1);
-        gbc.weightx = 1;
-        addUsingGBL(container, durationField, gbc, 3, 0, 1, 1);
-    }
-
-    public void nameChanged(String newName) {
-        nameField3.setText(newName);
-    }
-
-    public void durationChanged(int newDuration) {
-        durationField3.setText("" + newDuration);
-    }
-
-    protected JPanel setupCommonFields(boolean onlyOneTask) {
-        nameLabel3 = new JLabel(getLanguage().getText("name") + ":");
-        nameField3 = new JTextField(20);
-        nameField3.setText(getTask().getName());
-        durationLabel3 = new JLabel(getLanguage().getText("length") + ":");
-        durationField3 = new JTextField(8);
-        durationField3.setText("" + getTask().getDuration().getLength());
-        nameField3.setEditable(false);
-        durationField3.setEditable(false);
-        firstRowPanel3 = new JPanel(flowL);
-        setFirstRow(firstRowPanel3, gbc, nameLabel3, nameField3,
-                durationLabel3, durationField3);
-        if (!onlyOneTask) {
-            nameLabel3.setVisible(false);
-            nameField3.setVisible(false);
-        }
-        return firstRowPanel3;
-    }
-
-    protected GanttLanguage getLanguage() {
-        return language;
-    }
-
-    protected Task getTask() {
-        return myTask;
-    }
+abstract class CommonPanel {
+	static void setupTableUI(JNTable table) {
+        table.setPreferredVisibleRowCount(10);
+        table.setHighlighters(new HighlighterPipeline(new Highlighter[] {
+                AlternateRowHighlighter.floralWhite,
+                AlternateRowHighlighter.quickSilver }));
+        table.getTable().setSortable(false);
+	}
+	
+	static void setupComboBoxEditor(TableColumn column, Object[] values) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel(values);
+        JComboBox comboBox = new JComboBox(model);
+        comboBox.setSelectedIndex(0);
+        comboBox.setEditable(false);
+        column.setCellEditor(new DefaultCellEditor(comboBox));
+	}
 }
