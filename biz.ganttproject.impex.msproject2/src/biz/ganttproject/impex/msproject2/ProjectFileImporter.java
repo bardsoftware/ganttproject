@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
@@ -10,6 +28,7 @@ import java.util.regex.Pattern;
 
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
+import net.sf.mpxj.FieldType;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
@@ -18,6 +37,7 @@ import net.sf.mpxj.Rate;
 import net.sf.mpxj.Relation;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceAssignment;
+import net.sf.mpxj.ResourceField;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.TaskField;
 import net.sf.mpxj.TimeUnit;
@@ -159,11 +179,33 @@ public class ProjectFileImporter {
             nativeResource.setMail(r.getEmailAddress());
             myNativeProject.getHumanResourceManager().add(nativeResource);
             importDaysOff(r, nativeResource);
+            importCustomProperties(r, nativeResource);
             foreignId2humanResource.put(r.getID(), nativeResource);
         }
     }
 
-    private void importDaysOff(Resource r, final HumanResource nativeResource) {
+    private void importCustomProperties(Resource r, HumanResource nativeResource) {
+        Map<ResourceField, CustomPropertyDefinition> foreign2native =
+            new HashMap<ResourceField, CustomPropertyDefinition>();
+        for (ResourceField rf : ResourceField.values()) {
+            if (r.getCurrentValue(rf) == null || !isCustomField(rf)) {
+                continue;
+            }
+            CustomPropertyDefinition def = foreign2native.get(rf);
+            if (def == null) {
+                String typeAsString = convertDataType(rf);
+                String name = r.getParentFile().getResourceFieldAlias(rf);
+                if (name == null) {
+                    name = rf.getName();
+                }
+                def = myNativeProject.getTaskCustomColumnManager().createDefinition(
+                        typeAsString, name, null);
+            }
+            nativeResource.setCustomFieldVal(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
+        }
+	}
+
+	private void importDaysOff(Resource r, final HumanResource nativeResource) {
         ProjectCalendar c = r.getResourceCalendar();
         if (c == null) {
             return;
@@ -238,11 +280,11 @@ public class ProjectFileImporter {
     }
 
     private static Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
-    private boolean isCustomField(TaskField tf) {
+    private boolean isCustomField(FieldType tf) {
         return ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
     }
 
-    private String convertDataType(TaskField tf) {
+    private String convertDataType(FieldType tf) {
         switch (tf.getDataType()) {
         case ACCRUE:
         case CONSTRAINT:
@@ -267,7 +309,7 @@ public class ProjectFileImporter {
         return null;
     }
 
-    private Object convertDataValue(TaskField tf, Object value) {
+    private Object convertDataValue(FieldType tf, Object value) {
         switch (tf.getDataType()) {
         case ACCRUE:
         case CONSTRAINT:
