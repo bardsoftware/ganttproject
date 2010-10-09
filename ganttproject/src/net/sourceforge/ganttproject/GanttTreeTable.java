@@ -51,6 +51,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.GanttDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -127,9 +128,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      */
     public GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
         super(project, model);
-        initTreeTable();
         this.ttModel = model;
         myUIfacade = uifacade;
+        initTreeTable();
     }
 
 
@@ -503,6 +504,12 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         });
 
         reloadColumns();
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
+			@Override
+			protected TimelineChart getChart() {
+				return myUIfacade.getGanttChart();
+			}
+		});
     }
 
     protected void onCellSelectionChanged() {
@@ -1055,17 +1062,6 @@ private void createPopupMenu() {
      */
     public JTree getTree() {
         return this.getTreeTable().getTree();
-    }
-
-    /**
-     * @return The vertical scrollbar.
-     */
-    public JScrollBar getVerticalScrollBar() {
-        return scrollPane.getVerticalScrollBar();
-    }
-
-    public JScrollPane getScrollPane() {
-        return scrollPane;
     }
 
     /**

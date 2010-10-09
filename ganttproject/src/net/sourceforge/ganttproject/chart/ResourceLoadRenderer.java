@@ -39,12 +39,15 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
     private List<LoadDistribution> myDistributions;
 
-    private ResourceChart myResourcechart;
+    private final ResourceChart myResourcechart;
+
+	private final ChartModelResource myModel;
 
     public ResourceLoadRenderer(ChartModelResource model,
             ResourceChart resourceChart) {
         super(model);
         myResourcechart = resourceChart;
+        myModel = model;
     }
 
     /**
@@ -52,9 +55,9 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * If some resource is expanded, calls rendering of the load details
      */
     public void render() {
-       getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight());
+       getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight() - myModel.getVerticalOffset());
        beforeProcessingTimeFrames();
-       int ypos = 0 - getConfig().getYOffSet();
+       int ypos = 0;
        for (int i=0; i<myDistributions.size(); i++) {
     	   LoadDistribution nextDistribution = myDistributions.get(i);
            List<Load> loads = nextDistribution.getLoads();

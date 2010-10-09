@@ -27,36 +27,29 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.RenderedChartImage;
-import net.sourceforge.ganttproject.chart.RenderedGanttChartImage;
 import net.sourceforge.ganttproject.chart.RenderedResourceChartImage;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.font.Fonts;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * Classe for the graphic part of the soft
@@ -118,16 +111,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 return i;
         return -1;
     }
-
-    /** Change the velue connected to the JTree's Scrollbar */
-    public void setScrollBar(int v) {
-        getChartModel().getChartUIConfiguration().setYOffSet(v);
-    }
-
-//    /** Return the value of the JTree's Scrollbar */
-//    public int getScrollBar() {
-//        return margY;
-//    }
 
     public BufferedImage getChart(GanttExportSettings settings) {
         RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
@@ -295,8 +278,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     public void reset() {
-        // TODO Auto-generated method stub
-
+    	repaint();
     }
 
     public Icon getIcon() {

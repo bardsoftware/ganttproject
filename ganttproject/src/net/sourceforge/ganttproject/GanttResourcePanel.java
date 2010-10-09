@@ -77,8 +77,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     public ResourceLoadGraphicArea area;
 
-    private JScrollPane scrollpane;
-
     private final ResourceContext myContext = (ResourceContext) this;
     private ProjectResource [] clipboard = null;
     private boolean isCut = false;
@@ -156,18 +154,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         prj.addProjectEventListener(this);
         appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager());
-        table = new ResourceTreeTable(appli.getProject(), model);
+        table = new ResourceTreeTable(appli.getProject(), model, uiFacade);
         table.setRowHeight(20);
         table.setBackground(new Color(1.0f, 1.0f, 1.0f));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        scrollpane = new JScrollPane();
-        add(scrollpane, BorderLayout.CENTER);
-        scrollpane.getViewport().add(table);
-        scrollpane.getViewport().setBackground(new Color(1.0f, 1.0f, 1.0f));
-
-        area = new ResourceLoadGraphicArea(prj, prj
-                .getZoomManager()) {
+        table.insertWithLeftyScrollBar(this);
+        area = new ResourceLoadGraphicArea(prj, prj.getZoomManager()) {
 
             public boolean isExpanded(ProjectResource pr) {
                 return getResourceTreeTable().isExpanded(pr);
@@ -265,7 +258,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
-        final int x = popupTriggerEvent.getX() - scrollpane.getHorizontalScrollBar().getValue()/*
+        final int x = popupTriggerEvent.getX()/* - scrollpane.getHorizontalScrollBar().getValue()/*
         + (vbar.isVisible() ? vbar.getWidth() : 0)*/;
         final int y = popupTriggerEvent.getY() + table.getRowHeight()/* +
         + myImagePanel.getHeight()*/;
@@ -348,17 +341,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         return res;
     }
 
-    /**
-     * Listener when scrollbar move
-     */
-    public class GanttAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-            if (area != null) {
-                area.setScrollBar(e.getValue());
-                area.repaint();
-            }
-        }
-    }
 
     /** Create a new Human */
     public void newHuman(HumanResource people) {
