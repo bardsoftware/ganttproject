@@ -10,11 +10,9 @@ import java.awt.Toolkit;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
@@ -40,9 +38,7 @@ abstract class ChartTabContentPanel {
         treeHeader.add(but);
         left.add(treeHeader, BorderLayout.NORTH);
 
-        JScrollPane scrollPane = new JScrollPane(getTreeComponent());
-
-        left.add(scrollPane, BorderLayout.CENTER);
+        left.add(getTreeComponent(), BorderLayout.CENTER);
         left.setPreferredSize(new Dimension(315, 600));
         left.setBackground(new Color(102, 153, 153));
 

@@ -164,12 +164,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     = new Color(140, 182, 206);
 
-    /** This value is connected to the GanttTRee Scrollbar to move up or down */
-
-    private int margY;
-
-    /* ! The main application */
-
     GanttProject appli;
 
     private UIConfiguration myUIConfiguration;
@@ -250,8 +244,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 //        date.setDay(1);
 
 
-        margY = 0;
-
         appli = app;
 
         // creation of the different color use to paint
@@ -291,20 +283,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         g.setFont(Fonts.GP_VERSION_FONT);
         g.drawString("GanttProject (" + GanttProject.version + ")", 3,
                 getHeight() + 18);
-    }
-
-    /** Change the velue connected to the JTree's Scrollbar */
-
-    public void setScrollBar(int v) {
-
-        margY = v;
-
-    }
-
-    /** Return the value of the JTree's Scrollbar */
-
-    public int getScrollBar() {
-        return margY;
     }
 
     public String getName() {
@@ -1027,11 +1005,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 model.setTopTimeUnit(getViewState().getTopTimeUnit());
                 model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
                 VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
-                List visibleTasks = visibleNodesFilter.getVisibleNodes(tree
-                        .getJTree(), getScrollBar(), getHeight(), tree
-                        .getTreeTable().getRowHeight());
+                List visibleTasks = tree.getVisibleNodes(visibleNodesFilter);
                 model.setVisibleTasks(visibleTasks);
-                model.setVerticalOffset(getScrollBar() % tree.getTreeTable().getRowHeight());
                 model.paint(g);
                 if (getActiveInteraction() != null) {
                     getActiveInteraction().paint(g);
@@ -1333,8 +1308,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public void reset() {
-        // TODO Auto-generated method stub
-
+    	repaint();
     }
 
     public Icon getIcon() {

@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -41,9 +42,13 @@ import javax.swing.tree.TreePath;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+
+import net.sourceforge.ganttproject.GPTreeTableBase.VscrollAdjustmentListener;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.ResourceDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -89,14 +94,17 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     private final TableHeaderUIFacade myVisibleFields = new TableHeaderImpl();
 
+	private final UIFacade myUiFacade;
+
     /**
      * Creates an instance of GanttTreeTable with the given TreeTableModel.
      *
      * @param model
      *            TreeTableModel.
      */
-    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model) {
+    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
         super(project, model);
+        myUiFacade = uiFacade;
         myProject = project;
         myProject.addProjectEventListener(new ProjectEventListener(){
             public void projectClosed() {
@@ -295,7 +303,13 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             public void columnSelectionChanged(ListSelectionEvent e) {
             }
         });
-
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
+			@Override
+			protected TimelineChart getChart() {
+				return (TimelineChart)myUiFacade.getResourceChart();
+			}
+			
+		});
     }
 
     protected void updateColumnOrders(int fromIndex, int toIndex) {

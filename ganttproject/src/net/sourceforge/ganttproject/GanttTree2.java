@@ -23,14 +23,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.SystemColor;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -46,8 +44,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -69,23 +65,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -95,7 +88,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
@@ -103,12 +95,13 @@ import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.NewTaskAction;
+import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.delay.DelayObserver;
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.BlankLineNode;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -144,7 +137,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private GanttTreeTable treetable;
 
     /** Pointer on graphic area */
-    private GanttGraphicArea area = null;
+    private ChartComponentBase area = null;
 
     /** Pointer on application */
     private GanttProject appli;
@@ -153,11 +146,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     // private ArrayList expand = new ArrayList();
     private static final int AUTOSCROLL_MARGIN = 12;
 
-    /** The vertical scrollbar on the JTree */
-    private JScrollBar vbar;
-
-    /** The horizontal scrollbar on the JTree */
-    private JScrollBar hbar;
+//    /** The vertical scrollbar on the JTree */
+//    private JScrollBar vbar;
+//
+//    /** The horizontal scrollbar on the JTree */
+//    private JScrollBar hbar;
 
     /** The language use */
     private GanttLanguage language = GanttLanguage.getInstance();
@@ -226,52 +219,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private Action myLinkTasksAction;
     private Action myUnlinkTasksAction;
 
-    private class AutoscrollingTree extends JTree implements Autoscroll {
-
-        public AutoscrollingTree(DefaultTreeModel treeModel) {
-            super(treeModel);
-        }
-
-        // Calculate the insets for the *JTREE*, not the viewport
-        // the tree is in. This makes it a bit messy.
-        public Insets getAutoscrollInsets() {
-            Rectangle raOuter = getBounds();
-            Rectangle raInner = getParent().getBounds();
-            return new Insets(raInner.y - raOuter.y + AUTOSCROLL_MARGIN,
-                    raInner.x - raOuter.x + AUTOSCROLL_MARGIN, raOuter.height
-                            - raInner.height - raInner.y + raOuter.y
-                            + AUTOSCROLL_MARGIN, raOuter.width - raInner.width
-                            - raInner.x + raOuter.x + AUTOSCROLL_MARGIN);
-        }
-
-        public void autoscroll(Point pt) {
-            // Figure out which row we�e on.
-            int nRow = this.getClosestRowForLocation(pt.x, pt.y);
-
-            // If we are not on a row then ignore this autoscroll request
-            if (nRow < 0)
-                return;
-
-            Rectangle raOuter = getBounds();
-            // Now decide if the row is at the top of the screen or at the
-            // bottom. We do this to make the previous row (or the next
-            // row) visible as appropriate. If we�e at the absolute top or
-            // bottom, just return the first or last row respectively.
-
-            nRow = (pt.y + raOuter.y <= AUTOSCROLL_MARGIN) // Is row at top of
-                    // screen?
-                    ? (nRow <= 0 ? 0 : nRow - 1) // Yes, scroll up one row
-                    : (nRow < this.getRowCount() - 1 ? nRow + 1 : nRow); // No,
-            // scroll
-            // down
-            // one
-            // row
-
-            this.scrollRowToVisible(nRow);
-        }
-
-    }
-
     /**
      * Constructor.
      * @param selectionManager TODO
@@ -280,7 +227,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public GanttTree2(final GanttProject app, TaskManager taskManager,
             TaskSelectionManager selectionManager, UIFacade uiFacade) {
 
-        super();
+        super(new BorderLayout());
         app.getProject().addProjectEventListener(this);
         myUIFacade = uiFacade;
 
@@ -349,34 +296,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         ToolTipManager.sharedInstance().registerComponent(treetable);
 
-        // Add The tree on a Scrollpane
-        JScrollPane scrollpane = new JScrollPane();
-        setLayout(new BorderLayout());
-        add(scrollpane, BorderLayout.CENTER);
-        scrollpane.getViewport().add(treetable);
-        scrollpane
-                .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-
-        vbar = treetable.getVerticalScrollBar();
-        final JPanel jp = new JPanel(new BorderLayout());
-        jp.add(vbar, BorderLayout.CENTER);
-        jp.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        jp.setVisible(false);
-        vbar.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                if (treetable.getSize().getHeight() - 20 < e.getAdjustable()
-                        .getMaximum())
-                    jp.setVisible(true);
-                else
-                    jp.setVisible(false);
-                repaint();
-            }
-        });
-
-        this.add(jp, BorderLayout.WEST);
-        hbar = scrollpane.getHorizontalScrollBar();
-        vbar.addAdjustmentListener(new GanttAdjustmentListener());
-
+        treetable.insertWithLeftyScrollBar(this);
         mySelectionManager.addSelectionListener(new Listener() {
             public void selectionChanged(List<Task> currentSelection) {
             }
@@ -447,8 +367,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
             }
         };
-        if (!app.isOnlyViewer)
-            treetable.addMouseListener(ml);
 
         DragSource dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(treetable,
@@ -548,13 +466,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** Create a popup menu when mouse click */
     private void createPopupMenu(int x, int y, boolean all) {
         Action[] popupMenuActions = getPopupMenuActions();
-        myUIFacade.showPopupMenu(this, popupMenuActions, x - hbar.getValue()
-                + (vbar.isVisible() ? vbar.getWidth() : 0), y - vbar.getValue()
-                + 20);
+        myUIFacade.showPopupMenu(this, popupMenuActions, x, y);
+//        myUIFacade.showPopupMenu(this, popupMenuActions, x - hbar.getValue()
+//                + (vbar.isVisible() ? vbar.getWidth() : 0), y - vbar.getValue()
+//                + 20);
     }
 
     /** Change graphic part */
-    public void setGraphicArea(GanttGraphicArea area) {
+    public void setGraphicArea(ChartComponentBase area) {
         this.area = area;
     }
     /** add an object with the expand information */
@@ -1384,15 +1303,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /**
      * Listener when scrollbar move
      */
-    public class GanttAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-            if (area != null) {
-                int v = e.getValue();
-                area.setScrollBar(v);
-                area.repaint();
-            }
-        }
-    }
 
     // ////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -2400,6 +2310,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
 	public TableHeaderUIFacade getVisibleFields() {
 		return treetable.getVisibleFields();
+	}
+
+	public List getVisibleNodes(VisibleNodesFilter visibleNodesFilter) {
+		return visibleNodesFilter.getVisibleNodes(
+        		getJTree(), getTreeTable().getScrollPane().getVerticalScrollBar().getValue(), getHeight(), 
+        		getTreeTable().getRowHeight());
 	}
 
 
