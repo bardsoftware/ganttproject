@@ -73,6 +73,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -367,7 +368,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
             }
         };
-
+        treetable.addMouseListener(ml);
         DragSource dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(treetable,
                 DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -466,10 +467,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** Create a popup menu when mouse click */
     private void createPopupMenu(int x, int y, boolean all) {
         Action[] popupMenuActions = getPopupMenuActions();
-        myUIFacade.showPopupMenu(this, popupMenuActions, x, y);
-//        myUIFacade.showPopupMenu(this, popupMenuActions, x - hbar.getValue()
-//                + (vbar.isVisible() ? vbar.getWidth() : 0), y - vbar.getValue()
-//                + 20);
+        JScrollBar vbar = treetable.getScrollPane().getVerticalScrollBar();
+        myUIFacade.showPopupMenu(this, popupMenuActions, 
+        		x - treetable.getScrollPane().getHorizontalScrollBar().getValue() 
+        		    + (vbar.isVisible() ? vbar.getWidth() : 0), 
+        		y - vbar.getValue() + treetable.getTable().getTableHeader().getHeight());
     }
 
     /** Change graphic part */
