@@ -1,9 +1,6 @@
 package net.sourceforge.ganttproject.io;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
@@ -14,9 +11,7 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.resource.ResourceColumn;
 
 class ResourceSaver extends SaverBase {
 
@@ -27,7 +22,7 @@ class ResourceSaver extends SaverBase {
         ProjectResource[] resources = project.getHumanResourceManager().getResourcesArray();
         for (int i = 0; i < resources.length; i++) {
             HumanResource p = (HumanResource) resources[i];
-            addAttribute("id", String.valueOf(p.getId()), attrs);
+            addAttribute("id", p.getId(), attrs);
             addAttribute("name", p.getName(), attrs);
             addAttribute("function", p.getRole().getPersistentID(), attrs);
             addAttribute("contacts", p.getMail(), attrs);
@@ -44,9 +39,9 @@ class ResourceSaver extends SaverBase {
 	private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler) throws SAXException {
 		//CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
 		AttributesImpl attrs = new AttributesImpl();
-		List properties = resource.getCustomProperties();
+		List<CustomProperty> properties = resource.getCustomProperties();
 		for (int i=0; i<properties.size(); i++) {
-			CustomProperty nextProperty = (CustomProperty) properties.get(i);
+			CustomProperty nextProperty = properties.get(i);
 			CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
             if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
     			addAttribute("definition-id", nextDefinition.getID(), attrs);

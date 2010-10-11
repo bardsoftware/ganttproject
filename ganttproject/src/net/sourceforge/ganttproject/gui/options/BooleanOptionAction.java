@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class BooleanOptionAction extends AbstractAction {
     private BooleanOption myOption;

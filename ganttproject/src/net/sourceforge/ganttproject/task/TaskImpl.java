@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.Long;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,13 +18,14 @@ import java.net.URLEncoder;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
-import net.sourceforge.ganttproject.action.NewTaskAction;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
+import net.sourceforge.ganttproject.calendar.CalendarActivityImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * Created by IntelliJ IDEA.
@@ -53,8 +52,8 @@ public class TaskImpl implements Task {
     private boolean isMilestone;
 
     boolean isProjectTask;
-
-    private int myPriority;
+    
+    private Priority myPriority;
 
     private GanttCalendar myStart;
 
@@ -127,7 +126,7 @@ public class TaskImpl implements Task {
                 myManager.getDependencyCollection());
         myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this,
                 myManager.getDependencyCollection());
-        myPriority = 1;
+        myPriority = DEFAULT_PRIORITY;
         myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
         myNotes = "";
         bExpand = true;
@@ -163,7 +162,7 @@ public class TaskImpl implements Task {
         myColor = copy.myColor;
         myNotes = copy.myNotes;
         bExpand = copy.bExpand;
-        //
+
         myDependencySlice = new TaskDependencySliceImpl(this, myManager
                 .getDependencyCollection());
         myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this,
@@ -226,9 +225,9 @@ public class TaskImpl implements Task {
         return myWebLink;
     }
 
-    public List/*<Document>*/ getAttachments() {
+    public List<Document> getAttachments() {
     	if (getWebLink()!= null && !"".equals(getWebLink())) {
-	    	return Collections.singletonList(new AbstractURLDocument() {
+	    	return Collections.singletonList((Document)new AbstractURLDocument() {
 				public boolean canRead() {
 					return true;
 				}
@@ -293,7 +292,7 @@ public class TaskImpl implements Task {
         return isMilestone;
     }
 
-    public int getPriority() {
+    public Priority getPriority() {
         return myPriority;
     }
 
@@ -520,12 +519,12 @@ public class TaskImpl implements Task {
             if (index < 0 || index >= myDates.size()) {
                 return null;
             }
-            return (Date) myDates.get(index);
+            return myDates.get(index);
         }
 
         void cacheDate(Date date, int length) {
             if (myDates == null) {
-                myDates = new ArrayList();
+                myDates = new ArrayList<Date>();
             }
             int index = length - myMinLength;
             while (index <= -1) {
@@ -546,7 +545,7 @@ public class TaskImpl implements Task {
 
         private int myMinLength = 0;
 
-        private List myDates;
+        private List<Date> myDates;
 
     }
 
@@ -567,7 +566,7 @@ public class TaskImpl implements Task {
 
         private List myActivities;
 
-        private final List myCommands = new ArrayList();
+        private final List<Runnable> myCommands = new ArrayList<Runnable>();
 
         private int myIsolationLevel;
 
@@ -598,7 +597,7 @@ public class TaskImpl implements Task {
                     TaskImpl.this.setThirdDate(third);
                 }
                 for (int i = 0; i < myCommands.size(); i++) {
-                    Runnable next = (Runnable) myCommands.get(i);
+                    Runnable next = myCommands.get(i);
                     next.run();
                 }
                 myCommands.clear();
@@ -657,7 +656,7 @@ public class TaskImpl implements Task {
             });
         }
 
-        public void setPriority(final int priority) {
+        public void setPriority(final Priority priority) {
             myCommands.add(new Runnable() {
                 public void run() {
                     TaskImpl.this.setPriority(priority);
@@ -885,7 +884,6 @@ public class TaskImpl implements Task {
             myTaskInfo = taskInfo;
 
         }
-
     }
 
     public void setName(String name) {
@@ -904,7 +902,7 @@ public class TaskImpl implements Task {
         isMilestone = milestone;
     }
 
-    public void setPriority(int priority) {
+    public void setPriority(Priority priority) {
         myPriority = priority;
     }
 
@@ -961,7 +959,7 @@ public class TaskImpl implements Task {
     public void setThirdDateConstraint(int thirdDateConstraint) {
         myThirdDateConstraint = thirdDateConstraint;
     }
-
+    
     public void shift(TaskLength shift) {
         float unitCount = shift.getLength(myLength.getTimeUnit());
         if (unitCount != 0f) {
@@ -980,16 +978,16 @@ public class TaskImpl implements Task {
 
     public Task shift(float unitCount) {
         Task clone = unpluggedClone();
-        if (unitCount > 0) {
-            TaskLength length = myManager.createLength(myLength.getTimeUnit(),
-                    unitCount);
-            // clone.setDuration(length);
-            Date shiftedDate = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-            clone.setStart(new GanttCalendar(shiftedDate));
-            clone.setDuration(myLength);
-        } else {
-            Date newStart = shiftDate(clone.getStart().getTime(),
-            		                  getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
+        if (unitCount != 0) {
+            Date newStart;
+            if (unitCount > 0) {
+                TaskLength length = myManager.createLength(myLength.getTimeUnit(), unitCount);
+                // clone.setDuration(length);
+                newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
+            } else {
+                newStart = shiftDate(clone.getStart().getTime(), getManager().createLength(
+                        clone.getDuration().getTimeUnit(), (long) unitCount));
+            }
             clone.setStart(new GanttCalendar(newStart));
             clone.setDuration(myLength);
         }
@@ -1061,10 +1059,10 @@ public class TaskImpl implements Task {
 
     private void recalculateActivities(List output, Date startDate, Date endDate) {
         GPCalendar calendar = myManager.getConfig().getCalendar();
-        List activities = calendar.getActivities(startDate, endDate);
+        List<CalendarActivityImpl> activities = calendar.getActivities(startDate, endDate);
         output.clear();
         for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity nextCalendarActivity = (GPCalendarActivity) activities
+            GPCalendarActivity nextCalendarActivity = activities
                     .get(i);
             TaskActivityImpl nextTaskActivity;
             if (nextCalendarActivity.isWorkingTime()) {

@@ -12,15 +12,12 @@ import javax.swing.undo.CannotUndoException;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.io.GPSaver;
 
 /**
  * @author bard
  */
 class UndoableEditImpl extends AbstractUndoableEdit {
     private String myPresentationName;
-
-    private Runnable myEditImpl;
 
     private Document myDocumentBefore;
 
@@ -33,7 +30,6 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         // System.out.println ("UndoableEditImpl : " + localizedName);
         myManager = manager;
         myPresentationName = localizedName;
-        myEditImpl = editImpl;
         myDocumentBefore = saveFile();
         editImpl.run();
         myDocumentAfter = saveFile();

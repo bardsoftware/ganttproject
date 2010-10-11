@@ -47,18 +47,15 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.ExportFinalizationJob;
 import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -85,7 +82,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
-import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 import com.lowagie.text.BadElementException;
@@ -275,12 +271,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
     static class ChartWriter {
         private final Chart myChart;
-        protected final ChartModelBase myModel;
+        protected final ChartModel myModel;
         private PdfWriter myWriter;
         private Document myDoc;
-        ChartWriter(Chart chart, PdfWriter writer, Document doc) {
+        ChartWriter(TimelineChart chart, PdfWriter writer, Document doc) {
             myChart = (Chart) chart.createCopy();
-            myModel = myChart.getModel();
+            myModel = chart.getModel();
             myWriter = writer;
             myDoc = doc;
         }
@@ -572,7 +568,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                     GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
-            ChartWriter resourceChartWriter = new ChartWriter(myUIFacade.getResourceChart(), myWriter, myDoc) {
+            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
                 protected void setupChart() {
                     super.setupChart();
                     //myModel.setRowHeight(myModel.getBounds().height/getProject().getH);

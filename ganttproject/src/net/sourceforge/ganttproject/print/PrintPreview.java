@@ -308,7 +308,7 @@ public class PrintPreview extends JDialog {
                 }
             });
         }
-        Vector vMedia = new Vector();
+        Vector<MediaSizeName> vMedia = new Vector<MediaSizeName>();
         ;
         // try {
         // vMedia = getAllMediaSizeNameAvailable();
@@ -685,7 +685,7 @@ public class PrintPreview extends JDialog {
     }
 
     static class PagePreview extends JPanel {
-    	static SortedMap ourImageCache = new TreeMap();
+    	static SortedMap<Integer, BufferedImage> ourImageCache = new TreeMap<Integer, BufferedImage>();
 		private final int myPageIndex;
 		private final PageFormat myPageFormat;
 		private final Printable myChart;
@@ -730,7 +730,7 @@ public class PrintPreview extends JDialog {
 
         protected void paintComponent(Graphics g) {
         	super.paintComponent(g);
-        	BufferedImage bufferImage = (BufferedImage) ourImageCache.get(new Integer (myPageIndex));
+        	BufferedImage bufferImage = ourImageCache.get(new Integer (myPageIndex));
         	if (bufferImage==null) {
 	        	bufferImage = new BufferedImage(
 	        			(int)myPageFormat.getWidth(), 

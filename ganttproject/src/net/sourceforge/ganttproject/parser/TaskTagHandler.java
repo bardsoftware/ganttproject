@@ -57,15 +57,12 @@ public class TaskTagHandler implements TagHandler {
             task.setName(taskName);
         }
 
-        String meeting = attrs.getValue("meeting");
-        if (meeting != null) {
-            task.setMilestone(meeting.equals("true"));
-        }
-		
-		String project = attrs.getValue("project");
-		if (project != null)
-			task.setProjectTask(true);
-		
+        task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
+
+        String project = attrs.getValue("project");
+        if (project != null)
+            task.setProjectTask(true);
+
         String start = attrs.getValue("start");
         if (start != null) {
             task.setStart(GanttCalendar.parseXMLDate(start));
@@ -100,11 +97,28 @@ public class TaskTagHandler implements TagHandler {
         String priority = attrs.getValue("priority");
         if (priority != null) {
             try {
-                task.setPriority(Integer.parseInt(priority));
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Failed to parse the value '"
+                int old_p = Integer.parseInt(priority);
+                // old_p contains old priority values, so convert them
+                Task.Priority p;
+                switch(old_p) {
+                    case 0:
+                        p = Task.Priority.LOW;
+                        break;
+                    case 2:
+                        p = Task.Priority.HIGH;
+                        break;
+                    default:
+                        p = Task.Priority.NORMAL;
+                }
+                task.setPriority(p);
+            } catch (NumberFormatException nfe) {
+                try {
+                    task.setPriority(Task.Priority.valueOf(priority.toUpperCase()));
+                } catch(IllegalArgumentException e) {
+                    throw new RuntimeException("Failed to parse the value '"
                         + priority + "' of attribute 'priority' of tag <task>",
                         e);
+                }
             }
         }
 
@@ -117,11 +131,6 @@ public class TaskTagHandler implements TagHandler {
         if ("true".equals(fixedStart)) {
             myContext.addTaskWithLegacyFixedStart(task);
         }
-
-//        String fixedFinish = attrs.getValue("fixed-finish");
-//        if ("true".equals(fixedFinish)) {
-//            task.setFinishFixed(true);
-//        }
 
         String third = attrs.getValue("thirdDate");
         if (third != null) {
@@ -146,18 +155,15 @@ public class TaskTagHandler implements TagHandler {
             try {
                 webLink = URLDecoder.decode(webLink_enc, "ISO-8859-1");
             } catch (UnsupportedEncodingException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         if (webLink != null) {
             task.setWebLink(webLink);
         }
 
-        String expand = attrs.getValue("expand");
-        if (expand != null) {
-            task.setExpand("true".equals(expand));
-        }
+        task.setExpand(Boolean.parseBoolean(attrs.getValue("expand")));
 
         String shape = attrs.getValue("shape");
         if (shape != null) {
@@ -180,7 +186,7 @@ public class TaskTagHandler implements TagHandler {
                 .getTaskHierarchy();
         myContext.setTaskID(task.getTaskID());
         Task lastTask = myStack.isEmpty() ? taskHierarchy.getRootTask()
-                : (Task) myStack.peek();
+                : myStack.peek();
         taskHierarchy.move(task, lastTask);
         myStack.push(task);
     }
@@ -193,5 +199,5 @@ public class TaskTagHandler implements TagHandler {
 
     private final TaskManager myManager;
 
-    private final Stack myStack = new Stack();
+    private final Stack<GanttTask> myStack = new Stack<GanttTask>();
 }

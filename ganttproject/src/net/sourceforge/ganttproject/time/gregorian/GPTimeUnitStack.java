@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject.time.gregorian;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -19,6 +20,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 public class GPTimeUnitStack implements TimeUnitStack {
     private TimeUnitGraph ourGraph = new TimeUnitGraph();
 
+    private final TimeUnit HOUR = ourGraph.createAtomTimeUnit("hour");
     public final TimeUnit DAY;
 
     public final TimeUnit WEEK;
@@ -36,7 +38,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
     public final TimeUnit WEEK_AS_BOTTOM_UNIT;
 
     /**
-     * 
+     *
      */
     public GPTimeUnitStack(GanttLanguage i18n) {
         TimeUnit atom = ourGraph.createAtomTimeUnit("atom");
@@ -93,4 +95,71 @@ public class GPTimeUnitStack implements TimeUnitStack {
             super(topUnit, bottomUnit, GPTimeUnitStack.this);
         }
     }
+
+    public DateFormat[] getDateFormats() {
+        DateFormat[] result;
+        if (HOUR.isConstructedFrom(getDefaultTimeUnit())) {
+            result = new DateFormat[] {
+                DateFormat.getDateInstance(DateFormat.MEDIUM),
+                DateFormat.getDateInstance(DateFormat.MEDIUM),
+                DateFormat.getDateInstance(DateFormat.SHORT),
+            };
+        }
+        else {
+            result = new DateFormat[] {
+                DateFormat.getDateInstance(DateFormat.LONG),
+                DateFormat.getDateInstance(DateFormat.MEDIUM),
+                DateFormat.getDateInstance(DateFormat.SHORT),
+            };
+        }
+        return result;
+    }
+
+    public DateFormat getTimeFormat() {
+        if (HOUR.isConstructedFrom(getDefaultTimeUnit())) {
+            return DateFormat.getTimeInstance(DateFormat.SHORT);
+        }
+        return null;
+    }
+
+    public TimeUnit findTimeUnit(String code) {
+        assert code!=null;
+        code = code.trim();
+        if (isHour(code)) {
+            return HOUR;
+        }
+        if (isDay(code)) {
+            return DAY;
+        }
+        if (isWeek(code)) {
+            return WEEK_AS_BOTTOM_UNIT;
+        }
+        return null;
+    }
+
+    private boolean isWeek(String code) {
+        return "w".equalsIgnoreCase(code);
+    }
+
+    private boolean isDay(String code) {
+        return "d".equalsIgnoreCase(code);
+    }
+
+    private boolean isHour(String code) {
+        return "h".equalsIgnoreCase(code);
+    }
+
+    public String encode(TimeUnit timeUnit) {
+        if (timeUnit==HOUR) {
+            return "h";
+        }
+        if (timeUnit==DAY) {
+            return "d";
+        }
+        if (timeUnit==WEEK_AS_BOTTOM_UNIT) {
+            return "w";
+        }
+        throw new IllegalArgumentException();
+    }
+
 }

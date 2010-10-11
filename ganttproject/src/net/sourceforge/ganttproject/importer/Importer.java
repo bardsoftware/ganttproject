@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.osgi.service.prefs.Preferences;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;

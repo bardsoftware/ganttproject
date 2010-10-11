@@ -47,11 +47,11 @@ public class LoadDistribution {
         public final Date endDate;
     }
 
-    private final List/*<Load>*/ myDaysOff = new LinkedList/*<Load>*/();
+    private final List<Load> myDaysOff = new LinkedList<Load>();
 
-    private final List/*<Load>*/ myLoads = new ArrayList/*<Load>*/();
+    private final List<Load> myLoads = new ArrayList<Load>();
 
-    private final List/*<Load>*/ myTasksLoads = new ArrayList/*<Load>*/();
+    private final List<Load> myTasksLoads = new ArrayList<Load>();
 
     private final ProjectResource myResource;
 
@@ -98,7 +98,7 @@ public class LoadDistribution {
     }
 
     private void addLoad(Date startDate, Date endDate,
-            float load, List/*<Load>*/ loads, Task t) {
+            float load, List<Load> loads, Task t) {
         Load taskLoad = new Load(startDate, endDate, load, t);
 
         myTasksLoads.add(taskLoad);
@@ -109,9 +109,9 @@ public class LoadDistribution {
             idxStart = 0;
         } else {
             for (int i = 1; i < loads.size(); i++) {
-                Load nextLoad = (Load) loads.get(i);
+                Load nextLoad = loads.get(i);
                 if (startDate.compareTo(nextLoad.startDate)>=0) {
-                    currentLoad = ((Load)loads.get(i)).load;
+                    currentLoad = loads.get(i).load;
                 }
                 if (startDate.compareTo(nextLoad.startDate)>0) {
                     continue;
@@ -132,14 +132,14 @@ public class LoadDistribution {
             idxEnd = loads.size() - 1;
         } else {
             for (int i = idxStart; i < loads.size(); i++) {
-                Load nextLoad = (Load) loads.get(i);
+                Load nextLoad = loads.get(i);
                 if (endDate.compareTo(nextLoad.startDate)>0) {
                     nextLoad.load += load;
                     continue;
                 }
                 idxEnd = i;
                 if (endDate.compareTo(nextLoad.startDate)<0) {
-                    Load prevLoad = (Load) loads.get(i - 1);
+                    Load prevLoad = loads.get(i - 1);
                     loads.add(i, new Load(endDate, null, prevLoad.load - load, null));
                 }
                 break;
@@ -156,11 +156,11 @@ public class LoadDistribution {
         return myResource;
     }
 
-    public List/*<Load>*/ getLoads() {
+    public List<Load> getLoads() {
         return myLoads;
     }
 
-    public List/*<Load>*/ getDaysOff() {
+    public List<Load> getDaysOff() {
         return myDaysOff;
     }
 
@@ -170,19 +170,19 @@ public class LoadDistribution {
      *
      * @return a list of lists of <code>Load</code> instances.
      */
-    public List/*<Load>*/ getTasksLoads() {
+    public List<Load> getTasksLoads() {
         return myTasksLoads;
     }
 
-    public Map/*<Task, List<Load>>*/ getSeparatedTaskLoads() {
-        HashMap/*<Task,List<Load>>*/ result = new HashMap/*<Task, List<Load>>*/();
-        List taskLoads = getTasksLoads();
+    public Map<Task, List<Load>> getSeparatedTaskLoads() {
+        HashMap<Task, List<Load>> result = new HashMap<Task, List<Load>>();
+        List<Load> taskLoads = getTasksLoads();
         for (int i=0; i<taskLoads.size(); i++) {
-        	Load nextLoad = (Load) taskLoads.get(i);
+        	Load nextLoad = taskLoads.get(i);
             Task nextTask = nextLoad.refTask;
-            List/*<Load>*/ partition = (List) result.get(nextTask);
+            List<Load> partition = result.get(nextTask);
             if (partition==null) {
-                partition = new ArrayList/*<Load>*/();
+                partition = new ArrayList<Load>();
                 result.put(nextTask, partition);
             }
             partition.add(nextLoad);

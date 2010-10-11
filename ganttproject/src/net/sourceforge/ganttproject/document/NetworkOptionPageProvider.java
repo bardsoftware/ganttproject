@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject.document;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;

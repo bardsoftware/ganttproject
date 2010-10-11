@@ -31,7 +31,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
 
     private ParsingContext parsingContext = null;
 
-    private List listStructure = null;
+    private List<CustomPropertiesStructure> listStructure = null;
 
 	private final CustomColumnsStorage myColumnStorage;
 
@@ -39,7 +39,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
             TaskManager taskManager, CustomColumnsStorage columnStorage) {
         this.taskManager = taskManager;
         this.parsingContext = context;
-        this.listStructure = new ArrayList();
+        this.listStructure = new ArrayList<CustomPropertiesStructure>();
         myColumnStorage = columnStorage;
     }
 
@@ -75,10 +75,10 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
      */
     public void parsingFinished() {
-        Iterator it = this.listStructure.iterator();
+        Iterator<CustomPropertiesStructure> it = this.listStructure.iterator();
 
         while (it.hasNext()) {
-            CustomPropertiesStructure cps = (CustomPropertiesStructure) it
+            CustomPropertiesStructure cps = it
                     .next();
             Task task = taskManager.getTask(cps.taskID);
             CustomColumn cc = myColumnStorage.getCustomColumnByID(cps.taskPropertyID);

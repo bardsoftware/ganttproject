@@ -12,7 +12,7 @@ import net.sourceforge.ganttproject.task.TaskLength;
  * @author bard
  */
 public class SortTasksAlgorithm {
-    private Comparator mySortActivitiesByStartDateComparator = new Comparator() {
+    private Comparator<Object> mySortActivitiesByStartDateComparator = new Comparator() {
         public int compare(Object left, Object right) {
             int result = 0;
             TaskActivity leftTask = (TaskActivity) left;
@@ -48,7 +48,7 @@ public class SortTasksAlgorithm {
 
     };
 
-    private Comparator mySortTasksByStartDateComparator = new Comparator() {
+    private Comparator<Object> mySortTasksByStartDateComparator = new Comparator() {
         public int compare(Object left, Object right) {
             int result = 0;
             Task leftTask = (Task) left;
@@ -88,7 +88,7 @@ public class SortTasksAlgorithm {
         Collections.sort(tasks, mySortActivitiesByStartDateComparator);
     }
     
-    public void sortTasksByStartDate(List/* <Task> */tasks) {
+    public void sortTasksByStartDate(List/* <Task> */<Task> tasks) {
         Collections.sort(tasks, mySortTasksByStartDateComparator);
     }
     

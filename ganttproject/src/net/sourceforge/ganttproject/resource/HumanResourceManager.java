@@ -20,22 +20,18 @@ package net.sourceforge.ganttproject.resource;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
+import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
@@ -43,9 +39,9 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  */
 public class HumanResourceManager implements ResourceManager, CustomPropertyManager {
 
-    private List myViews = new ArrayList();
+    private List<ResourceView> myViews = new ArrayList<ResourceView>();
 
-    private List resources = new ArrayList();
+    private List<ProjectResource> resources = new ArrayList<ProjectResource>();
 
     private int nextFreeId = 0;
 
@@ -53,7 +49,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     /* customFields maintains a list of custom field names
      * and their default values */
-    private final Map customFields = new HashMap();
+    private final Map<String, CustomPropertyDefinition> customFields = new HashMap<String, CustomPropertyDefinition>();
 
     private final List myListeners = new ArrayList();
 
@@ -89,7 +85,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         customFields.put(definition.getName(), definition);
 
         /* all the existant resources are added the new property field */
-        Iterator it = resources.iterator();
+        Iterator<ProjectResource> it = resources.iterator();
         while (it.hasNext()) {
             ((HumanResource)it.next()).addCustomField(definition.getName(), definition.getDefaultValue());
         }
@@ -103,7 +99,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         customFields.remove(title);
 
         /* the property field is removed from all the existant resources */
-        Iterator it = resources.iterator();
+        Iterator<ProjectResource> it = resources.iterator();
         while (it.hasNext()) {
             ((HumanResource)it.next()).removeCustomField(title);
         }
@@ -114,19 +110,19 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         // resources !?
         ProjectResource pr = null;
         for (int i = 0; i < resources.size(); i++)
-            if (((ProjectResource) resources.get(i)).getId() == id) {
-                pr = (ProjectResource) resources.get(i);
+            if (resources.get(i).getId() == id) {
+                pr = resources.get(i);
                 break;
             }
         return pr;
     }
 
-    public List getResources() {
+    public List<ProjectResource> getResources() {
         return resources;
     }
 
     public ProjectResource[] getResourcesArray() {
-        return (ProjectResource[]) resources.toArray(new ProjectResource[resources.size()]);
+        return resources.toArray(new ProjectResource[resources.size()]);
     }
 
     public void remove(ProjectResource resource) {
@@ -158,16 +154,16 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     private void fireResourceAdded(ProjectResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = (ResourceView) i.next();
+        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+            ResourceView nextView = i.next();
             nextView.resourceAdded(e);
         }
     }
 
     void fireResourceChanged(ProjectResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = (ResourceView) i.next();
+        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+            ResourceView nextView = i.next();
             nextView.resourceChanged(e);
         }
     }
@@ -175,21 +171,21 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
     private void fireResourcesRemoved(ProjectResource[] resources) {
         ResourceEvent e = new ResourceEvent(this, resources);
         for (int i = 0; i < myViews.size(); i++) {
-            ResourceView nextView = (ResourceView) myViews.get(i);
+            ResourceView nextView = myViews.get(i);
             nextView.resourcesRemoved(e);
         }
     }
 
     public void fireAssignmentsChanged(ProjectResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = (ResourceView) i.next();
+        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+            ResourceView nextView = i.next();
             nextView.resourceAssignmentsChanged(e);
         }
     }
 
     private void fireCleanup() {
-        fireResourcesRemoved((ProjectResource[]) resources
+        fireResourcesRemoved(resources
                 .toArray(new ProjectResource[resources.size()]));
     }
 
@@ -212,9 +208,9 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     }
 
-    public Map importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
-        Map foreign2native = new HashMap();
-        List foreignResources = hrManager.getResources();
+    public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
+        Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
+        List<ProjectResource> foreignResources = hrManager.getResources();
         for (int i = 0; i < foreignResources.size(); i++) {
             HumanResource foreignHR = (HumanResource) foreignResources.get(i);
             HumanResource nativeHR = (HumanResource) getById(foreignHR.getId());
@@ -231,13 +227,13 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         return this;
     }
 
-    public List getDefinitions() {
-        List result = new ArrayList(customFields.values());
+    public List<CustomPropertyDefinition> getDefinitions() {
+        List<CustomPropertyDefinition> result = new ArrayList<CustomPropertyDefinition>(customFields.values());
         return result;
     }
 
-    CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
-        return (CustomPropertyDefinition) customFields.get(nextName);
+    public CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
+        return customFields.get(nextName);
     }
 
     static String getValueAsString(Object value) {
@@ -258,55 +254,31 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        CustomPropertyDefinition result = new CustomPropertyDefinitionImpl(name, id, stubDefinition);
+        CustomPropertyDefinition result = new DefaultCustomPropertyDefinition(name, id, stubDefinition);
         addCustomField(result);
         return result;
+    }
+
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        removeCustomField(def.getID());
     }
 
     public void importData(CustomPropertyManager source) {
         // TODO Auto-generated method stub
 
+
+}
+
+    @Override
+    public void addListener(CustomPropertyListener listener) {
+        // TODO Auto-generated method stub
+
     }
 
-    static class CustomPropertyDefinitionImpl implements CustomPropertyDefinition {
-        private final String myName;
-        private final String myID;
-        private final Object myDefaultValue;
-        private final String myDefaultValueAsString;
-        private final Class myType;
-        private final String myTypeAsString;
-
-        CustomPropertyDefinitionImpl(String name, String id, CustomPropertyDefinition stub) {
-            myName = name;
-            myID = id;
-            myDefaultValue = stub.getDefaultValue();
-            myDefaultValueAsString = stub.getDefaultValueAsString();
-            myType = stub.getType();
-            myTypeAsString = stub.getTypeAsString();
-        }
-        public Object getDefaultValue() {
-            return myDefaultValue;
-        }
-
-        public String getDefaultValueAsString() {
-            return myDefaultValueAsString;
-        }
-
-        public String getID() {
-            return myID;
-        }
-
-        public String getName() {
-            return myName;
-        }
-
-        public Class getType() {
-            return myType;
-        }
-
-        public String getTypeAsString() {
-            return myTypeAsString;
-        }
-
+    @Override
+    public CustomPropertyDefinition createDefinition(String typeAsString,
+            String colName, String defValue) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

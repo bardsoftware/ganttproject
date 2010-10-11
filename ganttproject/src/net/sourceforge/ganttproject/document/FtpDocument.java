@@ -6,8 +6,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 

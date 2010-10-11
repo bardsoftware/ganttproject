@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 

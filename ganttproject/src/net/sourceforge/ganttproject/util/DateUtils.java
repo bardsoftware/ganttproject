@@ -1,11 +1,8 @@
 package net.sourceforge.ganttproject.util;
 
-import java.text.AttributedCharacterIterator;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Locale;
-
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**

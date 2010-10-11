@@ -12,7 +12,7 @@ import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
-    private final Map myAssignments = new HashMap();
+    private final Map<ProjectResource, ResourceAssignment> myAssignments = new HashMap<ProjectResource, ResourceAssignment>();
 
     private final TaskImpl myTask;
 
@@ -47,12 +47,12 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     }
 
     public ResourceAssignment[] getAssignments() {
-        return (ResourceAssignment[]) myAssignments.values().toArray(
+        return myAssignments.values().toArray(
                 new ResourceAssignment[myAssignments.size()]);
     }
 
     public ResourceAssignment getAssignment(ProjectResource resource) {
-        return (ResourceAssignment) myAssignments.get(resource);
+        return myAssignments.get(resource);
     }
 
     public ResourceAssignmentMutator createMutator() {
@@ -213,7 +213,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     private class ResourceAssignmentMutatorImpl implements
             ResourceAssignmentMutator {
-        private Map myQueue = new HashMap();
+        private Map<ProjectResource, MutationInfo> myQueue = new HashMap<ProjectResource, MutationInfo>();
 
         public ResourceAssignment addAssignment(ProjectResource resource) {
             ResourceAssignment result = new ResourceAssignmentStub(resource);
@@ -222,7 +222,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
 
         public void deleteAssignment(ProjectResource resource) {
-            MutationInfo info = (MutationInfo) myQueue.get(resource);
+            MutationInfo info = myQueue.get(resource);
             if (info == null) {
                 myQueue.put(resource, new MutationInfo(resource,
                         MutationInfo.DELETE));
@@ -232,10 +232,10 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
 
         public void commit() {
-            List mutations = new ArrayList(myQueue.values());
+            List<MutationInfo> mutations = new ArrayList<MutationInfo>(myQueue.values());
             Collections.sort(mutations);
             for (int i = 0; i < mutations.size(); i++) {
-                MutationInfo next = (MutationInfo) mutations.get(i);
+                MutationInfo next = mutations.get(i);
                 switch (next.myOperation) {
                 case MutationInfo.DELETE: {
                     myAssignments.remove(next.myResource);
@@ -331,8 +331,8 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     }
 
 	public ProjectResource getCoordinator() {
-		for (Iterator assignments = myAssignments.values().iterator(); assignments.hasNext();) {
-			ResourceAssignment next = (ResourceAssignment) assignments.next();
+		for (Iterator<ResourceAssignment> assignments = myAssignments.values().iterator(); assignments.hasNext();) {
+			ResourceAssignment next = assignments.next();
 			if (next.isCoordinator()) {
 				return next.getResource();
 			}

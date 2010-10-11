@@ -6,7 +6,7 @@ package org.w3c.util;
 
 /**
  * @version $Revision: 1.1 $
- * @author Benoît Mahé (bmahe@w3.org)
+ * @author BenoÃ®t MahÃ© (bmahe@w3.org)
  */
 public class InvalidDateException extends Exception {
 

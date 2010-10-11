@@ -11,7 +11,6 @@ import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class OpenProjectAction extends GPAction {
     private GanttProject myMainFrame;

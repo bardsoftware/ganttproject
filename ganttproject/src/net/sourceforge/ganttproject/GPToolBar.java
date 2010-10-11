@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
@@ -25,7 +23,7 @@ public class GPToolBar extends JToolBar {
     };
     
     private final GanttOptions options;
-    private List myButtons;
+    private List<Object> myButtons;
     
     public GPToolBar(String title, int toolBarPosition, GanttOptions options) {
         super(title, toolBarPosition);
@@ -35,9 +33,9 @@ public class GPToolBar extends JToolBar {
         this.options = options;
     }
     
-    void populate(List/*<JButton>*/ buttons) {
+    void populate(List/*<JButton>*/<Object> buttons) {
         removeAll();
-        myButtons = new ArrayList(buttons.size());
+        myButtons = new ArrayList<Object>(buttons.size());
         for (int i = 0; i < buttons.size(); i++) {
             Object nextButton = buttons.get(i);
             if (GPToolBar.SEPARATOR_OBJECT.equals(nextButton)) {

@@ -10,7 +10,6 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Collision;
 
 /**
  * Dependant task starts not earlier than dependee finishes Created by IntelliJ

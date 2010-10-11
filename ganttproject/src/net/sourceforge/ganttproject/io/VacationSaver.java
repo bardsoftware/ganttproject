@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.io;
 
-import java.util.List;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
@@ -26,7 +24,7 @@ class VacationSaver extends SaverBase {
                             .getElementAt(j);
                     addAttribute("start", gdo.getStart().toXMLString(), attrs);
                     addAttribute("end", gdo.getFinish().toXMLString(), attrs);
-                    addAttribute("resourceid", String.valueOf(p.getId()), attrs);
+                    addAttribute("resourceid", p.getId(), attrs);
                     emptyElement("vacation", attrs, handler);
                 }
         }

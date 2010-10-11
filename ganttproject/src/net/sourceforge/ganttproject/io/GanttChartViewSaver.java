@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.io;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -22,8 +20,8 @@ class GanttChartViewSaver extends SaverBase {
                 GanttTreeTable.DisplayedColumn dc = (GanttTreeTable.DisplayedColumn)displayedColumns.get(i);
                 if (dc.isDisplayed()) {
                     addAttribute("property-id", dc.getID(), attrs);
-                    addAttribute("order", String.valueOf(dc.getOrder()), attrs);
-                    addAttribute("width", String.valueOf(dc.getWidth()), attrs);
+                    addAttribute("order", dc.getOrder(), attrs);
+                    addAttribute("width", dc.getWidth(), attrs);
                     emptyElement("displaycolumn", attrs, handler);
                 }
             }

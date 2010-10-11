@@ -1,7 +1,7 @@
 /*
  * ProjectResource.java
  *
- * Created on 27. Mai 2003, 08:11
+ * Created on 27.05.2003
  */
 
 package net.sourceforge.ganttproject.resource;
@@ -80,9 +80,10 @@ public abstract class ProjectResource {
     }
 
     public void setId(int id) {
-        if (this.id == -1) // setting the id is only allowed when id is not
-            // assigned
+        if (this.id == -1) {
+            // setting the id is only allowed when id is not assigned
             this.id = id;
+        }
     }
 
     public int getId() {
@@ -107,9 +108,9 @@ public abstract class ProjectResource {
     public ResourceAssignment createAssignment(
             ResourceAssignment assignmentToTask) {
         for (int i = 0; i < myAssignments.size(); i++) {
-            if (((ResourceAssignment) myAssignments.get(i)).getTask().equals(
+            if (myAssignments.get(i).getTask().equals(
                     assignmentToTask.getTask())) {
-                // throw new IllegalStateException("An attemp to assign resource
+                // throw new IllegalStateException("An attempt to assign resource
                 // to the same task twice");
             }
         }
@@ -122,7 +123,7 @@ public abstract class ProjectResource {
     /** Removes the assignment objects associated to this ProjectResource
      *  and those associated to it's Tasks */
     private void removeAllAssignments() {
-        List copy = new ArrayList(myAssignments);
+        List<ResourceAssignment> copy = new ArrayList<ResourceAssignment>(myAssignments);
         for (int i=0; i<copy.size(); i++) {
             ResourceAssignmentImpl next = (ResourceAssignmentImpl) copy.get(i);
             next.myAssignmentToTask.delete();
@@ -141,7 +142,7 @@ public abstract class ProjectResource {
         return myLoadDistribution;
     }
 
-    private final List myAssignments = new ArrayList();
+    private final List<ResourceAssignment> myAssignments = new ArrayList<ResourceAssignment>();
 
     private class ResourceAssignmentImpl implements ResourceAssignment {
 
@@ -205,7 +206,7 @@ public abstract class ProjectResource {
     }
 
     public ResourceAssignment[] getAssignments() {
-        return (ResourceAssignment[]) myAssignments.toArray(new ResourceAssignment[0]);
+        return myAssignments.toArray(new ResourceAssignment[0]);
     }
 
     public void resetLoads() {

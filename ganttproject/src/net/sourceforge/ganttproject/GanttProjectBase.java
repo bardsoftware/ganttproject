@@ -18,41 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -61,8 +43,6 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.gui.DialogAligner;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
@@ -72,12 +52,10 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
@@ -102,7 +80,7 @@ import org.eclipse.core.runtime.IAdaptable;
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
     private final ViewManagerImpl myViewManager;
-    private final List myModifiedStateChangeListeners = new ArrayList();
+    private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
     private final UIFacadeImpl myUIFacade;
     private final GanttStatusBar statusBar;
     private final TimeUnitStack myTimeUnitStack;
@@ -159,7 +137,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectModified(boolean isModified){
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             try {
                 if (isModified) {
                     next.projectModified();
@@ -176,7 +154,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectClosed() {
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             next.projectClosed();
         }
     }
@@ -260,7 +238,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     private class ViewManagerImpl implements GPViewManager, ProjectEventListener {
         private GanttTabbedPane myTabs;
-        private List myViews = new ArrayList();
+        private List<GPView> myViews = new ArrayList<GPView>();
         private GPViewImpl mySelectedView;
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;
@@ -443,7 +421,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
 
         public void optionsChanged() {
-            myTreeView.getTable().setRowHeight(myGanttViewModel.setRowHeight());
+            myTreeView.getTable().setRowHeight(myGanttViewModel.calculateRowHeight());
             AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
             model.fireTableStructureChanged();
             myTreeView.updateUI();

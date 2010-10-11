@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -76,7 +75,7 @@ class SkewedFrameOffsetBuilder {
     protected TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
-    void constructOffsets(List topUnitOffsets, List bottomUnitOffsets) {
+    void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
         {
             int offsetEnd = 0;
             Date currentDate = myStartDate;
@@ -91,6 +90,7 @@ class SkewedFrameOffsetBuilder {
                         new Offset(
                                 bottomUnit,
                                 myStartDate,
+                                currentFrame.getStartDate(),
                                 endDate,
                                 offsetEnd,
                                 null));
@@ -114,6 +114,7 @@ class SkewedFrameOffsetBuilder {
                         new Offset(
                                 topUnit,
                                 myStartDate,
+                                currentFrame.getStartDate(),
                                 endDate,
                                 offsetEnd,
                                 null));

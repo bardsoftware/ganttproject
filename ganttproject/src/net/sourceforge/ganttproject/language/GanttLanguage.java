@@ -23,7 +23,6 @@ import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EventListener;
 import java.util.EventObject;
@@ -58,7 +57,7 @@ public class GanttLanguage {
 
     private static GanttLanguage ganttLanguage = null;
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<Listener> myListeners = new ArrayList<Listener>();
 
     public static GanttLanguage getInstance() {
         if (ganttLanguage == null) {
@@ -218,7 +217,7 @@ public class GanttLanguage {
     private void fireLanguageChanged() {
         Event event = new Event(this);
         for (int i = 0; i < myListeners.size(); i++) {
-            Listener next = (Listener) myListeners.get(i);
+            Listener next = myListeners.get(i);
             next.languageChanged(event);
         }
     }

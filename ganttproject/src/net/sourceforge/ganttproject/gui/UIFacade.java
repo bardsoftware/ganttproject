@@ -5,8 +5,6 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 import java.awt.Frame;
-import java.io.File;
-
 import javax.swing.Action;
 
 import net.sourceforge.ganttproject.chart.Chart;

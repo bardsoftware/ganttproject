@@ -41,15 +41,15 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
 
     public void adjustNestedTasks(Task supertask) throws TaskDependencyException {
         TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
-        List /*<Task>*/ nestedTasks = new ArrayList(Arrays.asList(containmentFacade.getNestedTasks(supertask)));
+        List /*<Task>*/<Task> nestedTasks = new ArrayList<Task>(Arrays.asList(containmentFacade.getNestedTasks(supertask)));
         if (nestedTasks.size()==0) {
             return;
         }
         SortTasksAlgorithm sortAlgorithm = new SortTasksAlgorithm();
         sortAlgorithm.sortTasksByStartDate(nestedTasks);
-        Set modifiedTasks = new HashSet();
+        Set<Task> modifiedTasks = new HashSet<Task>();
         for (int i=0; i<nestedTasks.size(); i++) {
-            Task nextNested = (Task) nestedTasks.get(i);
+            Task nextNested = nestedTasks.get(i);
             if (nextNested.getStart().getTime().before(supertask.getStart().getTime())) {
                 TaskMutator mutator = nextNested.createMutatorFixingDuration();
                 mutator.setStart(supertask.getStart());
@@ -65,7 +65,7 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
                 modifiedTasks.add(nextNested);
             }
         }
-        run((Task[])modifiedTasks.toArray(new Task[0]));
+        run(modifiedTasks.toArray(new Task[0]));
         RecalculateTaskScheduleAlgorithm alg = new RecalculateTaskScheduleAlgorithm(this) {
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return AdjustTaskBoundsAlgorithm.this.createContainmentFacade();
@@ -77,18 +77,18 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
 
     private class AlgorithmImpl {
 		
-    private Set myModifiedTasks = new HashSet();
+    private Set<Task> myModifiedTasks = new HashSet<Task>();
 
     public void run(Task[] tasks) {
-        HashSet taskSet = new HashSet(Arrays.asList(tasks));
+        HashSet<Task> taskSet = new HashSet<Task>(Arrays.asList(tasks));
         myModifiedTasks.addAll(taskSet);
         TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
         while (!taskSet.isEmpty()) {
             recalculateSupertaskScheduleBottomUp(taskSet, containmentFacade);
             taskSet.clear();
-            for (Iterator modified = myModifiedTasks.iterator(); modified
+            for (Iterator<Task> modified = myModifiedTasks.iterator(); modified
                     .hasNext();) {
-                Task nextTask = (Task) modified.next();
+                Task nextTask = modified.next();
                 Task supertask = containmentFacade.getContainer(nextTask);
                 if (supertask != null) {
                     taskSet.add(supertask);
@@ -100,10 +100,10 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
     }
     
 
-    private void recalculateSupertaskScheduleBottomUp(Set supertasks,
+    private void recalculateSupertaskScheduleBottomUp(Set<Task> supertasks,
             TaskContainmentHierarchyFacade containmentFacade) {
-        for (Iterator it = supertasks.iterator(); it.hasNext();) {
-            Task nextSupertask = (Task) it.next();
+        for (Iterator<Task> it = supertasks.iterator(); it.hasNext();) {
+            Task nextSupertask = it.next();
             recalculateSupertaskSchedule(nextSupertask, containmentFacade);
         }
     }

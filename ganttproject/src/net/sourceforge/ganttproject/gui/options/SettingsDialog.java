@@ -74,12 +74,12 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
         addPagesFromProviders();
         DefaultMutableTreeNode projectNode = addObject(GanttProject
                 .correctLabel(language.getText("project")), null);
+        addObject(GanttProject.correctLabel(language.getText("weekends")), null);
         DefaultMutableTreeNode generalNode = addObject(language
                 .getText("general"), null);
         DefaultMutableTreeNode exportNode = addObject(GanttProject
                 .correctLabel(language.getText("export")), null);
-        DefaultMutableTreeNode roleNode = addObject(language
-                .getText("resourceRole"), null);
+        addObject(language.getText("resourceRole"), null);
 
         // general section
         addObject(language.getText("parameters"), generalNode);
@@ -142,7 +142,12 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
                     .getText("project"))))
                 settingPanel = new ProjectSettingsPanel((Frame) getOwner(),
                         getProject());
-    
+
+            else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("weekends"))))
+                settingPanel = new WeekendsSettingsPanel((Frame) getOwner(),
+                        getProject());
+
             else if (sNode.equals(GanttProject.correctLabel(language
                     .getText("parameters"))))
                 settingPanel = new ParametersSettingsPanel(appli);

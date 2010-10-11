@@ -11,8 +11,6 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.Mediator;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.ProjectResource;

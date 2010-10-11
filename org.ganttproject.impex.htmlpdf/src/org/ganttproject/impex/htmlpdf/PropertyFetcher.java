@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -28,12 +29,7 @@ class PropertyFetcher {
         return myProject.getCustomColumnsStorage();
     }    
     void getTaskAttributes(Task t, Map id2value) {
-        int priority = t.getPriority();
-        if (priority<0 || priority>2) {
-            priority = 1;
-        }
-        final String[] priorities = new String[] {i18n("low"), i18n("normal"), i18n("hight")};
-        id2value.put("tpd1", priorities[priority]);
+        id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
         
         DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
         id2value.put("tpd3", t.getName());

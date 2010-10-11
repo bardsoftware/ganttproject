@@ -27,11 +27,11 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
 
     private String s = "    "; // the marge
 
-    private final List myPreviousStates;
+    private final List<GanttPreviousState> myPreviousStates;
 
-    private ArrayList tasks = new ArrayList();
+    private ArrayList<GanttPreviousStateTask> tasks = new ArrayList<GanttPreviousStateTask>();
 
-    public PreviousStateTasksTagHandler(List previousStates) {
+    public PreviousStateTasksTagHandler(List<GanttPreviousState> previousStates) {
         myPreviousStates = previousStates;
     }
 
@@ -39,7 +39,7 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
             Attributes attrs) {
         if (qName.equals("previous-tasks")) {
             setName(attrs.getValue("name"));
-            tasks = new ArrayList();
+            tasks = new ArrayList<GanttPreviousStateTask>();
             if (myPreviousStates != null) {
                 try {
                     previousState = new GanttPreviousState(myName);
@@ -70,23 +70,13 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
 
         String id = attrs.getValue("id");
 
-        String meetingAsString = attrs.getValue("meeting");
-
-        boolean meeting = false;
-
-        if (meetingAsString.equals("true"))
-            meeting = true;
+        boolean meeting = Boolean.parseBoolean(attrs.getValue("meeting"));
 
         String start = attrs.getValue("start");
 
         String duration = attrs.getValue("duration");
 
-        String nestedAsString = attrs.getValue("super");
-
-        boolean nested = false;
-
-        if (nestedAsString.equals("true"))
-            nested = true;
+        boolean nested = Boolean.parseBoolean(attrs.getValue("super"));
 
         GanttPreviousStateTask task = new GanttPreviousStateTask(
                 new Integer(id).intValue(), GanttCalendar.parseXMLDate(start),
@@ -98,7 +88,7 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
         return myName;
     }
 
-    public ArrayList getTasks() {
+    public ArrayList<GanttPreviousStateTask> getTasks() {
         return tasks;
     }
 }

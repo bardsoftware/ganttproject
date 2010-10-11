@@ -2,9 +2,6 @@ package net.sourceforge.ganttproject.plugins;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.Exporter;
@@ -39,7 +36,7 @@ public class PluginManager {
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(extensionPointID);
         
-        ArrayList extensions = new ArrayList();
+        ArrayList<Object> extensions = new ArrayList<Object>();
         for (int i = 0; i < configElements.length; i++) {
             try {
                 Object nextExtension = configElements[i]

@@ -37,9 +37,6 @@ abstract class LabelPositionOptionImpl extends GPAbstractOption implements
     }
 
     public void setValue(String value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         myLockedValue = value;
     }
 

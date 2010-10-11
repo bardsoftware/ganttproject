@@ -19,7 +19,6 @@ import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.BlankLineNode;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 class TaskTreeImageGenerator {
@@ -33,12 +32,12 @@ class TaskTreeImageGenerator {
 
     }
 
-    private GanttTree2 getTree() {
+    protected GanttTree2 getTree() {
         return myTreeView;
     }
 
-    List getPrintableNodes(GanttExportSettings settings) {
-        List myItemsToConsider;
+    List<DefaultMutableTreeNode> getPrintableNodes(GanttExportSettings settings) {
+        List<DefaultMutableTreeNode> myItemsToConsider;
         if (settings.isOnlySelectedItem()) {
             myItemsToConsider = Arrays.asList(getTree().getSelectedNodes());
         }
@@ -48,7 +47,7 @@ class TaskTreeImageGenerator {
         System.out.println("TaskToConsider.size = " + myItemsToConsider.size());
 
         for (int i = 0; i < myItemsToConsider.size(); i++) {
-            if (((DefaultMutableTreeNode) myItemsToConsider.get(i)).isRoot()) {
+            if (myItemsToConsider.get(i).isRoot()) {
                 myItemsToConsider.remove(i);
                 break;
             }
@@ -123,7 +122,7 @@ class TaskTreeImageGenerator {
     static class PaintState {
         int y;
         int rowCount = 0;
-        Stack nestingStack = new Stack();
+        Stack<DefaultMutableTreeNode> nestingStack = new Stack<DefaultMutableTreeNode>();
         int rowHeight;
         int indent;
     }
@@ -145,7 +144,7 @@ class TaskTreeImageGenerator {
             if (!blankline) {
                 next = (Task) nextTreeNode.getUserObject();
                 while (!state.nestingStack.isEmpty()) {
-                    DefaultMutableTreeNode topStackNode = (DefaultMutableTreeNode) state.nestingStack.pop();
+                    DefaultMutableTreeNode topStackNode = state.nestingStack.pop();
                     if (nextTreeNode.getParent()==topStackNode) {
                         state.nestingStack.push(topStackNode);
                         break;
@@ -202,6 +201,6 @@ class TaskTreeImageGenerator {
         return res;
     }
 
-    private static final int HEADER_OFFSET = 44;
+    protected static final int HEADER_OFFSET = 44;
 
 }

@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
-import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,7 +34,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.PrjInfos;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -87,9 +85,9 @@ public class GanttXMLOpen implements GPParser {
     // boolean bImport = false;
     // int maxID = 0;
 
-    private ArrayList myTagHandlers = new ArrayList();
+    private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
     private ParsingContext myContext;
 
@@ -369,7 +367,7 @@ public class GanttXMLOpen implements GPParser {
     }
 
     private StringBuffer myCharacterBuffer = new StringBuffer();
-    private final Stack myTagStack = new Stack();
+    private final Stack<String> myTagStack = new Stack<String>();
     
     class GanttXMLParser extends DefaultHandler {
         StringBuffer textBuffer;
@@ -385,7 +383,7 @@ public class GanttXMLOpen implements GPParser {
         
         public void endDocument() throws SAXException {
             for (int i = 0; i < myListeners.size(); i++) {
-                ParsingListener l = (ParsingListener) myListeners.get(i);
+                ParsingListener l = myListeners.get(i);
                 l.parsingFinished();
             }
         }
@@ -395,9 +393,9 @@ public class GanttXMLOpen implements GPParser {
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
             myTagStack.push(qName);
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 try {
                     next.startElement(namespaceURI, sName, qName, attrs);
                 } catch (FileFormatException e) {
@@ -408,9 +406,9 @@ public class GanttXMLOpen implements GPParser {
 
         public void endElement(String namespaceURI, String sName, String qName)
                 throws SAXException {
-            for (Iterator handlers = myTagHandlers.iterator(); handlers
+            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
                     .hasNext();) {
-                TagHandler next = (TagHandler) handlers.next();
+                TagHandler next = handlers.next();
                 next.endElement(namespaceURI, sName, qName);
             }
             myTagStack.pop();
