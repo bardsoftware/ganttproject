@@ -24,32 +24,23 @@
 package org.ganttproject.impex.msproject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
@@ -258,20 +249,24 @@ public abstract class GanttMPXJOpen {
         Priority prio = task.getPriority();
         if (prio != null) {
             int priority = prio.getValue();
-            int p;
+            net.sourceforge.ganttproject.task.Task.Priority p;
             switch (priority) {
             case Priority.HIGHEST:
-            case Priority.HIGHER:
             case Priority.VERY_HIGH:
-                p = 2;
+                p = net.sourceforge.ganttproject.task.Task.Priority.HIGHEST;
+                break;
+            case Priority.HIGHER:
+                p = net.sourceforge.ganttproject.task.Task.Priority.HIGH;
+                break;
+            case Priority.LOWER:
+                p = net.sourceforge.ganttproject.task.Task.Priority.LOW;
                 break;
             case Priority.LOWEST:
-            case Priority.LOWER:
             case Priority.VERY_LOW:
-                p = 0;
+                p = net.sourceforge.ganttproject.task.Task.Priority.LOWEST;
                 break;
             default:
-                p = 1;
+                p = net.sourceforge.ganttproject.task.Task.Priority.NORMAL;
             }
 
             gtask.setPriority(p);

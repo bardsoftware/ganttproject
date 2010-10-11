@@ -47,14 +47,14 @@ public class GanttXFIGSaver {
     // private GanttGraphicArea area;
     // private PrjInfos prjInfos;
 
-    List lot = new ArrayList(); // list of tasks
+    List<Task> lot = new ArrayList<Task>(); // list of tasks
 
     // ArrayList lots = new ArrayList();
     ArrayList loc = new ArrayList(); // list of colors
 
-    ArrayList atl = new ArrayList(); // list of text object
+    ArrayList<TextObject> atl = new ArrayList<TextObject>(); // list of text object
 
-    ArrayList abl = new ArrayList(); // list of box object
+    ArrayList<BoxObject> abl = new ArrayList<BoxObject>(); // list of box object
 
     // store the start of the project
     GanttCalendar dateShift = new GanttCalendar();
@@ -135,9 +135,9 @@ public class GanttXFIGSaver {
             System.out.println("getProjectTextWidth begin");
 
         float res = 0.0f;
-        for (Iterator it = lot.iterator(); it.hasNext();) {
+        for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
             // get the name of the task
-            Task task = (Task) it.next();
+            Task task = it.next();
             float taskTextWidth = getTaskTextWidth(task);
             if (taskTextWidth > res) {
                 res = taskTextWidth;
@@ -199,7 +199,7 @@ public class GanttXFIGSaver {
             System.out.println("searchUserColor begin");
         loc.clear(); // clear the list
 
-        for (Iterator it = lot.iterator(); it.hasNext();) {
+        for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.next();
             if (!node.isRoot()) {
                 GanttTask task = (GanttTask) (node.getUserObject());
@@ -225,7 +225,7 @@ public class GanttXFIGSaver {
         GanttCalendar startDate = null, endDate = null;
 
         // Get project start, end times
-        for (Iterator it = lot.iterator(); it.hasNext();) {
+        for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
             // get the task
             Task task = (Task) (((DefaultMutableTreeNode) it.next())
                     .getUserObject());
@@ -251,7 +251,7 @@ public class GanttXFIGSaver {
         int index = 0;
 
         // now add text and box objects to the tasks
-        for (Iterator it = lot.iterator(); it.hasNext();) {
+        for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
             DefaultMutableTreeNode node = ((DefaultMutableTreeNode) it.next());
             if (!node.isRoot()) {
                 // get the task
@@ -432,15 +432,15 @@ public class GanttXFIGSaver {
 
             // loop on tasks
             int i = 0;
-            for (Iterator it = lot.iterator(); it.hasNext();) {
+            for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
                 DefaultMutableTreeNode node = ((DefaultMutableTreeNode) it
                         .next());
                 // get the task
                 if (!node.isRoot()) {
                     GanttTask task = (GanttTask) (node.getUserObject());
 
-                    TextObject txtObj = (TextObject) (atl.get(i));
-                    BoxObject boxObject = (BoxObject) (abl.get(i));
+                    TextObject txtObj = (atl.get(i));
+                    BoxObject boxObject = (abl.get(i));
 
                     // print the text of the task
                     drawtext(fout, txtObj);

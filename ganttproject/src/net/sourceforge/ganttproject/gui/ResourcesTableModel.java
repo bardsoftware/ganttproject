@@ -1,3 +1,21 @@
+/* 
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.util.ArrayList;
@@ -14,6 +32,9 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 
+/**
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class ResourcesTableModel extends AbstractTableModel {
 
     final String[] columnNames = { GanttLanguage.getInstance().getText("id"),
@@ -22,56 +43,35 @@ public class ResourcesTableModel extends AbstractTableModel {
             GanttLanguage.getInstance().getText("coordinator"),
             GanttLanguage.getInstance().getText("role") };
 
-    private final ResourceAssignmentCollection myAssignmentCollection;
-
-    private final List myAssignments;
-
-    private static final int MAX_ROW_COUNT = 100;
+    private final List<ResourceAssignment> myAssignments;
 
     private final ResourceAssignmentMutator myMutator;
 
     private boolean isChanged = false;
 
     public ResourcesTableModel(ResourceAssignmentCollection assignmentCollection) {
-        myAssignmentCollection = assignmentCollection;
-        myAssignments = new ArrayList(Arrays.asList(assignmentCollection
+        myAssignments = new ArrayList<ResourceAssignment>(Arrays.asList(assignmentCollection
                 .getAssignments()));
         myMutator = assignmentCollection.createMutator();
     }
 
-    /**
-     * Return the number of colums
-     */
     public int getColumnCount() {
-
         return columnNames.length;
-
     }
 
-    /**
-     * Return the number of rows
-     */
     public int getRowCount() {
         return myAssignments.size() + 1;
     }
 
-    /**
-     * Return the name of the column at col index
-     */
     public String getColumnName(int col) {
-
         return columnNames[col];
-
     }
 
-    /**
-     * Return the object a specify cell
-     */
     public Object getValueAt(int row, int col) {
         Object result;
         if (row >= 0) {
             if (row < myAssignments.size()) {
-                ResourceAssignment assignment = (ResourceAssignment) myAssignments
+                ResourceAssignment assignment = myAssignments
                         .get(row);
                 switch (col) {
                 case 0:
@@ -99,34 +99,8 @@ public class ResourcesTableModel extends AbstractTableModel {
             throw new IllegalArgumentException("I can't return data in row="
                     + row);
         }
+        System.err.println("row="+row+" col="+col+" result="+result);
         return result;
-    }
-
-    /*
-     * JTable uses this method to determine the default renderer/ editor for
-     * each cell. If we didn't implement this method, then the last column would
-     * contain text ("true"/"false"), rather than a check box.
-     */
-
-    public Class getColumnClass(int c) {
-        // if (c == 0 || c == 2) {
-        // return String.class;
-        // } else {
-        // return HumanResource.class;
-        // }
-        switch (c) {
-        case 0:
-        case 2:
-            return String.class;
-        case 1:
-            return HumanResource.class;
-        case 3:
-            return Boolean.class;
-        case 4:
-            return Role.class;
-        default:
-            return String.class;
-        }
     }
 
     public boolean isCellEditable(int row, int col) {
@@ -139,10 +113,6 @@ public class ResourcesTableModel extends AbstractTableModel {
         return result;
     }
 
-    /*
-     * Don't need to implement this method unless your table's data can change.
-     */
-
     public void setValueAt(Object value, int row, int col) {
         if (row >= 0) {
             if (row >= myAssignments.size()) {
@@ -154,12 +124,10 @@ public class ResourcesTableModel extends AbstractTableModel {
             throw new IllegalArgumentException("I can't set data in row=" + row);
         }
         isChanged = true;
-        // fireTableCellUpdated(row, col);
-
     }
 
     private void updateAssignment(Object value, int row, int col) {
-        ResourceAssignment updateTarget = (ResourceAssignment) myAssignments
+        ResourceAssignment updateTarget = myAssignments
                 .get(row);
         switch (col) {
         case 4: {
@@ -219,16 +187,28 @@ public class ResourcesTableModel extends AbstractTableModel {
         }
     }
 
-    public List getResourcesAssignments() {
+    public List<ResourceAssignment> getResourcesAssignments() {
         return myAssignments;
     }
 
-    void commit() {
+    public void commit() {
         myMutator.commit();
     }
 
     public boolean isChanged() {
         return isChanged;
     }
+
+	public void delete(int[] selectedRows) {
+        List<ResourceAssignment> selected = new ArrayList<ResourceAssignment>();
+        for (int row : selectedRows) {
+            selected.add(myAssignments.get(row));
+        }
+        for (ResourceAssignment ra : selected) {
+            ra.delete();
+        }
+        myAssignments.removeAll(selected);
+        fireTableDataChanged();
+	}
 
 }

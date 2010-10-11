@@ -1,15 +1,13 @@
 /*
  * HumanResource.java
  *
- * Created on 27. Mai 2003, 22:19
+ * Created on 27.05.2003
  */
 
 package net.sourceforge.ganttproject.resource;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,30 +34,27 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 
     private String email = "";
 
-    private int function;
-
     private Role myRole;
 
     private final DefaultListModel myDaysOffList = new DefaultListModel ();
     
-    /* contains all the custom property values of a resource.
+    /** contains all the custom property values of a resource.
      * the key is the property name and the value is the property value */
-    private final Map customFields;
+    private final Map<String, Object> customFields;
     
     private final HumanResourceManager myManager;
 
     HumanResource(HumanResourceManager manager) {
         this.name = "";
-        customFields = new HashMap();
+        customFields = new HashMap<String, Object>();
         myManager = manager;
-        // added
     }
 
     /** Creates a new instance of HumanResource */
     HumanResource(String name, int id, HumanResourceManager manager) {
     	super(id);
         this.name = name;
-        customFields = new HashMap();
+        customFields = new HashMap<String, Object>();
         myManager = manager;
     }
 
@@ -86,7 +81,7 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 		for (int i=0; i<copyDaysOff.getSize(); i++) {
 			myDaysOffList.addElement(copyDaysOff.get(i));
 		}
-		customFields = new HashMap(copy.customFields);
+		customFields = new HashMap<String, Object>(copy.customFields);
 		areEventsEnabled = true;
     }
  
@@ -119,14 +114,6 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         return phone;
     }
 
-    // public void setFunction (int function) {
-    // this.function=function;
-    // }
-
-    // public int getFunction () {
-    // return myRole==null ? 0 : myRole.getID();
-    // }
-
     public void setRole(Role role) {
         myRole = role;
         fireResourceChanged();
@@ -134,9 +121,9 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 
     public Role getRole() {
         if (myRole == null) {
-            System.err
-                    .println("[HumanResource] getRole(): I have no role :( name="
-                            + getName());
+            System.err.println(
+                    "[HumanResource] getRole(): I have no role :( name="
+                    + getName());
         }
         return myRole;
     }
@@ -189,8 +176,8 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         }        
     }
 
-	public List/*<CustomProperty>*/ getCustomProperties() {
-		List result = new ArrayList(customFields.size());
+	public List<CustomProperty> getCustomProperties() {
+		List<CustomProperty> result = new ArrayList<CustomProperty>(customFields.size());
 		for (Iterator entries = customFields.entrySet().iterator(); entries.hasNext();) {
 			Map.Entry nextEntry = (Entry) entries.next();
 			String nextName = (String) nextEntry.getKey();

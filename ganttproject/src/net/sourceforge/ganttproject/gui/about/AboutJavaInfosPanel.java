@@ -50,13 +50,13 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
 
         try {
             Enumeration props = System.getProperties().propertyNames();
-            SortedSet s = new TreeSet();
+            SortedSet<String> s = new TreeSet<String>();
             while (props.hasMoreElements()) {
                 s.add((String) props.nextElement());
             }
-            Iterator i = s.iterator();
+            Iterator<String> i = s.iterator();
             while (i.hasNext()) {
-                String prop = (String) i.next();
+                String prop = i.next();
                 modelproperties.addField(new SystemInfo(prop, System
                         .getProperty(prop)));
             }
@@ -117,7 +117,7 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
 
         final Class[] columnClasses = { String.class, String.class };
 
-        Vector data = new Vector();
+        Vector<SystemInfo> data = new Vector<SystemInfo>();
 
         public void addField(SystemInfo w) {
             data.addElement(w);
@@ -141,7 +141,7 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
         }
 
         public Object getValueAt(int row, int col) {
-            SystemInfo info = (SystemInfo) data.elementAt(row);
+            SystemInfo info = data.elementAt(row);
             if (col == 0)
                 return info.getName();
             else if (col == 1)

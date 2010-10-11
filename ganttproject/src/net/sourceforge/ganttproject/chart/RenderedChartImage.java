@@ -14,10 +14,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.util.List;
-
-import net.sourceforge.ganttproject.GanttGraphicArea;
-import net.sourceforge.ganttproject.GanttGraphicArea.ChartImplementation;
 
 public abstract class RenderedChartImage extends SimpleRenderedImage {
 

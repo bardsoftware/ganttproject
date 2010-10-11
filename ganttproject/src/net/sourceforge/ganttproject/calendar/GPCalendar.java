@@ -3,9 +3,7 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -18,13 +16,29 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface GPCalendar {
-    List getActivities(Date startDate, Date endDate);
+    public enum MoveDirection {
+        FORWARD, BACKWARD
+    }
+
+    List<CalendarActivityImpl> getActivities(Date startDate, Date endDate);
 
     List getActivities(Date startDate, TimeUnit timeUnit, long l);
 
     void setWeekDayType(int day, DayType type);
 
     DayType getWeekDayType(int day);
+
+    /**
+     * @return true when weekends are only shown and taken into
+     *  account for the task scheduling.
+     */
+    public boolean getOnlyShowWeekends();
+
+    /**
+     * @param onlyShowWeekends must be set to true if weekends are
+     *  only shown and not taken into account for the task scheduling
+     */
+    public void setOnlyShowWeekends(boolean onlyShowWeekends);
 
     void setPublicHoliDayType(int month, int date);
 
@@ -38,14 +52,10 @@ public interface GPCalendar {
 
     public void setPublicHolidays(URL calendar, GanttProject gp);
 
-    public Collection getPublicHolidays();
+    public Collection<Date> getPublicHolidays();
 
-    final class DayType {
-        public static final DayType WORKING = new DayType();
-
-        public static final DayType WEEKEND = new DayType();
-
-        public static final DayType HOLIDAY = new DayType();
+    public enum DayType {
+        WORKING, NON_WORKING, WEEKEND, HOLIDAY
     }
 
     Date findClosestWorkingTime(Date time);
@@ -58,6 +68,8 @@ public interface GPCalendar {
      * midnight of the next monday
      */
     Date shiftDate(Date input, TaskLength shift);
+
+    Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
 
     GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
     String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";

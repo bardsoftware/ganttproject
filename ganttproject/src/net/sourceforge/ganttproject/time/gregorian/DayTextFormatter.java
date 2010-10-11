@@ -4,9 +4,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TextFormatter;
-import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class DayTextFormatter extends CachingTextFormatter implements TextFormatter {

@@ -6,6 +6,8 @@ package net.sourceforge.ganttproject.calendar;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -40,10 +42,10 @@ abstract class GPCalendarBase {
                 -unitCount);
     }
 
-    protected abstract List getActivitiesBackward(Date startDate,
+    protected abstract List<CalendarActivityImpl> getActivitiesBackward(Date startDate,
             TimeUnit timeUnit, long l);
 
-    protected abstract List getActivitiesForward(Date startDate,
+    protected abstract List<GPCalendarActivity> getActivitiesForward(Date startDate,
             TimeUnit timeUnit, long l);
 
     public List/* <GPCalendarActivity> */getActivities(Date startingFrom,
@@ -51,5 +53,29 @@ abstract class GPCalendarBase {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());
     }
+
+    public Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType) {
+        Date nextUnitStart = direction == GPCalendar.MoveDirection.FORWARD ?
+                timeUnit.adjustRight(time) : timeUnit.jumpLeft(time);
+        switch (dayType) {
+        case WORKING:
+            if (!isNonWorkingDay(nextUnitStart)) {
+                return nextUnitStart;
+            } else {
+                break;
+            }
+        case WEEKEND:
+        case HOLIDAY:
+        case NON_WORKING:
+            if (isNonWorkingDay(nextUnitStart)) {
+                return nextUnitStart;
+            } else {
+                break;
+            }
+        }
+        return findClosest(nextUnitStart, timeUnit, direction, dayType);
+    }
+
+    public abstract boolean isNonWorkingDay(Date date);
 
 }

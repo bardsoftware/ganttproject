@@ -100,7 +100,7 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
     	
     }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
-		private List myFields = new ArrayList();
+		private List<TaskFieldImpl> myFields = new ArrayList<TaskFieldImpl>();
 		public void add(String name, int order, int width) {
 			myFields.add(new TaskFieldImpl(name, order, width));
 		}
@@ -108,7 +108,7 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
 			myFields.clear();
 		}
 		public Column getField(int index) {
-			return (Column) myFields.get(index);
+			return myFields.get(index);
 		}
 		public int getSize() {
 			return myFields.size();

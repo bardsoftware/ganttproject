@@ -25,17 +25,17 @@ public class LinkTasksAction extends TaskActionBase {
     }
 
 
-    protected void run(List selection) throws TaskDependencyException {
+    protected void run(List<Task> selection) throws TaskDependencyException {
         for (int i=0; i<selection.size()-1; i++) {
-            Task dependant = (Task) selection.get(i+1);
-            Task dependee = (Task) selection.get(i);
+            Task dependant = selection.get(i+1);
+            Task dependee = selection.get(i);
             if (getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {
                 getTaskManager().getDependencyCollection().createDependency(dependant, dependee);                
             }
         }                
     }
 
-    protected boolean isEnabled(List selection) {
+    protected boolean isEnabled(List<Task> selection) {
         return selection.size()>=2;
     }
 }

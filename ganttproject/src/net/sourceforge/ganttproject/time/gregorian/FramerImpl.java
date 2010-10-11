@@ -13,9 +13,6 @@ package net.sourceforge.ganttproject.time.gregorian;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.DateFrameable;

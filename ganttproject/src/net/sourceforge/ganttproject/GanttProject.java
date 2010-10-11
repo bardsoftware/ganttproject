@@ -36,7 +36,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -57,10 +56,8 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -77,9 +74,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.GanttProjectBase.RowHeightAligner;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
-import net.sourceforge.ganttproject.action.DeleteAssignmentAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.NewArtefactAction;
@@ -104,12 +99,10 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.ToggleChartAction;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.export.ExportFileAction;
 import net.sourceforge.ganttproject.gui.GanttDialogCalendar;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
@@ -127,8 +120,6 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.importer.ImportFileAction;
-import net.sourceforge.ganttproject.importer.ImportFileWizardImpl;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
@@ -138,7 +129,6 @@ import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
-import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
@@ -148,7 +138,6 @@ import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.BlankLineNode;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -240,7 +229,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public boolean isOnlyViewer;
 
     /** The list of all managers installed in this project */
-    private Hashtable managerHash = new Hashtable();
+    private Hashtable<String, Object> managerHash = new Hashtable<String, Object>();
 
     private ResourceActionSet myResourceActions;
 
@@ -283,9 +272,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
 
-    private List myRolloverActions = new ArrayList();
+    private List<Action> myRolloverActions = new ArrayList<Action>();
 
-    private ArrayList myPreviousStates = new ArrayList();
+    private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
     private MouseListener myStopEditingMouseListener = null;
 
@@ -547,7 +536,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(),tree, area);
         GPView ganttView = getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
-        myResourceChartTabContent = new ResourceChartTabContentPanel(getResourcePanel(), getResourcePanel().area);
+        myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(), getResourcePanel().area);
         GPView resourceView = getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
         getTabs().setSelectedIndex(0);
@@ -813,10 +802,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private void updateMenuMRU() {
         mMRU.removeAll();
         int index = 0;
-        Iterator iterator = documentsMRU.iterator();
+        Iterator<Document> iterator = documentsMRU.iterator();
         while (iterator.hasNext()) {
             index++;
-            Document document = (Document) iterator.next();
+            Document document = iterator.next();
             JMenuItem mi = new JMenuItem(new OpenDocumentAction(index,
                     document, this));
             mMRU.add(mi);
@@ -1399,11 +1388,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     }
 
-    public ArrayList getPreviouStates() {
+    public ArrayList<GanttPreviousState> getPreviouStates() {
         return myPreviousStates;
     }
 
-    public List getBaselines() {
+    public List<GanttPreviousState> getBaselines() {
         return getPreviouStates();
     }
 
@@ -1535,7 +1524,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Create a new task */
-
     public Task newTask() {
 
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
@@ -1552,8 +1540,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     new ChangeEvent(tree.getTreeTable().getTreeTable()));
         }
 
-        GanttCalendar cal = new GanttCalendar(area.getViewState()
-                .getStartDate());
+        GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
         GanttLanguage lang = GanttLanguage.getInstance();
@@ -1630,7 +1617,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         if (choice==Choice.YES) {
             getUndoManager().undoableEdit("Task removed", new Runnable() {
                 public void run() {
-                    ArrayList fathers = new ArrayList();
+                    ArrayList<DefaultMutableTreeNode> fathers = new ArrayList<DefaultMutableTreeNode>();
                     tree.stopEditing();
                     for (int i = 0; i < cdmtn.length; i++) {
                         if (cdmtn[i] != null && cdmtn[i] instanceof TaskNode) {
@@ -1661,7 +1648,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                     }
                     for (int i = 0; i < fathers.size(); i++) {
-                        DefaultMutableTreeNode father = (DefaultMutableTreeNode) fathers
+                        DefaultMutableTreeNode father = fathers
                                 .get(i);
                         if (father.getChildCount() == 0)
                             ((Task) father.getUserObject())
@@ -1988,7 +1975,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         System.out
                 .println("         -xsl-dir [xsl_directory]                        localisation of the xsl directory for html export");
         System.out
-                .println("    -pdf  [project_file_name] [pdf_file_name],         export directly a ganttproject file to web pages");
+                .println("    -pdf  [project_file_name] [pdf_file_name],         export directly a ganttproject file to a PDF file");
         System.out
                 .println("         -xsl-fo [xsl_fo_file]                           localisation of the xsl-fo file for pdf export");
         System.out
@@ -2072,7 +2059,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
-        HashMap parsedArgs = new HashMap();
+        HashMap<String, List> parsedArgs = new HashMap<String, List>();
         String argName = "";
         for (int i=0; i<arg.length; i++) {
             String nextWord = arg[i];
@@ -2082,9 +2069,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
                 argName = nextWord.toLowerCase();
             } else {
-                List values = (List) parsedArgs.get(argName);
+                List<String> values = parsedArgs.get(argName);
                 if (values==null || values==Collections.EMPTY_LIST) {
-                    values = new ArrayList();
+                    values = new ArrayList<String>();
                     parsedArgs.put(argName, values);
                 }
                 values.add(nextWord);
@@ -2102,7 +2089,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
         if (parsedArgs.containsKey("-log")) {
             try {
-                List values = (List) parsedArgs.get("-log");
+                List values = parsedArgs.get("-log");
                 String logFileName = values.isEmpty() ?
                         System.getProperty("user.home") +"/.ganttproject.log" :
                         String.valueOf(values.get(0));
@@ -2124,10 +2111,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 System.err.println("Main frame created");
                 String startupDocument = null;
                 if (parsedArgs.containsKey("")) {
-                   List values = (List) parsedArgs.get("");
+                   List values = parsedArgs.get("");
                    startupDocument = (String) values.get(0);
                 } else if (parsedArgs.containsKey("-open")) {
-                   List values = (List) parsedArgs.get("-open");
+                   List values = parsedArgs.get("-open");
                    startupDocument = values.isEmpty() ? null : (String) values.get(0);
                 }
                 if (startupDocument!=null) {
@@ -2149,48 +2136,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    /**
-     * The class able to export directly by command line From Dmitry Barashev
-     * @deprecated Use exporter extension point
-     */
-    public static class ExportFileInfo {
-        private static final String[] FILE_EXTENSIONS=new String[] {
-            "html", "png", "jpg", "pdf", "xfig", "csv", "mpx"
-        };
-        public final File myFile;
-
-        public final int myFormat;
-
-        public final GanttExportSettings myStorageOptions;
-
-        public static final int FORMAT_HTML = 1;
-
-        public static final int FORMAT_PNG = 2;
-
-        public static final int FORMAT_JPG = 3;
-
-        public static final int FORMAT_PDF = 4;
-
-        public static final int FORMAT_XFIG = 5;
-
-        public static final int FORMAT_CSV = 6;
-
-        public static final int FORMAT_MSPROJECT = 7;
-
-        public static final ExportFileInfo EMPTY = new ExportFileInfo(null, -1,
-                null);
-
-        public ExportFileInfo(File file, int format, GanttExportSettings options) {
-            myFile = file;
-            myFormat = format;
-            myStorageOptions = options;
-        }
-
-        public String getFileExtension() {
-            return FILE_EXTENSIONS[myFormat];
-        }
-    }
-
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
 
     public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
@@ -2198,7 +2143,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
 
     // private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-    private DocumentManager myDocumentManager;
 
     private ParserFactory myParserFactory;
 
@@ -2308,9 +2252,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getCustomColumnsStorage().reset();
 
         for (int i = 0; i < myPreviousStates.size(); i++) {
-            ((GanttPreviousState) myPreviousStates.get(i)).remove();
+            myPreviousStates.get(i).remove();
         }
-        myPreviousStates = new ArrayList();
+        myPreviousStates = new ArrayList<GanttPreviousState>();
 
         //TODO [dbarashev] implement ProjectEventListener in bComparePrev action
         bComparePrev.setEnabled(false);
@@ -2370,11 +2314,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public int getResourceDividerLocation() {
-        return getResourcePanel().getDividerLocation();
+        return myResourceChartTabContent.getDividerLocation();
+//        return getResourcePanel().getDividerLocation();
     }
 
     public void setResourceDividerLocation(int location) {
-        getResourcePanel().setDividerLocation(location);
+        myResourceChartTabContent.setDividerLocation(location);
     }
 
     public TaskTreeUIFacade getTaskTree() {
@@ -2602,7 +2547,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     private void addButtons() {
-        List buttons = new ArrayList(iconList.getSize());
+        List<Object> buttons = new ArrayList<Object>(iconList.getSize());
         for (int i=0; i<iconList.getSize(); i++) {
             buttons.add(iconList.get(i));
         }
@@ -2629,7 +2574,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
             getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-            ArrayList projectTasks = tree.getProjectTasks();
+            ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
             if (projectTasks.size() != 0) {
                 for (int i = 0; i < projectTasks.size(); i++)
                     getTaskManager().processCriticalPath(
@@ -2655,10 +2600,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         ourWindowListener = windowListener;
     }
 
-
     public void refresh() {
         getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-        ArrayList projectTasks = tree.getProjectTasks();
+        ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
         if (projectTasks.size() != 0) {
             for (int i = 0; i < projectTasks.size(); i++)
                 getTaskManager().processCriticalPath(
@@ -2725,4 +2669,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return getResourcePanel().getResourceTreeTable();
     }
 
+    public IGanttProject getProject() {
+        return this;
+    }
 }

@@ -11,8 +11,6 @@ import java.net.URI;
 
 import org.xml.sax.Attributes;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -54,11 +52,11 @@ class ProxyDocument implements Document {
 
     private final ParserFactory myParserFactory;
 
-	private final DocumentCreator myCreator;
+    private final DocumentCreator myCreator;
 
     private PortfolioImpl myPortfolio;
 
-	private final TableHeaderUIFacade myVisibleFields;
+    private final TableHeaderUIFacade myVisibleFields;
 
     ProxyDocument(DocumentCreator creator, Document physicalDocument, IGanttProject project,
             UIFacade uiFacade, TableHeaderUIFacade visibleFields, ParserFactory parserFactory) {
@@ -109,11 +107,11 @@ class ProxyDocument implements Document {
     public String getFilePath() {
         String result = myPhysicalDocument.getFilePath();
         if (result==null) {
-        	try {
-				result = myCreator.createTemporaryFile();
-			} catch (IOException e) {
-				myUIFacade.showErrorDialog(e);
-			}
+            try {
+                result = myCreator.createTemporaryFile();
+            } catch (IOException e) {
+                myUIFacade.showErrorDialog(e);
+            }
         }
         return result;
     }
@@ -146,11 +144,11 @@ class ProxyDocument implements Document {
 //                parsing, failure);
 //        AcquireLockState lock = new AcquireLockState(parsing, confirmation);
         try {
-        	getTaskManager().setEventsEnabled(false);
-        	parsing.enter();
+            getTaskManager().setEventsEnabled(false);
+            parsing.enter();
         }
         finally {
-        	getTaskManager().setEventsEnabled(true);
+            getTaskManager().setEventsEnabled(true);
         }
         //lock.enter();
     }
@@ -165,8 +163,8 @@ class ProxyDocument implements Document {
             buffer = bufferStream.toByteArray();
         }
         catch (IOException e) {
-        	getUIFacade().showErrorDialog(e);
-        	return;
+            getUIFacade().showErrorDialog(e);
+            return;
         }
         OutputStream output = getOutputStream();
         try {
@@ -174,10 +172,10 @@ class ProxyDocument implements Document {
             output.flush();
         }
         finally {
-            output.close();            	
+            output.close();
         }
     }
-    
+
     private TaskManagerImpl getTaskManager() {
         return (TaskManagerImpl) myProject.getTaskManager();
     }
@@ -223,7 +221,7 @@ class ProxyDocument implements Document {
         }
     }
 
-    
+
     class OpenCopyConfirmationState {
         ParsingState myParsingState;
 
@@ -277,29 +275,31 @@ class ProxyDocument implements Document {
                     hrManager, getTaskManager(), getRoleManager());
             VacationTagHandler vacationHandler = new VacationTagHandler(
                     hrManager);
-            PreviousStateTasksTagHandler previousStateHandler = 
-            	new PreviousStateTasksTagHandler(myProject.getBaselines());
+            PreviousStateTasksTagHandler previousStateHandler =
+                new PreviousStateTasksTagHandler(myProject.getBaselines());
             RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
             TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener
                     .getContext());
             DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(
                     getActiveCalendar());
+            OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(
+                    getActiveCalendar());
             ViewTagHandler viewHandler = new ViewTagHandler(getUIFacade());
 
-            TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getCustomColumnsStorage());
+            TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
             opener.addTagHandler(taskPropHandler);
             CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(
                     opener.getContext(), getTaskManager(), myProject.getCustomColumnsStorage());
             opener.addTagHandler(customPropHandler);
-            TaskDisplayColumnsTagHandler taskDisplayHandler = 
-            	new TaskDisplayColumnsTagHandler(myVisibleFields);
+            TaskDisplayColumnsTagHandler taskDisplayHandler =
+                new TaskDisplayColumnsTagHandler(myVisibleFields);
             opener.addTagHandler(taskDisplayHandler);
 
             TaskDisplayColumnsTagHandler resourceViewHandler = new TaskDisplayColumnsTagHandler(
-            		getUIFacade().getResourceTree().getVisibleFields(), "field", "id", "order", "width");
+                    getUIFacade().getResourceTree().getVisibleFields(), "field", "id", "order", "width");
             opener.addTagHandler(resourceViewHandler);
             opener.addParsingListener(resourceViewHandler);
-            
+
             opener.addTagHandler(taskHandler);
 
             opener.addParsingListener(taskPropHandler);
@@ -315,10 +315,11 @@ class ProxyDocument implements Document {
             opener.addTagHandler(previousStateHandler);
             opener.addTagHandler(rolesHandler);
             opener.addTagHandler(weekHandler);
+            opener.addTagHandler(onlyShowWeekendsHandler);
             opener.addTagHandler(viewHandler);
             opener.addParsingListener(dependencyHandler);
             opener.addParsingListener(resourceHandler);
-            
+
             HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject);
             opener.addTagHandler(holidayHandler);
             opener.addParsingListener(holidayHandler);
@@ -348,21 +349,21 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.getURI();
     }
 
-	public boolean isLocal() {
+    public boolean isLocal() {
         return myPhysicalDocument.isLocal();
     }
 
     /* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 * @author arun_ram
-	 * Added on Feb 26, 2006	 
-	 */
-	public boolean equals(Object doc) {
+     * @see java.lang.Object#equals(java.lang.Object)
+     * @author arun_ram
+     * Added on Feb 26, 2006
+     */
+    public boolean equals(Object doc) {
         if (false==doc instanceof ProxyDocument) {
             return false;
         }
-		return getPath().equals(((Document)doc).getPath());
-	}
+        return getPath().equals(((Document)doc).getPath());
+    }
 
     public Portfolio getPortfolio() {
         return myPortfolio;
@@ -406,15 +407,33 @@ class ProxyDocument implements Document {
                     Document document = myCreator.getDocument(locationAsString);
                     getPortfolioImpl().setDefaultDocument(document);
                 }
-                
+
             }
         }
 
         public void endElement(String namespaceURI, String sName, String qName) {
             if (PORTFOLIO_TAG.equals(qName)) {
                 isReadingPortfolio = false;
-            }        
+            }
         }
-        
+
+    }
+
+    private static class OnlyShowWeekendsTagHandler implements TagHandler {
+
+        private final GPCalendar calendar;
+
+        public OnlyShowWeekendsTagHandler(GPCalendar calendar) {
+            this.calendar = calendar;
+        }
+
+        public void startElement(String namespaceURI, String sName,
+                String qName, Attributes attrs) {
+            if ("only-show-weekends".equals(qName))
+                calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
+        }
+
+        public void endElement(String namespaceURI, String sName, String qName) {
+        }
     }
 }

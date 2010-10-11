@@ -3,41 +3,23 @@
  */
 package org.ganttproject.impex.htmlpdf;
 
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -45,22 +27,13 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
-import net.sourceforge.ganttproject.export.TaskVisitor;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.util.FileUtil;
 
 public class ExporterToHTML extends ExporterBase implements Exporter {

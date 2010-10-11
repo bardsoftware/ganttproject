@@ -6,7 +6,6 @@ package net.sourceforge.ganttproject.application;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 
 import org.eclipse.core.runtime.IPlatformRunnable;

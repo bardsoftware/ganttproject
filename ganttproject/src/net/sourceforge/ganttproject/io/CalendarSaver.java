@@ -1,7 +1,6 @@
 package net.sourceforge.ganttproject.io;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -42,15 +41,17 @@ public class CalendarSaver extends SaverBase {
             addAttribute(getShortDayName(i), holiday ? "1" : "0", attrs);
         }
         emptyElement("default-week", attrs, handler);
+        addAttribute("value", project.getActiveCalendar().getOnlyShowWeekends(), attrs);
+        emptyElement("only-show-weekends", attrs, handler);
         emptyElement("overriden-day-types", attrs, handler);
         emptyElement("days", attrs, handler);
         endElement("calendar", handler);
         //
         endElement("day-types", handler);
-        Collection publicHoliday = project.getActiveCalendar()
+        Collection<Date> publicHoliday = project.getActiveCalendar()
                 .getPublicHolidays();
-        for (Iterator iter = publicHoliday.iterator(); iter.hasNext();) {
-            Date d = (Date) iter.next();
+        for (Iterator<Date> iter = publicHoliday.iterator(); iter.hasNext();) {
+            Date d = iter.next();
             if (d.getYear() == 1 - 1900)
                 addAttribute("year", "", attrs);
             else

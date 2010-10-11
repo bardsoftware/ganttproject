@@ -112,7 +112,7 @@ public class GanttPreviousState {
         write(s + "</previous-tasks>");
     }
 
-    public void saveFilesFromLoaded(ArrayList tasks) {
+    public void saveFilesFromLoaded(ArrayList<GanttPreviousStateTask> tasks) {
         try {
             AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(os);
@@ -137,22 +137,22 @@ public class GanttPreviousState {
         }
     }
 
-    public void writeTasksFromLoaded(ArrayList tasks) throws IOException {
+    public void writeTasksFromLoaded(ArrayList<GanttPreviousStateTask> tasks) throws IOException {
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
         for (int i = 0; i < tasks.size(); i++) {
             os.write(s + s + "<previous-task id=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getId() + "\"");
+                    + tasks.get(i).getId() + "\"");
             os.write(" start=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getStart()
+                    + tasks.get(i).getStart()
                             .toXMLString() + "\"");
             os.write(" duration=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).getDuration()
+                    + tasks.get(i).getDuration()
                     + "\"");
             os.write(" meeting=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).isMilestone()
+                    + tasks.get(i).isMilestone()
                     + "\"");
             os.write(" super=\""
-                    + ((GanttPreviousStateTask) tasks.get(i)).hasNested()
+                    + tasks.get(i).hasNested()
                     + "\"");
             os.write("/>\n");
         }
@@ -205,7 +205,7 @@ public class GanttPreviousState {
 
             boolean haschild = false;
 
-            ArrayList child = myTree.getAllChildTask(node);
+            ArrayList<Object> child = myTree.getAllChildTask(node);
             if (child.size() != 0) {
                 haschild = true;
 
@@ -273,8 +273,8 @@ public class GanttPreviousState {
         return notes.replaceAll(s1, s2);
     }
 
-    public ArrayList load() throws ParserConfigurationException, SAXException, IOException {
-        ArrayList tasks = null;
+    public ArrayList<GanttPreviousStateTask> load() throws ParserConfigurationException, SAXException, IOException {
+        ArrayList<GanttPreviousStateTask> tasks = null;
         PreviousStateTasksTagHandler handler = new PreviousStateTasksTagHandler(
                 null);
         SAXParserFactory factory = SAXParserFactory.newInstance();

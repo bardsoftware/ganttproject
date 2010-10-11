@@ -9,6 +9,22 @@ import net.sourceforge.ganttproject.GanttCalendar;
  * this template use File | Settings | File Templates.
  */
 public interface TaskDependencyConstraint extends Cloneable {
+    enum Type {
+        startstart, finishstart, finishfinish, startfinish;
+
+        public static Type getType(TaskDependencyConstraint constraint) {
+            return getType(constraint.getID());
+        }
+
+        public static Type getType(int constraintID) {
+            for (Type t : Type.values()) {
+                if (t.ordinal()+1 == constraintID) {
+                    return t;
+                }
+            }
+            return null;
+        }
+    }
     void setTaskDependency(TaskDependency dependency);
 
     // boolean isFulfilled();
@@ -16,14 +32,14 @@ public interface TaskDependencyConstraint extends Cloneable {
     Collision getCollision();
 
     Collision getBackwardCollision(Date depedantStart);
-    
+
     String getName();
 
     int getID();
 
     TaskDependency.ActivityBinding getActivityBinding();
 
-    
+
     interface Collision {
         GanttCalendar getAcceptableStart();
 

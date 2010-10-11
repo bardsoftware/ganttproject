@@ -17,14 +17,14 @@ public class DocumentsMRU {
 
     private int maxSize;
 
-    private List documents;
+    private List<Document> documents;
 
     public DocumentsMRU(int maxSize) {
         if (maxSize <= 0)
             throw new IllegalArgumentException(
                     "maxSize must be larger than zero (" + maxSize + ")");
         this.maxSize = maxSize;
-        documents = new ArrayList(maxSize);
+        documents = new ArrayList<Document>(maxSize);
     }
 
     /**
@@ -99,7 +99,7 @@ public class DocumentsMRU {
     /**
      * returns an Iterator over the entries of the list of Documents MRU
      */
-    public Iterator iterator() {
+    public Iterator<Document> iterator() {
         return documents.iterator();
     }
 

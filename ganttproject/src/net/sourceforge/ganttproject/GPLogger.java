@@ -19,7 +19,7 @@ public class GPLogger {
 	private static Logger ourLogger = Logger.getLogger("org.ganttproject");
 	private static Handler ourHandler;
 	private static UIFacade ourUIFacade;
-    private static Map ourClass_Logger = new HashMap();
+    private static Map<Class, Logger> ourClass_Logger = new HashMap<Class, Logger>();
 
 	static {
         ourHandler = new ConsoleHandler();
@@ -50,7 +50,7 @@ public class GPLogger {
 	}
 
 	public static Logger getLogger(Class clazz) {
-        Logger logger = (Logger) ourClass_Logger.get(clazz);
+        Logger logger = ourClass_Logger.get(clazz);
         if (logger == null) {
             logger = Logger.getLogger(clazz.getName());
             logger.addHandler(ourHandler);

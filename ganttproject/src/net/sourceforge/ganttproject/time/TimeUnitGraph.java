@@ -11,11 +11,11 @@ import java.util.Map;
  * @author bard Date: 01.02.2004
  */
 public class TimeUnitGraph {
-    private Map myUnit2compositions = new HashMap();
+    private Map<TimeUnit, List<Composition>> myUnit2compositions = new HashMap<TimeUnit, List<Composition>>();
 
     public TimeUnit createAtomTimeUnit(String name) {
         TimeUnit result = new TimeUnitImpl(name, this, null);
-        List compositions = new ArrayList();
+        List<Composition> compositions = new ArrayList<Composition>();
         compositions.add(new Composition(result, 1));
         myUnit2compositions.put(result, compositions);
         return result;
@@ -45,11 +45,11 @@ public class TimeUnitGraph {
 
     private void registerTimeUnit(TimeUnit unit, int atomCount) {
         TimeUnit atomUnit = unit.getDirectAtomUnit();
-        List transitiveCompositions = (List) myUnit2compositions.get(atomUnit);
+        List transitiveCompositions = myUnit2compositions.get(atomUnit);
         if (transitiveCompositions == null) {
             throw new RuntimeException("Atom unit=" + atomUnit + " is unknown");
         }
-        List compositions = new ArrayList(transitiveCompositions.size() + 1);
+        List<Composition> compositions = new ArrayList<Composition>(transitiveCompositions.size() + 1);
         compositions.add(new Composition(unit, 1));
         for (int i = 0; i < transitiveCompositions.size(); i++) {
             Composition nextTransitive = (Composition) transitiveCompositions
@@ -61,7 +61,7 @@ public class TimeUnitGraph {
 
     public Composition getComposition(TimeUnitImpl timeUnit, TimeUnit atomUnit) {
         Composition result = null;
-        List compositions = (List) myUnit2compositions.get(timeUnit);
+        List compositions = myUnit2compositions.get(timeUnit);
         if (compositions == null) {
             throw new RuntimeException("Unit=" + timeUnit
                     + " has no compositions");

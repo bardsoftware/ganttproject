@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,11 +52,11 @@ public class GanttProjectImpl implements IGanttProject {
     private final HumanResourceManager myResourceManager;
     private final TaskManagerConfigImpl myTaskManagerConfig;
     private Document myDocument;
-    private final List myListeners = new ArrayList();
+    private final List<ProjectEventListener> myListeners = new ArrayList<ProjectEventListener>();
     private UIConfiguration myUIConfiguration;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
-    private final List myBaselines = new ArrayList();
+    private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
 
     public GanttProjectImpl() {
         myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole());
@@ -139,17 +138,14 @@ public class GanttProjectImpl implements IGanttProject {
 
     public void setModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void setModified(boolean modified) {
         // TODO Auto-generated method stub
-
     }
 
     public void close() {
         // TODO Auto-generated method stub
-
     }
 
     public Document getDocument() {
@@ -175,9 +171,7 @@ public class GanttProjectImpl implements IGanttProject {
 
     public void open(Document document) throws IOException {
         // TODO Auto-generated method stub
-
     }
-
 
     public DocumentManager getDocumentManager() {
         // TODO Auto-generated method stub
@@ -221,11 +215,17 @@ public class GanttProjectImpl implements IGanttProject {
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
     }
+
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
-    public List getBaselines() {
+
+    public List<GanttPreviousState> getBaselines() {
         return myBaselines;
+    }
+
+    public void repaintResourcePanel() {
+        // TODO Auto-generated method stub
     }
 
 }

@@ -3,7 +3,6 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -19,23 +19,23 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  */
 public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         GPCalendar {
-    public List getActivities(Date startDate, Date endDate) {
+    public List<CalendarActivityImpl> getActivities(Date startDate, Date endDate) {
         return Collections.singletonList(new CalendarActivityImpl(startDate,
                 endDate, true));
     }
 
-    protected List getActivitiesForward(Date startDate, TimeUnit timeUnit,
+    protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
             long l) {
         Date activityStart = timeUnit.adjustLeft(startDate);
         Date activityEnd = activityStart;
         for (; l > 0; l--) {
             activityEnd = timeUnit.adjustRight(activityEnd);
         }
-        return Collections.singletonList(new CalendarActivityImpl(
+        return Collections.singletonList((GPCalendarActivity)new CalendarActivityImpl(
                 activityStart, activityEnd, true));
     }
 
-    protected List getActivitiesBackward(Date startDate, TimeUnit timeUnit,
+    protected List<CalendarActivityImpl> getActivitiesBackward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
         Date activityEnd = timeUnit.adjustLeft(startDate);
         Date activityStart = activityEnd;
@@ -77,8 +77,17 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public DayType getDayTypeDate(Date curDayStart) {
-        // TODO Auto-generated method stub
         return GPCalendar.DayType.WORKING;
+    }
+
+    public boolean getOnlyShowWeekends() {
+        // Weekends are always working days for this calendar
+        return true;
+    }
+
+    public void setOnlyShowWeekends(boolean onlyShowWeekends) {
+        // Ignore onlyShowWeekends, since weekends are always
+        // working days for this calendar
     }
 
     public void setPublicHoliDayType(Date curDayStart) {
@@ -91,7 +100,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
 
     }
 
-    public Collection getPublicHolidays() {
+    public Collection<Date> getPublicHolidays() {
         // TODO Auto-generated method stub
         return null;
     }

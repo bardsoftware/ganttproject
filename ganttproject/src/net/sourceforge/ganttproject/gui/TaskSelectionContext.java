@@ -6,6 +6,6 @@ import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskSelectionContext {
 
-	List getSelectedTasks();
+	List<Task> getSelectedTasks();
 
 }

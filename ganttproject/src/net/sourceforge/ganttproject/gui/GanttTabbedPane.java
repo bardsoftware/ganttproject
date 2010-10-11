@@ -9,7 +9,7 @@ import javax.swing.JTabbedPane;
 
 public class GanttTabbedPane extends JTabbedPane {
 
-    private Map myUserObjectsMap = new HashMap();
+    private Map<Component, Object> myUserObjectsMap = new HashMap<Component, Object>();
     
 
     public GanttTabbedPane() {

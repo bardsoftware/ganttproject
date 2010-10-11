@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
  * http://www.w3.org/TR/1998/NOTE-datetime-19980827
  * 
  * @version $Revision: 1.5 $
- * @author Benoît Mahé (bmahe@w3.org)
+ * @author BenoÃ®t MahÃ© (bmahe@w3.org)
  */
 public class DateParser {
 

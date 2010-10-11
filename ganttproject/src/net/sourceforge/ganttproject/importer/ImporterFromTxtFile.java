@@ -2,8 +2,6 @@ package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GanttTXTOpen;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 

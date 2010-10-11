@@ -28,8 +28,8 @@ public class PluginPreferencesImpl implements Preferences {
 
     private final String myName;
     private final Preferences myParent;
-    private final LinkedHashMap myChildren = new LinkedHashMap();
-    private final TreeMap myProps = new TreeMap();
+    private final LinkedHashMap<String, PluginPreferencesImpl> myChildren = new LinkedHashMap<String, PluginPreferencesImpl>();
+    private final TreeMap<String, String> myProps = new TreeMap<String, String>();
     
     public PluginPreferencesImpl(Preferences parent, String name) {
         myName = name;
@@ -54,7 +54,7 @@ public class PluginPreferencesImpl implements Preferences {
         int firstSlash = path.indexOf('/');
         String prefix = firstSlash == -1 ? path : path.substring(0, firstSlash);
         String suffix = firstSlash == -1 ? "" : path.substring(firstSlash + 1);
-        Preferences child = (Preferences) myChildren.get(prefix);
+        Preferences child = myChildren.get(prefix);
         if (child==null) {
             child = createChild(prefix);
         }
@@ -70,7 +70,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public String[] childrenNames() throws BackingStoreException {
-        return (String[]) myChildren.keySet().toArray(new String[0]);
+        return myChildren.keySet().toArray(new String[0]);
     }
 
     public void clear() throws BackingStoreException {
@@ -81,7 +81,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public String get(String key, String def) {
-        String value = (String) myProps.get(key);
+        String value = myProps.get(key);
         return value==null ? def : value; 
     }
 
@@ -115,7 +115,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public String[] keys() throws BackingStoreException {
-        return (String[]) myProps.keySet().toArray(new String[0]);
+        return myProps.keySet().toArray(new String[0]);
     }
 
     public String name() {

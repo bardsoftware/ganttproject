@@ -16,9 +16,9 @@ import javax.swing.UIManager.LookAndFeelInfo;
  */
 public class GanttLookAndFeels {
 
-    protected Map infoByClass;
+    protected Map<String, GanttLookAndFeelInfo> infoByClass;
 
-    protected Map infoByName;
+    protected Map<String, GanttLookAndFeelInfo> infoByName;
 
     protected static GanttLookAndFeels singleton;
 
@@ -32,8 +32,8 @@ public class GanttLookAndFeels {
     }
 
     protected GanttLookAndFeels() {
-        infoByClass = new HashMap();
-        infoByName = new HashMap();
+        infoByClass = new HashMap<String, GanttLookAndFeelInfo>();
+        infoByName = new HashMap<String, GanttLookAndFeelInfo>();
         LookAndFeelInfo[] lookAndFeels = UIManager.getInstalledLookAndFeels();
         for (int i = 0; i < lookAndFeels.length; i++) {
             GanttLookAndFeelInfo info = new GanttLookAndFeelInfo(
@@ -59,11 +59,11 @@ public class GanttLookAndFeels {
     }
 
     public GanttLookAndFeelInfo getInfoByClass(String className) {
-        return ((GanttLookAndFeelInfo) infoByClass.get(className));
+        return infoByClass.get(className);
     }
 
     public GanttLookAndFeelInfo getInfoByName(String name) {
-        return ((GanttLookAndFeelInfo) infoByName.get(name));
+        return infoByName.get(name);
     }
 
     public GanttLookAndFeelInfo getDefaultInfo() {
@@ -77,8 +77,8 @@ public class GanttLookAndFeels {
 
     public GanttLookAndFeelInfo[] getInstalledLookAndFeels() {
         GanttLookAndFeelInfo[] lookAndFeels = new GanttLookAndFeelInfo[0];
-        return ((GanttLookAndFeelInfo[]) infoByClass.values().toArray(
-                lookAndFeels));
+        return infoByClass.values().toArray(
+                lookAndFeels);
     }
 
     public static GanttLookAndFeels getGanttLookAndFeels() {

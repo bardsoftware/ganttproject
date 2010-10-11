@@ -4,7 +4,6 @@
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import net.sourceforge.ganttproject.GanttOptions;

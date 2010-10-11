@@ -18,9 +18,6 @@ public class DefaultColorOption extends GPAbstractOption implements ColorOption 
 
 
     public void setValue(Color value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         myLockedValue = value;
     }
 
@@ -28,7 +25,7 @@ public class DefaultColorOption extends GPAbstractOption implements ColorOption 
         super.commit();
         myValue = myLockedValue;
     }
-    
+
     public String getPersistentValue() {
         return getValue()==null ? null : ColorConvertion.getColor(getValue());
     }
@@ -38,14 +35,4 @@ public class DefaultColorOption extends GPAbstractOption implements ColorOption 
             myLockedValue = ColorConvertion.determineColor(value);
         }
     }
-
-    public boolean isChanged() {
-        if (isLocked()) {
-            if (myValue!=null) {
-                return false==myValue.equals(myLockedValue);
-            }
-        }
-        return false;
-    }    
-
 }

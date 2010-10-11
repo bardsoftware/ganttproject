@@ -22,10 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import net.sourceforge.ganttproject.GanttGraphicArea;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 /**

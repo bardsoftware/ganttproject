@@ -4,31 +4,25 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
-
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComboBox;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
@@ -36,7 +30,6 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -49,12 +42,13 @@ import javax.swing.tree.TreePath;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.AbstractAction;
 
+import net.sourceforge.ganttproject.GPTreeTableBase.VscrollAdjustmentListener;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.ResourceDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -66,15 +60,11 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManager.RoleEvent;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.util.DateUtils;
-
-import org.jdesktop.jdnc.JNTreeTable;
 import org.jdesktop.swing.decorator.AlternateRowHighlighter;
 import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
 import org.jdesktop.swing.decorator.Highlighter;
 import org.jdesktop.swing.decorator.HighlighterPipeline;
 import org.jdesktop.swing.table.TableColumnExt;
-import org.jdesktop.swing.treetable.TreeTableModel;
 
 public class ResourceTreeTable extends GPTreeTableBase implements CustomPropertyManager{
     private final RoleManager myRoleManager;
@@ -104,14 +94,17 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     private final TableHeaderUIFacade myVisibleFields = new TableHeaderImpl();
 
+	private final UIFacade myUiFacade;
+
     /**
      * Creates an instance of GanttTreeTable with the given TreeTableModel.
      *
      * @param model
      *            TreeTableModel.
      */
-    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model) {
+    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
         super(project, model);
+        myUiFacade = uiFacade;
         myProject = project;
         myProject.addProjectEventListener(new ProjectEventListener(){
             public void projectClosed() {
@@ -137,9 +130,9 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     }
 
     private void deleteAllColumns() {
-        List customPropsDefinitions = getDefinitions();
+        List<CustomPropertyDefinition> customPropsDefinitions = getDefinitions();
         for (int i=0; i<customPropsDefinitions.size(); i++) {
-            CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) customPropsDefinitions.get(i);
+            CustomPropertyDefinition nextDefinition = customPropsDefinitions.get(i);
             deleteCustomColumn(nextDefinition.getName());
         }
         myResourceTreeModel.decreaseCustomPropertyIndex(customPropsDefinitions.size());
@@ -159,15 +152,15 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     public void initTreeTable() {
         // ttModel = (ResourceTreeTableModel) this.getTreeTableModel();
         Enumeration enumeration = getTable().getColumnModel().getColumns();
-        Collection lToDel = new ArrayList();
+        Collection<TableColumnExt> lToDel = new ArrayList<TableColumnExt>();
         while (enumeration.hasMoreElements()) {
             TableColumnExt tc = (TableColumnExt) enumeration.nextElement();
             lToDel.add(tc);
         }
 
-        Iterator it = lToDel.iterator();
+        Iterator<TableColumnExt> it = lToDel.iterator();
         while (it.hasNext())
-            getTable().removeColumn((TableColumn) it.next());
+            getTable().removeColumn(it.next());
 
         getTable().setAutoCreateColumnsFromModel(false);
         getTable().setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
@@ -191,9 +184,9 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         this.addMandatoryColumn(new ResourceColumn(tce5, myResourceTreeModel.useNextIndex(), String.class));
 
         initColumnsAlignements();
-        ArrayList cols = myResourceTreeModel.getColumns();
+        ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
         for (int i=2; i<cols.size(); i++) {
-            hideColumn((ResourceColumn) cols.get(i));
+            hideColumn(cols.get(i));
         }
         // Highlighters to ease the reading of the table.
         setHighlighters(new HighlighterPipeline(new Highlighter[] {
@@ -310,13 +303,19 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             public void columnSelectionChanged(ListSelectionEvent e) {
             }
         });
-
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
+			@Override
+			protected TimelineChart getChart() {
+				return (TimelineChart)myUiFacade.getResourceChart();
+			}
+			
+		});
     }
 
     protected void updateColumnOrders(int fromIndex, int toIndex) {
-        List columns = myResourceTreeModel.getColumns();
+        List<ResourceColumn> columns = myResourceTreeModel.getColumns();
         for (int i=0; i<columns.size(); i++) {
-            ResourceColumn nextColumn = (ResourceColumn) columns.get(i);
+            ResourceColumn nextColumn = columns.get(i);
             if (nextColumn.getOrder()==fromIndex) {
                 nextColumn.setOrder(toIndex);
                 continue;
@@ -333,11 +332,11 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         popupMenu = new JPopupMenu();
 
         /* show columns list */
-        ArrayList cols = myResourceTreeModel.getColumns();
+        ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
         ResourceColumn col;
         int size = cols.size();
         for (int i =0; i < size; i++) {
-            col = (ResourceColumn)cols.get(i);
+            col = cols.get(i);
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(col.getTitle(), col.isVisible());
             item.addActionListener(new ColumnHandler(col));
             popupMenu.add(item);
@@ -353,9 +352,9 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                     .undoableEdit("displayAllColumns", new Runnable() {
                             public void run() {
                                 /* sets all the columns visible */
-                                ArrayList cols = myResourceTreeModel.getColumns();
+                                ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
                                 for (int i =0; i < cols.size(); i++) {
-                                    ResourceColumn col = (ResourceColumn)cols.get(i);
+                                    ResourceColumn col = cols.get(i);
                                     if (!col.isVisible()) {
                                         showColumn(col);
                                     }
@@ -727,11 +726,11 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         newColumn.setDefaultVal(stubDefinition.getDefaultValue());
         assert String.valueOf(newColumn.getIndex()).equals(id);
         addCustomColumn(newColumn);
-        List definitions = myResourceManager.getDefinitions();
-        return (CustomPropertyDefinition) definitions.get(definitions.size()-1);
+        List<CustomPropertyDefinition> definitions = myResourceManager.getDefinitions();
+        return definitions.get(definitions.size()-1);
     }
 
-    public List getDefinitions() {
+    public List<CustomPropertyDefinition> getDefinitions() {
         return myResourceManager.getDefinitions();
     }
 
@@ -752,9 +751,9 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     class TableHeaderImpl implements TableHeaderUIFacade {
         public void add(String name, int order, int width) {
-            ArrayList cols = myResourceTreeModel.getColumns();
+            ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
             for (int i =0; i < cols.size(); i++) {
-                ResourceColumn col = (ResourceColumn)cols.get(i);
+                ResourceColumn col = cols.get(i);
                 if (name.equals(col.getID()) && !col.isVisible()) {
                     col.setWidth(width);
                     col.setOrder(order);
@@ -768,7 +767,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         }
 
         public Column getField(int index) {
-            return (Column) myResourceTreeModel.getColumns().get(index);
+            return myResourceTreeModel.getColumns().get(index);
         }
 
         public int getSize() {
@@ -779,12 +778,12 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             if (source.getSize() == 0) {
               return;
             }
-            ArrayList cols = myResourceTreeModel.getColumns();
+            ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
             for (int i =0; i < cols.size(); i++) {
-                ResourceColumn col = (ResourceColumn)cols.get(i);
+                ResourceColumn col = cols.get(i);
                 hideColumn(col);
             }
-            ArrayList sourceColumns = new ArrayList();
+            ArrayList<Column> sourceColumns = new ArrayList<Column>();
             for (int i=0; i<source.getSize(); i++) {
                 Column nextField = source.getField(i);
                 sourceColumns.add(nextField);
@@ -797,11 +796,36 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                 }
             });
             for (int i=0; i<sourceColumns.size(); i++) {
-                Column nextField = (Column) sourceColumns.get(i);
+                Column nextField = sourceColumns.get(i);
                 add(nextField.getID(), i, nextField.getWidth());
             }
 
         }
 
+    }
+
+    @Override
+    public void addListener(CustomPropertyListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public CustomPropertyDefinition createDefinition(String typeAsString,
+            String colName, String defValue) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

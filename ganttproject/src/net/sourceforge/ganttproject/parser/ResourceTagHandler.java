@@ -134,7 +134,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
         return myResourceManager;
     }
 
-    private final HashMap myLateResource2roleBinding = new HashMap();
+    private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
 
     private final HumanResourceManager myResourceManager;
 

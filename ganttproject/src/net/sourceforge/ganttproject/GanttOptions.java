@@ -42,7 +42,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
@@ -61,7 +60,6 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleSet;
 import net.sourceforge.ganttproject.util.ColorConvertion;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.xml.sax.Attributes;
@@ -225,8 +223,8 @@ public class GanttOptions {
 
     public static final int PREVIEWPRINT = 33;
 
-    private Map/*<String,GPOption>*/ myGPOptions = new LinkedHashMap();
-    private Map/*<String,GP1XOptionConverter>*/ myTagDotAttribute_Converter = new HashMap();
+    private Map<String,GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
+    private Map<String,GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
 
     private final DocumentManager myDocumentManager;
 
@@ -470,9 +468,9 @@ public class GanttOptions {
             // The last opened files
             {
                 startElement("files", attrs, handler);
-                for (Iterator iterator = documentsMRU.iterator(); iterator
+                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator
                         .hasNext();) {
-                    Document document = (Document) iterator.next();
+                    Document document = iterator.next();
                     addAttribute("path", document.getPath(), attrs);
                     emptyElement("file", attrs, handler);
                 }
@@ -724,7 +722,7 @@ public class GanttOptions {
             int r = 0, g = 0, b = 0;
 
             if ("option".equals(qName)) {
-                GPOption option = (GPOption) myGPOptions.get(attrs.getValue("id"));
+                GPOption option = myGPOptions.get(attrs.getValue("id"));
                 if (option!=null) {
                     option.lock();
                     option.loadPersistentValue(attrs.getValue("value"));
@@ -739,7 +737,7 @@ public class GanttOptions {
                     String value = attrs.getValue(i);
 
                     String tagDotAttribute = qName+"."+aName;
-                    GP1XOptionConverter converter = (GP1XOptionConverter) myTagDotAttribute_Converter.get(tagDotAttribute);
+                    GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);
                     if (converter!=null) {
                         converter.loadValue(value);
                         continue;

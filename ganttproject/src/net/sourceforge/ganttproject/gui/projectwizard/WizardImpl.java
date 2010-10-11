@@ -39,7 +39,7 @@ public abstract class WizardImpl {
 
     }
 
-    private final ArrayList myPages = new ArrayList();
+    private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
 
     private int myCurrentPage;
 
@@ -91,7 +91,7 @@ public abstract class WizardImpl {
 
     public void show() {
         for (int i = 0; i < myPages.size(); i++) {
-            WizardPage nextPage = (WizardPage) myPages.get(i);
+            WizardPage nextPage = myPages.get(i);
             //
             JPanel pagePanel = new JPanel(new BorderLayout());
             TopPanel titlePanel = new TopPanel(nextPage.getTitle() + "   ("
@@ -149,7 +149,7 @@ public abstract class WizardImpl {
     }
 
     private WizardPage getCurrentPage() {
-        return (WizardPage) myPages.get(myCurrentPage);
+        return myPages.get(myCurrentPage);
     }
 
     public UIFacade getUIFacade() {

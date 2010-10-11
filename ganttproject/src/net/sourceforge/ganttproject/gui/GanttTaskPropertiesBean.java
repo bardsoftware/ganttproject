@@ -37,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -78,9 +79,9 @@ import org.jdesktop.swing.JXDatePicker;
 /**
  * Real panel for editing task properties
  */
-public class GanttTaskPropertiesBean
+public class GanttTaskPropertiesBean extends JPanel {
 
-extends JPanel {
+    private static final JColorChooser colorChooser = new JColorChooser();
 
     private JXDatePicker myStartDatePicker;
     private JXDatePicker myEndDatePicker;
@@ -115,7 +116,7 @@ extends JPanel {
 
     private JPanel generalPanel;
 
-    private JPanel predecessorsPanel;
+    private JComponent predecessorsPanel;
 
     private JPanel resourcesPanel;
 
@@ -186,7 +187,7 @@ extends JPanel {
 
     private int taskCompletionPercentage;
 
-    private int taskPriority;
+    private Task.Priority taskPriority;
 
     private ShapePaint taskShape;
 
@@ -195,7 +196,7 @@ extends JPanel {
     // private ResourcesTableModel myResourcesTableModel;
     private TaskDependenciesPanel myDependenciesPanel;
 
-    private TaskAllocationsPanel[] myAllocationsPanel;
+    private TaskAllocationsPanel myAllocationsPanel;
 
     //private boolean isStartFixed;
 
@@ -209,6 +210,8 @@ extends JPanel {
     private final TaskManager myTaskManager;
     private final IGanttProject myProject;
     private final UIFacade myUIfacade;
+
+    private TaskMutator mutator;
 
     /** add a component to container by using GridBagConstraints. */
     private void addUsingGBL(Container container, Component component,
@@ -301,9 +304,9 @@ extends JPanel {
         priorityLabel1 = new JLabel(language.getText("priority"));
         secondRowPanel1.add(priorityLabel1);
         priorityComboBox = new JComboBox();
-        priorityComboBox.addItem(language.getText("low"));
-        priorityComboBox.addItem(language.getText("normal"));
-        priorityComboBox.addItem(language.getText("hight"));
+        for (Task.Priority p: Task.Priority.values()) {
+            priorityComboBox.addItem(language.getText(p.getI18nKey()));
+        }
         priorityComboBox.setEditable(false);
 
         secondRowPanel1.add(priorityComboBox);
@@ -330,9 +333,6 @@ extends JPanel {
             }
         });
 
-        ImageIcon icon = new ImageIcon(getClass().getResource(
-                "/icons/calendar_16.gif"));
-
         thirdRowPanel1 = new JPanel(flowL);
         thirdRowPanel1.setBorder(new TitledBorder(new EtchedBorder(), language
                 .getText("date")));
@@ -353,7 +353,7 @@ extends JPanel {
         finishDatePanel.add(finishDateLabel1);
         myEndDatePicker = createDatePicker(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
+                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(1), false);
             }
         });
         finishDatePanel.add(myEndDatePicker);
@@ -395,12 +395,10 @@ extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog;
                 dialog = JColorChooser.createDialog(GanttTaskPropertiesBean.this, colorChooserTitle,
-                        true, GanttDialogProperties.colorChooser,
+                        true, colorChooser,
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                colorButton
-                                        .setBackground(GanttDialogProperties.colorChooser
-                                                .getColor());
+                                colorButton.setBackground(colorChooser.getColor());
                                 isColorChanged = true;
                             }
                         }
@@ -418,8 +416,7 @@ extends JPanel {
                  * GanttDialogProperties.colorChooser.addChooserPanel(panels[0]);
                  */
 
-                GanttDialogProperties.colorChooser.setColor(colorButton
-                        .getBackground());
+                colorChooser.setColor(colorButton.getBackground());
                 dialog.setVisible(true);
             }
         });
@@ -508,37 +505,31 @@ extends JPanel {
         if (nameField1 != null && nameFieldNotes != null) {
             String nameOfTask = nameField1.getText().trim();
             nameField1.setText(nameOfTask);
-            if (onlyOneTask) {
-                myDependenciesPanel.nameChanged(nameOfTask);
-            }
-            myAllocationsPanel[0].nameChanged(nameOfTask);
+//            if (onlyOneTask) {
+//                myDependenciesPanel.nameChanged(nameOfTask);
+//            }
+            //myAllocationsPanel[0].nameChanged(nameOfTask);
             nameFieldNotes.setText(nameOfTask);
         }
     }
 
     private void constructCustomColumnPanel(IGanttProject project) {
         myCustomColumnPanel = new CustomColumnsPanel(
-                project.getTaskCustomColumnManager(),
-                project.getCustomColumnsStorage(), myUIfacade);
+                project.getTaskCustomColumnManager(), myUIfacade);
     }
 
     /** Construct the predecessors tabbed pane */
     private void constructPredecessorsPanel() {
-        myDependenciesPanel = new TaskDependenciesPanel(selectedTasks[0]);
+        myDependenciesPanel = new TaskDependenciesPanel();
+        myDependenciesPanel.init(selectedTasks[0]);
         predecessorsPanel = myDependenciesPanel.getComponent();
     }
 
     /** Construct the resources panel */
     private void constructResourcesPanel() {
-        myAllocationsPanel = new TaskAllocationsPanel[selectedTasks.length];
-        for (int i = 0; i < myAllocationsPanel.length; i++) {
-            myAllocationsPanel[i] = new TaskAllocationsPanel(selectedTasks[i],
-                    myHumanResourceManager, myRoleManager, onlyOneTask);
-            if (i != 0) {
-                myAllocationsPanel[i].getComponent();
-            }
-        }
-        resourcesPanel = myAllocationsPanel[0].getComponent();
+    	myAllocationsPanel = new TaskAllocationsPanel(
+    			selectedTasks[0], myHumanResourceManager, myRoleManager);
+    	resourcesPanel = myAllocationsPanel.getComponent();
     }
 
     /** construct the notes panel */
@@ -725,19 +716,10 @@ extends JPanel {
         GanttTask[] returnTask = new GanttTask[selectedTasks.length];
 
         for (int i = 0; i < selectedTasks.length; i++) {
-            if (myAllocationsPanel[0].getTableModel().isChanged()) {
-                if (i != 0) {
-                    copyValues(myAllocationsPanel[0].getTableModel(),
-                            myAllocationsPanel[i].getTableModel());
-                }
-
-            }
-            myAllocationsPanel[i].getTableModel().commit();
             returnTask[i] = selectedTasks[i];
 
             // returnTask.setTaskID(selectedTask.getTaskID());
-            TaskMutator mutator = returnTask[i].createMutator();
-
+            mutator = selectedTasks[0].createMutator();
             if (onlyOneTask) {
                 mutator.setName(getTaskName()); // getName()
                 mutator.setProjectTask (false);
@@ -800,9 +782,8 @@ extends JPanel {
             }
 
             mutator.commit();
-            if (onlyOneTask) {
-                myDependenciesPanel.getTableModel().commit();
-            }
+            myDependenciesPanel.commit();
+            myAllocationsPanel.commit();
             returnTask[i].applyThirdDateConstraint();
         }
 
@@ -812,7 +793,6 @@ extends JPanel {
 
     /** as the name indicates */
     public void setSelectedTask() {
-
         // this.selectedTask = selectedTask;
 
         nameField1.setText(selectedTasks[0].getName());
@@ -830,7 +810,7 @@ extends JPanel {
         percentCompleteSlider.setValue(new Integer(selectedTasks[0]
                 .getCompletionPercentage()));
 
-        priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority());
+        priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority().ordinal());
 
         if (selectedTasks[0].getThird() != null) {
             setThird(selectedTasks[0].getThird().Clone(), true);
@@ -918,10 +898,10 @@ extends JPanel {
         }
 
         durationField1.setText(_length + "");
-        if (onlyOneTask) {
-            myDependenciesPanel.durationChanged(_length);
-        }
-        myAllocationsPanel[0].durationChanged(_length);
+//        if (onlyOneTask) {
+//            myDependenciesPanel.durationChanged(_length);
+//        }
+        //myAllocationsPanel[0].durationChanged(_length);
         durationFieldNotes.setText(_length + "");
 
         // Calculate the end date for the given length
@@ -954,8 +934,8 @@ extends JPanel {
     }
 
     /** @return the priority level of the task */
-    public int getPriority() {
-        return priorityComboBox.getSelectedIndex();
+    public Task.Priority getPriority() {
+        return Task.Priority.getPriority(priorityComboBox.getSelectedIndex());
     }
 
 //    public void setStartFixed(boolean startFixed) {
@@ -1006,7 +986,7 @@ extends JPanel {
 
     /** Change the end date of the task */
     public void setEnd(GanttCalendar dend, boolean test) {
-        myEndDatePicker.setDate(dend.getTime());
+        myEndDatePicker.setDate(dend.newAdd(-1).getTime());
         this.end = dend;
         if (test == true) {
             return;
@@ -1034,7 +1014,7 @@ extends JPanel {
         length = (int) myUnpluggedClone.getDuration().getLength();
         durationField1.setText("" + length);
         // durationField2.setText(""+length);
-        myAllocationsPanel[0].durationChanged(length);
+        //myAllocationsPanel[0].durationChanged(length);
         durationFieldNotes.setText("" + length);
     }
 

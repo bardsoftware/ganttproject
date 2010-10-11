@@ -12,7 +12,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -208,7 +207,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             GanttDialogInfo gdi = new GanttDialogInfo(myMainFrame,
                     GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, errorMessage,
                     getLanguage().getText("error"));
-            gdi.show();
+            gdi.setVisible(true);
         } else {
             System.err.println("[GanttProjectBase] showErrorDialog:\n "+errorMessage);
         }

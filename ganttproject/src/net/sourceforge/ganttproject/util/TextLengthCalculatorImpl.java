@@ -29,6 +29,10 @@ public class TextLengthCalculatorImpl implements TextLengthCalculator {
         return (int) bounds.getWidth() + 1;
     }
 
+    public int getTextHeight(String text) {
+        return (int) myGraphics.getFontMetrics().getLineMetrics(text, myGraphics).getAscent();
+    }
+
     public TextLengthCalculatorImpl(Graphics g) {
         if (g != null) {
             setGraphics(g);
