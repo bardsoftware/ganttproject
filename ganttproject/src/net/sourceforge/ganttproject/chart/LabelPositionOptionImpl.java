@@ -9,7 +9,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
 /**
  * @author bard
  */
-abstract class LabelPositionOptionImpl extends GPAbstractOption implements
+abstract class LabelPositionOptionImpl extends GPAbstractOption<String> implements
         EnumerationOption {
     static final String OFF = "off";
 
@@ -37,9 +37,6 @@ abstract class LabelPositionOptionImpl extends GPAbstractOption implements
     }
 
     public void setValue(String value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         myLockedValue = value;
     }
 

@@ -42,15 +42,15 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 public class TaskRendererImpl extends ChartRendererBase implements
         TimeUnitVisitor {
 
-    private List<TaskActivity> myVisibleActivities;
+    private List/* <TaskActivity> */myVisibleActivities;
 
     private static final SortTasksAlgorithm ourAlgorithm = new SortTasksAlgorithm();
 
-    private List<TaskActivity> myCurrentlyProcessed = new ArrayList<TaskActivity>();
+    private List/* <TaskActivity> */myCurrentlyProcessed = new ArrayList();
 
-    private Map<TaskActivity, Integer> myActivity2ordinalNumber = new HashMap<TaskActivity, Integer>();
+    private Map/* <TaskActivity,Integer> */myActivity2ordinalNumber = new HashMap();
 
-    private Map<Task, Long> myTask_WorkingRectanglesLength = new HashMap<Task, Long>();
+    private Map/* <Task, Integer> */myTask_WorkingRectanglesLength = new HashMap();
 
     private int myPosX;
 
@@ -85,16 +85,16 @@ public class TaskRendererImpl extends ChartRendererBase implements
 
     public static final int RIGHT = 3;
 
-    private ArrayList<GanttPreviousStateTask> myTasks;
+    private ArrayList myTasks;
 
-    private ArrayList<GanttPreviousStateTask> myPreviousStateTasks;
+    private ArrayList myPreviousStateTasks;
 
-    private List<GanttPreviousStateTask> myPreviousStateCurrentlyProcessed = new ArrayList<GanttPreviousStateTask>();
+    private List myPreviousStateCurrentlyProcessed = new ArrayList();
 
-    private static List<String> ourInfoList;
+    private static List ourInfoList;
 
     static {
-        ourInfoList = new ArrayList<String>();
+        ourInfoList = new ArrayList();
         ourInfoList.add("");
         ourInfoList.add("id");
         ourInfoList.add("taskDates");
@@ -193,7 +193,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             Rectangle rectangle = container.createRectangle(getWidth()+10, topy, 1, getRowHeight());
             container.bind(rectangle, next);
         }
-        
+
         if (myDependenciesRenderingEnabled) {
             createDependencyLines();
         }
@@ -210,16 +210,16 @@ public class TaskRendererImpl extends ChartRendererBase implements
         }
         return result;
     }
-    
-    private List<TaskActivity> getSortedTaskActivities() {
-        List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
+
+    private List/* <Task> */getSortedTaskActivities() {
+        List visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
-        List<TaskActivity> visibleActivities = new ArrayList<TaskActivity>();
+        List visibleActivities = new ArrayList();
         myActivity2ordinalNumber.clear();
         for (int i = 0; i < visibleTasks.size(); i++) {
             if (visibleTasks.get(i).equals(BlankLineNode.BLANK_LINE))
                 continue; // todo a revoir...
-            Task nextTask = visibleTasks.get(i);
+            Task nextTask = (Task) visibleTasks.get(i);
 
             Integer nextOrdinal = new Integer(i);
             if (nextTask == null) {
@@ -230,31 +230,31 @@ public class TaskRendererImpl extends ChartRendererBase implements
             float visibleWorkingLength = 0;
             float totalWorkingLength = 0;
             for (int j = 0; j < activities.length; j++) {
-            	final TaskActivity nextActivity = activities[j];
+                final TaskActivity nextActivity = activities[j];
                 myActivity2ordinalNumber.put(nextActivity, nextOrdinal);
                 visibleActivities.add(nextActivity);
                 if (nextActivity.getIntensity() == 0f) {
                     continue;
                 }
-                final float nextChunk = 
-                    nextActivity.getDuration().getLength(getChartModel().getBottomUnit()) 
-                    * getChartModel().getBottomUnitWidth(); 
-                totalWorkingLength += nextChunk; 
+                final float nextChunk =
+                    nextActivity.getDuration().getLength(getChartModel().getBottomUnit())
+                    * getChartModel().getBottomUnitWidth();
+                totalWorkingLength += nextChunk;
                 if (!nextActivity.getEnd().before(getChartModel().getStartDate())) {
-                	visibleWorkingLength += nextChunk;
+                    visibleWorkingLength += nextChunk;
                 }
             }
             final float invisibleWorkingLength = totalWorkingLength - visibleWorkingLength;
-            final long progressBarLength = 
-                (long)(totalWorkingLength * nextTask.getCompletionPercentage() / 100 
-                        - invisibleWorkingLength); 
+            final long progressBarLength =
+                (long)(totalWorkingLength * nextTask.getCompletionPercentage() / 100
+                        - invisibleWorkingLength);
             myTask_WorkingRectanglesLength.put(nextTask, new Long(progressBarLength));
         }
-        Set<TaskActivity> hashedVisible = new HashSet<TaskActivity>(visibleActivities);
+        Set hashedVisible = new HashSet(visibleActivities);
         Integer maxOrdinal = new Integer(hashedVisible.size()+1);
         Integer minOrdinal = new Integer(-2);
         for (int i=0; i<visibleTasks.size(); i++) {
-            Task next = visibleTasks.get(i);
+            Task next = (Task)visibleTasks.get(i);
             TaskDependency[] dependencies = next.getDependenciesAsDependant().toArray();
             for (int j=0; j<dependencies.length; j++) {
                 TaskDependency nextDependency = dependencies[j];
@@ -334,9 +334,10 @@ public class TaskRendererImpl extends ChartRendererBase implements
             // System.err.println("[TaskRendererImpl] nextTimeUnit():
             // processing:"+myCurrentlyProcessed);
             // }
-            for (Iterator<TaskActivity> startedActivities = myCurrentlyProcessed.iterator(); startedActivities
+            for (Iterator startedActivities = myCurrentlyProcessed.iterator(); startedActivities
                     .hasNext(); startedActivities.remove()) {
-                TaskActivity nextStarted = startedActivities.next();
+                TaskActivity nextStarted = (TaskActivity) startedActivities
+                        .next();
                 processActivity(nextStarted);
             }
             if (myModel.isPrevious()) {
@@ -348,7 +349,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                         drawPreviousStateTask(previousTask, i);
                     }
                 }
-                myPreviousStateCurrentlyProcessed = new ArrayList<GanttPreviousStateTask>();
+                myPreviousStateCurrentlyProcessed = new ArrayList();
             }
             myPosX += getChartModel().getBottomUnitWidth();
         }
@@ -447,7 +448,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
                 nextRectangle.setStyle("task.startend");
             }
             else if (false==nextStarted.isFirst() ^ nextStarted.isLast()) {
-                nextRectangle.setStyle("task");                
+                nextRectangle.setStyle("task");
             }
             else if (nextStarted.isFirst()) {
                 nextRectangle.setStyle("task.start");
@@ -474,7 +475,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         }
         Task nextTask = nextStarted.getTask();
         int nextLength = nextActivityRectangle.myWidth;
-        Long workingRectanglesLength = myTask_WorkingRectanglesLength
+        Long workingRectanglesLength = (Long) myTask_WorkingRectanglesLength
                 .get(nextTask);
         if (workingRectanglesLength != null) {
             long nextProgressLength = nextLength;
@@ -629,7 +630,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         int length = (int) (tl.getLength(myCurrentUnit) * getChartModel()
                 .getBottomUnitWidth());
 
-        Integer nextOrdNumber = myActivity2ordinalNumber.get(task);
+        Integer nextOrdNumber = (Integer) myActivity2ordinalNumber.get(task);
         GraphicPrimitiveContainer container = getPrimitiveContainer();
 
         Rectangle rect = container.createRectangle(posX, topy, length, 6);
@@ -651,12 +652,13 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private String getTaskLabel(Task task, int position) {
-        String propertyID = myLabelOptions[position].getValue(); 
+        String propertyID = myLabelOptions[position].getValue();
         if (task.isMilestone() && !TaskProperties.ID_TASK_NAME.equals(propertyID)) {
             return null;
         }
         StringBuffer result = new StringBuffer();
-        Object property = TaskProperties.getProperty(task, propertyID);
+        TaskProperties taskProperties = new TaskProperties(getChartModel().getTimeUnitStack());
+        Object property = taskProperties.getProperty(task, propertyID);
         if (property != null) {
             if (property instanceof Boolean)
                 if (((Boolean) property).booleanValue())
@@ -670,31 +672,31 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private long getNegativeOffset(Date offsetDate, Date anchorDate) {
-    	if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
-    		TaskLength length = getChartModel().getTaskManager().createLength(myCurrentUnit, offsetDate, anchorDate);
-    		return -length.getLength()*getChartModel().getBottomUnitWidth();
-    	}
-    	int length = 0;
-    	while(true) {
-    		ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(myCurrentTimeFrame, myCurrentUnit, offsetDate, getChartModel().getTimeUnitStack().getDefaultTimeUnit(), getChartModel().getBottomUnitWidth());
-    		assert offsets.length>0;
-    		Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd(); 
-    		if (lastOffsetEnd.before(anchorDate)) {
-    			offsetDate = lastOffsetEnd;
-    			length += offsets[offsets.length-1].getOffsetPixels();
-    			continue;
-    		}
-			for (int i=offsets.length-1; i>=0; i--) {
-				Offset offset = offsets[i];
-				if (offset.getOffsetEnd().after(anchorDate)) {
-					continue;
-				}
-				length+=offset.getOffsetPixels();
-				break;
-			}
-			break;
-    	}
-    	return -length;
+        if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
+            TaskLength length = getChartModel().getTaskManager().createLength(myCurrentUnit, offsetDate, anchorDate);
+            return -length.getLength()*getChartModel().getBottomUnitWidth();
+        }
+        int length = 0;
+        while(true) {
+            ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(myCurrentTimeFrame, myCurrentUnit, offsetDate, getChartModel().getTimeUnitStack().getDefaultTimeUnit(), getChartModel().getBottomUnitWidth());
+            assert offsets.length>0;
+            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd();
+            if (lastOffsetEnd.before(anchorDate)) {
+                offsetDate = lastOffsetEnd;
+                length += offsets[offsets.length-1].getOffsetPixels();
+                continue;
+            }
+            for (int i=offsets.length-1; i>=0; i--) {
+                Offset offset = offsets[i];
+                if (offset.getOffsetEnd().after(anchorDate)) {
+                    continue;
+                }
+                length+=offset.getOffsetPixels();
+                break;
+            }
+            break;
+        }
+        return -length;
     }
     private long getPositiveOffset(Date offsetDate, Date anchorDate) {
         if (getChartModel().getTimeUnitStack().getDefaultTimeUnit().equals(myCurrentUnit)) {
@@ -704,15 +706,15 @@ public class TaskRendererImpl extends ChartRendererBase implements
         int length = 0;
         while(true) {
             ChartModelBase.Offset[] offsets = getChartModel().calculateOffsets(
-                    myCurrentTimeFrame, 
-                    myCurrentUnit, 
-                    anchorDate, 
-                    getChartModel().getTimeUnitStack().getDefaultTimeUnit(), 
+                    myCurrentTimeFrame,
+                    myCurrentUnit,
+                    anchorDate,
+                    getChartModel().getTimeUnitStack().getDefaultTimeUnit(),
                     getChartModel().getBottomUnitWidth());
             if (offsets.length==0) {
                 throw new IllegalStateException("Failed to calculate offsets for anchorDate="+anchorDate);
             }
-            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd(); 
+            Date lastOffsetEnd = offsets[offsets.length-1].getOffsetEnd();
             //System.err.println("[TaskRendererImpl] getPositiveOffset(): |offsets|="+offsets.length+" last offset end="+lastOffsetEnd+" last offset pixels="+offsets[offsets.length-1].getOffsetPixels());
             if (lastOffsetEnd.before(offsetDate)) {
                 anchorDate = lastOffsetEnd;
@@ -730,7 +732,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             break;
         }
         return length;
-        
+
     }
     private java.awt.Rectangle getBoundingRectangle(TaskActivity activity) {
         //System.err.println("[TaskRendererImpl] getBoundingRectangle():\nunit start="+myUnitStart+"\nactivity="+activity);
@@ -739,7 +741,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         if (false==activity.getStart().equals(myUnitStart)) {
             int deltaX = 0;
             if (activity.getStart().before(myUnitStart)) {
-            	deltaX = (int) getNegativeOffset(activity.getStart(), myUnitStart);
+                deltaX = (int) getNegativeOffset(activity.getStart(), myUnitStart);
             }
             else if (activity.getStart().after(myUnitStart)) {
                 deltaX = (int) getPositiveOffset(activity.getStart(), myUnitStart);
@@ -763,14 +765,14 @@ public class TaskRendererImpl extends ChartRendererBase implements
     }
 
     private void createDependencyLines() {
-        List<DependencyDrawData> dependencyDrawData = prepareDependencyDrawData();
+        List/* <DependencyDrawData> */dependencyDrawData = prepareDependencyDrawData();
         drawDependencies(dependencyDrawData);
     }
 
     /**
      * @param dependencyDrawData
      */
-    private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
+    private void drawDependencies(List dependencyDrawData) {
         // if(dependencyDrawData.size() == 0)
         // System.out.println("VIDE");
 
@@ -778,7 +780,8 @@ public class TaskRendererImpl extends ChartRendererBase implements
                 .getLayer(2);
         int arrowLength = 7;
         for (int i = 0; i < dependencyDrawData.size(); i++) {
-            DependencyDrawData next = dependencyDrawData.get(i);
+            DependencyDrawData next = (DependencyDrawData) dependencyDrawData
+                    .get(i);
             if (next.myDependeeVector
                     .reaches(next.myDependantVector.getPoint())) {
                 // when dependee.end <= dependant.start && dependency.type is
@@ -877,21 +880,21 @@ public class TaskRendererImpl extends ChartRendererBase implements
     /**
      * @return
      */
-    private List<DependencyDrawData> prepareDependencyDrawData() {
-        List<DependencyDrawData> result = new ArrayList<DependencyDrawData>();
-        List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
+    private List prepareDependencyDrawData() {
+        List result = new ArrayList();
+        List/* <Task> */visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
         for (int i = 0; i < visibleTasks.size(); i++) {
             if (visibleTasks.get(i).equals(BlankLineNode.BLANK_LINE))
                 continue; // todo a revoir...
-            Task nextTask = visibleTasks.get(i);
+            Task nextTask = (Task) visibleTasks.get(i);
             if (nextTask != null)
                 prepareDependencyDrawData(nextTask, result);
         }
         return result;
     }
 
-    private void prepareDependencyDrawData(Task task, List<DependencyDrawData> result) {
+    private void prepareDependencyDrawData(Task task, List result) {
         TaskDependency[] deps = task.getDependencies().toArray();
         for (int i = 0; i < deps.length; i++) {
             TaskDependency next = deps[i];
@@ -902,7 +905,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle)dependantContainer
                     .getPrimitive(dependant);
             if (dependantRectangle == null) {
-                
+
                 //System.out.println("dependantRectangle == null");
                 continue;
             }
@@ -951,13 +954,13 @@ public class TaskRendererImpl extends ChartRendererBase implements
         return myModel.getRowHeight();
     }
 
-    private List<TaskActivity> myActivitiesOutOfView = new ArrayList<TaskActivity>();
-    
+    private List myActivitiesOutOfView = new ArrayList();
+
     private void pullQueue(Date unitStart, Date unitFinish) {
-    	
-        for (Iterator<TaskActivity> activities = myVisibleActivities.iterator(); activities
+
+        for (Iterator activities = myVisibleActivities.iterator(); activities
                 .hasNext();) {
-            TaskActivity next = activities.next();
+            TaskActivity next = (TaskActivity) activities.next();
             if (next.getEnd().before(getChartModel().getStartDate())) {
                 myActivitiesOutOfView.add(next);
                 activities.remove();
@@ -966,7 +969,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
             if (next.getStart().before(getChartModel().getStartDate()) && next.getEnd().after(getChartModel().getEndDate())) {
                 myCurrentlyProcessed.add(next);
                 activities.remove();
-                continue;                
+                continue;
             }
             if (next.getStart().after(unitFinish)) {
                 break;
@@ -986,15 +989,15 @@ public class TaskRendererImpl extends ChartRendererBase implements
         // the previous task is not between unitStart & unitFinish
 
         if (myModel.isPrevious()) {
-            List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
+            List visibleTasks = ((ChartModelImpl) getChartModel())
                     .getVisibleTasks();
 
             for (int i = 0; i < visibleTasks.size(); i++) {
-                Task task = visibleTasks.get(i);
+                Task task = (Task) visibleTasks.get(i);
                 int index = getPreviousStateTaskIndex(task);
                 GPCalendar calendar = myModel.getTaskManager().getCalendar();
                 if (index != -1) {
-                    GanttPreviousStateTask previousStateTask = myPreviousStateTasks
+                    GanttPreviousStateTask previousStateTask = (GanttPreviousStateTask) myPreviousStateTasks
                             .get(index);
                     previousStateTask.setState(task, calendar);
                     if (previousStateTask.getStart().after(unitFinish)) {
@@ -1010,7 +1013,8 @@ public class TaskRendererImpl extends ChartRendererBase implements
                     // calendar)
                     // .getTime().compareTo(unitFinish) < 0)
                     {
-                        myPreviousStateCurrentlyProcessed.add(previousStateTask);
+                        myPreviousStateCurrentlyProcessed
+                                .add(previousStateTask);
                         myPreviousStateTasks.remove(index);
                     }
                     // if just a part of the previous task is visible
@@ -1053,7 +1057,8 @@ public class TaskRendererImpl extends ChartRendererBase implements
         if (myPreviousStateTasks == null)
             return -1;
         for (int i = 0; i < myPreviousStateTasks.size(); i++) {
-            if (task.getTaskID() == myPreviousStateTasks.get(i).getId())
+            if (task.getTaskID() == ((GanttPreviousStateTask) myPreviousStateTasks
+                    .get(i)).getId())
                 return i;
         }
         return -1;
@@ -1160,7 +1165,7 @@ public class TaskRendererImpl extends ChartRendererBase implements
         return myOptionGroups;
     }
 
-    public void setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
+    public void setPreviousStateTasks(ArrayList tasks) {
         myTasks = tasks;
     }
 

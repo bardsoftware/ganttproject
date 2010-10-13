@@ -1,69 +1,31 @@
 package net.sourceforge.ganttproject.task;
 
-/**
- * This class describes a single custom column.
- * @author bbaranne(Benoit Baranne) Mar 2, 2005
- * 
- */
-/**
- * @author bbaranne
- * Mar 8, 2005
- */
-/**
- * @author bbaranne Mar 8, 2005
- */
-public class CustomColumn {
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
+
+public class CustomColumn implements CustomPropertyDefinition {
     private String id = null;
 
-    /**
-     * The column name.
-     */
     private String name = null;
 
-    /**
-     * The enclosing value class.
-     */
-    private Class type = null;
-
-    /**
-     * The default value.
-     */
     private Object defaultValue = null;
 
-    /**
-     * Creates an instance of CustomColmn.
-     */
-    public CustomColumn() {
-    }
+    private final CustomColumnsManager myManager;
 
-    /**
-     * Creates an instance of CustomColmn with a name, a type (class) and a
-     * default value.
-     * 
-     * @param colName
-     *            The column name.
-     * @param colType
-     *            The column type.
-     * @param colDefaultValue
-     *            The default value.
-     */
-    public CustomColumn(String colName, Class colType, Object colDefaultValue) {
+    private CustomPropertyClass myPropertyClass;
+
+
+    CustomColumn(
+            CustomColumnsManager manager, String colName,
+            CustomPropertyClass propertyClass, Object colDefaultValue) {
         name = colName;
-        type = colType;
+        myPropertyClass = propertyClass;
         defaultValue = colDefaultValue;
-    }
-
-    /**
-     * Creates an instance of CustomColmn. The type is String and the default
-     * value is en empty String.
-     * 
-     * @param colName
-     *            The column name.
-     */
-    public CustomColumn(String colName) {
-        name = colName;
-        type = String.class;
-        defaultValue = "";
+        myManager = manager;
     }
 
     public String getId() {
@@ -74,61 +36,62 @@ public class CustomColumn {
         id = newId;
     }
 
-    /**
-     * @return The default value.
-     */
     public Object getDefaultValue() {
         return defaultValue;
     }
 
-    /**
-     * Sets the default value.
-     * 
-     * @param defaultValue
-     *            The default value to be set.
-     */
     public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
 
-    /**
-     * @return The column name.
-     */
+
+    public void setDefaultValueAsString(String value) {
+        CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+                getTypeAsString(), value);
+        defaultValue = stub.getDefaultValue();
+    }
+
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the column name.
-     * 
-     * @param name
-     *            The column name to be set.
-     */
     public void setName(String name) {
+        String oldName = this.name;
         this.name = name;
+        myManager.fireDefinitionChanged(this, oldName);
     }
 
-    /**
-     * @return The column type.
-     */
+    public CustomPropertyClass getPropertyClass() {
+        return myPropertyClass;
+    }
+
     public Class getType() {
-        return type;
+        return myPropertyClass.getJavaClass();
     }
 
-    /**
-     * Sets the column type.
-     * 
-     * @param type
-     *            The column type to be set.
-     */
-    public void setType(Class type) {
-        this.type = type;
-    }
-
-    /**
-     * @return A string representation of the CustomColumn.
-     */
     public String toString() {
-        return this.name + " [" + this.type + "] <" + this.defaultValue + ">";
+        return this.name + " [" + getType() + "] <" + this.defaultValue + ">";
+    }
+
+    public String getDefaultValueAsString() {
+        return this.defaultValue==null ? null : this.defaultValue.toString();
+    }
+
+    public String getID() {
+        return getId();
+    }
+
+    public String getTypeAsString() {
+        return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(getType());
+    }
+
+    public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
+        return Status.OK_STATUS;
+    }
+
+    public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+        myPropertyClass = propertyClass;
+        setDefaultValueAsString(getDefaultValueAsString());
+        return Status.OK_STATUS;
     }
 }

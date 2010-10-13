@@ -26,6 +26,7 @@ public class GPLogger {
 		ourLogger.addHandler(ourHandler);
 		ourLogger.setLevel(Level.ALL);
 		ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+
 	}
 
 	public static boolean log(Throwable e) {
@@ -49,7 +50,7 @@ public class GPLogger {
 	}
 
 	public static Logger getLogger(Class clazz) {
-        Logger logger = (Logger) ourClass_Logger.get(clazz);
+        Logger logger = ourClass_Logger.get(clazz);
         if (logger == null) {
             logger = Logger.getLogger(clazz.getName());
             logger.addHandler(ourHandler);

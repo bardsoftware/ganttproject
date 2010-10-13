@@ -7,18 +7,21 @@ package net.sourceforge.ganttproject.chart;
 public class ChartRendererBase {
     private int myHeight;
 
-    private final ChartModelBase myChartModel;
+    private ChartModel myChartModel;
 
     private final GraphicPrimitiveContainer myPrimitiveContainer;
 
     private boolean isEnabled = true;
 
-    public ChartRendererBase(ChartModelBase model) {
+    protected ChartRendererBase() {
         myPrimitiveContainer = new GraphicPrimitiveContainer();
+    }
+    public ChartRendererBase(ChartModel model) {
+        this();
         myChartModel = model;
     }
 
-    void setHeight(int height) {
+    public void setHeight(int height) {
         myHeight = height;
     }
 
@@ -38,7 +41,7 @@ public class ChartRendererBase {
         return myPrimitiveContainer;
     }
 
-    protected ChartModelBase getChartModel() {
+    protected ChartModel getChartModel() {
         return myChartModel;
     }
 
@@ -49,9 +52,14 @@ public class ChartRendererBase {
     public void setEnabled(boolean enabled) {
         isEnabled = enabled;
     }
-    
-    public void beforeProcessingTimeFrames() {
-        myPrimitiveContainer.clear();
+
+    public void clear() {
+        getPrimitiveContainer().clear();
     }
-    
+//    protected void setChartModel(ChartModelBase chartModel) {
+//        myChartModel = chartModel;
+//    }
+    public void render() {
+    }
+
 }

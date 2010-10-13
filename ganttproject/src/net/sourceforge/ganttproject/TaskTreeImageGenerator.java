@@ -46,13 +46,12 @@ class TaskTreeImageGenerator {
         System.out.println("TaskToConsider.size = " + myItemsToConsider.size());
 
         for (int i = 0; i < myItemsToConsider.size(); i++) {
-            if (((DefaultMutableTreeNode) myItemsToConsider.get(i)).isRoot()) {
+            if (myItemsToConsider.get(i).isRoot()) {
                 myItemsToConsider.remove(i);
                 break;
             }
         }
         return myItemsToConsider;
-
     }
 
     protected Dimension calculateDimension(List<DefaultMutableTreeNode> taskNodes) {
@@ -78,7 +77,9 @@ class TaskTreeImageGenerator {
             }
             if (isVisible(next)) {
                 height += getTree().getTreeTable().getRowHeight();
-                int nbchar = fmetric.stringWidth(next.getName()) + next.getManager().getTaskHierarchy().getDepth(next) * fourEmWidth;
+                int nbchar = fmetric.stringWidth(next.getName())
+                        + next.getManager().getTaskHierarchy().getDepth(next)
+                        * fourEmWidth;
                 if (nbchar > width) {
                     width = nbchar;
                 }
@@ -98,7 +99,8 @@ class TaskTreeImageGenerator {
         return image;
     }
 
-    protected void paint(Image image, Dimension d, List<DefaultMutableTreeNode> taskNodes) {
+    protected void paint(Image image, Dimension d,
+            List<DefaultMutableTreeNode> taskNodes) {
         Graphics g2 = image.getGraphics();
         ((Graphics2D) g2).setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -132,6 +134,7 @@ class TaskTreeImageGenerator {
         PaintState state = new PaintState();
         state.y = getTree().getTable().getTableHeader().getHeight() + HEADER_OFFSET;
         state.rowHeight = getTree().getTreeTable().getRowHeight();
+        //int x = 5;
         state.indent = new TextLengthCalculatorImpl(g).getTextLength("mmmm");
         for (Iterator<DefaultMutableTreeNode> tasks = taskNodes.iterator(); tasks.hasNext();) {
             DefaultMutableTreeNode nextTreeNode = tasks.next();
@@ -151,20 +154,23 @@ class TaskTreeImageGenerator {
             }
             if (blankline || isVisible(next)) {
                 if (state.rowCount % 2 == 1) {
-                    g.setColor(new Color((float) 0.933, (float) 0.933,
-                            (float) 0.933));
-                    g.fillRect(0, state.y, getWidth() - state.rowHeight / 2, state.rowHeight);
+                    // Make alternating background pattern
+                    // TODO Define background color for the alternating rows (and use that everywhere)
+                    g.setColor(new Color(0.933f, 0.933f, 0.933f));
+                    g.fillRect(0, state.y, getWidth() - state.rowHeight / 2,
+                            state.rowHeight);
                 }
                 g.setColor(Color.black);
-                g.drawRect(0, state.y, getWidth() - state.rowHeight / 2, state.rowHeight);
+                g.drawRect(0, state.y, getWidth() - state.rowHeight / 2,
+                        state.rowHeight);
                 if (!blankline) {
                     paintTask(g, state, next);
                 }
 
-                g.setColor(new Color((float) 0.807, (float) 0.807,
-                        (float) 0.807));
+                g.setColor(new Color(0.807f, 0.807f, 0.807f));
 
-                g.drawLine(1, state.y + state.rowHeight - 1, getWidth() - 11, state.y + state.rowHeight - 1);
+                g.drawLine(1, state.y + state.rowHeight - 1, getWidth() - 11,
+                        state.y + state.rowHeight - 1);
                 state.y += state.rowHeight;
 
                 state.rowCount++;
@@ -174,9 +180,11 @@ class TaskTreeImageGenerator {
     }
 
     protected void paintTask(Graphics g, PaintState state, Task t) {
-        int charH = (int) g.getFontMetrics().getLineMetrics(t.getName(), g).getAscent();
+        int charH = (int) g.getFontMetrics().getLineMetrics(t.getName(), g)
+                .getAscent();
         int x = (state.nestingStack.size() - 1) * state.indent + 5;
-        g.drawString(t.getName(), x, state.y + charH + (state.rowHeight - charH) / 2);
+        g.drawString(t.getName(), x, state.y + charH
+                + (state.rowHeight - charH) / 2);
     }
 
     private boolean isVisible(Task thetask) {

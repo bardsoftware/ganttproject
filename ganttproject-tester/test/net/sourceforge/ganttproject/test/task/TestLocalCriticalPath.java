@@ -52,7 +52,7 @@ public class TestLocalCriticalPath extends TaskTestCase {
         n2.move(t2);
         Task n3 = createTask();
         n3.move(t2);
-        
+
         Task d1 = createTask();
         d1.move(n2);
         Task d2 = createTask();
@@ -78,7 +78,7 @@ public class TestLocalCriticalPath extends TaskTestCase {
         assertFalse(criticalTasks.contains(n2));
         assertFalse(criticalTasks.contains(n3));        
     }
-    
+
     /*
      * This test creates the following hierarchy of tasks and dependencies:
      * t1       ---+
@@ -96,11 +96,11 @@ public class TestLocalCriticalPath extends TaskTestCase {
         t11.move(t1);        
         Task t12 = createTask();
         t12.move(t1);
-        
+
         Task t2 = createTask();
         Task t3 = createTask();
         t3.setDuration(getTaskManager().createLength(3));
-        
+
         createDependency(t12, t11);
         createDependency(t2, t11);
         createDependency(t3, t1);

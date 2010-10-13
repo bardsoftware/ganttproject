@@ -10,7 +10,7 @@ import net.sourceforge.ganttproject.task.Task;
 public class RenderedGanttChartImage extends RenderedChartImage {
     private final List<Task> myVisibleTasks;
     private ChartImplementation myChartImplementation;
-    
+
     public RenderedGanttChartImage(ChartModelBase chartModel, ChartImplementation chartImplementation, List<Task> tasks, BufferedImage taskImage, int chartWidth, int chartHeight) {
         super(chartModel, taskImage, chartWidth, chartHeight);
         myVisibleTasks = tasks;
@@ -19,10 +19,10 @@ public class RenderedGanttChartImage extends RenderedChartImage {
 
     protected void paintChart(Graphics g) {
         if (myVisibleTasks.isEmpty()) {
-            myChartImplementation.paintComponent(g);
+            myChartImplementation.paintChart(g);
         } else {
             myChartImplementation.paintComponent(g, myVisibleTasks);
-        }        
+        }
     }
 
 }

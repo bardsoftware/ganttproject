@@ -30,7 +30,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         for (; l > 0; l--) {
             activityEnd = timeUnit.adjustRight(activityEnd);
         }
-        return Collections.singletonList((GPCalendarActivity) new CalendarActivityImpl(
+        return Collections.singletonList((GPCalendarActivity)new CalendarActivityImpl(
                 activityStart, activityEnd, true));
     }
 
@@ -78,17 +78,17 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     public DayType getDayTypeDate(Date curDayStart) {
         return GPCalendar.DayType.WORKING;
     }
-    
+
     public boolean getOnlyShowWeekends() {
         // Weekends are always working days for this calendar
         return true;
     }
-    
+
     public void setOnlyShowWeekends(boolean onlyShowWeekends) {
-        // Ignore onlyShowWeekends, since weekends are always 
+        // Ignore onlyShowWeekends, since weekends are always
         // working days for this calendar
     }
-    
+
     public void setPublicHoliDayType(Date curDayStart) {
         // TODO Auto-generated method stub
 

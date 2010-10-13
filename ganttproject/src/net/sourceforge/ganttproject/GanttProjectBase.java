@@ -137,7 +137,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectModified(boolean isModified){
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             try {
                 if (isModified) {
                     next.projectModified();
@@ -154,7 +154,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected void fireProjectClosed() {
         for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = (ProjectEventListener) myModifiedStateChangeListeners.get(i);
+            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
             next.projectClosed();
         }
     }
@@ -419,11 +419,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
 
         public void optionsChanged() {
-            myTreeView.getTable().setRowHeight(myGanttViewModel.setRowHeight());
+            myTreeView.getTable().setRowHeight(myGanttViewModel.calculateRowHeight());
             AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
             model.fireTableStructureChanged();
             myTreeView.updateUI();
         }
+
     }
 
     public GanttTabbedPane getTabs() {

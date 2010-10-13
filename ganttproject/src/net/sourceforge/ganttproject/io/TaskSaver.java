@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
@@ -100,8 +101,8 @@ class TaskSaver extends SaverBase {
         }
 
         CustomColumnsValues ccv = task.getCustomValues();
-        for (Iterator/*<CustomColumn>*/ it = customColumns.getCustomColums().iterator(); it.hasNext();) {
-            CustomColumn nextColumn = (CustomColumn) it.next();
+        for (Iterator<CustomColumn> it = customColumns.getCustomColums().iterator(); it.hasNext();) {
+            CustomColumn nextColumn = it.next();
             final String name = nextColumn.getName();
             final String idc = nextColumn.getId();
             Object value = ccv.getValue(name);

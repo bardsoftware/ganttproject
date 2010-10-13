@@ -3,104 +3,87 @@
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.time.gregorian.FramerImpl;
+import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**
  * @author bard
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
     private final GraphicPrimitiveContainer myPrimitiveContainer;
-    private final FramerImpl myDayFramer = new FramerImpl(Calendar.DAY_OF_MONTH);
-    private final BooleanOption myRedlineOption;
-    private final BooleanOption myProjectDatesOption;
-    private Date myToday;
+    private GraphicPrimitiveContainer myTimelineContainer;
 
-    public BottomUnitLineRendererImpl(ChartModelBase model, UIConfiguration projectConfig) {
-    	this(model, new GraphicPrimitiveContainer(), projectConfig);
+    public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
+        this(model, primitiveContainer, primitiveContainer);
     }
-    public BottomUnitLineRendererImpl(ChartModelBase model, GraphicPrimitiveContainer primitiveContainer, UIConfiguration projectConfig) {
+
+    public BottomUnitLineRendererImpl(
+            ChartModel model,
+            GraphicPrimitiveContainer timelineContainer,
+            GraphicPrimitiveContainer primitiveContainer) {
         super(model);
         myPrimitiveContainer = primitiveContainer;
-        myRedlineOption = projectConfig.getRedlineOption();
-        myProjectDatesOption= projectConfig.getProjectBoundariesOption();
+        myTimelineContainer = timelineContainer;
     }
 
+    @Override
     public GraphicPrimitiveContainer getPrimitiveContainer() {
         return myPrimitiveContainer;
     }
 
     public void render() {
-        myToday = myDayFramer.adjustLeft(CalendarFactory.newCalendar().getTime());
-    	getPrimitiveContainer().clear();
         int curX = 0;
         Date curDate = getChartModel().getStartDate();
-        final int topUnitHeight = getLineTopPosition();
         boolean firstWeekendDay = true;
-        List offsets = getOffsets();
-        for (int i=0; i<offsets.size(); i++) {
-            Offset nextOffset = (Offset) offsets.get(i);
-            if (nextOffset.getDayType() == GPCalendar.DayType.WEEKEND ||
-            		nextOffset.getDayType() == GPCalendar.DayType.HOLIDAY) {
-                GraphicPrimitiveContainer.Rectangle r =
-                    getPrimitiveContainer().createRectangle(
-                            curX,
-                            getLineBottomPosition()+1,
-                            nextOffset.getOffsetPixels() - curX,
-                            getHeight());
-                Color background = nextOffset.getDayType()==GPCalendar.DayType.WEEKEND ?
-                		getConfig().getHolidayTimeBackgroundColor() :
-                        getConfig().getPublicHolidayTimeBackgroundColor();
-                r.setBackgroundColor(background);
-                r.setStyle("calendar.holiday");
-                getPrimitiveContainer().bind(r, nextOffset.getDayType());
-//                if (firstWeekendDay) {
-//                    getPrimitiveContainer().createLine(
-//                            curX, getLineTopPosition(), curX, getLineTopPosition()+10);
-//                    firstWeekendDay = false;
-//                }
+        for (Offset nextOffset : getOffsets()) {
+            if (!getChartModel().getTaskManager().getCalendar().isNonWorkingDay(nextOffset.getOffsetStart())) {
+                renderWorkingDay(curX, curDate, nextOffset);
+                firstWeekendDay = true;
             }
-//            else {
-//                TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
-//                String unitText = timeUnitText.getText(-1);
-//                int posY = getTextBaselinePosition();
-//                GraphicPrimitiveContainer.Text text = getPrimitiveContainer().createText(
-//                        curX + 2, posY, unitText);
-//                getPrimitiveContainer().bind(text, timeUnitText);
-//                text.setMaxLength(nextOffset.getOffsetPixels() - curX);
-//                text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-//                getPrimitiveContainer().createLine(
-//                        curX, getLineTopPosition(), curX, getLineTopPosition()+10);
-//                firstWeekendDay = true;
-//            }
-
-            if (curDate.equals(myToday) && myRedlineOption.isChecked()) {
-                Line redLine = getPrimitiveContainer().createLine(
-                        curX+2, getLineBottomPosition()+1, curX+2, getHeight());
-                redLine.setForegroundColor(Color.RED);
+            if (nextOffset.getDayType() != GPCalendar.DayType.WORKING){
+                renderNonWorkingDay(curX, nextOffset);
+                if (firstWeekendDay) {
+                    myTimelineContainer.createLine(
+                            curX, getLineTopPosition(), curX, getLineTopPosition()+10);
+                    firstWeekendDay = false;
+                }
             }
-            if ((curDate.equals(getChartModel().getTaskManager().getProjectStart()) ||
-                    curDate.equals(getChartModel().getTaskManager().getProjectEnd())) &&
-                isProjectBoundariesOptionOn()) {
-                Line blueLine = getPrimitiveContainer().createLine(
-                        curX, getLineBottomPosition()+1, curX, getHeight());
-                blueLine.setForegroundColor(Color.BLUE);
-            }
-
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
-            //System.err.println("curDate="+curDate+" curX="+curX);
         }
+    }
+
+    private void renderNonWorkingDay(int curX, Offset curOffset) {
+        GraphicPrimitiveContainer.Rectangle r =
+            getPrimitiveContainer().createRectangle(
+                    curX,
+                    getLineBottomPosition()+1,
+                    curOffset.getOffsetPixels() - curX,
+                    getHeight());
+        if (curOffset.getDayType() == GPCalendar.DayType.WEEKEND) {
+            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
+        }
+        else if (curOffset.getDayType() == GPCalendar.DayType.HOLIDAY) {
+            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
+        }
+        r.setStyle("calendar.holiday");
+        getPrimitiveContainer().bind(r, curOffset.getDayType());
+    }
+
+    private void renderWorkingDay(int curX, Date curDate, Offset curOffset) {
+        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
+        String unitText = timeUnitText.getText(-1);
+        int posY = getTextBaselinePosition();
+        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
+                curX + 2, posY, unitText);
+        myTimelineContainer.bind(text, timeUnitText);
+        text.setMaxLength(curOffset.getOffsetPixels() - curX);
+        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+        myTimelineContainer.createLine(
+                curX, getLineTopPosition(), curX, getLineTopPosition()+10);
     }
 
     protected int getLineTopPosition() {
@@ -108,7 +91,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     protected int getLineBottomPosition() {
-        return 0;
+        return getLineTopPosition() + getLineHeight();
     }
 
     protected int getLineHeight() {
@@ -119,12 +102,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         return getLineBottomPosition() - 5;
     }
 
-    protected List getOffsets() {
-        return getChartModel().getDefaultUnitOffsets();
+    protected Iterable<Offset> getOffsets() {
+        return getChartModel().getBottomUnitOffsets();
     }
-
-    private boolean isProjectBoundariesOptionOn() {
-        return myProjectDatesOption.isChecked();
-    }
-
 }

@@ -6,42 +6,32 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.util.List;
 
-import net.sourceforge.ganttproject.time.TimeFrame;
-import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.task.Task;
 
 /**
  * @author bard
  */
-public class TaskGridRendererImpl extends ChartRendererBase implements
-        TimeUnitVisitor {
+public class TaskGridRendererImpl extends ChartRendererBase {
+    private ChartModelImpl myModel;
+
     public TaskGridRendererImpl(ChartModelImpl model) {
         super(model);
+        myModel = model;
+        getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight()-model.getVerticalOffset());
     }
 
-    public void beforeProcessingTimeFrames() {
+    @Override
+    public void render() {
         getPrimitiveContainer().clear();
 
-        // GraphicPrimitiveContainer.Rectangle r =
-        // getPrimitiveContainer().createRectangle(0, 0, getWidth(),
-        // getHeight());
-        // r.setBackgroundColor(Color.WHITE);
-        // System.err.println("background rect="+r);
-        int rowHeight = getConfig().getRowHeight();
+        int rowHeight = myModel.getRowHeight();
         int ypos = rowHeight;
-        List/* <Task> */tasks = ((ChartModelImpl) getChartModel())
-                .getVisibleTasks();
-        //boolean isLightLine = true;
+        List<Task> tasks = ((ChartModelImpl) getChartModel()).getVisibleTasks();
         for (int i = 0; i < tasks.size(); i++) {
-            // GraphicPrimitiveContainer.Rectangle nextRect =
-            // getPrimitiveContainer().createRectangle(0, ypos,
-            // (int)getChartModel().getBounds().getWidth(), rowHeight-1);
-
-            // nextRect.setStyle(isLightLine ? "grid.light" : "grid.dark");
             GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer()
                     .createLine(0, ypos,
                             (int) getChartModel().getBounds().getWidth(), ypos);
             nextLine.setForegroundColor(Color.GRAY);
-            //isLightLine = !isLightLine;
             ypos += rowHeight;
         }
     }
@@ -50,23 +40,4 @@ public class TaskGridRendererImpl extends ChartRendererBase implements
         return (int) getChartModel().getBounds().getHeight()
                 - getConfig().getHeaderHeight();
     }
-
-    public void afterProcessingTimeFrames() {
-    }
-
-    public void startTimeFrame(TimeFrame timeFrame) {
-    }
-
-    public void endTimeFrame(TimeFrame timeFrame) {
-    }
-
-    public void startUnitLine(TimeUnit timeUnit) {
-    }
-
-    public void endUnitLine(TimeUnit timeUnit) {
-    }
-
-    public void nextTimeUnit(int unitIndex) {
-    }
-
 }

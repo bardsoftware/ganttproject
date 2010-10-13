@@ -48,10 +48,10 @@ public class CalendarSaver extends SaverBase {
         endElement("calendar", handler);
         //
         endElement("day-types", handler);
-        Collection publicHoliday = project.getActiveCalendar()
+        Collection<Date> publicHoliday = project.getActiveCalendar()
                 .getPublicHolidays();
-        for (Iterator iter = publicHoliday.iterator(); iter.hasNext();) {
-            Date d = (Date) iter.next();
+        for (Iterator<Date> iter = publicHoliday.iterator(); iter.hasNext();) {
+            Date d = iter.next();
             if (d.getYear() == 1 - 1900)
                 addAttribute("year", "", attrs);
             else

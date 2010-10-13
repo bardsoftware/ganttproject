@@ -18,11 +18,11 @@ public class ProjectBoundsAlgorithm {
         }
     }
 
-    public Result getBounds(Collection/* <Task> */tasks) {
+    public Result getBounds(Collection/* <Task> */<Task> tasks) {
         Date lowerBound = null;
         Date upperBound = null;
-        for (Iterator it = tasks.iterator(); it.hasNext();) {
-            Task next = (Task) it.next();
+        for (Iterator<Task> it = tasks.iterator(); it.hasNext();) {
+            Task next = it.next();
             Date start = next.getStart().getTime();
             Date end = next.getEnd().getTime();
             if (lowerBound == null || lowerBound.after(start)) {

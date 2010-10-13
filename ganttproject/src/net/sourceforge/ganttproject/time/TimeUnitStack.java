@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject.time;
 
+import java.text.DateFormat;
 import java.util.Date;
 
 /**
@@ -17,4 +18,9 @@ public interface TimeUnitStack {
     TimeUnitPair[] getTimeUnitPairs();
 
     String getName();
+
+    DateFormat[] getDateFormats();
+    DateFormat getTimeFormat();
+    TimeUnit findTimeUnit(String code);
+    String encode(TimeUnit timeUnit);
 }

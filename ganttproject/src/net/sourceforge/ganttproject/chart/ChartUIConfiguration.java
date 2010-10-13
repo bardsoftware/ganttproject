@@ -42,8 +42,6 @@ public class ChartUIConfiguration {
 
     private int myHeaderHeight = 44;
 
-    private boolean isCriticalPathOn;
-
     private int myYOffset = 0;
 
     private final int myMargin = 4;
@@ -179,9 +177,8 @@ public class ChartUIConfiguration {
     public int getMargin() {
         return myMargin;
     }
-    
+
     public float getWeekendAlphaValue() {
         return myProjectConfig.getWeekendAlphaRenderingOption().getValueAsFloat();
     }    
-
 }

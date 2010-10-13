@@ -1,22 +1,21 @@
 package net.sourceforge.ganttproject.gui.options.model;
 
-public class DefaultStringOption extends GPAbstractOption implements StringOption {
+public class DefaultStringOption extends GPAbstractOption<String> implements StringOption {
 
     private String myLockedValue;
+
+    // TODO GPAbstractOption also contains a myValue, are those the same?? (If so they should be merged and made protected)
     private String myValue;
-    
+
     public DefaultStringOption(String id) {
         super(id);
     }
 
     public void setValue(String value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         ChangeValueEvent event = new ChangeValueEvent(getID(), myLockedValue,
-                value);        
+                value);
         myLockedValue = value;
-        fireChangeValueEvent(event);        
+        fireChangeValueEvent(event);
     }
 
     public String getValue() {
@@ -26,7 +25,7 @@ public class DefaultStringOption extends GPAbstractOption implements StringOptio
     public String getUncommitedValue() {
         return myLockedValue;
     }
-    
+
     public void commit() {
         super.commit();
         myValue = myLockedValue;
@@ -39,14 +38,4 @@ public class DefaultStringOption extends GPAbstractOption implements StringOptio
     public void loadPersistentValue(String value) {
         setValue(value);
     }
-    
-    public boolean isChanged() {
-        if (isLocked()) {
-            if (myValue!=null) {
-                return false==myValue.equals(myLockedValue);
-            }
-        }
-        return false;
-    }    
-    
 }

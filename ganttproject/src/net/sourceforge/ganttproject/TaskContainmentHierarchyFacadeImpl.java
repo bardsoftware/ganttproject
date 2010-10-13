@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -21,7 +22,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 class TaskContainmentHierarchyFacadeImpl implements
         TaskContainmentHierarchyFacade {
-    private Map<Task, TaskNode> myTask2treeNode = new HashMap<Task, TaskNode>();
+    private Map<Task, DefaultMutableTreeNode> myTask2treeNode = new HashMap<Task, DefaultMutableTreeNode>();
     private Map<Task, Integer> myTask2index = new LinkedHashMap<Task, Integer>();
     private Task myRootTask;
 
@@ -45,13 +46,17 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public Task[] getNestedTasks(Task container) {
         Task[] result = null;
-        TaskNode treeNode = myTask2treeNode.get(container);
+        DefaultMutableTreeNode treeNode = myTask2treeNode
+                .get(container);
         if (treeNode != null) {
             ArrayList<Task> list = new ArrayList<Task>();
-            for (Enumeration<TaskNode> children = treeNode.children(); children.hasMoreElements();) {
-                TaskNode next = children.nextElement();
-                if (next instanceof TaskNode)
+            for (Enumeration children = treeNode.children(); children
+                    .hasMoreElements();) {
+                DefaultMutableTreeNode next = (DefaultMutableTreeNode) children
+                        .nextElement();
+                if (next instanceof TaskNode) {
                     list.add((Task) next.getUserObject());
+                }
             }
             result = list.toArray(new Task[0]);
         }
@@ -60,10 +65,10 @@ class TaskContainmentHierarchyFacadeImpl implements
 
     public Task[] getDeepNestedTasks(Task container) {
         ArrayList<Task> result = new ArrayList<Task>();
-        TaskNode treeNode = myTask2treeNode.get(container);
-        if (treeNode != null) {
-            for (Enumeration<TaskNode> subtree = treeNode.preorderEnumeration(); subtree.hasMoreElements();) {
-                TaskNode curNode = subtree.nextElement();
+        DefaultMutableTreeNode treeNodes = myTask2treeNode.get(container);
+        if (treeNodes != null) {
+            for (Enumeration subtree = treeNodes.preorderEnumeration(); subtree.hasMoreElements();) {
+                DefaultMutableTreeNode curNode = (DefaultMutableTreeNode) subtree.nextElement();
                 assert curNode.getUserObject() instanceof Task;
                 result.add((Task) curNode.getUserObject());
             }
@@ -72,7 +77,7 @@ class TaskContainmentHierarchyFacadeImpl implements
             assert result.size() > 0;
             result.remove(0);
         }
-        return (Task[]) result.toArray(new Task[result.size()]);
+        return result.toArray(new Task[result.size()]);
     }
 
     /**
@@ -83,7 +88,7 @@ class TaskContainmentHierarchyFacadeImpl implements
      *            The Task on which to check for children.
      */
     public boolean hasNestedTasks(Task container) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(container);
         if (treeNode != null) {
             if (treeNode.children().hasMoreElements()) {
@@ -98,7 +103,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public Task getContainer(Task nestedTask) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(nestedTask);
         if (treeNode == null) {
             return null;
@@ -128,17 +133,16 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public void move(Task whatMove, Task whereMove) {
-        DefaultMutableTreeNode targetNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode targetNode = myTask2treeNode
                 .get(whereMove);
-        DefaultMutableTreeNode movedNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode movedNode = myTask2treeNode
                 .get(whatMove);
         if (movedNode != null) {
             TreePath movedPath = new TreePath(movedNode.getPath());
             boolean wasSelected = (myTree.getJTree().getSelectionModel()
                     .isPathSelected(movedPath));
             if (wasSelected) {
-                myTree.getJTree().getSelectionModel().removeSelectionPath(
-                        movedPath);
+                myTree.getJTree().getSelectionModel().removeSelectionPath(movedPath);
             }
             myTree.getModel().removeNodeFromParent(movedNode);
             myTree.getModel().insertNodeInto(movedNode, targetNode,
@@ -164,18 +168,32 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public int getDepth(Task task) {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) myTask2treeNode
+        DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(task);
         return treeNode.getLevel();
     }
 
     public int compareDocumentOrder(Task task1, Task task2) {
-        Integer index1 = (Integer) myTask2index.get(task1);
-        Integer index2 = (Integer) myTask2index.get(task2);
+        Integer index1 = myTask2index.get(task1);
+        Integer index2 = myTask2index.get(task2);
         return index1.intValue() - index2.intValue();
     }
 
     public boolean contains(Task task) {
         return myTask2treeNode.containsKey(task);
+    }
+
+    public List<Task> getTasksInDocumentOrder() {
+        List<Task> result = new ArrayList<Task>();
+        DefaultMutableTreeNode rootNode = myTask2treeNode.get(getRootTask());
+        Enumeration<TreeNode> nodes = rootNode.preorderEnumeration();
+        if (nodes.hasMoreElements()) {
+            nodes.nextElement();
+        }
+        for (;nodes.hasMoreElements();) {
+            DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
+            result.add((Task) nextNode.getUserObject());
+        }
+        return result;
     }
 }

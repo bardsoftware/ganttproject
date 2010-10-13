@@ -51,8 +51,9 @@ import javax.swing.JPanel;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -173,7 +174,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         Thread fontReadingThread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    Thread.currentThread().sleep(2000);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -204,6 +205,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
         }
     }
+
     protected void registerFontDirectories() {
         myFontCache.registerDirectory(System.getProperty("java.home") + "/lib/fonts", false);
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
@@ -231,10 +233,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
         }
     }
-    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
+
+    protected Job[] createJobs(File outputFile, List resultFiles) {
         waitRegisterFonts();
         return new Job[] {createTransformationJob(outputFile)};
     }
+
     private Job createTransformationJob(final File outputFile) {
         Job result = new ExportJob("Generating PDF") {
             protected IStatus run(IProgressMonitor monitor) {
@@ -269,12 +273,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
     static class ChartWriter {
         private final Chart myChart;
-        protected final ChartModelBase myModel;
+        protected final ChartModel myModel;
         private PdfWriter myWriter;
         private Document myDoc;
-        ChartWriter(Chart chart, PdfWriter writer, Document doc) {
-            myChart = (Chart) chart.createCopy();
-            myModel = myChart.getModel();
+        ChartWriter(TimelineChart chart, PdfWriter writer, Document doc) {
+            myChart = chart.createCopy();
+            myModel = chart.getModel();
             myWriter = writer;
             myDoc = doc;
         }
@@ -453,20 +457,21 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             writeResourceChart();
         }
 
-        private void writeAttributes(PdfPTable table, LinkedHashMap<String,String> attrs) {
+        private void writeAttributes(PdfPTable table, LinkedHashMap<String, String> attrs) {
             for (Iterator<Entry<String, String>> entries = attrs.entrySet().iterator(); entries.hasNext();) {
                 Map.Entry<String, String> nextEntry = entries.next();
+
                 {
-                    Paragraph p = new Paragraph(String.valueOf(nextEntry.getKey()), getSansRegularBold(12));
-                    PdfPCell cell = new PdfPCell(p);
-                    cell.setBorder(PdfPCell.NO_BORDER);
-                    table.addCell(cell);
+                Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));
+                PdfPCell cell = new PdfPCell(p);
+                cell.setBorder(PdfPCell.NO_BORDER);
+                table.addCell(cell);
                 }
                 {
-                    Paragraph p = new Paragraph(String.valueOf(nextEntry.getValue()), getSansRegular(12));
-                    PdfPCell cell = new PdfPCell(p);
-                    cell.setBorder(PdfPCell.NO_BORDER);
-                    table.addCell(cell);
+                Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(12));
+                PdfPCell cell = new PdfPCell(p);
+                cell.setBorder(PdfPCell.NO_BORDER);
+                table.addCell(cell);
                 }
             }
         }
@@ -486,7 +491,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 head.addCell(cell);
             }
             addEmptyRow(head, 20);
-            LinkedHashMap<String,String> attrs = new LinkedHashMap<String,String>();
+            LinkedHashMap<String, String> attrs = new LinkedHashMap<String, String>();
             attrs.put("Project managers: ", buildManagerString());
             attrs.put("Dates: ", buildProjectDatesString());
             attrs.put(" ", " ");
@@ -565,7 +570,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                     GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
-            ChartWriter resourceChartWriter = new ChartWriter(myUIFacade.getResourceChart(), myWriter, myDoc) {
+            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
                 protected void setupChart() {
                     super.setupChart();
                     //myModel.setRowHeight(myModel.getBounds().height/getProject().getH);
@@ -575,8 +580,8 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         }
 
 
-        protected PdfPTable createTableHeader(
-                TableHeaderUIFacade tableHeader, ArrayList<Column> orderedColumns) throws DocumentException {
+        protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader,
+                ArrayList<Column> orderedColumns) throws DocumentException {
             for (int i=0; i<tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c.isVisible()) {
@@ -680,9 +685,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     if (addEmptyRow) {
                         addEmptyRow(table, 10);
                     }
-                    HashMap<String, String> id2value = new HashMap<String,String>();
+                    HashMap<String, String> id2value = new HashMap<String, String>();
                     myTaskProperty.getTaskAttributes(t, id2value);
-                    HashMap<String, PdfPCell> id2cell = new HashMap<String,PdfPCell>();
+                    HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
 
                     PdfPCell nameCell;
                     if (myShowNotesOption.isChecked() && t.getNotes()!=null && !"".equals(t.getNotes())) {

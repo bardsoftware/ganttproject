@@ -17,16 +17,16 @@ public abstract class FindPossibleDependeesAlgorithmImpl implements
 
     public Task[] run(Task dependant) {
         myContainmentFacade = createContainmentFacade();
-        ArrayList result = new ArrayList();
+        ArrayList<Task> result = new ArrayList<Task>();
         Task root = myContainmentFacade.getRootTask();
         Task[] nestedTasks = myContainmentFacade.getNestedTasks(root);
         processTask(nestedTasks, dependant, result);
-        return (Task[]) result.toArray(new Task[0]);
+        return result.toArray(new Task[0]);
     }
 
     protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
 
-    private void processTask(Task[] taskList, Task dependant, ArrayList result) {
+    private void processTask(Task[] taskList, Task dependant, ArrayList<Task> result) {
         for (int i = 0; i < taskList.length; i++) {
             Task next = taskList[i];
             if (!next.equals(dependant)) {

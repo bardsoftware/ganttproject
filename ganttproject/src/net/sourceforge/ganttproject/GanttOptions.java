@@ -276,6 +276,7 @@ public class GanttOptions {
         iconListAsIntArray = getDefaultIconListIntArray();
         deletedIconListAsString = getDefaultDeletedIconListAsString();
         deletedIconListAsIntArray = getDefaultDeletedIconListIntArray();
+
     }
 
     // iconListAsIntArray = initIconList ();
@@ -469,7 +470,7 @@ public class GanttOptions {
                 startElement("files", attrs, handler);
                 for (Iterator<Document> iterator = documentsMRU.iterator(); iterator
                         .hasNext();) {
-                    Document document = (Document) iterator.next();
+                    Document document = iterator.next();
                     addAttribute("path", document.getPath(), attrs);
                     emptyElement("file", attrs, handler);
                 }
@@ -479,7 +480,7 @@ public class GanttOptions {
             addAttribute("spec",
                     getFontSpec(getUIConfiguration().getMenuFont()), attrs);
             emptyElement("font", attrs, handler);
-
+            //
             addAttribute("category", "chart-main", attrs);
             addAttribute("spec", getFontSpec(getUIConfiguration()
                     .getChartMainFont()), attrs);
@@ -662,6 +663,7 @@ public class GanttOptions {
             addAttribute("name", next.getName(), attrs);
             emptyElement("role", attrs, handler);
         }
+
     }
 
     private void saveIconPositions(TransformerHandler handler)
@@ -719,7 +721,7 @@ public class GanttOptions {
             int r = 0, g = 0, b = 0;
 
             if ("option".equals(qName)) {
-                GPOption option = (GPOption) myGPOptions.get(attrs.getValue("id"));
+                GPOption option = myGPOptions.get(attrs.getValue("id"));
                 if (option!=null) {
                     option.lock();
                     option.loadPersistentValue(attrs.getValue("value"));
@@ -734,7 +736,7 @@ public class GanttOptions {
                     String value = attrs.getValue(i);
 
                     String tagDotAttribute = qName+"."+aName;
-                    GP1XOptionConverter converter = (GP1XOptionConverter) myTagDotAttribute_Converter.get(tagDotAttribute);
+                    GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);
                     if (converter!=null) {
                         converter.loadValue(value);
                         continue;
@@ -813,12 +815,10 @@ public class GanttOptions {
                             } else if (value.equals("Hungarian")
                                     || value.equals("hu")) {
                                 language.setLocale(new Locale("hu", "HU"));
-                            }
-                            else if (value.equals("Hrvatski")
+                            } else if (value.equals("Hrvatski")
                                 || value.equals("hr")) {
                             language.setLocale(new Locale("hr", "HR"));
-                            }
-                            else if (value
+                            } else if (value
                                     .equals("\u05d0\u05e0\u05d2\u05dc\u05d9\u05ea")
                                     || value.equals("iw")) {
                                 language.setLocale(new Locale("iw", "IW"));
@@ -853,7 +853,6 @@ public class GanttOptions {
                             } else if (value.equals("Ti\u1ebfng anh")
                                     || value.equals("vi")) {
                                 language.setLocale(new Locale("vi", "VN"));
-
                             }
                         }
                     } else if (qName.equals("task-color")) {
@@ -1026,6 +1025,7 @@ public class GanttOptions {
                 // Color color = new Color(r, g, b);
                 // getUIConfiguration().setTaskColor(color);
                 setDefaultTaskColor(new Color(r, g, b));
+
             }
 
             if (qName.equals("font")) {
@@ -1035,7 +1035,9 @@ public class GanttOptions {
                 } else if ("chart-main".equals(category)) {
                     myChartMainFont = Font.decode(attrs.getValue("spec"));
                 }
+
             }
+
         }
 
         public void endElement(String uri, String localName, String name)
@@ -1082,6 +1084,7 @@ public class GanttOptions {
     // public Color getResourceOverloadColor() {
     // return getUIConfiguration().getResourceOverloadColor();
     // }
+
     /** @return the lock DAV Minutes. */
     public int getLockDAVMinutes() {
         return lockDAVMinutes;
@@ -1106,7 +1109,6 @@ public class GanttOptions {
     public String getXslFo() {
         return (new File(xslFo).exists()) ? xslFo : getClass().getResource(
                 "/xslfo/ganttproject.xsl").toString();
-
     }
 
     /** @return if the mouse is used to drag on the chart. */

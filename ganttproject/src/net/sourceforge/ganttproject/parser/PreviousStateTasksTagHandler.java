@@ -48,8 +48,8 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
                 	}
                 }
             }
-        } else if ((qName.equals("previous-task"))) {// && (myPreviousStates
-            // != null)) {
+        } else if ((qName.equals("previous-task"))
+                /*&& (myPreviousStates != null)*/) {
             writePreviousTask(attrs);
         }
     }

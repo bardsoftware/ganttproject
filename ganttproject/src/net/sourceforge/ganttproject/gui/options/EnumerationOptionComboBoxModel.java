@@ -18,7 +18,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 class EnumerationOptionComboBoxModel extends AbstractListModel implements
         ComboBoxModel {
-    private final List myValues;
+    private final List<Item> myValues;
 
     private Item mySelectedItem;
 
@@ -31,7 +31,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
         String[] ids = option.getAvailableValues();
         String[] i18nedValues = geti18nedValues(option, group);
 
-        myValues = new ArrayList(ids.length);
+        myValues = new ArrayList<Item>(ids.length);
         for (int i = 0; i < ids.length; i++) {
             Item nextItem = new Item(ids[i], i18nedValues[i]);
             myValues.add(nextItem);

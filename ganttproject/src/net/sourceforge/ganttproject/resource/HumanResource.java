@@ -37,11 +37,11 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
     private Role myRole;
 
     private final DefaultListModel myDaysOffList = new DefaultListModel ();
-    
+
     /** contains all the custom property values of a resource.
      * the key is the property name and the value is the property value */
     private final Map<String, Object> customFields;
-    
+
     private final HumanResourceManager myManager;
 
     HumanResource(HumanResourceManager manager) {
@@ -61,7 +61,7 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
     void initCustomProperties(){
     	List<CustomPropertyDefinition> defs = myManager.getCustomPropertyManager().getDefinitions();
     	for (int i=0; i<defs.size(); i++) {
-    		CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) defs.get(i);
+    		CustomPropertyDefinition nextDefinition = defs.get(i);
     		customFields.put(nextDefinition.getName(), nextDefinition.getDefaultValue());
     	}
     }
@@ -84,7 +84,7 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 		customFields = new HashMap<String, Object>(copy.customFields);
 		areEventsEnabled = true;
     }
- 
+
     public void delete() {
         super.delete();
         myManager.remove(this);
@@ -136,20 +136,19 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
     public DefaultListModel getDaysOff() {
         return myDaysOffList;
     }
-    
-    
+
     public void addCustomField(String title, Object value) {
     	this.customFields.put(title,value);
     }
-    
+
     public void removeCustomField(String title) {
     	this.customFields.remove(title);
     }
-    
+
     public Object getCustomFieldVal(String title) {
     	return customFields.get(title);
     }
-    
+
     public void setCustomFieldVal(String title, Object val) {
     	this.customFields.put(title,val);
     }
@@ -159,17 +158,17 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
         fireAssignmentsChanged();
         return result;
     }    
-    
+
     public ProjectResource unpluggedClone() {
     	return new HumanResource(this);
     }
-    
+
     private void fireResourceChanged() {
     	if (areEventsEnabled) {
     		myManager.fireResourceChanged(this);
     	}
     }
-    
+
     protected void fireAssignmentsChanged() {
         if (areEventsEnabled) {
             myManager.fireAssignmentsChanged(this);
@@ -178,8 +177,8 @@ public class HumanResource extends ProjectResource implements CustomPropertyHold
 
 	public List<CustomProperty> getCustomProperties() {
 		List<CustomProperty> result = new ArrayList<CustomProperty>(customFields.size());
-		for (Iterator<Entry<String,Object>> entries = customFields.entrySet().iterator(); entries.hasNext();) {
-			Map.Entry<String,Object> nextEntry = entries.next();
+		for (Iterator<Entry<String, Object>> entries = customFields.entrySet().iterator(); entries.hasNext();) {
+			Map.Entry<String, Object> nextEntry = entries.next();
 			String nextName = nextEntry.getKey();
 			Object nextValue = nextEntry.getValue();
 			CustomPropertyDefinition nextDefinition = myManager.getCustomPropertyDefinition(nextName);

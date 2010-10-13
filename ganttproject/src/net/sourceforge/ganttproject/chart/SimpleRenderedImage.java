@@ -44,39 +44,39 @@ public abstract class SimpleRenderedImage implements RenderedImage {
 
  /** The X coordinate of the image's upper-left pixel. */
  protected int minX;
- 
+
  /** The Y coordinate of the image's upper-left pixel. */
  protected int minY;
- 
+
  /** The image's width in pixels. */
  protected int width;
- 
+
  /** The image's height in pixels. */
  protected int height;
- 
+
  /** The width of a tile. */
  protected int tileWidth;
- 
+
  /** The height of a tile. */
  protected int tileHeight;
 
  /** The X coordinate of the upper-left pixel of tile (0, 0). */
  protected int tileGridXOffset = 0;
- 
+
  /** The Y coordinate of the upper-left pixel of tile (0, 0). */
  protected int tileGridYOffset = 0;
- 
+
  /** The image's SampleModel. */
  protected SampleModel sampleModel = null;
- 
+
  /** The image's ColorModel. */
  protected ColorModel colorModel = null;
- 
+
  /** The image's sources, stored in a Vector. */
  protected Vector sources = new Vector();
 
  /** A Hashtable containing the image properties. */
- protected Hashtable properties = new Hashtable();
+ protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
  public SimpleRenderedImage() {}
 
@@ -86,7 +86,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  }
 
  /**
-  * Returns the X coordinate of the column immediatetely to the
+  * Returns the X coordinate of the column immediately to the
   * right of the rightmost column of the image.  getMaxX() is
   * implemented in terms of getMinX() and getWidth() and so does
   * not need to be implemented by subclasses.
@@ -119,13 +119,13 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  public int getHeight() {
      return height;
  }
- 
+
  /** Returns a Rectangle indicating the image bounds. */
  public Rectangle getBounds() {
      return new Rectangle(getMinX(), getMinY(),
                           getWidth(), getHeight());
  }
- 
+
  /** Returns the width of a tile. */
  public int getTileWidth() {
      return tileWidth;
@@ -177,7 +177,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  public int getNumXTiles() {
      return getMaxTileX() - getMinTileX() + 1;
  }
- 
+
  /**
   * Returns the vertical index of the uppermost row of tiles.  getMinTileY()
   * is implemented in terms of getMinY() and so does not need to be
@@ -230,7 +230,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      name = name.toLowerCase();
      return properties.get(name);
  }
- 
+
  /**
   * Returns a list of the properties recognized by this image.  If
   * no properties are available, <code>null</code> will be
@@ -243,12 +243,11 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      String[] names = new String[properties.size()];
      int index = 0;
 
-     Enumeration e = properties.keys();
+     Enumeration<String> e = properties.keys();
      while (e.hasMoreElements()) {
-         String name = (String)e.nextElement();
+         String name = e.nextElement();
          names[index++] = name;
      }
-     
      return names;
  }
 
@@ -273,7 +272,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
 
      prefix = prefix.toLowerCase();
 
-     Vector names = new Vector();
+     Vector<String> names = new Vector<String>();
      for (int i = 0; i < propertyNames.length; i++) {
          if (propertyNames[i].startsWith(prefix)) {
              names.addElement(propertyNames[i]);
@@ -287,8 +286,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      // Copy the strings from the Vector over to a String array.
      String prefixNames[] = new String[names.size()];
      int count = 0;
-     for (Iterator it = names.iterator(); it.hasNext(); ) {
-         prefixNames[count++] = (String)it.next();
+     for (Iterator<String> it = names.iterator(); it.hasNext(); ) {
+         prefixNames[count++] = it.next();
      }
 
      return prefixNames;
@@ -492,7 +491,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  public WritableRaster copyData(WritableRaster dest) {
      Rectangle bounds;
      Raster tile;
-                 
+
      if (dest == null) {
          bounds = getBounds();
          Point p = new Point(minX, minY);
@@ -503,12 +502,12 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      } else {
          bounds = dest.getBounds();
      }
-     
+
      int startX = XToTileX(bounds.x);
      int startY = YToTileY(bounds.y);
      int endX = XToTileX(bounds.x + bounds.width - 1);
      int endY = YToTileY(bounds.y + bounds.height - 1);
-         
+
      for (int j = startY; j <= endY; j++) {
          for (int i = startX; i <= endX; i++) {
              tile = getTile(i, j);

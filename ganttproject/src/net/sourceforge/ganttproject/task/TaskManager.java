@@ -10,7 +10,6 @@ import java.util.Map;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade.Factory;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
@@ -39,6 +38,9 @@ public interface TaskManager {
 
     public GanttTask createTask(int taskId);
 
+    String encode(TaskLength duration);
+    TaskLength createLength(String lengthAsString);
+
     public TaskLength createLength(long length);
 
     TaskLength createLength(TimeUnit unit, float length);
@@ -46,12 +48,13 @@ public interface TaskManager {
     public TaskLength createLength(TimeUnit timeUnit, Date startDate,
             Date endDate);
 
+    Date shift(Date original, TaskLength duration);
     TaskDependencyCollection getDependencyCollection();
 
     AlgorithmCollection getAlgorithmCollection();
 
     TaskDependencyConstraint createConstraint(int constraintID);
-
+    TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
     GPCalendar getCalendar();
 
     TaskContainmentHierarchyFacade getTaskHierarchy();
@@ -65,12 +68,12 @@ public interface TaskManager {
             return new TaskManagerImpl(containmentFacadeFactory, config,null);
         }
 
-		public static TaskManager newInstance(
-				Factory factory, 
-				TaskManagerConfig taskConfig, 
-				CustomColumnsStorage customColumnsStorage) {
+        public static TaskManager newInstance(
+                Factory factory,
+                TaskManagerConfig taskConfig,
+                CustomColumnsStorage customColumnsStorage) {
             return new TaskManagerImpl(factory, taskConfig, customColumnsStorage);
-		}
+        }
     }
 
     public TaskLength getProjectLength();
@@ -87,11 +90,11 @@ public interface TaskManager {
 
     public void importAssignments(TaskManager importedTaskManager,
             ResourceManager hrManager, Map<Task, Task> original2importedTask,
-            Map<ProjectResource, HumanResource> original2importedResource);
+            Map<HumanResource, HumanResource> original2importedResource);
 
     /**
-     * Processes the critical path finding on <code>root</code> tasks.
-     * 
+     * Processes the critical path findind on <code>root</code> tasks.
+     *
      * @param root
      *            The root of the tasks to consider in the critical path
      *            finding.

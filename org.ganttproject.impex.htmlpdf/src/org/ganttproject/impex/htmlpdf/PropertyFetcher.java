@@ -29,7 +29,7 @@ class PropertyFetcher {
     }    
     void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
-        
+
         DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
         id2value.put("tpd3", t.getName());
         id2value.put("tpd4", dateFormat.format(t.getStart().getTime()));
@@ -43,8 +43,8 @@ class PropertyFetcher {
         }
 
         CustomColumnsValues customValues = t.getCustomValues();
-        for (Iterator<CustomColumn> it = getCustomColumnStorage().getCustomColums().iterator();
-        it.hasNext();) {
+        for (Iterator<CustomColumn> it = getCustomColumnStorage()
+                .getCustomColums().iterator(); it.hasNext();) {
             CustomColumn nextColumn = it.next();
             Object value = customValues.getValue(nextColumn.getName());
             String valueAsString = value==null ? "" : value.toString();
@@ -57,7 +57,7 @@ class PropertyFetcher {
         id2value.put("1", hr.getRole().getName());
         id2value.put("2", hr.getMail());
         id2value.put("3", hr.getPhone());
-     
+
         List<CustomProperty> customFields = hr.getCustomProperties();
         for (int j=0; j<customFields.size(); j++) {
             CustomProperty nextProperty = (CustomProperty) customFields.get(j);

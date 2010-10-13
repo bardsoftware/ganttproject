@@ -99,6 +99,9 @@ public abstract class TaskTestCase extends TestCase {
         return new GanttCalendar(2004, 9, 20);
     }
 
+    protected GanttCalendar newThursday() {
+        return new GanttCalendar(2004, 9, 21);
+    }
 
     protected TaskManager newTaskManager() {
         return TaskManager.Access.newInstance(null, new TaskManagerConfigImpl());

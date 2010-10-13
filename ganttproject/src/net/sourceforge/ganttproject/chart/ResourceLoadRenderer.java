@@ -1,15 +1,26 @@
-/*
- * This code is provided under the terms of GPL version 2.
- * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
- */
+/* LICENSE: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,20 +30,24 @@ import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.Task;
 
 /**
  * Renders resource load chart
  */
 class ResourceLoadRenderer extends ChartRendererBase {
 
-    private List myDistributions;
+    private List<LoadDistribution> myDistributions;
 
-    private ResourceChart myResourcechart;
+    private final ResourceChart myResourcechart;
+
+	private final ChartModelResource myModel;
 
     public ResourceLoadRenderer(ChartModelResource model,
             ResourceChart resourceChart) {
         super(model);
         myResourcechart = resourceChart;
+        myModel = model;
     }
 
     /**
@@ -40,11 +55,12 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * If some resource is expanded, calls rendering of the load details
      */
     public void render() {
+       getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight() - myModel.getVerticalOffset());
        beforeProcessingTimeFrames();
-       int ypos = 0 - getConfig().getYOffSet();
+       int ypos = 0;
        for (int i=0; i<myDistributions.size(); i++) {
-    	   LoadDistribution nextDistribution = (LoadDistribution) myDistributions.get(i);
-           List loads = nextDistribution.getLoads();
+    	   LoadDistribution nextDistribution = myDistributions.get(i);
+           List<Load> loads = nextDistribution.getLoads();
            renderLoads(nextDistribution.getDaysOff(), ypos);
            renderLoads(loads, ypos);
            if (myResourcechart.isExpanded(nextDistribution.getResource())) {
@@ -64,12 +80,12 @@ class ResourceLoadRenderer extends ChartRendererBase {
      */
     private void renderLoadDetails(LoadDistribution distribution, int ypos) {
         int yPos2 = ypos;
-        Map/*<Task, List<Load>>*/ task2loads = distribution.getSeparatedTaskLoads();
+        Map<Task, List<Load>> task2loads = distribution.getSeparatedTaskLoads();
 
         ResourceAssignment[] assignments = distribution.getResource().getAssignments();
         for (int i=0; i<assignments.length; i++) {
         	ResourceAssignment assignment = assignments[i];
-            List nextLoads = (List) task2loads.get(assignment.getTask());
+            List<Load> nextLoads = task2loads.get(assignment.getTask());
             yPos2 += getConfig().getRowHeight();
             if (nextLoads==null) {
                 continue;
@@ -83,14 +99,14 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * Preconditions: loads come from the same distribution and are ordered by
      * their time offsets
      */
-    private void renderLoads(List/*<Load>*/ loads, int ypos) {
+    private void renderLoads(List<Load> loads, int ypos) {
         Load prevLoad = null;
         Load curLoad = null;
-        LinkedList/*<Offset>*/ offsets = getOffsets();
+        List<Offset> offsets = getDefaultOffsets();
         String suffix = "";
-        for (int curIndex=1; curIndex<loads.size() && offsets.getFirst()!=null; curIndex++) {
-            curLoad = (Load) loads.get(curIndex);
-            prevLoad = (Load) loads.get(curIndex-1);
+        for (int curIndex=1; curIndex<loads.size(); curIndex++) {
+            curLoad = loads.get(curIndex);
+            prevLoad = loads.get(curIndex-1);
             if (prevLoad.load!=0) {
                 renderLoads(prevLoad, curLoad, offsets, ypos, suffix);
                 suffix = "";
@@ -105,7 +121,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * Renders prevLoad, with curLoad serving as a load right border marker and style hint
      */
     private void renderLoads(
-            Load prevLoad, Load curLoad, LinkedList/*<Offset>*/ offsets, int ypos, String suffix) {
+            Load prevLoad, Load curLoad, List<Offset> offsets, int ypos, String suffix) {
         final Date prevEnd = curLoad.startDate;
         final Date prevStart = prevLoad.startDate;
 
@@ -140,11 +156,11 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * Precondition: loads belong to the same pair (resource,task) and are ordered
      * by their time values
      */
-    private void buildTasksLoadsRectangles(List/*<Load>*/ partition, int ypos) {
-        LinkedList/*<Offset>*/ offsets = getOffsets();
-        Iterator/*<Load>*/ loads = partition.iterator();
-        while (loads.hasNext() && offsets.getFirst()!=null) {
-            final Load nextLoad = (Load) loads.next();
+    private void buildTasksLoadsRectangles(List<Load> partition, int ypos) {
+        List<Offset> offsets = getDefaultOffsets();
+        Iterator<Load> loads = partition.iterator();
+        while (loads.hasNext()) {
+            final Load nextLoad = loads.next();
             final Date nextStart = nextLoad.startDate;
             final Date nextEnd = nextLoad.endDate;
 
@@ -168,71 +184,14 @@ class ResourceLoadRenderer extends ChartRendererBase {
         }
     }
 
-    private Rectangle createRectangle(LinkedList/*<Offset>*/ offsets, Date start, Date end, int ypos) {
+    private Rectangle createRectangle(List<Offset> offsets, Date start, Date end, int ypos) {
         if (start.after(getChartEndDate()) || end.compareTo(getChartStartDate())<=0) {
             return null;
         }
-        Date lastOffsetEnd = ((Offset)offsets.getLast()).getOffsetEnd();
-        if (end.after(lastOffsetEnd)) {
-        	end = lastOffsetEnd;
-        }
-        ArrayList copy = new ArrayList(offsets);
-        Offset offsetBefore = null;
-        Offset offsetAfter = null;
-
-        LinkedList buffer = new LinkedList();
-        while (offsets.getFirst()!=null) {
-            Offset offset = (Offset) offsets.getFirst();
-            if (offset.getOffsetEnd().compareTo(start)<=0) {
-                offsetBefore = offset;
-                buffer.clear();
-            }
-            if (offset.getOffsetEnd().compareTo(end)>=0) {
-                offsetAfter = offset;
-                if (offset.getOffsetEnd().after(end)) {
-                	offsets.addAll(0, buffer);
-                }
-                break;
-            }
-            buffer.addLast(offset);
-            offsets.removeFirst();
-        }
-
-        int rectStart;
-        int rectEnd;
-        if (offsetAfter==null) {
-            rectEnd = getChartModel().getBounds().width;
-        }
-        else if (offsetAfter.getOffsetEnd().equals(end)) {
-            rectEnd = offsetAfter.getOffsetPixels();
-        }
-        else {
-            rectEnd = -1;
-        }
-        if (offsetBefore == null) {
-            rectStart = 0;
-        }
-        else if (offsetBefore.getOffsetEnd().equals(start)) {
-            rectStart = offsetBefore.getOffsetPixels();
-        }
-        else {
-            rectStart = -1;
-        }
-        if (rectStart==-1 || rectEnd==-1) {
-            return createRectangle(getDefaultOffsetsInRange(offsetBefore, offsetAfter), start, end, ypos);
-        }
-        Rectangle nextRect = getPrimitiveContainer().createRectangle(
-                rectStart, ypos, rectEnd-rectStart, getConfig().getRowHeight());
-        return nextRect;
-    }
-
-    private LinkedList/*<Offset>*/ getDefaultOffsetsInRange(Offset offsetBefore, Offset offsetAfter) {
-        LinkedList/*<Offset>*/ result = new LinkedList/*<Offset>*/(
-                getChartModel().getDefaultUnitOffsetsInRange(offsetBefore, offsetAfter));
-        if (offsetBefore!=null) {
-            result.addFirst(offsetBefore);
-        }
-        return result;
+        OffsetLookup offsetLookup = new OffsetLookup();
+        int[] bounds = offsetLookup.getBounds(start, end, offsets);
+        return getPrimitiveContainer().createRectangle(
+                bounds[0], ypos, bounds[1]-bounds[0], getConfig().getRowHeight());
     }
 
     private Date getChartStartDate() {
@@ -243,12 +202,12 @@ class ResourceLoadRenderer extends ChartRendererBase {
         return ((Offset) getChartModel().getBottomUnitOffsets().get(getChartModel().getBottomUnitOffsets().size()-1)).getOffsetEnd();
     }
 
-    private LinkedList/*<Offset>*/ getOffsets() {
-        return new LinkedList/*<Offset>*/(getChartModel().getBottomUnitOffsets());
+    private List<Offset> getDefaultOffsets() {
+        return getChartModel().getDefaultUnitOffsets();
     }
 
     public void beforeProcessingTimeFrames() {
-        myDistributions = new ArrayList/*<LoadDistribution>*/();
+        myDistributions = new ArrayList<LoadDistribution>();
         getPrimitiveContainer().clear();
         ProjectResource[] resources = ((ChartModelResource) getChartModel())
                 .getVisibleResources();

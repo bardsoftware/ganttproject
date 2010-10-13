@@ -10,7 +10,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
- * This class allows the developer to get some useful references. - GanttProject
+ * This class allow the developer to get some useful references. - GanttProject
  * reference; - CustomColumnManager reference; - CustomColumnStorage reference.
  * 
  * @author bbaranne Mar 2, 2005
@@ -21,26 +21,19 @@ public class Mediator {
      */
     private static GanttProject ganttprojectSingleton = null;
 
-    /**
-     * The unique CustomColumnsManager instance.
-     */
     private static TaskSelectionManager taskSelectionManager = null;
-
-//    private static RoleManager roleManager = null;
-
-//    private static TaskManager taskManager = null;
 
     private static GPUndoManager undoManager = null;
 
     private static DelayManager delayManager = null;
 
     private static PluginManager pluginManager = new PluginManager();
-    
+
     private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
 
     /**
      * Registers the unique GanttProject instance.
-     *
+     * 
      * @param gp
      *            The unique GanttProject instance.
      */
@@ -50,7 +43,7 @@ public class Mediator {
 
     /**
      * Registers the unique CustomColumnsManager instance.
-     *
+     * 
      * @param managerThe
      *            unique CustomColumnsManager instance.
      */
@@ -82,14 +75,14 @@ public class Mediator {
     public static void registerDelayManager(DelayManager delayMgr) {
         delayManager = delayMgr;
     }
-    
-    public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher) {
+
+    public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher){
         changeValueDispatchers.add(dispatcher);
     }
 
     /**
      * Returns the unique GanttProject instance.
-     *
+     * 
      * @return The unique GanttProject instance.
      */
     public static GanttProject getGanttProjectSingleton() {
@@ -107,7 +100,7 @@ public class Mediator {
 
     /**
      * Returns the unique CustomColumnsManager instance.
-     *
+     * 
      * @return The unique CustomColumnsManager instance.
      */
 //    public static CustomColumnsManager getCustomColumnsManager() {
@@ -137,7 +130,7 @@ public class Mediator {
     public static PluginManager getPluginManager() {
         return pluginManager;
     }
-    
+
     public static List<ChangeValueDispatcher> getChangeValueDispatchers(){
         return changeValueDispatchers;
     }

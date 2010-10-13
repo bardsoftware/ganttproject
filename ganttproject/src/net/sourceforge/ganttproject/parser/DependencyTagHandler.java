@@ -62,7 +62,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
     public void parsingFinished() {
         for (int i = 0; i < getDependencies().size(); i++) {
-            GanttDependStructure ds = (GanttDependStructure) getDependencies()
+            GanttDependStructure ds = getDependencies()
                     .get(i);
             Task dependee = myTaskManager.getTask(ds.taskID); // By CL
             Task dependant = myTaskManager.getTask(ds.successorTaskID);
@@ -135,7 +135,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
         }
     }
 
-    private List getDependencies() {
+    private List<GanttDependStructure> getDependencies() {
         return myDependencies;
     }
 
@@ -143,7 +143,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
         return myContext;
     }
 
-    private List myDependencies = new ArrayList();
+    private List<GanttDependStructure> myDependencies = new ArrayList<GanttDependStructure>();
 
     private boolean myDependenciesSectionStarted = false;
 

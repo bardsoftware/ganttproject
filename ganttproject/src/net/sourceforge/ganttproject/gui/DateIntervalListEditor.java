@@ -61,9 +61,9 @@ public class DateIntervalListEditor extends JPanel{
 	}
 
 	public static class DefaultDateIntervalModel implements DateIntervalModel {
-    	List/*<DatInterval>*/ myIntervals = new ArrayList();
+    	List/*<DatInterval>*/<DateInterval> myIntervals = new ArrayList<DateInterval>();
 		public DateInterval[] getIntervals() {
-			return (DateInterval[]) myIntervals.toArray(new DateInterval[myIntervals.size()]);
+			return myIntervals.toArray(new DateInterval[myIntervals.size()]);
 		}
 		public void remove(DateInterval interval) {
 			myIntervals.remove(interval);

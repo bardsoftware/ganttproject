@@ -37,11 +37,11 @@ public class TaskHierarchyItem {
         if (myFirstNestedItem == null) {
             result = EMPTY_ARRAY;
         } else {
-            ArrayList tempList = new ArrayList();
+            ArrayList<TaskHierarchyItem> tempList = new ArrayList<TaskHierarchyItem>();
             for (TaskHierarchyItem nested = myFirstNestedItem; nested != null; nested = nested.myNextSiblingItem) {
                 tempList.add(nested);
             }
-            result = (TaskHierarchyItem[]) tempList.toArray(EMPTY_ARRAY);
+            result = tempList.toArray(EMPTY_ARRAY);
         }
         return result;
     }

@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 import org.xml.sax.Attributes;
 
-/** Class to parse the attibute of resources handler */
+/** Class to parse the attribute of resources handler */
 public class ResourceTagHandler implements TagHandler, ParsingListener {
     private final CustomPropertyManager myCustomPropertyManager;
 
@@ -77,15 +77,14 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
     private void loadCustomProperty(Attributes attrs) {
     	String id = attrs.getValue("definition-id");
     	String value = attrs.getValue("value");
-    	List definitions = myCustomPropertyManager.getDefinitions();
+    	List<CustomPropertyDefinition> definitions = myCustomPropertyManager.getDefinitions();
     	for (int i=0; i<definitions.size(); i++) {
-    		CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) definitions.get(i);
+    		CustomPropertyDefinition nextDefinition = definitions.get(i);
     		if (id.equals(nextDefinition.getID())) {
     			myCurrentResource.addCustomProperty(nextDefinition, value);
     			break;
     		}
     	}
-    	
 	}
 
 	private void loadCustomPropertyDefinition(Attributes attrs) {
@@ -134,7 +133,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
         return myResourceManager;
     }
 
-    private final HashMap myLateResource2roleBinding = new HashMap();
+    private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
 
     private final HumanResourceManager myResourceManager;
 
@@ -172,16 +171,15 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
 
     public void parsingFinished() {
         // System.err.println("[ResourceTagHandler] parsingFinished():");
-        for (Iterator lateBindingEntries = myLateResource2roleBinding
+        for (Iterator<Entry<HumanResource, String>> lateBindingEntries = myLateResource2roleBinding
                 .entrySet().iterator(); lateBindingEntries.hasNext();) {
-            Map.Entry nextEntry = (Entry) lateBindingEntries.next();
-            String persistentID = (String) nextEntry.getValue();
+            Map.Entry<HumanResource, String> nextEntry = lateBindingEntries.next();
+            String persistentID = nextEntry.getValue();
             Role nextRole = findRole(persistentID);
             if (nextRole != null) {
                 lateBindingEntries.remove();
-                ((HumanResource) nextEntry.getKey()).setRole(nextRole);
+                nextEntry.getKey().setRole(nextRole);
             }
-
         }
         if (!myLateResource2roleBinding.isEmpty()) {
             System.err

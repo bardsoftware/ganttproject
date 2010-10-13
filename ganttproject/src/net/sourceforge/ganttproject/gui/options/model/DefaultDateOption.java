@@ -2,19 +2,16 @@ package net.sourceforge.ganttproject.gui.options.model;
 
 import java.util.Date;
 
-public class DefaultDateOption extends GPAbstractOption implements DateOption {
+public class DefaultDateOption extends GPAbstractOption<Date> implements DateOption {
 
     private Date myLockedValue;
     private Date myValue;
-    
+
     public DefaultDateOption(String id) {
         super(id);
     }
 
     public void setValue(Date value) {
-        if (!isLocked()) {
-            throw new IllegalStateException("Lock option before setting value");
-        }
         fireChangeValueEvent(new ChangeValueEvent(getID(), myLockedValue, value));
         myLockedValue = value;
     }
@@ -28,15 +25,6 @@ public class DefaultDateOption extends GPAbstractOption implements DateOption {
         myValue = myLockedValue;
     }
 
-    public boolean isChanged() {
-        if (isLocked()) {
-            if (myValue!=null) {
-                return false==myValue.equals(myLockedValue);
-            }
-        }
-        return false;
-    }
-
     public String getPersistentValue() {
         // TODO Auto-generated method stub
         return null;
@@ -44,7 +32,6 @@ public class DefaultDateOption extends GPAbstractOption implements DateOption {
 
     public void loadPersistentValue(String value) {
         // TODO Auto-generated method stub
-        
-    }    
-    
+    }
+
 }

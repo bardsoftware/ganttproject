@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-
 /**
  * This class handles the custom columns for one single task. It associate a
  * customColumn name with a value. The name of the custom column has to exist in
@@ -18,7 +17,7 @@ public class CustomColumnsValues implements Cloneable {
     /**
      * CustomColumnName(String) -> Value (Object)
      */
-    private final Map mapCustomColumnValue = new HashMap();
+    private final Map<Object, Object> mapCustomColumnValue = new HashMap<Object, Object>();
 	private final CustomColumnsStorage myColumnStorage;
 
     /**
@@ -91,7 +90,7 @@ public class CustomColumnsValues implements Cloneable {
 
     public Object clone() {
         CustomColumnsValues res = new CustomColumnsValues(myColumnStorage);
-        Iterator it = mapCustomColumnValue.keySet().iterator();
+        Iterator<Object> it = mapCustomColumnValue.keySet().iterator();
         while (it.hasNext()) {
             Object k = it.next();
             res.mapCustomColumnValue.put(k, mapCustomColumnValue.get(k));

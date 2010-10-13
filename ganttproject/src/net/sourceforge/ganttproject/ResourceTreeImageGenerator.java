@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -20,7 +21,7 @@ class ResourceTreeImageGenerator {
     private final Color BORDER_COLOR_3D = new Color(0.807f, 0.807f, 0.807f);
     private final Color ODD_ROW_COLOR = new Color(0.933f, 0.933f, 0.933f);
     private final int myRowHeight;
-    
+
     ResourceTreeImageGenerator(HumanResourceManager resourceManager) {
         myResourceManager = resourceManager;
         final BufferedImage testImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
@@ -29,7 +30,7 @@ class ResourceTreeImageGenerator {
         final int nameLinePadding = 3;
         myRowHeight = nameFontHeight+2*nameLinePadding;
     }
-    
+
     BufferedImage createImage() {
         Dimension d = calculateDimension();
         BufferedImage image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_RGB);
@@ -39,11 +40,11 @@ class ResourceTreeImageGenerator {
         printResources(g, d.width);
         return image;
     }
-    
+
     protected int getRowHeight() {
         return myRowHeight;
     }
-    
+
     private Dimension calculateDimension() {
         int width = 0;
         int assignmentsCount = 0;
@@ -75,7 +76,7 @@ class ResourceTreeImageGenerator {
         int height = (assignmentsCount + users.size()) * getRowHeight() + 90;
         return new Dimension(width, height);
     }
-    
+
     private void printResources(Graphics g, int width) {
         ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -95,7 +96,7 @@ class ResourceTreeImageGenerator {
             {
                 // paint resource name here
                 String nameOfRes = pr.toString();
-    
+
                 if (isOddRow) {
                     g.setColor(ODD_ROW_COLOR);
                     g.fillRect(0, y, width, nameLineHeight);
@@ -103,10 +104,10 @@ class ResourceTreeImageGenerator {
                 g.setColor(Color.black);
 
                 g.drawRect(0, y, width, nameLineHeight);
-                
+
                 g.drawString(nameOfRes, 5, y + nameLineHeight - nameLinePadding);
                 g.setColor(BORDER_COLOR_3D);
-                g.drawLine(1, y + nameLineHeight - 1, width - 1, y + nameLineHeight - 1);
+                g.drawLine(1, y + nameLineHeight - 1, width - 1, y + nameLineHeight-1);
                 y += nameLineHeight;
                 isOddRow = !isOddRow;
             }
@@ -125,7 +126,7 @@ class ResourceTreeImageGenerator {
                             g.drawString("  " + assignments[i].getTask().getName(),
                                     5, y+nameLineHeight-nameLinePadding);
                             g.setColor(BORDER_COLOR_3D);
-                            g.drawLine(1, y + nameLineHeight, width - 1, y + nameLineHeight-1);
+                            g.drawLine(1, y + nameLineHeight, width - 1, y + nameLineHeight - 1);
                             y += nameLineHeight;
                             isOddRow = !isOddRow;
                         }
@@ -133,7 +134,6 @@ class ResourceTreeImageGenerator {
                 }
             }
         }
-
     }
 
     protected boolean isAssignmentVisible(ResourceAssignment assignment) {

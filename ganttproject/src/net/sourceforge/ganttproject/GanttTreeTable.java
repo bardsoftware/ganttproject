@@ -29,8 +29,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -50,6 +48,7 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.GanttDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -57,10 +56,9 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.language.GanttLanguage.Listener;
-import net.sourceforge.ganttproject.task.CustomColumEvent;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
-import net.sourceforge.ganttproject.task.CustomColumsListener;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -71,12 +69,12 @@ import org.jdesktop.swing.decorator.HighlighterPipeline;
 import org.jdesktop.swing.table.TableColumnExt;
 
 /**
- * Treetable used to displayed tabular data and hierarchical data.
+ * TreeTable used to displayed tabular data and hierarchical data.
  *
  * @author bbaranne
  * @version 1.0 (20050301) (yyyymmdd)
  */
-public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListener {
+public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyListener {
     /**
      * Unique instance of GanttLanguage.
      */
@@ -101,7 +99,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      * stores the tableColum associated with there ColumnKeeper. it is used to
      * restore the column at the same index it has been removed.
      */
-    private final Map<TableColumnExt, ColumnKeeper> mapTableColumnColumnKeeper = new LinkedHashMap<TableColumnExt, ColumnKeeper>();
+    private final Map<TableColumn, ColumnKeeper> mapTableColumnColumnKeeper = new LinkedHashMap<TableColumn, ColumnKeeper>();
 
     /**
      * Menu item to delete columns.
@@ -112,9 +110,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
 
     private Listener myLanguageListener;
 
-	private final UIFacade myUIfacade;
+    private final UIFacade myUIfacade;
 
-	private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
+    private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
 
     /**
      * Creates an instance of GanttTreeTable with the given TreeTableModel.
@@ -125,17 +123,15 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      */
     public GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
         super(project, model);
-        initTreeTable();
         this.ttModel = model;
         myUIfacade = uifacade;
+        initTreeTable();
     }
 
 
     void setAction(Action action) {
 
         addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
-
-
         // Add the action to the component
     }
 
@@ -195,7 +191,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             GanttLanguage.getInstance().removeListener(myLanguageListener);
         }
 
-        // TODO Put in an Array in order to use loops to manage the TableColumns...
+        // TODO Put in an Array in order to use loops to manage the TableColumns.
         final TableColumnExt tce1 = newTableColumnExt(0);
         final TableColumnExt tce2 = newTableColumnExt(1);
         final TableColumnExt tce3 = newTableColumnExt(2);
@@ -363,20 +359,20 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      */
     void initTreeTable() {
         clickPoint = null;
-        getProject().getTaskCustomColumnManager().addCustomColumnsListener(this);
+        getProject().getTaskCustomColumnManager().addListener(this);
         getTreeTableModel().addTreeModelListener(new TreeModelListener() {
-			public void treeNodesChanged(TreeModelEvent arg0) {
-			}
+            public void treeNodesChanged(TreeModelEvent arg0) {
+            }
 
-			public void treeNodesInserted(TreeModelEvent arg0) {
-			}
+            public void treeNodesInserted(TreeModelEvent arg0) {
+            }
 
-			public void treeNodesRemoved(TreeModelEvent arg0) {
+            public void treeNodesRemoved(TreeModelEvent arg0) {
 
-			}
+            }
 
-			public void treeStructureChanged(TreeModelEvent arg0) {
-			}
+            public void treeStructureChanged(TreeModelEvent arg0) {
+            }
 
         });
         getTable().setAutoCreateColumnsFromModel(false);
@@ -468,8 +464,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                             DefaultTableColumnModel o = (DefaultTableColumnModel) e
                                     .getSource();
                             TableColumn tc = o.getColumn(e.getFromIndex());
-                            ColumnKeeper ck = ((ColumnKeeper) mapTableColumnColumnKeeper
-                                    .get(tc));
+                            ColumnKeeper ck = mapTableColumnColumnKeeper
+                                    .get(tc);
                             if (ck != null)
                                 ck.setInitIndex(e.getToIndex());
                             if (Mediator.getGanttProjectSingleton() != null)
@@ -492,37 +488,43 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                 AlternateRowHighlighter.quickSilver,
                 new HierarchicalColumnHighlighter() }));
 
-    	getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				onCellSelectionChanged();
-			}
-    	});
-    	getTable().getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				onCellSelectionChanged();
-			}
-    	});
+        getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                onCellSelectionChanged();
+            }
+        });
+        getTable().getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                onCellSelectionChanged();
+            }
+        });
 
         reloadColumns();
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
+            @Override
+            protected TimelineChart getChart() {
+                return myUIfacade.getGanttChart();
+            }
+        });
     }
 
     protected void onCellSelectionChanged() {
-    	if (!getTable().isEditing()) {
+        if (!getTable().isEditing()) {
             int row = getTable().getSelectedRow();
             int col = getTable().getSelectedColumn();
             Rectangle rect = getTable().getCellRect(row, col, true);
             scrollPane.scrollRectToVisible(rect);
-    	}
-	}
+        }
+    }
 
 
-	void addScrollPaneMouseListener(MouseListener ml) {
+    void addScrollPaneMouseListener(MouseListener ml) {
         this.getTreeTable().getParent().addMouseListener(ml);
     }
 
     private void initColumnsAlignements() {
-        // set the columns horizontal alignment. It also associate an
-        // appropriate renderer according to the column class.
+        // set the columns horizontal aligment. It also associate an
+        // appropiate renderer according to the column class.
         setColumnHorizontalAlignment(GanttTreeTableModel.strColType,
                 SwingConstants.CENTER);
         setColumnHorizontalAlignment(GanttTreeTableModel.strColPriority,
@@ -590,13 +592,15 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      * columns. It will associate each tablecolumn with an ColumnKeeper in
      * charge of adding and removing the tablecolumn.
      */
-    private void createPopupMenu() {
+private void createPopupMenu() {
         popupMenu = new JPopupMenu();
-        for (Iterator<Entry<TableColumnExt, ColumnKeeper>> entries = mapTableColumnColumnKeeper.entrySet().iterator(); entries.hasNext();) {
-            Map.Entry<TableColumnExt, ColumnKeeper> nextEntry = entries.next();
+        for (Iterator<Entry<TableColumn, ColumnKeeper>> entries = mapTableColumnColumnKeeper
+                .entrySet().iterator(); entries.hasNext();) {
+            Map.Entry<TableColumn, ColumnKeeper> nextEntry = entries.next();
             TableColumn column = nextEntry.getKey();
             JCheckBoxMenuItem jcbmi = new JCheckBoxMenuItem(column
                     .getHeaderValue().toString());
+
             ColumnKeeper ck = nextEntry.getValue();
             assert ck != null;
             jcbmi.setSelected(ck.isShown);
@@ -615,13 +619,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                 myUIfacade.getUndoManager()
                         .undoableEdit("PopUpNewColumn", new Runnable() {
                             public void run() {
-                                CustomColumn customColumn = new CustomColumn();
-                                GanttDialogCustomColumn d = new GanttDialogCustomColumn(
-                                		myUIfacade, customColumn);
-                                d.setVisible(true);
-                                if (d.isOk()) {
-                                	getProject().getTaskCustomColumnManager().addNewCustomColumn(customColumn);
-                                }
+                                new GanttDialogCustomColumn(
+                                        myUIfacade, getProject().getTaskCustomColumnManager()).setVisible(true);
                             }
                         });
             }
@@ -656,8 +655,10 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                                 // deleteCustomColumn(getTable().getColumnName(getTable().columnAtPoint(clickPoint)));
                                 int ind = getTable().columnAtPoint(clickPoint);
                                 if(ind >=0){
-                                	getProject().getTaskCustomColumnManager()
-                                        .deleteCustomColumn(getTable().getColumnName(ind));
+                                    String columnName = getTable().getColumnName(ind);
+                                    CustomPropertyDefinition def =
+                                        getProject().getTaskCustomColumnManager().getCustomPropertyDefinition(columnName);
+                                    getProject().getTaskCustomColumnManager().deleteDefinition(def);
                                 jmiDeleteColumn.setEnabled(false);
                                 }
                             }
@@ -717,19 +718,17 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             }
         }
 
-        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
-            TableColumn c = (TableColumn) it.next();
+            TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = (ColumnKeeper) mapTableColumnColumnKeeper
+                ColumnKeeper ck = mapTableColumnColumnKeeper
                         .get(c);
-                if (indexView != -1) {
+                if (indexView != -1)
                     ck.index = indexView;
-                }
-                if (!ck.isShown) {
+                if (!ck.isShown)
                     ck.show();
-                }
                 break;
             }
         }
@@ -740,15 +739,15 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
     }
 
     private void hideColumn(String name) {
-        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
             TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = mapTableColumnColumnKeeper.get(c);
-                if (ck.isShown) {
+                ColumnKeeper ck = mapTableColumnColumnKeeper
+                        .get(c);
+                if (ck.isShown)
                     ck.hide();
-                }
                 break;
             }
         }
@@ -761,12 +760,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      * date, integer, double, boolean). A default value is also set.
      */
     public void addNewCustomColumn(CustomColumn customColumn) {
-        if (customColumn == null) {
-            customColumn = new CustomColumn();
-            GanttDialogCustomColumn d = new GanttDialogCustomColumn(myUIfacade, customColumn);
-            d.setVisible(true);
-        }
-
         if (customColumn.getName() != null) // if something has been entered
         {
             GanttTreeTableModel treeTableModel = (GanttTreeTableModel) getTreeTableModel();
@@ -774,7 +767,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             // treeTableModel.getCustomColumnCount();
             String newName = customColumn.getName();
 
-            ttModel.addCustomColumn(newName);
+            ((GanttTreeTableModel) ttModel).addCustomColumn(newName);
 
             TaskContainmentHierarchyFacade tchf = getProject().getTaskManager()
                     .getTaskHierarchy();
@@ -792,9 +785,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
                             getTable().columnAtPoint(clickPoint));
                 }
             } catch (IllegalArgumentException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
             int align = SwingConstants.CENTER;
             if (customColumn.getType().equals(GregorianCalendar.class))
@@ -802,7 +795,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             setColumnHorizontalAlignment(newName, align);
 
             DisplayedColumn dc = new DisplayedColumn(
-            		getProject().getCustomColumnsStorage().getIdFromName(newName));
+                    getProject().getCustomColumnsStorage().getIdFromName(newName));
             dc.setDisplayed(true);
             dc.setOrder(getTable().convertColumnIndexToView(
                     getColumn(newName).getModelIndex()));
@@ -841,7 +834,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
      */
     public void deleteCustomColumn(CustomColumn column) {
 
-    	final String name = column.getName();
+        final String name = column.getName();
         // the column has to be displayed to be removed.
         this.displayColumn(name);
 
@@ -856,7 +849,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
     }
 
     private void deleteColumnFromUI(String name) {
+        //DisplayedColumn toDel = null;
         Iterator<DisplayedColumn> it = listDisplayedColumns.iterator();
+
         while (it.hasNext()) {
             DisplayedColumn dc = it.next();
             if (getNameForId(dc.getID()).equals(name)) {
@@ -880,7 +875,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         ttModel.deleteCustomColumn(name);
 
         // newBB
-        Iterator<TableColumnExt> it2 = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumn> it2 = mapTableColumnColumnKeeper.keySet().iterator();
         while (it2.hasNext()) {
             TableColumn c = it2.next();
             String n = (String) c.getHeaderValue();
@@ -905,12 +900,14 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         ttModel.renameCustomColumn(name, newName);
 
         // newBB
-        Iterator<TableColumnExt> it = mapTableColumnColumnKeeper.keySet().iterator();
+        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
         while (it.hasNext()) {
-            TableColumnExt c = it.next();
+            TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                c.setTitle(newName);
+                ColumnKeeper ck = mapTableColumnColumnKeeper
+                        .get(c);
+                ((TableColumnExt) c).setTitle(newName);
                 break;
             }
         }
@@ -939,18 +936,18 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         try {
             root.getCustomValues().setValue(colName, value);
         } catch (CustomColumnsException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
         Task[] tt = facade.getNestedTasks(root);
         for (int i = 0; i < tt.length; i++) {
             try {
                 tt[i].getCustomValues().setValue(colName, value);
             } catch (CustomColumnsException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
             setCustomColumnValueToAllNestedTask(facade, tt[i], colName, value);
         }
@@ -1049,28 +1046,12 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
     }
 
     /**
-     * Returns the JTree used in the treetable.
-     *
      * @return The JTree used in the treetable.
      */
     public JTree getTree() {
         return this.getTreeTable().getTree();
     }
 
-    /**
-     * @return The vertical scrollbar.
-     */
-    public JScrollBar getVerticalScrollBar() {
-        return scrollPane.getVerticalScrollBar();
-    }
-
-    public JScrollPane getScrollPane() {
-        return scrollPane;
-    }
-
-//    /**
-//     * @inheritDoc
-//     */
 //    public void requestFocus() {
 //        if (getDisplayColumns().isDisplayed(GanttTreeTableModel.strColName)) {
 //            int c = getTable().convertColumnIndexToView(
@@ -1090,7 +1071,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         Rectangle rect = getTable().getCellRect(row, col, true);
         scrollPane.getHorizontalScrollBar().scrollRectToVisible(rect);
         scrollPane.getViewport().scrollRectToVisible(rect);
-
     }
 
     public void addMouseListener(MouseListener mouseListener) {
@@ -1167,17 +1147,20 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             return null;
         }
 
-        public boolean add(DisplayedColumn o) {
-            DisplayedColumn dc1 = (DisplayedColumn) o;
-            Iterator<DisplayedColumn> it = this.iterator();
-            while (it.hasNext()) {
-                DisplayedColumn dc = it.next();
-                if (dc.getID().equals(dc1.getID())) {
-                    this.remove(dc);
-                    return super.add(dc1);
+        public boolean add(DisplayedColumn dc) {
+            if (dc instanceof DisplayedColumn) {
+                Iterator<DisplayedColumn> it = this.iterator();
+                while (it.hasNext()) {
+                    DisplayedColumn dc1 = it.next();
+                    if (dc1.getID().equals(dc.getID())) {
+                        this.remove(dc1);
+                        return super.add(dc);
+                    }
                 }
+                return super.add(dc);
+
             }
-            return super.add(dc1);
+            return false;
         }
 
         public Object clone() {
@@ -1186,9 +1169,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             while (it.hasNext()) {
                 l.add((DisplayedColumn) it.next().clone());
             }
-
             return l;
-
         }
     }
 
@@ -1216,15 +1197,12 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         public boolean isDisplayed() {
             return this.displayed;
         }
-
         public boolean isVisible() {
-        	return isDisplayed();
+            return isDisplayed();
         }
-
-		public String getName() {
-			return getNameForId(getID());
-		}
-
+        public String getName() {
+            return getNameForId(getID());
+        }
         public String getID() {
             return this.id;
         }
@@ -1267,14 +1245,18 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             if (dc == null) {
                 return 0;
             }
-            if (this.order != dc.order)
-                return this.order - dc.order;
-            return this.id.compareTo(dc.id);
+            if (dc instanceof DisplayedColumn) {
+                if (this.order != dc.order) {
+                    return this.order - dc.order;
+                }
+                return this.id.compareTo(dc.id);
+            }
+            return 0;
         }
     }
 
     /**
-     * This actionListener manages the column to be hiden or displayed. It has a
+     * This actionListener manages the column to be hidden or displayed. It has a
      * TableColumn and hide it or display it
      *
      * @author bbaranne Mar 1, 2005
@@ -1338,9 +1320,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             Iterator<DisplayedColumn> it = listDisplayedColumns.iterator();
             while (it.hasNext()) {
                 DisplayedColumn dc = it.next();
-                if (dc.getID().equals(id)){
+                if (dc.getID().equals(id))
                     dc.setDisplayed(false);
-                }
             }
             // Thread t = new Thread(){
             // public void run(){
@@ -1377,7 +1358,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
             boolean found = false;
             Iterator<DisplayedColumn> it = listDisplayedColumns.iterator();
             while (it.hasNext()) {
-                DisplayedColumn dc = (DisplayedColumn) it.next();
+                DisplayedColumn dc = it.next();
                 if (dc.getID().equals(id)) {
                     dc.setDisplayed(true);
                     found = true;
@@ -1483,38 +1464,38 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
 
 
         public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-			final JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-			result.selectAll();
-//			result.addFocusListener(new FocusAdapter() {
-//				public void focusGained(FocusEvent arg0) {
-//					super.focusGained(arg0);
-//					((JTextComponent)result).selectAll();
-//				}
+            final JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
+            result.selectAll();
+//            result.addFocusListener(new FocusAdapter() {
+//                public void focusGained(FocusEvent arg0) {
+//                    super.focusGained(arg0);
+//                    ((JTextComponent)result).selectAll();
+//                }
 //
-//				public void focusLost(FocusEvent arg0) {
-//					// TODO Auto-generated method stub
-//					super.focusLost(arg0);
-//				}
+//                public void focusLost(FocusEvent arg0) {
+//                    // TODO Auto-generated method stub
+//                    super.focusLost(arg0);
+//                }
 //
-//			});
+//            });
 //
-			return result;
-		}
+            return result;
+        }
 
 //
-		public void requestFocus() {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					field.requestFocus();
-					field.selectAll();
-				}
-			});
+        public void requestFocus() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    field.requestFocus();
+                    field.selectAll();
+                }
+            });
         }
     }
 
     /**
      * This class repaints the GraphicArea and the table every time the table
-     * model has been modified. 
+     * model has been modified.
      * TODO Add the refresh functionality when available.
      *
      * @author Benoit Baranne
@@ -1527,78 +1508,77 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomColumsListe
         }
     }
 
-	public void editNewTask(Task t) {
-		TreePath selectedPath = getTree().getSelectionPath();
+    public void editNewTask(Task t) {
+        TreePath selectedPath = getTree().getSelectionPath();
         int c = getTable().convertColumnIndexToView(
                 getTable().getColumn(GanttTreeTableModel.strColName)
                         .getModelIndex());
 
         NameCellEditor nameCellEditor = (NameCellEditor) getTable().getCellEditor(-1, c);
-		getTreeTable().editCellAt(getTree().getRowForPath(selectedPath), c);
-		nameCellEditor.requestFocus();
-	}
+        getTreeTable().editCellAt(getTree().getRowForPath(selectedPath), c);
+        nameCellEditor.requestFocus();
+    }
 
 
-	public void customColumsChange(CustomColumEvent event) {
-		switch(event.getType()) {
-		case CustomColumEvent.EVENT_ADD:
-			addNewCustomColumn(event.getColumn());
-			break;
-		case CustomColumEvent.EVENT_REMOVE:
-			deleteCustomColumn(event.getColumn());
-			break;
-		case CustomColumEvent.EVENT_RENAME:
-			renameCustomcolumn(event.getOldName(), event.getColName());
-			break;
-		}
-	}
+    public void customPropertyChange(CustomPropertyEvent event) {
+        switch(event.getType()) {
+        case CustomPropertyEvent.EVENT_ADD:
+            addNewCustomColumn((CustomColumn) event.getDefinition());
+            break;
+        case CustomPropertyEvent.EVENT_REMOVE:
+            deleteCustomColumn((CustomColumn) event.getDefinition());
+            break;
+        case CustomPropertyEvent.EVENT_PROPERTY_CHANGE:
+            renameCustomcolumn(event.getOldName(), event.getColName());
+            break;
+        }
+    }
 
 
-	public TableHeaderUIFacade getVisibleFields() {
-		return myVisibleFields;
-	}
+    public TableHeaderUIFacade getVisibleFields() {
+        return myVisibleFields;
+    }
 
-	class VisibleFieldsImpl implements TableHeaderUIFacade {
-		public void add(String name, int order, int width) {
-			DisplayedColumn newColumn = new DisplayedColumn(name);
-			newColumn.setOrder(order);
-			if (width>=0) {
-				newColumn.setWidth(width);
-			}
-			newColumn.setDisplayed(true);
-			DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
-			clone.add(newColumn);
-			setDisplayedColumns(clone);
-		}
+    class VisibleFieldsImpl implements TableHeaderUIFacade {
+        public void add(String name, int order, int width) {
+            DisplayedColumn newColumn = new DisplayedColumn(name);
+            newColumn.setOrder(order);
+            if (width>=0) {
+                newColumn.setWidth(width);
+            }
+            newColumn.setDisplayed(true);
+            DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
+            clone.add(newColumn);
+            setDisplayedColumns(clone);
+        }
 
-		public void clear() {
-			setDisplayedColumns(new DisplayedColumnsList());
-		}
+        public void clear() {
+            setDisplayedColumns(new DisplayedColumnsList());
+        }
 
-		public Column getField(int index) {
-			return (Column) getDisplayColumns().get(index);
-		}
+        public Column getField(int index) {
+            return (Column) getDisplayColumns().get(index);
+        }
 
-		public int getSize() {
-			return getDisplayColumns().size();
-		}
-
-	    public void importData(TableHeaderUIFacade source) {
-	    	clear();
-	    	DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
-	    	clone.clear();
-	    	for (int i=0; i<source.getSize(); i++) {
-	    		Column nextField = source.getField(i);
-				DisplayedColumn newColumn = new DisplayedColumn(nextField.getName());
-				newColumn.setID(nextField.getID());
-				newColumn.setOrder(nextField.getOrder());
-				if (nextField.getWidth()>=0) {
-					newColumn.setWidth(nextField.getWidth());
-				}
-				newColumn.setDisplayed(true);
-	    		clone.add(newColumn);
-	    	}
-	    	setDisplayedColumns(clone);
-	    }
-	}
+        public int getSize() {
+            return getDisplayColumns().size();
+        }
+        public void importData(TableHeaderUIFacade source) {
+            clear();
+            DisplayedColumnsList clone = (DisplayedColumnsList) getDisplayColumns().clone();
+            clone.clear();
+            for (int i=0; i<source.getSize(); i++) {
+                Column nextField = source.getField(i);
+                DisplayedColumn newColumn = new DisplayedColumn(nextField.getName());
+                newColumn.setID(nextField.getID());
+                newColumn.setOrder(nextField.getOrder());
+                if (nextField.getWidth()>=0) {
+                    newColumn.setWidth(nextField.getWidth());
+                }
+                newColumn.setDisplayed(true);
+                clone.add(newColumn);
+            }
+            setDisplayedColumns(clone);
+        }
+    }
 }
