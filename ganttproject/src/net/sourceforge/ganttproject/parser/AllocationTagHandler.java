@@ -54,11 +54,9 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
      */
     public void endElement(String namespaceURI, String sName, String qName) {
         // TODO Auto-generated method stub
-
     }
 
     private void loadAllocation(Attributes attrs) throws FileFormatException {
-        String aName;
         int taskId = 0;
         int resourceId = 0;
         float load = 0;
@@ -169,19 +167,17 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
 
     public void parsingStarted() {
         // TODO Auto-generated method stub
-
     }
 
     public void parsingFinished() {
-        for (Iterator lateBindingEntries = myLateAssigmnent2roleBinding
+        for (Iterator<Entry<ResourceAssignment, String>> lateBindingEntries = myLateAssigmnent2roleBinding
                 .entrySet().iterator(); lateBindingEntries.hasNext();) {
-            Map.Entry nextEntry = (Entry) lateBindingEntries.next();
-            String persistentID = (String) nextEntry.getValue();
+            Map.Entry<ResourceAssignment, String> nextEntry = lateBindingEntries.next();
+            String persistentID = nextEntry.getValue();
             Role nextRole = findRole(persistentID);
             if (nextRole != null) {
                 lateBindingEntries.remove();
-                ((ResourceAssignment) nextEntry.getKey())
-                        .setRoleForAssignment(nextRole);
+                nextEntry.getKey().setRoleForAssignment(nextRole);
             }
         }
         if (!myLateAssigmnent2roleBinding.isEmpty()) {
@@ -189,7 +185,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
                     .println("[ResourceTagHandler] parsingFinished(): not found roles:\n"
                             + myLateAssigmnent2roleBinding);
         }
-
     }
 
     private ResourceManager myResourceManager;
@@ -198,6 +193,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
 
     private RoleManager myRoleManager;
 
-    private final HashMap myLateAssigmnent2roleBinding = new HashMap();
+    private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
 
 }

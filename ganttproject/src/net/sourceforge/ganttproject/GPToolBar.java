@@ -22,10 +22,10 @@ public class GPToolBar extends JToolBar {
             return myString;
         }
     };
-    
+
     private final GanttOptions options;
-    private List<TestGanttRolloverButton> myButtons;
-    
+    private List<Object> myButtons;
+
     public GPToolBar(String title, int toolBarPosition, GanttOptions options) {
         super(title, toolBarPosition);
         setBorderPainted(true);
@@ -33,14 +33,14 @@ public class GPToolBar extends JToolBar {
         setFloatable(true);        
         this.options = options;
     }
-    
-    void populate(List/*<JButton>*/ buttons) {
+
+    void populate(List<Object> buttons) {
         removeAll();
-        myButtons = new ArrayList<TestGanttRolloverButton>(buttons.size());
+        myButtons = new ArrayList<Object>(buttons.size());
         for (int i = 0; i < buttons.size(); i++) {
             Object nextButton = buttons.get(i);
             if (GPToolBar.SEPARATOR_OBJECT.equals(nextButton)) {
-                // int size = Integer.parseInt(options.getIconSize());
+                //int size = Integer.parseInt(options.getIconSize());
                 // toolBar.addSeparator(new Dimension(size, size));
                 ImageIcon icon;
                 if (getOrientation() == JToolBar.HORIZONTAL) {
@@ -55,7 +55,7 @@ public class GPToolBar extends JToolBar {
             } else {
                 add((AbstractButton) nextButton);
                 if (nextButton instanceof TestGanttRolloverButton) {
-                    myButtons.add((TestGanttRolloverButton) nextButton);
+                    myButtons.add(nextButton);
                 }
             }
         }
@@ -63,11 +63,12 @@ public class GPToolBar extends JToolBar {
     }
 
     void updateButtonsLook() {
-        for (int i = 0; i < myButtons.size(); i++) {
-            TestGanttRolloverButton nextButton = myButtons.get(i);
+        for (int i=0; i<myButtons.size(); i++) {
+            TestGanttRolloverButton nextButton = (TestGanttRolloverButton) myButtons.get(i);
             nextButton.setIconHidden(options.getButtonShow() == GanttOptions.TEXT);
             nextButton.setTextHidden(options.getButtonShow() == GanttOptions.ICONS);
         }
         invalidate();
     }
+
 }

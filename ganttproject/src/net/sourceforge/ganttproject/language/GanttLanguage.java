@@ -57,7 +57,7 @@ public class GanttLanguage {
 
     private static GanttLanguage ganttLanguage = null;
 
-    private ArrayList myListeners = new ArrayList();
+    private ArrayList<Listener> myListeners = new ArrayList<Listener>();
 
     public static GanttLanguage getInstance() {
         if (ganttLanguage == null) {
@@ -68,7 +68,7 @@ public class GanttLanguage {
 
     Locale currentLocale = null;
     CharSetMap myCharSetMap;
-    
+
     ResourceBundle i18n = null;
 
     SimpleDateFormat currentDateFormat = null;
@@ -99,7 +99,6 @@ public class GanttLanguage {
         Locale.setDefault(locale);
         int defaultTimezoneOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
-        
         TimeZone utc = TimeZone.getTimeZone("UTC");
         utc.setRawOffset(defaultTimezoneOffset);
         TimeZone.setDefault(utc);
@@ -123,7 +122,7 @@ public class GanttLanguage {
         String resourceBase = System.getProperty(
                 "org.ganttproject.resourcebase", "language/i18n");
         i18n = ResourceBundle.getBundle(resourceBase, currentLocale);
-        
+
         fireLanguageChanged();
     }
 
@@ -217,7 +216,7 @@ public class GanttLanguage {
     private void fireLanguageChanged() {
         Event event = new Event(this);
         for (int i = 0; i < myListeners.size(); i++) {
-            Listener next = (Listener) myListeners.get(i);
+            Listener next = myListeners.get(i);
             next.languageChanged(event);
         }
     }

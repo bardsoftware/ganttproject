@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
 import javax.swing.Action;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.GanttProject;
@@ -27,7 +28,7 @@ public class CalculateCriticalPathAction extends GPAction implements
     private final UIConfiguration myUIConfiguration;
 
     private final GanttOptions myOptions;
-    
+
     private final GanttProject appli;
 
     public CalculateCriticalPathAction(TaskManager taskManager, GanttTree2 tree,
@@ -38,8 +39,6 @@ public class CalculateCriticalPathAction extends GPAction implements
         myUIConfiguration = uiConfiguration;
         myOptions = options;
         this.appli = appli;
-
-       
     }
 
     protected String getIconFilePrefix() {
@@ -52,7 +51,7 @@ public class CalculateCriticalPathAction extends GPAction implements
         putValue(Action.SMALL_ICON, createIcon(myOptions.getIconSize()));
         if (isOn()) {
 			taskManager.processCriticalPath(root);
-			ArrayList projectTasks = ((GanttTree2)tree).getProjectTasks();
+			ArrayList<DefaultMutableTreeNode> projectTasks = ((GanttTree2)tree).getProjectTasks();
 	        if (projectTasks.size() != 0)
 				for (int i = 0 ; i < projectTasks.size() ; i++)
 					taskManager.processCriticalPath((TaskNode) projectTasks.get(i));       

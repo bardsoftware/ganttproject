@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskNode;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -38,9 +37,6 @@ import org.xml.sax.helpers.AttributesImpl;
 public class GanttPreviousState {
     private final String myName;
 
-    private DocumentManager myManager;
-
-    private ParserFactory myFactory;
 
     private File myFile;
 
@@ -48,11 +44,10 @@ public class GanttPreviousState {
 
     private GanttTree2 myTree;
 
+    //TODO myProject is not used... remove?
     private GanttProject myProject;
 
-    private GanttLanguage lang = GanttLanguage.getInstance();
-
-    private String s = "    "; // the marge
+    private String s = "    "; // the margin
 
     // constructor for a new previous state
     public GanttPreviousState(String name, GanttProject project)
@@ -77,7 +72,6 @@ public class GanttPreviousState {
 
     public void saveFile() {
         try {
-            AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(os);
             SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory
                     .newInstance();
@@ -101,12 +95,13 @@ public class GanttPreviousState {
     }
 
     private void writeTasks() {
-        Enumeration<DefaultMutableTreeNode> children = ((DefaultMutableTreeNode) myTree.getJTree()
+        Enumeration children = ((DefaultMutableTreeNode) myTree.getJTree()
                 .getModel().getRoot()).children();
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
 
         while (children.hasMoreElements()) {
-            DefaultMutableTreeNode element = children.nextElement();
+            DefaultMutableTreeNode element = (DefaultMutableTreeNode) children
+                    .nextElement();
             writeTask(os, /* lot.indexOf(element) */element);
         }
         write(s + "</previous-tasks>");
@@ -114,7 +109,6 @@ public class GanttPreviousState {
 
     public void saveFilesFromLoaded(ArrayList<GanttPreviousStateTask> tasks) {
         try {
-            AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(os);
             SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory
                     .newInstance();
@@ -137,15 +131,23 @@ public class GanttPreviousState {
         }
     }
 
-    public void writeTasksFromLoaded(ArrayList<GanttPreviousStateTask> tasks)
-            throws IOException {
+    public void writeTasksFromLoaded(ArrayList<GanttPreviousStateTask> tasks) throws IOException {
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
         for (int i = 0; i < tasks.size(); i++) {
-            os.write(s + s + "<previous-task id=\"" + tasks.get(i).getId() + "\"");
-            os.write(" start=\"" + tasks.get(i).getStart().toXMLString() + "\"");
-            os.write(" duration=\"" + tasks.get(i).getDuration() + "\"");
-            os.write(" meeting=\"" + tasks.get(i).isMilestone() + "\"");
-            os.write(" super=\"" + tasks.get(i).hasNested() + "\"");
+            os.write(s + s + "<previous-task id=\""
+                    + tasks.get(i).getId() + "\"");
+            os.write(" start=\""
+                    + tasks.get(i).getStart()
+                            .toXMLString() + "\"");
+            os.write(" duration=\""
+                    + tasks.get(i).getDuration()
+                    + "\"");
+            os.write(" meeting=\""
+                    + tasks.get(i).isMilestone()
+                    + "\"");
+            os.write(" super=\""
+                    + tasks.get(i).hasNested()
+                    + "\"");
             os.write("/>\n");
         }
         write(s + "</previous-tasks>");
@@ -181,8 +183,8 @@ public class GanttPreviousState {
 
     /** Simple write information of tasks */
     public void writeTask(Writer fout, DefaultMutableTreeNode node) {
-        // TODO there is never put data in lot... Remove?
-        ArrayList lot = new ArrayList();
+        /** List of tasks */
+        ArrayList<Task> lot = new ArrayList<Task>();
         try {
             GanttTask task = (GanttTask) node.getUserObject();
 
@@ -190,20 +192,25 @@ public class GanttPreviousState {
                 throw new RuntimeException(
                         "A task can not has a number equal to -1");
 
+            int id = task.getTaskID();
+
             /*
-             * int id = task.getTaskID();
              * if (id >= lot.size()) { return; }
              */
 
             boolean haschild = false;
 
-            ArrayList<TaskNode> child = myTree.getAllChildTask(node);
+            ArrayList<Object> child = myTree.getAllChildTask(node);
             if (child.size() != 0) {
                 haschild = true;
+
             }
 
             // Writes data of task
-            fout.write(s + s + "<previous-task id=\"" + task.getTaskID() + // lots.indexOf(task.toString()) + //By CL
+            fout.write(s + s + "<previous-task id=\"" + task.getTaskID() + // lots.indexOf(task.toString())
+                    // +
+                    // //By
+                    // CL
                     "\"");
             fout.write(" start=\"" + task.getStart().toXMLString() + "\"");
             fout.write(" duration=\"" + task.getLength() + "\"");
@@ -215,7 +222,8 @@ public class GanttPreviousState {
             // Write the child of the task
             if (haschild) {
                 for (int i = 0; i < child.size(); i++) {
-                    Task task2 = (Task) child.get(i).getUserObject();
+                    Task task2 = (Task) ((DefaultMutableTreeNode) child.get(i))
+                            .getUserObject();
                     int newid = -1; // lot.lastIndexOf(task2);
 
                     for (int j = 0; j < lot.size(); j++) {
@@ -228,10 +236,11 @@ public class GanttPreviousState {
                             newid = j;
                         }
                     }
-                    writeTask(fout, child.get(i));
+                    writeTask(fout, (DefaultMutableTreeNode) child.get(i));
                 }
 
             }
+
             // end of task section
 
         } catch (Exception e) {

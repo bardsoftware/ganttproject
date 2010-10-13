@@ -27,7 +27,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class GanttCompareToPreviousStateBean extends JPanel {
     private GanttLanguage lang = GanttLanguage.getInstance();
 
-    private ArrayList myPreviousStates;
+    private ArrayList<GanttPreviousState> myPreviousStates;
 
     private JPanel southPanel;
 
@@ -79,7 +79,7 @@ public class GanttCompareToPreviousStateBean extends JPanel {
         nameComboBox.setName("nameComboBox");
         nameComboBox.addItem(lang.getText("none"));
         for (int i = 0; i < myPreviousStates.size(); i++)
-            nameComboBox.addItem(((GanttPreviousState) myPreviousStates.get(i))
+            nameComboBox.addItem(myPreviousStates.get(i)
                     .getName());
         nameComboBox.setSelectedIndex(myPreviousStates.size());
         nameComboBox.setName("nameComboBox");
@@ -114,7 +114,7 @@ public class GanttCompareToPreviousStateBean extends JPanel {
     public void removeItem() {
         int index = nameComboBox.getSelectedIndex();
         nameComboBox.removeItemAt(index);
-        ((GanttPreviousState) myPreviousStates.get(index - 1)).remove();
+        myPreviousStates.get(index - 1).remove();
         myPreviousStates.remove(index - 1);
     }
 

@@ -1,18 +1,16 @@
 package net.sourceforge.ganttproject.task;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.DateUtils;
 
@@ -23,18 +21,12 @@ import net.sourceforge.ganttproject.util.DateUtils;
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {
-    public static List<String> availableTypes = null;
-
     public static GanttLanguage language = GanttLanguage.getInstance();
 
     private static int nextId;
 
     private final static String ID_PREFIX = "tpc";
-    private final List<CustomColumsListener> myListeners = new ArrayList<CustomColumsListener>();
-
-    static {
-        initTypes();
-    }
+    private final List<CustomPropertyListener> myListeners = new ArrayList<CustomPropertyListener>();
 
     /**
      * Column name (String) -> CustomColumn
@@ -49,7 +41,6 @@ public class CustomColumnsStorage {
     }
 
     public void reset() {
-        initTypes();
         mapIdCustomColum.clear();
         nextId = 0;
     }
@@ -62,15 +53,6 @@ public class CustomColumnsStorage {
     /**
      * Initialize the available types (text, integer, ...)
      */
-    private static void initTypes() {
-        availableTypes = new Vector<String>(6);
-        availableTypes.add(language.getText("text"));
-        availableTypes.add(language.getText("integer"));
-        availableTypes.add(language.getText("double"));
-        availableTypes.add(language.getText("date"));
-        availableTypes.add(language.getText("boolean"));
-    }
-
     /**
      * Changes the language of the available types.
      *
@@ -79,7 +61,6 @@ public class CustomColumnsStorage {
      */
     public static void changeLanguage(GanttLanguage lang) {
         language = lang;
-        initTypes();
     }
 
     /**
@@ -94,9 +75,7 @@ public class CustomColumnsStorage {
      *             exists.
      */
     public void addCustomColumn(CustomColumn col) {
-        if (getCustomColumnsNames().contains(col.getName())) {
-        	return;
-        }
+        assert !getCustomColumnsNames().contains(col.getName());
         String id = col.getId();
         while (id == null) {
             id = ID_PREFIX + nextId++;
@@ -105,15 +84,15 @@ public class CustomColumnsStorage {
         }
         mapIdCustomColum.put(id, col);
         col.setId(id);
-        CustomColumEvent event = new CustomColumEvent(CustomColumEvent.EVENT_ADD, col);
+        CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, col);
         fireCustomColumnsChange(event);
     }
 
     void removeCustomColumn(String name) {
-    	CustomColumn column = getCustomColumn(name);
-    	if (column!=null) {
-    		removeCustomColumn(column);
-    	}
+        CustomColumn column = getCustomColumn(name);
+        if (column!=null) {
+            removeCustomColumn(column);
+        }
     }
     /**
      * Removes the CustomColumn whose name is given in parameter. If the column
@@ -122,10 +101,10 @@ public class CustomColumnsStorage {
      * @param name
      *            Name of the column to remove.
      */
-    public void removeCustomColumn(CustomColumn column) {
-        CustomColumEvent event = new CustomColumEvent(CustomColumEvent.EVENT_REMOVE, column);
+    public void removeCustomColumn(CustomPropertyDefinition column) {
+        CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);
         fireCustomColumnsChange(event);
-        mapIdCustomColum.remove(column.getId());
+        mapIdCustomColum.remove(column.getID());
     }
 
     /**
@@ -152,7 +131,7 @@ public class CustomColumnsStorage {
         Iterator<String> it = mapIdCustomColum.keySet().iterator();
         while (it.hasNext()) {
             String id = it.next();
-            c.add(mapIdCustomColum.get(id).getName());
+            c.add(((CustomColumn) mapIdCustomColum.get(id)).getName());
         }
         return c;
     }
@@ -179,7 +158,7 @@ public class CustomColumnsStorage {
         // return (CustomColumn) customColumns.get(name);
         String id = getIdFromName(name);
         if (id == null) {
-        	return null;
+            return null;
         }
         return (CustomColumn) mapIdCustomColum.get(id);
     }
@@ -218,8 +197,6 @@ public class CustomColumnsStorage {
         if (id != null) {
             CustomColumn cc = (CustomColumn) mapIdCustomColum.get(id);
             cc.setName(newName);
-            CustomColumEvent event = new CustomColumEvent(name, cc);
-            fireCustomColumnsChange(event);
         }
 
     }
@@ -244,40 +221,24 @@ public class CustomColumnsStorage {
                     if (cc.getType().equals(Boolean.class))
                         cc.setDefaultValue(Boolean.valueOf(newDefaultValue
                                 .toString()));
-                    else if (cc.getType().equals(Integer.class)) {
-                    	try {
-                    		cc.setDefaultValue(Integer.valueOf(newDefaultValue
-                    				.toString()));
-                    	}
-                    	catch (NumberFormatException e) {
-                    		cc.setDefaultValue(null);
-                    	}
-                    }
-                    else if (cc.getType().equals(Double.class)) {
-                    	try {
-                            cc.setDefaultValue(Double.valueOf(newDefaultValue
-                                    .toString()));
-                    	}
-                    	catch (NumberFormatException e) {
-                    		cc.setDefaultValue(null);
-                    	}
-
-                    }
+                    else if (cc.getType().equals(Integer.class))
+                        cc.setDefaultValue(Integer.valueOf(newDefaultValue
+                                .toString()));
+                    else if (cc.getType().equals(Double.class))
+                        cc.setDefaultValue(Double.valueOf(newDefaultValue
+                                .toString()));
                     else if (GregorianCalendar.class.isAssignableFrom(cc
-                            .getType())) {
-                    	try {
-	                    	Date dateValue =
-	                    		DateUtils.parseDate(newDefaultValue.toString());
-	                    	cc.setDefaultValue(new GanttCalendar(dateValue));
-                    	}
-                    	catch (ParseException e) {
-                    		cc.setDefaultValue(null);
-                    	}
-                    }
+                            .getType()))
+                        cc.setDefaultValue(DateUtils.parseDate(newDefaultValue
+                                .toString()));
 
                 } catch (Exception ee) {
-                	throw new CustomColumnsException(ee);
+                    throw new CustomColumnsException(
+                            CustomColumnsException.CLASS_MISMATCH,
+                            "Try to set a '" + newDefaultValue.getClass()
+                                    + "' for '" + cc.getType() + "'");
                 }
+
             }
         }
     }
@@ -286,7 +247,7 @@ public class CustomColumnsStorage {
         String id = null;
         Iterator<CustomColumn> it = mapIdCustomColum.values().iterator();
         while (it.hasNext()) {
-            CustomColumn cc = it.next();
+            CustomColumn cc = (CustomColumn) it.next();
             if (cc.getName().equals(name)) {
                 id = cc.getId();
                 break;
@@ -296,9 +257,8 @@ public class CustomColumnsStorage {
     }
 
     public String getNameFromId(String id) {
-        CustomColumn column = getCustomColumnByID(id);
-        assert column!=null : "failed to find column by id=" + id;
-        return column.getName();
+        CustomColumn column = (CustomColumn) mapIdCustomColum.get(id);
+        return column==null ? null : column.getName();
     }
 
     /**
@@ -313,39 +273,48 @@ public class CustomColumnsStorage {
         while (it.hasNext()) {
             CustomColumn cc = it.next();
             try {
-                task.getCustomValues().setValue(cc.getName(),
-                        cc.getDefaultValue());
+                if (cc.getDefaultValue()!=null) {
+                    task.getCustomValues().setValue(
+                            cc.getName(), cc.getDefaultValue());
+                }
             } catch (CustomColumnsException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         }
+
     }
 
     public String toString() {
         return mapIdCustomColum.toString();
     }
 
-	public void importData(CustomColumnsStorage source) {
-		for (Iterator<CustomColumn> columns = source.getCustomColums().iterator();
-			 columns.hasNext();) {
-			CustomColumn nextColumn = columns.next();
-			if (!exists(nextColumn.getName())) {
-				addCustomColumn(nextColumn);
-			}
-		}
-	}
+    public void importData(CustomColumnsStorage source) {
+        for (Iterator<CustomColumn> columns = source.getCustomColums().iterator();
+             columns.hasNext();) {
+            CustomColumn nextColumn = columns.next();
+            if (!exists(nextColumn.getName())) {
+                addCustomColumn(nextColumn);
+            }
+        }
+    }
 
-    void addCustomColumnsListener(CustomColumsListener listener) {
+    public void addCustomColumnsListener(CustomPropertyListener listener) {
         myListeners.add(listener);
     }
 
-    private void fireCustomColumnsChange(CustomColumEvent event) {
-        Iterator<CustomColumsListener> it = myListeners.iterator();
+    private void fireCustomColumnsChange(CustomPropertyEvent event) {
+        Iterator<CustomPropertyListener> it = myListeners.iterator();
         while (it.hasNext()) {
-            CustomColumsListener listener = it.next();
-            listener.customColumsChange(event);
+            CustomPropertyListener listener = it.next();
+            listener.customPropertyChange(event);
         }
     }
+
+    void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
+        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_PROPERTY_CHANGE, def, oldName);
+        fireCustomColumnsChange(e);
+    }
+
 }

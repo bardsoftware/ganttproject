@@ -4,7 +4,7 @@ import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 31.01.2004
  */
 public interface TimeUnit extends DateFrameable {

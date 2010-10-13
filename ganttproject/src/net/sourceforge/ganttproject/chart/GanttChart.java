@@ -1,7 +1,9 @@
 package net.sourceforge.ganttproject.chart;
 
-public interface GanttChart extends Chart {
+import net.sourceforge.ganttproject.task.Task;
 
-    void appendBlankRow();
+public interface GanttChart extends TimelineChart {
+
+    void editTaskAsNew(Task task);
 
 }

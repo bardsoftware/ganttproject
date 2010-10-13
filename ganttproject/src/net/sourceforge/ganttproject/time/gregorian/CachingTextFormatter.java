@@ -17,7 +17,7 @@ import net.sourceforge.ganttproject.time.TimeUnitText;
  * @author bard
  */
 public abstract class CachingTextFormatter implements Listener {
-    private final HashMap myTextCache = new HashMap();
+    private final HashMap<Date, TimeUnitText> myTextCache = new HashMap<Date, TimeUnitText>();
 
     protected CachingTextFormatter() {
         GanttLanguage.getInstance().addListener(this);
@@ -36,7 +36,7 @@ public abstract class CachingTextFormatter implements Listener {
     }
 
     protected TimeUnitText getCachedText(Date startDate) {
-        return (TimeUnitText) myTextCache.get(startDate);
+        return myTextCache.get(startDate);
     }
 
     public void languageChanged(Event event) {

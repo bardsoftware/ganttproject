@@ -23,7 +23,7 @@ import java.util.Map;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 
 public interface HumanResourceMerger {
-    void merge(Map/*<HumanResource,HumanResource>*/ existing2imported);
+    void merge(Map/*<HumanResource,HumanResource>*/<HumanResource, HumanResource> existing2imported);
     public static class MergeResourcesOption extends DefaultEnumerationOption {
         public static final String NO = "mergeresources_no";
         public static final String BY_ID = "mergeresources_by_id";

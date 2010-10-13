@@ -94,14 +94,14 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return result;
     }
 
-    /** @return a clone of the calendar */
+    /** Return a clone of the calendar */
     public GanttCalendar Clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         clone.setFixed(isFixed());
         return clone;
     }
 
-    /** @return the date to A string */
+    /** Return the date to A string */
     public String toString() {
         return (language.formatShortDate(this));
     	//return (language.formatDate(this));
@@ -112,37 +112,37 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return DateParser.getIsoDateNoHours(getTime());
     }
 
-    /** @return the year */
+    /** Return the year */
     public int getYear() {
         return this.get(Calendar.YEAR);
     }
 
-    /** @return the month */
+    /** Return the month */
     public int getMonth() {
         return this.get(Calendar.MONTH);
     }
 
-    /** @return the day */
+    /** Return the day */
     public int getDate() {
         return this.get(Calendar.DATE);
     }
 
-    /** @return the day */
+    /** Return the day */
     public int getDay() {
         return this.get(Calendar.DAY_OF_MONTH);
     }
 
-    /** @return the number of the day on the week */
+    /** Return the number of the day on the week */
     public int getDayWeek() {
         return this.get(Calendar.DAY_OF_WEEK);
     }
 
-    /** @return the number of the week on the year */
+    /** Return the numbner of the week on the year */
     public int getWeek() {
         return this.get(Calendar.WEEK_OF_YEAR);
     }
 
-    /** @return an array with all names of months */
+    /** Return an array with all name of month */
     public String[] getDayMonthLanguage() {
         String[] res = new String[12];
         for (int i = 0; i < 12; i++)
@@ -150,7 +150,7 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return res;
     }
 
-    /** @return an array with all names of the days */
+    /** Return an array with all name of day */
     public String[] getDayWeekLanguage() {
         String[] res = new String[7];
         for (int i = 0; i < 7; i++)
@@ -173,7 +173,7 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         this.set(Calendar.DAY_OF_MONTH, d);
     }
 
-    /** Add a number of days to the current date */
+    /** Add a number of day to the current date */
     public void add(int dayNumber) {
         this.add(Calendar.DATE, dayNumber);
     }
@@ -277,12 +277,12 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         this.add(Calendar.MONTH, -1);
     }
 
-    /** Change the value of a field */
+    /** Change the value of a filed */
     public void go(int field, int value) {
         this.add(field, value);
     }
 
-    /** Return the actual date */
+    /** Return the actually date */
     public static String getDateAndTime() {
         GanttCalendar c = new GanttCalendar();
         return c.toString() + " - " + GanttLanguage.getInstance().formatTime(c);
@@ -292,9 +292,9 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return compareTo((GanttCalendar) o);
     }
 
+
     public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
         public int compare(GanttCalendar o1, GanttCalendar o2) {
-            // TODO is this assert still required??
             assert o1 instanceof GanttCalendar && o2 instanceof GanttCalendar;
             return o1.compareTo(o2);
         }

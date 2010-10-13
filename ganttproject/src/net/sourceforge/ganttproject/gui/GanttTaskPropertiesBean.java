@@ -37,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -81,6 +82,7 @@ import org.jdesktop.swing.JXDatePicker;
 public class GanttTaskPropertiesBean extends JPanel {
 
     private static final JColorChooser colorChooser = new JColorChooser();
+
     private JXDatePicker myStartDatePicker;
     private JXDatePicker myEndDatePicker;
     private JXDatePicker myThirdDatePicker;
@@ -114,7 +116,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private JPanel generalPanel;
 
-    private JPanel predecessorsPanel;
+    private JComponent predecessorsPanel;
 
     private JPanel resourcesPanel;
 
@@ -194,7 +196,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     // private ResourcesTableModel myResourcesTableModel;
     private TaskDependenciesPanel myDependenciesPanel;
 
-    private TaskAllocationsPanel[] myAllocationsPanel;
+    private TaskAllocationsPanel myAllocationsPanel;
 
     //private boolean isStartFixed;
 
@@ -208,6 +210,8 @@ public class GanttTaskPropertiesBean extends JPanel {
     private final TaskManager myTaskManager;
     private final IGanttProject myProject;
     private final UIFacade myUIfacade;
+
+    private TaskMutator mutator;
 
     /** add a component to container by using GridBagConstraints. */
     private void addUsingGBL(Container container, Component component,
@@ -482,6 +486,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         gbc.gridy = 4;
         generalPanel.add(webLinkPanel, gbc);
+
     }
 
     /** Add the different action listeners on the different widgets */
@@ -500,37 +505,31 @@ public class GanttTaskPropertiesBean extends JPanel {
         if (nameField1 != null && nameFieldNotes != null) {
             String nameOfTask = nameField1.getText().trim();
             nameField1.setText(nameOfTask);
-            if (onlyOneTask) {
-                myDependenciesPanel.nameChanged(nameOfTask);
-            }
-            myAllocationsPanel[0].nameChanged(nameOfTask);
+//            if (onlyOneTask) {
+//                myDependenciesPanel.nameChanged(nameOfTask);
+//            }
+            //myAllocationsPanel[0].nameChanged(nameOfTask);
             nameFieldNotes.setText(nameOfTask);
         }
     }
 
     private void constructCustomColumnPanel(IGanttProject project) {
         myCustomColumnPanel = new CustomColumnsPanel(
-                project.getTaskCustomColumnManager(),
-                project.getCustomColumnsStorage(), myUIfacade);
+                project.getTaskCustomColumnManager(), myUIfacade);
     }
 
     /** Construct the predecessors tabbed pane */
     private void constructPredecessorsPanel() {
-        myDependenciesPanel = new TaskDependenciesPanel(selectedTasks[0]);
+        myDependenciesPanel = new TaskDependenciesPanel();
+        myDependenciesPanel.init(selectedTasks[0]);
         predecessorsPanel = myDependenciesPanel.getComponent();
     }
 
     /** Construct the resources panel */
     private void constructResourcesPanel() {
-        myAllocationsPanel = new TaskAllocationsPanel[selectedTasks.length];
-        for (int i = 0; i < myAllocationsPanel.length; i++) {
-            myAllocationsPanel[i] = new TaskAllocationsPanel(selectedTasks[i],
-                    myHumanResourceManager, myRoleManager, onlyOneTask);
-            if (i != 0) {
-                myAllocationsPanel[i].getComponent();
-            }
-        }
-        resourcesPanel = myAllocationsPanel[0].getComponent();
+    	myAllocationsPanel = new TaskAllocationsPanel(
+    			selectedTasks[0], myHumanResourceManager, myRoleManager);
+    	resourcesPanel = myAllocationsPanel.getComponent();
     }
 
     /** construct the notes panel */
@@ -717,18 +716,10 @@ public class GanttTaskPropertiesBean extends JPanel {
         GanttTask[] returnTask = new GanttTask[selectedTasks.length];
 
         for (int i = 0; i < selectedTasks.length; i++) {
-            if (myAllocationsPanel[0].getTableModel().isChanged()) {
-                if (i != 0) {
-                    copyValues(myAllocationsPanel[0].getTableModel(),
-                            myAllocationsPanel[i].getTableModel());
-                }
-            }
-            myAllocationsPanel[i].getTableModel().commit();
             returnTask[i] = selectedTasks[i];
 
             // returnTask.setTaskID(selectedTask.getTaskID());
-            TaskMutator mutator = returnTask[i].createMutator();
-
+            mutator = selectedTasks[0].createMutator();
             if (onlyOneTask) {
                 mutator.setName(getTaskName()); // getName()
                 mutator.setProjectTask (false);
@@ -791,18 +782,17 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
 
             mutator.commit();
-            if (onlyOneTask) {
-                myDependenciesPanel.getTableModel().commit();
-            }
+            myDependenciesPanel.commit();
+            myAllocationsPanel.commit();
             returnTask[i].applyThirdDateConstraint();
         }
 
         return returnTask;
+
     }
 
     /** as the name indicates */
     public void setSelectedTask() {
-
         // this.selectedTask = selectedTask;
 
         nameField1.setText(selectedTasks[0].getName());
@@ -898,7 +888,6 @@ public class GanttTaskPropertiesBean extends JPanel {
         } catch (NumberFormatException e) {
 
         }
-
     }
 
     /** Set the duration of the task */
@@ -908,10 +897,10 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
 
         durationField1.setText(_length + "");
-        if (onlyOneTask) {
-            myDependenciesPanel.durationChanged(_length);
-        }
-        myAllocationsPanel[0].durationChanged(_length);
+//        if (onlyOneTask) {
+//            myDependenciesPanel.durationChanged(_length);
+//        }
+        //myAllocationsPanel[0].durationChanged(_length);
         durationFieldNotes.setText(_length + "");
 
         // Calculate the end date for the given length
@@ -1024,7 +1013,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         length = (int) myUnpluggedClone.getDuration().getLength();
         durationField1.setText("" + length);
         // durationField2.setText(""+length);
-        myAllocationsPanel[0].durationChanged(length);
+        //myAllocationsPanel[0].durationChanged(length);
         durationFieldNotes.setText("" + length);
     }
 
@@ -1044,6 +1033,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         this.taskIsProjectTask = task.isProjectTask();
     }
 
+    // TODO Method is unded... delete?
     private void copyValues(ResourcesTableModel original,
             ResourcesTableModel clone) {
         for (int i = 0; i < clone.getRowCount(); i++) {
@@ -1073,6 +1063,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
         return true;
     }
+
     private boolean isProjectTaskOrContainsProjectTask(Task task) {
         if (task.isProjectTask()) {
             return true;

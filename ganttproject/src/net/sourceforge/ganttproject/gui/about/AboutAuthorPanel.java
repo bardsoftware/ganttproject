@@ -196,7 +196,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
 
         final Class[] columnClasses = { String.class, String.class };
 
-        Vector data = new Vector();
+        Vector<AuthorsInfo> data = new Vector<AuthorsInfo>();
 
         public void addField(AuthorsInfo w) {
             data.addElement(w);
@@ -220,7 +220,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         }
 
         public Object getValueAt(int row, int col) {
-            AuthorsInfo info = (AuthorsInfo) data.elementAt(row);
+            AuthorsInfo info = data.elementAt(row);
             if (col == 0)
                 return info.getName();
             else if (col == 1)

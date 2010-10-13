@@ -29,7 +29,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
@@ -409,9 +408,9 @@ abstract class ExporterBase {
                 {
                 	AttributesImpl attrs = new AttributesImpl();
 	                CustomColumnsValues customValues = t.getCustomValues();
-	                for (Iterator<CustomColumn> it = getCustomColumnStorage().getCustomColums().iterator();
+	                for (Iterator it = getCustomColumnStorage().getCustomColums().iterator();
 	                     it.hasNext();) {
-	                	CustomColumn nextColumn = it.next();
+	                	CustomColumn nextColumn = (CustomColumn) it.next();
 	                	Object value = customValues.getValue(nextColumn.getName());
 	                	String valueAsString = value==null ? "" : value.toString();
 	                	addAttribute("id", nextColumn.getId(), attrs);

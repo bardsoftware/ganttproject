@@ -140,7 +140,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         final Class[] columnClasses = { String.class, String.class,
                 String.class };
 
-        Vector data = new Vector();
+        Vector<LibraryInfo> data = new Vector<LibraryInfo>();
 
         public void addField(LibraryInfo w) {
             data.addElement(w);
@@ -164,7 +164,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         }
 
         public Object getValueAt(int row, int col) {
-            LibraryInfo info = (LibraryInfo) data.elementAt(row);
+            LibraryInfo info = data.elementAt(row);
             if (col == 0)
                 return info.getName();
             else if (col == 1)

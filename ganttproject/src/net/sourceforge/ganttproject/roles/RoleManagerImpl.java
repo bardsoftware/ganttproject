@@ -12,12 +12,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  * @author athomas
  */
 public class RoleManagerImpl implements RoleManager {
-	private final List myListeners = new ArrayList();
+	private final List<Listener> myListeners = new ArrayList<Listener>();
 
     private RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);
 
-    private ArrayList myRoleSets = new ArrayList();
-    
+    private ArrayList<RoleSet> myRoleSets = new ArrayList<RoleSet>();
+
     final private RoleSetImpl SOFTWARE_DEVELOPMENT_ROLE_SET;
     final private RoleSetImpl DEFAULT_ROLE_SET;
 
@@ -31,7 +31,7 @@ public class RoleManagerImpl implements RoleManager {
         myRoleSets.add(SOFTWARE_DEVELOPMENT_ROLE_SET);
         myProjectRoleSet.setEnabled(true);
         SOFTWARE_DEVELOPMENT_ROLE_SET.setEnabled(false);
-        
+
         GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
             public void languageChanged(Event event) {
                 changeRoleSet();
@@ -42,7 +42,7 @@ public class RoleManagerImpl implements RoleManager {
     public void clear() {
         myProjectRoleSet = new RoleSetImpl(null, this);
         for (int i = 0; i < myRoleSets.size(); i++) {
-            RoleSet next = (RoleSet) myRoleSets.get(i);
+            RoleSet next = myRoleSets.get(i);
             next.setEnabled(false);
         }
         myProjectRoleSet.setEnabled(true);
@@ -61,7 +61,7 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     public RoleSet[] getRoleSets() {
-        return (RoleSet[]) myRoleSets.toArray(new RoleSet[0]);
+        return myRoleSets.toArray(new RoleSet[0]);
     }
 
     public RoleSet createRoleSet(String name) {
@@ -89,7 +89,7 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     public Role[] getEnabledRoles() {
-        ArrayList result = new ArrayList();
+        ArrayList<Role> result = new ArrayList<Role>();
         RoleSet[] roleSets = getRoleSets();
         for (int i = 0; i < roleSets.length; i++) {
             if (roleSets[i].isEnabled()) {
@@ -97,7 +97,7 @@ public class RoleManagerImpl implements RoleManager {
             }
         }
         result.addAll(Arrays.asList(getProjectRoleSet().getRoles()));
-        return (Role[]) result.toArray(new Role[0]);
+        return result.toArray(new Role[0]);
     }
 
     public Role getDefaultRole() {
@@ -117,9 +117,9 @@ public class RoleManagerImpl implements RoleManager {
     public void importData(RoleManager original) {
         myProjectRoleSet.importData(original.getProjectRoleSet());
         RoleSet[] originalRoleSets = original.getRoleSets();
-        HashSet thisNames = new HashSet();
+        HashSet<String> thisNames = new HashSet<String>();
         for (int i = 0; i < myRoleSets.size(); i++) {
-            RoleSet next = (RoleSet) myRoleSets.get(i);
+            RoleSet next = myRoleSets.get(i);
             thisNames.add(next.getName());
         }
         for (int i = 0; i < originalRoleSets.length; i++) {
@@ -143,11 +143,11 @@ public class RoleManagerImpl implements RoleManager {
 	void fireRolesChanged(RoleSet changedRoleSet) {
 		RoleEvent event = new RoleEvent(this, changedRoleSet);
 		for (int i=0; i<myListeners.size(); i++) {
-			Listener next = (Listener) myListeners.get(i);
+			Listener next = myListeners.get(i);
 			next.rolesChanged(event);
 		}
 	}
-    
+
     private void createRoleSet() {
         GanttLanguage language = GanttLanguage.getInstance();
 
@@ -175,7 +175,7 @@ public class RoleManagerImpl implements RoleManager {
         DEFAULT_ROLE_SET.createRole(language.getText("resProjectManager"), 1);
         DEFAULT_ROLE_SET.setEnabled(true);
     }
-    
+
     private void changeRoleSet() {
         GanttLanguage language = GanttLanguage.getInstance();
 

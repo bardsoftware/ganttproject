@@ -1,25 +1,35 @@
 package net.sourceforge.ganttproject;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.text.AttributedCharacterIterator;
-import java.text.CharacterIterator;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomColumn;
+
 import org.jdesktop.jdnc.JNTreeTable;
 import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.table.TableColumnExt;
@@ -84,8 +94,8 @@ class GPTreeTableBase extends JNTreeTable{
                 			AttributedCharacterIterator iter = formats[i].formatToCharacterIterator(typedDate);
                 			int additionalZeroes = -1;
                 			StringBuffer result = new StringBuffer();
-                            for (char c = iter.first(); c != CharacterIterator.DONE; c = iter.next()) {
-                				if (iter.getAttribute(DateFormat.Field.YEAR) != null && additionalZeroes == -1) {
+                			for (char c = iter.first(); c!=AttributedCharacterIterator.DONE; c = iter.next()) {
+                				if (iter.getAttribute(DateFormat.Field.YEAR)!=null && additionalZeroes==-1) {
                         			additionalZeroes = iter.getRunLimit(DateFormat.Field.YEAR) - iter.getIndex();
                 					for (int j=0; j<additionalZeroes; j++) {
                 						result.append('0');
@@ -107,9 +117,19 @@ class GPTreeTableBase extends JNTreeTable{
                 	}
                 }
                 return null;
+
     		}
     	};
     }
+
+    public JScrollBar getVerticalScrollBar() {
+        return scrollPane.getVerticalScrollBar();
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
 
     private static abstract class DateCellEditor extends DefaultCellEditor {
         // normal textfield background color
@@ -150,5 +170,49 @@ class GPTreeTableBase extends JNTreeTable{
         		return true;
         	}
         }
+    }
+
+    protected abstract class VscrollAdjustmentListener implements AdjustmentListener {
+    	private final boolean isMod;
+
+		protected VscrollAdjustmentListener(boolean calculateMod) {
+    		isMod = calculateMod;
+    	}
+    	protected abstract TimelineChart getChart();
+    	
+        public void adjustmentValueChanged(AdjustmentEvent e) {
+        	if (getChart() == null) {
+        		return;
+        	}
+        	if (isMod) {
+        		getChart().getModel().setVerticalOffset(e.getValue() % getTreeTable().getRowHeight());
+        	} else {
+        		getChart().getModel().setVerticalOffset(e.getValue());
+        	}
+        	getChart().reset();
+        }
+    }
+
+    void insertWithLeftyScrollBar(JComponent container) {
+    	JScrollPane scrollpane = new JScrollPane();
+    	container.add(scrollpane, BorderLayout.CENTER);
+    	scrollpane.getViewport().add(this);
+    	scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+    	final JPanel jp = new JPanel(new BorderLayout());
+    	jp.add(getVerticalScrollBar(), BorderLayout.CENTER);
+    	jp.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+    	jp.setVisible(false);
+    	getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+    		public void adjustmentValueChanged(AdjustmentEvent e) {
+    			if (getSize().getHeight() - 20 < e.getAdjustable().getMaximum()) {
+    				jp.setVisible(true);
+    			} else {
+	                jp.setVisible(false);
+    			}
+	            repaint();
+	          }
+	      	});
+    	container.add(jp, BorderLayout.WEST);
     }
 }

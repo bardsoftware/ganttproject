@@ -1,10 +1,29 @@
+/* LICENSE: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -18,25 +37,48 @@ import net.sourceforge.ganttproject.task.dependency.constraint.ConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * @author dbarashev (Dmitry Barashev)
  */
 public class DependencyTableModel extends AbstractTableModel {
+    private static final boolean EDITABLE = true;
+    private static final boolean NOT_EDITABLE = false;
+    public static enum MyColumn {
+        ID(GanttLanguage.getInstance().getText("id"), DependencyTableModel.NOT_EDITABLE),
+        TASK_NAME(GanttLanguage.getInstance().getText("taskname"), DependencyTableModel.EDITABLE),
+        CONSTRAINT_TYPE(GanttLanguage.getInstance().getText("type"), DependencyTableModel.EDITABLE),
+        LAG(GanttLanguage.getInstance().getText("delay"), DependencyTableModel.EDITABLE),
+        HARDNESS(GanttLanguage.getInstance().getText("hardness"), DependencyTableModel.EDITABLE);
 
-    final String[] columnNames = { GanttLanguage.getInstance().getText("id"),
-            GanttLanguage.getInstance().getText("taskname"),
-            GanttLanguage.getInstance().getText("type"),
-            GanttLanguage.getInstance().getText("delay"),
-            GanttLanguage.getInstance().getText("hardness"),};
+        private final String myCaption;
+        private final boolean isEditable;
 
-    private final List myDependencies;
+        MyColumn(String caption, boolean isEditable) {
+            myCaption = caption;
+            this.isEditable = isEditable;
+        }
+
+        public String getCaption() {
+            return myCaption;
+        }
+
+        public boolean isEditable() {
+            return isEditable;
+        }
+
+        TableColumn getTableColumn(JTable table) {
+            return table.getColumnModel().getColumn(this.ordinal());
+        }
+    }
+
+    private final List<TaskDependency> myDependencies;
 
     private final TaskDependencyCollectionMutator myMutator;
 
     private final Task myTask;
 
     public DependencyTableModel(Task task) {
-        myDependencies = new ArrayList(Arrays.asList(task
-                .getDependenciesAsDependant().toArray()));
+        myDependencies = new ArrayList<TaskDependency>(Arrays.asList(
+                task.getDependenciesAsDependant().toArray()));
         myMutator = task.getManager().getDependencyCollection().createMutator();
         myTask = task;
     }
@@ -45,112 +87,75 @@ public class DependencyTableModel extends AbstractTableModel {
         myMutator.commit();
     }
 
-    /**
-     * Return the number of colums
-     */
     public int getColumnCount() {
-
-        return columnNames.length;
-
+        return MyColumn.values().length;
     }
 
-    /**
-     * Return the numbers of rows
-     */
     public int getRowCount() {
         return myDependencies.size() + 1;
     }
 
-    /**
-     * Return the name of the colums col
-     */
     public String getColumnName(int col) {
-        return columnNames[col];
+        return MyColumn.values()[col].getCaption();
     }
 
-    /**
-     * Return the object at the specify row & colums
-     */
     public Object getValueAt(int row, int col) {
-        Object result;
+        assert row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount();
+        if (row == myDependencies.size()) {
+            return "";
+        }
 
-        if (row >= 0 && row < getRowCount()) {
-            if (row == myDependencies.size()) {
-                result = "";
-            } else {
-                TaskDependency dep = (TaskDependency) myDependencies.get(row);
-                switch (col) {
-                case 0: {
-                    result = new Integer(dep.getDependee().getTaskID());
-                    break;
-                }
-                case 1: {
-                    result = dep.getDependee();
-                    break;
-                }
-                case 2: {
-                    result = dep.getConstraint().getName();
-                    break;
-                }
-                case 3: {
-                    result = new Integer(dep.getDifference());
-                    break;
-                }
-                case 4: {
-                	result = dep.getHardness();
-                	break;
-                }
-                default: {
-                    throw new IllegalArgumentException("Illegal column number="
-                            + col);
-                }
-                }
-
-            }
-        } else {
+        TaskDependency dep = myDependencies.get(row);
+        MyColumn column = MyColumn.values()[col];
+        switch (column) {
+        case ID: {
+            return dep.getDependee().getTaskID();
+        }
+        case TASK_NAME: {
+            return new TaskComboItem(dep.getDependee());
+        }
+        case CONSTRAINT_TYPE: {
+            return dep.getConstraint().getName();
+        }
+        case LAG: {
+            return dep.getDifference();
+        }
+        case HARDNESS: {
+            return dep.getHardness();
+        }
+        default:
             throw new IllegalArgumentException("Illegal row number=" + row);
         }
-        return result;
     }
 
     public boolean isCellEditable(int row, int col) {
-        boolean result = col > 0;
-        if (result) {
-            result = col == 2 ? row < myDependencies.size()
-                    : row <= myDependencies.size();
-        }
-        return result;
+        MyColumn column = MyColumn.values()[col];
+        return row == getRowCount() ? column ==  MyColumn.TASK_NAME : column.isEditable();
     }
 
     public void setValueAt(Object value, int row, int col) {
-        if (row >= 0) {
-
-            try {
-                if (row == myDependencies.size()) {
-                    createDependency(value);
-                } else {
-                    updateDependency(value, row, col);
-                }
-            } catch (TaskDependencyException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+        assert row >= 0;
+        try {
+            if (row == myDependencies.size()) {
+                createDependency(value);
+            } else {
+                updateDependency(value, row, col);
             }
-        } else {
-            throw new IllegalArgumentException("I can't set data in row=" + row);
+        } catch (TaskDependencyException e) {
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
-
         fireTableCellUpdated(row, col);
-
     }
 
     private void updateDependency(Object value, int row, int col)
             throws TaskDependencyException {
-        TaskDependency dep = (TaskDependency) myDependencies.get(row);
+        TaskDependency dep = myDependencies.get(row);
         switch (col) {
         case 4:
-        	dep.setHardness((Hardness) value);
-        	break;
+            dep.setHardness((Hardness) value);
+            break;
         case 3: {
             int loadAsInt = Integer.parseInt(String.valueOf(value));
             dep.setDifference(loadAsInt);
@@ -162,7 +167,7 @@ public class DependencyTableModel extends AbstractTableModel {
                 clone = (TaskDependencyConstraint) ((ConstraintImpl) value).clone();
             } catch (CloneNotSupportedException e) {
                 throw new RuntimeException(e);
-            } 
+            }
             dep.setConstraint(clone);
             break;
         }
@@ -179,6 +184,18 @@ public class DependencyTableModel extends AbstractTableModel {
             }
         }
         }
+    }
+
+    public void delete(int[] selectedRows) {
+        List<TaskDependency> selected = new ArrayList<TaskDependency>();
+        for (int row : selectedRows) {
+            selected.add(myDependencies.get(row));
+        }
+        for (TaskDependency d : selected) {
+            d.delete();
+        }
+        myDependencies.removeAll(selected);
+        fireTableDataChanged();
     }
 
     private void createDependency(Object value) throws TaskDependencyException {
@@ -202,8 +219,23 @@ public class DependencyTableModel extends AbstractTableModel {
         }
 
         public String toString() {
-            return myText;
+            return myTask.getName();
         }
-    }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof TaskComboItem == false) {
+                return false;
+            }
+            TaskComboItem value = (TaskComboItem) obj;
+            return myTask.getTaskID() == value.myTask.getTaskID();
+        }
+
+        @Override
+        public int hashCode() {
+            return myTask.getTaskID();
+        }
+
+
+    }
 }

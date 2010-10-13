@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.time.gregorian;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 01.02.2004
  */
 public class GregorianTimeUnitStack implements TimeUnitStack {
@@ -53,7 +54,7 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     private static final TimeUnit ATOM_UNIT;
 
-    private static final HashMap ourUnit2field = new HashMap();
+    private static final HashMap<TimeUnit, Integer> ourUnit2field = new HashMap<TimeUnit, Integer>();
     static {
         SECOND = ourGraph.createAtomTimeUnit("second");
         MINUTE = ourGraph.createDateFrameableTimeUnit("minute", SECOND, 60,
@@ -95,6 +96,27 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     }
 
     public String getName() {
+        return null;
+    }
+
+    public DateFormat[] getDateFormats() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public DateFormat getTimeFormat() {
+        return null;
+    }
+
+    @Override
+    public String encode(TimeUnit timeUnit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public TimeUnit findTimeUnit(String code) {
+        // TODO Auto-generated method stub
         return null;
     }
 }

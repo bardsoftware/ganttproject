@@ -43,7 +43,7 @@ public class ZoomManager {
 
     private int myZooming = 2;
 
-    private List myListeners = new ArrayList();
+    private List<ZoomListener> myListeners = new ArrayList<ZoomListener>();
 
     private TimeUnitStack myTimeUnitStack;
 
@@ -54,7 +54,7 @@ public class ZoomManager {
         TimeUnitPair[] unitPairs = myTimeUnitStack.getTimeUnitPairs();
         myZoomStates = new ZoomManager.ZoomState[unitPairs.length];
         int width1 = 60;
-        int width2 = 40;
+        //int width2 = 40;
         for (int i = 0; i < unitPairs.length; i++) {
             myZoomStates[i] = new ZoomManager.ZoomState(unitPairs[i], width1, i);
             // myZoomStates[i*2+1] = new ZoomState(unitPairs[i], width2);
@@ -100,7 +100,7 @@ public class ZoomManager {
     private void fireZoomingChanged(int oldZoomValue, int newZoomValue) {
         ZoomEvent e = new ZoomEvent(this, myZoomStates[newZoomValue]);
         for (int i = 0; i < myListeners.size(); i++) {
-            ZoomListener nextListener = (ZoomListener) myListeners.get(i);
+            ZoomListener nextListener = myListeners.get(i);
             nextListener.zoomChanged(e);
         }
     }

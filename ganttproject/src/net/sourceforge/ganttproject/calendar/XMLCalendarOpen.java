@@ -43,8 +43,7 @@ public class XMLCalendarOpen {
 
     private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
-    boolean load(InputStream inputStream) throws ParserConfigurationException,
-            SAXException, IOException {
+    boolean load(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
         // Use an instance of ourselves as the SAX event handler
         DefaultHandler handler = new GanttXMLParser();
 
@@ -113,7 +112,8 @@ public class XMLCalendarOpen {
             }
         }
 
-        public void startElement(String namespaceURI, String sName, // simple name
+        public void startElement(String namespaceURI, String sName, // simple
+                // name
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
             for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
@@ -142,17 +142,16 @@ public class XMLCalendarOpen {
         // :
         // - using eclipse where test is a directory
         // - using the built jar archive where test is not a directory
-    
+//        
 //        URL url = getClass().getResource("/calendar");
 //        URL resolvedUrl = Platform.resolve(url);
 //        File test = new File(resolvedUrl.getPath());
 //        File path = new File(URLDecoder.decode(test.getAbsolutePath()));
 
-        // if(test.isDirectory()) {
-        //     path = test;
-        // } else {
-        //     path = new File("calendar");
-        // }
+        // if(test.isDirectory())
+        // path = test;
+        // else
+        // path = new File("calendar");
         myCalendarResources.clear();
         DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
         addTagHandler(th);
@@ -162,7 +161,7 @@ public class XMLCalendarOpen {
         for (int i = 0; i < calendarExtensions.length; i++) {
             Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespace());
             URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
-            if (calendarUrl != null) {
+            if (calendarUrl!=null) {
                 load(calendarUrl.openStream());
                 myCalendarLabels[i] = th.getName();
                 myCalendarResources.add(calendarUrl);
@@ -171,14 +170,14 @@ public class XMLCalendarOpen {
     }
 
     public URL[] getCalendarResources() {
-        return (URL[]) myCalendarResources.toArray(new URL[0]);
+        return myCalendarResources.toArray(new URL[0]);
     }
 
     public String[] getLabels() {
         return myCalendarLabels;
     }
 
-    // Class is never used... delete?
+    // TODO Class is never used... remove?
     private static class Filter extends FileFilter implements FilenameFilter {
         private String extension;
 

@@ -1,7 +1,7 @@
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +13,8 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -31,8 +33,6 @@ public class ChartModelResource extends ChartModelBase {
     private ColorOption myResourceUnderloadOption;
 
     private ColorOption myDayOffOption;
-
-	private BottomUnitLineRendererImpl myBottomLineRenderer;
 
     private final ResourceChart myResourceChart;
 
@@ -62,10 +62,10 @@ public class ChartModelResource extends ChartModelBase {
             HumanResourceManager resourceManager, TimeUnitStack timeUnitStack,
             final UIConfiguration projectConfig, ResourceChart resourceChart) {
         super(taskManager, timeUnitStack, projectConfig);
-        myResourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);
-        myBottomLineRenderer = new BottomUnitLineRendererImpl(this, projectConfig);
-        myManager = resourceManager;
         myResourceChart = resourceChart;
+        myResourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);
+        addRenderer(myResourceLoadRenderer);
+        myManager = resourceManager;
         {
             myResourceNormalLoadOption = new ResourceLoadOption("resourceChartColors.normalLoad", "colors", "resources") {
                 public void commit() {
@@ -113,45 +113,57 @@ public class ChartModelResource extends ChartModelBase {
         myColorOptions = new GPOptionGroup("resourceChartColors", new GPOption[] {myResourceNormalLoadOption, myResourceOverloadOption, myResourceUnderloadOption, myDayOffOption});
     }
 
-    public void paint(Graphics g) {
-        super.paint(g);
-        Graphics mainArea = g.create(0, getChartUIConfiguration()
-                .getHeaderHeight(), (int) getBounds().getWidth(),
-                (int) getBounds().getHeight());
-        mainArea.translate(0, -getVerticalOffset());
-        getPainter().setGraphics(mainArea);
-        myResourceLoadRenderer.render();
-        myBottomLineRenderer.setHeight(getBounds().height);
-        myBottomLineRenderer.render();
-        myBottomLineRenderer.getPrimitiveContainer().paint(getPainter(), mainArea);
-        myResourceLoadRenderer.getPrimitiveContainer().paint(getPainter(), mainArea);
-    }
+//    public void paint(Graphics g) {
+//        super.paint(g);
+//        myResourceLoadRenderer.render();
+//        myResourceLoadRenderer.getPrimitiveContainer().paint(getPainter(), g);
+//    }
 
     public ProjectResource[] getVisibleResources() {
-        return (ProjectResource[]) myManager.getResources().toArray(
+        return myManager.getResources().toArray(
                 new ProjectResource[0]);
     }
 
-
     public GPOptionGroup[] getChartOptionGroups() {
-        List result = new ArrayList();
+        List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
+        // FIXME Need to add superGroups to result?? (or what else is the point of fetching them)
         GPOptionGroup[] superGroups = super.getChartOptionGroups();
         result.add(myColorOptions);
-        return (GPOptionGroup[]) result.toArray(new GPOptionGroup[result.size()]);
+        return result.toArray(new GPOptionGroup[result.size()]);
     }
 
-    public int calculateRowHeight() {
-        return getChartUIConfiguration().getRowHeight();
+    @Override
+    protected int getRowCount() {
+        return getVisibleResources().length;
     }
 
+    @Override
     public ChartModelBase createCopy() {
         ChartModelBase result = new ChartModelResource(myTaskManager, myManager, myTimeUnitStack, getProjectConfig(), myResourceChart);
         super.setupCopy(result);
         return result;
     }
 
-    protected int getRowCount() {
-        return getVisibleResources().length;
+    public Task findTaskWithCoordinates(int x, int y) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Rectangle getBoundingRectangle(Task task) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setTaskContainment(TaskContainmentHierarchyFacade taskContainment) {
+        // TODO Auto-generated method stub
+    }
+
+    public void setVisibleTasks(List<Task> visibleTasks) {
+        // TODO Auto-generated method stub
+    }
+
+    public int calculateRowHeight() {
+        return getChartUIConfiguration().getRowHeight();
     }
 
 }

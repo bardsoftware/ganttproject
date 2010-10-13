@@ -18,7 +18,7 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
     public TaskDependency[] toArray() {
         return myDependencyCollection.getDependencies(myTask);
     }
-    
+
     public void clear() {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {
@@ -26,7 +26,7 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
         }
     }
     // This function unlinks only tasks that are selected and leaves links to not selected tasks.
-    public void clear(List selection) {
+    public void clear(List<Task> selection) {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {
             if (selection.contains(deps[i].getDependant()) && selection.contains(deps[i].getDependee())) {

@@ -12,11 +12,9 @@ import net.sourceforge.ganttproject.task.TaskLength;
  * @author bard
  */
 public class SortTasksAlgorithm {
-    private Comparator mySortActivitiesByStartDateComparator = new Comparator() {
-        public int compare(Object left, Object right) {
+    private Comparator<TaskActivity> mySortActivitiesByStartDateComparator = new Comparator<TaskActivity>() {
+        public int compare(TaskActivity leftTask, TaskActivity rightTask) {
             int result = 0;
-            TaskActivity leftTask = (TaskActivity) left;
-            TaskActivity rightTask = (TaskActivity) right;
             if (!leftTask.equals(rightTask)) {
                 result = leftTask.getStart().compareTo(rightTask.getStart());
                 if (result == 0) {
@@ -48,11 +46,9 @@ public class SortTasksAlgorithm {
 
     };
 
-    private Comparator mySortTasksByStartDateComparator = new Comparator() {
-        public int compare(Object left, Object right) {
+    private Comparator<Task> mySortTasksByStartDateComparator = new Comparator<Task>() {
+        public int compare(Task leftTask, Task rightTask) {
             int result = 0;
-            Task leftTask = (Task) left;
-            Task rightTask = (Task) right;
             if (!leftTask.equals(rightTask)) {
                 result = leftTask.getStart().compareTo(rightTask.getStart());
                 if (result == 0) {
@@ -84,11 +80,11 @@ public class SortTasksAlgorithm {
 
     };
     
-    public void sortByStartDate(List/* <TaskActivity> */tasks) {
+    public void sortByStartDate(List<TaskActivity> tasks) {
         Collections.sort(tasks, mySortActivitiesByStartDateComparator);
     }
     
-    public void sortTasksByStartDate(List/* <Task> */tasks) {
+    public void sortTasksByStartDate(List<Task> tasks) {
         Collections.sort(tasks, mySortTasksByStartDateComparator);
     }
     

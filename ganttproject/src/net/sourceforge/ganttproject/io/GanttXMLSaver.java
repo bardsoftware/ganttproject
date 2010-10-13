@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
+import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTree2;
@@ -85,10 +86,10 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
             addAttribute("name", getProject().getProjectName(), attrs);
             addAttribute("company", getProject().getOrganization(), attrs);
             addAttribute("webLink", getProject().getWebLink(), attrs);
-            addAttribute("view-date", new GanttCalendar(area.getViewState()
+            addAttribute("view-date", new GanttCalendar(area
                     .getStartDate()).toXMLString(), attrs);
             addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
-            //TODO for GP 2.0: move view configurations into <view> tag (see ViewSaver) 
+            //TODO for GP 2.0: move view configurations into <view> tag (see ViewSaver)
             addAttribute("gantt-divider-location", ""
                     + myUIFacade.getGanttDividerLocation(), attrs);
             addAttribute("resource-divider-location", ""
@@ -97,7 +98,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
             startElement("project", attrs, handler);
             //
             cdataElement("description", getProject().getDescription(), attrs, handler);
-            
+
             saveViews(handler);
             emptyComment(handler);
             saveCalendar(handler);
@@ -113,9 +114,9 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
             stream.close();
         } catch (Throwable e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
             IOException propagatedException  = new IOException("Failed to save the project file");
             propagatedException.initCause(e);
             throw propagatedException;
@@ -123,7 +124,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     }
 
     private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-        List history = ((GanttProject) myProject).getPreviouStates();
+        List<GanttPreviousState> history = ((GanttProject) myProject).getPreviouStates();
         new HistorySaver().save(history, handler);
     }
 
@@ -146,7 +147,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     private void saveCalendar(TransformerHandler handler) throws SAXException {
         new CalendarSaver().save(getProject(), handler);
     }
-    
+
     private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
         new TaskSaver().save(getProject(), handler, area.getTaskColor());
     }

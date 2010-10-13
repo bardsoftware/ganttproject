@@ -24,13 +24,13 @@ public class UnlinkTasksAction extends TaskActionBase {
         return getI18n("unlink");
     }
 
-    protected boolean isEnabled(List selection) {
+    protected boolean isEnabled(List<Task> selection) {
         return false==selection.isEmpty();
     }
 
-    protected void run(List selection) throws Exception {
+    protected void run(List<Task> selection) throws Exception {
         for (int i=0; i<selection.size(); i++) {
-            Task nextTask = (Task) selection.get(i);
+            Task nextTask = selection.get(i);
             nextTask.getDependencies().clear(selection);
         }
     }

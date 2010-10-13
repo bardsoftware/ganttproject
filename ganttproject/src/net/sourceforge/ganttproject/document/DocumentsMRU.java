@@ -34,7 +34,7 @@ public class DocumentsMRU {
      * 
      * @param document
      *            the Document that should be added
-     * @return true when the list has changed through the addition
+     * @return wether the list has changed through the addition
      */
     public boolean add(Document document) {
         // if the document is invalid, we don't add it
@@ -64,7 +64,7 @@ public class DocumentsMRU {
      * 
      * @param document
      *            the Document that should be added
-     * @return true when the list has changed through the addition
+     * @return wether the list has changed through the addition
      */
     public boolean append(Document document) {
         // if the document is invalid, we don't add it

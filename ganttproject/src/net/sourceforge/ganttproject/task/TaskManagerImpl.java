@@ -14,14 +14,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
+import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
@@ -56,6 +56,8 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public class TaskManagerImpl implements TaskManager {
+    private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+
     private final TaskHierarchyManagerImpl myHierarchyManager;
 
     private final TaskDependencyCollectionImpl myDependencyCollection;
@@ -73,64 +75,64 @@ public class TaskManagerImpl implements TaskManager {
 
     private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
-	private boolean areEventsEnabled = true;
+    private boolean areEventsEnabled = true;
 
     private static class TaskMap {
-        private final Map<Integer,Task> myId2task = new HashMap<Integer,Task>();
-		private TaskDocumentOrderComparator myComparator;
-		private boolean isModified = true;
-		private Task[] myArray;
+        private final Map<Integer, Task> myId2task = new HashMap<Integer, Task>();
+        private TaskDocumentOrderComparator myComparator;
+        private boolean isModified = true;
+        private Task[] myArray;
         private final TaskManagerImpl myManager;
-    	TaskMap(TaskManagerImpl taskManager) {
-    		myComparator = new TaskDocumentOrderComparator(taskManager);
+        TaskMap(TaskManagerImpl taskManager) {
+            myComparator = new TaskDocumentOrderComparator(taskManager);
             myManager = taskManager;
-    	}
-    	void addTask(Task task) {
-    		myId2task.put(new Integer(task.getTaskID()), task);
-    		isModified = true;
-    	}
-    	Task getTask(int id) {
-    		return (Task) myId2task.get(new Integer(id));
-    	}
+        }
+        void addTask(Task task) {
+            myId2task.put(new Integer(task.getTaskID()), task);
+            isModified = true;
+        }
+        Task getTask(int id) {
+            return myId2task.get(new Integer(id));
+        }
         public Task[] getTasks() {
-			if (isModified) {
-				myArray = myId2task.values().toArray(new Task[myId2task.size()]);
-				Arrays.sort(myArray, myComparator);
-				isModified = false;
-			}
-			return myArray;
-		}
-		public void clear() {
-			myId2task.clear();
-			isModified = true;
-		}
-		public void removeTask(Task task) {
-			myId2task.remove(new Integer(task.getTaskID()));
+            if (isModified) {
+                myArray = myId2task.values().toArray(new Task[myId2task.size()]);
+                Arrays.sort(myArray, myComparator);
+                isModified = false;
+            }
+            return myArray;
+        }
+        public void clear() {
+            myId2task.clear();
+            isModified = true;
+        }
+        public void removeTask(Task task) {
+            myId2task.remove(new Integer(task.getTaskID()));
             Task[] nestedTasks = myManager.getTaskHierarchy().getNestedTasks(task);
             for (int i=0; i<nestedTasks.length; i++) {
                 removeTask(nestedTasks[i]);
             }
-			isModified = true;
-		}
-		public int size() {
-			return myId2task.size();
-		}
-		public boolean isEmpty() {
-			return myId2task.isEmpty();
-		}
-		void setDirty() {
-			isModified = true;
-		}
+            isModified = true;
+        }
+        public int size() {
+            return myId2task.size();
+        }
+        public boolean isEmpty() {
+            return myId2task.isEmpty();
+        }
+        void setDirty() {
+            isModified = true;
+        }
     }
     private final TaskMap myTaskMap = new TaskMap(this);
 
-	private final CustomColumnsStorage myCustomColumnStorage;
+    private final CustomColumnsStorage myCustomColumnStorage;
 
     TaskManagerImpl(
             TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
             TaskManagerConfig config, CustomColumnsStorage columnStorage) {
-    	myCustomColumnStorage = columnStorage==null ?
-    			new CustomColumnsStorage() : columnStorage;
+        myCustomColumnStorage = columnStorage==null ?
+                new CustomColumnsStorage() : columnStorage;
         myConfig = config;
         myHierarchyManager = new TaskHierarchyManagerImpl();
         EventDispatcher dispatcher = new EventDispatcher() {
@@ -207,7 +209,7 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public Task[] getTasks() {
-    	return myTaskMap.getTasks();
+        return myTaskMap.getTasks();
         //return (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
     }
 
@@ -233,7 +235,7 @@ public class TaskManagerImpl implements TaskManager {
         fireTaskModelReset();
     }
 
-    
+
     public void projectOpened() {
         processCriticalPath(getRootTask());
         myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
@@ -285,9 +287,9 @@ public class TaskManagerImpl implements TaskManager {
         }
     }
 
-	boolean isRegistered(TaskImpl task) {
-		return myTaskMap.getTask(task.getTaskID())!=null;
-	}
+    boolean isRegistered(TaskImpl task) {
+        return myTaskMap.getTask(task.getTaskID())!=null;
+    }
 
     public int getTaskCount() {
         return myTaskMap.size();
@@ -324,6 +326,118 @@ public class TaskManagerImpl implements TaskManager {
     public int getProjectCompletion() {
         return myRoot.getCompletionPercentage();
     }
+
+    public String encode(TaskLength taskLength) {
+        StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
+        result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
+        return result.toString();
+    }
+
+    public TaskLength createLength(String lengthAsString) throws DurationParsingException {
+        int state = 0;
+        StringBuffer valueBuffer = new StringBuffer();
+        Integer currentValue = null;
+        TaskLength currentLength = null;
+        lengthAsString += " ";
+        for (int i=0; i<lengthAsString.length(); i++) {
+            char nextChar = lengthAsString.charAt(i);
+            if (Character.isDigit(nextChar)) {
+                switch (state) {
+                    case 0:
+                        if (currentValue!=null) {
+                            throw new DurationParsingException();
+                        }
+                        state = 1;
+                        valueBuffer.setLength(0);
+                    case 1:
+                        valueBuffer.append(nextChar);
+                        break;
+                    case 2:
+                        TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+                        if (timeUnit==null) {
+                            throw new DurationParsingException(valueBuffer.toString());
+                        }
+                        assert currentValue!=null;
+                        TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+                        if (currentLength==null) {
+                            currentLength = localResult;
+                        }
+                        else {
+                            if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                                float recalculatedLength = currentLength.getLength(timeUnit);
+                                currentLength = createLength(timeUnit, localResult.getValue()+recalculatedLength);
+                            }
+                            else {
+                                throw new DurationParsingException();
+                            }
+                        }
+                        state = 1;
+                        currentValue = null;
+                        valueBuffer.setLength(0);
+                        valueBuffer.append(nextChar);
+                        break;
+                }
+            }
+            else if(Character.isWhitespace(nextChar)) {
+                switch (state) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentValue = Integer.valueOf(valueBuffer.toString());
+                        state = 0;
+                        break;
+                    case 2:
+                        TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+                        if (timeUnit==null) {
+                            throw new DurationParsingException(valueBuffer.toString());
+                        }
+                        assert currentValue!=null;
+                        TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+                        if (currentLength==null) {
+                            currentLength = localResult;
+                        }
+                        else {
+                            if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                                float recalculatedLength = currentLength.getLength(timeUnit);
+                                currentLength = createLength(timeUnit, localResult.getValue()+recalculatedLength);
+                            }
+                            else {
+                                throw new DurationParsingException();
+                            }
+                        }
+                        state = 0;
+                        currentValue = null;
+                        break;
+                }
+            }
+            else {
+                switch (state) {
+                    case 1:
+                        currentValue = Integer.valueOf(valueBuffer.toString());
+                    case 0:
+                        if (currentValue==null) {
+                            throw new DurationParsingException();
+                        }
+                        state = 2;
+                        valueBuffer.setLength(0);
+                    case 2:
+                        valueBuffer.append(nextChar);
+                        break;
+                }
+            }
+        }
+        if (currentValue!=null) {
+            currentValue = Integer.valueOf(valueBuffer.toString());
+            TimeUnit dayUnit = findTimeUnit("d");
+            currentLength = createLength(dayUnit, currentValue.floatValue());
+        }
+        return currentLength;
+    }
+
+    private TimeUnit findTimeUnit(String code) {
+        return myConfig.getTimeUnitStack().findTimeUnit(code);
+    }
+
     public TaskLength createLength(TimeUnit unit, float length) {
         return new TaskLengthImpl(unit, length);
     }
@@ -357,6 +471,11 @@ public class TaskManagerImpl implements TaskManager {
         return result;
     }
 
+    public Date shift(Date original, TaskLength duration) {
+        GPCalendar calendar = RESTLESS_CALENDAR;
+        return calendar.shiftDate(original, duration);
+    }
+
     public TaskDependencyCollection getDependencyCollection() {
         return myDependencyCollection;
     }
@@ -370,32 +489,33 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public TaskDependencyConstraint createConstraint(final int constraintID) {
+        return createConstraint(TaskDependencyConstraint.Type.getType(constraintID));
+    }
+    public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
         TaskDependencyConstraint result;
-        switch (constraintID) {
-        case GanttTaskRelationship.FS: {
+        switch (type) {
+        case finishstart: {
             result = new FinishStartConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.FF: {
+        case finishfinish: {
             result = new FinishFinishConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.SF: {
+        case startfinish: {
             result = new StartFinishConstraintImpl();
             break;
         }
-        case GanttTaskRelationship.SS: {
+        case startstart: {
             result = new StartStartConstraintImpl();
             break;
         }
         default: {
-            throw new IllegalArgumentException("Unknown constraint ID="
-                    + constraintID);
+            throw new IllegalArgumentException("Unknown constraint type="+type);
         }
         }
         return result;
     }
-
     public int getMaxID() {
         return myMaxID;
     }
@@ -417,89 +537,90 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public void fireTaskProgressChanged(Task changedTask) {
-    	if (areEventsEnabled) {
-	        TaskPropertyEvent e = new TaskPropertyEvent(changedTask);
-	        for (int i = 0; i < myListeners.size(); i++) {
-	            TaskListener next = (TaskListener) myListeners.get(i);
-	            next.taskProgressChanged(e);
-	        }
-    	}
+        if (areEventsEnabled) {
+            TaskPropertyEvent e = new TaskPropertyEvent(changedTask);
+            for (int i = 0; i < myListeners.size(); i++) {
+                TaskListener next = myListeners.get(i);
+                next.taskProgressChanged(e);
+            }
+        }
     }
 
     void fireTaskScheduleChanged(Task changedTask, GanttCalendar oldStartDate,
             GanttCalendar oldFinishDate) {
-    	if (areEventsEnabled) {
-	        TaskScheduleEvent e = new TaskScheduleEvent(changedTask, oldStartDate,
-	                oldFinishDate, changedTask.getStart(), changedTask.getEnd());
-	        // List copy = new ArrayList(myListeners);
-	        // myListeners.clear();
-	        for (int i = 0; i < myListeners.size(); i++) {
-	            TaskListener next = (TaskListener) myListeners.get(i);
-	            next.taskScheduleChanged(e);
-	        }
-    	}
+        if (areEventsEnabled) {
+            TaskScheduleEvent e = new TaskScheduleEvent(changedTask, oldStartDate,
+                    oldFinishDate, changedTask.getStart(), changedTask.getEnd());
+            // List copy = new ArrayList(myListeners);
+            // myListeners.clear();
+            for (int i = 0; i < myListeners.size(); i++) {
+                TaskListener next = myListeners.get(i);
+                next.taskScheduleChanged(e);
+            }
+        }
     }
 
     private void fireDependencyAdded(TaskDependency newDependency) {
-    	if (areEventsEnabled) {
-	        TaskDependencyEvent e = new TaskDependencyEvent(
-	                getDependencyCollection(), newDependency);
-	        for (int i = 0; i < myListeners.size(); i++) {
-	            TaskListener next = (TaskListener) myListeners.get(i);
-	            next.dependencyAdded(e);
-	        }
-    	}
+        if (areEventsEnabled) {
+            TaskDependencyEvent e = new TaskDependencyEvent(
+                    getDependencyCollection(), newDependency);
+            for (int i = 0; i < myListeners.size(); i++) {
+                TaskListener next = myListeners.get(i);
+                next.dependencyAdded(e);
+            }
+        }
     }
 
     private void fireDependencyRemoved(TaskDependency dep) {
         TaskDependencyEvent e = new TaskDependencyEvent(
                 getDependencyCollection(), dep);
         for (int i = 0; i < myListeners.size(); i++) {
-            TaskListener next = (TaskListener) myListeners.get(i);
+            TaskListener next = myListeners.get(i);
             next.dependencyRemoved(e);
         }
     }
 
     private void fireTaskAdded(Task task) {
-    	if (areEventsEnabled) {
-	        TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, null,
-	                getTaskHierarchy().getContainer(task));
-	        for (int i = 0; i < myListeners.size(); i++) {
-	            TaskListener next = (TaskListener) myListeners.get(i);
-	            next.taskAdded(e);
-	        }
-    	}
+        if (areEventsEnabled) {
+            TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, null,
+                    getTaskHierarchy().getContainer(task));
+            for (int i = 0; i < myListeners.size(); i++) {
+                TaskListener next = myListeners.get(i);
+                next.taskAdded(e);
+            }
+        }
     }
 
+    // TODO Method is unused... delete?
     private void fireTaskRemoved(Task task, Task oldSupertask) {
         TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, oldSupertask,
                 null);
         for (int i = 0; i < myListeners.size(); i++) {
-            TaskListener next = (TaskListener) myListeners.get(i);
+            TaskListener next = myListeners.get(i);
             next.taskRemoved(e);
         }
     }
 
     void fireTaskPropertiesChanged(Task task) {
-    	if (areEventsEnabled) {
-	        TaskPropertyEvent e = new TaskPropertyEvent(task);
-	        for (int i = 0; i < myListeners.size(); i++) {
-	            TaskListener next = (TaskListener) myListeners.get(i);
-	            next.taskPropertiesChanged(e);
-	        }
-    	}
+        if (areEventsEnabled) {
+            TaskPropertyEvent e = new TaskPropertyEvent(task);
+            for (int i = 0; i < myListeners.size(); i++) {
+                TaskListener next = myListeners.get(i);
+                next.taskPropertiesChanged(e);
+            }
+        }
     }
 
     private void fireTaskModelReset() {
         if (areEventsEnabled) {
             for (int i = 0; i < myListeners.size(); i++) {
-                TaskListener next = (TaskListener) myListeners.get(i);
+                TaskListener next = myListeners.get(i);
                 next.taskModelReset();
             }
         }
     }
 
-    
+
     public TaskManagerConfig getConfig() {
         return myConfig;
     }
@@ -576,54 +697,58 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         public int compareDocumentOrder(Task task1, Task task2) {
-        	if (task1==task2) {
-        		return 0;
-        	}
-        	List<Task> buffer1 = new ArrayList<Task>();
+            if (task1==task2) {
+                return 0;
+            }
+            List<Task> buffer1 = new ArrayList<Task>();
             for (Task container = task1; container != null; container = getContainer(container)) {
                 buffer1.add(0,container);
             }
-        	List<Task> buffer2 = new ArrayList<Task>();
+            List<Task> buffer2 = new ArrayList<Task>();
             for (Task container = task2; container != null; container = getContainer(container)) {
                 buffer2.add(0,container);
             }
             if (buffer1.get(0)!=getRootTask() && buffer2.get(0)==getRootTask()) {
-            	return -1;
+                return -1;
             }
             if (buffer1.get(0)==getRootTask() && buffer2.get(0)!=getRootTask()) {
-            	return 1;
+                return 1;
             }
 
-        	int i=0;
-        	Task commonRoot = null;
-        	while (true) {
-        		if (i==buffer1.size()) {
-        			return -1;
-        		}
-        		if (i==buffer2.size()) {
-        			return 1;
-        		}
-        		Task root1 = (Task) buffer1.get(i);
-        		Task root2 = (Task) buffer2.get(i);
-        		if (root1!=root2) {
-        			assert commonRoot!=null : "Failure comparing task="+task1+" and task="+task2+"\n. Path1="+buffer1+"\nPath2="+buffer2;
-        			Task[] nestedTasks = commonRoot.getNestedTasks();
-        			for (int j=0; j<nestedTasks.length; j++) {
-        				if (nestedTasks[j]==root1) {
-        					return -1;
-        				}
-        				if (nestedTasks[j]==root2) {
-        					return 1;
-        				}
-        			}
-        			throw new IllegalStateException("We should not be here");
-        		}
-        		i++;
-        		commonRoot = root1;
-        	}
+            int i=0;
+            Task commonRoot = null;
+            while (true) {
+                if (i==buffer1.size()) {
+                    return -1;
+                }
+                if (i==buffer2.size()) {
+                    return 1;
+                }
+                Task root1 = buffer1.get(i);
+                Task root2 = buffer2.get(i);
+                if (root1!=root2) {
+                    assert commonRoot!=null : "Failure comparing task="+task1+" and task="+task2+"\n. Path1="+buffer1+"\nPath2="+buffer2;
+                    Task[] nestedTasks = commonRoot.getNestedTasks();
+                    for (int j=0; j<nestedTasks.length; j++) {
+                        if (nestedTasks[j]==root1) {
+                            return -1;
+                        }
+                        if (nestedTasks[j]==root2) {
+                            return 1;
+                        }
+                    }
+                    throw new IllegalStateException("We should not be here");
+                }
+                i++;
+                commonRoot = root1;
+            }
         }
 
         public boolean contains(Task task) {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<Task> getTasksInDocumentOrder() {
             throw new UnsupportedOperationException();
         }
 
@@ -654,16 +779,17 @@ public class TaskManagerImpl implements TaskManager {
         return new TaskManagerImpl(null, myConfig, null);
     }
 
-    public Map<Task,Task> importData(TaskManager taskManager) {
+    public Map<Task, Task> importData(TaskManager taskManager) {
         Task importRoot = taskManager.getRootTask();
-        Map<Task,Task> original2imported = new HashMap<Task,Task>();
+        Map<Task, Task> original2imported = new HashMap<Task, Task>();
         importData(importRoot, getRootTask(), original2imported);
         TaskDependency[] deps = taskManager.getDependencyCollection()
                 .getDependencies();
         for (int i = 0; i < deps.length; i++) {
             Task nextDependant = deps[i].getDependant();
             Task nextDependee = deps[i].getDependee();
-            Task importedDependant = original2imported.get(nextDependant);
+            Task importedDependant = original2imported
+                    .get(nextDependant);
             Task importedDependee = original2imported.get(nextDependee);
             try {
                 TaskDependency dependency = getDependencyCollection()
@@ -673,15 +799,15 @@ public class TaskManagerImpl implements TaskManager {
                 dependency.setDifference(deps[i].getDifference());
                 dependency.setHardness(deps[i].getHardness());
             } catch (TaskDependencyException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         }
         return original2imported;
     }
 
-    private void importData(Task importRoot, Task root, Map<Task,Task> original2imported) {
+    private void importData(Task importRoot, Task root, Map<Task, Task> original2imported) {
         Task[] nested = importRoot.getManager().getTaskHierarchy()
                 .getNestedTasks(importRoot);
         for (int i = nested.length - 1; i >= 0; i--) {
@@ -708,17 +834,17 @@ public class TaskManagerImpl implements TaskManager {
             CustomColumnsValues customValues = nested[i].getCustomValues();
             Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
             for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
-            	CustomColumn nextColumn = it.next();
-            	Object value = customValues.getValue(nextColumn.getName());
-            	if (value!=null) {
-            		try {
-						nextImported.getCustomValues().setValue(nextColumn.getName(), value);
-					} catch (CustomColumnsException e) {
-			        	if (!GPLogger.log(e)) {
-			        		e.printStackTrace(System.err);
-			        	}
-					}
-            	}
+                CustomColumn nextColumn = it.next();
+                Object value = customValues.getValue(nextColumn.getName());
+                if (value!=null) {
+                    try {
+                        nextImported.getCustomValues().setValue(nextColumn.getName(), value);
+                    } catch (CustomColumnsException e) {
+                        if (!GPLogger.log(e)) {
+                            e.printStackTrace(System.err);
+                        }
+                    }
+                }
             }
             // System.out.println ("Import : " + nextImported.getTaskID() + "
             // -->> " + nextImported.getName());
@@ -737,7 +863,7 @@ public class TaskManagerImpl implements TaskManager {
     public void processCriticalPath(TaskNode root) {
         processCriticalPath((Task)root.getUserObject());
     }
-    
+
     public void processCriticalPath(Task root) {
         try {
             myAlgorithmCollection.getRecalculateTaskScheduleAlgorithm().run();
@@ -750,7 +876,7 @@ public class TaskManagerImpl implements TaskManager {
         resetCriticalPath();
         for (int i = 0; i < tasks.length; i++) {
             tasks[i].setCritical(true);
-        }        
+        }
     }
 
     private void resetCriticalPath() {
@@ -762,7 +888,7 @@ public class TaskManagerImpl implements TaskManager {
 
     public void importAssignments(TaskManager importedTaskManager,
             ResourceManager hrManager, Map<Task, Task> original2importedTask,
-            Map<ProjectResource, HumanResource> original2importedResource) {
+            Map<HumanResource, HumanResource> original2importedResource) {
         Task[] tasks = importedTaskManager.getTasks();
         for (int i = 0; i < tasks.length; i++) {
             ResourceAssignment[] assignments = tasks[i].getAssignments();
@@ -770,30 +896,31 @@ public class TaskManagerImpl implements TaskManager {
                 Task task = getTask(original2importedTask.get(tasks[i])
                         .getTaskID());
                 ResourceAssignment assignment = task.getAssignmentCollection()
-                        .addAssignment(original2importedResource.get(
-                                assignments[j].getResource()));
+                        .addAssignment(
+                                original2importedResource
+                                        .get(assignments[j].getResource()));
                 assignment.setLoad(assignments[j].getLoad());
                 assignment.setCoordinator(assignments[j].isCoordinator());
             }
         }
     }
 
-	void onTaskMoved(TaskImpl task) {
-		if (!isRegistered(task)) {
-			registerTask(task);
-		}
-		myTaskMap.setDirty();
-	}
+    void onTaskMoved(TaskImpl task) {
+        if (!isRegistered(task)) {
+            registerTask(task);
+        }
+        myTaskMap.setDirty();
+    }
 
-	public void setEventsEnabled(boolean enabled) {
-		areEventsEnabled = enabled;
-	}
+    public void setEventsEnabled(boolean enabled) {
+        areEventsEnabled = enabled;
+    }
 
-	public CustomColumnsStorage getCustomColumnStorage() {
-		return myCustomColumnStorage;
-	}
+    public CustomColumnsStorage getCustomColumnStorage() {
+        return myCustomColumnStorage;
+    }
 
-	public URL getProjectDocument() {
-		return myConfig.getProjectDocumentURL();
-	}
+    public URL getProjectDocument() {
+        return myConfig.getProjectDocumentURL();
+    }
 }

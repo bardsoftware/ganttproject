@@ -21,9 +21,6 @@
       <library name="lib/core/commons-transaction-1.0.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/jakarta-poi-2.5.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/core/jakarta-slide-webdavlib-2.1.jar">
          <export name="*"/>
       </library>

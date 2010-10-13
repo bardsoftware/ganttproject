@@ -3,7 +3,7 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
-import net.sourceforge.ganttproject.ChartComponentBase.AbstractChartImplementation;
+import net.sourceforge.ganttproject.AbstractChartImplementation;
 
 public class RenderedResourceChartImage extends RenderedChartImage {
 
@@ -13,11 +13,10 @@ public class RenderedResourceChartImage extends RenderedChartImage {
             AbstractChartImplementation chartImplementation, BufferedImage resourceTreeImage, int chartWidth, int chartHeight) {
         super(chartModel, resourceTreeImage, chartWidth, chartHeight);
         myChartImplementation = chartImplementation;
-        // TODO Auto-generated constructor stub
     }
 
     protected void paintChart(Graphics g) {
-        myChartImplementation.paintComponent(g);
+        myChartImplementation.paintChart(g);
     }
 
 }

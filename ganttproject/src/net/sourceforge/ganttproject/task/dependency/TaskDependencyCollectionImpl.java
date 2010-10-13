@@ -28,7 +28,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
 
     private final EventDispatcher myEventDispatcher;
 
-    private final TaskContainmentHierarchyFacade.Factory myTaskHierarchyFactory;
+	private final TaskContainmentHierarchyFacade.Factory myTaskHierarchyFactory;
 
     public TaskDependencyCollectionImpl(TaskContainmentHierarchyFacade.Factory taskHierarchyFactory, EventDispatcher myEventDispatcher) {
         this.myEventDispatcher = myEventDispatcher;
@@ -42,9 +42,9 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     public TaskDependency[] getDependencies(Task task) {
         SearchKey fromKey = new RangeSearchFromKey(task);
         SearchKey toKey = new RangeSearchToKey(task);
-        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
-                .subMap(fromKey, toKey);
-        return submap.values().toArray(new TaskDependency[0]);
+        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency.subMap(fromKey, toKey);
+        return submap.values()
+                .toArray(new TaskDependency[0]);
     }
 
     public TaskDependency[] getDependenciesAsDependant(Task dependant) {
@@ -52,9 +52,9 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .getTaskID(), -1);
         SearchKey toKey = new SearchKey(SearchKey.DEPENDEE, dependant
                 .getTaskID(), -1);
-        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
-                .subMap(fromKey, toKey);
-        return submap.values().toArray(new TaskDependency[0]);
+        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency.subMap(fromKey, toKey);
+        return submap.values()
+                .toArray(new TaskDependency[0]);
     }
 
     public TaskDependency[] getDependenciesAsDependee(Task dependee) {
@@ -62,13 +62,13 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .getTaskID(), -1);
         SearchKey toKey = new SearchKey(Integer.MAX_VALUE,
                 dependee.getTaskID(), -1);
-        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency
-                .subMap(fromKey, toKey);
-        return submap.values().toArray(new TaskDependency[0]);
+        SortedMap<SearchKey, TaskDependency> submap = mySearchKey2dependency.subMap(fromKey, toKey);
+        return submap.values()
+                .toArray(new TaskDependency[0]);
     }
 
     public TaskDependency createDependency(Task dependant, Task dependee)
-            throws TaskDependencyException {
+            throws TaskDependencyException{
         return createDependency(dependant, dependee,
                 new FinishStartConstraintImpl());
     }
@@ -85,7 +85,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         if (dependant == dependee) {
             return false;
         }
-        if (false == getTaskHierarchy().areUnrelated(dependant, dependee)) {
+        if (false==getTaskHierarchy().areUnrelated(dependant, dependee)) {
             return false;
         }
         SearchKey key = new SearchKey(SearchKey.DEPENDANT, dependant.getTaskID(), dependee.getTaskID());
@@ -94,7 +94,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         }
         TaskDependency testDep = new TaskDependencyImpl(dependant, dependee, this);
         if (isLooping(testDep)) {
-            return false;
+        	return false;
         }
         return true;
     }
@@ -104,10 +104,9 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     }
 
     void fireChanged(TaskDependency dependency) {
-        myEventDispatcher.fireDependencyRemoved(dependency);
-        myEventDispatcher.fireDependencyAdded(dependency);
+    	myEventDispatcher.fireDependencyRemoved(dependency);
+    	myEventDispatcher.fireDependencyAdded(dependency);
     }
-
     public void clear() {
         doClear();
     }
@@ -131,20 +130,27 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 MutationInfo next = mutations.get(i);
                 switch (next.myOperation) {
                 case MutationInfo.ADD:
-                    try {
+                {
+                    try
+                    {
                         addDependency(next.myDependency);
-                    } catch (TaskDependencyException e) {
-                        if (!GPLogger.log(e)) {
-                            e.printStackTrace(System.err);
-                        }
+                    }
+                    catch (TaskDependencyException e)
+                    {
+                    	if (!GPLogger.log(e)) {
+                    		e.printStackTrace(System.err);
+                    	}
                     }
                     break;
-                case MutationInfo.DELETE:
+                }
+                case MutationInfo.DELETE: {
                     delete(next.myDependency);
                     break;
-                case MutationInfo.CLEAR:
+                }
+                case MutationInfo.CLEAR: {
                     doClear();
                     break;
+                }
                 }
             }
         }
@@ -170,7 +176,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         }
 
         public void deleteDependency(TaskDependency dependency) {
-            MutationInfo info = (MutationInfo) myQueue.get(dependency);
+            MutationInfo info = myQueue.get(dependency);
             if (info == null) {
                 myQueue.put(dependency, new MutationInfo(dependency,
                         MutationInfo.DELETE));
@@ -201,34 +207,37 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             this.myOperation = myOperation;
         }
 
-        public int compareTo(MutationInfo o) {
-            return myOrder - o.myOrder;
+        public int compareTo(MutationInfo rvalue) {
+            return myOrder - rvalue.myOrder;
         }
     }
 
     private TaskDependency auxCreateDependency(Task dependant, Task dependee,
             TaskDependencyConstraint constraint) {
-        TaskDependency result = new TaskDependencyImpl(dependant, dependee, this);
+        TaskDependency result = new TaskDependencyImpl(dependant, dependee,
+                this);
         result.setConstraint(constraint);
         result.setDifference(0);
         return result;
     }
 
-    void addDependency(TaskDependency dep) throws TaskDependencyException {
-        if (myDependencies.contains(dep)) {
+    void addDependency(TaskDependency dep) throws TaskDependencyException
+    {
+        if (myDependencies.contains(dep))
+        {
             throw new TaskDependencyException("Dependency=" + dep
                     + " already exists");
         }
-        if (this.isLooping(dep)) {
-            throw new TaskDependencyException("Dependency=" + dep
+        if(this.isLooping(dep))
+        {
+        	throw new TaskDependencyException("Dependency=" + dep
                     + " is looping");
         }
-        if (false == getTaskHierarchy().areUnrelated(dep.getDependant(), dep.getDependee())) {
-            throw new TaskDependencyException("In dependency=" + dep
-                    + " one of participants is a supertask of another");
+        if (false==getTaskHierarchy().areUnrelated(dep.getDependant(), dep.getDependee())) {
+        	throw new TaskDependencyException("In dependency="+dep+" one of participants is a supertask of another");
         }
         myDependencies.add(dep);
-
+        //
         mySearchKey2dependency.put(new SearchKey(SearchKey.DEPENDANT,
                 (TaskDependencyImpl) dep), dep);
         mySearchKey2dependency.put(new SearchKey(SearchKey.DEPENDEE,
@@ -237,51 +246,52 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     }
 
     boolean isLooping(TaskDependency dep) {
-        LoopDetector detector = new LoopDetector(dep.getDependant().getManager());
-        return detector.isLooping(dep);
+    	LoopDetector detector = new LoopDetector(dep.getDependant().getManager());
+    	return detector.isLooping(dep);
     }
 
-    // FIXME This method is never used (although it seems to be working, but also more complex...) -> delete?
-    boolean _isLooping(TaskDependency dep) {
-        Set<Task> tasksInvolved = new HashSet<Task>();
-        tasksInvolved.add(dep.getDependee());
-        return _isLooping(dep, tasksInvolved);
+    boolean _isLooping(TaskDependency dep)
+    {
+    	Set<Task> tasksInvolved = new HashSet<Task>();
+    	tasksInvolved.add(dep.getDependee());
+    	return _isLooping(dep, tasksInvolved);
     }
 
     private boolean _isLooping(TaskDependency dep, Set<Task> tasksInvolved) {
-        Task dependant = dep.getDependant();
-        if (tasksInvolved.contains(dependant)) {
-            return true;
-        }
-        for (Iterator<Task> tasks = tasksInvolved.iterator(); tasks.hasNext();) {
-            Task nextInvolved = tasks.next();
-            if (false == getTaskHierarchy().areUnrelated(nextInvolved,
-                    dependant)) {
-                return true;
-            }
-        }
-        tasksInvolved.add(dependant);
-        {
-            TaskDependency[] nextDeps = dependant.getDependenciesAsDependee().toArray();
-            for (int i = 0; i < nextDeps.length; i++) {
-                if (_isLooping(nextDeps[i], tasksInvolved)) {
-                    return true;
-                }
-            }
-        }
-        Task[] nestedTasks = getTaskHierarchy().getNestedTasks(dependant);
-        for (int i = 0; i < nestedTasks.length; i++) {
-            tasksInvolved.add(nestedTasks[i]);
-            TaskDependency[] nextDeps = nestedTasks[i].getDependenciesAsDependee().toArray();
-            for (int j = 0; j < nextDeps.length; j++) {
-                if (_isLooping(nextDeps[j], tasksInvolved)) {
-                    return true;
-                }
-            }
-        }
+    	Task dependant = dep.getDependant();
+    	if (tasksInvolved.contains(dependant)) {
+    		return true;
+    	}
+    	for (Iterator<Task> tasks = tasksInvolved.iterator(); tasks.hasNext();) {
+    		Task nextInvolved = tasks.next();
+    		if (false==getTaskHierarchy().areUnrelated(nextInvolved, dependant)) {
+    			return true;
+    		}
+    	}
+    	tasksInvolved.add(dependant);
+    	{
+	    	TaskDependency[] nextDeps =dependant.getDependenciesAsDependee().toArray();
+	    	for (int i=0; i<nextDeps.length; i++) {
+	    		if (_isLooping(nextDeps[i], tasksInvolved)) {
+	    			return true;
+	    		}
+	    	}
+    	}
+    	Task[] nestedTasks = getTaskHierarchy().getNestedTasks(dependant);
+    	for (int i=0; i<nestedTasks.length; i++) {
+    		tasksInvolved.add(nestedTasks[i]);
+        	TaskDependency[] nextDeps =nestedTasks[i].getDependenciesAsDependee().toArray();
+        	for (int j=0; j<nextDeps.length; j++) {
+        		if (_isLooping(nextDeps[j], tasksInvolved)) {
+        			return true;
+        		}
+        	}
+
+    	}
         tasksInvolved.remove(dependant);
-        return false;
+    	return false;
     }
+
 
     void delete(TaskDependency dep) {
         myDependencies.remove(dep);
@@ -308,4 +318,5 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     protected TaskContainmentHierarchyFacade getTaskHierarchy() {
         return myTaskHierarchyFactory.createFacede();
     }
+
 }

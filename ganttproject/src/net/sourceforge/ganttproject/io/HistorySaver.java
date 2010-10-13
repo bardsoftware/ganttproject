@@ -14,12 +14,12 @@ import net.sourceforge.ganttproject.GanttPreviousStateTask;
 
 class HistorySaver extends SaverBase {
 
-    void save(List<GanttPreviousState> history, TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
+    void save(List/*<GanttPreviousState*/<GanttPreviousState> history, TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
         AttributesImpl attrs = new AttributesImpl();
         startElement("previous", handler);
         for (int i=0; i<history.size(); i++) {
             final GanttPreviousState nextState = history.get(i);
-            final List<GanttPreviousStateTask> stateTasks = nextState.load();
+            final List/*<GanttPreviousStateTask>*/<GanttPreviousStateTask> stateTasks = nextState.load();
             addAttribute("name", nextState.getName(), attrs);
             startElement("previous-tasks", attrs, handler);
             // ArrayList list =
@@ -37,7 +37,6 @@ class HistorySaver extends SaverBase {
             endElement("previous-tasks", handler);
         }
         endElement("previous", handler);
-        
     }
 
 }

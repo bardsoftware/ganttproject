@@ -30,12 +30,12 @@ public class PluginPreferencesImpl implements Preferences {
     private final Preferences myParent;
     private final LinkedHashMap<String, PluginPreferencesImpl> myChildren = new LinkedHashMap<String, PluginPreferencesImpl>();
     private final TreeMap<String, String> myProps = new TreeMap<String, String>();
-    
+
     public PluginPreferencesImpl(Preferences parent, String name) {
         myName = name;
         myParent = parent;
     }
-    
+
     public Preferences node(String path) {
         if (path.endsWith("/")) {
             if (!"/".equals(path)) {
@@ -55,7 +55,7 @@ public class PluginPreferencesImpl implements Preferences {
         String prefix = firstSlash == -1 ? path : path.substring(0, firstSlash);
         String suffix = firstSlash == -1 ? "" : path.substring(firstSlash + 1);
         Preferences child = myChildren.get(prefix);
-        if (child == null) {
+        if (child==null) {
             child = createChild(prefix);
         }
         return child.node(suffix);
@@ -66,7 +66,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public String absolutePath() {
-        return myParent == null ? "/" : myParent.absolutePath() + "/" + myName;
+        return myParent==null ? "/" : myParent.absolutePath() + "/" + myName;
     }
 
     public String[] childrenNames() throws BackingStoreException {
@@ -81,8 +81,8 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public String get(String key, String def) {
-        String value =  myProps.get(key);
-        return value == null ? def : value; 
+        String value = myProps.get(key);
+        return value==null ? def : value; 
     }
 
     public boolean getBoolean(String key, boolean def) {

@@ -9,8 +9,7 @@ import javax.swing.JTabbedPane;
 
 public class GanttTabbedPane extends JTabbedPane {
 
-    private Map myUserObjectsMap = new HashMap();
-    
+    private Map<Component, Object> myUserObjectsMap = new HashMap<Component, Object>();
 
     public GanttTabbedPane() {
         super();
@@ -41,8 +40,6 @@ public class GanttTabbedPane extends JTabbedPane {
         super.addTab(title, icon, component, tip);
         myUserObjectsMap.put(component, userObject);
     }
-
-    
 
     public Object getSelectedUserObject() {
         Object selectedComp = this.getSelectedComponent();

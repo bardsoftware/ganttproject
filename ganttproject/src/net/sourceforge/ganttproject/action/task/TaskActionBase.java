@@ -9,13 +9,14 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 
 abstract class TaskActionBase extends GPAction implements Listener {
     private final TaskManager myTaskManager;
-    private List mySelection;
+    private List<Task> mySelection;
     private final UIFacade myUIFacade;
 
     protected TaskActionBase(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
@@ -26,7 +27,7 @@ abstract class TaskActionBase extends GPAction implements Listener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        final List selection = new ArrayList(mySelection);
+        final List<Task> selection = new ArrayList<Task>(mySelection);
         myUIFacade.getUndoManager().undoableEdit(getLocalizedName(), new Runnable() {
             public void run() {
                 try {
@@ -37,7 +38,7 @@ abstract class TaskActionBase extends GPAction implements Listener {
             }
         });
     }
-    public void selectionChanged(List currentSelection) {
+    public void selectionChanged(List<Task> currentSelection) {
         setEnabled(isEnabled(currentSelection));
         mySelection = currentSelection;
     }
@@ -51,6 +52,6 @@ abstract class TaskActionBase extends GPAction implements Listener {
     protected UIFacade getUIFacade() {
         return myUIFacade;
     }
-    protected abstract boolean isEnabled(List selection);
-    protected abstract void run(List selection) throws Exception ;
+    protected abstract boolean isEnabled(List<Task> selection);
+    protected abstract void run(List<Task> selection) throws Exception ;
 }

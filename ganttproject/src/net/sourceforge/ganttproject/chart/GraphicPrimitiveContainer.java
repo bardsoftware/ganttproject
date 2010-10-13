@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -15,16 +16,20 @@ import java.util.WeakHashMap;
 /**
  * @author bard
  */
-class GraphicPrimitiveContainer {
-    private ArrayList myRectangles = new ArrayList();
+public class GraphicPrimitiveContainer {
+    private ArrayList<Rectangle> myRectangles = new ArrayList<Rectangle>();
 
-    private ArrayList myLines = new ArrayList();
+    private ArrayList<Line> myLines = new ArrayList<Line>();
 
-    private ArrayList myTexts = new ArrayList();
+    private ArrayList<Text> myTexts = new ArrayList<Text>();
 
-    private Map myModelObject2primitive = new WeakHashMap();
+    private Map<Object, GraphicPrimitive> myModelObject2primitive = new WeakHashMap<Object, GraphicPrimitive>();
 
-    private List myLayers = new ArrayList();
+    private List<GraphicPrimitiveContainer> myLayers = new ArrayList<GraphicPrimitiveContainer>();
+
+    private int myDeltaX;
+
+    private int myDeltaY;
 
     static class GraphicPrimitive {
         private Color myBackgroundColor;
@@ -35,7 +40,8 @@ class GraphicPrimitiveContainer {
 
         private Object myModelObject;
 
-        
+        private boolean isVisible = true;
+
         public void setStyle(String styleName) {
             myStyleName = styleName;
         }
@@ -73,9 +79,17 @@ class GraphicPrimitiveContainer {
         void setModelObject(Object modelObject) {
             myModelObject = modelObject;
         }
+
+        public boolean isVisible() {
+            return isVisible;
+        }
+
+        public void setVisible(boolean visible) {
+            isVisible = visible;
+        }
     }
 
-    static class Rectangle extends GraphicPrimitive {
+    public static class Rectangle extends GraphicPrimitive {
         final int myLeftX;
 
         final int myTopY;
@@ -113,7 +127,7 @@ class GraphicPrimitiveContainer {
         }
     }
 
-    static class Line extends GraphicPrimitive {
+    public static class Line extends GraphicPrimitive {
         private final int myStartX;
 
         private final int myStartY;
@@ -130,7 +144,7 @@ class GraphicPrimitiveContainer {
         }
     }
 
-    static class Text extends GraphicPrimitive {
+    public static class Text extends GraphicPrimitive {
         private final int myLeftX;
 
         private final int myBottomY;
@@ -179,16 +193,16 @@ class GraphicPrimitiveContainer {
         public int getBottomY() {
             return myBottomY;
         }
-        
+
         public void setAlignment(HAlignment halignment, VAlignment valignment) {
             myHAlignment = halignment;
             myVAlignment = valignment;
         }
-        
+
         public HAlignment getHAlignment() {
             return myHAlignment;
         }
-        
+
         public VAlignment getVAlignment() {
             return myVAlignment;
         }
@@ -199,46 +213,60 @@ class GraphicPrimitiveContainer {
         public static final HAlignment LEFT = new HAlignment();
         public static final HAlignment RIGHT = new HAlignment();
     }
-    
+
     static final class VAlignment {
         public static final VAlignment CENTER = new VAlignment();
         public static final VAlignment TOP = new VAlignment();
         public static final VAlignment BOTTOM = new VAlignment();
-        
+
     }
     public GraphicPrimitiveContainer() {
-        myLayers.add(this);
+        this(0,0);
     }
 
-    Rectangle createRectangle(int leftx, int topy, int width, int height) {
+    public GraphicPrimitiveContainer(int deltax, int deltay) {
+        myDeltaX = deltax;
+        myDeltaY = deltay;
+    }
+
+    public void setOffset(int deltax, int deltay) {
+        myDeltaX = deltax;
+        myDeltaY = deltay;
+//        for (GraphicPrimitiveContainer layer : myLayers) {
+//            layer.setOffset(deltax, deltay);
+//        }
+    }
+    public Rectangle createRectangle(int leftx, int topy, int width, int height) {
         if (width < 0) {
             width = -width;
             leftx = leftx - width;
         }
-        Rectangle result = new Rectangle(leftx, topy, width, height);
+        Rectangle result = new Rectangle(leftx+myDeltaX, topy+myDeltaY, width, height);
         myRectangles.add(result);
         return result;
     }
 
-    Line createLine(int startx, int starty, int finishx, int finishy) {
-        Line result = new Line(startx, starty, finishx, finishy);
+    public Line createLine(int startx, int starty, int finishx, int finishy) {
+        Line result = new Line(startx+myDeltaX, starty+myDeltaY, finishx+myDeltaX, finishy+myDeltaY);
         myLines.add(result);
         return result;
     }
 
-    Text createText(int leftx, int bottomy, String text) {
-        Text result = new Text(leftx, bottomy, text);
+    public Text createText(int leftx, int bottomy, String text) {
+        Text result = new Text(leftx+myDeltaX, bottomy+myDeltaY, text);
         myTexts.add(result);
         return result;
     }
 
     void paint(Painter painter, Graphics g) {
         for (int i = 0; i < myRectangles.size(); i++) {
-            Rectangle next = (Rectangle) myRectangles.get(i);
-            painter.paint(next);
+            Rectangle next = myRectangles.get(i);
+            if (next.isVisible()) {
+                painter.paint(next);
+            }
         }
         for (int i = 0; i < myLines.size(); i++) {
-            Line next = (Line) myLines.get(i);
+            Line next = myLines.get(i);
             Color foreColor = next.getForegroundColor();
             if (foreColor == null) {
                 foreColor = Color.BLACK;
@@ -248,7 +276,7 @@ class GraphicPrimitiveContainer {
                     next.myFinishY);
         }
         for (int i = 0; i < myTexts.size(); i++) {
-            Text next = (Text) myTexts.get(i);
+            Text next = myTexts.get(i);
             painter.paint(next);
         }
     }
@@ -266,7 +294,7 @@ class GraphicPrimitiveContainer {
     }
 
     GraphicPrimitive getPrimitive(Object modelObject) {
-        return (GraphicPrimitive) myModelObject2primitive.get(modelObject);
+        return myModelObject2primitive.get(modelObject);
     }
 
     public GraphicPrimitive getPrimitive(int x, int y) {
@@ -282,10 +310,10 @@ class GraphicPrimitiveContainer {
 //        }
 //        return null;
     }
-    
+
     public GraphicPrimitive getPrimitive(int x, int xThreshold, int y, int yThreshold) {
         for (int i = 0; i < myRectangles.size(); i++) {
-            Rectangle next = (Rectangle) myRectangles.get(i);
+            Rectangle next = myRectangles.get(i);
             // System.err.println(" next rectangle="+next);
             if (next.myLeftX <= x+xThreshold && next.myLeftX + next.myWidth >= x-xThreshold
                     && next.myTopY <= y+yThreshold && next.myTopY + next.myHeight >= y-yThreshold) {
@@ -293,18 +321,29 @@ class GraphicPrimitiveContainer {
             }
         }
         return null;
-        
+
     }
 
+    public List<GraphicPrimitiveContainer> getLayers() {
+        return Collections.unmodifiableList(myLayers);
+    }
     public GraphicPrimitiveContainer getLayer(int layer) {
         if (layer < 0 || layer >= myLayers.size()) {
-            return this;
+            throw new IllegalArgumentException();
         }
-        return (GraphicPrimitiveContainer) myLayers.get(layer);
+        return myLayers.get(layer);
     }
 
     public GraphicPrimitiveContainer newLayer() {
-        GraphicPrimitiveContainer result = new GraphicPrimitiveContainer();
+        GraphicPrimitiveContainer result = new GraphicPrimitiveContainer() {
+
+            @Override
+            public void setOffset(int deltax, int deltay) {
+                // TODO Auto-generated method stub
+                super.setOffset(deltax, deltay);
+            }
+
+        };
         myLayers.add(result);
         return result;
 

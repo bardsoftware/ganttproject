@@ -10,7 +10,7 @@ import java.util.Map;
  * @author bard
  */
 public class GPOptionGroup {
-    private Map myCanonicalKey_customKey;
+    private Map<String, String> myCanonicalKey_customKey;
     private final String myID;
 
     private final GPOption[] myOptions;
@@ -39,7 +39,7 @@ public class GPOptionGroup {
         }
         return null;
     }
-    
+
     public void lock() {
         for (int i = 0; i < myOptions.length; i++) {
             myOptions[i].lock();
@@ -65,20 +65,20 @@ public class GPOptionGroup {
     public void setTitled(boolean isTitled) {
         this.isTitled = isTitled;
     }
-    
+
     public void copyFrom(GPOptionGroup originalGroup) {
         if (!getID().equals(originalGroup.getID())) {
             throw new IllegalArgumentException("You can copy only identically structured option groups");
         }
         lock();
         try {
-            Map id2option = new HashMap();
+            Map<String, GPOption> id2option = new HashMap<String, GPOption>();
             for (int i=0; i<myOptions.length; i++) {
                 id2option.put(myOptions[i].getID(), myOptions[i]);
             }
             GPOption[] originals = originalGroup.getOptions();
             for (int i=0; i<originals.length; i++) {
-                GPOption copy = (GPOption) id2option.get(originals[i].getID());
+                GPOption copy = id2option.get(originals[i].getID());
                 if (copy==null) {
                     throw new IllegalStateException("Can't find option (id="+originals[i].getID()+") in my options");
                 }
@@ -89,14 +89,14 @@ public class GPOptionGroup {
             commit();
         }
     }
-    
+
     public String getI18Nkey(String canonicalKey) {
         return (String) (myCanonicalKey_customKey==null ? null : myCanonicalKey_customKey.get(canonicalKey));
     }
-    
+
     public void setI18Nkey(String canonicalKey, String customKey) {
         if (myCanonicalKey_customKey==null) {
-            myCanonicalKey_customKey = new HashMap();
+            myCanonicalKey_customKey = new HashMap<String, String>();
         }
         myCanonicalKey_customKey.put(canonicalKey, customKey);
     }

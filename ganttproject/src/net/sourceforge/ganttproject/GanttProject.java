@@ -56,7 +56,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -172,13 +171,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** The available menus */
+    /** The differents menus */
     public JMenu mProject, mMRU, mEdit, mTask, mHuman, mHelp, mServer,
             mCalendar;
 
     // public JMenu mView;
 
-    /** The available menuitems */
+    /** The differetns menuitem */
     public JMenuItem
             miPreview,/* miCut, miCopy, miPaste,*/ miOptions,
             miDeleteTask,  /*miUp, miDown,*/ miDelHuman,
@@ -191,11 +190,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
-    /** The available buttons of the toolbars */
+    /** The differents button of toolbar */
     private TestGanttRolloverButton bNew, bOpen, bSave,
             bExport, bImport, bPrint, bPreviewPrint, bCopy, bCut, bPaste,
             bNewTask, bDelete, bProperties,/* bUnlink, bLink,  bUp,
-            bDown,*/ bPrev, bScrollCenter, bNext, /*bZoomFit,*/ bAbout;
+            bDown,*/ bPrev, bScrollCenter, bNext, bZoomFit, bAbout;
 
     private TestGanttRolloverButton bShowHiddens;
 
@@ -527,14 +526,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bar.add(mHuman);
         // bar.add(mCalendar);
         bar.add(mHelp);
-        setMemonic();
+        setMnemonic();
         // to create a default project
         // createDefaultTree(tree);
         System.err.println("4. creating views...");
         myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(),tree, area);
         GPView ganttView = getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
-        myResourceChartTabContent = new ResourceChartTabContentPanel(getResourcePanel(), getResourcePanel().area);
+        myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(), getResourcePanel().area);
         GPView resourceView = getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
         getTabs().setSelectedIndex(0);
@@ -838,8 +837,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return options.getXslFo();
     }
 
-    /** Create memonic for keyboard */
-    public void setMemonic() {
+    /** Create mnemonic for keyboard */
+    public void setMnemonic() {
         int MENU_MASK = GPAction.MENU_MASK;
 
         // --UNDO----------------------------------
@@ -1021,7 +1020,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miChartOptions = changeMenuLabel(miChartOptions, language
                 .getText("chartOptions"));
         miRefresh = changeMenuLabel(miRefresh, language.getText("refresh"));
-        // //////////////////////////////////////////
+        ////////////////////////////////////////////
         bPreviewPrint.setToolTipText(getToolTip(correctLabel(language
                 .getText("preview"))));
         bExport.setToolTipText(getToolTip(correctLabel(language
@@ -1082,6 +1081,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
          * Consume the event to prevent it to go farther.
          */
         int code = e.getKeyCode();
+        int modifiers = e.getModifiersEx();
 
         if (code == KeyEvent.KEY_LOCATION_UNKNOWN)
             e.consume();
@@ -1523,23 +1523,26 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Create a new task */
     public Task newTask() {
+
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
 
+        int index = -1;
         MutableTreeNode selectedNode = getTree().getSelectedNode();
         if (selectedNode != null) {
             DefaultMutableTreeNode parent1 = (DefaultMutableTreeNode) selectedNode
                     .getParent();
+            index = parent1.getIndex(selectedNode) + 1;
             tree.getTreeTable().getTree().setSelectionPath(
                     new TreePath(parent1.getPath()));
             tree.getTreeTable().getTreeTable().editingStopped(
                     new ChangeEvent(tree.getTreeTable().getTreeTable()));
         }
 
-        GanttCalendar cal = new GanttCalendar(area.getViewState()
-                .getStartDate());
+        GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
-        //DefaultMutableTreeNode node = tree.getSelectedNode();
-        String nameOfTask = options.getTaskNamePrefix();
+        DefaultMutableTreeNode node = tree.getSelectedNode();
+        GanttLanguage lang = GanttLanguage.getInstance();
+        String nameOfTask = options.getTaskNamePrefix(); // language.getText("newTask");
         // if (current != null) {
         // current.setMilestone(false);
         // node = (TaskNode) tree.getSelectedNode();
@@ -1561,6 +1564,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // if (current.shapeDefined())
         // task.setShape(current.getShape());
         // }
+        TaskNode taskNode = tree.addObject(task, node, index);
 
         /*
          * this will add new custom columns to the newly created task.
@@ -1605,6 +1609,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             return;
         }
 
+
         Choice choice = getUIFacade().showConfirmationDialog(language.getText("msg19"), language.getText("question"));
 
         if (choice==Choice.YES) {
@@ -1641,7 +1646,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                     }
                     for (int i = 0; i < fathers.size(); i++) {
-                        DefaultMutableTreeNode father = (DefaultMutableTreeNode) fathers
+                        DefaultMutableTreeNode father = fathers
                                 .get(i);
                         if (father.getChildCount() == 0)
                             ((Task) father.getUserObject())
@@ -2047,16 +2052,16 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
         HashMap<String, List<String>> parsedArgs = new HashMap<String, List<String>>();
         String argName = "";
-        for (int i = 0; i < arg.length; i++) {
+        for (int i=0; i<arg.length; i++) {
             String nextWord = arg[i];
             if (nextWord.charAt(0) == '-'){
-                if (argName.length() != 0) {
-                    parsedArgs.put(argName, Collections.<String>emptyList());
+                if (argName.length()!=0) {
+                    parsedArgs.put(argName, Collections.EMPTY_LIST);
                 }
                 argName = nextWord.toLowerCase();
             } else {
                 List<String> values = parsedArgs.get(argName);
-                if (values == null || values == Collections.EMPTY_LIST) {
+                if (values==null || values==Collections.EMPTY_LIST) {
                     values = new ArrayList<String>();
                     parsedArgs.put(argName, values);
                 }
@@ -2067,7 +2072,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         if (argName.length()>0 && !parsedArgs.containsKey(argName)) {
-            parsedArgs.put(argName, Collections.<String>emptyList());
+            parsedArgs.put(argName, Collections.EMPTY_LIST);
         }
         if (parsedArgs.containsKey("-h") || parsedArgs.containsKey("--help")) {
             usage();
@@ -2129,7 +2134,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
 
     // private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-    
+
     private ParserFactory myParserFactory;
 
     private static WindowListener ourWindowListener;
@@ -2238,7 +2243,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getCustomColumnsStorage().reset();
 
         for (int i = 0; i < myPreviousStates.size(); i++) {
-            ((GanttPreviousState) myPreviousStates.get(i)).remove();
+            myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
 
@@ -2253,7 +2258,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return myParserFactory;
     }
 
-    // ///////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
     // ResourceView implementation
     public void resourceAdded(ResourceEvent event) {
         if (getStatusBar() != null) {
@@ -2279,7 +2284,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         setAskForSave(true);
     }
 
-    // ///////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
     // UIFacade
 
     public GanttChart getGanttChart() {
@@ -2300,11 +2305,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public int getResourceDividerLocation() {
-        return getResourcePanel().getDividerLocation();
+        return myResourceChartTabContent.getDividerLocation();
+//        return getResourcePanel().getDividerLocation();
     }
 
     public void setResourceDividerLocation(int location) {
-        getResourcePanel().setDividerLocation(location);
+        myResourceChartTabContent.setDividerLocation(location);
     }
 
     public TaskTreeUIFacade getTaskTree() {
@@ -2532,7 +2538,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     private void addButtons() {
-        List buttons = new ArrayList(iconList.getSize());
+        List<Object> buttons = new ArrayList<Object>(iconList.getSize());
         for (int i=0; i<iconList.getSize(); i++) {
             buttons.add(iconList.get(i));
         }
@@ -2559,11 +2565,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
             getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-            ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
+            ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
             if (projectTasks.size() != 0) {
-                for (int i = 0; i < projectTasks.size(); i++) {
-                    getTaskManager().processCriticalPath(projectTasks.get(i));
-                }
+                for (int i = 0; i < projectTasks.size(); i++)
+                    getTaskManager().processCriticalPath(
+                            (TaskNode) projectTasks.get(i));
             }
             repaint();
         }
@@ -2587,11 +2593,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void refresh() {
         getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-        ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
+        ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
         if (projectTasks.size() != 0) {
-            for (int i = 0; i < projectTasks.size(); i++) {
-                getTaskManager().processCriticalPath(projectTasks.get(i));
-            }
+            for (int i = 0; i < projectTasks.size(); i++)
+                getTaskManager().processCriticalPath(
+                        (TaskNode) projectTasks.get(i));
         }
 
         getResourcePanel().getResourceTreeTableModel().updateResources();
@@ -2655,5 +2661,4 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public CustomPropertyManager getResourceCustomPropertyManager() {
         return getResourcePanel().getResourceTreeTable();
     }
-
 }

@@ -30,13 +30,13 @@ public class PluginManager {
         String extensionPointID = extensionPointInterface.getName();
         return getExtensions(extensionPointID, extensionPointInterface);
     }
-    
+
     public Object[] getExtensions(String extensionPointID, Class extensionPointInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(extensionPointID);
-        
-        ArrayList extensions = new ArrayList();
+
+        ArrayList<Object> extensions = new ArrayList<Object>();
         for (int i = 0; i < configElements.length; i++) {
             try {
                 Object nextExtension = configElements[i]
@@ -50,9 +50,8 @@ public class PluginManager {
             }
         }
         return extensions.toArray((Object[])Array.newInstance(extensionPointInterface, 0));
-        
     }
-    
+
     public Chart[] getCharts() {
         if (myCharts == null) {
             myCharts = (Chart[]) getExtensions(EXTENSION_POINT_ID_CHART, Chart.class);

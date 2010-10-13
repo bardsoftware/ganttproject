@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -82,7 +84,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         /* all the existent resources are added the new property field */
         Iterator<ProjectResource> it = resources.iterator();
         while (it.hasNext()) {
-            ((HumanResource) it.next()).addCustomField(definition.getName(), definition.getDefaultValue());
+            ((HumanResource)it.next()).addCustomField(definition.getName(), definition.getDefaultValue());
         }
     }
 
@@ -101,7 +103,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
     }
 
     public ProjectResource getById(int id) {
-        // Linear search is not really efficient, but we don't have so many
+        // Linear search is not really efficient, but we do not have so many
         // resources !?
         ProjectResource pr = null;
         for (int i = 0; i < resources.size(); i++)
@@ -117,7 +119,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
     }
 
     public ProjectResource[] getResourcesArray() {
-        return (ProjectResource[]) resources.toArray(new ProjectResource[resources.size()]);
+        return resources.toArray(new ProjectResource[resources.size()]);
     }
 
     public void remove(ProjectResource resource) {
@@ -180,7 +182,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
     }
 
     private void fireCleanup() {
-        fireResourcesRemoved((ProjectResource[]) resources
+        fireResourcesRemoved(resources
                 .toArray(new ProjectResource[resources.size()]));
     }
 
@@ -227,8 +229,8 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         return result;
     }
 
-    CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
-        return (CustomPropertyDefinition) customFields.get(nextName);
+    public CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
+        return customFields.get(nextName);
     }
 
     static String getValueAsString(Object value) {
@@ -249,55 +251,28 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        CustomPropertyDefinition result = new CustomPropertyDefinitionImpl(name, id, stubDefinition);
+        CustomPropertyDefinition result = new DefaultCustomPropertyDefinition(name, id, stubDefinition);
         addCustomField(result);
         return result;
     }
 
-    public void importData(CustomPropertyManager source) {
-        // TODO Auto-generated method stub
-
+    public void deleteDefinition(CustomPropertyDefinition def) {
+        removeCustomField(def.getID());
     }
 
-    static class CustomPropertyDefinitionImpl implements CustomPropertyDefinition {
-        private final String myName;
-        private final String myID;
-        private final Object myDefaultValue;
-        private final String myDefaultValueAsString;
-        private final Class myType;
-        private final String myTypeAsString;
+    public void importData(CustomPropertyManager source) {
+        // TODO Auto-generated method stub
+    }
 
-        CustomPropertyDefinitionImpl(String name, String id, CustomPropertyDefinition stub) {
-            myName = name;
-            myID = id;
-            myDefaultValue = stub.getDefaultValue();
-            myDefaultValueAsString = stub.getDefaultValueAsString();
-            myType = stub.getType();
-            myTypeAsString = stub.getTypeAsString();
-        }
-        public Object getDefaultValue() {
-            return myDefaultValue;
-        }
+    @Override
+    public void addListener(CustomPropertyListener listener) {
+        // TODO Auto-generated method stub
+    }
 
-        public String getDefaultValueAsString() {
-            return myDefaultValueAsString;
-        }
-
-        public String getID() {
-            return myID;
-        }
-
-        public String getName() {
-            return myName;
-        }
-
-        public Class getType() {
-            return myType;
-        }
-
-        public String getTypeAsString() {
-            return myTypeAsString;
-        }
-
+    @Override
+    public CustomPropertyDefinition createDefinition(String typeAsString,
+            String colName, String defValue) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
