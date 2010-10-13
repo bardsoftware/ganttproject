@@ -41,32 +41,37 @@ public class ZoomManager {
         }
     }
 
+    /** Number representing the selected ZoomState */
     private int myZooming = 2;
 
     private List<ZoomListener> myListeners = new ArrayList<ZoomListener>();
 
-    private TimeUnitStack myTimeUnitStack;
+    /**
+     * List with available ZoomStates, is expanded when even more ZoomStates are
+     * required
+     */
+    private ArrayList<ZoomState> myZoomStates;
 
-    private ZoomState[] myZoomStates;
+    /** Zoom step for next ZoomState which need to be calculated/extrapolated */
+    private final float myZoomStep = 0.75f;
+
+    /** If this value is false the maximum ZoomState is not reached */
+    private boolean myMaximumZoomStateReached = false;
 
     public ZoomManager(TimeUnitStack timeUnitStack) {
-        myTimeUnitStack = timeUnitStack;
-        TimeUnitPair[] unitPairs = myTimeUnitStack.getTimeUnitPairs();
-        myZoomStates = new ZoomManager.ZoomState[unitPairs.length];
-        int width1 = 60;
-        //int width2 = 40;
+        TimeUnitPair[] unitPairs = timeUnitStack.getTimeUnitPairs();
+        myZoomStates = new ArrayList<ZoomState>(unitPairs.length);
+        int width = 60;
         for (int i = 0; i < unitPairs.length; i++) {
-            myZoomStates[i] = new ZoomManager.ZoomState(unitPairs[i], width1, i);
-            // myZoomStates[i*2+1] = new ZoomState(unitPairs[i], width2);
-            float scale = 2 / 3;
+            myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], width, i));
             if (i < unitPairs.length - 1) {
                 float defaults1 = unitPairs[i].getBottomTimeUnit()
-                        .getAtomCount(myTimeUnitStack.getDefaultTimeUnit());
+                        .getAtomCount(timeUnitStack.getDefaultTimeUnit());
                 float defaults2 = unitPairs[i + 1].getBottomTimeUnit()
-                        .getAtomCount(myTimeUnitStack.getDefaultTimeUnit());
-                scale = (2 * defaults2) / (3 * defaults1);
+                        .getAtomCount(timeUnitStack.getDefaultTimeUnit());
+                double scale = (2 * defaults2) / (3 * defaults1);
+                width = (int) (width * scale);
             }
-            width1 = (int) (width1 * scale);
         }
     }
 
@@ -75,7 +80,8 @@ public class ZoomManager {
     }
 
     public boolean canZoomOut() {
-        return myZooming < myZoomStates.length - 1;
+        return myZooming < myZoomStates.size() - 1
+                || myMaximumZoomStateReached == false;
     }
 
     public void zoomIn() {
@@ -90,7 +96,7 @@ public class ZoomManager {
 
     public void addZoomListener(ZoomListener listener) {
         myListeners.add(listener);
-        listener.zoomChanged(new ZoomEvent(this, myZoomStates[myZooming]));
+        listener.zoomChanged(new ZoomEvent(this, getZoomState()));
     }
 
     public void removeZoomListener(ZoomListener listener) {
@@ -98,16 +104,25 @@ public class ZoomManager {
     }
 
     private void fireZoomingChanged(int oldZoomValue, int newZoomValue) {
-        ZoomEvent e = new ZoomEvent(this, myZoomStates[newZoomValue]);
+        ZoomEvent e = new ZoomEvent(this, getZoomState());
         for (int i = 0; i < myListeners.size(); i++) {
             ZoomListener nextListener = myListeners.get(i);
             nextListener.zoomChanged(e);
         }
     }
 
+    /**
+     * Find persistentName in the available ZoomStates or add new States until
+     * it is found. Or the maximum allowed ZoomState is reached, in this case
+     * the ZoomState is not changed.
+     *
+     * @param persistentName
+     *            is the ZoomState name to find
+     */
     public void setZoomState(String persistentName) {
-        for (int i = 0; i < myZoomStates.length; i++) {
-            if (myZoomStates[i].getPersistentName().equals(persistentName)) {
+        for (int i = 0; i < myZoomStates.size()
+                || myMaximumZoomStateReached == false; i++) {
+            if (getZoomState(i).getPersistentName().equals(persistentName)) {
                 myZooming = i;
                 fireZoomingChanged(0, myZooming);
                 break;
@@ -115,8 +130,28 @@ public class ZoomManager {
         }
     }
 
+    /** @return the selected ZoomState */
     public ZoomState getZoomState() {
-        return myZoomStates[myZooming];
+        return getZoomState(myZooming);
     }
 
+    private ZoomState getZoomState(int zoom) {
+        while (zoom >= myZoomStates.size()) {
+            // Zoom out even further by calculating the required ZoomState
+            // The list of ZoomState is filled step by step until the desired
+            // ZoomState is added (normally just the next step needs to be calculated)
+            ZoomState lastZoomState = myZoomStates.get(myZoomStates.size() - 1);
+            int bottomUnitWidth = (int) (lastZoomState.getBottomUnitWidth()
+                    * myZoomStep);
+            if (bottomUnitWidth < 2) {
+                // A bottomUnitWidth of 1 is the maximum allowed zoom,
+                // since a width of 0 is not possible (and breaking stuff).
+                myMaximumZoomStateReached = true;
+            }
+            myZoomStates.add(new ZoomState(lastZoomState.getTimeUnitPair(),
+                    (int) bottomUnitWidth, zoom));
+        }
+
+        return myZoomStates.get(zoom);
+    }
 }

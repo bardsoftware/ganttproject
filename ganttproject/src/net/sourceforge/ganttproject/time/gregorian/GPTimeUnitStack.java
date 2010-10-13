@@ -60,13 +60,18 @@ public class GPTimeUnitStack implements TimeUnitStack {
         YEAR = ourGraph.createTimeUnitFunctionOfDate("year", DAY,
                 new FramerImpl(Calendar.YEAR));
         YEAR.setTextFormatter(new YearTextFormatter());
-        myPairs = new TimeUnitPair[] { new MyTimeUnitPair(WEEK, DAY),
-                new MyTimeUnitPair(WEEK, DAY), new MyTimeUnitPair(MONTH, DAY),
+        myPairs = new TimeUnitPair[] {
+                new MyTimeUnitPair(WEEK, DAY),
+                new MyTimeUnitPair(WEEK, DAY),
+                new MyTimeUnitPair(MONTH, DAY),
                 new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT),
                 new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT),
                 new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT),
                 new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT),
-                new MyTimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT),
+                /*
+                 * The last pair is reused for the next steps,
+                 * so it is needed only once.
+                 */
                 new MyTimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT) };
     }
 
