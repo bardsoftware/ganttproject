@@ -1099,7 +1099,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             scrollDate = GPCalendar.PLAIN.shiftDate(min.getTime(),
                     getTaskManager().createLength(defaultUnit, delta));
 
-            myScrollingManager.scrollLeft(scrollDate);
+            myScrollingManager.scrollTo(scrollDate);
         }
 
         /*
