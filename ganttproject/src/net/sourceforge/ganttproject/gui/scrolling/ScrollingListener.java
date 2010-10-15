@@ -10,16 +10,14 @@ import java.util.Date;
  */
 public interface ScrollingListener {
     /**
-     * Scrolls the view to the left
-     * @param days are the number of days to scroll
+     * Scrolls the view by a number of days
+     *
+     * @param days
+     *            are the number of days to scroll. If days < 0 it scrolls to
+     *            the right otherwise to the left.
      */
-    void scrollLeft(int days);
+    void scrollBy(int days);
 
-    /**
-     * Scrolls the view to the right
-     * @param days are the number of days to scroll
-     */
-    void scrollRight(int days);
-
-    void scrollLeft(Date date);
+    /** Scrolls the view to the given Date */
+    void scrollTo(Date date);
 }

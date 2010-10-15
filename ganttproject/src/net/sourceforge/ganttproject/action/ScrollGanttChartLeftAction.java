@@ -18,7 +18,7 @@ public class ScrollGanttChartLeftAction extends GPAction implements
     }
 
     public void actionPerformed(ActionEvent e) {
-        myScrollingManager.scrollLeft(1);
+        myScrollingManager.scrollBy(1);
     }
 
     protected String getIconFilePrefix() {

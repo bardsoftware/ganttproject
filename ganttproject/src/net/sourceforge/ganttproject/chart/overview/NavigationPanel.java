@@ -42,7 +42,7 @@ public class NavigationPanel {
         projectStart.addMouseListener(new HighlightOnMouseOver(projectStart, buttonBar.getBackground(), new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 myChart.setStartDate(myProject.getTaskManager().getProjectStart());
-                myChart.scrollRight(1);
+                myChart.scrollBy(-1);
             }
         }));
 
@@ -68,9 +68,9 @@ public class NavigationPanel {
                 final Date projectEnd = myProject.getTaskManager().getProjectEnd();
                 ganttChart.setStartDate(projectEnd);
                 while(projectEnd.before(ganttChart.getEndDate())) {
-                    ganttChart.scrollRight(1);
+                    ganttChart.scrollBy(-1);
                 }
-                ganttChart.scrollLeft(1);
+                ganttChart.scrollBy(1);
             }
         }));
 

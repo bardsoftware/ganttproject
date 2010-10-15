@@ -106,19 +106,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         startDate = myFirstTimeFrame.getStartDate();
         getChartModel().setStartDate(startDate);
     }
-    public void scrollLeft(int days) {
-        Calendar c = (Calendar) Calendar.getInstance().clone();
-        c.setTime(getStartDate());
-        c.add(Calendar.DAY_OF_MONTH, days);
-        c.add(Calendar.MILLISECOND, 1);
-        Date scrolledDate = c.getTime();
-        setStartDate(scrolledDate);
-    }
-    public void scrollRight(int days) {
+
+    public void scrollBy(int days) {
         Calendar c = (Calendar) Calendar.getInstance().clone();
         c.setTime(getStartDate());
         c.add(Calendar.DAY_OF_MONTH, -days);
-        c.add(Calendar.MILLISECOND, -1);
+        c.add(Calendar.MILLISECOND, days > 0 ? -1 : 1);
         Date scrolledDate = c.getTime();
         setStartDate(scrolledDate);
 
