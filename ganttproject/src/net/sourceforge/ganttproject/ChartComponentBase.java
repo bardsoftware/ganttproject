@@ -212,11 +212,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                 return;
             }
             if (days > 0) {
-                getUIFacade().getScrollingManager().scrollLeft();
+                getUIFacade().getScrollingManager().scrollLeft(days);
 
             }
             if (days < 0) {
-               getUIFacade().getScrollingManager().scrollRight();
+               getUIFacade().getScrollingManager().scrollRight(-days);
 
             }
            myPreviousAbsoluteDiff = absoluteDiff;
@@ -342,13 +342,13 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return getImplementation().getEndDate();
     }
 
-    public void scrollLeft() {
-        getImplementation().scrollLeft();
+    public void scrollLeft(int days) {
+        getImplementation().scrollLeft(days);
         repaint();
     }
 
-    public void scrollRight() {
-        getImplementation().scrollRight();
+    public void scrollRight(int days) {
+        getImplementation().scrollRight(days);
         repaint();
     }
 

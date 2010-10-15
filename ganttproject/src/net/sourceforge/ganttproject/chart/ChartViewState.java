@@ -32,16 +32,16 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
     // myBottomUnitWidth = 20;
     // }
 
-    public void scrollRight() {
+    public void scrollRight(final int days) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                myChart.scrollRight();
+                myChart.scrollRight(days);
             }
         });
     }
 
-    public void scrollLeft() {
-        myChart.scrollLeft();
+    public void scrollLeft(int days) {
+        myChart.scrollLeft(days);
     }
 
     public void scrollLeft(Date date) {

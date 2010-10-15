@@ -9,9 +9,17 @@ import java.util.Date;
  * @author bard
  */
 public interface ScrollingManager {
-    void scrollLeft();
+    /**
+     * Scrolls the view to the left
+     * @param days are the number of days to scroll
+     */
+    void scrollLeft(int days);
 
-    void scrollRight();
+    /**
+     * Scrolls the view to the right
+     * @param days are the number of days to scroll
+     */
+    void scrollRight(int days);
 
     void scrollLeft(Date date);
 
