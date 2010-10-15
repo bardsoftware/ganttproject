@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -36,8 +37,6 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
-import org.jdesktop.jdnc.JNTable;
-
 /**
  * @author dbarashev (Dmitry Barashev)
  */
@@ -47,7 +46,7 @@ public class TaskAllocationsPanel {
     private final RoleManager myRoleManager;
     private final Task myTask;
 
-	private JNTable myTable;
+	private JTable myTable;
 
     public TaskAllocationsPanel(Task task, HumanResourceManager hrManager,  RoleManager roleMgr) {
         myHRManager = hrManager;
@@ -55,28 +54,31 @@ public class TaskAllocationsPanel {
         myTask = task;
     }
 
+    private JTable getTable() {
+    	return myTable;
+    }
     public JPanel getComponent() {
         myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
-        myTable = new JNTable(myModel);
-        CommonPanel.setupTableUI(myTable);
-        setUpCoordinatorBooleanColumn(myTable.getTable());
+        myTable = new JTable(myModel);
+        CommonPanel.setupTableUI(getTable());
+        setUpCoordinatorBooleanColumn(getTable());
         CommonPanel.setupComboBoxEditor(
-        		myTable.getTable().getColumnModel().getColumn(1), 
+        		getTable().getColumnModel().getColumn(1), 
         		myHRManager.getResources().toArray());
         CommonPanel.setupComboBoxEditor(
-        		myTable.getTable().getColumnModel().getColumn(4), 
+        		getTable().getColumnModel().getColumn(4), 
         		myRoleManager.getEnabledRoles());
 
         AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
-            new AbstractTableAndActionsComponent<TaskDependency>(myTable.getTable()) {
+            new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
                 @Override
                 protected void onAddEvent() {
-                    myTable.getTable().editCellAt(myModel.getRowCount(), 1);
+                    getTable().editCellAt(myModel.getRowCount() - 1, 1);
                 }
 
                 @Override
                 protected void onDeleteEvent() {
-                    myModel.delete(myTable.getTable().getSelectedRows());
+                    myModel.delete(getTable().getSelectedRows());
                 }
 
                 @Override
@@ -97,6 +99,8 @@ public class TaskAllocationsPanel {
     }
 
     static class BooleanRenderer extends JCheckBox implements TableCellRenderer {
+    	private static JPanel EMPTY_LABEL = new JPanel();
+    	
         public BooleanRenderer() {
             super();
             setHorizontalAlignment(JLabel.CENTER);
@@ -105,20 +109,25 @@ public class TaskAllocationsPanel {
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean hasFocus, int row,
                 int column) {
-
+        	final JComponent result;
+        	if (value == null || "".equals(value)) {
+        		result = EMPTY_LABEL;
+        	} else {
+        		setSelected(((Boolean) value).booleanValue());
+        		result = this;
+        	}
+        	setupRendererColors(isSelected, table, result);
+            return result;
+        }
+        
+        private static void setupRendererColors(boolean isSelected, JTable table, JComponent component) {
             if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
+                component.setForeground(table.getSelectionForeground());
+                component.setBackground(table.getSelectionBackground());
             } else {
-                setForeground(table.getForeground());
-                setBackground(table.getBackground());
+                component.setForeground(table.getForeground());
+                component.setBackground(table.getBackground());
             }
-            if (!value.getClass().equals(Boolean.class))
-                setSelected(false);
-            else
-                setSelected((value != null && ((Boolean) value).booleanValue()));
-
-            return this;
         }
     }
 

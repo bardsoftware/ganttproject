@@ -18,9 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
+import java.awt.Dimension;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
 import org.jdesktop.jdnc.JNTable;
@@ -46,5 +49,11 @@ abstract class CommonPanel {
         comboBox.setSelectedIndex(0);
         comboBox.setEditable(false);
         column.setCellEditor(new DefaultCellEditor(comboBox));
+	}
+
+	static void setupTableUI(JTable table) {
+        table.setPreferredScrollableViewportSize(new Dimension(
+        		table.getPreferredScrollableViewportSize().width, 
+        		table.getRowHeight() * 10));
 	}
 }

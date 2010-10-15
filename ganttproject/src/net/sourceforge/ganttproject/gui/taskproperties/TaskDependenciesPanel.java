@@ -38,8 +38,6 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 
-import org.jdesktop.jdnc.JNTable;
-
 /**
  * @author dbarashev (Dmitry Barashev)
  */
@@ -54,32 +52,36 @@ public class TaskDependenciesPanel {
 
     private Task myTask;
     private DependencyTableModel myModel;
-    private JNTable myTable;
+    private JTable myTable;
+
+    private JTable getTable() {
+    	return myTable;
+    }
 
     public JPanel getComponent() {
         myModel = new DependencyTableModel(myTask);
-        myTable = new JNTable(myModel);
+        myTable = new JTable(myModel);
         CommonPanel.setupTableUI(myTable);
         setUpPredecessorComboColumn(
-                DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(myTable.getTable()),
-                myTable.getTable());
+                DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()),
+                getTable());
         CommonPanel.setupComboBoxEditor(
-        		DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(myTable.getTable()), 
+        		DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()), 
         		CONSTRAINTS);
         CommonPanel.setupComboBoxEditor(
-        		DependencyTableModel.MyColumn.HARDNESS.getTableColumn(myTable.getTable()), 
+        		DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()), 
         		HARDNESS);
         AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
-            new AbstractTableAndActionsComponent<TaskDependency>(myTable.getTable()) {
+            new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
                 @Override
                 protected void onAddEvent() {
-                    myTable.getTable().editCellAt(
-                            myModel.getRowCount(), DependencyTableModel.MyColumn.TASK_NAME.ordinal());
+                    getTable().editCellAt(
+                            myModel.getRowCount() - 1, DependencyTableModel.MyColumn.TASK_NAME.ordinal());
                 }
 
                 @Override
                 protected void onDeleteEvent() {
-                    myModel.delete(myTable.getTable().getSelectedRows());
+                    myModel.delete(getTable().getSelectedRows());
                 }
 
                 @Override
