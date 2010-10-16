@@ -45,6 +45,7 @@ import javax.swing.event.DocumentListener;
 
 import org.jdesktop.swing.JXDatePicker;
 
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
@@ -113,9 +114,7 @@ public class OptionsPageBuilder {
     public JComponent createGroupComponent(GPOptionGroup group) {
         JPanel optionsPanel = new JPanel(new SpringLayout());
         if (group.isTitled()) {
-            Border lineBorder = BorderFactory.createMatteBorder(1,0,0,0,Color.BLACK);
-            optionsPanel.setBorder(BorderFactory.createTitledBorder(lineBorder,myi18n
-                    .getOptionGroupLabel(group)));
+        	UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
         }
         GPOption[] options = group.getOptions();
         for (int i = 0; i < options.length; i++) {

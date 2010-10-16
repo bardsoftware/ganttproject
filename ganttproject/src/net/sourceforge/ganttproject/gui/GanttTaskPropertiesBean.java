@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +12,7 @@ import java.awt.event.FocusListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -55,6 +57,7 @@ import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.util.BrowserControl;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swing.JXDatePicker;
 
@@ -163,159 +166,183 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private TaskMutator mutator;
 
+    private static void addEmptyRow(JPanel form) {
+        form.add(Box.createRigidArea(new Dimension(1, 10)));
+        form.add(Box.createRigidArea(new Dimension(1, 10)));    	
+    }
     /** Construct the general panel */
     private void constructGeneralPanel() {
         JPanel propertiesPanel = new JPanel(new SpringLayout());
 
-        propertiesPanel.add(new JLabel(language.getText("name") + ":"));
-        nameField1 = new JTextField(20);
-        nameField1.setName("name_of_task");
-        propertiesPanel.add(nameField1);
-
-        propertiesPanel.add(new JLabel(language.getText("length") + ":"));
-        durationField1 = new JTextField(8);
-        durationField1.setName("length");
-        durationField1.addFocusListener(new FocusListener() {
-                       public void focusLost(FocusEvent e) {
-                               fireDurationChanged();
-                       }
-                       public void focusGained(FocusEvent e) {}
-               });
-        propertiesPanel.add(durationField1);
-
-        propertiesPanel.add(new JLabel(language.getText("advancement")));
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(0, 0, 100, 1);
-        percentCompleteSlider = new JSpinner(spinnerModel);
-        propertiesPanel.add(percentCompleteSlider);
-        
-        propertiesPanel.add(new JLabel(language.getText("priority")));
-        priorityComboBox = new JComboBox();
-        for (Task.Priority p: Task.Priority.values()) {
-            priorityComboBox.addItem(language.getText(p.getI18nKey()));
+        {
+	        propertiesPanel.add(new JLabel(language.getText("name")));
+	        nameField1 = new JTextField(20);
+	        nameField1.setName("name_of_task");
+	        propertiesPanel.add(nameField1);
+	        Pair<String, JCheckBox> checkBox = constructCheckBox();
+	        propertiesPanel.add(new JLabel(checkBox.first()));
+	        propertiesPanel.add(checkBox.second());
+	
+	        addEmptyRow(propertiesPanel);
+        }        
+        {
+	        propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
+	        myStartDatePicker = createDatePicker(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                setStart(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
+	            }
+	        });
+	        propertiesPanel.add(myStartDatePicker);
+	        
+	        propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
+	        myEndDatePicker = createDatePicker(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(1), false);
+	            }
+	        });
+	        propertiesPanel.add(myEndDatePicker);
+	
+	        propertiesPanel.add(new JLabel(language.getText("length")));
+	        durationField1 = new JTextField(8);
+	        durationField1.setName("length");
+	        durationField1.addFocusListener(new FocusListener() {
+	                       public void focusLost(FocusEvent e) {
+	                               fireDurationChanged();
+	                       }
+	                       public void focusGained(FocusEvent e) {}
+	               });
+	        propertiesPanel.add(durationField1);
+	
+	        Box extraConstraintBox = Box.createHorizontalBox();
+	        thirdDateComboBox = new JComboBox();
+	        thirdDateComboBox.addItem("");
+	        thirdDateComboBox.addItem(language.getText("earliestBegin"));
+	        thirdDateComboBox.setName("third");
+	        thirdDateComboBox.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                switch (thirdDateComboBox.getSelectedIndex()) {
+	                case TaskImpl.EARLIESTBEGIN:
+	                    myThirdDatePicker.setEnabled(true);
+	                    break;
+	                case TaskImpl.NONE:
+	                    myThirdDatePicker.setEnabled(false);
+	                    break;
+	                }
+	            }
+	        });
+	        extraConstraintBox.add(thirdDateComboBox);
+	        myThirdDatePicker = createDatePicker(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                setThird(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
+	            }
+	        });
+	        extraConstraintBox.add(Box.createHorizontalStrut(5));
+	        extraConstraintBox.add(myThirdDatePicker);
+	        propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.extraConstraint.label")));
+	        propertiesPanel.add(extraConstraintBox);
+	        
+	        addEmptyRow(propertiesPanel);
         }
-        priorityComboBox.setEditable(false);
-        propertiesPanel.add(priorityComboBox);
+        {
+	        propertiesPanel.add(new JLabel(language.getText("priority")));
+	        priorityComboBox = new JComboBox();
+	        for (Task.Priority p: Task.Priority.values()) {
+	            priorityComboBox.addItem(language.getText(p.getI18nKey()));
+	        }
+	        priorityComboBox.setEditable(false);
+	        propertiesPanel.add(priorityComboBox);
+	
+	        propertiesPanel.add(new JLabel(language.getText("advancement")));
+	        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(0, 0, 100, 1);
+	        percentCompleteSlider = new JSpinner(spinnerModel);
+	        propertiesPanel.add(percentCompleteSlider);
+	        
+	        addEmptyRow(propertiesPanel);
+        }        
+        {
+	        propertiesPanel.add(new JLabel(language.getText("shape")));
+	        shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
+	        propertiesPanel.add(shapeComboBox);
+	
+	        Box colorBox = Box.createHorizontalBox();
+	        colorButton = new JButton(language.getText("colorButton"));
+	        colorButton.setBackground(selectedTasks[0].getColor());
+	        final String colorChooserTitle = language.getText("selectColor");
+	        colorButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                JDialog dialog;
+	                dialog = JColorChooser.createDialog(GanttTaskPropertiesBean.this, colorChooserTitle,
+	                        true, colorChooser,
+	                        new ActionListener() {
+	                            public void actionPerformed(ActionEvent e) {
+	                                colorButton.setBackground(colorChooser.getColor());
+	                                isColorChanged = true;
+	                            }
+	                        }
+	
+	                        , new ActionListener() {
+	                            public void actionPerformed(ActionEvent e) {
+	                                // nothing to do for "Cancel"
+	                            }
+	                        });
+	                colorChooser.setColor(colorButton.getBackground());
+	                dialog.setVisible(true);
+	            }
+	        });
+	        colorBox.add(colorButton);
+	        colorBox.add(Box.createHorizontalStrut(5));
+	        
+	        defaultColorButton = new JButton(language.getText("defaultColor"));
+	        defaultColorButton.setBackground(GanttGraphicArea.taskDefaultColor);
+	        defaultColorButton.setToolTipText(GanttProject.getToolTip(language
+	                .getText("resetColor")));
+	        defaultColorButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
+	                isColorChanged = true;
+	            }
+	        });
+	        colorBox.add(defaultColorButton);
 
-        propertiesPanel.add(new JLabel(language.getText("dateOfBegining") + ":"));
-        myStartDatePicker = createDatePicker(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setStart(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
-            }
-        });
-        propertiesPanel.add(myStartDatePicker);
-        
-        propertiesPanel.add(new JLabel(language.getText("dateOfEnd") + ":"));
-        myEndDatePicker = createDatePicker(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(1), false);
-            }
-        });
-        propertiesPanel.add(myEndDatePicker);
-        
-        thirdDateComboBox = new JComboBox();
-        thirdDateComboBox.addItem("");
-        thirdDateComboBox.addItem(language.getText("earliestBegin"));
-        thirdDateComboBox.setName("third");
-        thirdDateComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                switch (thirdDateComboBox.getSelectedIndex()) {
-                case TaskImpl.EARLIESTBEGIN:
-                    myThirdDatePicker.setEnabled(true);
-                    break;
-                case TaskImpl.NONE:
-                    myThirdDatePicker.setEnabled(false);
-                    break;
-                }
-            }
-        });
-        propertiesPanel.add(thirdDateComboBox);
-        myThirdDatePicker = createDatePicker(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setThird(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
-            }
-        });
-        propertiesPanel.add(myThirdDatePicker);
-
-        JCheckBox checkBox = constructCheckBox ();
-        propertiesPanel.add(checkBox);
-        propertiesPanel.add(new JPanel());
-
-        propertiesPanel.add(new JLabel("  " + language.getText("shape") + " "));
-        shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
-        propertiesPanel.add(shapeComboBox);
-
-        colorButton = new JButton(language.getText("colorButton"));
-        colorButton.setBackground(selectedTasks[0].getColor());
-        final String colorChooserTitle = language.getText("selectColor");
-        colorButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JDialog dialog;
-                dialog = JColorChooser.createDialog(GanttTaskPropertiesBean.this, colorChooserTitle,
-                        true, colorChooser,
-                        new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                colorButton.setBackground(colorChooser.getColor());
-                                isColorChanged = true;
-                            }
-                        }
-
-                        , new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                // nothing to do for "Cancel"
-                            }
-                        });
-                colorChooser.setColor(colorButton.getBackground());
-                dialog.setVisible(true);
-            }
-        });
-
-        defaultColorButton = new JButton(language.getText("defaultColor"));
-        defaultColorButton.setBackground(GanttGraphicArea.taskDefaultColor);
-        defaultColorButton.setToolTipText(GanttProject.getToolTip(language
-                .getText("resetColor")));
-        defaultColorButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
-                isColorChanged = true;
-            }
-        });
-        propertiesPanel.add(colorButton);
-        propertiesPanel.add(defaultColorButton);
-        
-        propertiesPanel.add(new JLabel(language.getText("webLink")));
-        
-        JPanel webLinkPanel = new JPanel(new FlowLayout());
-        tfWebLink = new JTextField(30);
-        webLinkPanel.add(tfWebLink);
-        bWebLink = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource("/icons/web_16.gif")));
-        bWebLink.setToolTipText(GanttProject.getToolTip(language
-                .getText("openWebLink")));
-        webLinkPanel.add(bWebLink);
-
-        bWebLink.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // link to open the web link
-                try {
-                    if (!BrowserControl.displayURL(tfWebLink.getText())) {
-                        GanttDialogInfo gdi = new GanttDialogInfo(null,
-                                GanttDialogInfo.ERROR,
-                                GanttDialogInfo.YES_OPTION, language
-                                        .getText("msg4"), language
-                                        .getText("error"));
-                        gdi.setVisible(true);
-                    }
-                } catch (Exception ex) {
-                }
-            }
-        });
-        propertiesPanel.add(webLinkPanel);
-        SpringUtilities.makeCompactGrid(propertiesPanel, 11, 2, 1, 1, 3, 5);
+	        propertiesPanel.add(new JLabel(language.getText("colors")));
+	        propertiesPanel.add(colorBox);
+	        
+	        Box weblinkBox = Box.createHorizontalBox();
+	        tfWebLink = new JTextField(20);
+	        weblinkBox.add(tfWebLink);
+	        weblinkBox.add(Box.createHorizontalStrut(2));
+	        bWebLink = new TestGanttRolloverButton(
+	        		new ImageIcon(getClass().getResource("/icons/web_16.gif")));
+	        bWebLink.setToolTipText(GanttProject.getToolTip(language
+	                .getText("openWebLink")));
+	        weblinkBox.add(bWebLink);
+	
+	        bWebLink.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                // link to open the web link
+	                try {
+	                    if (!BrowserControl.displayURL(tfWebLink.getText())) {
+	                        GanttDialogInfo gdi = new GanttDialogInfo(null,
+	                                GanttDialogInfo.ERROR,
+	                                GanttDialogInfo.YES_OPTION, language
+	                                        .getText("msg4"), language
+	                                        .getText("error"));
+	                        gdi.setVisible(true);
+	                    }
+	                } catch (Exception ex) {
+	                }
+	            }
+	        });
+	        propertiesPanel.add(new JLabel(language.getText("webLink")));
+	        propertiesPanel.add(weblinkBox);
+        }
+        SpringUtilities.makeCompactGrid(propertiesPanel, 14, 2, 1, 1, 5, 5);
         
         generalPanel = new JPanel(new SpringLayout());
         generalPanel.add(propertiesPanel);
         generalPanel.add(notesPanel);
         SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
+        generalPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
     }
 
     /** Add the different action listeners on the different widgets */
@@ -359,8 +386,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     /** construct the notes panel */
     private void constructNotesPanel() {
         secondRowPanelNotes = new JPanel(new BorderLayout());
-        secondRowPanelNotes.setBorder(new TitledBorder(
-        		new EtchedBorder(), language.getText("notesTask") + ":"));
+        UIUtil.createTitle(secondRowPanelNotes, language.getText("notesTask"));
 
         noteAreaNotes = new JTextArea(8, 40);
         noteAreaNotes.setLineWrap(true);
@@ -809,7 +835,7 @@ public class GanttTaskPropertiesBean extends JPanel {
      * Creates a milestone, a project task or no checkbox depending on the selected task
      * @return the created checkbox or null
      */
-    private JCheckBox constructCheckBox () {
+    private Pair<String, JCheckBox> constructCheckBox () {
         boolean canBeProjectTask = true;
         boolean canBeMilestone = true;
         TaskContainmentHierarchyFacade taskHierarchy = myTaskManager.getTaskHierarchy();
@@ -819,21 +845,21 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
         assert false==(canBeProjectTask && canBeMilestone);
 
-        final JCheckBox result;
+        final Pair<String, JCheckBox> result;
         if (canBeProjectTask) {
-            projectTaskCheckBox1 = new JCheckBox (language.getText("projectTask"));
-            result = projectTaskCheckBox1;
+            projectTaskCheckBox1 = new JCheckBox ();
+        	result = Pair.create(language.getText("projectTask"), projectTaskCheckBox1);
         }
         else if (canBeMilestone) {
-            mileStoneCheckBox1 = new JCheckBox(new AbstractAction(language.getText("meetingPoint")) {
+            mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
                 public void actionPerformed(ActionEvent arg0) {
                     enableMilestoneUnfriendlyControls(!isMilestone());
                 }
             });
-            result = mileStoneCheckBox1;
+            result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);
         }
         else {
-            result = null;
+            throw new IllegalStateException("Can't be here");
         }
         return result;
     }
