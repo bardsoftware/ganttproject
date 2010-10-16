@@ -1,28 +1,8 @@
 package net.sourceforge.ganttproject.gui;
 
-/**
- *
- * <p>Title: </p>
- *
- * <p>Description: Provide the properties of selected task</p>
- *
- * <p>Copyright: Copyright (c) 2003</p>
- *
- * <p>Company: </p>
- *
- * @author ganttproject
- *
- * @version 1.0
- *
- */
-
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -88,31 +68,16 @@ public class GanttTaskPropertiesBean extends JPanel {
     private JXDatePicker myStartDatePicker;
     private JXDatePicker myEndDatePicker;
     private JXDatePicker myThirdDatePicker;
-    // Input attributes
 
     protected GanttTask[] selectedTasks;
 
-    //private GanttTree2 tree; // GanttTree that contain all the tasks information
-
     private final GanttLanguage language = GanttLanguage.getInstance(); // language
-
-    // Output attributes: you can find the definition is GanttTask
 
     private GanttCalendar start;
 
     private GanttCalendar end;
 
     private GanttCalendar third;
-
-    // private GanttTask selectedTaskClone;
-
-    // private Hashtable managerHash;
-
-    // private Hashtable assignedResources = new Hashtable();
-
-    // private attributes for internal use
-
-    private final GridBagConstraints gbc = new GridBagConstraints();
 
     private JTabbedPane tabbedPane; // TabbedPane that includes the following four items
 
@@ -123,8 +88,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     private JPanel resourcesPanel;
 
     private JPanel notesPanel;
-
-    // Components on general panel
 
     private JTextField nameField1;
 
@@ -153,8 +116,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     /** Shape chooser combo Box */
     private JPaintCombo shapeComboBox;
 
-    // Components on predecessors panel
-
     private JScrollPane scrollPaneNotes;
 
     private JTextArea noteAreaNotes;
@@ -162,8 +123,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     private JPanel secondRowPanelNotes;
 
     private boolean onlyOneTask = false;
-
-    // Original values of the selected Task
 
     private String taskWebLink;
 
@@ -189,14 +148,9 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private CustomColumnsPanel myCustomColumnPanel = null;
 
-    // private ResourcesTableModel myResourcesTableModel;
     private TaskDependenciesPanel myDependenciesPanel;
 
     private TaskAllocationsPanel myAllocationsPanel;
-
-    //private boolean isStartFixed;
-
-//    private boolean isFinishFixed;
 
     private final HumanResourceManager myHumanResourceManager;
 
@@ -208,35 +162,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     private final UIFacade myUIfacade;
 
     private TaskMutator mutator;
-
-    /** add a component to container by using GridBagConstraints. */
-    private void addUsingGBL(Container container, Component component,
-            GridBagConstraints gbc, int x, int y, int w, int h) {
-        gbc.gridx = x;
-        gbc.gridy = y;
-        gbc.gridwidth = w;
-        gbc.gridheight = h;
-        gbc.weighty = 0;
-        container.add(component, gbc);
-    }
-
-    /** set the first row in all the tabbed pane. thus give them a common look */
-    private void setFirstRow(Container container, GridBagConstraints gbc,
-            JLabel nameLabel, JTextField nameField, JLabel durationLabel,
-            JTextField durationField) {
-        container.setLayout(new GridBagLayout());
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets.right = 15;
-        gbc.insets.left = 10;
-        gbc.insets.top = 10;
-        addUsingGBL(container, nameLabel, gbc, 0, 0, 1, 1);
-        addUsingGBL(container, nameField, gbc, 1, 0, 1, 1);
-        addUsingGBL(container, durationLabel, gbc, 2, 0, 1, 1);
-        gbc.weightx = 1;
-        addUsingGBL(container, durationField, gbc, 3, 0, 1, 1);
-    }
 
     /** Construct the general panel */
     private void constructGeneralPanel() {
@@ -310,8 +235,6 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
         });
         propertiesPanel.add(myThirdDatePicker);
-
-        // fourth row
 
         JCheckBox checkBox = constructCheckBox ();
         propertiesPanel.add(checkBox);
