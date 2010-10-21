@@ -32,7 +32,11 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author nbohn
  */
 public class XMLCalendarOpen {
-
+	public static class MyException extends Exception {
+		MyException(Throwable cause) {
+			super(cause);
+		}
+	}
     //private File myCalendarFiles[];
 
     private List<URL> myCalendarResources = new ArrayList<URL>();
@@ -43,14 +47,23 @@ public class XMLCalendarOpen {
 
     private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
-    boolean load(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+    boolean load(InputStream inputStream) throws MyException {
         // Use an instance of ourselves as the SAX event handler
         DefaultHandler handler = new GanttXMLParser();
 
         // Use the default (non-validating) parser
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = factory.newSAXParser();
-        saxParser.parse(inputStream, handler);
+        
+		try {
+			SAXParser saxParser = factory.newSAXParser();
+	        saxParser.parse(inputStream, handler);
+		} catch (ParserConfigurationException e) {
+			throw new MyException(e);
+		} catch (SAXException e) {
+			throw new MyException(e);
+		} catch (IOException e) {
+			throw new MyException(e);
+		}
         return true;
     }
 
@@ -137,32 +150,21 @@ public class XMLCalendarOpen {
         }
     }
 
-    public void setCalendars() throws Exception {
-        // TODO The loading of the calendar is not clear. There are 2 cases here
-        // :
-        // - using eclipse where test is a directory
-        // - using the built jar archive where test is not a directory
-//        
-//        URL url = getClass().getResource("/calendar");
-//        URL resolvedUrl = Platform.resolve(url);
-//        File test = new File(resolvedUrl.getPath());
-//        File path = new File(URLDecoder.decode(test.getAbsolutePath()));
-
-        // if(test.isDirectory())
-        // path = test;
-        // else
-        // path = new File("calendar");
+    public void setCalendars() throws MyException  {
         myCalendarResources.clear();
         DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
         addTagHandler(th);
         IConfigurationElement[] calendarExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor(GPCalendar.EXTENSION_POINT_ID);
-//        myCalendarFiles = path.listFiles(new Filter(".calendar"));
         myCalendarLabels = new String[calendarExtensions.length];
         for (int i = 0; i < calendarExtensions.length; i++) {
             Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespace());
             URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
             if (calendarUrl!=null) {
-                load(calendarUrl.openStream());
+                try {
+					load(calendarUrl.openStream());
+				} catch (IOException e) {
+					throw new MyException(e);
+				}
                 myCalendarLabels[i] = th.getName();
                 myCalendarResources.add(calendarUrl);
             }
@@ -176,32 +178,4 @@ public class XMLCalendarOpen {
     public String[] getLabels() {
         return myCalendarLabels;
     }
-
-    // TODO Class is never used... remove?
-    private static class Filter extends FileFilter implements FilenameFilter {
-        private String extension;
-
-        public Filter(String extension) {
-            if (extension == null) {
-                throw new NullPointerException(
-                        "The description (or extension) can not be null.");
-            }
-            this.extension = extension;
-        }
-
-        public String getDescription() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        public boolean accept(File file, String arg1) {
-            return arg1.endsWith(extension);
-        }
-
-        public boolean accept(File arg0) {
-            // TODO Auto-generated method stub
-            return false;
-        }
-    }
-
 }
