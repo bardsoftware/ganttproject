@@ -69,7 +69,7 @@ public class TopPanel extends JPanel {
         textArea.setDragEnabled(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setMargin(new Insets(3, 5, 3, 5));
+        textArea.setMargin(new Insets(3, 0, 3, 5));
         textArea.setBackground(getBackground());
         vb.add(textArea);
 
