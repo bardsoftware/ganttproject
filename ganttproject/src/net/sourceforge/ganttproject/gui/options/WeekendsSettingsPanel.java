@@ -37,7 +37,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
     public boolean applyChanges(boolean askForApply) {
         GPCalendar projectCalendar = project.getActiveCalendar();
-        bHasChange = false;
+        bHasChange = calendar.getOnlyShowWeekends() != projectCalendar.getOnlyShowWeekends();
         for(int i = 1; i < 8; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
                 bHasChange = true;
@@ -50,7 +50,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                 for(int i = 1; i < 8; i++) {
                     projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
                 }
-
+                projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
                 // Update tasks for the new weekends
                 // By setting their end dates to null it gets recalculated
                 TaskContainmentHierarchyFacade c = project.getTaskContainment();
@@ -75,11 +75,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         for(int i = 1; i < 8; i++) {
             calendar.setWeekDayType(i, projectCalendar.getWeekDayType(i));
         }
-
-        try {
-            weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, false);
-            vb.add(weekendConfigurationPanel.getComponent());
-        } catch (Exception e) {
-        }
+        calendar.setOnlyShowWeekends(projectCalendar.getOnlyShowWeekends());
+        weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, false);
+        vb.add(weekendConfigurationPanel.getComponent());
     }
 }

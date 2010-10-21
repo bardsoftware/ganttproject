@@ -18,10 +18,12 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
+import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
@@ -42,7 +44,7 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
     private final GanttProject myProject;
 
     public WeekendConfigurationPage(GPCalendar calendar, I18N i18n,
-            IGanttProject project, boolean showPublicHolidays) throws Exception {
+            IGanttProject project, boolean showPublicHolidays) {
         JLabel choosePublicHoliday;
         JLabel chooseWeekend;
         JCheckBox renderWeekend;
@@ -58,12 +60,18 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
             myCalendarField = new JComboBox();
             myCalendarField.addItem(GanttLanguage.getInstance().getText("none"));
             XMLCalendarOpen open = new XMLCalendarOpen();
-            open.setCalendars();
-            String[] labels = open.getLabels();
-            calendars = open.getCalendarResources();
-            for (int i = 0; i < labels.length; i++) {
-                myCalendarField.addItem(labels[i]);
-            }
+            URL[] loadedUrls = null;
+            try {
+				open.setCalendars();
+	            String[] labels = open.getLabels();
+	            loadedUrls = open.getCalendarResources();
+	            for (int i = 0; i < labels.length; i++) {
+	                myCalendarField.addItem(labels[i]);
+	            }
+			} catch (MyException e1) {
+				GPLogger.log(e1);
+			}
+			calendars = loadedUrls;
             myCalendarField.addActionListener(this);
 
             JPanel publicHolidayPanel = new JPanel(new BorderLayout());
