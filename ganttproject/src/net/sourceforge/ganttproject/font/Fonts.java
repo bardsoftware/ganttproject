@@ -19,7 +19,7 @@ public class Fonts {
             Font.PLAIN, 10);
 
     public static final Font SPLASH_FONT = new Font("Arial", Font.BOLD
-            /*+ Font.ITALIC*/, 14);
+            /*+ Font.ITALIC*/, 16);
 
     public static final Font GANTT_TREE_FONT = new Font("SansSerif",
             Font.PLAIN, 11);
