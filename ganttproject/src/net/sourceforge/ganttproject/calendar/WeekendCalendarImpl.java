@@ -63,8 +63,13 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         // end="+endDate);
         while (curDayStart.before(endDate)) {
             // System.err.println("curDayStart="+curDayStart);
-            Date changeStateDayStart = getStateChangeDate(curDayStart, endDate, !isWeekendState);
+            Date changeStateDayStart = findClosest(
+            		curDayStart, myFramer, MoveDirection.FORWARD, 
+            		isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
             // System.err.println("changeStateDayStart="+changeStateDayStart);
+            if (changeStateDayStart == null) {
+            	changeStateDayStart = endDate;
+            }
             if (changeStateDayStart.before(endDate)) {
                 result.add(new CalendarActivityImpl(curDayStart,
                         changeStateDayStart, !isWeekendState));
@@ -89,27 +94,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         myCalendar.setTime(curDayStart);
         int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
         return myTypes[dayOfWeek - 1] == GPCalendar.DayType.WEEKEND;
-    }
-
-    private Date getStateChangeDate(Date startDate, Date limitDate, boolean changeToWeekend) {
-        Date nextDayStart = myFramer.adjustRight(startDate);
-        if (!(changeToWeekend ^ isNonWorkingDay(nextDayStart))) {
-            return nextDayStart;
-        } else {
-            if (getWeekendDaysCount() > 0 || limitDate != null && limitDate.compareTo(nextDayStart) > 0) {
-                return getStateChangeDate(nextDayStart, limitDate, changeToWeekend);
-            }
-            else {
-                return limitDate;
-            }
-        }
-    }
-
-    Date getStateChangeDate(Date startDate, TimeUnit timeUnit,
-            boolean changeToWeekend, boolean moveRightNotLeft) {
-        return findClosest(startDate, timeUnit,
-                moveRightNotLeft ? MoveDirection.FORWARD : MoveDirection.BACKWARD,
-                changeToWeekend ? DayType.NON_WORKING : DayType.WORKING);
     }
 
     protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
@@ -142,17 +126,14 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
             Date prevUnitStart = timeUnit.jumpLeft(unitStart);
             boolean isWeekendState = isNonWorkingDay(prevUnitStart);
             if (isWeekendState) {
-                Date lastWorkingUnitStart = getStateChangeDate(prevUnitStart,
-                        timeUnit, false, false);
-                Date firstWeekendUnitStart = timeUnit
-                        .adjustRight(lastWorkingUnitStart);
+                Date lastWorkingUnitStart = findClosest(
+                		prevUnitStart, timeUnit, MoveDirection.BACKWARD, DayType.WORKING); 
+                Date firstWeekendUnitStart = timeUnit.adjustRight(lastWorkingUnitStart);
                 Date lastWeekendUnitEnd = unitStart;
-                result.add(0, new CalendarActivityImpl(firstWeekendUnitStart,
-                        lastWeekendUnitEnd, false));
+                result.add(0, new CalendarActivityImpl(firstWeekendUnitStart, lastWeekendUnitEnd, false));
                 unitStart = firstWeekendUnitStart;
             } else {
-                result.add(0, new CalendarActivityImpl(prevUnitStart,
-                        unitStart, true));
+                result.add(0, new CalendarActivityImpl(prevUnitStart, unitStart, true));
                 unitCount--;
                 unitStart = prevUnitStart;
             }
@@ -185,13 +166,13 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     }
 
     public Date findClosestWorkingTime(Date time) {
-        if (getWeekendDaysCount() == 0) {
+        if (getWeekendDaysCount() == 0 && myStableHolidays.isEmpty() && publicHolidaysArray.isEmpty()) {
             return time;
         }
         if (!isNonWorkingDay(time)) {
             return time;
         }
-        return getStateChangeDate(time, null, false);
+        return findClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
     }
 
     public void setPublicHoliDayType(int month, int date) {

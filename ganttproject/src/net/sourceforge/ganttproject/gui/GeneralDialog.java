@@ -179,6 +179,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
             settingPanel.applyChanges(false); // ask if the panel has
             // modifications
             this.setVisible(false);
+            appli.getUIFacade().getGanttChart().reset();
             dispose();
         }
         // click the cancel button

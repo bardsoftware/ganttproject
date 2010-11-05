@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Frame;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -11,6 +12,8 @@ import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * @author Maarten Bezemer
@@ -54,10 +57,17 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                 // Update tasks for the new weekends
                 // By setting their end dates to null it gets recalculated
                 TaskContainmentHierarchyFacade c = project.getTaskContainment();
-                Task[] tasks = c.getDeepNestedTasks(c.getRootTask());
+                Task[] tasks = project.getTaskManager().getTasks();
                 for(int i = 0; i < tasks.length; i++) {
                     tasks[i].setEnd(null);
                 }
+                try {
+                	TaskManager taskManager = project.getTaskManager();
+					taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+					taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
+				} catch (TaskDependencyException e) {
+					GPLogger.log(e);
+				}
             }
         }
         return bHasChange;
