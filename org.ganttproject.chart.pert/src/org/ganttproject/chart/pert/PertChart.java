@@ -39,11 +39,12 @@ import net.sourceforge.ganttproject.task.TaskManager;
  * Abstract class that should implement all PERT chart implementation.
  * 
  * @author bbaranne
- * 
  */
 public abstract class PertChart extends JPanel implements Chart {
 
-    private final List/*<ChartSelectionListener>*/ myListeners = new ArrayList/*<ChartSelectionListener>*/();
+    // TODO List of Listeners is not used...
+    private final List<ChartSelectionListener> myListeners = new ArrayList<ChartSelectionListener>();
+
     /**
      * Task manager used to build PERT chart. It provides data.
      */
@@ -108,17 +109,13 @@ public abstract class PertChart extends JPanel implements Chart {
     
     public void paste(ChartSelection selection) {
         throw new UnsupportedOperationException();
-        
     }
     
     public void addSelectionListener(ChartSelectionListener listener) {
         myListeners.add(listener);
-        
     }
+
     public void removeSelectionListener(ChartSelectionListener listener) {
         myListeners.remove(listener);
-        
     }
-    
-
 }

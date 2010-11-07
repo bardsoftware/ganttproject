@@ -29,7 +29,6 @@ import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -38,8 +37,6 @@ import net.sourceforge.ganttproject.util.FileUtil;
 
 public class ExporterToHTML extends ExporterBase implements Exporter {
     private static final String PNG_FORMAT_NAME = "png";
-    private AdvancedOptionGroup myAdvancedOptions = new AdvancedOptionGroup(new GPOption[0]);
-    private EnumerationOption myStylesheetOption;
     private HTMLStylesheet mySelectedStylesheet;
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.html.description");
@@ -48,12 +45,12 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         mySelectedStylesheet = (HTMLStylesheet) stylesheet;
     }
-    
+
     public GPOptionGroup[] getSecondaryOptions() {
         //return getGanttChart().getOptionGroups();
         return null;
-    }    
-    
+    }
+
     public String getFileNamePattern() {
         return "html";
     }
@@ -67,7 +64,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 generateGanttChartJob, generateResourceChartJob, generatePagesJob, copyImagesJob
         };
     }
-    
+
     private Job createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("generate gantt chart") {
             protected IStatus run(IProgressMonitor monitor) {
@@ -96,7 +93,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         };
         return result;
     }
-    
+
     private Job createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate resource chart") {
             protected IStatus run(IProgressMonitor monitor) {
@@ -124,7 +121,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         };
         return result;
     }
-    
+
     private Job createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate HTML pages") {
 
@@ -140,7 +137,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                         serialize(handler, outputFile);
                         resultFiles.add(outputFile);
                     }
-                    //
                     {
                         TransformerHandler handler = mySelectedStylesheet.createTasksPageHandler();
                         File tasksPageFile = appendSuffixBeforeExtension(outputFile, "-tasks");
@@ -153,15 +149,14 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                         File chartPageFile = appendSuffixBeforeExtension(outputFile, "-chart");
                         handler.setResult(new StreamResult(chartPageFile));
                         serialize(handler, outputFile);
-                        resultFiles.add(chartPageFile);       
+                        resultFiles.add(chartPageFile);
                     }
                     {
                         TransformerHandler handler = mySelectedStylesheet.createResourcesPageHandler();
                         File resourcesPageFile = appendSuffixBeforeExtension(outputFile, "-resources");
                         handler.setResult(new StreamResult(resourcesPageFile));
                         serialize(handler, outputFile);
-                        resultFiles.add(resourcesPageFile);            
-                        
+                        resultFiles.add(resourcesPageFile);
                     }
                     monitor.worked(1);
                 } catch (SAXException e) {
@@ -179,15 +174,15 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                     ExporterToHTML.this.getUIFacade().showErrorDialog(e);
 				}
                 finally {
-                    
+
                 }
                 return Status.OK_STATUS;
             }
-            
+
         };
         return result;
     }
-    
+
     private Job createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Copying images") {
             protected IStatus run(IProgressMonitor monitor) {
@@ -225,23 +220,23 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                     return Status.CANCEL_STATUS;
                 }
                 finally {
-                    
+
                 }
                 return Status.OK_STATUS;
             }
         };
         return result;
     }
-    
+
     private void serialize(TransformerHandler handler, File outputFile) throws SAXException, IOException, ExportException {
         String filenameWithoutExtension = getFilenameWithoutExtension(outputFile);
         handler.startDocument();
         AttributesImpl attrs = new AttributesImpl();
-        
+
         writeViews(getUIFacade(), handler);
         startElement("ganttproject",attrs, handler);
         textElement("title", attrs, "GanttProject - " + filenameWithoutExtension, handler);
-        //
+
         addAttribute("prefix", filenameWithoutExtension, attrs);
         startElement("links", attrs, handler);
         textElement("home", attrs, i18n("home"), handler);
@@ -249,7 +244,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         textElement("tasks", attrs, i18n("task"), handler);
         textElement("resources", attrs, i18n("human"), handler);
         endElement("links", handler);
-        //
+
         startElement("project", attrs, handler);
         addAttribute("title", i18n("project"), attrs);
         textElement("name", attrs, getProject().getProjectName(), handler);
@@ -260,7 +255,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         addAttribute("title", i18n("shortDescription"), attrs);
         textElement("description", attrs, getProject().getDescription(), handler);
         endElement("project", handler);
-        //
+
         //TODO: [dbarashev, 10.09.2005] introduce output files grouping structure
         String ganttChartFileName = replaceExtension(outputFile,GANTT_CHART_FILE_EXTENSION).getName();
         textElement("chart", attrs, ganttChartFileName, handler);
@@ -270,12 +265,12 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         addAttribute("phone", i18n("colPhone"), attrs);
         startElement("resources", attrs, handler);
         writeResources((HumanResourceManager) getProject().getHumanResourceManager(), handler);
-        
+
         String resourceChartFileName = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION).getName();
         addAttribute("path", resourceChartFileName, attrs);
         emptyElement("chart", attrs, handler);
         endElement("resources", handler);
-        //
+
         addAttribute("name", i18n("name"), attrs);
         addAttribute("begin", i18n("start"), attrs);
         addAttribute("end", i18n("end"), attrs);
@@ -288,7 +283,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         } catch (Exception e) {
             throw new ExportException("Failed to write tasks", e);
         }
-        //
+
         addAttribute("version", "Ganttproject ("+GanttProject.version + ")", attrs);
         addAttribute("date", GanttCalendar.getDateAndTime(), attrs);
         emptyElement("footer", attrs, handler);
@@ -304,6 +299,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return "html";
     }
 
+    // TODO Class is not used... Remove?
     private class AdvancedOptionGroup extends GPOptionGroup implements GPOption {
         public AdvancedOptionGroup(GPOption[] options) {
             super("exporter.html.advanced", options);
@@ -319,7 +315,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         public boolean isChanged() {
             return false;
         }
-        
+
     }
 
     public String[] getFileExtensions() {
@@ -327,12 +323,10 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return s;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //
     protected String getStylesheetOptionID() {
         return "impex.html.stylesheet";
     }
-    
+
     protected Stylesheet[] getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
@@ -341,11 +335,12 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         };
         return (Stylesheet[]) factory.createStylesheets(HTMLStylesheet.class);
     }
-   
+
     class HTMLStylesheetImpl extends StylesheetImpl implements HTMLStylesheet {
         HTMLStylesheetImpl(URL stylesheetURL, String localizedName) {
             super(stylesheetURL, localizedName);
         }
+
         public String getInputVersion() {
             return HTMLStylesheet.InputVersion.GP1X;
         }
@@ -355,7 +350,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL titleUrl = new URL(getUrl(), "gantt.xsl");
                 TransformerHandler result = createHandler(titleUrl.toString());
                 return result;
-                
+
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -369,7 +364,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL tasksUrl = new URL(getUrl(), "gantt-tasks.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-                
+
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -377,13 +372,13 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
             	throw new RuntimeException(e);            	
             }
         }
-        
+
         public TransformerHandler createGanttChartPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-chart.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-                
+
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -391,12 +386,13 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
             	throw new RuntimeException(e);
             }
         }
+
         public TransformerHandler createResourcesPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-resources.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-                
+
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -404,6 +400,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
             	throw new RuntimeException(e);
             }
         }
+
         public File getImagesDirectory() {
             try {
                 URL imagesUrl = new URL(getUrl(), "images");
@@ -417,8 +414,9 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
             	throw new RuntimeException(e);
             }
         }
-        
+
     }
+
     private static File replaceExtension(File f, String newExtension) throws IOException {
         File result = FileUtil.replaceExtension(f, newExtension);
         if (!result.exists()) {
@@ -426,16 +424,15 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         }
         return result;
     }
-    
+
     private static File appendSuffixBeforeExtension(File f, String suffix) throws IOException {
         return FileUtil.appendSuffixBeforeExtension(f, suffix);
     }
-    
+
     private static String getFilenameWithoutExtension(File f) {
         return FileUtil.getFilenameWithoutExtension(f);
     }
-    
+
     private static final String GANTT_CHART_FILE_EXTENSION = "png";
     private static final String RESOURCE_CHART_FILE_EXTENSION = "res.png";
-    
 }

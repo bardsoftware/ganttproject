@@ -52,7 +52,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
@@ -108,6 +107,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     public ExporterToIText() {
         registerFonts();
     }
+
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.pdf.description")+" (iText beta)";
     }
@@ -151,6 +151,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             myStylesheet.setFontSubstitutionModel(mySubstitutionModel);
         }
     }
+
     public void setStylesheet(Stylesheet stylesheet) {
         myStylesheet = (ITextStylesheet) stylesheet;
     }
@@ -215,8 +216,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             final String dirName = configElements[i].getAttribute("name");
             if (Boolean.TRUE.toString().equalsIgnoreCase(configElements[i].getAttribute("absolute"))) {
                 myFontCache.registerDirectory(dirName, true);
-            }
-            else {
+            } else {
                 String namespace = configElements[i].getDeclaringExtension().getNamespace();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
                 if (dirUrl==null) {
@@ -234,7 +234,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         }
     }
 
-    protected Job[] createJobs(File outputFile, List resultFiles) {
+    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         waitRegisterFonts();
         return new Job[] {createTransformationJob(outputFile)};
     }
@@ -261,8 +261,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     e.printStackTrace();
                     getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
-                }
-                finally {
+                } finally {
                     monitor.worked(1);
                 }
                 return Status.OK_STATUS;
@@ -272,6 +271,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     }
 
     static class ChartWriter {
+        // TODO Field is not read... Remove?
         private final Chart myChart;
         protected final ChartModel myModel;
         private PdfWriter myWriter;
@@ -301,8 +301,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             try {
                 myModel.paint(g2);
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
             g2.dispose();
@@ -319,12 +318,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     static class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
         static List<String> ourSizes = new ArrayList<String>();
         static {
-            {
-                Field[] fields = PageSize.class.getDeclaredFields();
-                for (int i=0; i<fields.length; i++) {
-                    if (fields[i].getType().equals(Rectangle.class)) {
-                        ourSizes.add(fields[i].getName());
-                    }
+            Field[] fields = PageSize.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].getType().equals(Rectangle.class)) {
+                    ourSizes.add(fields[i].getName());
                 }
             }
         }
@@ -341,8 +338,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", new GPOption[] {
                 myPageSizeOption, myLandscapeOption});
         private GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data", new GPOption[] {
-                myShowNotesOption
-        });
+                myShowNotesOption});
         private boolean isColontitleEnabled = false;
         private Properties myProperties;
         private FontSubstitutionModel mySubstitutionModel;
@@ -412,9 +408,11 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         protected Font getSansItalic(float size) {
             return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.ITALIC);
         }
+
         protected Font getSansRegularBold(float size) {
             return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.BOLD);
         }
+
         protected Font getSansRegularBold() {
             return getSansRegularBold(12);
         }
@@ -432,12 +430,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 myWriter.setPageEvent(this);
                 myDoc.open();
                 writeProject();
-            }
-            catch(Throwable e) {
+            } catch(Throwable e) {
                 e.printStackTrace();
                 throw new ExportException("Export failed", e);
-            }
-            finally {
+            } finally {
                 myDoc.close();
             }
         }
@@ -460,21 +456,21 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private void writeAttributes(PdfPTable table, LinkedHashMap<String, String> attrs) {
             for (Iterator<Entry<String, String>> entries = attrs.entrySet().iterator(); entries.hasNext();) {
                 Map.Entry<String, String> nextEntry = entries.next();
-
                 {
-                Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));
-                PdfPCell cell = new PdfPCell(p);
-                cell.setBorder(PdfPCell.NO_BORDER);
-                table.addCell(cell);
+                    Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));
+                    PdfPCell cell = new PdfPCell(p);
+                    cell.setBorder(PdfPCell.NO_BORDER);
+                    table.addCell(cell);
                 }
                 {
-                Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(12));
-                PdfPCell cell = new PdfPCell(p);
-                cell.setBorder(PdfPCell.NO_BORDER);
-                table.addCell(cell);
+                    Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(12));
+                    PdfPCell cell = new PdfPCell(p);
+                    cell.setBorder(PdfPCell.NO_BORDER);
+                    table.addCell(cell);
                 }
             }
         }
+
         private void writeTitlePage() throws DocumentException {
             Rectangle page = myDoc.getPageSize();
             PdfPTable head = new PdfPTable(1);
@@ -504,7 +500,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             attrsCell.setBorder(PdfPCell.NO_BORDER);
             head.addCell(attrsCell);
             addEmptyRow(head, 20);
-            if (getProject().getDescription().length()>0){
+            if (getProject().getDescription().length() > 0) {
                 Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(12));
                 PdfPCell cell = new PdfPCell(p);
                 cell.setBorder(PdfPCell.TOP | PdfPCell.BOTTOM);
@@ -524,13 +520,13 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         private String buildManagerString() {
             Role managerRole = getProject().getRoleManager().getRole(myProperties.getProperty("manager-role"));
-            if (managerRole==null) {
+            if (managerRole == null) {
                 return "";
             }
             StringBuffer result = new StringBuffer();
             String delimiter = "";
             List resources = getProject().getHumanResourceManager().getResources();
-            for (int i=0; i<resources.size(); i++) {
+            for (int i = 0; i < resources.size(); i++) {
                 HumanResource resource = (HumanResource) resources.get(i);
                 if (resource.getRole().equals(managerRole)) {
                     result.append(delimiter).append(resource.getName());
@@ -556,7 +552,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc) {
                 protected void setupChart() {
-                    ((ChartModelImpl)myModel).setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
+                    myModel.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
                     super.setupChart();
                     //myModel.setRowHeight(myModel.getBounds().height/getProject().getTaskManager().getTaskCount());
                 }
@@ -582,7 +578,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader,
                 ArrayList<Column> orderedColumns) throws DocumentException {
-            for (int i=0; i<tableHeader.getSize(); i++) {
+            for (int i = 0; i < tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c.isVisible()) {
                     orderedColumns.add(c);
@@ -590,22 +586,22 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
             Collections.sort(orderedColumns, new Comparator<Column>() {
                 public int compare(Column lhs, Column rhs) {
-                    if (lhs==null || rhs==null) {
+                    if (lhs == null || rhs == null) {
                         return 0;
                     }
-                    return lhs.getOrder()-rhs.getOrder();
+                    return lhs.getOrder() - rhs.getOrder();
                 }
             });
             float[] widths = new float[orderedColumns.size()];
-            for (int i=0; i<orderedColumns.size(); i++) {
-                TableHeaderUIFacade.Column column = (Column) orderedColumns.get(i);
-                widths[i] = (float)column.getWidth();
+            for (int i = 0; i < orderedColumns.size(); i++) {
+                Column column = orderedColumns.get(i);
+                widths[i] = (float) column.getWidth();
             }
 
             PdfPTable table = new PdfPTable(widths);
             table.setWidthPercentage(95);
-            for (int i=0; i<orderedColumns.size(); i++) {
-                TableHeaderUIFacade.Column field = (Column) orderedColumns.get(i);
+            for (int i = 0; i < orderedColumns.size(); i++) {
+                Column field = orderedColumns.get(i);
                 if (field.isVisible()) {
                     PdfPCell cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(12f)));
                     cell.setPaddingTop(4);
@@ -626,7 +622,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         protected void addEmptyRow(PdfPTable table, float height) {
             PdfPCell emptyCell = new PdfPCell(new Paragraph("  ", getSansRegular(height)));
             emptyCell.setBorderWidth(0);
-            for (int i=0; i<table.getNumberOfColumns(); i++) {
+            for (int i = 0; i < table.getNumberOfColumns(); i++) {
                 table.addCell(emptyCell);
             }
         }
@@ -637,9 +633,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             for (int i=0; i<orderedColumns.size(); i++) {
                 Column column = orderedColumns.get(i);
                 PdfPCell cell = id2cell.get(column.getID());
-                if (cell==null) {
+                if (cell == null) {
                     String value = id2value.get(column.getID());
-                    if (value==null) {
+                    if (value == null) {
                         value = "";
                     }
                     Paragraph p = new Paragraph(value, getSansRegular(12));
@@ -663,20 +659,18 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());
                 protected String serializeTask(Task t, int depth) throws Exception {
                     boolean addEmptyRow = false;
-                    if (depth==0) {
-                        addEmptyRow = myPreviousChildTaskCount>0;
+                    if (depth == 0) {
+                        addEmptyRow = myPreviousChildTaskCount > 0;
                         if (!addEmptyRow) {
                             boolean hasNested = getProject().getTaskManager().getTaskHierarchy().hasNestedTasks(t);
                             if (hasNested) {
-                                addEmptyRow = myPreviousChildlessTaskCount>0;
+                                addEmptyRow = myPreviousChildlessTaskCount > 0;
                                 myPreviousChildlessTaskCount = 0;
-                            }
-                            else {
+                            } else {
                                 myPreviousChildlessTaskCount++;
                             }
-
                         }
-                        myPreviousChildTaskCount=0;
+                        myPreviousChildTaskCount = 0;
                     }
                     else {
                         myPreviousChildTaskCount++;
@@ -690,13 +684,14 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
 
                     PdfPCell nameCell;
-                    if (myShowNotesOption.isChecked() && t.getNotes()!=null && !"".equals(t.getNotes())) {
+                    if (myShowNotesOption.isChecked() && t.getNotes() != null
+                            && !"".equals(t.getNotes())) {
                         nameCell = new PdfPCell(createNameCellContent(t));
                     } else {
                         nameCell = new PdfPCell(new Paragraph(t.getName(), getSansRegular(12)));
                     }
                     nameCell.setBorderWidth(0);
-                    nameCell.setPaddingLeft(5 + depth*10);
+                    nameCell.setPaddingLeft(5 + depth * 10);
 
                     id2cell.put("tpd3", nameCell);
                     writeProperties(orderedColumns, id2value, table, id2cell);
@@ -810,6 +805,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             head.setTotalWidth(page.getWidth() - document.leftMargin() - document.rightMargin());
             return head;
         }
+
         private void writeColontitle(String topLeft, String topRight, String bottomLeft, String bottomRight) {
             final Document document = myDoc;
             final PdfWriter writer = myWriter;
@@ -821,12 +817,17 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 writer.getDirectContent());
 
         }
-        public void onChapter(PdfWriter arg0, Document arg1, float arg2, Paragraph arg3) {
+
+        public void onChapter(PdfWriter arg0, Document arg1, float arg2,
+                Paragraph arg3) {
         }
+
         public void onChapterEnd(PdfWriter arg0, Document arg1, float arg2) {
         }
+
         public void onCloseDocument(PdfWriter arg0, Document arg1) {
         }
+
         public void onEndPage(PdfWriter writer, Document document) {
             if (isColontitleEnabled) {
                 writeColontitle(
@@ -836,18 +837,25 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                         String.valueOf(writer.getPageNumber()));
             }
         }
+
         public void onGenericTag(PdfWriter arg0, Document arg1, Rectangle arg2, String arg3) {
         }
+
         public void onOpenDocument(PdfWriter arg0, Document arg1) {
         }
+
         public void onParagraph(PdfWriter arg0, Document arg1, float arg2) {
         }
+
         public void onParagraphEnd(PdfWriter arg0, Document arg1, float arg2) {
         }
+
         public void onSection(PdfWriter arg0, Document arg1, float arg2, int arg3, Paragraph arg4) {
         }
+
         public void onSectionEnd(PdfWriter arg0, Document arg1, float arg2) {
         }
+
         public void onStartPage(PdfWriter writer, Document document) {
         }
     }
