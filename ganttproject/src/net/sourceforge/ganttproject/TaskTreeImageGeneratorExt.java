@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.table.JTableHeader;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttTreeTable.DisplayedColumnsList;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -21,13 +22,13 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
   }
 
   @Override
-  protected Dimension calculateDimension(List taskNodes) {
+  protected Dimension calculateDimension(List<DefaultMutableTreeNode> taskNodes) {
     Dimension d = super.calculateDimension(taskNodes);
     return new Dimension(getTree().getTreeTable().getWidth(), d.height);
   }
 
   @Override
-  protected void paint(Image image, Dimension d, List taskNodes) {
+  protected void paint(Image image, Dimension d, List<DefaultMutableTreeNode> taskNodes) {
     super.paint(image, d, taskNodes);
     // Insert a bitmap of the Table Header region to complete the
     // generation of the Task tree image.
@@ -44,7 +45,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
     // to by the code
     final DisplayedColumnsList dispCols = getTree().getTreeTable().getDisplayColumns();
 
-    // A small constant offset for the X Co-ords
+    // A small constant offset for the X coordinates
     int x = 2;
 
     // The primary loop works based on the "Order" value of each

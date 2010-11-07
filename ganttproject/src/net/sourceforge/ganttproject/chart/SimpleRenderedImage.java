@@ -73,7 +73,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  protected ColorModel colorModel = null;
 
  /** The image's sources, stored in a Vector. */
- protected Vector sources = new Vector();
+ protected Vector<RenderedImage> sources = new Vector<RenderedImage>();
 
  /** A Hashtable containing the image properties. */
  protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
@@ -387,7 +387,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      return ty*tileHeight + tileGridYOffset;
  }
 
- public Vector getSources() {
+ public Vector<RenderedImage> getSources() {
      return null;
  }
 

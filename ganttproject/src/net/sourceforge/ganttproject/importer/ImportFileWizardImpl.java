@@ -20,6 +20,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class ImportFileWizardImpl extends WizardImpl {
     private final State myState;
 
+    // TODO Field is never read... Remove?
     private final GanttProject myProject;
 
     private static Importer[] ourImporters;

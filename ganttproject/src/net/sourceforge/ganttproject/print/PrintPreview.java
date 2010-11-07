@@ -305,7 +305,7 @@ public class PrintPreview extends JDialog {
             });
         }
         Vector<MediaSizeName> vMedia = new Vector<MediaSizeName>();
-        ;
+
         // try {
         // vMedia = getAllMediaSizeNameAvailable();
         vMedia.add(MediaSizeName.ISO_A0);
@@ -316,7 +316,6 @@ public class PrintPreview extends JDialog {
         vMedia.add(MediaSizeName.ISO_A5);
         vMedia.add(MediaSizeName.ISO_A6);
         // } catch (ClassNotFoundException e1) {
-        // // TODO Auto-generated catch block
         // e1.printStackTrace();
         // }
 
@@ -466,7 +465,6 @@ public class PrintPreview extends JDialog {
 
         myPreviewContainer = new PreviewContainer();
 
-        // --
         myPageFormat = new PageFormat();
         myPageFormat.setOrientation(myOrientation);
 
@@ -478,7 +476,7 @@ public class PrintPreview extends JDialog {
         p.setImageableArea(72, 72, p.getWidth() - 72 * 2,
                 p.getHeight() - 72 * 2);
         myPageFormat.setPaper(p);
-        // --
+
         statusBar.setText1(ms.getX(MediaSize.MM) + " x "
                 + ms.getY(MediaSize.MM));
 
@@ -511,8 +509,9 @@ public class PrintPreview extends JDialog {
                 Graphics g = img.getGraphics();
                 g.setColor(Color.white);
                 g.fillRect(0, 0, myPageWidth, myPageHeight);
-                if (myPrintable.print(g, myPageFormat, pageIndex) != Printable.PAGE_EXISTS)
+                if (myPrintable.print(g, myPageFormat, pageIndex) != Printable.PAGE_EXISTS) {
                     break;
+                }
                 PagePreview pp = new PagePreview(pageIndex, myPageFormat, myPrintable, myScale);
                 myPreviewContainer.add(pp);
                 pageIndex++;
@@ -525,8 +524,9 @@ public class PrintPreview extends JDialog {
 
     private void changeScale() {
         String str = myComboScale.getSelectedItem().toString();
-        if (str.endsWith("%"))
+        if (str.endsWith("%")) {
             str = str.substring(0, str.length() - 1);
+        }
         str = str.trim();
         myScale = 0;
         try {
@@ -537,8 +537,9 @@ public class PrintPreview extends JDialog {
 
         Component[] comps = myPreviewContainer.getComponents();
         for (int k = 0; k < comps.length; k++) {
-            if (!(comps[k] instanceof PagePreview))
+            if (!(comps[k] instanceof PagePreview)) {
                 continue;
+            }
             PagePreview pp = (PagePreview) comps[k];
             pp.setScale(myScale);
         }
@@ -614,8 +615,9 @@ public class PrintPreview extends JDialog {
 
         public Dimension getPreferredSize() {
             int n = getComponentCount();
-            if (n == 0)
+            if (n == 0) {
                 return new Dimension(H_GAP, V_GAP);
+            }
             Component comp = getComponent(0);
             Dimension dc = comp.getPreferredSize();
             int w = dc.width;
@@ -624,8 +626,9 @@ public class PrintPreview extends JDialog {
             Dimension dp = getParent().getSize();
             int nCol = Math.max((dp.width - H_GAP) / (w + H_GAP), 1);
             int nRow = n / nCol;
-            if (nRow * nCol < n)
+            if (nRow * nCol < n) {
                 nRow++;
+            }
 
             int ww = nCol * (w + H_GAP) + H_GAP;
             int hh = nRow * (h + V_GAP) + V_GAP;
@@ -664,8 +667,9 @@ public class PrintPreview extends JDialog {
             int index = 0;
             for (int k = 0; k < nRow; k++) {
                 for (int m = 0; m < nCol; m++) {
-                    if (index >= n)
+                    if (index >= n) {
                         return;
+                    }
                     comp = getComponent(index++);
                     comp.setBounds(x, y, w, h);
                     x += w + H_GAP;
@@ -794,6 +798,5 @@ public class PrintPreview extends JDialog {
         public void setText1(String text) {
             message1.setText(text);
         }
-
     }
 }

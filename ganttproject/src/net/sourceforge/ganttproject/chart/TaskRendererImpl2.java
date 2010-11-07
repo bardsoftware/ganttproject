@@ -516,6 +516,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     private static class DependencyDrawData {
         final GraphicPrimitiveContainer.Rectangle myDependantRectangle;
 
+        // TODO Field is never read... Remove?
         final GraphicPrimitiveContainer.Rectangle myDependeeRectangle;
 
         final TaskDependency myDependency;

@@ -41,6 +41,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
     }
 
     private class ParameterizedTimeUnitImpl implements TimeUnit, DateFrameable {
+        // TODO FIeld is never read... Remove?
         private final Date myBaseDate;
 
         private final Date myRightDate;
@@ -49,6 +50,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
 
         private int myAtomCount = -1;
 
+        // TODO FIeld is never read... Remove?
         private TextFormatter myTextFormatter;
 
         public ParameterizedTimeUnitImpl(Date myBaseDate) {

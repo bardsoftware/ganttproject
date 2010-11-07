@@ -24,15 +24,14 @@ public class ResourcesRendererImpl extends ChartRendererBase implements
 
     public void beforeProcessingTimeFrames() {
         // TODO Auto-generated method stub
-
     }
 
     public void afterProcessingTimeFrames() {
-        List visibleTasks = ((ChartModelImpl) getChartModel())
+        List<Task> visibleTasks = ((ChartModelImpl) getChartModel())
                 .getVisibleTasks();
         int bottomY = getConfig().getRowHeight();
         for (int i = 0; i < visibleTasks.size(); i++) {
-            Task nextTask = (Task) visibleTasks.get(i);
+            Task nextTask = visibleTasks.get(i);
             ResourceAssignment[] assignments = nextTask.getAssignments();
             if (assignments.length > 0) {
                 StringBuffer resources = new StringBuffer();

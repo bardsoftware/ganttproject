@@ -38,7 +38,6 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -435,8 +434,8 @@ public class OptionsPageBuilder {
     private static JColorChooser ourColorChooser = new JColorChooser();
 
     static {
-        ImageIcon calendarImage = new ImageIcon(OptionsPageBuilder.class.getResource(
-        "/icons/calendar_16.gif"));
+        ImageIcon calendarImage = new ImageIcon(OptionsPageBuilder.class
+                .getResource("/icons/calendar_16.gif"));
         Icon nextMonth = new ImageIcon(OptionsPageBuilder.class
                 .getResource("/icons/nextmonth.gif"));
         Icon prevMonth = new ImageIcon(OptionsPageBuilder.class

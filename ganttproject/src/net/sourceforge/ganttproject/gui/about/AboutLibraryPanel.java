@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class AboutLibraryPanel extends GeneralOptionPanel {
 
-    /** Constructor. */
     public AboutLibraryPanel(GanttProject parent) {
         super(GanttLanguage.getInstance().getText("library"), GanttLanguage
                 .getInstance().getText("settingsLibrary"), parent);
@@ -104,7 +103,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
     public void initialize() {
     }
 
-    /** Store informations for lirary uses. */
+    /** Store informations for library uses. */
     class LibraryInfo {
         private String libName;
 

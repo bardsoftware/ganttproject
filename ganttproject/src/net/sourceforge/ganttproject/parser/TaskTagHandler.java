@@ -16,6 +16,10 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import org.xml.sax.Attributes;
 
 public class TaskTagHandler implements TagHandler {
+    private final ParsingContext myContext;
+    private final TaskManager myManager;
+    private final Stack<GanttTask> myStack = new Stack<GanttTask>();
+
     public TaskTagHandler(TaskManager mgr, ParsingContext context) {
         myManager = mgr;
         myContext = context;
@@ -28,7 +32,7 @@ public class TaskTagHandler implements TagHandler {
         }
     }
 
-    /** Method when finish to parse an attibute */
+    /** Method when finish to parse an attribute */
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("task")) {
             myStack.pop();
@@ -51,7 +55,7 @@ public class TaskTagHandler implements TagHandler {
             }
             task = getManager().createTask(taskId);
         }
-        //
+
         String taskName = attrs.getValue("name");
         if (taskName != null) {
             task.setName(taskName);
@@ -194,10 +198,4 @@ public class TaskTagHandler implements TagHandler {
     private TaskManager getManager() {
         return myManager;
     }
-
-    private final ParsingContext myContext;
-
-    private final TaskManager myManager;
-
-    private final Stack<GanttTask> myStack = new Stack<GanttTask>();
 }
