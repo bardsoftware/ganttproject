@@ -51,16 +51,15 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         protected void calculateNextStep(OffsetStep step, TimeFrame currentFrame, Date startDate) {
             float offsetStep = getOffsetStep(currentFrame);
-            boolean isBottomUnitWorking =! ChartModelBase.this.getTaskManager().getCalendar().isNonWorkingDay(startDate);
-            if (!isBottomUnitWorking) {
-                step.dayType = GPCalendar.DayType.WEEKEND;
-//                step.incrementTopUnit = false;
-                if (isCompressedWeekend) {
-                    offsetStep = offsetStep / RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
-                }
+            DayType dayType = ChartModelBase.this.getTaskManager().getCalendar().getDayTypeDate(startDate);
+            if (dayType == DayType.WORKING) {
+            	step.dayType = GPCalendar.DayType.WORKING;
             }
             else {
-                step.dayType = GPCalendar.DayType.WORKING;
+              step.dayType = dayType;
+              if (isCompressedWeekend) {
+                  offsetStep = offsetStep / RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
+              }                
             }
             step.parrots += offsetStep;
         }

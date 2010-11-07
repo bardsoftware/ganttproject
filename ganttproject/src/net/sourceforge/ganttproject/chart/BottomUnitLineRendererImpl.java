@@ -37,12 +37,20 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     public void render() {
         int curX = 0;
         Date curDate = getChartModel().getStartDate();
-        boolean firstWeekendDay = true;
-        for (Offset nextOffset : getOffsets()) {
+        for (Offset nextOffset : getBottomUnitOffsets()) {
             if (!getChartModel().getTaskManager().getCalendar().isNonWorkingDay(nextOffset.getOffsetStart())) {
                 renderWorkingDay(curX, curDate, nextOffset);
-                firstWeekendDay = true;
             }
+            curX = nextOffset.getOffsetPixels();
+            curDate = nextOffset.getOffsetEnd();
+        }
+        renderNonWorkingDayColumns();
+    }
+    
+    private void renderNonWorkingDayColumns() {
+        int curX = 0;
+        boolean firstWeekendDay = true;
+        for (Offset nextOffset : getChartModel().getBottomUnitOffsets()) {
             if (nextOffset.getDayType() != GPCalendar.DayType.WORKING){
                 renderNonWorkingDay(curX, nextOffset);
                 if (firstWeekendDay) {
@@ -50,9 +58,10 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
                             curX, getLineTopPosition(), curX, getLineTopPosition()+10);
                     firstWeekendDay = false;
                 }
+            } else {
+                firstWeekendDay = true;
             }
             curX = nextOffset.getOffsetPixels();
-            curDate = nextOffset.getOffsetEnd();
         }
     }
 
@@ -102,7 +111,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         return getLineBottomPosition() - 5;
     }
 
-    protected Iterable<Offset> getOffsets() {
+    protected Iterable<Offset> getBottomUnitOffsets() {
         return getChartModel().getBottomUnitOffsets();
     }
 }
