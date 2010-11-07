@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.export.ExportFileAction;
 import net.sourceforge.ganttproject.importer.ImportFileAction;
 
 public class ProjectMenu {
+    // TODO Field is never read locally... remove?
     private GanttProject myMainFrame;
     private NewProjectAction myNewProjectAction;
     private OpenProjectAction myOpenProjectAction;

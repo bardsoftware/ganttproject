@@ -33,25 +33,17 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     private static final DateFrameable MINUTE_FRAMER = new FramerImpl(
             Calendar.MINUTE);
 
-    private static final DateFrameable SECOND_FRAMER = new FramerImpl(
-            Calendar.SECOND);
+    public static final TimeUnit SECOND;// = ourGraph.createAtomTimeUnit("second");
 
-    public static final TimeUnit SECOND;// =
+    public static final TimeUnit MINUTE;// = ourGraph.createTimeUnit("minute", SECOND, 60);
 
-    // ourGraph.createAtomTimeUnit("second");
-
-    public static final TimeUnit MINUTE;// = ourGraph.createTimeUnit("minute",
-
-    // SECOND, 60);
-
-    public static final TimeUnit HOUR;// = ourGraph.createTimeUnit("hour",
-
-    // MINUTE, 60);
+    public static final TimeUnit HOUR;// = ourGraph.createTimeUnit("hour", MINUTE, 60);
 
     public static final TimeUnit DAY;
 
     public static final TimeUnitFunctionOfDate MONTH;
 
+    // Field is never used... Remove?
     private static final TimeUnit ATOM_UNIT;
 
     private static final HashMap<TimeUnit, Integer> ourUnit2field = new HashMap<TimeUnit, Integer>();
@@ -61,7 +53,7 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
                 MINUTE_FRAMER);
         HOUR = ourGraph.createDateFrameableTimeUnit("hour", MINUTE, 60,
                 HOUR_FRAMER);
-        ;
+
         DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER);
         DAY.setTextFormatter(new DayTextFormatter());
         MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY,

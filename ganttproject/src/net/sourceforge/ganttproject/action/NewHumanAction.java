@@ -19,6 +19,7 @@ import net.sourceforge.ganttproject.roles.RoleManager;
  * Action connected to the menu item for insert a new resource
  */
 public class NewHumanAction extends ResourceAction {
+    // TODO Field is never read locally... remove?
     private final RoleManager myRoleManager;
 
     private final GanttProject myProject;

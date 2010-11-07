@@ -15,6 +15,7 @@ public class TaskProgressChartItem extends ChartItem {
 
     private int myUnitWidth;
 
+    // TODO Field is never read... remove?
     private TimeUnit myTimeUnit;
 
     private float myTaskLength;

@@ -27,7 +27,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -52,13 +51,6 @@ public class GanttDialogDate extends JDialog {
     /** Save the date */
     // private GanttCalendar save;
     private GanttPanelDate panel;
-
-    /** buttons to handles the change of date EV 20031027 * */
-    private JButton jbPrevMonth, jbNextMonth;
-
-    private JFormattedTextField jtDate;
-
-    private JButton jbPrevYear, jbNextYear;
 
     private boolean myFixedDate;
 
