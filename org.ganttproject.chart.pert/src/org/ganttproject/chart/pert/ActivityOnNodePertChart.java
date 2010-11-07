@@ -64,17 +64,17 @@ public class ActivityOnNodePertChart extends PertChart {
     /**
      * List of abstract nodes.
      */
-    private List myTaskGraphNodes;
+    private List<TaskGraphNode> myTaskGraphNodes;
 
     /**
      * List of graphical arrows.
      */
-    private List myGraphicalArrows;
+    private List<GraphicalArrow> myGraphicalArrows;
 
     /**
      * List of graphical nodes (in relation with abstract nodes)
      */
-    private List myGraphicalNodes;
+    private List<GraphicalNode> myGraphicalNodes;
 
     //private Map myMapPositionListOfNodes;
     private int nbCols;
@@ -107,17 +107,64 @@ public class ActivityOnNodePertChart extends PertChart {
      */
     int myXClickedOffset, myYClickedOffset;
 
-    /**
-     * Graphics where PERT chart is painted.
-     */
-    private Graphics myGraphics;
-
     private static GanttLanguage ourLanguage = GanttLanguage.getInstance();
 
     /**
-     * Constructs a ActivityOnNodePertChart.
-     * 
+     * Graphical nodes width.
      */
+    private final static int NODE_WIDTH = 110;//205;
+
+    /**
+     * Graphical nodes height.
+     */
+    private final static int NODE_HEIGHT = 70;
+
+    /**
+     * Gap between two TaskGraphNodes with the same X coordinate.
+     */
+    private final static int X_GAP = 30;//60;
+
+    /**
+     * Gap between two TaskGraphNodes with the same Y coordinate.
+     */
+    private final static int Y_GAP = 15;//30;
+
+    private final static int ARROW_HEIGHT = 10;
+
+    private final static int ARROW_WIDTH = 15;
+
+    private final static int ARROW_CORNER_WIDTH = 6;
+
+    /**
+     * X offset for the top left task graph node.
+     */
+    private final static int X_OFFSET = 5;
+
+    /**
+     * Y offset for the top left task graph node.
+     */
+    private final static int Y_OFFSET = 5;
+
+    /**
+     * Color of the border of normal tasks.
+     */
+    private final static Color NORMAL_COLOR = Color.BLUE.brighter();
+
+    /**
+     * Color of the border of supertasks.
+     */
+    private final static Color SUPER_COLOR = Color.RED;
+
+    /**
+     * Color of the border of milestones.
+     */
+    private final static Color MILESTONE_COLOR = Color.BLACK;
+
+    /**
+     * Color of the arrows.
+     */
+    private final static Color ARROW_COLOR = Color.GRAY;
+    
     public ActivityOnNodePertChart() {
         super(null);
         // pressedGraphicalNodes = new ArrayList();
@@ -209,9 +256,9 @@ public class ActivityOnNodePertChart extends PertChart {
         int maxX = 0;
         int maxY = 0;
 
-        Iterator it = myGraphicalNodes.iterator();
+        Iterator<GraphicalNode> it = myGraphicalNodes.iterator();
         while (it.hasNext()) {
-            GraphicalNode gn = (GraphicalNode) it.next();
+            GraphicalNode gn = it.next();
             int x = gn.x + NODE_WIDTH;
             int y = gn.y + NODE_HEIGHT;
             maxX = Math.max(maxX, x);
@@ -223,22 +270,11 @@ public class ActivityOnNodePertChart extends PertChart {
     }
     
     /**
-     * Returns <code>true</code> if the point of coordinates <code>x</code>,
-     * <code>y</code> is in the rectangle described by is top left corner (<code>rectX</code>,
-     * <code>rectY</code>) and dimension (<code>rectWidth</code>,
-     * <code>rectHeight</code>), <code>false</code> ortherwise.
-     * 
-     * @param x
-     * @param y
-     * @param rectX
-     * @param rectY
-     * @param rectWidth
-     * @param rectHeight
      * @return <code>true</code> if the point of coordinates <code>x</code>,
      *         <code>y</code> is in the rectangle described by is top left
      *         corner (<code>rectX</code>, <code>rectY</code>) and
      *         dimension (<code>rectWidth</code>, <code>rectHeight</code>),
-     *         <code>false</code> ortherwise.
+     *         <code>false</code> otherwise.
      */
     private static boolean isInRectancle(int x, int y, int rectX, int rectY,
             int rectWidth, int rectHeight) {
@@ -247,20 +283,16 @@ public class ActivityOnNodePertChart extends PertChart {
     }
 
     /**
-     * Returns the GraphicalNode at the <code>x</code>, <code>y</code>
-     * position, or <code>null</code> if there is no node.
-     * 
-     * @param x
-     * @param y
      * @return The GraphicalNode at the <code>x</code>, <code>y</code>
      *         position, or <code>null</code> if there is no node.
      */
     private GraphicalNode getGraphicalNode(int x, int y) {
-        Iterator it = myGraphicalNodes.iterator();
+        Iterator<GraphicalNode> it = myGraphicalNodes.iterator();
         while (it.hasNext()) {
-            GraphicalNode gn = (GraphicalNode) it.next();
-            if (isInRectancle(x, y, gn.x, gn.y, NODE_WIDTH, NODE_HEIGHT))
+            GraphicalNode gn = it.next();
+            if (isInRectancle(x, y, gn.x, gn.y, NODE_WIDTH, NODE_HEIGHT)) {
                 return gn;
+            }
         }
         return null;
     }
@@ -273,8 +305,8 @@ public class ActivityOnNodePertChart extends PertChart {
         {
             this.myPertAbstraction = new PertChartAbstraction(myTaskManager);
             this.myTaskGraphNodes = myPertAbstraction.getTaskGraphNodes();
-            this.myGraphicalNodes = new ArrayList();
-            this.myGraphicalArrows = new ArrayList();
+            this.myGraphicalNodes = new ArrayList<GraphicalNode>();
+            this.myGraphicalArrows = new ArrayList<GraphicalArrow>();
             //myMapPositionListOfNodes = new HashMap();
             //this.rowsList = new HashMap();
             this.nbCols = 0;
@@ -299,32 +331,27 @@ public class ActivityOnNodePertChart extends PertChart {
 
     /**
      * Updates the data for each nodes.
-     * 
      */
     private void updateGraphNodesInfo() {
         if (myTaskGraphNodes != null) {
-            Iterator it = myTaskGraphNodes.iterator();
+            Iterator<TaskGraphNode> it = myTaskGraphNodes.iterator();
             while (it.hasNext()) {
-                TaskGraphNode tgn = (TaskGraphNode) it.next();
+                TaskGraphNode tgn = it.next();
                 int id = tgn.getID();
-                if(getGraphicalNodeByID(id) != null)
+                if(getGraphicalNodeByID(id) != null) {
                     getGraphicalNodeByID(id).updateData(tgn);
+                }
             }
         }
     }
 
-    /**
-     * 
-     * @param taskGraphNode
-     * @return
-     */
     private boolean isZeroPosition(TaskGraphNode taskGraphNode) {
-        Iterator it = myTaskGraphNodes.iterator();
-        while (it.hasNext())
-        {
-            TaskGraphNode t = (TaskGraphNode) it.next();
-            if (t.getSuccessors().contains(taskGraphNode))
+        Iterator<TaskGraphNode> it = myTaskGraphNodes.iterator();
+        while (it.hasNext()) {
+            TaskGraphNode t = it.next();
+            if (t.getSuccessors().contains(taskGraphNode)) {
                 return false;
+            }
         }
         return true;
     }
@@ -332,8 +359,7 @@ public class ActivityOnNodePertChart extends PertChart {
     private static int getGridX(int x) {
         int res = X_OFFSET;
         int tmp = 0;
-        while (res < x)
-        {
+        while (res < x) {
             tmp = res;
             res += NODE_WIDTH + X_GAP;
         }
@@ -343,8 +369,7 @@ public class ActivityOnNodePertChart extends PertChart {
     private static int getGridY(int y) {
         int res = Y_OFFSET;
         int tmp = 0;
-        while (res < y)
-        {
+        while (res < y) {
             tmp = res;
             res += NODE_HEIGHT + Y_GAP;
         }
@@ -352,34 +377,27 @@ public class ActivityOnNodePertChart extends PertChart {
     }
 
     private void process() {
-        Iterator it = myTaskGraphNodes.iterator();
-        while (it.hasNext())
-        {
-            TaskGraphNode tgn = (TaskGraphNode) it.next();
-            if (isZeroPosition(tgn))
-            {
+        Iterator<TaskGraphNode> it = myTaskGraphNodes.iterator();
+        while (it.hasNext()) {
+            TaskGraphNode tgn = it.next();
+            if (isZeroPosition(tgn)) {
                 add(0, new GraphicalNode(tgn));
             }
         }
         int col = 0;
-        List l = getNodesThatAreInASpecificSuccessorPosition(col);
+        List<TaskGraphNode> l = getNodesThatAreInASpecificSuccessorPosition(col);
+        // TODO Translate:
         // ici tous les 0 position sont faits.
-        while (l != null)
-        {
-            Iterator it2 = l.iterator();
-            while (it2.hasNext())
-            {
-                TaskGraphNode tnode = (TaskGraphNode) it2.next();
+        while (l != null) {
+            Iterator<TaskGraphNode> it2 = l.iterator();
+            while (it2.hasNext()) {
+                TaskGraphNode tnode = it2.next();
                 GraphicalNode gnode = this.getGraphicalNodeByID(tnode.getID());
-                if(gnode == null)
-                {
+                if (gnode == null) {
                     gnode = this.createGraphicalNode(tnode);
-                }
-                else
-                {
+                } else {
                     this.remove(gnode);
                 }
-                
                 this.add(col + 1, gnode);
             }
             col++;
@@ -391,16 +409,17 @@ public class ActivityOnNodePertChart extends PertChart {
      * Creates or gets the graphical node corresponding to the taskGrahNode
      * 
      * @param taskGraphNode
-     * @return
      */
     private GraphicalNode createGraphicalNode(TaskGraphNode taskGraphNode) {
         GraphicalNode res = getGraphicalNodeByID(taskGraphNode.getID());
-        if (res != null)
+        if (res != null) {
             return res;
-        else
+        } else {
             return new GraphicalNode(taskGraphNode);
+        }
     }
 
+    // TODO Method is never used... Remove?
     private void correctPositionBecauseOfSuperTasks() {
         TaskContainmentHierarchyFacade hierarchy = myTaskManager
                 .getTaskHierarchy();
@@ -414,8 +433,9 @@ public class ActivityOnNodePertChart extends PertChart {
 
     // recursive
     private void correctPositions(Task[] tasks) {
-        if (tasks == null)
+        if (tasks == null) {
             return;
+        }
         TaskContainmentHierarchyFacade hierarchy = myTaskManager
                 .getTaskHierarchy();
         for (int j = 0; j < tasks.length; j++) {
@@ -436,73 +456,66 @@ public class ActivityOnNodePertChart extends PertChart {
         this.add(newCol, graphicalNode);
     }
     
-    private void moveDown(GraphicalNode graphicalNode)
-    {
+    private void moveDown(GraphicalNode graphicalNode) {
         int row = graphicalNode.row;
         while(this.isOccupied(++row, graphicalNode.col));
         graphicalNode.row = row;
         /*int nbRows = ((Integer)this.rowsList.get(new Integer(graphicalNode.col))).intValue();
-        if(nbRows-1<row)
-        {
+        if(nbRows-1<row) {
             this.rowsList.put(new Integer(graphicalNode.col), new Integer(row+1));
         }*/
     }
     
-    private GraphicalNode getNode(int row, int col)
-    {
-        Iterator inCol = this.getNodeInColumn(col).iterator();
-        while(inCol.hasNext())
-        {
-            GraphicalNode node = (GraphicalNode)inCol.next();
-            if (node.row ==row)
+    private GraphicalNode getNode(int row, int col) {
+        Iterator<GraphicalNode> inCol = this.getNodeInColumn(col).iterator();
+        while(inCol.hasNext()) {
+            GraphicalNode node = inCol.next();
+            if (node.row ==row) {
                 return node;
+            }
         }
         return null;
     }
     
-    private void moveRight(GraphicalNode graphicalNode)
-    {
-        Iterator successors = graphicalNode.node.getSuccessors().iterator();
-        while(successors.hasNext())
-        {
-            TaskGraphNode successor = (TaskGraphNode)successors.next();
+    private void moveRight(GraphicalNode graphicalNode) {
+        Iterator<TaskGraphNode> successors = graphicalNode.node.getSuccessors().iterator();
+        while(successors.hasNext()) {
+            TaskGraphNode successor = successors.next();
             this.moveRight(this.getGraphicalNodeByID(successor.getID()));
         }
         int newCol = graphicalNode.col +1;
-        if(this.isOccupied(graphicalNode.row, newCol))
+        if(this.isOccupied(graphicalNode.row, newCol)) {
             this.moveRight(this.getNode(graphicalNode.row, newCol));
+        }
         graphicalNode.col = newCol;
-        if(newCol==this.nbCols)
-        {
+        if(newCol==this.nbCols) {
             this.nbCols++;
         }
     }
     
-    private void remove(GraphicalNode graphicalNode)
-    {
+    private void remove(GraphicalNode graphicalNode) {
         this.myGraphicalNodes.remove(graphicalNode);
         
-        if(graphicalNode.col == -1)
+        if(graphicalNode.col == -1) {
             return;
+        }
         
-        Iterator gnodes = this.getNodeInColumn(graphicalNode.col).iterator();
-        while(gnodes.hasNext())
-        {
-            GraphicalNode gnode = (GraphicalNode)gnodes.next();
-            if(gnode.row>graphicalNode.row)
+        Iterator<GraphicalNode> gnodes = this.getNodeInColumn(graphicalNode.col).iterator();
+        while(gnodes.hasNext()) {
+            GraphicalNode gnode = gnodes.next();
+            if(gnode.row>graphicalNode.row) {
                 gnode.row--;
+            }
         }
         
         //int iNbRow = ((Integer)this.rowsList.get(new Integer(graphicalNode.col))).intValue();
         //rowsList.put(new Integer(graphicalNode.col), new Integer(iNbRow-1));
         
-        if(graphicalNode.col==this.nbCols-1)
-        {
-            List list = this.getNodeInColumn(this.nbCols-1);
-            while(list.size()==0)
-            {
+        if (graphicalNode.col == this.nbCols - 1) {
+            List<GraphicalNode> list = this.getNodeInColumn(this.nbCols - 1);
+            while (list.size() == 0) {
                 this.nbCols--;
-                list = this.getNodeInColumn(this.nbCols-1);
+                list = this.getNodeInColumn(this.nbCols -1);
             }
         }
         
@@ -512,9 +525,9 @@ public class ActivityOnNodePertChart extends PertChart {
 
     private GraphicalNode getGraphicalNodeByID(int id) {
         GraphicalNode res = null;
-        Iterator it = myGraphicalNodes.iterator();
+        Iterator<GraphicalNode> it = myGraphicalNodes.iterator();
         while (it.hasNext()) {
-            GraphicalNode gn = (GraphicalNode) it.next();
+            GraphicalNode gn = it.next();
             if (gn.node.getID() == id) {
                 res = gn;
                 break;
@@ -523,7 +536,8 @@ public class ActivityOnNodePertChart extends PertChart {
         return res;
     }
 
-    // ajoute la graphical node dans la map position/liste des successeurs
+    // TODO Translate:
+    /** ajoute la graphical node dans la map position/liste des successeurs */
     private void add(int col, GraphicalNode graphicalNode) {
         /*Integer key = new Integer(position);
         List l = (List) myMapPositionListOfNodes.get(key);
@@ -551,12 +565,14 @@ public class ActivityOnNodePertChart extends PertChart {
         
         myGraphicalNodes.remove(graphicalNode);
         
-        if (this.nbCols-1 < col)
-            this.nbCols = col+1;
+        if (this.nbCols - 1 < col) {
+            this.nbCols = col + 1;
+        }
         
         int row = 0;
-        while(this.isOccupied(row, col))
+        while(this.isOccupied(row, col)) {
             row++;
+        }
         
         graphicalNode.row = row;
         graphicalNode.col = col;
@@ -566,17 +582,15 @@ public class ActivityOnNodePertChart extends PertChart {
         //rowsList.put(new Integer(col), new Integer(iNbRow+1));
     }
 
-    private List getNodesThatAreInASpecificSuccessorPosition(int col) {
-        /*
-        List graphicaleNodes = (List) myMapPositionListOfNodes.get(new Integer(
-                position));
-        */
-        List graphicaleNodes = getNodeInColumn(col);
+    private List<TaskGraphNode> getNodesThatAreInASpecificSuccessorPosition(int col) {
+        // List graphicaleNodes = (List) myMapPositionListOfNodes.get(new Integer(position));
+        List<GraphicalNode> graphicaleNodes = getNodeInColumn(col);
         
-        if (graphicaleNodes.size()==0)
+        if (graphicaleNodes.size()==0) {
             return null;
+        }
         
-        List res = new ArrayList();
+        List<TaskGraphNode> res = new ArrayList<TaskGraphNode>();
         for (int i = 0; i < graphicaleNodes.size(); i++) {
             GraphicalNode gn = (GraphicalNode) graphicaleNodes.get(i);
             TaskGraphNode tgn = gn.node;
@@ -590,71 +604,61 @@ public class ActivityOnNodePertChart extends PertChart {
      * Get the list of GraphicalNode that are in a column.
      * 
      * @param col	the column number to look in 
-     * @return		the list of GraphicalNode in the colum col
+     * @return		the list of GraphicalNode in the col
      */
-    private List getNodeInColumn(int col)
-    {
-        List list = new ArrayList();
-        
-        Iterator gnodes = this.myGraphicalNodes.iterator();
-        while(gnodes.hasNext())
-        {
-            GraphicalNode gnode = (GraphicalNode) gnodes.next();
-            if(gnode.col == col)
+    private List<GraphicalNode> getNodeInColumn(int col) {
+        List<GraphicalNode> list = new ArrayList<GraphicalNode>();
+        Iterator<GraphicalNode> gnodes = this.myGraphicalNodes.iterator();
+        while(gnodes.hasNext()) {
+            GraphicalNode gnode = gnodes.next();
+            if(gnode.col == col) {
                 list.add(gnode);
+            }
         }
-        
         return list;
     }
     
-    private boolean isOccupied(int row, int col)
-    {
-        List list = this.getNodeInColumn(col);
-        if(list.size()!=0)
-        {
-            Iterator gnodes = list.iterator();
-            while(gnodes.hasNext())
-            {
-                GraphicalNode gnode = (GraphicalNode)gnodes.next();
-                if(gnode.row==row)
+    private boolean isOccupied(int row, int col) {
+        List<GraphicalNode> list = this.getNodeInColumn(col);
+        if (list.size() != 0) {
+            Iterator<GraphicalNode> gnodes = list.iterator();
+            while(gnodes.hasNext()) {
+                GraphicalNode gnode = gnodes.next();
+                if(gnode.row == row) {
                     return true;
+                }
             }
         }
         return false;
     }
     
-    private List getAncestor(TaskGraphNode tgn)
-    {
-        List ancestors = new ArrayList();
-        Iterator tnodes = this.myTaskGraphNodes.iterator();
-        while(tnodes.hasNext())
-        {
-            TaskGraphNode tnode = (TaskGraphNode)tnodes.next();
-            List successor = tnode.getSuccessors();
-            if(successor.contains(tgn))
+    private List<TaskGraphNode> getAncestor(TaskGraphNode tgn) {
+        List<TaskGraphNode> ancestors = new ArrayList<TaskGraphNode>();
+        Iterator<TaskGraphNode> tnodes = this.myTaskGraphNodes.iterator();
+        while(tnodes.hasNext()) {
+            TaskGraphNode tnode = tnodes.next();
+            List<TaskGraphNode> successor = tnode.getSuccessors();
+            if(successor.contains(tgn)) {
                 ancestors.add(tnode);
+            }
         }
-        
         return ancestors;
     }
     
     private boolean isCrossingNode(GraphicalNode gnode)
     {
         TaskGraphNode tgn = gnode.node;
-        List list = this.getAncestor(tgn);
-        if(list.size()>0)
-        {
-            Iterator ancestors = list.iterator();
-            while(ancestors.hasNext())
-            {
-                TaskGraphNode ancestor = (TaskGraphNode)ancestors.next();
+        List<TaskGraphNode> list = this.getAncestor(tgn);
+        if (list.size() > 0) {
+            Iterator<TaskGraphNode> ancestors = list.iterator();
+            while (ancestors.hasNext()) {
+                TaskGraphNode ancestor = ancestors.next();
                 GraphicalNode gancestor = this.getGraphicalNodeByID(ancestor.getID());
-                if(gancestor.col<gnode.col-1)
-                {
-                    for(int col=gnode.col-1; col>gancestor.col; col--)
-                    {
-                        if(this.isOccupied(gnode.row, col))
+                if (gancestor.col < gnode.col - 1) {
+                    for (int col = gnode.col - 1; col > gancestor.col; col--) {
+                        if (this.isOccupied(gnode.row, col)) {
                             return true;
+                        }
                     }
                 }
             }
@@ -662,123 +666,109 @@ public class ActivityOnNodePertChart extends PertChart {
         return false;
     }
     
-    private void avoidCrossingNode()
-    {
-        if(this.nbCols==0)
+    private void avoidCrossingNode() {
+        if (this.nbCols == 0) {
             return;
-        
-        int col = this.nbCols-1;
-        while(col>0)
-        {
+        }
+
+        int col = this.nbCols - 1;
+        while (col > 0) {
             boolean hasmoved = false;
-            Iterator gnodes = this.getNodeInColumn(col).iterator();
-            while(gnodes.hasNext())
-            {
-                GraphicalNode gnode = (GraphicalNode)gnodes.next();
-                while(this.isCrossingNode(gnode))
-                {
+            Iterator<GraphicalNode> gnodes = this.getNodeInColumn(col).iterator();
+            while (gnodes.hasNext()) {
+                GraphicalNode gnode = gnodes.next();
+                while (this.isCrossingNode(gnode)) {
                     this.moveDown(gnode);
                     hasmoved = true;
                 }
             }
-            if(hasmoved && col<this.nbCols-1)
+            if (hasmoved && col < this.nbCols - 1) {
                 col++;
-            else
+            } else {
                 col--;
+            }
         }
     }
     
-    private boolean isCrossingArrow(GraphicalNode gnode)
-    {
-        //recherche de la position du successeur le plus haut et le plus bas
-        int maxUp = 1000000, maxDown = -1;
-        Iterator successors = gnode.node.getSuccessors().iterator();
-        while(successors.hasNext())
-        {
-            GraphicalNode successor = this.getGraphicalNodeByID(((TaskGraphNode)successors.next()).getID());
-            if(successor.row<maxUp)
+    private boolean isCrossingArrow(GraphicalNode gnode) {
+        // search for the successors with the highest and lowest position
+        int maxUp = Integer.MAX_VALUE, maxDown = -1;
+        Iterator<TaskGraphNode> successors = gnode.node.getSuccessors().iterator();
+        while(successors.hasNext()) {
+            GraphicalNode successor = this.getGraphicalNodeByID(successors.next().getID());
+            if(successor.row<maxUp) {
                 maxUp = successor.row;
-            if(successor.row>maxDown)
+            }
+            if(successor.row>maxDown) {
                 maxDown = successor.row;
-        }
-        
-        //r�cup�ration de toutes les nodes sur la m�me colonne
-        List othernodes = this.getNodeInColumn(gnode.col);
-        othernodes.remove(gnode);
-        
-        //parcours des nodes sur la m�me colonne
-        Iterator nodes = othernodes.iterator();
-        while(nodes.hasNext())
-        {
-            GraphicalNode othergnode = (GraphicalNode)nodes.next();
-            Iterator othersuccessors = othergnode.node.getSuccessors().iterator();
-            while(othersuccessors.hasNext())
-            {
-                TaskGraphNode othersuccessor = (TaskGraphNode)othersuccessors.next();
-                GraphicalNode othersuccessornode = this.getGraphicalNodeByID(othersuccessor.getID());
-                if(maxUp < gnode.row)
-                {
-                    //some arrows are going up
-                    if(othersuccessornode.row <= gnode.row && !gnode.node.getSuccessors().contains(othersuccessor))
-                        return true;
-                }
-                if(maxDown > gnode.row)
-                {
-                    //some arrow are going down
-                    if(othersuccessornode.row >= gnode.row && !gnode.node.getSuccessors().contains(othersuccessor))
-                        return true;
-                }
             }
         }
         
+        // Find all other nodes on the same column
+        List<GraphicalNode> othernodes = this.getNodeInColumn(gnode.col);
+        othernodes.remove(gnode);
+
+        // TODO Translate
+        //parcours des nodes sur la m�me colonne
+        Iterator<GraphicalNode> nodes = othernodes.iterator();
+        while(nodes.hasNext()) {
+            GraphicalNode othergnode = nodes.next();
+            Iterator<TaskGraphNode> othersuccessors = othergnode.node.getSuccessors().iterator();
+            while (othersuccessors.hasNext()) {
+                TaskGraphNode othersuccessor = othersuccessors.next();
+                GraphicalNode othersuccessornode = this.getGraphicalNodeByID(othersuccessor.getID());
+                if (maxUp < gnode.row) {
+                    // some arrows are going up
+                    if (othersuccessornode.row <= gnode.row
+                            && !gnode.node.getSuccessors().contains(othersuccessor)) {
+                        return true;
+                    }
+                }
+                if (maxDown > gnode.row) {
+                    // some arrow are going down
+                    if (othersuccessornode.row >= gnode.row
+                            && !gnode.node.getSuccessors().contains(othersuccessor)) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
     
-    private void avoidCrossingLine()
-    {
+    private void avoidCrossingLine() {
         boolean restart = true;
-        while(restart)
-        {
+        while (restart) {
             restart = false;
-            for(int col=0; col<this.nbCols; col++)
-            {
-                List list = this.getNodeInColumn(col);
-                if(list.size()>1)
-                {
-                    Iterator gnodes = list.iterator();
-                    while(gnodes.hasNext())
-                    {
-                        GraphicalNode gnode = (GraphicalNode)gnodes.next();
-                        if(this.isCrossingArrow(gnode))
-                        {
+            for (int col = 0; col < this.nbCols; col++) {
+                List<GraphicalNode> list = this.getNodeInColumn(col);
+                if (list.size() > 1) {
+                    Iterator<GraphicalNode> gnodes = list.iterator();
+                    while (gnodes.hasNext()) {
+                        GraphicalNode gnode = gnodes.next();
+                        if (this.isCrossingArrow(gnode)) {
                             this.moveRight(gnode);
                             this.avoidCrossingNode();
                             restart = true;
                             break;
                         }
                     }
-                    
-                    if(restart)
+                    if (restart) {
                         break;
+                    }
                 }
             }
         }
     }
     
-    private void removeEmptyColumn()
-    {
-        for(int col=this.nbCols-1; col>=0; col--)
-        {
-            if(this.getNodeInColumn(col).size()==0)
-            {
-                if(col!=this.nbCols-1)
-                {	
-                    for(int c=col+1;c<this.nbCols;c++)
-                    {
-                        Iterator gnodes = this.getNodeInColumn(c).iterator();
-                        while(gnodes.hasNext())
-                        {
-                            GraphicalNode gnode = (GraphicalNode)gnodes.next();
+    private void removeEmptyColumn() {
+        for (int col = this.nbCols - 1; col >= 0; col--) {
+            if (this.getNodeInColumn(col).size() == 0) {
+                if (col != this.nbCols - 1) {
+                    for (int c = col + 1; c < this.nbCols; c++) {
+                        Iterator<GraphicalNode> gnodes = this.getNodeInColumn(c).iterator();
+                        while (gnodes.hasNext()) {
+                            GraphicalNode gnode = gnodes.next();
                             gnode.col--;
                         }
                     }
@@ -791,6 +781,7 @@ public class ActivityOnNodePertChart extends PertChart {
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         return getChart(settings);
     }
+
     public BufferedImage getChart(GanttExportSettings settings) {
         BufferedImage image = new BufferedImage(myMaxX, myMaxY,
                 BufferedImage.TYPE_INT_RGB);
@@ -810,13 +801,12 @@ public class ActivityOnNodePertChart extends PertChart {
 
     public void paint(Graphics g) {
         this.buildPertChart();
-        myGraphics = g;
         super.paint(g);
         for (int i = 0; i < myGraphicalNodes.size(); i++) {
-            ((GraphicalNode) myGraphicalNodes.get(i)).paint(g);
+            myGraphicalNodes.get(i).paint(g);
         }
         for (int i = 0; i < myGraphicalArrows.size(); i++) {
-            ((GraphicalArrow) myGraphicalArrows.get(i)).paintMe(g);
+            myGraphicalArrows.get(i).paintMe(g);
         }
     }
 
@@ -853,28 +843,27 @@ public class ActivityOnNodePertChart extends PertChart {
         */
         this.myMaxX = 0;
         this.myMaxY = 0;
-        Iterator gnodes = this.myGraphicalNodes.iterator();
-        while(gnodes.hasNext())
-        {
-            GraphicalNode gnode = (GraphicalNode)gnodes.next();
+        Iterator<GraphicalNode> gnodes = this.myGraphicalNodes.iterator();
+        while (gnodes.hasNext()) {
+            GraphicalNode gnode = gnodes.next();
             gnode.x += (NODE_WIDTH + X_GAP) * gnode.col;
             gnode.y += (NODE_HEIGHT + Y_GAP) * gnode.row;
-            
+
             this.myMaxX = gnode.x > this.myMaxX ? gnode.x : this.myMaxX;
             this.myMaxY = gnode.y > this.myMaxY ? gnode.y : this.myMaxY;
         }
-        
+
         this.myMaxX += NODE_WIDTH + X_GAP;
         this.myMaxY += NODE_HEIGHT + Y_GAP;
     }
 
     private void calculateArrowsCoordinates() {
-        Iterator it = myGraphicalNodes.iterator();
+        Iterator<GraphicalNode> it = myGraphicalNodes.iterator();
         while (it.hasNext()) {
-            GraphicalNode gn = (GraphicalNode) it.next();
-            Iterator itSuccessors = gn.node.getSuccessors().iterator();
+            GraphicalNode gn = it.next();
+            Iterator<TaskGraphNode> itSuccessors = gn.node.getSuccessors().iterator();
             while (itSuccessors.hasNext()) {
-                TaskGraphNode tgn = (TaskGraphNode) itSuccessors.next();
+                TaskGraphNode tgn = itSuccessors.next();
                 int id = tgn.getID();
 
                 GraphicalArrow arrow = new GraphicalArrow(gn,
@@ -895,8 +884,7 @@ public class ActivityOnNodePertChart extends PertChart {
     public Object getAdapter(Class adapter) {
         if (adapter.equals(Container.class) || adapter.equals(Chart.class)) {
             return this;
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -905,7 +893,6 @@ public class ActivityOnNodePertChart extends PertChart {
      * Graphical node that is rendered on graphics.
      * 
      * @author bbaranne
-     * 
      */
     private static class GraphicalNode extends JComponent {
         static int xName = 10;
@@ -914,8 +901,8 @@ public class ActivityOnNodePertChart extends PertChart {
 
         private TaskGraphNode node;
 
-        private int col=-1; // conditionne le X
-        private int row=-1;
+        private int col = -1; // determines X
+        private int row = -1;
 
         private final static Color defaultBackgroundColor = new Color(0.9f,
                 0.9f, 0.9f);
@@ -933,8 +920,9 @@ public class ActivityOnNodePertChart extends PertChart {
             this.col = -1;
             this.node = node;
             this.backgroundColor = defaultBackgroundColor;
-            if (node.isCritical())
+            if (node.isCritical()) {
                 this.backgroundColor = defaultCriticalColor;
+            }
         }
 
         /**
@@ -954,10 +942,11 @@ public class ActivityOnNodePertChart extends PertChart {
          *            Graphics where the graphical node is to be painted.
          */
         public void paint(Graphics g) {
-            if (node.isCritical())
+            if (node.isCritical()) {
                 this.backgroundColor = defaultCriticalColor;
-            else
+            } else {
                 this.backgroundColor = defaultBackgroundColor;
+            }
             paintMe(g);
         }
 
@@ -972,20 +961,19 @@ public class ActivityOnNodePertChart extends PertChart {
             FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
 
             int type = this.node.getType();
-            Color color = NORMAL_COLOR;
+            Color color;
             switch (type) {
-            case PertChartAbstraction.Type.NORMAL: {
+            case PertChartAbstraction.Type.NORMAL:
                 color = NORMAL_COLOR;
                 break;
-            }
-            case PertChartAbstraction.Type.SUPER: {
+            case PertChartAbstraction.Type.SUPER:
                 color = SUPER_COLOR;
                 break;
-            }
-            case PertChartAbstraction.Type.MILESTONE: {
+            case PertChartAbstraction.Type.MILESTONE:
                 color = MILESTONE_COLOR;
                 break;
-            }
+            default :
+                color = NORMAL_COLOR;
             }
             g.setColor(this.backgroundColor);
 
@@ -1001,7 +989,6 @@ public class ActivityOnNodePertChart extends PertChart {
 
             g.setColor(Color.BLACK);
             String name = node.getName();
-            int nameWidth = fontMetrics.stringWidth(name);
 
             g.drawString(getTruncatedString(name, NODE_WIDTH - xName,
                     fontMetrics), x + xName, y + yName
@@ -1025,7 +1012,6 @@ public class ActivityOnNodePertChart extends PertChart {
                         + ": "
                         + node.getDuration().getLength(), x + xName, (int) (y
                         + yName + 4.3 * fontMetrics.getHeight()));
-
         }
 
         /**
@@ -1033,9 +1019,6 @@ public class ActivityOnNodePertChart extends PertChart {
          * <code>width</code> and <code>fontMetrics</code>. Returns the
          * truncated String.
          * 
-         * @param str
-         * @param width
-         * @param fontMetrics
          * @return Returns the truncated String.
          */
         private static String getTruncatedString(String str, int width,
@@ -1075,7 +1058,6 @@ public class ActivityOnNodePertChart extends PertChart {
      * Graphical arrow that is rendered on graphics.
      * 
      * @author bbaranne
-     * 
      */
     private static class GraphicalArrow {
         GraphicalNode from;
@@ -1131,66 +1113,8 @@ public class ActivityOnNodePertChart extends PertChart {
 
             // g.drawString(from.node.getName(),arrowFromX+5,arrowFromY+15);
             // g.drawString(to.node.getName(),arrowFromX+50,arrowFromY+15);
-
         }
     }
-
-    /**
-     * Graphical nodes width.
-     */
-    private final static int NODE_WIDTH = 110;//205;
-
-    /**
-     * Graphical nodes height.
-     */
-    private final static int NODE_HEIGHT = 70;
-
-    /**
-     * Gap between two TaskGraphNodes with the same X coordinate.
-     */
-    private final static int X_GAP = 30;//60;
-
-    /**
-     * Gap between two TaskGraphNodes with the same Y coordinate.
-     */
-    private final static int Y_GAP = 15;//30;
-
-    private final static int ARROW_HEIGHT = 10;
-
-    private final static int ARROW_WIDTH = 15;
-
-    private final static int ARROW_CORNER_WIDTH = 6;
-
-    /**
-     * X offset for the top left task graph node.
-     */
-    private final static int X_OFFSET = 5;
-
-    /**
-     * Y offset for the top left task graph node.
-     */
-    private final static int Y_OFFSET = 5;
-
-    /**
-     * Color of the border of normal tasks.
-     */
-    private final static Color NORMAL_COLOR = Color.BLUE.brighter();
-
-    /**
-     * Color of the border of supertasks.
-     */
-    private final static Color SUPER_COLOR = Color.RED;
-
-    /**
-     * Color of the border of milestones.
-     */
-    private final static Color MILESTONE_COLOR = Color.BLACK;
-
-    /**
-     * Color of the arrows.
-     */
-    private final static Color ARROW_COLOR = Color.GRAY;
-
 
     public TaskLength calculateLength(int posX) {
         // TODO Auto-generated method stub
@@ -1204,52 +1128,42 @@ public class ActivityOnNodePertChart extends PertChart {
 
     public void paintChart(Graphics g) {
         // TODO Auto-generated method stub
-        
     }
 
     public void resetRenderers() {
         // TODO Auto-generated method stub
-        
     }
 
     public void scrollLeft() {
         // TODO Auto-generated method stub
-        
     }
 
     public void scrollRight() {
         // TODO Auto-generated method stub
-        
     }
 
     public void setBottomUnit(TimeUnit bottomUnit) {
         // TODO Auto-generated method stub
-        
     }
 
     public void setBottomUnitWidth(int width) {
         // TODO Auto-generated method stub
-        
     }
 
     public void setDimensions(int height, int width) {
         // TODO Auto-generated method stub
-        
     }
 
     public void setStartDate(Date startDate) {
         // TODO Auto-generated method stub
-        
     }
 
     public void setTopUnit(TimeUnit topUnit) {
         // TODO Auto-generated method stub
-        
     }
 
     public ChartModelBase getModel() {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

@@ -41,7 +41,7 @@ public class PertChartAbstraction {
 
     private TaskManager myTaskManager;
 
-    private List myTaskGraph;
+    private List<TaskGraphNode> myTaskGraph;
 
     /**
      * Creates a PertChartAbstraction, then load the data with data found in
@@ -52,7 +52,7 @@ public class PertChartAbstraction {
      */
     public PertChartAbstraction(TaskManager taskManager) {
         myTaskManager = taskManager;
-        myTaskGraph = new ArrayList();
+        myTaskGraph = new ArrayList<TaskGraphNode>();
         load();
     }
 
@@ -72,39 +72,34 @@ public class PertChartAbstraction {
                 tgn.addSuccessor(getTaskGraphNode(successor));
             }
         }
-
     }
 
     /**
-     * Returns the <code>TaskGraphNode</code> corresponding to the given
-     * <code>task</code>.
-     * 
      * @param task
      *            The task from which we want the <code>TaskGraphNode</code>
-     * @return The <code>TaskGraphNode</code> corresponding to the given
+     * @return The <code>TaskGraphNode</code> corresponding of the given
      *         <code>task</code>.
      */
     private TaskGraphNode getTaskGraphNode(Task task) {
         TaskGraphNode res = getTaskGraphNodeByID(task.getTaskID());
         if (res == null) {
             res = new TaskGraphNode(task);
-            if (task.isMilestone())
+            if (task.isMilestone()) {
                 res.setType(Type.MILESTONE);
-            else if (myTaskManager.getTaskHierarchy().getNestedTasks(task).length == 0)
+            } else if (myTaskManager.getTaskHierarchy().getNestedTasks(task).length == 0) {
                 res.setType(Type.NORMAL);
-            else
+            } else {
                 res.setType(Type.SUPER);
+            }
             myTaskGraph.add(res);
         }
         return res;
     }
 
     /**
-     * Returns the list of <code>TaskGraphNodes</code>.
-     * 
      * @return The list of <code>TaskGraphNodes</code>.
      */
-    public List getTaskGraphNodes() {
+    public List<TaskGraphNode> getTaskGraphNodes() {
         return myTaskGraph;
     }
 
@@ -119,9 +114,9 @@ public class PertChartAbstraction {
      */
     public TaskGraphNode getTaskGraphNodeByID(int id) {
         TaskGraphNode res = null;
-        Iterator it = myTaskGraph.iterator();
+        Iterator<TaskGraphNode> it = myTaskGraph.iterator();
         while (it.hasNext()) {
-            TaskGraphNode tgn = (TaskGraphNode) it.next();
+            TaskGraphNode tgn = it.next();
             if (tgn.getID() == id) {
                 res = tgn;
                 break;
@@ -138,14 +133,14 @@ public class PertChartAbstraction {
      */
     static class TaskGraphNode {
 
-        private List successors;
+        private List<TaskGraphNode> successors;
 
         private int type;
 
         private Task myTask;
 
         TaskGraphNode(Task task) {
-            successors = new ArrayList();
+            successors = new ArrayList<TaskGraphNode>();
             myTask = task;
         }
 
@@ -161,7 +156,7 @@ public class PertChartAbstraction {
             this.successors.add(successor);
         }
 
-        List getSuccessors() {
+        List<TaskGraphNode> getSuccessors() {
             return this.successors;
         }
 

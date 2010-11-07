@@ -154,7 +154,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                 try {
                     Driver driver = new Driver();
                     driver.setRenderer(Driver.RENDER_PDF);
-                    Options options = createOptions();
+                    createOptions();
                     FopImageFactory.resetCache();
                     state.driver = driver;
                     monitor.worked(1);
@@ -212,8 +212,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                         try {
                             out.flush();
                         	out.close();
-                        }
-                        catch(IOException e) {
+                        } catch(IOException e) {
                             getUIFacade().showErrorDialog(e);
                         }
                     }
@@ -390,14 +389,9 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         return (Stylesheet[]) factory.createStylesheets(PDFStylesheet.class);
     }
 
-    private class PDFStylesheetImpl extends StylesheetImpl
-            implements
-                PDFStylesheet {
-
+    private class PDFStylesheetImpl extends StylesheetImpl implements PDFStylesheet {
         PDFStylesheetImpl(URL stylesheetURL, String localizedName) {
             super(stylesheetURL, localizedName);
         }
-
     }
-
 }

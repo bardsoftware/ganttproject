@@ -23,7 +23,6 @@ class LocaleChooserPanel extends JPanel {
 
     private static GanttLanguage lang = GanttLanguage.getInstance();
 
-    /** Constructor. */
     public LocaleChooserPanel() {
         super();
 
@@ -49,10 +48,10 @@ class LocaleChooserPanel extends JPanel {
 
         private static final String LOCALE_EN = "English";
 
-        private static Map mapLocales = null;
+        private static Map<String, Locale> mapLocales = null;
 
         static {
-            mapLocales = new HashMap();
+            mapLocales = new HashMap<String, Locale>();
             mapLocales.put(LOCALE_EN, Locale.US);
             mapLocales.put(LOCALE_FR, Locale.FRANCE);
         }
@@ -61,7 +60,7 @@ class LocaleChooserPanel extends JPanel {
 
         public LocalePanel() {
             super("", "");
-            combo = new JComboBox(new Vector(mapLocales.keySet()));
+            combo = new JComboBox(new Vector<String>(mapLocales.keySet()));
             vb.add(combo);
             Locale currentLocale = GanttLanguage.getInstance().getLocale();
             try {
@@ -85,20 +84,21 @@ class LocaleChooserPanel extends JPanel {
             return (Locale) mapLocales.get(combo.getSelectedItem());
         }
 
+        // TODO Method is unused... Remove?
         private static Locale getLocale(String locale) {
             return (Locale) mapLocales.get(locale);
         }
 
         private static String getString(Locale locale) {
             String res = null;
-            Iterator it = mapLocales.keySet().iterator();
+            Iterator<String> it = mapLocales.keySet().iterator();
             while (it.hasNext()) {
-                res = (String) it.next();
-                if (mapLocales.get(res).equals(locale))
+                res = it.next();
+                if (mapLocales.get(res).equals(locale)) {
                     break;
+                }
             }
             return res;
         }
     }
-
 }
