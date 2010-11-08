@@ -16,27 +16,19 @@ public class ScrollingManagerImpl implements ScrollingManager {
     public ScrollingManagerImpl() {
     }
 
-    public void scrollLeft() {
+    public void scrollBy(int days) {
         for (int i = 0; i < myListeners.size(); i++) {
             ScrollingListener nextListener = myListeners
                     .get(i);
-            nextListener.scrollLeft();
+            nextListener.scrollBy(days);
         }
     }
 
-    public void scrollRight() {
+    public void scrollTo(Date date) {
         for (int i = 0; i < myListeners.size(); i++) {
             ScrollingListener nextListener = myListeners
                     .get(i);
-            nextListener.scrollRight();
-        }
-    }
-
-    public void scrollLeft(Date date) {
-        for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = myListeners
-                    .get(i);
-            nextListener.scrollLeft(date);
+            nextListener.scrollTo(date);
         }
     }
 

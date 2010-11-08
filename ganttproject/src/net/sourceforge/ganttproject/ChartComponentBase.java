@@ -211,20 +211,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
             if (days == 0) {
                 return;
             }
-            if (days > 0) {
-                getUIFacade().getScrollingManager().scrollLeft();
-
-            }
-            if (days < 0) {
-               getUIFacade().getScrollingManager().scrollRight();
-
-            }
-           myPreviousAbsoluteDiff = absoluteDiff;
-           // moves the block of the chart's scroll bar
-//           Mediator.getGanttProjectSingleton().getMyGanttChartTabContent().getCustomScrollPane().setBlockFromChart();
-           //Mediator.getGanttProjectSingleton().getResourcePanel().getCustomScrollPane().setBlockFromChart();
-
-
+            getUIFacade().getScrollingManager().scrollBy(-days);
+            myPreviousAbsoluteDiff = absoluteDiff;
         }
 
 
@@ -342,13 +330,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return getImplementation().getEndDate();
     }
 
-    public void scrollLeft() {
-        getImplementation().scrollLeft();
-        repaint();
-    }
-
-    public void scrollRight() {
-        getImplementation().scrollRight();
+    public void scrollBy(int days) {
+        getImplementation().scrollBy(days);
         repaint();
     }
 

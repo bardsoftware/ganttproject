@@ -294,7 +294,7 @@ public class GanttXMLOpen implements GPParser {
                         }
                         // TODO: 1.12 repair scrolling to the saved date
                         else if (aName.equals("view-date")) {
-                        	myUIFacade.getScrollingManager().scrollLeft(GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime());
+                        	myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime());
                         }
                         else if (aName.equals("view-index")) {
                             viewIndex = new Integer(attrs.getValue(i))
