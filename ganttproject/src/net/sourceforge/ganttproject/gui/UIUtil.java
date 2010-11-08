@@ -1,10 +1,13 @@
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 
 public abstract class UIUtil {
     public static void repackWindow(JComponent component) {
@@ -25,6 +28,11 @@ public abstract class UIUtil {
                 setEnabledTree((JComponent) components[i], isEnabled);
             }
         }
+    }
+    
+    public static void createTitle(JComponent component, String title) {
+        Border lineBorder = BorderFactory.createMatteBorder(1,0,0,0,Color.BLACK);
+        component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));
     }
 
 }

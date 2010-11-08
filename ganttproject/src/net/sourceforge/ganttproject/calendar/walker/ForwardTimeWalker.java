@@ -50,6 +50,7 @@ public abstract class ForwardTimeWalker {
             boolean isWeekendState = myCalendar.isNonWorkingDay(unitStart);
             if (isWeekendState) {
                 Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);
+                assert workingUnitStart.after(unitStart);
                 processNonWorkingTime(unitStart, workingUnitStart);
                 unitStart = workingUnitStart;
                 continue;

@@ -56,15 +56,15 @@ public class GanttSplash extends JFrame {
                 
                 int textLength = TextLengthCalculatorImpl.getTextLength(g,
                         GanttProject.version);
-                drawTextWithShadow(g2, GPVersion.V2_0_X, (int) (getSize().getWidth()
-                        - textLength - 9), 287);
-                drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
+                drawTextWithShadow(g2, GPVersion.PRAHA, 
+                		65, 80);
+                //drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
             }
         };
     }
 
     private void drawTextWithShadow(Graphics2D graphics, String text, int xpos, int ypos) {
-        graphics.setColor(Color.white);
+        graphics.setColor(Color.GRAY);
         graphics.drawString(text, xpos , ypos);
     }
     public void setVisible(boolean b) {

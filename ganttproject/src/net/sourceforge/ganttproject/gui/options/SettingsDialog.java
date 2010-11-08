@@ -172,6 +172,7 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
                     .getComment()));
         }    
         // - initialize the panel
+        vb.add(Box.createVerticalStrut(20));
         settingPanel.initialize();
         vb.add(settingPanel.getComponent());
 

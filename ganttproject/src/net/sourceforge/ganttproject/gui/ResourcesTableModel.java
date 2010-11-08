@@ -71,8 +71,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         Object result;
         if (row >= 0) {
             if (row < myAssignments.size()) {
-                ResourceAssignment assignment = myAssignments
-                        .get(row);
+                ResourceAssignment assignment = myAssignments.get(row);
                 switch (col) {
                 case 0:
                     result = String.valueOf(assignment.getResource().getId());
@@ -99,7 +98,6 @@ public class ResourcesTableModel extends AbstractTableModel {
             throw new IllegalArgumentException("I can't return data in row="
                     + row);
         }
-        System.err.println("row="+row+" col="+col+" result="+result);
         return result;
     }
 
@@ -127,8 +125,7 @@ public class ResourcesTableModel extends AbstractTableModel {
     }
 
     private void updateAssignment(Object value, int row, int col) {
-        ResourceAssignment updateTarget = myAssignments
-                .get(row);
+        ResourceAssignment updateTarget = myAssignments.get(row);
         switch (col) {
         case 4: {
             updateTarget.setRoleForAssignment((Role) value);
