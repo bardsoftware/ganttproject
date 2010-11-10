@@ -52,6 +52,7 @@ public class CustomColumnsPanel extends JPanel {
     private JNTable table;
 
     public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade) {
+    	assert manager != null;
         myCustomPropertyManager = manager;
         myUIfacade = uifacade;
         this.initComponents();
@@ -111,13 +112,13 @@ public class CustomColumnsPanel extends JPanel {
         model.reload();
     }
 
-    class CustomColumnTableModel extends DefaultTableModel {
-        private final String[] COLUMN_NAMES = new String[] {
-            CustomColumnsPanel.language.getText("name"),
-            CustomColumnsPanel.language.getText("typeClass"),
-            CustomColumnsPanel.language.getText("default")
-        };
+    private static final String[] COLUMN_NAMES = new String[] {
+        CustomColumnsPanel.language.getText("name"),
+        CustomColumnsPanel.language.getText("typeClass"),
+        CustomColumnsPanel.language.getText("default")
+    };
 
+    class CustomColumnTableModel extends DefaultTableModel {
         public CustomColumnTableModel() {
         }
 

@@ -72,6 +72,8 @@ public class ProjectFileImporter {
     private final IGanttProject myNativeProject;
     private final ProjectReader myReader;
     private final File myForeignFile;
+	private Map<ResourceField, CustomPropertyDefinition> myResourceCustomPropertyMapping;
+	private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
 
     private static ProjectReader createReader(File file) {
         int lastDot = file.getName().lastIndexOf('.');
@@ -173,6 +175,7 @@ public class ProjectFileImporter {
 
 
     private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
+        myResourceCustomPropertyMapping = new HashMap<ResourceField, CustomPropertyDefinition>();
         for (Resource r: pf.getAllResources()) {
             HumanResource nativeResource = myNativeProject.getHumanResourceManager().newHumanResource();
             nativeResource.setName(r.getName());
@@ -185,21 +188,20 @@ public class ProjectFileImporter {
     }
 
     private void importCustomProperties(Resource r, HumanResource nativeResource) {
-        Map<ResourceField, CustomPropertyDefinition> foreign2native =
-            new HashMap<ResourceField, CustomPropertyDefinition>();
         for (ResourceField rf : ResourceField.values()) {
             if (r.getCurrentValue(rf) == null || !isCustomField(rf)) {
                 continue;
             }
-            CustomPropertyDefinition def = foreign2native.get(rf);
+            CustomPropertyDefinition def = myResourceCustomPropertyMapping.get(rf);
             if (def == null) {
                 String typeAsString = convertDataType(rf);
                 String name = r.getParentFile().getResourceFieldAlias(rf);
                 if (name == null) {
                     name = rf.getName();
                 }
-                def = myNativeProject.getTaskCustomColumnManager().createDefinition(
+                def = myNativeProject.getResourceCustomPropertyManager().createDefinition(
                         typeAsString, name, null);
+                myResourceCustomPropertyMapping.put(rf, def);
             }
             nativeResource.setCustomFieldVal(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
         }
@@ -221,6 +223,7 @@ public class ProjectFileImporter {
     }
 
     private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask) {
+        myTaskCustomPropertyMapping = new HashMap<TaskField, CustomPropertyDefinition>();
         for (Task t: foreignProject.getChildTasks()) {
             importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
         }
@@ -253,13 +256,11 @@ public class ProjectFileImporter {
     }
 
     private void importCustomFields(Task t, GanttTask nativeTask) {
-        Map<TaskField, CustomPropertyDefinition> foreign2native =
-            new HashMap<TaskField, CustomPropertyDefinition>();
         for (TaskField tf : TaskField.values()) {
             if (t.getCurrentValue(tf) == null || !isCustomField(tf)) {
                 continue;
             }
-            CustomPropertyDefinition def = foreign2native.get(tf);
+            CustomPropertyDefinition def = myTaskCustomPropertyMapping.get(tf);
             if (def == null) {
                 String typeAsString = convertDataType(tf);
                 String name = t.getParentFile().getTaskFieldAlias(tf);
@@ -268,6 +269,7 @@ public class ProjectFileImporter {
                 }
                 def = myNativeProject.getTaskCustomColumnManager().createDefinition(
                         typeAsString, name, null);
+                myTaskCustomPropertyMapping.put(tf, def);
             }
             try {
                 nativeTask.getCustomValues().setValue(
