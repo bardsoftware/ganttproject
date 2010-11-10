@@ -10,7 +10,7 @@ SET LOCAL_CLASSPATH=%GP_HOME%\eclipsito.jar
 SET CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 SET BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 
-"%JAVA_COMMAND%" -Xmx256m -classpath "%CLASSPATH%;%LOCAL_CLASSPATH%" %BOOT_CLASS% "%CONFIGURATION_FILE%" -log -open %1 %2 %3 %4 %5 %6 
+"%JAVA_COMMAND%" -Xmx512m -classpath "%CLASSPATH%;%LOCAL_CLASSPATH%" -ea %BOOT_CLASS% "%CONFIGURATION_FILE%" -log -open %1 %2 %3 %4 %5 %6 
 if %ERRORLEVEL% EQU 9009 goto ERROR_NO_JAVA
 goto END
 
