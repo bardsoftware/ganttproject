@@ -106,7 +106,7 @@ public class CustomColumnsPanel extends JPanel {
         int selectedRowsIndexes[] = table.getTable().getSelectedRows();
         for (int i = 0; i < selectedRowsIndexes.length; i++) {
             String nameToDel = (String) model.getValueAt(selectedRowsIndexes[i], 0);
-            CustomPropertyDefinition def = myCustomPropertyManager.getCustomPropertyDefinition(nameToDel);
+            CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(selectedRowsIndexes[i]);
             myCustomPropertyManager.deleteDefinition(def);
         }
         model.reload();
