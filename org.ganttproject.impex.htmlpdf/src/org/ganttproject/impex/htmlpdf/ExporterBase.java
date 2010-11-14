@@ -18,16 +18,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
-import org.eclipse.core.runtime.jobs.Job;
-import org.osgi.service.prefs.Preferences;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -43,14 +33,23 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.service.prefs.Preferences;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 abstract class ExporterBase {
     private IGanttProject myProject;
@@ -394,7 +393,7 @@ abstract class ExporterBase {
                 	}
                 }
                 {
-                	ProjectResource coordinator = t.getAssignmentCollection().getCoordinator();
+                	HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
                 	if (coordinator!=null) {
                 		addAttribute("id", "tpd8", myAttrs);
                 		textElement("coordinator", myAttrs, coordinator.getName(), handler);
@@ -450,7 +449,7 @@ abstract class ExporterBase {
       return " ";
     }
 
-    protected void writeResources(ResourceManager resourceManager,
+    protected void writeResources(HumanResourceManager resourceManager,
             TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("title", i18n("resourcesList"), attrs);
@@ -460,12 +459,12 @@ abstract class ExporterBase {
         addAttribute("phone", i18n("colPhone"), attrs);
         startPrefixedElement("resources", attrs, handler);
         {
-            List resources = resourceManager.getResources();
+            List<HumanResource> resources = resourceManager.getResources();
 
             // String
             // []function=RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
-                HumanResource p = (HumanResource) resources.get(i);
+                HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);
                 startPrefixedElement("resource", attrs, handler);
                 addAttribute("id", "0", attrs);

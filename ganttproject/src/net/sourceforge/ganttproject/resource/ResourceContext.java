@@ -12,5 +12,5 @@ package net.sourceforge.ganttproject.resource;
  */
 public interface ResourceContext {
     /** @return Resources selected at the moment */
-    public ProjectResource[] getResources();
+    public HumanResource[] getResources();
 }

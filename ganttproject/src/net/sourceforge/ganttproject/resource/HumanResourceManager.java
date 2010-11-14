@@ -36,11 +36,11 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 /**
  * @author barmeier
  */
-public class HumanResourceManager implements ResourceManager, CustomPropertyManager {
+public class HumanResourceManager implements CustomPropertyManager {
 
     private List<ResourceView> myViews = new ArrayList<ResourceView>();
 
-    private List<ProjectResource> resources = new ArrayList<ProjectResource>();
+    private List<HumanResource> resources = new ArrayList<HumanResource>();
 
     private int nextFreeId = 0;
 
@@ -60,14 +60,14 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         return result;
     }
 
-    public ProjectResource create(String name, int i) {
+    public HumanResource create(String name, int i) {
         HumanResource hr = new HumanResource(name, i, this);
         hr.setRole(myDefaultRole);
         add(hr);
-        return (hr);
+        return hr;
     }
 
-    public void add(ProjectResource resource) {
+    public void add(HumanResource resource) {
         if (resource.getId() == -1) {
             resource.setId(nextFreeId);
         }
@@ -82,9 +82,9 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         customFields.put(definition.getName(), definition);
 
         /* all the existent resources are added the new property field */
-        Iterator<ProjectResource> it = resources.iterator();
+        Iterator<HumanResource> it = resources.iterator();
         while (it.hasNext()) {
-            ((HumanResource)it.next()).addCustomField(definition.getName(), definition.getDefaultValue());
+            it.next().setCustomField(definition.getName(), definition.getDefaultValue());
         }
     }
 
@@ -96,16 +96,16 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         customFields.remove(title);
 
         /* the property field is removed from all the existent resources */
-        Iterator<ProjectResource> it = resources.iterator();
+        Iterator<HumanResource> it = resources.iterator();
         while (it.hasNext()) {
-            ((HumanResource)it.next()).removeCustomField(title);
+            it.next().removeCustomField(title);
         }
     }
 
-    public ProjectResource getById(int id) {
+    public HumanResource getById(int id) {
         // Linear search is not really efficient, but we do not have so many
         // resources !?
-        ProjectResource pr = null;
+    	HumanResource pr = null;
         for (int i = 0; i < resources.size(); i++)
             if (resources.get(i).getId() == id) {
                 pr = resources.get(i);
@@ -114,24 +114,24 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         return pr;
     }
 
-    public List<ProjectResource> getResources() {
+    public List<HumanResource> getResources() {
         return resources;
     }
 
-    public ProjectResource[] getResourcesArray() {
-        return resources.toArray(new ProjectResource[resources.size()]);
+    public HumanResource[] getResourcesArray() {
+        return resources.toArray(new HumanResource[resources.size()]);
     }
 
-    public void remove(ProjectResource resource) {
-        fireResourcesRemoved(new ProjectResource[] { resource });
+    public void remove(HumanResource resource) {
+        fireResourcesRemoved(new HumanResource[] { resource });
         resources.remove(resource);
     }
 
-    public void remove(ProjectResource resource, GPUndoManager myUndoManager) {
-        final ProjectResource res = resource;
+    public void remove(HumanResource resource, GPUndoManager myUndoManager) {
+        final HumanResource res = resource;
         myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
             public void run() {
-                fireResourcesRemoved(new ProjectResource[] { res });
+                fireResourcesRemoved(new HumanResource[] { res });
                 resources.remove(res);
             }
         });
@@ -149,7 +149,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         myViews.add(view);
     }
 
-    private void fireResourceAdded(ProjectResource resource) {
+    private void fireResourceAdded(HumanResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
         for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
             ResourceView nextView = i.next();
@@ -157,7 +157,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         }
     }
 
-    void fireResourceChanged(ProjectResource resource) {
+    void fireResourceChanged(HumanResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
         for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
             ResourceView nextView = i.next();
@@ -165,7 +165,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         }
     }
 
-    private void fireResourcesRemoved(ProjectResource[] resources) {
+    private void fireResourcesRemoved(HumanResource[] resources) {
         ResourceEvent e = new ResourceEvent(this, resources);
         for (int i = 0; i < myViews.size(); i++) {
             ResourceView nextView = myViews.get(i);
@@ -173,7 +173,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
         }
     }
 
-    public void fireAssignmentsChanged(ProjectResource resource) {
+    public void fireAssignmentsChanged(HumanResource resource) {
         ResourceEvent e = new ResourceEvent(this, resource);
         for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
             ResourceView nextView = i.next();
@@ -183,7 +183,7 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     private void fireCleanup() {
         fireResourcesRemoved(resources
-                .toArray(new ProjectResource[resources.size()]));
+                .toArray(new HumanResource[resources.size()]));
     }
 
     /** Move up the resource number index */
@@ -207,12 +207,12 @@ public class HumanResourceManager implements ResourceManager, CustomPropertyMana
 
     public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
         Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
-        List<ProjectResource> foreignResources = hrManager.getResources();
+        List<HumanResource> foreignResources = hrManager.getResources();
         for (int i = 0; i < foreignResources.size(); i++) {
-            HumanResource foreignHR = (HumanResource) foreignResources.get(i);
-            HumanResource nativeHR = (HumanResource) getById(foreignHR.getId());
+            HumanResource foreignHR = foreignResources.get(i);
+            HumanResource nativeHR = getById(foreignHR.getId());
             if (nativeHR == null) {
-                nativeHR = (HumanResource) create(foreignHR.getName(), nextFreeId);
+                nativeHR = create(foreignHR.getName(), nextFreeId);
             }
             foreign2native.put(foreignHR, nativeHR);
         }

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RolePersistentID;
@@ -25,7 +25,15 @@ import org.xml.sax.Attributes;
  * @author bard
  */
 public class AllocationTagHandler implements TagHandler, ParsingListener {
-    public AllocationTagHandler(ResourceManager resourceMgr,
+    private HumanResourceManager myResourceManager;
+
+    private TaskManager myTaskManager;
+
+    private RoleManager myRoleManager;
+
+    private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
+
+    public AllocationTagHandler(HumanResourceManager resourceMgr,
             TaskManager taskMgr, RoleManager roleMgr) {
         myResourceManager = resourceMgr;
         myTaskManager = taskMgr;
@@ -40,7 +48,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
      */
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
-
         if (qName.equals("allocation")) {
             loadAllocation(attrs);
         }
@@ -53,7 +60,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
      *      java.lang.String, java.lang.String)
      */
     public void endElement(String namespaceURI, String sName, String qName) {
-        // TODO Auto-generated method stub
     }
 
     private void loadAllocation(Attributes attrs) throws FileFormatException {
@@ -98,8 +104,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
             load = 100;
         }
 
-        HumanResource human = (HumanResource) getResourceManager().getById(
-                resourceId);
+		HumanResource human = getResourceManager().getById(resourceId);
         if (human == null) {
             throw new FileFormatException("Human resource with id="
                     + resourceId + " not found");
@@ -132,7 +137,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         assignment.setCoordinator(coordinator);
     }
 
-    private ResourceManager getResourceManager() {
+    private HumanResourceManager getResourceManager() {
         return myResourceManager;
     }
 
@@ -166,7 +171,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
     }
 
     public void parsingStarted() {
-        // TODO Auto-generated method stub
     }
 
     public void parsingFinished() {
@@ -186,13 +190,4 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
                             + myLateAssigmnent2roleBinding);
         }
     }
-
-    private ResourceManager myResourceManager;
-
-    private TaskManager myTaskManager;
-
-    private RoleManager myRoleManager;
-
-    private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
-
 }

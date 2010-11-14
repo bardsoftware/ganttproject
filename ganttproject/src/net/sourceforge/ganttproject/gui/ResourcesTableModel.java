@@ -26,7 +26,6 @@ import javax.swing.table.AbstractTableModel;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
@@ -145,12 +144,12 @@ public class ResourcesTableModel extends AbstractTableModel {
                 updateTarget.delete();
                 myAssignments.remove(row);
                 fireTableRowsDeleted(row, row);
-            } else if (value instanceof ProjectResource) {
+            } else if (value instanceof HumanResource) {
                 float load = updateTarget.getLoad();
                 boolean coord = updateTarget.isCoordinator();
                 updateTarget.delete();
-                ResourceAssignment newAssignment = myMutator
-                        .addAssignment((ProjectResource) value);
+				ResourceAssignment newAssignment = myMutator
+						.addAssignment((HumanResource) value);
                 newAssignment.setLoad(load);
                 newAssignment.setCoordinator(coord);
                 myAssignments.set(row, newAssignment);
@@ -164,9 +163,9 @@ public class ResourcesTableModel extends AbstractTableModel {
     }
 
     private void createAssignment(Object value) {
-        if (value instanceof ProjectResource) {
+        if (value instanceof HumanResource) {
             ResourceAssignment newAssignment = myMutator
-                    .addAssignment((ProjectResource) value);
+                    .addAssignment((HumanResource) value);
             newAssignment.setLoad(100);
 
             boolean coord = false;

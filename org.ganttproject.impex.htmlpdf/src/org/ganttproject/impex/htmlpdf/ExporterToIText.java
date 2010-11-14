@@ -525,9 +525,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
             StringBuffer result = new StringBuffer();
             String delimiter = "";
-            List resources = getProject().getHumanResourceManager().getResources();
+            List<HumanResource> resources = getProject().getHumanResourceManager().getResources();
             for (int i = 0; i < resources.size(); i++) {
-                HumanResource resource = (HumanResource) resources.get(i);
+                HumanResource resource = resources.get(i);
                 if (resource.getRole().equals(managerRole)) {
                     result.append(delimiter).append(resource.getName());
                     delimiter = ", ";
@@ -725,11 +725,11 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             TableHeaderUIFacade visibleFields = getUIFacade().getResourceTree().getVisibleFields();
             final ArrayList<Column> orderedColumns = new ArrayList<Column>();
             final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
-            List resources = getProject().getHumanResourceManager().getResources();
+            List<HumanResource> resources = getProject().getHumanResourceManager().getResources();
 
             PropertyFetcher propFetcher = new PropertyFetcher(getProject());
             for (int i = 0; i < resources.size(); i++) {
-                HumanResource resource = (HumanResource) resources.get(i);
+                HumanResource resource = resources.get(i);
                 HashMap<String, String> id2value = new HashMap<String, String>();
                 propFetcher.getResourceAttributes(resource, id2value);
                 HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();

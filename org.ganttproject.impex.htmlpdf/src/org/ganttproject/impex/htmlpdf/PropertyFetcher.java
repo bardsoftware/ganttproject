@@ -9,7 +9,6 @@ import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
@@ -37,7 +36,7 @@ class PropertyFetcher {
         id2value.put("tpd6", String.valueOf(t.getDuration().getLength()));
         id2value.put("tpd7", String.valueOf(t.getCompletionPercentage()));
 
-        ProjectResource coordinator = t.getAssignmentCollection().getCoordinator();
+        HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
         if (coordinator!=null) {
             id2value.put("tpd8", coordinator.getName());                        
         }

@@ -7,19 +7,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
-    private final Map<ProjectResource, ResourceAssignment> myAssignments = new HashMap<ProjectResource, ResourceAssignment>();
+    private final Map<HumanResource, ResourceAssignment> myAssignments = new HashMap<HumanResource, ResourceAssignment>();
 
     private final TaskImpl myTask;
 
-    private ResourceManager myResourceManager;
+    private HumanResourceManager myResourceManager;
 
-    public ResourceAssignmentCollectionImpl(TaskImpl task,
-            ResourceManager resourceManager) {
+	public ResourceAssignmentCollectionImpl(TaskImpl task,
+			HumanResourceManager resourceManager) {
         myTask = task;
         myResourceManager = resourceManager;
     }
@@ -51,7 +51,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
                 new ResourceAssignment[myAssignments.size()]);
     }
 
-    public ResourceAssignment getAssignment(ProjectResource resource) {
+    public ResourceAssignment getAssignment(HumanResource resource) {
         return myAssignments.get(resource);
     }
 
@@ -63,15 +63,15 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         return new ResourceAssignmentCollectionImpl(this);
     }
 
-    public ResourceAssignment addAssignment(ProjectResource resource) {
+    public ResourceAssignment addAssignment(HumanResource resource) {
         return auxAddAssignment(resource);
     }
 
-    public void deleteAssignment(ProjectResource resource) {
+    public void deleteAssignment(HumanResource resource) {
         myAssignments.remove(resource);
     }
 
-    private ResourceAssignment auxAddAssignment(ProjectResource resource) {
+    private ResourceAssignment auxAddAssignment(HumanResource resource) {
         final ResourceAssignment result = new ResourceAssignmentImpl(resource);
         addAssignment(result);
         return result;
@@ -86,8 +86,8 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
      *  
      * @param resource Assigned resource
      */
-    public void removeAssignment(ProjectResource resource) {
-        (new ResourceAssignmentImpl(resource)).delete();
+    public void removeAssignment(HumanResource resource) {
+        new ResourceAssignmentImpl(resource).delete();
     }
 
     private Task getTask() {
@@ -97,7 +97,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     private class ResourceAssignmentImpl implements ResourceAssignment {
         private ResourceAssignment myAssignmentToResource;
 
-        public ResourceAssignmentImpl(ProjectResource resource) {
+        public ResourceAssignmentImpl(HumanResource resource) {
             myAssignmentToResource = resource.createAssignment(this);
 //            resource.setAssignmentCollection(ResourceAssignmentCollectionImpl.this);
         }
@@ -106,7 +106,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             return ResourceAssignmentCollectionImpl.this.getTask();
         }
 
-        public ProjectResource getResource() {
+        public HumanResource getResource() {
             return myAssignmentToResource.getResource();
         }
 
@@ -123,9 +123,9 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
          * Deletes all the assignments and all the related assignments
          */
         public void delete() {
-            ResourceAssignmentCollectionImpl.this
-                    .deleteAssignment(getResource());
-            myAssignmentToResource.delete();
+			ResourceAssignmentCollectionImpl.this
+					.deleteAssignment(getResource());
+			myAssignmentToResource.delete();
         }
 
         public void setCoordinator(boolean responsible) {
@@ -152,7 +152,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     }
 
     private class ResourceAssignmentStub implements ResourceAssignment {
-        private final ProjectResource myResource;
+        private final HumanResource myResource;
 
         private float myLoad;
 
@@ -160,7 +160,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
         private Role myRoleForAssignment;
 
-        public ResourceAssignmentStub(ProjectResource resource) {
+        public ResourceAssignmentStub(HumanResource resource) {
             myResource = resource;
         }
 
@@ -168,7 +168,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             return ResourceAssignmentCollectionImpl.this.getTask();
         }
 
-        public ProjectResource getResource() {
+        public HumanResource getResource() {
             return myResource;
         }
 
@@ -212,15 +212,15 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     private class ResourceAssignmentMutatorImpl implements
             ResourceAssignmentMutator {
-        private Map<ProjectResource, MutationInfo> myQueue = new HashMap<ProjectResource, MutationInfo>();
+        private Map<HumanResource, MutationInfo> myQueue = new HashMap<HumanResource, MutationInfo>();
 
-        public ResourceAssignment addAssignment(ProjectResource resource) {
+        public ResourceAssignment addAssignment(HumanResource resource) {
             ResourceAssignment result = new ResourceAssignmentStub(resource);
             myQueue.put(resource, new MutationInfo(result, MutationInfo.ADD));
             return result;
         }
 
-        public void deleteAssignment(ProjectResource resource) {
+        public void deleteAssignment(HumanResource resource) {
             MutationInfo info = myQueue.get(resource);
             if (info == null) {
                 myQueue.put(resource, new MutationInfo(resource,
@@ -268,7 +268,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
         private int myOperation;
 
-        private final ProjectResource myResource;
+        private final HumanResource myResource;
 
         public MutationInfo(ResourceAssignment assignment, int operation) {
             myAssignment = assignment;
@@ -277,7 +277,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             myResource = assignment.getResource();
         }
 
-        public MutationInfo(ProjectResource resource, int operation) {
+        public MutationInfo(HumanResource resource, int operation) {
             this.myAssignment = null;
             this.myOrder = ourOrder++;
             this.myOperation = operation;
@@ -314,8 +314,8 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
                     .getAssignments();
             for (int i = 0; i < assignments.length; i++) {
                 ResourceAssignment next = assignments[i];
-                ProjectResource nextResource = next.getResource();
-                ProjectResource nextImportedResource = myResourceManager
+                HumanResource nextResource = next.getResource();
+                HumanResource nextImportedResource = myResourceManager
                         .getById(nextResource.getId());
                 if (nextImportedResource != null) {
                     ResourceAssignment copy = new ResourceAssignmentImpl(
@@ -329,7 +329,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
     }
 
-	public ProjectResource getCoordinator() {
+	public HumanResource getCoordinator() {
 		for (Iterator<ResourceAssignment> assignments = myAssignments.values().iterator(); assignments.hasNext();) {
 			ResourceAssignment next = assignments.next();
 			if (next.isCoordinator()) {
