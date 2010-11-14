@@ -201,7 +201,7 @@ public class ProjectFileImporter {
                 def = myNativeProject.getTaskCustomColumnManager().createDefinition(
                         typeAsString, name, null);
             }
-            nativeResource.setCustomFieldVal(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
+            nativeResource.setCustomField(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
         }
 	}
 

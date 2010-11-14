@@ -12,7 +12,6 @@ import java.util.List;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
@@ -51,14 +50,14 @@ class ResourceTreeImageGenerator {
         final BufferedImage testImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         final Graphics g = testImage.getGraphics();
         final int tabSize = 5;
-        final List<ProjectResource> users = myResourceManager.getResources();
-        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
-            ProjectResource pr = user.next();
-            int nameWidth = TextLengthCalculatorImpl.getTextLength(g, pr.getName());
+        final List<HumanResource> users = myResourceManager.getResources();
+        for (Iterator<HumanResource> user = users.iterator(); user.hasNext();) {
+        	HumanResource hr = user.next();
+            int nameWidth = TextLengthCalculatorImpl.getTextLength(g, hr.getName());
             if (nameWidth > width) {
                 width = nameWidth;
             }
-            ResourceAssignment[] assignments = pr.getAssignments();
+            ResourceAssignment[] assignments = hr.getAssignments();
             if (assignments != null) {
                 for (int i = 0; i < assignments.length; i++) {
                     if (isAssignmentVisible(assignments[i])) {
@@ -84,18 +83,18 @@ class ResourceTreeImageGenerator {
         g.setColor(Color.black);
         g.setFont(Fonts.RESSOURCE_FONT);
 
-        List<ProjectResource> users = myResourceManager.getResources();
+        List<HumanResource> users = myResourceManager.getResources();
 
         int y = 67;
 
         final int nameLinePadding = 3;
         final int nameLineHeight = getRowHeight();
         boolean isOddRow = false;
-        for (Iterator<ProjectResource> user = users.iterator(); user.hasNext();) {
-            ProjectResource pr = user.next();
+        for (Iterator<HumanResource> user = users.iterator(); user.hasNext();) {
+        	HumanResource hr = user.next();
             {
                 // paint resource name here
-                String nameOfRes = pr.toString();
+                String nameOfRes = hr.toString();
 
                 if (isOddRow) {
                     g.setColor(ODD_ROW_COLOR);
@@ -113,7 +112,7 @@ class ResourceTreeImageGenerator {
             }
             {
                 //paint assigned task names
-                ResourceAssignment[] assignments = pr.getAssignments();
+                ResourceAssignment[] assignments = hr.getAssignments();
                 if (assignments != null) {
                     for (int i = 0; i < assignments.length; i++) {
                         if (isAssignmentVisible(assignments[i])) {

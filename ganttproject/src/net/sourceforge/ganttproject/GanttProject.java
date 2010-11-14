@@ -131,10 +131,8 @@ import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.BlankLineNode;
@@ -361,7 +359,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 return GanttProject.this.getTimeUnitStack();
             }
 
-            public ResourceManager getResourceManager() {
+            public HumanResourceManager getResourceManager() {
                 return GanttProject.this.getHumanResourceManager();
             }
 
@@ -1255,7 +1253,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     deleteTasks(true);
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resource
                     // chart
-                    final ProjectResource[] context = getResourcePanel()
+                    final HumanResource[] context = getResourcePanel()
                             .getContext().getResources();
                     if (context.length > 0) {
                         Choice choice = getUIFacade().showConfirmationDialog(getLanguage()
@@ -1499,7 +1497,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         area.repaint();
     }
 
-    public ProjectResource newHumanResource() {
+    public HumanResource newHumanResource() {
         final HumanResource people = ((HumanResourceManager) getHumanResourceManager())
                 .newHumanResource();
         people.setRole(getRoleManager().getDefaultRole());

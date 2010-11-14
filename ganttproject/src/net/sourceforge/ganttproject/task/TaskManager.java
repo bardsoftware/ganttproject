@@ -10,7 +10,7 @@ import java.util.Map;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade.Factory;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
@@ -89,24 +89,17 @@ public interface TaskManager {
     public Map<Task, Task> importData(TaskManager taskManager);
 
     public void importAssignments(TaskManager importedTaskManager,
-            ResourceManager hrManager, Map<Task, Task> original2importedTask,
+    		HumanResourceManager hrManager, Map<Task, Task> original2importedTask,
             Map<HumanResource, HumanResource> original2importedResource);
 
     /**
-     * Processes the critical path findind on <code>root</code> tasks.
+     * Processes the critical path finding on <code>root</code> tasks.
      *
      * @param root
      *            The root of the tasks to consider in the critical path
      *            finding.
      */
     public void processCriticalPath(TaskNode root);
-
-    // /**
-    // * Resets the critical path, i.e. reset all critical tasks to 'normal'
-    // tasks.
-    // * @param root The root of the tasks to consider.
-    // */
-    // public void resetCriticalPath(TaskNode root);
 
     public void deleteTask(Task tasktoRemove);
 

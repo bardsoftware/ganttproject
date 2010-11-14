@@ -12,7 +12,6 @@ import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
 public class ResourcePropertiesAction extends GPAction {
@@ -59,9 +58,9 @@ public class ResourcePropertiesAction extends GPAction {
 	}
 
 	public void setContext(ResourceContext context) {
-		ProjectResource[] resources = context.getResources();
+		HumanResource[] resources = context.getResources();
 		if (resources.length==1) {
-			mySelectedResource = (HumanResource) resources[0];
+			mySelectedResource = resources[0];
 			setEnabled(true);
 		}
 		else {

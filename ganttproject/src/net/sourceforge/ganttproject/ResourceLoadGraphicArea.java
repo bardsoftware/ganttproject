@@ -41,8 +41,8 @@ import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -104,6 +104,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 getHeight() - 8);
     }
 
+    // TODO Method is unused... Remove?
     /** Search for a coef on the arraylist */
     public int indexOf(ArrayList listOfParam, String coef) {
         for (int i = 0; i < listOfParam.size(); i++)
@@ -257,7 +258,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return myChartImplementation;
     }
 
-    public boolean isExpanded(ProjectResource resource) {
+    public boolean isExpanded(HumanResource resource) {
         return true;
     }
 
