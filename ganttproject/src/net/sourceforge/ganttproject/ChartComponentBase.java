@@ -11,6 +11,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,7 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import net.sourceforge.ganttproject.chart.RegularFrameOffsetBuilder;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -188,40 +190,81 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         }
     }
 
-    protected class ScrollViewInteraction extends MouseInteractionBase
-            implements MouseInteraction {
-        private float myPreviousAbsoluteDiff;
+	protected class ScrollViewInteraction extends MouseInteractionBase
+			implements MouseInteraction {
+		private final Calendar c;
 
-        protected ScrollViewInteraction(MouseEvent e) {
-            super(e);
+		/** Leftmost date when the user started to drag the view */
+		private final Date startDate;
+
+		/** Number of days in a bottom unit */
+		private final int daysPerUnit;
+		
+		/** The width of a bottom unit */
+		private final int unitWidth;
+		
+		/** The compressed width of a bottom unit, used in non-linear time frames */
+		private final float unitWidthSmall;
+
+		protected ScrollViewInteraction(MouseEvent e) {
+			super(e);
+			startDate = getUIFacade().getGanttChart().getStartDate();
+
+			// Cache some values (prevent getting/creating them over and over)
+			c = (Calendar) Calendar.getInstance().clone();
+			daysPerUnit = getChartModel().getBottomUnit().getAtomCount(
+					getChartModel().getTimeUnitStack().getDefaultTimeUnit());
+			unitWidth = getChartModel().getBottomUnitWidth();
+			if(getChartModel().getTopUnit().isConstructedFrom(getChartModel().getBottomUnit())) {
+				// We have a non-linear bottom time frame, so calculate the small width
+				unitWidthSmall =  ((float) unitWidth) / RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
+			} else {
+				// We have a linear bottom time frame, so the small width is equal the the normal width
+				unitWidthSmall = unitWidth;
+			}
+		}
+
+		public void apply(MouseEvent event) {
+			Date d = shiftDate(startDate, getStartX() - event.getX());
+			getUIFacade().getScrollingManager().scrollTo(d);
+		}
+
+		/**
+		 * This method calculates a new date from the given date and the number
+		 * of pixels we want to shift, taking non-linear time frames into
+		 * account.
+		 * 
+		 * @param date
+		 *            before the shift
+		 * @param pixelsShifted
+		 *            number of pixels to shift the given date
+		 * @return the new date as a result of the shift, rounded the bottomUnit
+		 *         closest to the given date.
+		 */
+		private Date shiftDate(Date date, float pixelsShifted) {
+			c.setTime(date);
+			int substract = pixelsShifted > 0 ? 1 : -1;
+			if (pixelsShifted < 0) {
+				pixelsShifted = -pixelsShifted;
+			}
+
+			while (pixelsShifted > 0) {
+				// Subtract pixels for current (compressed) unit
+				if (getTaskManager().getCalendar().isNonWorkingDay(c.getTime())) {
+					pixelsShifted -= unitWidthSmall;
+				} else {
+					pixelsShifted -= unitWidth;
+				}
+				if (pixelsShifted > 0) {
+					// Update date to next unit
+					c.add(Calendar.DAY_OF_MONTH, substract * daysPerUnit);
+				}
+			}
+			return c.getTime();
+		}
+
+		public void finish() {
         }
-
-        public void apply(MouseEvent event) {
-
-
-           float absoluteDiff = getLengthDiff(event);
-           float relativeDiff = myPreviousAbsoluteDiff - absoluteDiff;
-           TaskLength diff = getTaskManager().createLength(
-                   getViewState().getBottomTimeUnit(), relativeDiff);
-
-            float daysF = diff.getLength(getTimeUnitStack()
-                    .getDefaultTimeUnit());
-
-            int days = (int) daysF;
-            if (days == 0) {
-                return;
-            }
-            getUIFacade().getScrollingManager().scrollBy(-days);
-            myPreviousAbsoluteDiff = absoluteDiff;
-        }
-
-
-
-
-
-        public void finish() {
-        }
-
     }
 
     protected class MouseListenerBase extends MouseAdapter {

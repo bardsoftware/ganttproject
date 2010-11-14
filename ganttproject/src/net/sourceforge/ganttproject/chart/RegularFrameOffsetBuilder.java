@@ -20,7 +20,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * Builds grid offsets for timelines where top cells are always constructed from the integer
  * number of bottom cells (e.g. week from days)
  */
-class RegularFrameOffsetBuilder {
+public class RegularFrameOffsetBuilder {
     protected static class OffsetStep {
         public float parrots;
         public GPCalendar.DayType dayType;
