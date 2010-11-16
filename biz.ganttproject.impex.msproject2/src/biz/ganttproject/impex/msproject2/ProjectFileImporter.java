@@ -203,7 +203,7 @@ public class ProjectFileImporter {
                         typeAsString, name, null);
                 myResourceCustomPropertyMapping.put(rf, def);
             }
-            nativeResource.setCustomFieldVal(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
+            nativeResource.setCustomField(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
         }
 	}
 

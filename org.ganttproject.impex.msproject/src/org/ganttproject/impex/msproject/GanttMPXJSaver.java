@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -86,16 +85,16 @@ public class GanttMPXJSaver {
      */
     private void processResources() {
         try {
-            List resources = myHrManager.getResources();
+            List<HumanResource> resources = myHrManager.getResources();
 
             for (int i = 0; i < resources.size(); i++) {
-                HumanResource ganttResource = (HumanResource) resources.get(i);
+                HumanResource resource = resources.get(i);
 
                 Resource mpxResource = m_mpx.addResource();
-                mpxResource.setName(ganttResource.getName());
-                mpxResource.setEmailAddress(ganttResource.getMail());
+                mpxResource.setName(resource.getName());
+                mpxResource.setEmailAddress(resource.getMail());
 
-                m_ganttMpxResourceMap.put(new Integer(ganttResource.getId()),
+                m_ganttMpxResourceMap.put(new Integer(resource.getId()),
                         mpxResource.getUniqueID());
             }
         } catch (Exception ex) {

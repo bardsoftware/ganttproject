@@ -32,7 +32,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 
@@ -42,7 +42,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 public class ImportResources extends AbstractAction {
     private final TaskManager myTaskManager;
 
-    private final ResourceManager myResourceManager;
+    private final HumanResourceManager myResourceManager;
 
     private final GanttProject myproject;
 
@@ -50,7 +50,7 @@ public class ImportResources extends AbstractAction {
 
     private File startFile = null;
 
-    public ImportResources(ResourceManager resourceManager,
+    public ImportResources(HumanResourceManager resourceManager,
             TaskManager taskManager, RoleManager roleManager,
             GanttProject project) {
         myTaskManager = taskManager;

@@ -53,9 +53,9 @@ public class LoadDistribution {
 
     private final List<Load> myTasksLoads = new ArrayList<Load>();
 
-    private final ProjectResource myResource;
+    private final HumanResource myResource;
 
-    public LoadDistribution(ProjectResource resource) {
+    public LoadDistribution(HumanResource resource) {
         myLoads.add(new Load(null, null, 0, null));
         myDaysOff.add(new Load(null, null, 0, null));
         myResource = resource;
@@ -66,9 +66,8 @@ public class LoadDistribution {
         processDaysOff(myResource);
     }
 
-    private void processDaysOff(ProjectResource resource) {
-        HumanResource hr = (HumanResource) resource;
-        DefaultListModel daysOff = hr.getDaysOff();
+    private void processDaysOff(HumanResource resource) {
+        DefaultListModel daysOff = resource.getDaysOff();
         if (daysOff != null) {
             for (int l = 0; l < daysOff.size(); l++) {
                 processDayOff((GanttDaysOff) daysOff.get(l));
@@ -152,7 +151,7 @@ public class LoadDistribution {
 
     }
 
-    public ProjectResource getResource() {
+    public HumanResource getResource() {
         return myResource;
     }
 

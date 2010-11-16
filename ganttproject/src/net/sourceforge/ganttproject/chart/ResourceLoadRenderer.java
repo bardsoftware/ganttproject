@@ -27,7 +27,7 @@ import java.util.Map;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.resource.LoadDistribution;
-import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
@@ -209,10 +209,10 @@ class ResourceLoadRenderer extends ChartRendererBase {
     public void beforeProcessingTimeFrames() {
         myDistributions = new ArrayList<LoadDistribution>();
         getPrimitiveContainer().clear();
-        ProjectResource[] resources = ((ChartModelResource) getChartModel())
+        HumanResource[] resources = ((ChartModelResource) getChartModel())
                 .getVisibleResources();
         for (int i = 0; i < resources.length; i++) {
-            ProjectResource nextResource = resources[i];
+        	HumanResource nextResource = resources[i];
             LoadDistribution nextDistribution = nextResource.getLoadDistribution();
             myDistributions.add(nextDistribution);
         }
@@ -240,7 +240,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
         }
     }
 
-    private int calculateGap(ProjectResource resource) {
+    private int calculateGap(HumanResource resource) {
         return resource.getAssignments().length * getConfig().getRowHeight();
     }
 }

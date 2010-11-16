@@ -11,8 +11,8 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -119,10 +119,9 @@ public class ChartModelResource extends ChartModelBase {
 //        myResourceLoadRenderer.getPrimitiveContainer().paint(getPainter(), g);
 //    }
 
-    public ProjectResource[] getVisibleResources() {
-        return myManager.getResources().toArray(
-                new ProjectResource[0]);
-    }
+	public HumanResource[] getVisibleResources() {
+		return myManager.getResources().toArray(new HumanResource[0]);
+	}
 
     public GPOptionGroup[] getChartOptionGroups() {
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();

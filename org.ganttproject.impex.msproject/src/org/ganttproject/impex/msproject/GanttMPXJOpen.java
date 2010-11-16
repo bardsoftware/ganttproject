@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -383,7 +382,7 @@ public abstract class GanttMPXJOpen {
      * instance and creates the equivalent GanttProject data structures.
      *
      * @param mpx
-     *            Currenct MPXFile instance
+     *            Current MPXFile instance
      */
     private void processResourceAssignments(MPXFile mpx) {
         TaskManager tm = m_project.getTaskManager();
@@ -399,17 +398,13 @@ public abstract class GanttMPXJOpen {
 
             if ((gTaskID != -1) && (gResourceID != -1)) {
                 GanttTask gTask = tm.getTask(gTaskID);
-                ProjectResource gResource = hrm.getById(gResourceID);
+                HumanResource gResource = hrm.getById(gResourceID);
 
-                ResourceAssignment gAssignment = gTask.getAssignmentCollection().addAssignment(
-                        gResource);
+				ResourceAssignment gAssignment = gTask
+						.getAssignmentCollection().addAssignment(gResource);
                 gAssignment.setLoad((float) assignment.getUnitsValue());
                 gAssignment.setCoordinator(false);
-                if (gResource instanceof HumanResource) {
-                    gAssignment
-                            .setRoleForAssignment(((HumanResource) gResource)
-                                    .getRole());
-                }
+				gAssignment.setRoleForAssignment(gResource.getRole());
             }
         }
     }
