@@ -12,8 +12,6 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class LocaleOption extends DefaultEnumerationOption {
-    private final String LOCALE_NAMES[] = new String[] {};
-    
     private final Locale[] LOCALES = new Locale[] {Locale.FRANCE, Locale.US, new Locale("pt", "PT")};
 
 	private Locale myLocale;
@@ -23,7 +21,7 @@ class LocaleOption extends DefaultEnumerationOption {
     			Locale.FRANCE.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), Locale.US.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), new Locale("pt", "PT").getDisplayLanguage(GanttLanguage.getInstance().getLocale())    			
     	});
     }
-    
+
     public void commit() {
         super.commit();
         setSelectedLocale(getValue());
@@ -32,6 +30,7 @@ class LocaleOption extends DefaultEnumerationOption {
     Locale getSelectedLocale() {
     	return myLocale;
     }
+
     private void setSelectedLocale(String value) {
         for (int i=0; i<LOCALES.length; i++) {
             if (LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale()).equals(value)) {
@@ -44,5 +43,4 @@ class LocaleOption extends DefaultEnumerationOption {
 	public void setSelectedLocale(Locale locale) {
 		setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
 	}
-    
 }

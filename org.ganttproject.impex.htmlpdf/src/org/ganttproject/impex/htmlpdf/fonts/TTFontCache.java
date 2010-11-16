@@ -38,7 +38,7 @@ import com.lowagie.text.FontFactory;
  * @author dbarashev
  */
 public class TTFontCache {
-    private Map/*<String,Font>*/ myMap_Family_RegularFont = new TreeMap/*<String,Font>*/();
+    private Map<String,Font> myMap_Family_RegularFont = new TreeMap<String,Font>();
 
     public void registerDirectory(String path, boolean recursive) {
         GPLogger.log("reading directory="+path);
@@ -50,8 +50,8 @@ public class TTFontCache {
         }
     }
 
-    public List/*<String>*/ getRegisteredFamilies() {
-        return new ArrayList(myMap_Family_RegularFont.keySet());
+    public List<String> getRegisteredFamilies() {
+        return new ArrayList<String>(myMap_Family_RegularFont.keySet());
     }
 
     public Font getAwtFont(String family) {
@@ -63,15 +63,13 @@ public class TTFontCache {
         try {
             Font.class.getMethod("createFont", new Class[] {Integer.TYPE, File.class});
             runningUnderJava6 = true;
-        }
-        catch (SecurityException e) {
+        } catch (SecurityException e) {
             runningUnderJava6 = false;            
-        } 
-        catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             runningUnderJava6 = false;
         }
         final File[] files = dir.listFiles();
-        for (int i=0; i<files.length; i++) {
+        for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 registerFonts(files[i]);
                 continue;
@@ -81,12 +79,8 @@ public class TTFontCache {
             }
             try {
                 registerFontFile(files[i], runningUnderJava6);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 GPLogger.log(e);
-            }
-            finally {
-                continue;
             }
        }
     }
@@ -104,7 +98,7 @@ public class TTFontCache {
                 
         // We will put a font to the mapping only if it is a plain font.
         final com.lowagie.text.Font itextFont = FontFactory.getFont(family, 12f, com.lowagie.text.Font.NORMAL);                
-        if (itextFont == null || itextFont.getBaseFont()==null) {
+        if (itextFont == null || itextFont.getBaseFont() == null) {
             return;
         }
                 

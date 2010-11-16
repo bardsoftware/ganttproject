@@ -65,10 +65,11 @@ public abstract class GanttMPXJOpen {
 
     private final IGanttProject m_project;
 
-    private final HashMap m_taskMap = new HashMap();
+    private final HashMap<Integer, Integer> m_taskMap = new HashMap<Integer, Integer>();
 
-    private final HashMap m_resourceMap = new HashMap();
+    private final HashMap<Integer, Integer> m_resourceMap = new HashMap<Integer, Integer>();
 
+    // TODO FIeld is never read... Remove?
     private final Locale m_mpxImportLocale;
 
     private static final MPXDuration MILESTONE_DURATION = MPXDuration.getInstance(1,
@@ -154,22 +155,19 @@ public abstract class GanttMPXJOpen {
      *            Current MPXFile instance
      */
     private void processResources(MPXFile mpx) {
-        HumanResourceManager hrm = (HumanResourceManager) m_project
-                .getHumanResourceManager();
+        HumanResourceManager hrm = m_project.getHumanResourceManager();
         LinkedList resources = mpx.getAllResources();
         Iterator iter = resources.iterator();
-        Resource resource;
-        HumanResource people;
 
         while (iter.hasNext() == true) {
-            resource = (Resource) iter.next();
+            Resource resource = (Resource) iter.next();
             if (resource.getName() != null) {
-                people = hrm.newHumanResource();
-                people.setName(resource.getName());
-                people.setMail(resource.getEmailAddress());
-                hrm.add(people);
+                HumanResource person = hrm.newHumanResource();
+                person.setName(resource.getName());
+                person.setMail(resource.getEmailAddress());
+                hrm.add(person);
 
-                m_resourceMap.put(resource.getID(), new Integer(people.getId()));
+                m_resourceMap.put(resource.getID(), new Integer(person.getId()));
             }
         }
     }
@@ -211,13 +209,13 @@ public abstract class GanttMPXJOpen {
         //
         // Calculate the duration in days
         //
-        MPXCalendar taskCalendar = task.getCalendar();
-        MPXCalendar cal;
-        if (taskCalendar != null) {
-            cal = taskCalendar;
-        } else {
-            cal = defaultCalendar;
-        }
+//        MPXCalendar taskCalendar = task.getCalendar();
+//        MPXCalendar cal;
+//        if (taskCalendar != null) {
+//            cal = taskCalendar;
+//        } else {
+//            cal = defaultCalendar;
+//        }
 
         final MPXDuration duration;
         boolean milestone = task.getMilestoneValue();
@@ -319,71 +317,52 @@ public abstract class GanttMPXJOpen {
     private void processRelationships(MPXFile mpx) {
         TaskManager tm = m_project.getTaskManager();
         Iterator taskIter = mpx.getAllTasks().iterator();
-        Task task;
-        RelationList rels;
-        Iterator relIter;
-        Relation rel;
 
-        GanttTask gTask1;
-        int gTaskNumber1;
-        GanttTask gTask2;
-        int gTaskNumber2;
-        TaskDependency gTaskDependency;
-        int gConstraintType;
         while (taskIter.hasNext() == true) {
-            task = (Task) taskIter.next();
-            gTaskNumber1 = mapTaskNumber(task.getID());
-
+            Task task = (Task) taskIter.next();
+            int gTaskNumber1 = mapTaskNumber(task.getID());
             if (gTaskNumber1 == -1) {
                 continue;
             }
 
-            rels = (RelationList)task.getPredecessors();
-
+            RelationList rels = (RelationList) task.getPredecessors();
             if (rels != null) {
-                relIter = rels.iterator();
+                Iterator relIter = rels.iterator();
 
                 while (relIter.hasNext() == true) {
-                    rel = (Relation) relIter.next();
+                    Relation rel = (Relation) relIter.next();
 
-                    gTaskNumber2 = mapTaskNumber(new Integer(rel
+                    int gTaskNumber2 = mapTaskNumber(new Integer(rel
                             .getTaskIDValue()));
 
                     if (gTaskNumber2 != -1) {
-                        gTask1 = tm.getTask(gTaskNumber1);
-                        gTask2 = tm.getTask(gTaskNumber2);
+                        GanttTask gTask1 = tm.getTask(gTaskNumber1);
+                        GanttTask gTask2 = tm.getTask(gTaskNumber2);
+                        int gConstraintType;
 
                         switch (rel.getType().getType()) {
-                        case RelationType.FINISH_FINISH_VALUE: {
+                        case RelationType.FINISH_FINISH_VALUE:
                             gConstraintType = GanttTaskRelationship.FF;
                             break;
-                        }
-
-                        case RelationType.START_FINISH_VALUE: {
+                        case RelationType.START_FINISH_VALUE:
                             gConstraintType = GanttTaskRelationship.SF;
                             break;
-                        }
-
-                        case RelationType.START_START_VALUE: {
+                        case RelationType.START_START_VALUE:
                             gConstraintType = GanttTaskRelationship.SS;
                             break;
-                        }
-
                         default:
-                        case RelationType.FINISH_START_VALUE: {
+                        case RelationType.FINISH_START_VALUE:
                             gConstraintType = GanttTaskRelationship.FS;
                             break;
                         }
-                        }
 
                         try {
-                            gTaskDependency = tm
+                            TaskDependency gTaskDependency = tm
                                     .getDependencyCollection()
                                     .createDependency(
                                             gTask1,
                                             gTask2,
-                                            tm
-                                                    .createConstraint(gConstraintType));
+                                            tm.createConstraint(gConstraintType));
                             gTaskDependency.setConstraint(tm
                                     .createConstraint(gConstraintType));
                         }
@@ -408,34 +387,29 @@ public abstract class GanttMPXJOpen {
      */
     private void processResourceAssignments(MPXFile mpx) {
         TaskManager tm = m_project.getTaskManager();
-        HumanResourceManager hrm = (HumanResourceManager) m_project
-                .getHumanResourceManager();
+        HumanResourceManager hrm = m_project.getHumanResourceManager();
         LinkedList assignments = mpx.getAllResourceAssignments();
         Iterator iter = assignments.iterator();
         com.tapsterrock.mpx.ResourceAssignment assignment;
-        int gTaskID;
-        int gResourceID;
-        GanttTask gTask;
-        ProjectResource gResource;
-        ResourceAssignment gAssignment;
 
         while (iter.hasNext() == true) {
             assignment = (com.tapsterrock.mpx.ResourceAssignment) iter.next();
-            gTaskID = mapTaskNumber(assignment.getTask().getID());
-            gResourceID = mapResourceNumber(assignment.getResource().getID());
+            int gTaskID = mapTaskNumber(assignment.getTask().getID());
+            int gResourceID = mapResourceNumber(assignment.getResource().getID());
 
             if ((gTaskID != -1) && (gResourceID != -1)) {
-                gTask = tm.getTask(gTaskID);
-                gResource = hrm.getById(gResourceID);
+                GanttTask gTask = tm.getTask(gTaskID);
+                ProjectResource gResource = hrm.getById(gResourceID);
 
-                gAssignment = gTask.getAssignmentCollection().addAssignment(
+                ResourceAssignment gAssignment = gTask.getAssignmentCollection().addAssignment(
                         gResource);
                 gAssignment.setLoad((float) assignment.getUnitsValue());
                 gAssignment.setCoordinator(false);
-                if (gResource instanceof HumanResource)
+                if (gResource instanceof HumanResource) {
                     gAssignment
                             .setRoleForAssignment(((HumanResource) gResource)
                                     .getRole());
+                }
             }
         }
     }
@@ -451,8 +425,7 @@ public abstract class GanttMPXJOpen {
     private int mapTaskNumber(Integer taskID) {
         int result = -1;
 
-        Integer taskNumber = (Integer) m_taskMap.get(taskID);
-
+        Integer taskNumber = m_taskMap.get(taskID);
         if (taskNumber != null) {
             result = taskNumber.intValue();
         }
@@ -471,13 +444,11 @@ public abstract class GanttMPXJOpen {
     private int mapResourceNumber(Integer resourceID) {
         int result = -1;
 
-        Integer resourceNumber = (Integer) m_resourceMap.get(resourceID);
-
+        Integer resourceNumber = m_resourceMap.get(resourceID);
         if (resourceNumber != null) {
             result = resourceNumber.intValue();
         }
 
         return (result);
     }
-
 }
