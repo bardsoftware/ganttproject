@@ -905,13 +905,10 @@ private void createPopupMenu() {
             TableColumn c = it.next();
             String n = (String) c.getHeaderValue();
             if (n.equals(name)) {
-                ColumnKeeper ck = mapTableColumnColumnKeeper
-                        .get(c);
                 ((TableColumnExt) c).setTitle(newName);
                 break;
             }
         }
-
         assert getColumn(newName)!=null;
     }
 

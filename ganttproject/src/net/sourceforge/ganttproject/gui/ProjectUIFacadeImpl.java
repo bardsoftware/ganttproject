@@ -30,7 +30,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         myUndoManager = undoManager;
     }
     public void saveProject(IGanttProject project) {
-        if (project.getDocument()==null) {
+        if (project.getDocument() == null) {
             saveProjectAs(project);
             return;
         }
@@ -99,7 +99,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         try {
             for(;;) {
                 int userChoice = fc.showSaveDialog(myWorkbenchFacade.getMainFrame());
-                if (userChoice!=JFileChooser.APPROVE_OPTION) {
+                if (userChoice != JFileChooser.APPROVE_OPTION) {
                     break;
                 }
                 File projectfile = fc.getSelectedFile();
@@ -129,7 +129,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
     public void saveProjectRemotely(IGanttProject project) {
         Document document = showURLDialog(project);
-        if (document!=null) {
+        if (document != null) {
             project.setDocument(document);
             saveProject(project);
         }
@@ -161,8 +161,9 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
         return true;
     }
+
     public void openProject(final IGanttProject project) throws IOException {
-        if (false==ensureProjectSaved(project)) {
+        if (false == ensureProjectSaved(project)) {
             return;
         }
         JFileChooser fc = new JFileChooser(myDocumentManager.getWorkingDirectory());
@@ -186,7 +187,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     }
     public void openRemoteProject(final IGanttProject project) throws IOException {
         final Document document = showURLDialog(project);
-        if (document!=null) {
+        if (document != null) {
         	openProject(document, project);
         }
     }
@@ -203,7 +204,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     }
 
     public void createProject(final IGanttProject project) {
-        if (false==ensureProjectSaved(project)) {
+        if (false == ensureProjectSaved(project)) {
             return;
         }
         getUndoManager().undoableEdit("Init new Project", new Runnable() {
@@ -239,7 +240,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                 (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
                 (null != document) ? document.getUsername() : null,
                 (null != document) ? document.getPassword() : null);
-        uc.show();
+        uc.setVisible(true);
         if (uc.change) {
             document = myDocumentManager.getDocument(uc.fileurl,
                         uc.userName, uc.password);

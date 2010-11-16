@@ -99,8 +99,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
         public ResourceAssignmentImpl(ProjectResource resource) {
             myAssignmentToResource = resource.createAssignment(this);
-//            resource
-//                    .setAssignmentCollection(ResourceAssignmentCollectionImpl.this);
+//            resource.setAssignmentCollection(ResourceAssignmentCollectionImpl.this);
         }
 
         public Task getTask() {
@@ -115,7 +114,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             return myAssignmentToResource.getLoad();
         }
 
-        // todo: transaction
+        // TODO transaction
         public void setLoad(float load) {
             myAssignmentToResource.setLoad(load);
         }
@@ -256,7 +255,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     }
 
-    private static class MutationInfo implements Comparable {
+    private static class MutationInfo implements Comparable<MutationInfo> {
         static final int ADD = 0;
 
         static final int DELETE = 1;
@@ -294,11 +293,11 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             return result;
         }
 
-        public int compareTo(Object o) {
+        public int compareTo(MutationInfo o) {
             if (!(o instanceof MutationInfo)) {
                 throw new IllegalArgumentException();
             }
-            return myOrder - ((MutationInfo) o).myOrder;
+            return myOrder - o.myOrder;
         }
     }
 

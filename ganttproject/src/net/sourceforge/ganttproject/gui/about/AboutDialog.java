@@ -37,7 +37,7 @@ public class AboutDialog extends GeneralDialog {
                 + " - Ganttproject", true, new AboutPanel(parent));
 
         // hide the cancel button
-        cancelButton.hide();
+        cancelButton.setVisible(false);
     }
 
     /** Callback for the tree selection event. */
@@ -74,11 +74,12 @@ public class AboutDialog extends GeneralDialog {
         // - add the settingPanel into the main Panel
         mainPanel2.add(vb, 0);
         mainPanel2.repaint();
-        mainPanel2.validate(); // valide the changes
+        mainPanel2.validate(); // validate the changes
     }
 
-    /** Coonstruct the menu settings. */
+    /** Construct the menu settings. */
     public void constructSections() {
+        // TODO Do something with these local variables:
         DefaultMutableTreeNode aboutNode = addObject(GanttProject
                 .correctLabel(language.getText("about")), null);
         DefaultMutableTreeNode authorsNode = addObject(language

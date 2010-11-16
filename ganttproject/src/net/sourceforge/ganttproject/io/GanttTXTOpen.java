@@ -26,14 +26,13 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
- * @author athomas This class allo to open a list of task from a simple txt
+ * @author athomas This class allows to open a list of task from a simple txt
  *         file. Each line of the file are insert as a new task with the name as
  *         text of the line.
  */
 public class GanttTXTOpen {
     private final TaskManager myTaskManager;
 
-    /** Constructor with a task manager. */
     public GanttTXTOpen(TaskManager taskManager) {
         myTaskManager = taskManager;
     }

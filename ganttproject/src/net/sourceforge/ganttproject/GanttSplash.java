@@ -30,7 +30,6 @@ import javax.swing.JLabel;
 
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.DialogAligner;
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**
  * Class to put a splash before lunch the soft
@@ -53,11 +52,8 @@ public class GanttSplash extends JFrame {
                         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 Font font = Fonts.SPLASH_FONT;
                 g2.setFont(font);
-                
-                int textLength = TextLengthCalculatorImpl.getTextLength(g,
-                        GanttProject.version);
-                drawTextWithShadow(g2, GPVersion.PRAHA, 
-                		65, 80);
+
+                drawTextWithShadow(g2, GPVersion.PRAHA, 65, 80);
                 //drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
             }
         };
