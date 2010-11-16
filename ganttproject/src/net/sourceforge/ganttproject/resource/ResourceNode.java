@@ -8,9 +8,9 @@ public class ResourceNode extends DefaultMutableTreeNode {
 
     private static final long serialVersionUID = 3834033541318392117L;
 
-    private final ProjectResource resource;
+    private final HumanResource resource;
 
-    public ResourceNode(ProjectResource res) {
+    public ResourceNode(HumanResource res) {
         super(res);
         resource = res;
     }
@@ -24,68 +24,58 @@ public class ResourceNode extends DefaultMutableTreeNode {
     }
 
     public void setPhone(String phoneNumber) {
-        if (resource instanceof HumanResource)
-            ((HumanResource) resource).setPhone(phoneNumber);
+            resource.setPhone(phoneNumber);
     }
 
     public String getPhone() {
-        if (resource instanceof HumanResource)
-            return ((HumanResource) resource).getPhone();
-        return null;
+        return resource.getPhone();
     }
 
     public void setEMail(String email) {
-        if (resource instanceof HumanResource)
-            ((HumanResource) resource).setMail(email);
+        resource.setMail(email);
     }
 
     public String getEMail() {
-        if (resource instanceof HumanResource)
-            return ((HumanResource) resource).getMail();
-        return null;
+        return resource.getMail();
     }
 
     public void setDefaultRole(Role defRole) {
-        if (resource instanceof HumanResource)
-            ((HumanResource) resource).setRole(defRole);
+        resource.setRole(defRole);
     }
 
     public Role getDefaultRole() {
-        if (resource instanceof HumanResource)
-            return ((HumanResource) resource).getRole();
-        return null;
+       return resource.getRole();
     }
     
-    /* gets the value of a custom field referenced by it's title */
+    /** @return the value of a custom field referenced by its title */
     public Object getCustomField(String title) {
-    	if (resource instanceof HumanResource)
-            return ((HumanResource) resource).getCustomFieldVal(title);
-        return null;
+    	return resource.getCustomField(title);
     }
     
-    /* gets the new value to the custom field referenced by it's title */
+    /** sets the new value to the custom field referenced by its title */
     public void setCustomField(String title, Object val) {
-    	if (resource instanceof HumanResource)
-            ((HumanResource) resource).setCustomFieldVal(title, val);
+    	resource.setCustomField(title, val);
     }
 
     /**
      * @inheritDoc
      */
     public String toString() {
-        if (resource != null)
+        if (resource != null) {
             return resource.getName();
+        }
         return "-";
     }
 
-    public ProjectResource getResource() {
+    public HumanResource getResource() {
         return resource;
     }
 
     public boolean equals(Object obj) {
         boolean res = false;
-        if (this == obj)
+        if (this == obj) {
             return true;
+        }
         if (obj instanceof ResourceNode) {
             ResourceNode rn = (ResourceNode) obj;
             res = rn.getUserObject() != null

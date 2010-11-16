@@ -22,7 +22,7 @@ import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
@@ -891,7 +891,7 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     public void importAssignments(TaskManager importedTaskManager,
-            ResourceManager hrManager, Map<Task, Task> original2importedTask,
+            HumanResourceManager hrManager, Map<Task, Task> original2importedTask,
             Map<HumanResource, HumanResource> original2importedResource) {
         Task[] tasks = importedTaskManager.getTasks();
         for (int i = 0; i < tasks.length; i++) {

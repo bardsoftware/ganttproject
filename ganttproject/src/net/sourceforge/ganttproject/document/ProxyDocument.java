@@ -35,7 +35,6 @@ import net.sourceforge.ganttproject.parser.TaskTagHandler;
 import net.sourceforge.ganttproject.parser.VacationTagHandler;
 import net.sourceforge.ganttproject.parser.ViewTagHandler;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
@@ -227,10 +226,6 @@ class ProxyDocument implements Document {
 
         FailureState myExitState;
 
-        /**
-         * @param parsing
-         * @param failure
-         */
         public OpenCopyConfirmationState(ParsingState parsing,
                 FailureState failure) {
             myParsingState = parsing;
@@ -253,10 +248,6 @@ class ProxyDocument implements Document {
 
         SuccessState mySuccessState;
 
-        /**
-         * @param success
-         * @param failure
-         */
         public ParsingState(SuccessState success, FailureState failure) {
             mySuccessState = success;
             myFailureState = failure;
@@ -264,7 +255,7 @@ class ProxyDocument implements Document {
 
         void enter() throws IOException {
             GPParser opener = myParserFactory.newParser();
-            ResourceManager hrManager = getHumanResourceManager();
+            HumanResourceManager hrManager = getHumanResourceManager();
             RoleManager roleManager = getRoleManager();
             TaskManager taskManager = getTaskManager();
             ResourceTagHandler resourceHandler = new ResourceTagHandler(
@@ -323,7 +314,7 @@ class ProxyDocument implements Document {
             HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject);
             opener.addTagHandler(holidayHandler);
             opener.addParsingListener(holidayHandler);
-            //
+
             PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();
             opener.addTagHandler(portfolioHandler);
             if (opener.load(getInputStream())) {
@@ -359,7 +350,7 @@ class ProxyDocument implements Document {
      * Added on Feb 26, 2006
      */
     public boolean equals(Object doc) {
-        if (false==doc instanceof ProxyDocument) {
+		if (false == doc instanceof ProxyDocument) {
             return false;
         }
         return getPath().equals(((Document)doc).getPath());
@@ -370,7 +361,7 @@ class ProxyDocument implements Document {
     }
 
     private PortfolioImpl getPortfolioImpl() {
-        if (myPortfolio==null) {
+		if (myPortfolio == null) {
             myPortfolio = new PortfolioImpl();
         }
         return myPortfolio;
@@ -384,7 +375,7 @@ class ProxyDocument implements Document {
         }
 
         void setDefaultDocument(Document document) {
-            if (myDefaultDocument !=null) {
+            if (myDefaultDocument != null) {
                 throw new IllegalStateException("Don't set default document twice");
             }
             myDefaultDocument = document;
@@ -416,7 +407,6 @@ class ProxyDocument implements Document {
                 isReadingPortfolio = false;
             }
         }
-
     }
 
     private static class OnlyShowWeekendsTagHandler implements TagHandler {

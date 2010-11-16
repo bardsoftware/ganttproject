@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 
 /**
@@ -24,7 +24,7 @@ public class NewHumanAction extends ResourceAction {
 
     private final GanttProject myProject;
 
-    public NewHumanAction(ResourceManager hrManager, RoleManager roleManager,
+    public NewHumanAction(HumanResourceManager hrManager, RoleManager roleManager,
             JFrame projectFrame, GanttProject project) {
         super(hrManager);
         myRoleManager = roleManager;

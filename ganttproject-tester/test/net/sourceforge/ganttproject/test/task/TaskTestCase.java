@@ -8,7 +8,6 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.Task;
@@ -28,7 +27,7 @@ public abstract class TaskTestCase extends TestCase {
 
         private TimeUnitStack myTimeUnitStack;
 
-        private ResourceManager myResourceManager;
+        private HumanResourceManager myResourceManager;
 
         private RoleManager myRoleManager;
 
@@ -50,9 +49,10 @@ public abstract class TaskTestCase extends TestCase {
             return myTimeUnitStack;
         }
 
-        public ResourceManager getResourceManager() {
+        public HumanResourceManager getResourceManager() {
             return myResourceManager;
         }
+
         public URL getProjectDocumentURL() {
             return null;
         }

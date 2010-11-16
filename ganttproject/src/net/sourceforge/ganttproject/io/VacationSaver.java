@@ -8,16 +8,14 @@ import org.xml.sax.helpers.AttributesImpl;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 
 class VacationSaver extends SaverBase {
-
     void save(IGanttProject project, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         startElement("vacations", handler);
-        ProjectResource[] resources = project.getHumanResourceManager().getResourcesArray();
+        HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
         for (int i = 0; i < resources.length; i++) {
-            HumanResource p = (HumanResource) resources[i];
+            HumanResource p = resources[i];
             if (p.getDaysOff() != null)
                 for (int j = 0; j < p.getDaysOff().size(); j++) {
                     GanttDaysOff gdo = (GanttDaysOff) p.getDaysOff()
@@ -30,5 +28,4 @@ class VacationSaver extends SaverBase {
         }
         endElement("vacations", handler);
     }
-
 }
