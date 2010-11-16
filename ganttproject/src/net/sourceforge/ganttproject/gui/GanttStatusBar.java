@@ -61,7 +61,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     private static final int MESSAGE_2 = 1;
 
-    private static final int PROGRESS_FINISH = 2;
+    // private static final int PROGRESS_FINISH = 2;
 
     int mode = NO_MESSAGE;
 
@@ -164,7 +164,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
         bRunning = false;
     }
 
-    // ! Class to display a message
+    /** Class to display a message */
     private class MessagePanel extends JPanel {
         JLabel message;
 
@@ -172,7 +172,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
         int timer = 0;
 
-        /** Constructor. */
         public MessagePanel(int size, boolean separator) {
             super(new FlowLayout());
             message = new JLabel() {
@@ -187,8 +186,9 @@ public class GanttStatusBar extends JPanel implements Runnable {
                 message.setMaximumSize(new Dimension(size, 16));
                 message.setMaximumSize(new Dimension(size, 16));
             }
-            if (separator)
+            if (separator) {
                 add(new JLabel("|"));
+            }
             add(message);
         }
 
@@ -213,7 +213,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
         public void hideText() {
             try {
                 Color cPanel = getBackground();
-                Color cBlack = Color.BLACK;
 
                 int step = 50;
 
@@ -331,8 +330,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
     	//private CancelableProgressPanel myProgressPanel;
     	//ProgressBarPanel myProgressPanel;
     	ProgressBarDialog myProgressDialog;
-    	String myTaskName;
-	    private int myTotalWork;
 		private boolean isCanceled;
 
     	ProgressMonitorImpl() {
@@ -345,26 +342,17 @@ public class GanttStatusBar extends JPanel implements Runnable {
 					public void run() {
 				        //pbp.reset(name, totalWork);
 				        //pbp.setVisible(true);
-				    	myTaskName = name;
-				    	myTotalWork = totalWork;
 						//myMainFrame.setGlassPane(myProgressPanel);
 						//myProgressPanel.setVisible(true);
 						//myMainFrame.getRootPane().revalidate();
 						//myProgressPanel.start();
 				    	myProgressDialog.start(name, totalWork);
 				        GPLogger.log("[ProgressMonitorImpl] beginTask: name="+name);
-				    }
-				});
-			} /*catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
-			finally {
-				
-			}
+                    }
+                });
+            } finally {
+
+            }
         }
 
         public void done() {
@@ -406,14 +394,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 				    	myProgressDialog.setProgress(myWorked);
 					}
 				});
-			} /*catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
-			finally {
+			} finally {
 				
 			}
         }

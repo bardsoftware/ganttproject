@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Platform;
 /**
  * Very basic Plugin Manager
  * @author bbaranne
- *
  */
 public class PluginManager {
 

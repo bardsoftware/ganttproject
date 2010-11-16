@@ -103,6 +103,8 @@ public class TaskImpl implements Task {
 
     public final static int EARLIESTBEGIN = 1;
 
+    private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+
     protected TaskImpl(TaskManager taskManager, int taskID) {
         myManager = (TaskManagerImpl) taskManager;
         if (taskID == -1) {
@@ -283,7 +285,7 @@ public class TaskImpl implements Task {
 	    	});
     	}
     	else {
-    		return Collections.EMPTY_LIST;
+    		return Collections.emptyList();
     	}
     }
     public boolean isMilestone() {
@@ -383,15 +385,11 @@ public class TaskImpl implements Task {
     }
 
     public GanttTaskRelationship[] getPredecessors() {
-        return new GanttTaskRelationship[0]; // To change body of implemented
-        // methods use Options | File
-        // Templates.
+        return new GanttTaskRelationship[0]; // To change body of implemented methods use Options | File Templates.
     }
 
     public GanttTaskRelationship[] getSuccessors() {
-        return new GanttTaskRelationship[0]; // To change body of implemented
-        // methods use Options | File
-        // Templates.
+        return new GanttTaskRelationship[0]; // To change body of implemented methods use Options | File Templates.
     }
 
     public ResourceAssignment[] getAssignments() {
@@ -402,7 +400,6 @@ public class TaskImpl implements Task {
         return myAssignments;
     }
 
-    //
     public Task getSupertask() {
         TaskHierarchyItem container = myTaskHierarchyItem.getContainerItem();
         return container.getTask();
@@ -871,13 +868,13 @@ public class TaskImpl implements Task {
 
         private TaskInfo myTaskInfo;
 
+        // TODO MEthod is never used... Remove?
         public TaskInfo getTaskInfo() {
             return myTaskInfo;
         }
 
         public void setTaskInfo(TaskInfo taskInfo) {
             myTaskInfo = taskInfo;
-
         }
     }
 
@@ -1174,7 +1171,7 @@ public class TaskImpl implements Task {
     // recalculating schedules,
     // doesn't affect subtasks and supertasks. It is necessary to call this
     // method explicitly from other
-    // parts of code to be sure that constraint fulfils
+    // parts of code to be sure that constraint fulfills
     //
     // Method GanttCalendar.newAdd() assumes that time unit is day
     public void applyThirdDateConstraint() {
@@ -1213,7 +1210,4 @@ public class TaskImpl implements Task {
     public void setProjectTask(boolean projectTask) {
         isProjectTask = projectTask;
     }
-
-    private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
-
 }

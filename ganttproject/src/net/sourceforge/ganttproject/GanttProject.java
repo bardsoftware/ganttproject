@@ -190,11 +190,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
-    /** The differents button of toolbar */
+    /** The different buttons of toolbar */
     private TestGanttRolloverButton bNew, bOpen, bSave,
             bExport, bImport, bPrint, bPreviewPrint, bCopy, bCut, bPaste,
             bNewTask, bDelete, bProperties,/* bUnlink, bLink,  bUp,
-            bDown,*/ bPrev, bScrollCenter, bNext, bZoomFit, bAbout;
+            bDown,*/ bPrev, bScrollCenter, bNext, /*bZoomFit,*/ bAbout;
 
     private TestGanttRolloverButton bShowHiddens;
 
@@ -1081,7 +1081,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
          * Consume the event to prevent it to go farther.
          */
         int code = e.getKeyCode();
-        int modifiers = e.getModifiersEx();
 
         if (code == KeyEvent.KEY_LOCATION_UNKNOWN)
             e.consume();
@@ -1116,7 +1115,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void keyTyped(KeyEvent e) {
     }
 
-    /** Return the tooltip in html (with yello bgcolor */
+    /** Return the ToolTip in HTML (with gray bgcolor) */
     public static String getToolTip(String msg) {
         return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
     }
@@ -1190,11 +1189,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void addButtons(JToolBar toolBar) {
         // toolBar.addSeparator(new Dimension(20,0));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         bNew = new TestGanttRolloverButton(myProjectMenu.getNewProjectAction());
         bOpen = new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction());
         bSave = new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction());
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         bImport = new TestGanttRolloverButton(myProjectMenu.getImportFileAction());
         bExport = new TestGanttRolloverButton(myProjectMenu.getExportFileAction());
@@ -1382,7 +1379,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bComparePrev.setEnabled(true);
             myPreviousStates.add(ps.getPreviousState());
         }
-
     }
 
     public ArrayList<GanttPreviousState> getPreviouStates() {
@@ -1541,7 +1537,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
-        GanttLanguage lang = GanttLanguage.getInstance();
         String nameOfTask = options.getTaskNamePrefix(); // language.getText("newTask");
         // if (current != null) {
         // current.setMilestone(false);
@@ -1564,7 +1559,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // if (current.shapeDefined())
         // task.setShape(current.getShape());
         // }
-        TaskNode taskNode = tree.addObject(task, node, index);
+        tree.addObject(task, node, index);
 
         /*
          * this will add new custom columns to the newly created task.
@@ -1920,7 +1915,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 + " www.ganttproject.biz");
     }
 
-    // change by G. Herrmann
     public void setAskForSave(boolean afs) {
         if (isOnlyViewer)
             return;
@@ -2056,12 +2050,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             String nextWord = arg[i];
             if (nextWord.charAt(0) == '-'){
                 if (argName.length()!=0) {
-                    parsedArgs.put(argName, Collections.EMPTY_LIST);
+                    parsedArgs.put(argName, Collections.<String>emptyList());
                 }
                 argName = nextWord.toLowerCase();
             } else {
                 List<String> values = parsedArgs.get(argName);
-                if (values==null || values==Collections.EMPTY_LIST) {
+                if (values == null || values == Collections.<String> emptyList()) {
                     values = new ArrayList<String>();
                     parsedArgs.put(argName, values);
                 }
@@ -2071,8 +2065,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
             }
         }
-        if (argName.length()>0 && !parsedArgs.containsKey(argName)) {
-            parsedArgs.put(argName, Collections.EMPTY_LIST);
+        if (argName.length() > 0 && !parsedArgs.containsKey(argName)) {
+            parsedArgs.put(argName, Collections.<String>emptyList());
         }
         if (parsedArgs.containsKey("-h") || parsedArgs.containsKey("--help")) {
             usage();
@@ -2094,7 +2088,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
-        if (false==cmdlineApplication.export(parsedArgs)) {
+        if (false == cmdlineApplication.export(parsedArgs)) {
             GanttSplash splash = new GanttSplash();
             try {
                 splash.setVisible(true);
@@ -2108,7 +2102,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                    List<String> values = parsedArgs.get("-open");
                    startupDocument = values.isEmpty() ? null : values.get(0);
                 }
-                if (startupDocument!=null) {
+                if (startupDocument != null) {
                     ganttFrame.openStartupDocument(startupDocument);
                 }
                 ganttFrame.setVisible(true);

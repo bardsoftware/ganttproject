@@ -83,17 +83,21 @@ public class TaskManagerImpl implements TaskManager {
         private boolean isModified = true;
         private Task[] myArray;
         private final TaskManagerImpl myManager;
+
         TaskMap(TaskManagerImpl taskManager) {
             myComparator = new TaskDocumentOrderComparator(taskManager);
             myManager = taskManager;
         }
+
         void addTask(Task task) {
             myId2task.put(new Integer(task.getTaskID()), task);
             isModified = true;
         }
+
         Task getTask(int id) {
             return myId2task.get(new Integer(id));
         }
+
         public Task[] getTasks() {
             if (isModified) {
                 myArray = myId2task.values().toArray(new Task[myId2task.size()]);
@@ -102,10 +106,12 @@ public class TaskManagerImpl implements TaskManager {
             }
             return myArray;
         }
+
         public void clear() {
             myId2task.clear();
             isModified = true;
         }
+
         public void removeTask(Task task) {
             myId2task.remove(new Integer(task.getTaskID()));
             Task[] nestedTasks = myManager.getTaskHierarchy().getNestedTasks(task);
@@ -114,12 +120,15 @@ public class TaskManagerImpl implements TaskManager {
             }
             isModified = true;
         }
+
         public int size() {
             return myId2task.size();
         }
+
         public boolean isEmpty() {
             return myId2task.isEmpty();
         }
+
         void setDirty() {
             isModified = true;
         }
@@ -230,7 +239,6 @@ public class TaskManagerImpl implements TaskManager {
             myRoot.setDuration(createLength(getConfig().getTimeUnitStack()
                     .getDefaultTimeUnit(), 1));
             myRoot.setExpand(true);
-
         }
         fireTaskModelReset();
     }
@@ -315,6 +323,7 @@ public class TaskManagerImpl implements TaskManager {
                 .getBounds(Arrays.asList(myTaskMap.getTasks()));
         return result.lowerBound;
     }
+
     public Date getProjectEnd(){
         if (myTaskMap.isEmpty()) {
             return myRoot.getStart().getTime();
@@ -323,6 +332,7 @@ public class TaskManagerImpl implements TaskManager {
                 .getBounds(Arrays.asList(myTaskMap.getTasks()));
         return result.upperBound;
     }
+
     public int getProjectCompletion() {
         return myRoot.getCompletionPercentage();
     }
@@ -491,31 +501,28 @@ public class TaskManagerImpl implements TaskManager {
     public TaskDependencyConstraint createConstraint(final int constraintID) {
         return createConstraint(TaskDependencyConstraint.Type.getType(constraintID));
     }
+
     public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
         TaskDependencyConstraint result;
         switch (type) {
-        case finishstart: {
+        case finishstart:
             result = new FinishStartConstraintImpl();
             break;
-        }
-        case finishfinish: {
+        case finishfinish:
             result = new FinishFinishConstraintImpl();
             break;
-        }
-        case startfinish: {
+        case startfinish:
             result = new StartFinishConstraintImpl();
             break;
-        }
-        case startstart: {
+        case startstart:
             result = new StartStartConstraintImpl();
             break;
-        }
-        default: {
-            throw new IllegalArgumentException("Unknown constraint type="+type);
-        }
+        default:
+            throw new IllegalArgumentException("Unknown constraint type=" + type);
         }
         return result;
     }
+
     public int getMaxID() {
         return myMaxID;
     }
@@ -619,7 +626,6 @@ public class TaskManagerImpl implements TaskManager {
             }
         }
     }
-
 
     public TaskManagerConfig getConfig() {
         return myConfig;
@@ -751,7 +757,6 @@ public class TaskManagerImpl implements TaskManager {
         public List<Task> getTasksInDocumentOrder() {
             throw new UnsupportedOperationException();
         }
-
     }
 
     private class FacadeFactoryImpl implements
@@ -765,7 +770,6 @@ public class TaskManagerImpl implements TaskManager {
         public TaskContainmentHierarchyFacade createFacede() {
             return new FacadeImpl();
         }
-
     }
 
     public TaskContainmentHierarchyFacade getTaskHierarchy() {
@@ -896,9 +900,8 @@ public class TaskManagerImpl implements TaskManager {
                 Task task = getTask(original2importedTask.get(tasks[i])
                         .getTaskID());
                 ResourceAssignment assignment = task.getAssignmentCollection()
-                        .addAssignment(
-                                original2importedResource
-                                        .get(assignments[j].getResource()));
+                        .addAssignment(original2importedResource
+                                .get(assignments[j].getResource()));
                 assignment.setLoad(assignments[j].getLoad());
                 assignment.setCoordinator(assignments[j].isCoordinator());
             }

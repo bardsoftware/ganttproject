@@ -8,7 +8,6 @@ import java.util.Iterator;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
@@ -120,7 +119,6 @@ class TaskSaver extends SaverBase {
             for (int i = 0; i < nestedTasks.length; i++) {
                 writeTask(handler, (GanttTask) nestedTasks[i], customColumns);
             }
-
         }
 
         // end of task section
@@ -130,6 +128,7 @@ class TaskSaver extends SaverBase {
     private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType) throws SAXException {
         writeTaskProperty(handler, id, name, type, valueType, null);
     }
+
     private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType, String defaultValue) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("id", id, attrs);
@@ -141,6 +140,7 @@ class TaskSaver extends SaverBase {
         }
         emptyElement("taskproperty", attrs, handler);
     }
+
     private void writeTaskProperties(TransformerHandler handler, CustomColumnsStorage customCol) throws SAXException {
         writeTaskProperty(handler, "tpd0", "type", "default", "icon");
         writeTaskProperty(handler, "tpd1", "priority", "default", "icon");

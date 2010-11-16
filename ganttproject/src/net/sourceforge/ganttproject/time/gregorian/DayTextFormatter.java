@@ -2,14 +2,13 @@ package net.sourceforge.ganttproject.time.gregorian;
 
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.HashMap;
 
 import net.sourceforge.ganttproject.time.TextFormatter;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class DayTextFormatter extends CachingTextFormatter implements TextFormatter {
-    /** cache for holding formatted day names * */
-    private final HashMap textCache = new HashMap();
+//    /** cache for holding formatted day names * */
+//    private final HashMap<Date, String> textCache = new HashMap<Date, String>();
 
     protected TimeUnitText createTimeUnitText(Date adjustedLeft) {
         return new TimeUnitText(MessageFormat.format("{0}", new Object[] { ""

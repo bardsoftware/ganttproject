@@ -27,7 +27,12 @@ import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
  * Open A dialog box to select an xml file for import resources
  */
 public class OpenFileDialog {
-    /** Construtor */
+
+    private File myStartDirectory;
+
+    // TODO Field is never read locally... Remove?
+    private GanttProject myproject;
+
     public OpenFileDialog(GanttProject project) {
         myStartDirectory = new File(System.getProperty("user.home"));
         myproject = project;
@@ -53,8 +58,4 @@ public class OpenFileDialog {
         }
         return result;
     }
-
-    private File myStartDirectory;
-
-    private GanttProject myproject;
 }
