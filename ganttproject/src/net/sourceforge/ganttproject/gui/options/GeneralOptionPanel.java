@@ -18,7 +18,6 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Frame;
 
 import javax.swing.Box;
 import javax.swing.JPanel;
@@ -40,21 +39,12 @@ public abstract class GeneralOptionPanel extends JPanel {
     /** Tell if the parameters of the panel have change. */
     protected boolean bHasChange = false;
 
-    // TODO Field is never read... Remove?
-    /** Ganttproject object. */
-    private Frame appli;
-
     private String myTitle;
 
     private String myComment;
 
     public GeneralOptionPanel(String title, String comment) {
-        this(title, comment, null);
-    }
-
-    public GeneralOptionPanel(String title, String comment, Frame parent) {
         super();
-        appli = parent;
         setLayout(new BorderLayout());
         add(vb, BorderLayout.CENTER);
         myTitle = title;

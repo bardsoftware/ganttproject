@@ -30,22 +30,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ExportSettingsPanel extends GeneralOptionPanel {
 
-    JCheckBox cbName;
+    private final JCheckBox cbName;
 
-    JCheckBox cbComplete;
+    private final JCheckBox cbComplete;
 
-    JCheckBox cbRelations;
+    private final JCheckBox cbRelations;
 
-    // JCheckBox cb3dBorder;
+    private final GanttProject appli;
 
-    private GanttProject appli;
-
-    /** Constructor. */
     public ExportSettingsPanel(GanttProject parent) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "export")), GanttLanguage.getInstance().getText(
-                "settingsExport"), parent);
+                "settingsExport"));
         appli = parent;
+
         // export the name of the task
         JPanel namePanel = new JPanel(new BorderLayout());
         namePanel.add(cbName = new JCheckBox(), BorderLayout.WEST);
@@ -62,7 +60,7 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
         vb.add(completePanel);
         vb.add(new JPanel());
 
-        // export the relationst of the task
+        // export the relations of the task
         JPanel relationsPanel = new JPanel(new BorderLayout());
         relationsPanel.add(cbRelations = new JCheckBox(), BorderLayout.WEST);
         relationsPanel.add(new JLabel(language.getText("depends")),
@@ -115,19 +113,19 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
         // cb3dBorder.setSelected(appli.getOptions().getExport3dBorders());
     }
 
-    boolean getExportName() {
+    public boolean getExportName() {
         return cbName.isSelected();
     }
 
-    boolean getExportComplete() {
+    public boolean getExportComplete() {
         return cbComplete.isSelected();
     }
 
-    boolean getExportRelations() {
+    public boolean getExportRelations() {
         return cbRelations.isSelected();
     }
-    // boolean getExport3DBorder() {
+
+    // public boolean getExport3DBorder() {
     // return cb3dBorder.isSelected();
     // }
-
 }

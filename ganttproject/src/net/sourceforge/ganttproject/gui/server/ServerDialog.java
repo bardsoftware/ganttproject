@@ -27,12 +27,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author athomas Generic dialog for server I/O
  */
 public class ServerDialog extends GeneralDialog {
-
-    /** Constructor. */
     public ServerDialog(GanttProject parent) {
         super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
-                .getText("webServer")), true, new ConnectionPanel(parent));
-
+                .getText("webServer")), true, new ConnectionPanel());
     }
 
     /*
@@ -57,16 +54,16 @@ public class ServerDialog extends GeneralDialog {
         String sNode = (String) (node.getUserObject());
 
         // - ask the settingPanel if parameters are changed
-        // boolean bHasChange = settingPanel.applyChanges(true); //no change to
-        // do on this panel
+        // boolean bHasChange = settingPanel.applyChanges(true); //no change to do on this panel
 
         // - remove the settingPanel
         mainPanel2.remove(0);
 
         // - Create the new panel
         if (sNode.equals(GanttProject.correctLabel(language
-                .getText("openFromServer"))))
-            settingPanel = new ConnectionPanel(appli);
+                .getText("openFromServer")))) {
+            settingPanel = new ConnectionPanel();
+        }
 
         // - initialize the panel
         settingPanel.initialize();
@@ -74,7 +71,7 @@ public class ServerDialog extends GeneralDialog {
         // - add the settingPanel into the main Panel
         mainPanel2.add(settingPanel, 0);
         mainPanel2.repaint();
-        mainPanel2.validate(); // valide the changes
+        mainPanel2.validate(); // validate the changes
     }
 
 }

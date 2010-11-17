@@ -12,7 +12,10 @@ public class ImporterBase {
     private final String myID;
     private UIFacade myUiFacade;
     private IGanttProject myProject;
-    // TODO Field is never read... Remove?
+    /**
+     * Do not remove: to be used when latest import locations get stored in
+     * preferences
+     */
     private Preferences myPrefs;
 
     protected ImporterBase() {
@@ -44,6 +47,7 @@ public class ImporterBase {
     protected GPOption[] getOptions() {
         return null;
     }
+
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
         myProject = project;
         myUiFacade = uiFacade;

@@ -64,7 +64,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -230,11 +229,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private Action myLinkTasksAction;
     private Action myUnlinkTasksAction;
 
-    /**
-     * Constructor.
-     * @param selectionManager TODO
-     * @param facade
-     */
     public GanttTree2(final GanttProject app, TaskManager taskManager,
             TaskSelectionManager selectionManager, UIFacade uiFacade) {
 
@@ -698,22 +692,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    // TODO This method is used... Remove?
-    /** @return all sub tasks for the tree node base */
-    public ArrayList<Task> getAllChildTask(Task task) {
-        ArrayList<Task> res = new ArrayList<Task>();
-        if (task == null)
-            return null;
-        DefaultMutableTreeNode base = getNode(task.getTaskID());
-        if (base == null)
-            return res;
-        Enumeration e = base.children();
-        while (e.hasMoreElements()) {
-            res.add((Task) e.nextElement());
-        }
-        return res;
-    }
-
     /** @return all sub tasks for the tree node base */
     public ArrayList<Object> getAllChildTask(DefaultMutableTreeNode base) {
         ArrayList<Object> res = new ArrayList<Object>();
@@ -764,10 +742,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     public void selectTasks(List<Task> tasksList) {
         Iterator<Task> it = tasksList.iterator();
-        if (it.hasNext())
+        if (it.hasNext()) {
             selectTask(it.next(), false);
-        while (it.hasNext())
+        }
+        while (it.hasNext()) {
             selectTask(it.next(), true);
+        }
     }
 
     public void selectTask(Task task, boolean multipleSelection) {
@@ -776,8 +756,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 .hasMoreElements();) {
             DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes
                     .nextElement();
-            if (!(nextNode instanceof TaskNode))
+            if (!(nextNode instanceof TaskNode)) {
                 continue;
+            }
             if (nextNode.getUserObject().equals(task)) {
                 taskNode = nextNode;
                 break;
@@ -887,16 +868,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         }
     }
 
-    // TODO Method is unused... Remove?
-    public Set/*<Task>*/ getHiddenTasks() {
-        HashSet result = new HashSet();
-        for (int i = 0; i < hiddenTask.size(); i++) {
-            HiddenTask next = hiddenTask.get(i);
-            result.add(next.getNode().getUserObject());
-        }
-        return result;
-    }
-
     /**
      * Hides the selected tasks.
      */
@@ -911,10 +882,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         for (int i = 0; i < hiddenTask.size(); i++) {
             HiddenTask ht = hiddenTask.get(i);
             TreeNode parent = ht.node.getParent();
-            if (parent != null)
+            if (parent != null) {
                 ((GanttTreeTableModel) getTreeTable().getTreeTableModel())
                         .removeNodeFromParent(hiddenTask.get(i)
                                 .getNode());
+            }
         }
     }
 

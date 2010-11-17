@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * Dialog allow you to select a date
+ * Dialog allowing the user to select a date
  */
 public class GanttDialogCalendar extends JDialog implements ActionListener {
 
@@ -52,7 +52,6 @@ public class GanttDialogCalendar extends JDialog implements ActionListener {
 
     private JRadioButton bWork, bNonWork;
 
-    /** Constructor */
     public GanttDialogCalendar(JFrame parent) {
         super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
                 .getText("editCalendars")), true);

@@ -99,14 +99,15 @@ public class ImportResources extends AbstractAction {
 
     private File getResourcesFile() {
         OpenFileDialog openDialog;
-        if (startFile != null)
+        if (startFile != null) {
             openDialog = new OpenFileDialog(startFile.getPath());
-        else
-            openDialog = new OpenFileDialog(myproject);
+        } else {
+            openDialog = new OpenFileDialog();
+        }
         File result = openDialog.show();
-        if (result != null)
+        if (result != null) {
             startFile = result;
+        }
         return result;
     }
-
 }

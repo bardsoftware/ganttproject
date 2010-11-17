@@ -53,6 +53,19 @@ public class TestGanttRolloverButton extends JButton {
 
     private int myAutoRepeatMilliseconds;
 
+    public TestGanttRolloverButton() {
+        setBorder(new EtchedBorder());
+        setBorderPainted(false);
+        setMargin(new Insets(0, 0, 0, 0));
+
+        setRequestFocusEnabled(false);
+
+        addMouseListener(new MouseOverHandler());
+        addMouseListener(new AutoRepeatHandler());
+        setHorizontalTextPosition(SwingConstants.CENTER);
+        setVerticalTextPosition(SwingConstants.BOTTOM);
+    }
+
     public TestGanttRolloverButton(Action action) {
         this();
         setAction(action);
@@ -68,29 +81,6 @@ public class TestGanttRolloverButton extends JButton {
 
     }
 
-    public void setAutoRepeatMousePressedEvent(int milliseconds) {
-        myAutoRepeatMilliseconds = milliseconds;
-    }
-
-    /**
-     * Setup the border (invisible initially)
-     */
-    public TestGanttRolloverButton() {
-        setBorder(new EtchedBorder());
-        setBorderPainted(false);
-        setMargin(new Insets(0, 0, 0, 0));
-
-        setRequestFocusEnabled(false);
-
-        addMouseListener(new MouseOverHandler());
-        addMouseListener(new AutoRepeatHandler());
-        setHorizontalTextPosition(SwingConstants.CENTER);
-        setVerticalTextPosition(SwingConstants.BOTTOM);
-    }
-
-    /**
-     * Setup the border (invisible initially)
-     */
     public TestGanttRolloverButton(Icon icon) {
         this();
         setIcon(icon);
@@ -98,15 +88,22 @@ public class TestGanttRolloverButton extends JButton {
         myIcon = icon;
     }
 
-    /**
-     * Setup the border (invisible initially)
-     */
-    private TestGanttRolloverButton(Icon iconOn, Icon iconOff) {
-        // TODO this() results in a infinite loop! Was intended to be super()?
+    public TestGanttRolloverButton(Icon iconOn, Icon iconOff) {
         this();
         setIcon(iconOff);
         _iconOn = iconOn;
         _iconOff = iconOff;
+    }
+
+    public TestGanttRolloverButton(Icon icon, String text) {
+        this();
+        setIcon(icon);
+        _iconOn = icon;
+        setText(text);
+    }
+
+    public void setAutoRepeatMousePressedEvent(int milliseconds) {
+        myAutoRepeatMilliseconds = milliseconds;
     }
 
     public void setIconHidden(boolean isHidden) {
@@ -127,16 +124,6 @@ public class TestGanttRolloverButton extends JButton {
             }
         }
     };
-
-    /**
-     * Setup the border (invisible initially)
-     */
-    public TestGanttRolloverButton(Icon icon, String text) {
-        this();
-        setIcon(icon);
-        _iconOn = icon;
-        setText(text);
-    }
 
     public void setIcon(Icon icon) {
         Action a = getAction();

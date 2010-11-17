@@ -47,21 +47,21 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
         ItemListener {
 
     // combo box to store all look'n'feel data
-    private JComboBox cbLnf;
+    private final JComboBox cbLnf;
 
-    private JCheckBox cbSmallIcon;
+    private final JCheckBox cbSmallIcon;
 
-    private JComboBox cbButtonType;
+    private final JComboBox cbButtonType;
 
-//    private JCheckBox cbShowStatus;
+//    private final JCheckBox cbShowStatus;
 
-    private JList list;
+    private final JList list;
 
     private DefaultListModel iconList;
 
     private DefaultListModel buttonList;
 
-    private JList listDeleted;
+    private final JList listDeleted;
 
     private DefaultListModel deletedIconList;
 
@@ -69,14 +69,11 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
 
     private boolean bIconMoved = false;
 
-    private JScrollPane scrollPane;
+    private final GanttProject appli;
 
-    private GanttProject appli;
-
-    /** Constructor. */
     public LnFSettingsPanel(GanttProject parent) {
         super(GanttLanguage.getInstance().getText("looknfeel"), GanttLanguage
-                .getInstance().getText("settingsLooknFeel"), parent);
+                .getInstance().getText("settingsLooknFeel"));
 
         appli = parent;
 
@@ -149,7 +146,8 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
         list = new JList();
         listDeleted = new JList();
         listDeleted.setName("listDeleted");
-        scrollPane = new JScrollPane(listDeleted);
+
+        JScrollPane scrollPane = new JScrollPane(listDeleted);
         scrollPane.setPreferredSize(new Dimension(110, 200));
         deletedPanel.add(scrollPane, BorderLayout.EAST);
 
@@ -245,17 +243,20 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
     /** This method check if the value has changed, and ask for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         if (cbSmallIcon.isSelected() != appli.getOptions().getIconSize()
-                .equals("16"))
+                .equals("16")) {
             bHasChange = true;
+        }
 
         if (cbButtonType.getSelectedIndex() != appli.getOptions()
-                .getButtonShow())
+                .getButtonShow()) {
             bHasChange = true;
+        }
 
 //        if (getShowStatusBar() != appli.getOptions().getShowStatusBar())
 //            bHasChange = true;
-        if (bIconMoved)
+        if (bIconMoved) {
             bHasChange = true;
+        }
         // if there is changes
         if (bHasChange) {
             if (!askForApply || (askForApply && askForApplyChanges())) {
@@ -308,31 +309,34 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
         }
         for (int i = 1; i < deletedButtonList.size(); i++) {
             if (((TestGanttRolloverButton) deletedButtonList.getElementAt(i))
-                    .getIcon() == null)
+                    .getIcon() == null) {
                 deletedIconList
                         .addElement(((TestGanttRolloverButton) deletedButtonList
                                 .getElementAt(i)).getText());
-            else
+            } else {
                 deletedIconList
                         .addElement(((TestGanttRolloverButton) deletedButtonList
                                 .getElementAt(i)).getIcon());
+            }
         }
         iconList = new DefaultListModel();
         buttonList = new DefaultListModel();
-        for (int i = 0; i < appli.getButtonList().size(); i++)
+        for (int i = 0; i < appli.getButtonList().size(); i++) {
             buttonList.addElement(appli.getButtonList().getElementAt(i));
+        }
         for (int i = 0; i < buttonList.size(); i++) {
             if (buttonList.elementAt(i).equals(
-                    GPToolBar.SEPARATOR_OBJECT))
+                    GPToolBar.SEPARATOR_OBJECT)) {
                 iconList.addElement(buttonList.getElementAt(i));
-            else {
+            } else {
                 if (((TestGanttRolloverButton) buttonList.getElementAt(i))
-                        .getIcon() == null)
+                        .getIcon() == null) {
                     iconList.addElement(((TestGanttRolloverButton) buttonList
                             .getElementAt(i)).getText());
-                else
+                } else {
                     iconList.addElement(((TestGanttRolloverButton) buttonList
                             .getElementAt(i)).getIcon());
+                }
             }
         }
 
@@ -395,8 +399,9 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
     /** Add a new separator. */
     private void separatorButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int index = 0;
-        if (list.getSelectedIndex() != -1)
+        if (list.getSelectedIndex() != -1) {
             index = list.getSelectedIndex();
+        }
         iconList.add(index, GPToolBar.SEPARATOR_OBJECT);
 
         buttonList.add(index, GPToolBar.SEPARATOR_OBJECT);
@@ -441,8 +446,9 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
                 if (indexesDeleted[i] == 0) {
                     j = 1;
                     indexesDeleted[i] = indexesDeleted[i];
-                } else
+                } else {
                     indexesDeleted[i] = indexesDeleted[i] - i + j;
+                }
                 Object icon = GPToolBar.SEPARATOR_OBJECT;
                 Object button = GPToolBar.SEPARATOR_OBJECT;
                 if (deletedIconList.getElementAt(indexesDeleted[i]).getClass() != String.class) {
@@ -459,15 +465,17 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
                 }
 
             }
-            if (iconList.getSize() != index + 1)
+            if (iconList.getSize() != index + 1) {
                 list.setSelectedIndex(index + 1);
-            else
+            } else {
                 list.setSelectedIndex(index);
+            }
 
-            if (deletedIconList.getSize() <= indexesDeleted[0])
+            if (deletedIconList.getSize() <= indexesDeleted[0]) {
                 listDeleted.setSelectedIndex(0);
-            else
+            } else {
                 listDeleted.setSelectedIndex(indexesDeleted[0]);
+            }
 
             bHasChange = true;
         }

@@ -8,17 +8,11 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GanttDialogProperties;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class TaskPropertiesAction extends TaskActionBase {
 
-    // TODO Field is never read locally... remove?
-	private RoleManager myRoleManager;
-    // TODO Field is never read locally... remove?	
-	private HumanResourceManager myHumanManager;
 	private IGanttProject myProject;
     private final TaskSelectionManager mySelectionManager;
 
@@ -26,8 +20,6 @@ public class TaskPropertiesAction extends TaskActionBase {
 		super(project.getTaskManager(), selectionManager, uiFacade);
 		myProject = project;
         mySelectionManager = selectionManager;
-		myHumanManager = project.getHumanResourceManager();
-		myRoleManager = project.getRoleManager();
 	}
 
 	protected boolean isEnabled(List<Task> selection) {

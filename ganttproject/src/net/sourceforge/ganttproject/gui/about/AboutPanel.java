@@ -35,15 +35,12 @@ import net.sourceforge.ganttproject.util.BrowserControl;
  */
 public class AboutPanel extends GeneralOptionPanel {
 
-    /** Constructor. */
-    public AboutPanel(GanttProject parent) {
+    public AboutPanel() {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "about")), GanttLanguage.getInstance().getText("settingsAbout")
-                + " " + GanttProject.version, parent);
+                + " " + GanttProject.version);
         GanttSplash splash = new GanttSplash();
         JLabel jLabelImage = splash.getSplashComponent();
-        // JPanel imagePanel = new JPanel(new BorderLayout());
-        // imagePanel.add(jLabelImage, BorderLayout.CENTER);
         vb.add(new JPanel());
         vb.add(jLabelImage);
         vb.add(new JPanel());
@@ -52,8 +49,7 @@ public class AboutPanel extends GeneralOptionPanel {
                 "/icons/home_16.gif")));
         bHomePage.setToolTipText(GanttProject.getToolTip(language
                 .getText("goTo")
-                + " " + "http://ganttproject.biz")); // add a simple tool tip
-        // text :)
+                + " " + "http://ganttproject.biz")); // add a simple tool tip text
         bHomePage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BrowserControl.displayURL("http://ganttproject.biz/");
@@ -65,14 +61,12 @@ public class AboutPanel extends GeneralOptionPanel {
 
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        // nothing to do :)
         return bHasChange = false;
     }
 
     /** Initialize the component. */
     public void initialize() {
-        // nothing to do :)
     }
 }

@@ -14,7 +14,7 @@ public class OptionPageProviderPanel extends GeneralOptionPanel{
     private GPOptionGroup[] myGroups;
 
     public OptionPageProviderPanel(OptionPageProvider provider, IGanttProject project, UIFacade uiFacade) {
-        super("", "", uiFacade.getMainFrame());
+        super("", "");
         myProject = project;
         myUIFacade = uiFacade;
         myProvider = provider;

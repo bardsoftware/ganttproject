@@ -204,11 +204,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
             timer = mltimer;
         }
 
-        /** clear the panel. */
-        public void clear() {
-            message.setText("");
-        }
-
         /** Hide the text by decrease the color. */
         public void hideText() {
             try {
@@ -337,22 +332,18 @@ public class GanttStatusBar extends JPanel implements Runnable {
     		myProgressDialog = new ProgressBarDialog(this);
     	}
         public void beginTask(final String name, final int totalWork)  {
-            try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-				        //pbp.reset(name, totalWork);
-				        //pbp.setVisible(true);
-						//myMainFrame.setGlassPane(myProgressPanel);
-						//myProgressPanel.setVisible(true);
-						//myMainFrame.getRootPane().revalidate();
-						//myProgressPanel.start();
-				    	myProgressDialog.start(name, totalWork);
-				        GPLogger.log("[ProgressMonitorImpl] beginTask: name="+name);
-                    }
-                });
-            } finally {
-
-            }
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+			        //pbp.reset(name, totalWork);
+			        //pbp.setVisible(true);
+					//myMainFrame.setGlassPane(myProgressPanel);
+					//myProgressPanel.setVisible(true);
+					//myMainFrame.getRootPane().revalidate();
+					//myProgressPanel.start();
+			    	myProgressDialog.start(name, totalWork);
+			        GPLogger.log("[ProgressMonitorImpl] beginTask: name="+name);
+                }
+            });
         }
 
         public void done() {
@@ -387,18 +378,13 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
 
         public void worked(final int work) {
-        	try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-				    	myWorked += work;
-				    	myProgressDialog.setProgress(myWorked);
-					}
-				});
-			} finally {
-				
-			}
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+			    	myWorked += work;
+			    	myProgressDialog.setProgress(myWorked);
+				}
+			});
         }
-        
     }
 	public void setErrorNotifier(Runnable notifier) {
 		if (notifier==null && myErrorNotifier!=null) {

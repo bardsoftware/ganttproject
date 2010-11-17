@@ -30,11 +30,6 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
      *      String, String)
      */
     public void endElement(String namespaceURI, String sName, String qName) {
-        /*
-         * if ("dependencies".equals (qName)) {
-         *     myDependenciesSectionStarted = false; 
-         * }
-         */
     }
 
     /**
@@ -44,23 +39,8 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
 
-        /*
-         * if ("dependencies".equals (qName)) {
-         *     myDependenciesSectionStarted = true;
-         * }
-         */
         if ("depend".equals(qName)) {
-            
-            /*
-             * if (!myDependenciesSectionStarted) {
-             *    throw new RuntimeException(
-             *            "Invalid file format. Found 'dependency' tag without prior 'dependencies' tag");
-             * } else {
-             */
-                loadDependency(attrs);
-             /*
-              * }
-              */
+            loadDependency(attrs);
         }
     }
 
@@ -118,7 +98,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
                 } catch (NumberFormatException e) {
                 }
             }
-            if (hardnessAsString!=null) {
+            if (hardnessAsString != null) {
             	TaskDependency.Hardness hardness = TaskDependency.Hardness.parse(hardnessAsString);
             	gds.setHardness(hardness);
             }
@@ -157,36 +137,13 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
         public int difference = 0;
 
-        public int dependType = GanttTaskRelationship.FS; //
+        public int dependType = GanttTaskRelationship.FS;
 
 		private Hardness myHardness = TaskDependency.Hardness.STRONG;
-
-		// TODO Method is never used... Remove?
-        public GanttDependStructure(int a, int b) {
-            taskID = a;
-            successorTaskID = b;
-        }
 
         public void setHardness(Hardness hardness) {
         	myHardness = hardness;
 		}
-
-        // TODO Method is never used... Remove?
-		public GanttDependStructure(int taskID, int successorID,
-                int relationType) {
-            this.taskID = taskID;
-            this.successorTaskID = successorID;
-            this.dependType = relationType;
-        }
-
-        // TODO Method is never used... Remove?
-        public GanttDependStructure(int taskID, int successorID,
-                int relationType, int difference) {
-            this.taskID = taskID;
-            this.successorTaskID = successorID;
-            this.dependType = relationType;
-            this.difference = difference;
-        }
 
         public GanttDependStructure() {
         }

@@ -70,21 +70,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     private Set<Task> myHiddenTasks;
 
-    // TODO Class is never used... remove?
-    public static class TuningOptions {
-        private final boolean renderProgress;
-
-        private final boolean renderDependencies;
-
-        public TuningOptions(boolean renderProgress, boolean renderDependencies) {
-            this.renderProgress = renderProgress;
-            this.renderDependencies = renderDependencies;
-        }
-
-        public static final TuningOptions DEFAULT = new TuningOptions(true,
-                true);
-    }
-
     public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack,
             final UIConfiguration projectConfig) {
         super(taskManager, timeUnitStack, projectConfig);

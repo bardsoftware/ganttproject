@@ -8,27 +8,19 @@ import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
 
 /**
  * Action connected to the menu item for insert a new resource
  */
 public class NewHumanAction extends ResourceAction {
-    // TODO Field is never read locally... remove?
-    private final RoleManager myRoleManager;
-
     private final GanttProject myProject;
 
-    public NewHumanAction(HumanResourceManager hrManager, RoleManager roleManager,
-            JFrame projectFrame, GanttProject project) {
+    public NewHumanAction(HumanResourceManager hrManager, GanttProject project) {
         super(hrManager);
-        myRoleManager = roleManager;
-        myProjectFrame = projectFrame;
         myProject = project;
 
         this.putValue(AbstractAction.NAME, GanttProject
@@ -43,21 +35,6 @@ public class NewHumanAction extends ResourceAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-        // final HumanResource people =
-        // ((HumanResourceManager)getManager()).newHumanResource();
-        // people.setRole(myRoleManager.getDefaultRole());
-        // GanttDialogPerson dp = new GanttDialogPerson(getProjectFrame(),
-        // getLanguage(), people);
-        // dp.show();
-        // if(dp.result()) {
-        //
-        // myProject.getUndoManager().undoableEdit("new Resource", new
-        // Runnable(){
-        // public void run() {
-        // getManager().add(people);
-        // }});
-        // myProject.quickSave ("new Resource");
-        // }
         myProject.newHumanResource();
     }
 
@@ -66,12 +43,6 @@ public class NewHumanAction extends ResourceAction {
                 .correctLabel(getLanguage().getText("newHuman")));
     }
 
-    private JFrame getProjectFrame() {
-        return myProjectFrame;
-    }
-
     private final int MENU_MASK = Toolkit.getDefaultToolkit()
-            .getMenuShortcutKeyMask();
-
-    private JFrame myProjectFrame;
+            .getMenuShortcutKeyMask();;
 }

@@ -34,7 +34,7 @@ public class AboutDialog extends GeneralDialog {
     public AboutDialog(GanttProject parent) {
         super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
                 .getText("about"))
-                + " - Ganttproject", true, new AboutPanel(parent));
+                + " - Ganttproject", true, new AboutPanel());
 
         // hide the cancel button
         cancelButton.setVisible(false);
@@ -55,15 +55,15 @@ public class AboutDialog extends GeneralDialog {
 
         // - Create the new panel
         if (sNode.equals(GanttProject.correctLabel(language.getText("about"))))
-            settingPanel = new AboutPanel(appli);
+            settingPanel = new AboutPanel();
         else if (sNode.equals(language.getText("authors")))
-            settingPanel = new AboutAuthorPanel(appli);
+            settingPanel = new AboutAuthorPanel();
         else if (sNode.equals(language.getText("jinfos")))
-            settingPanel = new AboutJavaInfosPanel(appli);
+            settingPanel = new AboutJavaInfosPanel();
         else if (sNode.equals(language.getText("license")))
-            settingPanel = new AboutLicensePanel(appli);
+            settingPanel = new AboutLicensePanel();
         else if (sNode.equals(language.getText("library")))
-            settingPanel = new AboutLibraryPanel(appli);
+            settingPanel = new AboutLibraryPanel();
 
         Box vb = Box.createVerticalBox();
         vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel

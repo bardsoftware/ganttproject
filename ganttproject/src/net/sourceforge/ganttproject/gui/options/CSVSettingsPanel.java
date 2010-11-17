@@ -44,59 +44,58 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class CSVSettingsPanel extends GeneralOptionPanel implements
         ActionListener {
 
-    JRadioButton bFixedSize = null;
+    private final JRadioButton bFixedSize;
 
-    JRadioButton bSeparatedText = null;
+    private final JRadioButton bSeparatedText;
 
-    JRadioButton bDoubleDot = null;
+    private final JRadioButton bDoubleDot;
 
-    JRadioButton bDotComa = null;
+    private final JRadioButton bDotComa;
 
-    JRadioButton bComa = null;
+    private final JRadioButton bComa;
 
-    JRadioButton bSpace = null;
+    private final JRadioButton bSpace;
 
-    JRadioButton bOther = null;
+    private final JRadioButton bOther;
 
-    JComboBox cbTextSeparator = null;
+    private final JComboBox cbTextSeparator;
 
-    JTextField tfOther = null;
+    private final JTextField tfOther;
 
-    JCheckBox cbTaskID;
+    private final JCheckBox cbTaskID;
 
-    JCheckBox cbTaskName;
+    private final JCheckBox cbTaskName;
 
-    JCheckBox cbStartDate;
+    private final JCheckBox cbStartDate;
 
-    JCheckBox cbEndDate;
+    private final JCheckBox cbEndDate;
 
-    JCheckBox cbTaskPercent;
+    private final JCheckBox cbTaskPercent;
 
-    JCheckBox cbTaskDuration;
+    private final JCheckBox cbTaskDuration;
 
-    JCheckBox cbTaskWebLink;
+    private final JCheckBox cbTaskWebLink;
 
-    JCheckBox cbTaskResources;
+    private final JCheckBox cbTaskResources;
 
-    JCheckBox cbTaskNotes;
+    private final JCheckBox cbTaskNotes;
 
-    JCheckBox cbResID;
+    private final JCheckBox cbResID;
 
-    JCheckBox cbResName;
+    private final JCheckBox cbResName;
 
-    JCheckBox cbResMail;
+    private final JCheckBox cbResMail;
 
-    JCheckBox cbResPhone;
+    private final JCheckBox cbResPhone;
 
-    JCheckBox cbResRole;
+    private final JCheckBox cbResRole;
 
-    private GanttProject appli;
+    private final GanttProject appli;
 
-    /** Constructor. */
     public CSVSettingsPanel(GanttProject parent) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "csvexport")), GanttLanguage.getInstance().getText(
-                "settingsCVSExport"), parent);
+                "settingsCVSExport"));
         appli = parent;
         vb.add(new JSeparator());
         JPanel genePanel = new JPanel(new BorderLayout());
@@ -170,7 +169,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
         textSeparatorFieldPanel.add(cbTextSeparator);
 
         vb.add(new JPanel());
-        // /////////////////////////////////////////////////
+
         vb.add(new JSeparator());
         JPanel taskPanel = new JPanel(new BorderLayout());
         JLabel lblTaskField = new JLabel(language.getText("taskFields"));
@@ -217,7 +216,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
                 7, 2, 1, 1);
 
         vb.add(new JPanel());
-        // /////////////////////////////////////////////////
+
         vb.add(new JSeparator());
         JPanel resPanel = new JPanel(new BorderLayout());
         JLabel lblResField = new JLabel(language.getText("resFields"));
@@ -357,20 +356,21 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
 
         String sSeparatedChar = appli.getOptions().getCSVOptions().sSeparatedChar;
 
-        if (",".equals(sSeparatedChar))
+        if (",".equals(sSeparatedChar)) {
             unselectOther(bComa);
-        else if (";".equals(sSeparatedChar))
+        } else if (";".equals(sSeparatedChar)) {
             unselectOther(bDotComa);
-        else if (":".equals(sSeparatedChar))
+        } else if (":".equals(sSeparatedChar)) {
             unselectOther(bDoubleDot);
-        else if (" ".equals(sSeparatedChar))
+        } else if (" ".equals(sSeparatedChar)) {
             unselectOther(bSpace);
-        else {
+        } else {
             unselectOther(bOther);
             tfOther.setText(sSeparatedChar);
         }
-        if ("\"".equals(appli.getOptions().getCSVOptions().sSeparatedTextChar))
+        if ("\"".equals(appli.getOptions().getCSVOptions().sSeparatedTextChar)) {
             cbTextSeparator.setSelectedIndex(1);
+        }
 
     }
 
@@ -409,7 +409,6 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
         bSpace.setSelected(selectedButton == bSpace);
         bOther.setSelected(selectedButton == bOther);
         tfOther.setEnabled(selectedButton == bOther);
-
     }
 
     public void enableSeparatedButton(boolean enabled) {
@@ -483,23 +482,29 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
 
     public boolean separatCharHasChange() {
         CSVOptions csvOptions = appli.getOptions().getCSVOptions();
-        if (bDoubleDot.isSelected() && csvOptions.sSeparatedChar.equals(":"))
+        if (bDoubleDot.isSelected() && csvOptions.sSeparatedChar.equals(":")) {
             return false;
-        if (bComa.isSelected() && csvOptions.sSeparatedChar.equals(","))
+        }
+        if (bComa.isSelected() && csvOptions.sSeparatedChar.equals(",")) {
             return false;
-        if (bDotComa.isSelected() && csvOptions.sSeparatedChar.equals(";"))
+        }
+        if (bDotComa.isSelected() && csvOptions.sSeparatedChar.equals(";")) {
             return false;
-        if (bSpace.isSelected() && csvOptions.sSeparatedChar.equals(" "))
+        }
+        if (bSpace.isSelected() && csvOptions.sSeparatedChar.equals(" ")) {
             return false;
+        }
         if (bOther.isSelected()
-                && csvOptions.sSeparatedChar.equals(tfOther.getText()))
+                && csvOptions.sSeparatedChar.equals(tfOther.getText())) {
             return false;
+        }
         return true;
     }
 
     public String getTextSeparat() {
-        if (cbTextSeparator.getSelectedIndex() == 0)
+        if (cbTextSeparator.getSelectedIndex() == 0) {
             return "\'";
+        }
         return "\"";
     }
 

@@ -29,17 +29,16 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class RolesSettingsPanel extends GeneralOptionPanel {
 
-    RolesTableModel myRolesModel;
+    private final RolesTableModel myRolesModel;
 
-    JTable rolesTable;
+    private final JTable rolesTable;
 
-    private GanttProject appli;
+    private final GanttProject appli;
 
-    /** Constructor. */
     public RolesSettingsPanel(GanttProject parent) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "resourceRole")), GanttLanguage.getInstance().getText(
-                "settingsRoles"), parent);
+                "settingsRoles"));
 
         appli = parent;
         myRolesModel = new RolesTableModel();
@@ -54,17 +53,13 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and ask for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        System.err.println("[RolesSettingsPanel] applyChanges(): ");
         bHasChange = myRolesModel.hasChanges();
-        if (!bHasChange) {
-            System.err
-                    .println("[RolesSettingsPanel] applyChanges(): no changes");
-            return bHasChange;
+        if (bHasChange) {
+            myRolesModel.applyChanges();
+            appli.setAskForSave(true);
         }
-        myRolesModel.applyChanges();
-        appli.setAskForSave(true);
         return bHasChange;
     }
 
@@ -72,5 +67,4 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
     public void initialize() {
         // automatic initialize with the role model
     }
-
 }

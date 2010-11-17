@@ -32,18 +32,10 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author athomas The connection panel for http acces.
  */
 public class ConnectionPanel extends GeneralOptionPanel {
-
-    JTextField tfUrl;
-
-    JTextField tfLogin;
-
-    JPasswordField tfPassword;
-
-    /** Constructor. */
-    public ConnectionPanel(GanttProject parent) {
+    public ConnectionPanel() {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "openFromServer")), GanttLanguage.getInstance().getText(
-                "settingsConnection"), parent);
+                "settingsConnection"));
 
         Box vbServer = Box.createVerticalBox();
 
@@ -51,35 +43,27 @@ public class ConnectionPanel extends GeneralOptionPanel {
         JPanel urlPanel = new JPanel(new BorderLayout());
         urlPanel.add(new JLabel(language.getText("fileFromServer")),
                 BorderLayout.WEST);
-        // urlPanel.add(tfUrl = new JTextField(), BorderLayout.CENTER);
-        // vb.add(urlPanel);
-        // vb.add(new JPanel());
+
         vbServer.add(urlPanel);
-        vbServer.add(tfUrl = new JTextField("http://"));
+        vbServer.add(new JTextField("http://"));
         vbServer.add(new JPanel());
 
         // login textfield
         JPanel loginPanel = new JPanel(new BorderLayout());
         loginPanel.add(new JLabel(language.getText("userName")),
                 BorderLayout.WEST);
-        /*
-         * loginPanel.add(tfLogin = new JTextField(), BorderLayout.CENTER);
-         * vb.add(loginPanel); vb.add(new JPanel());
-         */
+
         vbServer.add(loginPanel);
-        vbServer.add(tfLogin = new JTextField());
+        vbServer.add(new JTextField());
         vbServer.add(new JPanel());
 
         // password textfield
         JPanel passwordPanel = new JPanel(new BorderLayout());
         passwordPanel.add(new JLabel(language.getText("userName")),
                 BorderLayout.WEST);
-        /*
-         * passwordPanel.add(tfPassword = new JPasswordField(),
-         * BorderLayout.CENTER); vb.add(passwordPanel); vb.add(new JPanel());
-         */
+
         vbServer.add(passwordPanel);
-        vbServer.add(tfPassword = new JPasswordField());
+        vbServer.add(new JPasswordField());
         vbServer.add(new JPanel());
 
         JPanel serverPanel = new JPanel(new BorderLayout());
@@ -95,7 +79,6 @@ public class ConnectionPanel extends GeneralOptionPanel {
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
      */
     public boolean applyChanges(boolean askForApply) {
-
         return false;
     }
 
@@ -105,7 +88,6 @@ public class ConnectionPanel extends GeneralOptionPanel {
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
      */
     public void initialize() {
-
     }
 
 }

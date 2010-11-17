@@ -20,7 +20,6 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 
 /**
@@ -30,12 +29,8 @@ public class OpenFileDialog {
 
     private File myStartDirectory;
 
-    // TODO Field is never read locally... Remove?
-    private GanttProject myproject;
-
-    public OpenFileDialog(GanttProject project) {
+    public OpenFileDialog() {
         myStartDirectory = new File(System.getProperty("user.home"));
-        myproject = project;
     }
 
     /** Open the file chooser */

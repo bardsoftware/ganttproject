@@ -84,9 +84,6 @@ public class ExporterToImage implements Exporter {
     private final GPOptionGroup myOptions = new GPOptionGroup("impex.image",
             new GPOption[] { myFileTypeOption });
 
-    // TODO Field is never read... Remove?
-    private Chart myGanttChart;
-
     public ExporterToImage() {
         myOptions.setTitled(false);
     }
@@ -116,7 +113,6 @@ public class ExporterToImage implements Exporter {
 
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myUIFacade = uiFacade;
-        myGanttChart = uiFacade.getGanttChart().createCopy();
     }
 
     public void run(File outputFile,ExportFinalizationJob finalizationJob) throws Exception {

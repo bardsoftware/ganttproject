@@ -79,7 +79,7 @@ public class TTFontCache {
             }
             try {
                 registerFontFile(files[i], runningUnderJava6);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 GPLogger.log(e);
             }
        }

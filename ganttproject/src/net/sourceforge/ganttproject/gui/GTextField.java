@@ -5,7 +5,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
 import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -96,16 +95,6 @@ public class GTextField extends JFormattedTextField {
             ((GPlainDocument) d).setPattern(pattern);
         }
     }
-
-    public static void main(String[] args) {
-        GTextField f = new GTextField();
-        f.setPattern("[0-9]*.?[0-9]*");
-        JFrame jf = new JFrame();
-        jf.getContentPane().add(f);
-        jf.pack();
-        jf.setVisible(true);
-        // f.setText("ere");
-    }
 }
 
 /**
@@ -195,5 +184,4 @@ class GPlainDocument extends PlainDocument {
     protected void setPattern(String pattern) {
         this.pattern = Pattern.compile(pattern);
     }
-
 }

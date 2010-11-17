@@ -30,7 +30,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -40,9 +39,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class AboutJavaInfosPanel extends GeneralOptionPanel {
 
     /** Constructor. */
-    public AboutJavaInfosPanel(GanttProject parent) {
+    public AboutJavaInfosPanel() {
         super(GanttLanguage.getInstance().getText("jinfos"), GanttLanguage
-                .getInstance().getText("settingsJavaInfos"), parent);
+                .getInstance().getText("settingsJavaInfos"));
 
         JTable jTableProperties = new JTable();
         AboutFieldTableModel modelproperties = new AboutFieldTableModel();

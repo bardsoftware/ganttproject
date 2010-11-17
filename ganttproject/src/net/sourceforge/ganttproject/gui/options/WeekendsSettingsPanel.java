@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.Frame;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -27,10 +25,10 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
     private final GPCalendar calendar;
 
-    public WeekendsSettingsPanel(Frame owner, IGanttProject project) {
+    public WeekendsSettingsPanel(IGanttProject project) {
         super(GanttProject.correctLabel(
                 GanttLanguage.getInstance().getText("weekends")),
-                GanttLanguage.getInstance().getText("settingsWeekends"), owner);
+                GanttLanguage.getInstance().getText("settingsWeekends"));
 
         this.project = project;
         calendar = new WeekendCalendarImpl();

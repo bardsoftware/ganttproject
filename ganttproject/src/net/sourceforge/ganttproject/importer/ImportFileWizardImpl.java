@@ -20,14 +20,10 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class ImportFileWizardImpl extends WizardImpl {
     private final State myState;
 
-    // TODO Field is never read... Remove?
-    private final GanttProject myProject;
-
     private static Importer[] ourImporters;
 
     public ImportFileWizardImpl(UIFacade uiFacade, GanttProject project, GanttOptions options) {
         super(uiFacade, ImportFileWizardImpl.i18n("importWizard.dialog.title"));
-        myProject = project;
         myState = new State();
         if (ourImporters == null) {
             ourImporters = getImporters();

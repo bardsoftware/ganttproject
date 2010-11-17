@@ -34,21 +34,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ParametersSettingsPanel extends GeneralOptionPanel {
 
-    JCheckBox cbAutomatic;
+    private final JCheckBox cbAutomatic;
 
-    JSpinner spLockDAV;
+    private final JSpinner spLockDAV;
 
-    JTextField tfTaskPrefix;
+    private final JTextField tfTaskPrefix;
 
-    // private JSpinner spUndoNumber;
+    // private final JSpinner spUndoNumber;
 
-    private GanttProject appli;
+    private final GanttProject appli;
 
-    /** Constructor. */
     public ParametersSettingsPanel(GanttProject parent) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "parameters")), GanttLanguage.getInstance().getText(
-                "settingsParameters"), parent);
+                "settingsParameters"));
 
         appli = parent;
 
@@ -99,7 +98,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         if (getAutomatic() == appli.getOptions().getAutomatic()
                 &&

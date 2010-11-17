@@ -17,7 +17,6 @@
 
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -38,20 +37,16 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * @author athomas Dialog to edit the preferences for the application.
  */
-public class SettingsDialog extends GeneralDialog implements ActionListener
+public class SettingsDialog extends GeneralDialog implements ActionListener {
+    /** If true restart the initialization */
+    private boolean reinit = false;
 
-{
+    private final JButton restoreButton;
 
-    boolean reinit = false; // If restart the initialization
-
-    JButton restoreButton = null;
-
-    /** Constructor. */
     public SettingsDialog(GanttProject parent) {
         super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
                 .getText("settings")), true, new WelcomeSettingsPanel(parent));
 
-        
         restoreButton = new JButton(language.getText("restoreDefaults"));
         restoreButton.setName("restore");
         restoreButton.addActionListener(this);
@@ -61,11 +56,10 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                if (settingPanel!=null) {
+                if (settingPanel != null) {
                     settingPanel.rollback();
                 }
             }
-            
         });
     }
 
@@ -105,8 +99,9 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
 
     /** Callback for the tree selection event. */
     public void valueChanged(TreeSelectionEvent e) {
-        if (reinit)
+        if (reinit) {
             return;
+        }
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e.getPath()
                 .getLastPathComponent());
         boolean bHasChange = settingPanel.applyChanges(true);
@@ -128,49 +123,39 @@ public class SettingsDialog extends GeneralDialog implements ActionListener
         Object userObject = node.getUserObject();
         if (userObject instanceof OptionPageProvider) {
             settingPanel = new OptionPageProviderPanel((OptionPageProvider) userObject, getProject(), getUIFacade());
-        }
-        else {
+        } else {
 
         // - ask the settingPanel if parameters are changed
 
         // - Create the new panel
             String sNode = (String) (node.getUserObject());
-            if (sNode.equals(language.getText("languages")))
+            if (sNode.equals(language.getText("languages"))) {
                 settingPanel = new LanguageSettingsPanel(appli);
-    
-            else if (sNode.equals(GanttProject.correctLabel(language
-                    .getText("project"))))
-                settingPanel = new ProjectSettingsPanel((Frame) getOwner(),
-                        getProject());
-
-            else if (sNode.equals(GanttProject.correctLabel(language
-                    .getText("weekends"))))
-                settingPanel = new WeekendsSettingsPanel((Frame) getOwner(),
-                        getProject());
-
-            else if (sNode.equals(GanttProject.correctLabel(language
-                    .getText("parameters"))))
+            } else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("project")))) {
+                settingPanel = new ProjectSettingsPanel(getProject());
+            } else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("weekends")))) {
+                settingPanel = new WeekendsSettingsPanel(getProject());
+            } else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("parameters")))) {
                 settingPanel = new ParametersSettingsPanel(appli);
-    
-            else if (sNode.equals(GanttProject.correctLabel(language
-                    .getText("resourceRole"))))
+            } else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("resourceRole")))) {
                 settingPanel = new RolesSettingsPanel(appli);
-    
-            else if (sNode.equals(language.getText("looknfeel")))
+            } else if (sNode.equals(language.getText("looknfeel"))) {
                 settingPanel = new LnFSettingsPanel(appli);
-    
-            else if (sNode.equals(GanttProject.correctLabel(language
-                    .getText("export"))))
+            } else if (sNode.equals(GanttProject.correctLabel(language
+                    .getText("export")))) {
                 settingPanel = new ExportSettingsPanel(appli);
-    
-            else if (sNode.equals("csv"))
+            } else if (sNode.equals("csv")) {
                 settingPanel = new CSVSettingsPanel(appli);
-    
-            else
+            } else {
                 settingPanel = new WelcomeSettingsPanel(appli);
+            }
             vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel
                     .getComment()));
-        }    
+        }
         // - initialize the panel
         vb.add(Box.createVerticalStrut(20));
         settingPanel.initialize();

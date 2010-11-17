@@ -23,24 +23,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author athomas Simple class for welcome panel.
  */
 public class WelcomeSettingsPanel extends GeneralOptionPanel {
-
-    /** Constructor. */
     public WelcomeSettingsPanel(GanttProject parent) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "settings")), GanttLanguage.getInstance().getText(
-                "settingsWelcome"), parent);
+                "settingsWelcome"));
 
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        // nothing to do :)
         return false;
     }
 
     /** Initialize the component. */
     public void initialize() {
-        // nothing to do :)
     }
 }

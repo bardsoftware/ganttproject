@@ -8,12 +8,9 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
 
 public class ResourceActionSet {
 	private final DeleteHumanAction myDeleteHumanAction;
-
-    private final RoleManager myRoleManager;
 
     private final HumanResourceManager myManager;
 
@@ -24,7 +21,6 @@ public class ResourceActionSet {
 	public ResourceActionSet(IGanttProject project, ResourceContext context,
             GanttProject projectFrame, UIFacade uiFacade) {
         myManager = project.getHumanResourceManager();
-        myRoleManager = project.getRoleManager();
         myProjectFrame = projectFrame;
         myDeleteHumanAction = new DeleteHumanAction(myManager, context, myProjectFrame, uiFacade);
     }
@@ -32,8 +28,7 @@ public class ResourceActionSet {
     public AbstractAction[] getActions() {
         if (myActions == null) {
 			myActions = new AbstractAction[] {
-					new NewHumanAction(myManager, myRoleManager,
-							myProjectFrame, myProjectFrame),
+					new NewHumanAction(myManager, myProjectFrame),
 					myDeleteHumanAction };
         }
         return myActions;

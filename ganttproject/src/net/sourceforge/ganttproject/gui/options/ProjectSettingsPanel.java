@@ -17,7 +17,6 @@
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -54,10 +53,10 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
     private final IGanttProject myProject;
 
     /** Default constructor. */
-    public ProjectSettingsPanel(Frame owner, IGanttProject project) {
+    public ProjectSettingsPanel(IGanttProject project) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "project")), GanttLanguage.getInstance().getText(
-                "settingsProject"), owner);
+                "settingsProject"));
 
         myProject = project;
         Box vbproject = Box.createVerticalBox();

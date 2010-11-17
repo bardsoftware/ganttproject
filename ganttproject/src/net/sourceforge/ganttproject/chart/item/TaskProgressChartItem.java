@@ -15,9 +15,6 @@ public class TaskProgressChartItem extends ChartItem {
 
     private int myUnitWidth;
 
-    // TODO Field is never read... remove?
-    private TimeUnit myTimeUnit;
-
     private float myTaskLength;
 
     public TaskProgressChartItem(int posX, int unitWidth, TimeUnit bottomUnit,
@@ -25,7 +22,6 @@ public class TaskProgressChartItem extends ChartItem {
         super(task);
         myPosX = posX;
         myUnitWidth = unitWidth;
-        myTimeUnit = bottomUnit;
         myTaskLength = task.getDuration().getLength(bottomUnit);
     }
 
@@ -34,5 +30,4 @@ public class TaskProgressChartItem extends ChartItem {
         float deltaUnits = (float) deltaX / (float) myUnitWidth;
         return 100 * deltaUnits / myTaskLength;
     }
-
 }

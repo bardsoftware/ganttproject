@@ -34,14 +34,14 @@ public class LanguageSettingsPanel extends GeneralOptionPanel implements
         ItemListener {
 
     // combo box to store all languages data
-    private JComboBox cbLanguage;
+    private final JComboBox cbLanguage;
 
-    private GanttProject appli;
+    private final GanttProject appli;
 
     /** Constructor. */
     public LanguageSettingsPanel(GanttProject parent) {
         super(GanttLanguage.getInstance().getText("languages"), GanttLanguage
-                .getInstance().getText("settingsLanguages"), parent);
+                .getInstance().getText("settingsLanguages"));
 
         appli = parent;
 
@@ -111,76 +111,76 @@ public class LanguageSettingsPanel extends GeneralOptionPanel implements
             this.bHasChange = true;
     }
 
-    /** Appli the new language */
+    /** Apply the new language */
     public void changeLanguage() {
         String lang = (String) cbLanguage.getSelectedItem();
 
-        if (lang.equals("Traditional Chinese"))
+        if (lang.equals("Traditional Chinese")) {
             language.setLocale(Locale.TAIWAN);
-        else if (lang.equals("Simplified Chinese"))
+        } else if (lang.equals("Simplified Chinese")) {
             language.setLocale(Locale.CHINA);
-        else if (lang
-                .equals("\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438"))
+        } else if (lang
+                .equals("\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438")) {
             language.setLocale(new Locale("bg", "BG"));
-        else if (lang.equals("\u010cesky"))
+        } else if (lang.equals("\u010cesky")) {
             language.setLocale(new Locale("cs", "CZ"));
-        else if (lang.equals("Dansk"))
+        } else if (lang.equals("Dansk")) {
             language.setLocale(new Locale("da", "DK"));
-        else if (lang.equals("Deutsch"))
+        } else if (lang.equals("Deutsch")) {
             language.setLocale(Locale.GERMANY);
-        else if (lang.equals("English"))
+        } else if (lang.equals("English")) {
             language.setLocale(Locale.US);
-        else if (lang.equals("English (United Kingdom)"))
+        } else if (lang.equals("English (United Kingdom)")) {
             language.setLocale(Locale.UK);
-        else if (lang.equals("English (Australia)"))
+        } else if (lang.equals("English (Australia)")) {
             language.setLocale(new Locale("en", "AU"));
-        else if (lang.equals("Espa\u00f1ol"))
+        } else if (lang.equals("Espa\u00f1ol")) {
             language.setLocale(new Locale("es", "ES"));
-        else if (lang.equals("Estonian"))
+        } else if (lang.equals("Estonian")) {
             language.setLocale(new Locale("et", "ET"));
-        else if (lang.equals("Greek"))
+        } else if (lang.equals("Greek")) {
             language.setLocale(new Locale("el", "GR"));
-        else if (lang.equals("Finnish"))
+        } else if (lang.equals("Finnish")) {
             language.setLocale(new Locale("fi", "FI"));
-        else if (lang.equals("Fran\u00e7ais"))
+        } else if (lang.equals("Fran\u00e7ais")) {
             language.setLocale(Locale.FRANCE);
-        else if (lang.equals("Hrvatski")) {
+        } else if (lang.equals("Hrvatski")) {
         	language.setLocale(new Locale("hr", "HR"));
-        }
-        else if (lang.equals("Hungarian"))
+        } else if (lang.equals("Hungarian")) {
             language.setLocale(new Locale("hu", "HU"));
-        else if (lang.equals("Korean"))
+        } else if (lang.equals("Korean")) {
             language.setLocale(new Locale("ko", "KR"));
-        else if (lang.equals("\u05e2\u05d1\u05e8\u05d9\u05ea"))
+        } else if (lang.equals("\u05e2\u05d1\u05e8\u05d9\u05ea")) {
             language.setLocale(new Locale("iw", "iW"));
-        else if (lang.equals("Italiano"))
+        } else if (lang.equals("Italiano")) {
             language.setLocale(Locale.ITALY);
-        else if (lang.equals("Japanese"))
+        } else if (lang.equals("Japanese")) {
             language.setLocale(new Locale("ja", "JP"));
-        else if (lang.equals("Nederlands"))
+        } else if (lang.equals("Nederlands")) {
             language.setLocale(new Locale("nl", "NL"));
-        else if (lang.equals("Norsk"))
+        } else if (lang.equals("Norsk")) {
             language.setLocale(new Locale("no", "NO"));
-        else if (lang.equals("Polski"))
+        } else if (lang.equals("Polski")) {
             language.setLocale(new Locale("pl", "PL"));
-        else if (lang.equals("Portugu\u00EAs"))
+        } else if (lang.equals("Portugu\u00EAs")) {
             language.setLocale(new Locale("pt", "PT"));
-        else if (lang.equals("Portugu\u00eas do Brasil"))
+        } else if (lang.equals("Portugu\u00eas do Brasil")) {
             language.setLocale(new Locale("pt", "BR"));
-        else if (lang.equals("Romanian"))
+        } else if (lang.equals("Romanian")) {
             language.setLocale(new Locale("ro", "RO"));
-        else if (lang.equals("Sloven\u0161\u010dina"))
+        } else if (lang.equals("Sloven\u0161\u010dina")) {
             language.setLocale(new Locale("sl", "SL"));
-        else if (lang.equals("Slovensky"))
+        } else if (lang.equals("Slovensky")) {
             language.setLocale(new Locale("sk", "SK"));
-        else if (lang.equals("Svenska"))
+        } else if (lang.equals("Svenska")) {
             language.setLocale(new Locale("sv", "SV"));
-        else if (lang.equals("T\u00FCrk\u00E7e"))
+        } else if (lang.equals("T\u00FCrk\u00E7e")) {
             language.setLocale(new Locale("tr", "TR"));
-        else if (lang.equals("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"))
+        } else if (lang.equals("\u0420\u0443\u0441\u0441\u043a\u0438\u0439")) {
             language.setLocale(new Locale("ru", "RU"));
-        else if (lang.equals("Ti\u1ebfng anh"))
+        } else if (lang.equals("Ti\u1ebfng anh")) {
             language.setLocale(new Locale("vi", "VN"));
+        }
         appli.changeLanguage();
     }
 }

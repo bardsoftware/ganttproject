@@ -19,7 +19,7 @@ public class NewProjectWizardWindow extends WizardImpl {
     }
 
     public void addProjectNamePage(IGanttProject project) {
-        WizardPage projectNamePage = new ProjectNamePage(null, project, myI18n);
+        WizardPage projectNamePage = new ProjectNamePage(project, myI18n);
         addPage(projectNamePage);
     }
 

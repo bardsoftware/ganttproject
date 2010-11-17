@@ -481,8 +481,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
         //
         //
-        myNewHumanAction = new NewHumanAction(getHumanResourceManager(),
-                getRoleManager(), this, this) {
+        myNewHumanAction = new NewHumanAction(getHumanResourceManager(), this) {
             public void actionPerformed(ActionEvent event) {
                 super.actionPerformed(event);
                 getTabs().setSelectedIndex(UIFacade.RESOURCES_INDEX);

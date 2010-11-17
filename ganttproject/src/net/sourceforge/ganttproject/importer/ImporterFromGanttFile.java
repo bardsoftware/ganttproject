@@ -190,7 +190,6 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             return myTaskManager.getCustomColumnStorage();
         }
         public CustomColumnsManager getTaskCustomColumnManager() {
-            // TODO Auto-generated method stub
             return super.getTaskCustomColumnManager();
         }
     }

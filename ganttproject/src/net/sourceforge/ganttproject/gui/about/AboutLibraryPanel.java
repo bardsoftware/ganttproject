@@ -34,9 +34,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class AboutLibraryPanel extends GeneralOptionPanel {
 
-    public AboutLibraryPanel(GanttProject parent) {
+    public AboutLibraryPanel() {
         super(GanttLanguage.getInstance().getText("library"), GanttLanguage
-                .getInstance().getText("settingsLibrary"), parent);
+                .getInstance().getText("settingsLibrary"));
 
         JTable jTableLib = new JTable();
         LibraryFieldTableModel modellib = new LibraryFieldTableModel();
@@ -83,7 +83,6 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         vb.add(libraryPanel);
 
         applyComponentOrientation(language.getComponentOrientation());
-
     }
 
     /*
@@ -164,14 +163,15 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
 
         public Object getValueAt(int row, int col) {
             LibraryInfo info = data.elementAt(row);
-            if (col == 0)
+            if (col == 0) {
                 return info.getName();
-            else if (col == 1)
+            } else if (col == 1) {
                 return info.getWeb();
-            else if (col == 2)
+            } else if (col == 2) {
                 return info.getComment();
-            else
+            } else {
                 return null;
+            }
         }
 
         public boolean isCellEditable(int row, int col) {

@@ -25,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -35,9 +34,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class AboutAuthorPanel extends GeneralOptionPanel {
 
     /** Constructor. */
-    public AboutAuthorPanel(GanttProject parent) {
+    public AboutAuthorPanel() {
         super(GanttLanguage.getInstance().getText("authors"), GanttLanguage
-                .getInstance().getText("settingsAuthors"), parent);
+                .getInstance().getText("settingsAuthors"));
 
         JTable jTableAuthors = new JTable();
         AuthorsFieldTableModel modelauthors = new AuthorsFieldTableModel();

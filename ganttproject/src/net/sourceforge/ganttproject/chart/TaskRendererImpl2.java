@@ -79,7 +79,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         renderDependencies();
     }
 
-
     private void renderDependencies() {
         createDependencyLines();
     }
@@ -503,7 +502,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             }
             //System.err.println("dependant rectangle="+dependantRectangle+"\ndependeeREctangle="+dependeeRectangle+"\ndependantVector="+dependantVector+"\ndependeeVector="+dependeeVector);
             DependencyDrawData data = new DependencyDrawData(next,
-                    dependantRectangle, dependeeRectangle, dependantVector,
+                    dependantRectangle, dependantVector,
                     dependeeVector);
             result.add(data);
         }
@@ -516,23 +515,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     private static class DependencyDrawData {
         final GraphicPrimitiveContainer.Rectangle myDependantRectangle;
 
-        // TODO Field is never read... Remove?
-        final GraphicPrimitiveContainer.Rectangle myDependeeRectangle;
-
         final TaskDependency myDependency;
 
         final PointVector myDependantVector;
 
         final PointVector myDependeeVector;
 
-        // FIXME dependeePrimitive is not used... remove argument?
         public DependencyDrawData(TaskDependency dependency,
                 GraphicPrimitiveContainer.GraphicPrimitive dependantPrimitive,
-                GraphicPrimitiveContainer.GraphicPrimitive dependeePrimitive,
                 PointVector dependantVector, PointVector dependeeVector) {
             myDependency = dependency;
             myDependantRectangle = (GraphicPrimitiveContainer.Rectangle) dependantPrimitive;
-            myDependeeRectangle = (GraphicPrimitiveContainer.Rectangle) dependeePrimitive;
             myDependantVector = dependantVector;
             myDependeeVector = dependeeVector;
         }
