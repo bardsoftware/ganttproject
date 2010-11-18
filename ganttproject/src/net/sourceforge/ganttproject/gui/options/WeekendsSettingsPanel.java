@@ -11,13 +11,13 @@ import net.sourceforge.ganttproject.gui.projectwizard.I18N;
 import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
+ * Panel to edit the weekend settings
+ * 
  * @author Maarten Bezemer
- * @description Panel to edit the weekend settings
  */
 public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
@@ -56,7 +56,6 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                 projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
                 // Update tasks for the new weekends
                 // By setting their end dates to null it gets recalculated
-                TaskContainmentHierarchyFacade c = project.getTaskContainment();
                 Task[] tasks = project.getTaskManager().getTasks();
                 for(int i = 0; i < tasks.length; i++) {
                     tasks[i].setEnd(null);

@@ -50,7 +50,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceColumn;
 import net.sourceforge.ganttproject.roles.Role;
@@ -586,12 +585,13 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         return dmtnselected;
     }
 
-    public boolean isExpanded(ProjectResource pr) {
-        ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel())
-                .exists(pr);
-        if (node != null)
-            return getTreeTable().isExpanded(new TreePath(node.getPath()));
-        return false;
+    public boolean isExpanded(HumanResource hr) {
+		ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel())
+				.exists(hr);
+		if (node != null) {
+			return getTreeTable().isExpanded(new TreePath(node.getPath()));
+		}
+		return false;
     }
 
     public void addKeyListener(KeyListener listener) {
@@ -804,15 +804,14 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     }
 
     @Override
-    public CustomPropertyDefinition createDefinition(String typeAsString,
-            String colName, String defValue) {
-        // TODO Auto-generated method stub
-        return null;
+    public CustomPropertyDefinition createDefinition(
+    		String typeAsString, String colName, String defValue) {
+        return createDefinition(String.valueOf(getDefinitions().size()), typeAsString, colName, defValue);
     }
 
     @Override
     public void deleteDefinition(CustomPropertyDefinition def) {
-        // TODO Auto-generated method stub
+    	deleteCustomColumn(def.getName());
     }
 
     @Override

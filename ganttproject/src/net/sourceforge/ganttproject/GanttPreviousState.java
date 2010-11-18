@@ -21,14 +21,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.task.Task;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * @author nbohn
@@ -161,7 +157,6 @@ public class GanttPreviousState {
         		e.printStackTrace(System.err);
         	}
         }
-
     }
 
     private File createTemporaryFile() throws IOException {
@@ -192,9 +187,8 @@ public class GanttPreviousState {
                 throw new RuntimeException(
                         "A task can not has a number equal to -1");
 
-            int id = task.getTaskID();
-
             /*
+             * int id = task.getTaskID();
              * if (id >= lot.size()) { return; }
              */
 
@@ -203,7 +197,6 @@ public class GanttPreviousState {
             ArrayList<Object> child = myTree.getAllChildTask(node);
             if (child.size() != 0) {
                 haschild = true;
-
             }
 
             // Writes data of task
@@ -219,6 +212,7 @@ public class GanttPreviousState {
 
             fout.write("/>\n");
 
+            // TODO What is up with newid? It is never read, what is its purpose?
             // Write the child of the task
             if (haschild) {
                 for (int i = 0; i < child.size(); i++) {
@@ -238,7 +232,6 @@ public class GanttPreviousState {
                     }
                     writeTask(fout, (DefaultMutableTreeNode) child.get(i));
                 }
-
             }
 
             // end of task section
@@ -278,5 +271,4 @@ public class GanttPreviousState {
         tasks = handler.getTasks();
         return tasks;
     }
-
 }

@@ -27,12 +27,12 @@ public class CalendarSaver extends SaverBase {
         AttributesImpl attrs = new AttributesImpl();
         startElement("calendars", attrs, handler);
         startElement("day-types", attrs, handler);
-        //
+
         addAttribute("id", "0", attrs);
         emptyElement("day-type", attrs, handler);
         addAttribute("id", "1", attrs);
         emptyElement("day-type", attrs, handler);
-        //
+
         addAttribute("id", "1", attrs);
         addAttribute("name", "default", attrs);
         startElement("calendar", attrs, handler);
@@ -46,16 +46,17 @@ public class CalendarSaver extends SaverBase {
         emptyElement("overriden-day-types", attrs, handler);
         emptyElement("days", attrs, handler);
         endElement("calendar", handler);
-        //
+
         endElement("day-types", handler);
         Collection<Date> publicHoliday = project.getActiveCalendar()
                 .getPublicHolidays();
         for (Iterator<Date> iter = publicHoliday.iterator(); iter.hasNext();) {
             Date d = iter.next();
-            if (d.getYear() == 1 - 1900)
+            if (d.getYear() == 1 - 1900) {
                 addAttribute("year", "", attrs);
-            else
+            } else {
                 addAttribute("year", (d.getYear() + 1900) + "", attrs);
+            }
             addAttribute("month", (d.getMonth() + 1) + "", attrs);
             addAttribute("date", d.getDate() + "", attrs);
             emptyElement("date", attrs, handler);
@@ -68,5 +69,4 @@ public class CalendarSaver extends SaverBase {
         myCalendar.set(Calendar.DAY_OF_WEEK, i);
         return myShortFormat.format(myCalendar.getTime()).toLowerCase();
     }
-
 }

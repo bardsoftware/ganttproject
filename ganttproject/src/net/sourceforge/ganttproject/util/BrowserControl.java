@@ -31,16 +31,18 @@ public class BrowserControl {
      * @param url
      *            the document's url (the url must start with either "http://"
      *            or "file://").
+     * @return true when the method succeeded in displaying the URL in the
+     *         system browser
      */
     public static boolean displayURL(String url) {
 
         // Opening a browser, even when running sandbox-restricted
         // in JavaWebStart.
         try {
-            Class serManClass = Class.forName("javax.jnlp.ServiceManager");
-            Class basSerClass = Class.forName("javax.jnlp.BasicService");
-            Class[] stringParam = { String.class };
-            Class[] urlParam = { URL.class };
+            Class<?> serManClass = Class.forName("javax.jnlp.ServiceManager");
+            Class<?> basSerClass = Class.forName("javax.jnlp.BasicService");
+            Class<?>[] stringParam = { String.class };
+            Class<?>[] urlParam = { URL.class };
 
             Object basicService = serManClass.getMethod("lookup", stringParam)
                     .invoke(serManClass,
@@ -54,8 +56,6 @@ public class BrowserControl {
             // We continue with the methods below ...
         }
 
-        String[] cmd = null;
-
         switch (getPlatform()) {
         case (WIN_ID):
             return runCmdLine(replaceToken(WIN_CMDLINE, URLTOKEN, url));
@@ -64,26 +64,28 @@ public class BrowserControl {
         default:
             for (int i = 0; i < OTHER_CMDLINES.length; i++) {
                 if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url),
-                        replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url)))
+                        replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {
                     return true;
+                }
             }
         }
-
         return false;
     }
 
     /**
      * Try to determine whether this application is running under Windows or
-     * some other platform by examing the "os.name" property.
+     * some other platform by examining the "os.name" property.
      * 
      * @return the ID of the platform
      */
     private static int getPlatform() {
         String os = System.getProperty("os.name");
-        if (os != null && os.startsWith(WIN_PREFIX))
+        if (os != null && os.startsWith(WIN_PREFIX)) {
             return WIN_ID;
-        if (os != null && os.startsWith(MAC_PREFIX))
+        }
+        if (os != null && os.startsWith(MAC_PREFIX)) {
             return MAC_ID;
+        }
         return OTHER_ID;
     }
 
@@ -135,7 +137,6 @@ public class BrowserControl {
                     System.err.println("Trying to invoke browser, cmd='"
                             + connectStringArray(fallBackCmdLine) + "' ...");
                     Runtime.getRuntime().exec(fallBackCmdLine);
-
                 }
             }
 
@@ -152,7 +153,7 @@ public class BrowserControl {
         return false;
     }
 
-    // This token is a placeholder for the actual URL
+    // This token is a place holder for the actual URL
     private static final String URLTOKEN = "%URLTOKEN%";
 
     // Used to identify the windows platform.
@@ -193,7 +194,7 @@ public class BrowserControl {
             { "mozilla", "-remote", "openURL(" + URLTOKEN + ",new-window)" },
 
             // The second guess for a browser under other systems (and unix):
-            // The RedHat skript htmlview
+            // The RedHat script htmlview
             { "htmlview", URLTOKEN },
 
             // The third guess for a browser under KDE:
@@ -219,7 +220,6 @@ public class BrowserControl {
             // Fallback for remote controlling netscape:
             // Starting up a new netscape
             { "netscape", URLTOKEN }
-
     };
 
 }

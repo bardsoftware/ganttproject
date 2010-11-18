@@ -22,13 +22,14 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 import org.xml.sax.Attributes;
 
-/** Class to parse the attibute of resources handler */
+/** Class to parse the attributes of resources handler */
 public class RoleTagHandler implements TagHandler {
     private RoleSet myRoleSet;
+    private final RoleManager myRoleManager;
 
     public RoleTagHandler(RoleManager roleManager) {
         myRoleManager = roleManager;
-        myRoleManager.clear(); // CleanUP the old stuff
+        myRoleManager.clear(); // Cleanup the old stuff
     }
 
     /**
@@ -81,10 +82,4 @@ public class RoleTagHandler implements TagHandler {
             myRoleSet.createRole(roleName, persistentID.getRoleID());
         }
     }
-
-    private RoleManager getRoleManager() {
-        return myRoleManager;
-    }
-
-    private final RoleManager myRoleManager;
 }

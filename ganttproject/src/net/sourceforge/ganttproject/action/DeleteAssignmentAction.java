@@ -6,7 +6,6 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 
 public class DeleteAssignmentAction extends GPAction {
@@ -15,11 +14,8 @@ public class DeleteAssignmentAction extends GPAction {
     private GanttProject myProjectFrame;
 
 
-    public DeleteAssignmentAction(ResourceManager hrManager,
-            AssignmentContext context, GanttProject projectFrame) {
+    public DeleteAssignmentAction(AssignmentContext context, GanttProject projectFrame) {
         myProjectFrame = projectFrame;
-        // this.putValue(AbstractAction.NAME, GanttProject
-        // .correctLabel(getLanguage().getText("deleteAssignment")));
         myContext = context;
     }
 
@@ -76,7 +72,4 @@ public class DeleteAssignmentAction extends GPAction {
 	protected String getLocalizedName() {
 		return getI18n("deleteAssignment");
 	}
-	
-	
-
 }

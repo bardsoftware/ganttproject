@@ -25,7 +25,6 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RolePersistentID;
@@ -39,9 +38,15 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
 
 	private HumanResource myCurrentResource;
 
-	public ResourceTagHandler(ResourceManager resourceManager,
+    private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
+
+    private final HumanResourceManager myResourceManager;
+
+    private final RoleManager myRoleManager;
+
+	public ResourceTagHandler(HumanResourceManager resourceManager,
             RoleManager roleManager, CustomPropertyManager resourceCustomPropertyManager) {
-        myResourceManager = (HumanResourceManager) resourceManager;
+        myResourceManager = resourceManager;
         myCustomPropertyManager =resourceCustomPropertyManager;
         // myResourceManager.clear(); //CleanUP the old stuff
         myRoleManager = roleManager;
@@ -106,8 +111,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
                 hr.setName(atts.getValue("name"));
                 getResourceManager().add(hr);
             } else {
-                hr = (HumanResource) getResourceManager().create(
-                        atts.getValue("name"), Integer.parseInt(id));
+				hr = getResourceManager().create(atts.getValue("name"), Integer.parseInt(id));
             }
             myCurrentResource = hr;
         } catch (NumberFormatException e) {
@@ -132,12 +136,6 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
     private HumanResourceManager getResourceManager() {
         return myResourceManager;
     }
-
-    private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
-
-    private final HumanResourceManager myResourceManager;
-
-    private final RoleManager myRoleManager;
 
     // private GanttPeoplePanel myPeople;
 
@@ -187,5 +185,4 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
                             + myLateResource2roleBinding);
         }
     }
-
 }

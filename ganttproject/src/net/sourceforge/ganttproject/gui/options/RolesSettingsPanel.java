@@ -24,8 +24,6 @@ import javax.swing.JTable;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.RolesTableModel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.roles.RoleManager;
-
 /**
  * @author athomas Panel to edit the roles for resources of the project.
  */
@@ -56,10 +54,9 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method check if the value has changed, and ask for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         System.err.println("[RolesSettingsPanel] applyChanges(): ");
-        RoleManager roleManager = myRolesModel.getRoleManager();
         bHasChange = myRolesModel.hasChanges();
         if (!bHasChange) {
             System.err

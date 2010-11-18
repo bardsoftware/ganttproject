@@ -9,9 +9,8 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.RoleManager;
 
 import java.awt.Color;
@@ -23,6 +22,8 @@ import java.util.Arrays;
 public class TestResourceAssignments extends TestCase {
     private TaskManager myTaskManager;
 
+    private HumanResourceManager myHumanResourceManager;
+
     public TestResourceAssignments(String s) {
         super(s);
     }
@@ -30,13 +31,13 @@ public class TestResourceAssignments extends TestCase {
     public void testResourceAppearsInListAfterCreation() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
-        ProjectResource res1 = getResourceManager().getById(1);
-        ProjectResource res2 = getResourceManager().getById(2);
+        HumanResource res1 = getResourceManager().getById(1);
+        HumanResource res2 = getResourceManager().getById(2);
         task.getAssignmentCollection().addAssignment(res1);
         task.getAssignmentCollection().addAssignment(res2);
-        Set<ProjectResource> actualResources = extractResources(task);
-        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
-                Arrays.asList(new ProjectResource[] { res1, res2 }));
+        Set<HumanResource> actualResources = extractResources(task);
+        Set<HumanResource> expectedResources = new HashSet<HumanResource>(
+                Arrays.asList(new HumanResource[] { res1, res2 }));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
     }
@@ -44,16 +45,16 @@ public class TestResourceAssignments extends TestCase {
     public void testResourceDisappearsFromListAfterAssignmentDeletion() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
-        ProjectResource res1 = getResourceManager().getById(1);
-        ProjectResource res2 = getResourceManager().getById(2);
+        HumanResource res1 = getResourceManager().getById(1);
+        HumanResource res2 = getResourceManager().getById(2);
         task.getAssignmentCollection().addAssignment(res1);
         ResourceAssignment asgn2 = task.getAssignmentCollection()
                 .addAssignment(res2);
 
         asgn2.delete();
 
-        Set<ProjectResource> actualResources = extractResources(task);
-        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
+        Set<HumanResource> actualResources = extractResources(task);
+        Set<HumanResource> expectedResources = new HashSet<HumanResource>(
                 Arrays.asList(res1));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
@@ -62,11 +63,11 @@ public class TestResourceAssignments extends TestCase {
     public void testResourceIsNotAssignedTwice() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
-        ProjectResource res1 = getResourceManager().getById(1);
+        HumanResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         task.getAssignmentCollection().addAssignment(res1);
-        Set<ProjectResource> actualResources = extractResources(task);
-        Set<ProjectResource> expectedResources = new HashSet<ProjectResource>(
+        Set<HumanResource> actualResources = extractResources(task);
+        Set<HumanResource> expectedResources = new HashSet<HumanResource>(
                 Arrays.asList(res1));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
@@ -76,7 +77,7 @@ public class TestResourceAssignments extends TestCase {
     public void testAssignmentsDisappearOnTaskDeletion() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
-        ProjectResource res1 = getResourceManager().getById(1);
+        HumanResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         task.delete();
         ResourceAssignment[] assignments = res1.getAssignments();
@@ -89,15 +90,15 @@ public class TestResourceAssignments extends TestCase {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
         taskManager.registerTask(task);
-        ProjectResource res1 = getResourceManager().getById(1);
+        HumanResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         res1.delete();
-        Set<ProjectResource> resources = extractResources(task);
+        Set<HumanResource> resources = extractResources(task);
         assertTrue("It is expecte that after resource deletion assignments disappear", resources.isEmpty());
     }
 
-    private Set<ProjectResource> extractResources(Task task) {
-        Set<ProjectResource> result = new HashSet<ProjectResource>();
+    private Set<HumanResource> extractResources(Task task) {
+        Set<HumanResource> result = new HashSet<HumanResource>();
         ResourceAssignment[] assignments = task.getAssignments();
         for (int i = 0; i < assignments.length; i++) {
             ResourceAssignment next = assignments[i];
@@ -132,7 +133,7 @@ public class TestResourceAssignments extends TestCase {
                 return new GregorianTimeUnitStack();
             }
 
-            public ResourceManager getResourceManager() {
+            public HumanResourceManager getResourceManager() {
                 return null;
             }
 
@@ -146,9 +147,7 @@ public class TestResourceAssignments extends TestCase {
         return myTaskManager;
     }
 
-    private ResourceManager getResourceManager() {
+    private HumanResourceManager getResourceManager() {
         return myHumanResourceManager;
     }
-
-    private HumanResourceManager myHumanResourceManager;
 }

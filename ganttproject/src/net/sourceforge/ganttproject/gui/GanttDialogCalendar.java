@@ -115,8 +115,8 @@ public class GanttDialogCalendar extends JDialog implements ActionListener {
         panelDate = new GanttPanelDate(new GanttCalendar());
 
         JPanel panel1 = new JPanel();
-        JPanel panel2 = new JPanel();
-        JPanel panel3 = new JPanel();
+        //JPanel panel2 = new JPanel();
+        //JPanel panel3 = new JPanel();
 
         Box vb1 = Box.createVerticalBox();
 

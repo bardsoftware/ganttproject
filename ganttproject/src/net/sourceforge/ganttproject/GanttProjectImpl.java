@@ -32,7 +32,6 @@ import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
@@ -182,15 +181,16 @@ public class GanttProjectImpl implements IGanttProject {
     };
 
     private static class TaskManagerConfigImpl implements TaskManagerConfig {
-        private final ResourceManager myResourceManager;
+        private final HumanResourceManager myResourceManager;
         private final GPTimeUnitStack myTimeUnitStack;
         private final WeekendCalendarImpl myCalendar;
 
-        private TaskManagerConfigImpl(ResourceManager resourceManager, GanttLanguage i18n) {
+        private TaskManagerConfigImpl(HumanResourceManager resourceManager, GanttLanguage i18n) {
             myResourceManager = resourceManager;
             myTimeUnitStack = new GPTimeUnitStack(i18n);
             myCalendar = new WeekendCalendarImpl();
         }
+
         public Color getDefaultColor() {
             return Color.BLUE;
         }
@@ -203,13 +203,12 @@ public class GanttProjectImpl implements IGanttProject {
             return myTimeUnitStack;
         }
 
-        public ResourceManager getResourceManager() {
+        public HumanResourceManager getResourceManager() {
             return myResourceManager;
         }
         public URL getProjectDocumentURL() {
             return null;
         }
-
     }
 
     public CustomColumnsManager getTaskCustomColumnManager() {

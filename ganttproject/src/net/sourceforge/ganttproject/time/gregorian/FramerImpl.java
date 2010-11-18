@@ -46,13 +46,12 @@ public class FramerImpl implements DateFrameable {
     public Date adjustLeft(Date baseDate) {
         Calendar c = CalendarFactory.newCalendar();
         c.setTime(baseDate);
-        Date beforeClear = c.getTime();
         clearFields(c);
+        // Date beforeClear = c.getTime();
         // if (beforeClear.compareTo(c.getTime())==0) {
-        // c.add(Calendar.MILLISECOND, -1);
+        //     c.add(Calendar.MILLISECOND, -1);
         // }
-        Date result = c.getTime();
-        return result;
+        return c.getTime();
     }
 
     public Date jumpLeft(Date baseDate) {

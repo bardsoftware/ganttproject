@@ -18,16 +18,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
-import org.eclipse.core.runtime.jobs.Job;
-import org.osgi.service.prefs.Preferences;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -43,14 +33,23 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.service.prefs.Preferences;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 abstract class ExporterBase {
     private IGanttProject myProject;
@@ -80,6 +79,7 @@ abstract class ExporterBase {
         };
         return stylesheetOption;
     }
+
     protected abstract void setSelectedStylesheet(Stylesheet stylesheet);
     protected abstract Stylesheet[] getStylesheets();
     protected abstract String getStylesheetOptionID();
@@ -98,25 +98,30 @@ abstract class ExporterBase {
 	public Component getCustomOptionsUI() {
 	    return null;
 	}
-    public void run(final File outputFile, final ExportFinalizationJob finalizationJob)
-    throws Exception {
+
+    public void run(final File outputFile,
+            final ExportFinalizationJob finalizationJob) throws Exception {
         final IJobManager jobManager = Platform.getJobManager();
         final List<File> resultFiles = new ArrayList<File>();
         final Job[] jobs = createJobs(outputFile, resultFiles);
         final IProgressMonitor monitor = jobManager.createProgressGroup();
         final IProgressMonitor familyMonitor = new IProgressMonitor() {
-			public void beginTask(String name, int totalWork) {
-				monitor.beginTask(name, totalWork);
-			}
-			public void done() {
-				monitor.done();
-			}
-			public void internalWorked(double work) {
-				monitor.internalWorked(work);
-			}
-			public boolean isCanceled() {
-				return monitor.isCanceled();
-			}
+            public void beginTask(String name, int totalWork) {
+                monitor.beginTask(name, totalWork);
+            }
+
+            public void done() {
+                monitor.done();
+            }
+
+            public void internalWorked(double work) {
+                monitor.internalWorked(work);
+            }
+
+            public boolean isCanceled() {
+                return monitor.isCanceled();
+            }
+
 			public void setCanceled(boolean value) {
 				monitor.setCanceled(value);
 				if (value) {
@@ -124,15 +129,18 @@ abstract class ExporterBase {
 					jobManager.cancel(EXPORT_JOB_FAMILY);
 				}
 			}
-			public void setTaskName(String name) {
-				monitor.setTaskName(name);
-			}
-			public void subTask(String name) {
-				monitor.subTask(name);
-			}
-			public void worked(int work) {
-				monitor.worked(work);
-			}
+
+            public void setTaskName(String name) {
+                monitor.setTaskName(name);
+            }
+
+            public void subTask(String name) {
+                monitor.subTask(name);
+            }
+
+            public void worked(int work) {
+                monitor.worked(work);
+            }
         };
         Job starting = new Job("starting") {
 			protected IStatus run(IProgressMonitor monitor) {
@@ -183,21 +191,27 @@ abstract class ExporterBase {
     protected UIFacade getUIFacade() {
     	return myUIFacade;
     }
+
     protected IGanttProject getProject() {
         return myProject;
     }
+
     protected Preferences getPreferences() {
         return myRootPreferences;
     }
+
     protected CustomColumnsStorage getCustomColumnStorage() {
-    	return getProject().getCustomColumnsStorage();
+        return getProject().getCustomColumnsStorage();
     }
+
     protected Chart getGanttChart() {
         return myGanttChart;
     }
+
     public GPOptionGroup getOptions() {
         return myOptions;
     }
+
     protected Chart getResourceChart() {
         return myResourceChart;
     }
@@ -210,24 +224,27 @@ abstract class ExporterBase {
 
     protected void startPrefixedElement(String name, AttributesImpl attrs,
             TransformerHandler handler) throws SAXException {
-        handler.startElement("http://ganttproject.sf.net/", name, "ganttproject:"+name, attrs);
+        handler.startElement("http://ganttproject.sf.net/", name,
+                "ganttproject:" + name, attrs);
         attrs.clear();
     }
+
     protected void endElement(String name, TransformerHandler handler)
             throws SAXException {
         handler.endElement("", name, name);
     }
+
     protected void endPrefixedElement(String name, TransformerHandler handler)
-        throws SAXException {
-        handler.endElement("http://ganttproject.sf.net/", name, "ganttproject:"+name);
+            throws SAXException {
+        handler.endElement("http://ganttproject.sf.net/", name, "ganttproject:"
+                + name);
     }
 
     protected void addAttribute(String name, String value, AttributesImpl attrs) {
         if (value != null) {
             attrs.addAttribute("", name, name, "CDATA", value);
         } else {
-            System.err.println("[GanttOptions] attribute '" + name
-                    + "' is null");
+            System.err.println("[GanttOptions] attribute '" + name + "' is null");
         }
     }
 
@@ -239,11 +256,11 @@ abstract class ExporterBase {
     }
 
     protected void textElement(String name, AttributesImpl attrs, String text, TransformerHandler handler) throws SAXException {
-    	if (text!=null) {
-	        startElement(name, attrs, handler);
-	        handler.startCDATA();
-	        handler.characters(text.toCharArray(), 0, text.length());
-	        handler.endCDATA();
+        if (text != null) {
+            startElement(name, attrs, handler);
+            handler.startCDATA();
+            handler.characters(text.toCharArray(), 0, text.length());
+            handler.endCDATA();
 	        endElement(name, handler);
 	        attrs.clear();
     	}
@@ -356,10 +373,10 @@ abstract class ExporterBase {
                 textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
 
                 final List<Document> attachments = t.getAttachments();
-                for (int i=0; i<attachments.size(); i++) {
+                for (int i = 0; i < attachments.size(); i++) {
                 	Document nextAttachment = attachments.get(i);
                 	URI nextUri = nextAttachment.getURI();
-                	if (nextUri!=null) {
+                    if (nextUri != null) {
                 		String strUri = URLDecoder.decode(nextUri.toString(), "utf-8");
                 		if (strUri.startsWith("file:")) {
                 			if (strUri.endsWith("/")) {
@@ -371,13 +388,12 @@ abstract class ExporterBase {
                 			}
                 		}
                 		textElement("attachment", myAttrs, strUri, handler);
-                	}
-                	else {
+                    } else {
                 		textElement("attachment", myAttrs, nextAttachment.getPath(), handler);
                 	}
                 }
                 {
-                	ProjectResource coordinator = t.getAssignmentCollection().getCoordinator();
+                	HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
                 	if (coordinator!=null) {
                 		addAttribute("id", "tpd8", myAttrs);
                 		textElement("coordinator", myAttrs, coordinator.getName(), handler);
@@ -408,9 +424,9 @@ abstract class ExporterBase {
                 {
                 	AttributesImpl attrs = new AttributesImpl();
 	                CustomColumnsValues customValues = t.getCustomValues();
-	                for (Iterator it = getCustomColumnStorage().getCustomColums().iterator();
-	                     it.hasNext();) {
-	                	CustomColumn nextColumn = (CustomColumn) it.next();
+                    for (Iterator<CustomColumn> it = getCustomColumnStorage()
+                            .getCustomColums().iterator(); it.hasNext();) {
+	                	CustomColumn nextColumn = it.next();
 	                	Object value = customValues.getValue(nextColumn.getName());
 	                	String valueAsString = value==null ? "" : value.toString();
 	                	addAttribute("id", nextColumn.getId(), attrs);
@@ -433,7 +449,7 @@ abstract class ExporterBase {
       return " ";
     }
 
-    protected void writeResources(ResourceManager resourceManager,
+    protected void writeResources(HumanResourceManager resourceManager,
             TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("title", i18n("resourcesList"), attrs);
@@ -443,12 +459,12 @@ abstract class ExporterBase {
         addAttribute("phone", i18n("colPhone"), attrs);
         startPrefixedElement("resources", attrs, handler);
         {
-            List resources = resourceManager.getResources();
+            List<HumanResource> resources = resourceManager.getResources();
 
             // String
             // []function=RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
-                HumanResource p = (HumanResource) resources.get(i);
+                HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);
                 startPrefixedElement("resource", attrs, handler);
                 addAttribute("id", "0", attrs);
@@ -469,10 +485,8 @@ abstract class ExporterBase {
                 }
                 endPrefixedElement("resource", handler);
             }
-
         }
         endPrefixedElement("resources", handler);
-
     }
 
     protected static String getHexaColor(java.awt.Color color) {
@@ -493,6 +507,4 @@ abstract class ExporterBase {
 
         return out.toString();
     }
-
-
 }

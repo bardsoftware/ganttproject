@@ -28,13 +28,14 @@ import org.osgi.service.prefs.Preferences;
  */
 public class ExporterToImage implements Exporter {
 
-    static class FileTypeOption extends GPAbstractOption implements
+    static class FileTypeOption extends GPAbstractOption<String> implements
             EnumerationOption {
         static final String[] FILE_FORMAT_ID = new String[] {
                 "impex.image.fileformat.png", "impex.image.fileformat.jpeg" };
 
         static final String[] FILE_EXTENSION = new String[] { "png", "jpg" };
 
+        // TODO GPAbstractOption already has this field, why add it again?!
         private String myValue = FileTypeOption.FILE_FORMAT_ID[0];
 
         FileTypeOption() {
@@ -83,6 +84,7 @@ public class ExporterToImage implements Exporter {
     private final GPOptionGroup myOptions = new GPOptionGroup("impex.image",
             new GPOption[] { myFileTypeOption });
 
+    // TODO Field is never read... Remove?
     private Chart myGanttChart;
 
     public ExporterToImage() {

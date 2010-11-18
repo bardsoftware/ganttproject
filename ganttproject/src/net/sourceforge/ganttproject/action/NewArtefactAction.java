@@ -3,13 +3,10 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 
 public class NewArtefactAction extends GPAction implements RolloverAction {
 
     private ActiveActionProvider myProvider;
-
-    private Icon myIconOnMouseOver;
 
     public NewArtefactAction(ActiveActionProvider provider, String iconSize) {
         super("", iconSize);

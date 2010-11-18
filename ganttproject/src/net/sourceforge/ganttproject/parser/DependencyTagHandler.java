@@ -31,8 +31,9 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
      */
     public void endElement(String namespaceURI, String sName, String qName) {
         /*
-         * if ("dependencies".equals (qName)) { myDependenciesSectionStarted =
-         * false; }
+         * if ("dependencies".equals (qName)) {
+         *     myDependenciesSectionStarted = false; 
+         * }
          */
     }
 
@@ -44,16 +45,22 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
             Attributes attrs) {
 
         /*
-         * if ("dependencies".equals (qName)) { myDependenciesSectionStarted =
-         * true; }
+         * if ("dependencies".equals (qName)) {
+         *     myDependenciesSectionStarted = true;
+         * }
          */
         if ("depend".equals(qName)) {
+            
             /*
-             * if (!myDependenciesSectionStarted) { throw new
-             * RuntimeException("Invalid file format. Found 'dependency' tag
-             * without prior 'dependencies' tag"); } else {
+             * if (!myDependenciesSectionStarted) {
+             *    throw new RuntimeException(
+             *            "Invalid file format. Found 'dependency' tag without prior 'dependencies' tag");
+             * } else {
              */
-            loadDependency(attrs);
+                loadDependency(attrs);
+             /*
+              * }
+              */
         }
     }
 
@@ -62,9 +69,8 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
     public void parsingFinished() {
         for (int i = 0; i < getDependencies().size(); i++) {
-            GanttDependStructure ds = getDependencies()
-                    .get(i);
-            Task dependee = myTaskManager.getTask(ds.taskID); // By CL
+            GanttDependStructure ds = getDependencies().get(i);
+            Task dependee = myTaskManager.getTask(ds.taskID);
             Task dependant = myTaskManager.getTask(ds.successorTaskID);
             if (dependee == null || dependant == null) {
                 continue;
@@ -74,9 +80,8 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
                 TaskDependency dep = myTaskManager.getDependencyCollection()
                         .createDependency(dependant, dependee,
                                 new FinishStartConstraintImpl());
-                dep
-                        .setConstraint(myTaskManager
-                                .createConstraint(ds.dependType));
+                dep.setConstraint(myTaskManager
+                        .createConstraint(ds.dependType));
                 dep.setDifference(ds.difference);
                 if (myContext.getTasksWithLegacyFixedStart().contains(dependant)) {
                 	dep.setHardness(TaskDependency.Hardness.RUBBER);
@@ -145,8 +150,6 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
     private List<GanttDependStructure> myDependencies = new ArrayList<GanttDependStructure>();
 
-    private boolean myDependenciesSectionStarted = false;
-
     private ParsingContext myContext;
 
     private class GanttDependStructure {
@@ -158,6 +161,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
 		private Hardness myHardness = TaskDependency.Hardness.STRONG;
 
+		// TODO Method is never used... Remove?
         public GanttDependStructure(int a, int b) {
             taskID = a;
             successorTaskID = b;
@@ -167,6 +171,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
         	myHardness = hardness;
 		}
 
+        // TODO Method is never used... Remove?
 		public GanttDependStructure(int taskID, int successorID,
                 int relationType) {
             this.taskID = taskID;
@@ -174,6 +179,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
             this.dependType = relationType;
         }
 
+        // TODO Method is never used... Remove?
         public GanttDependStructure(int taskID, int successorID,
                 int relationType, int difference) {
             this.taskID = taskID;
@@ -201,5 +207,4 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
             this.dependType = dependType;
         }
     }
-
 }

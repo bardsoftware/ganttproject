@@ -32,8 +32,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public abstract class GeneralOptionPanel extends JPanel {
 
-    // -- ATTRIBUTES --
-
     protected GanttLanguage language = GanttLanguage.getInstance();
 
     /** General vertical box. */
@@ -42,14 +40,13 @@ public abstract class GeneralOptionPanel extends JPanel {
     /** Tell if the parameters of the panel have change. */
     protected boolean bHasChange = false;
 
+    // TODO Field is never read... Remove?
     /** Ganttproject object. */
     private Frame appli;
 
     private String myTitle;
 
     private String myComment;
-
-    // -- METHODS --
 
     public GeneralOptionPanel(String title, String comment) {
         this(title, comment, null);
@@ -62,7 +59,6 @@ public abstract class GeneralOptionPanel extends JPanel {
         add(vb, BorderLayout.CENTER);
         myTitle = title;
         myComment = comment;
-
     }
 
     public Component getComponent() {

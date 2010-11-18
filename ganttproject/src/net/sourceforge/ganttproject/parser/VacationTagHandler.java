@@ -7,7 +7,6 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceManager;
 
 import org.xml.sax.Attributes;
 
@@ -15,19 +14,10 @@ import org.xml.sax.Attributes;
  * @author nbohn
  */
 public class VacationTagHandler implements TagHandler, ParsingListener {
-    private ResourceManager myResourceManager;
+    private HumanResourceManager myResourceManager;
 
-    public VacationTagHandler(ResourceManager resourceManager) {
-        myResourceManager = (HumanResourceManager) resourceManager;
-    }
-
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) {
-
-        if (qName.equals("vacation")) {
-            loadResource(attrs);
-        }
-
+    public VacationTagHandler(HumanResourceManager resourceManager) {
+        myResourceManager = resourceManager;
     }
 
     private void loadResource(Attributes atts) {
@@ -39,8 +29,8 @@ public class VacationTagHandler implements TagHandler, ParsingListener {
             String endAsString = atts.getValue("end");
             String resourceIdAsString = atts.getValue("resourceid");
             HumanResource hr;
-            hr = (HumanResource) myResourceManager.getById(Integer
-                    .parseInt(resourceIdAsString));
+			hr = myResourceManager
+					.getById(Integer.parseInt(resourceIdAsString));
             hr.addDaysOff(new GanttDaysOff(GanttCalendar
                     .parseXMLDate(startAsString), GanttCalendar
                     .parseXMLDate(endAsString)));
@@ -52,19 +42,20 @@ public class VacationTagHandler implements TagHandler, ParsingListener {
         }
     }
 
-    public void endElement(String namespaceURI, String sName, String qName) {
-        // TODO Auto-generated method stub
+    public void startElement(String namespaceURI, String sName, String qName,
+            Attributes attrs) {
+        if (qName.equals("vacation")) {
+            loadResource(attrs);
+        }
+    }
 
+    public void endElement(String namespaceURI, String sName, String qName) {
     }
 
     public void parsingStarted() {
-        // TODO Auto-generated method stub
-
     }
 
     public void parsingFinished() {
-        // TODO Auto-generated method stub
-
     }
 
 }

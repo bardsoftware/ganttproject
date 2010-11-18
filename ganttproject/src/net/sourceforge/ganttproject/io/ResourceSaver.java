@@ -11,17 +11,15 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 
 class ResourceSaver extends SaverBase {
-
     void save(IGanttProject project, TransformerHandler handler) throws SAXException {
         final AttributesImpl attrs = new AttributesImpl();
         startElement("resources", handler);
         saveCustomColumnDefinitions(project, handler);
-        ProjectResource[] resources = project.getHumanResourceManager().getResourcesArray();
+        HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
         for (int i = 0; i < resources.length; i++) {
-            HumanResource p = (HumanResource) resources[i];
+            HumanResource p = resources[i];
             addAttribute("id", p.getId(), attrs);
             addAttribute("name", p.getName(), attrs);
             addAttribute("function", p.getRole().getPersistentID(), attrs);
@@ -43,6 +41,10 @@ class ResourceSaver extends SaverBase {
 		for (int i=0; i<properties.size(); i++) {
 			CustomProperty nextProperty = properties.get(i);
 			CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
+			assert nextProperty != null 
+				: "WTF? null property in properties=" + properties;
+			assert nextDefinition != null 
+				: "WTF? null property definition for property=" + i + "(value=" + nextProperty.getValueAsString() + ")";
             if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
     			addAttribute("definition-id", nextDefinition.getID(), attrs);
     			addAttribute("value", nextProperty.getValueAsString(), attrs);
@@ -72,6 +74,4 @@ class ResourceSaver extends SaverBase {
 		}
 		//endElement("custom-properties-definition", handler);
 	}
-
-	
 }

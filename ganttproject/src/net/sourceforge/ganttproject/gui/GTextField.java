@@ -18,7 +18,7 @@ import javax.swing.text.PlainDocument;
  * </p>
  * <p>
  * Description: This class is a text field enabling accurate character
- * autorisation. You can specify the valid characters you want autorize in
+ * authorization. You can specify the valid characters you want authorize in
  * edition or a regular expression pattern.
  * </p>
  * 
@@ -103,7 +103,7 @@ public class GTextField extends JFormattedTextField {
         JFrame jf = new JFrame();
         jf.getContentPane().add(f);
         jf.pack();
-        jf.show();
+        jf.setVisible(true);
         // f.setText("ere");
     }
 }
@@ -113,10 +113,10 @@ public class GTextField extends JFormattedTextField {
  * Title: CPlainDocument
  * </p>
  * <p>
- * Description: This class enales you to specify the valid characters for the
- * document. If the pattern is set (i.e. not null) the valid charaters refer to
+ * Description: This class enables you to specify the valid characters for the
+ * document. If the pattern is set (i.e. not null) the valid characters refer to
  * it, otherwise it refers to the valid characters string.
- * 
+ * </p>
  * @author Benoit Baranne
  */
 class GPlainDocument extends PlainDocument {

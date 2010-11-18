@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -57,9 +56,17 @@ public class GanttMPXJSaver {
 
     private TaskManager myTaskManager;
 
+    private final IGanttProject m_project;
+
+    // private GanttTree m_tree;
+
+    private MPXFile m_mpx;
+
+    private HashMap<Integer, Integer> m_ganttMpxTaskMap = new HashMap<Integer, Integer>();
+
+    private HashMap<Integer, Integer>  m_ganttMpxResourceMap = new HashMap<Integer, Integer>();
+
     /**
-     * Constructor.
-     * 
      * @param project
      *            current project
      * @param tree
@@ -78,23 +85,19 @@ public class GanttMPXJSaver {
      */
     private void processResources() {
         try {
-            List resources = myHrManager.getResources();
-            HumanResource ganttResource;
-            Resource mpxResource;
+            List<HumanResource> resources = myHrManager.getResources();
 
             for (int i = 0; i < resources.size(); i++) {
-                ganttResource = (HumanResource) resources.get(i);
+                HumanResource resource = resources.get(i);
 
-                mpxResource = m_mpx.addResource();
-                mpxResource.setName(ganttResource.getName());
-                mpxResource.setEmailAddress(ganttResource.getMail());
+                Resource mpxResource = m_mpx.addResource();
+                mpxResource.setName(resource.getName());
+                mpxResource.setEmailAddress(resource.getMail());
 
-                m_ganttMpxResourceMap.put(new Integer(ganttResource.getId()),
+                m_ganttMpxResourceMap.put(new Integer(resource.getId()),
                         mpxResource.getUniqueID());
             }
-        }
-
-        catch (Exception ex) {
+        } catch (Exception ex) {
             System.out.println(ex);
         }
     }
@@ -158,9 +161,7 @@ public class GanttMPXJSaver {
             for (int i = 0; i < children.length; i++) {
                 processTask(children[i], mpxTask);
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e);
         }
     }
@@ -212,25 +213,18 @@ public class GanttMPXJSaver {
                 TaskDependencyConstraint constraint = relationship
                         .getConstraint();
                 switch (constraint.getID()) {
-                case GanttTaskRelationship.SS: {
+                case GanttTaskRelationship.SS:
                     mpxRelation.setType(RelationType.START_START);
                     break;
-                }
-
-                case GanttTaskRelationship.SF: {
+                case GanttTaskRelationship.SF:
                     mpxRelation.setType(RelationType.START_FINISH);
                     break;
-                }
-
-                case GanttTaskRelationship.FS: {
+                case GanttTaskRelationship.FS:
                     mpxRelation.setType(RelationType.FINISH_START);
                     break;
-                }
-
-                case GanttTaskRelationship.FF: {
+                case GanttTaskRelationship.FF:
                     mpxRelation.setType(RelationType.FINISH_FINISH);
                     break;
-                }
                 }
             }
         }
@@ -358,15 +352,4 @@ public class GanttMPXJSaver {
 
         mpx.write(file);
     }
-
-    private final IGanttProject m_project;
-
-    // private GanttTree m_tree;
-    private GanttResourcePanel m_resources;
-
-    private MPXFile m_mpx;
-
-    private HashMap m_ganttMpxTaskMap = new HashMap();
-
-    private HashMap m_ganttMpxResourceMap = new HashMap();
 }
