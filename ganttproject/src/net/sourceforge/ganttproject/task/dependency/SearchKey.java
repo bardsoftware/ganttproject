@@ -2,7 +2,7 @@ package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
 
-public class SearchKey implements Comparable {
+public class SearchKey implements Comparable<SearchKey> {
     static final int DEPENDANT = 1;
 
     static final int DEPENDEE = 2;
@@ -41,8 +41,7 @@ public class SearchKey implements Comparable {
         mySecondTaskID = secondTaskID;
     }
 
-    public int compareTo(Object o) {
-        SearchKey rvalue = (SearchKey) o;
+    public int compareTo(SearchKey rvalue) {
         int result = myFirstTaskID - rvalue.myFirstTaskID;
         if (result == 0) {
             result = myType - rvalue.myType;

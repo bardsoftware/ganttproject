@@ -49,9 +49,8 @@ public class ResourceDialogCustomColumn  {
     private static String cardDate = language.getText("date");
 
     private static String cardBoolean = language.getText("boolean");
-    
+
     public static String[] availableTypes = {cardText,cardInteger,cardDouble,cardDate,cardBoolean};
-    
 
     /**
      * Created CustomColumn.
@@ -85,9 +84,7 @@ public class ResourceDialogCustomColumn  {
     private JLabel labelDefaultValue = null;
 
     //private GanttCalendar date = null;
-    /* TODO all the options use the translations for task columns. should create new properties
-     * (resourceProperties) and the translations for every one of them
-     */
+    // TODO all the options use the translations for task columns. should create new properties (resourceProperties) and the translations for every one of them
     private DateOption myDate = new DefaultDateOption("taskProperties.customColumn.defaultDate") {
         public void setValue(Date value) {
             super.setValue(value);
@@ -176,11 +173,13 @@ public class ResourceDialogCustomColumn  {
     private UIFacade getUIFacade() {
         return myUIFacade;
     }
+
     private Component getComponent() {
         JPanel result = new JPanel();
         GridBagConstraints constraints = new GridBagConstraints();
 
         OptionsPageBuilder builder = new OptionsPageBuilder();
+        // TODO Label is never added to the UI!
         labelDefaultValue = new JLabel(language.getText("defaultValue") + ": ");
 
         {

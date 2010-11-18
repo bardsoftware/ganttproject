@@ -33,13 +33,11 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
     private final TimeUnitPair[] myPairs;
 
+    // Field is never read... Remove?
     private TimeUnit MONTH_FROM_WEEKS;
 
     public final TimeUnit WEEK_AS_BOTTOM_UNIT;
 
-    /**
-     *
-     */
     public GPTimeUnitStack(GanttLanguage i18n) {
         TimeUnit atom = ourGraph.createAtomTimeUnit("atom");
         DAY = ourGraph.createDateFrameableTimeUnit("day", atom, 1,
@@ -78,7 +76,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
     public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
             TimeUnit bottomUnit) {
         // if (topUnit instanceof TimeUnitFunctionOfDate) {
-        // topUnit = ((TimeUnitFunctionOfDate)topUnit).createTimeUnit(baseDate);
+        //     topUnit = ((TimeUnitFunctionOfDate)topUnit).createTimeUnit(baseDate);
         // }
         return new TimeFrameImpl(baseDate, topUnit, bottomUnit);
     }
@@ -128,7 +126,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
     }
 
     public TimeUnit findTimeUnit(String code) {
-        assert code!=null;
+        assert code != null;
         code = code.trim();
         if (isHour(code)) {
             return HOUR;
@@ -155,16 +153,15 @@ public class GPTimeUnitStack implements TimeUnitStack {
     }
 
     public String encode(TimeUnit timeUnit) {
-        if (timeUnit==HOUR) {
+        if (timeUnit == HOUR) {
             return "h";
         }
-        if (timeUnit==DAY) {
+        if (timeUnit == DAY) {
             return "d";
         }
-        if (timeUnit==WEEK_AS_BOTTOM_UNIT) {
+        if (timeUnit == WEEK_AS_BOTTOM_UNIT) {
             return "w";
         }
         throw new IllegalArgumentException();
     }
-
 }

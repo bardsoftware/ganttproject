@@ -131,6 +131,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** The model for the JTableTree */
     private GanttTreeTableModel treeModel;
 
+    private List<HiddenTask> hiddenTask = new ArrayList<HiddenTask>();
+
     private UIFacade myUIFacade;
 
     /** The GanttTreeTable. */
@@ -648,18 +650,18 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return null;
     }
 
-    public static List convertNodesListToItemList(List<DefaultMutableTreeNode> nodesList) {
-        List res = new ArrayList(nodesList.size());
+    public static List<Task> convertNodesListToItemList(List<DefaultMutableTreeNode> nodesList) {
+        List<Task> res = new ArrayList<Task>(nodesList.size());
         Iterator<DefaultMutableTreeNode> itNodes = nodesList.iterator();
         while (itNodes.hasNext()) {
-            res.add(itNodes.next().getUserObject());
+            res.add((Task) itNodes.next().getUserObject());
         }
         return res;
     }
 
     /** @return true if the Project has tasks and false is no tasks on the project */
     public boolean hasTasks() {
-        Enumeration<TreeNode> e = (rootNode).preorderEnumeration();
+        Enumeration<TreeNode> e = rootNode.preorderEnumeration();
         while (e.hasMoreElements()) {
             Object next = e.nextElement();
 
@@ -696,23 +698,23 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** @return all sub task for the tree node base */
-    public ArrayList getAllChildTask(Task task) {
-        ArrayList res = new ArrayList();
+    // TODO This method is used... Remove?
+    /** @return all sub tasks for the tree node base */
+    public ArrayList<Task> getAllChildTask(Task task) {
+        ArrayList<Task> res = new ArrayList<Task>();
         if (task == null)
             return null;
-        DefaultMutableTreeNode base = (DefaultMutableTreeNode) getNode(task
-                .getTaskID());
+        DefaultMutableTreeNode base = getNode(task.getTaskID());
         if (base == null)
             return res;
         Enumeration e = base.children();
         while (e.hasMoreElements()) {
-            res.add(e.nextElement());
+            res.add((Task) e.nextElement());
         }
         return res;
     }
 
-    /** @return all sub task for the tree node base */
+    /** @return all sub tasks for the tree node base */
     public ArrayList<Object> getAllChildTask(DefaultMutableTreeNode base) {
         ArrayList<Object> res = new ArrayList<Object>();
         if (base == null || !(base instanceof TaskNode))
@@ -847,7 +849,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return treetable;
     }
 
-    class HiddenTask implements Comparable {
+    class HiddenTask implements Comparable<HiddenTask> {
         private DefaultMutableTreeNode node = null;
 
         private DefaultMutableTreeNode parent = null;
@@ -877,27 +879,24 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         /**
          * @see java.lang.Comparable#compareTo(java.lang.Object)
          */
-        public int compareTo(Object o) {
-            if (o == null)
+        public int compareTo(HiddenTask ht) {
+            if (ht == null) {
                 return 0;
-            if (o instanceof HiddenTask) {
-                HiddenTask ht = (HiddenTask) o;
-                return this.index - ht.index;
             }
-            return 0;
+            return this.index - ht.index;
         }
     }
 
-    private List<HiddenTask> hiddenTask = new ArrayList<HiddenTask>();
-
+    // TODO Method is unused... Remove?
     public Set/*<Task>*/ getHiddenTasks() {
         HashSet result = new HashSet();
-        for (int i=0; i<hiddenTask.size(); i++) {
+        for (int i = 0; i < hiddenTask.size(); i++) {
             HiddenTask next = hiddenTask.get(i);
             result.add(next.getNode().getUserObject());
         }
         return result;
     }
+
     /**
      * Hides the selected tasks.
      */
@@ -1336,11 +1335,10 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         /** Insert a new node. */
         public void treeNodesInserted(TreeModelEvent e) {
 
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e
-                    .getTreePath().getLastPathComponent());
-            Task task = (Task) node.getUserObject();
-
             /*
+             * DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e
+             *      .getTreePath().getLastPathComponent());
+             * Task task = (Task) node.getUserObject();
              * if (!expand.contains(new Integer(task.getTaskID()))) {
              *     expand.add(new Integer(task.getTaskID())); 
              * }
@@ -2135,10 +2133,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         for (int i = 0; i < child.size(); i++) {
             DefaultMutableTreeNode taskNode = (DefaultMutableTreeNode) child
                     .get(i);
-            if (((Task) taskNode.getUserObject()).isProjectTask())
+            if (((Task) taskNode.getUserObject()).isProjectTask()) {
                 list.add(taskNode);
-            else
+            } else {
                 getProjectTasks(taskNode, list);
+            }
         }
     }
 
@@ -2146,8 +2145,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 TaskNode taskNode = (TaskNode) getNode(task.getTaskID());
-                if (taskNode != null)
+                if (taskNode != null) {
                     treetable.setDelay(taskNode, delay);
+                }
             }
         });
     }

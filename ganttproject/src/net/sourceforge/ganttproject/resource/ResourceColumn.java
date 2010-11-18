@@ -13,7 +13,7 @@ import org.jdesktop.swing.table.TableColumnExt;
  * Describes one column in the resources table. */
     public class ResourceColumn implements CustomPropertyDefinition, TableHeaderUIFacade.Column
     {
-        /** Swing column composant representing the column */
+        /** Swing column component representing the column */
         TableColumnExt column;
         /** Datatype of the column */
         Class type;
@@ -151,13 +151,11 @@ import org.jdesktop.swing.table.TableColumnExt;
         @Override
         public void setDefaultValueAsString(String value) {
             // TODO Auto-generated method stub
-
         }
 
         @Override
         public void setName(String name) {
             // TODO Auto-generated method stub
-
         }
 
         @Override

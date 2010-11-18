@@ -49,10 +49,8 @@ public class TestGanttRolloverButton extends JButton {
 
     protected Icon _iconOff = null;
 
-    private boolean isIconHidden;
-    
     private Icon myIcon;
-    
+
     private int myAutoRepeatMilliseconds;
 
     public TestGanttRolloverButton(Action action) {
@@ -104,6 +102,7 @@ public class TestGanttRolloverButton extends JButton {
      * Setup the border (invisible initially)
      */
     private TestGanttRolloverButton(Icon iconOn, Icon iconOff) {
+        // TODO this() results in a infinite loop! Was intended to be super()?
         this();
         setIcon(iconOff);
         _iconOn = iconOn;
@@ -113,24 +112,22 @@ public class TestGanttRolloverButton extends JButton {
     public void setIconHidden(boolean isHidden) {
         if (isHidden) {
             setDefaultIcon(null);
-        }
-        else {
+        } else {
             setDefaultIcon(myIcon);
         }
     }
-    
+
     public void setTextHidden(boolean isHidden) {
         if (isHidden) {
             setText("");
-        }
-        else {
+        } else {
             Action action = getAction();
-            if (action!=null) {
+            if (action != null) {
                 setText(String.valueOf(action.getValue(Action.NAME)));
             }
         }
     };
-    
+
     /**
      * Setup the border (invisible initially)
      */
@@ -246,5 +243,4 @@ public class TestGanttRolloverButton extends JButton {
             }
         }
     }
-
 }

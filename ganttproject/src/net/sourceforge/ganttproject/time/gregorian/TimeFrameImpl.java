@@ -13,6 +13,7 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
+// TODO Remove all commented parts in this class?
 class TimeFrameImpl implements TimeFrame {
     private final Date myBaseDate;
 
@@ -20,14 +21,13 @@ class TimeFrameImpl implements TimeFrame {
 
     private final TimeUnit myBottomUnit;
 
-    private Date myNextFrameStartDate;
-
     private Calendar myCalendar;
 
     private DateFrameable myLowestFrameable;
 
     private Date myStartDate;
 
+    // TODO Field is never read... Remove?
     private DateFrameable myHighestFrameable;
 
     private Date myEndDate;
@@ -320,7 +320,7 @@ class TimeFrameImpl implements TimeFrame {
     }
 
     private TimeUnitText getUnitText(TimeUnit unitLine, Date startDate) {
-        String result = null;
+        // String result = null;
         return unitLine.format(startDate);
         // if (unitLine.equals(GregorianTimeUnitStack.DAY)) {
         // result = ""+startDate.getDate();
@@ -350,6 +350,7 @@ class TimeFrameImpl implements TimeFrame {
                 + getBottomUnit();
     }
 
+    // TODO Class is never used... Remove?
     private static class UnitInfo {
         final int myTruncatedCount;
 
@@ -377,9 +378,7 @@ class TimeFrameImpl implements TimeFrame {
             this.myUnit = myUnit;
         }
 
-        /**
-         * @return
-         */
+        // TODO Method is unused... Remove?
         public String fullDump() {
             StringBuffer result = new StringBuffer(toString());
             for (int i = 0; i < getItemCount(); i++) {
@@ -415,7 +414,6 @@ class TimeFrameImpl implements TimeFrame {
             LineItem result = myFirstItem;
             for (; result != null && position-- > 0; result = result.myNextItem) {
                 // position--;
-
             }
             return result;
         }
@@ -449,5 +447,4 @@ class TimeFrameImpl implements TimeFrame {
         }
         return myLineHeader;
     }
-
 }

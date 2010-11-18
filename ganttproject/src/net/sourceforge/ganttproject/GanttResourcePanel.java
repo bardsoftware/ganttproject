@@ -51,7 +51,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceNode;
@@ -75,7 +74,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     public ResourceLoadGraphicArea area;
 
     private final ResourceContext myContext = (ResourceContext) this;
-    private ProjectResource [] clipboard = null;
+    private HumanResource [] clipboard = null;
     private boolean isCut = false;
 
     private final GPAction myMoveUpAction = new GPAction() {
@@ -144,9 +143,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     public GanttResourcePanel(final GanttProject prj, GanttTree2 tree, UIFacade uiFacade) {
         super(new BorderLayout());
         myUIFacade = uiFacade;
-        myDeleteAssignmentAction = new DeleteAssignmentAction(
-                prj.getProject().getHumanResourceManager(),
-                (AssignmentContext)this, prj);
+        myDeleteAssignmentAction = new DeleteAssignmentAction(this, prj);
 
         prj.addProjectEventListener(this);
         appli = prj;
@@ -158,9 +155,8 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
         table.insertWithLeftyScrollBar(this);
         area = new ResourceLoadGraphicArea(prj, prj.getZoomManager()) {
-
-            public boolean isExpanded(ProjectResource pr) {
-                return getResourceTreeTable().isExpanded(pr);
+            public boolean isExpanded(HumanResource hr) {
+                return getResourceTreeTable().isExpanded(hr);
             }
 
             protected int getRowHeight(){
@@ -293,7 +289,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     public void resourceAdded(ResourceEvent event) {
-        newHuman((HumanResource) event.getResource());
+        newHuman(event.getResource());
     }
 
     public void resourcesRemoved(ResourceEvent event) {
@@ -303,7 +299,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     public void resourceChanged(ResourceEvent e) {
         model.resourceChanged(e.getResource());
-        ((HumanResource)e.getResource()).resetLoads();
+        e.getResource().resetLoads();
         repaint();
     }
 
@@ -314,30 +310,32 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     // //////////////////////////////////////////////////////////////////////////
     // ResourceContext interface
-    public ProjectResource[] getResources() {
+    public HumanResource[] getResources() {
         // ProjectResource[] res;
         // List allRes = model.getAllResouces();
         // res = new ProjectResource[allRes.size()];
         // model.getAllResouces().toArray(res);
         // return res;
-        ProjectResource[] res;
         DefaultMutableTreeNode[] tNodes = table.getSelectedNodes();
         if (tNodes==null) {
-            return new ProjectResource[0];
+            return new HumanResource[0];
         }
-        int nbProjectResource = 0;
-        for (int i = 0; i < tNodes.length; i++)
-            if (tNodes[i] instanceof ResourceNode)
-                nbProjectResource++;
+        int nbHumanResource = 0;
+        for (int i = 0; i < tNodes.length; i++) {
+            if (tNodes[i] instanceof ResourceNode) {
+                nbHumanResource++;
+            }
+        }
 
-        res = new ProjectResource[nbProjectResource];
-        for (int i = 0; i < nbProjectResource; i++)
-            if (tNodes[i] instanceof ResourceNode)
-                res[i] = (ProjectResource) ((ResourceNode) tNodes[i])
-                        .getUserObject();
+    	HumanResource[] res = new HumanResource[nbHumanResource];
+		for (int i = 0; i < nbHumanResource; i++) {
+			if (tNodes[i] instanceof ResourceNode) {
+				res[i] = (HumanResource) ((ResourceNode) tNodes[i])
+						.getUserObject();
+			}
+		}
         return res;
     }
-
 
     /** Create a new Human */
     public void newHuman(HumanResource people) {
@@ -383,7 +381,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     /** Return the list of the person */
-    public List<ProjectResource> getPeople() {
+    public List<HumanResource> getPeople() {
         return model.getAllResouces();
     }
 
@@ -505,23 +503,20 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
         }
 
-        this.clipboard = new ProjectResource[count];
+        this.clipboard = new HumanResource[count];
 
-        int index=0;
-        for(int i=0; i<selectedNodes.length; i++)
-        {
-            if(selectedNodes[i] instanceof ResourceNode)
-            {
-                ResourceNode rn = (ResourceNode)selectedNodes[i];
+		int index = 0;
+		for (int i = 0; i < selectedNodes.length; i++) {
+			if (selectedNodes[i] instanceof ResourceNode) {
+				ResourceNode rn = (ResourceNode) selectedNodes[i];
 
-                this.clipboard[index] = (HumanResource)rn.getUserObject();
-                if(cut)
-                {
-                    this.appli.getHumanResourceManager().remove(this.clipboard[index], this.appli.getUndoManager());
-                }
-
-                index++;
-            }
+				this.clipboard[index] = (HumanResource) rn.getUserObject();
+				if (cut) {
+					this.appli.getHumanResourceManager().remove(
+							this.clipboard[index], this.appli.getUndoManager());
+				}
+				index++;
+			}
         }
     }
 

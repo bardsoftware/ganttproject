@@ -6,10 +6,10 @@ import org.xml.sax.Attributes;
 
 public class BlankLineTagHandler implements TagHandler {
 
-    private final GanttChart myGanttChart;
+    //private final GanttChart myGanttChart;
 
     public BlankLineTagHandler(GanttChart chart) {
-        myGanttChart = chart;
+        //myGanttChart = chart;
     }
 
     public void startElement(String namespaceURI, String sName, String qName,
@@ -17,11 +17,9 @@ public class BlankLineTagHandler implements TagHandler {
         if (qName.equals("blankline")) {
             //myGanttChart.appendBlankRow();
         }
-
     }
 
     public void endElement(String namespaceURI, String sName, String qName) {
         // TODO Auto-generated method stub
-
     }
 }

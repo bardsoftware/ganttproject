@@ -13,36 +13,36 @@ public class ResourceEvent extends EventObject {
     /**
      * @param source
      */
-    public ResourceEvent(ResourceManager mgr, ProjectResource resource) {
+    public ResourceEvent(HumanResourceManager mgr, HumanResource resource) {
         super(mgr);
         myManager = mgr;
         myResource = resource;
-        myResources = new ProjectResource[] { myResource };
+        myResources = new HumanResource[] { myResource };
     }
 
-    public ResourceEvent(ResourceManager mgr, ProjectResource[] resources) {
+    public ResourceEvent(HumanResourceManager mgr, HumanResource[] resources) {
         super(mgr);
         myManager = mgr;
         myResources = resources;
         myResource = resources.length > 0 ? resources[0] : null;
     }
 
-    public ResourceManager getManager() {
+    public HumanResourceManager getManager() {
         return myManager;
     }
 
-    public ProjectResource getResource() {
+    public HumanResource getResource() {
         return myResource;
     }
 
-    public ProjectResource[] getResources() {
+    public HumanResource[] getResources() {
         return myResources;
     }
 
-    private ProjectResource[] myResources;
+    private HumanResource[] myResources;
 
-    private ResourceManager myManager;
+    private HumanResourceManager myManager;
 
-    private ProjectResource myResource;
+    private HumanResource myResource;
 
 }

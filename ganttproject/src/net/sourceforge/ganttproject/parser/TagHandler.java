@@ -22,10 +22,10 @@ import org.xml.sax.Attributes;
  * Class to parse the xml file attribute
  */
 public interface TagHandler {
-    /** Method when start to parse an attibute */
+    /** Method when start to parse an attribute */
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException;
 
-    /** Method when finish to parse an attibute */
+    /** Method when finish to parse an attribute */
     public void endElement(String namespaceURI, String sName, String qName);
 }

@@ -1,6 +1,6 @@
 package net.sourceforge.ganttproject.task;
 
-import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.resource.HumanResource;
 
 /**
  * @author bard
@@ -9,16 +9,16 @@ public interface ResourceAssignmentCollection extends
         MutableResourceAssignmentCollection {
     ResourceAssignment[] getAssignments();
 
-    ResourceAssignment getAssignment(ProjectResource resource);
+    ResourceAssignment getAssignment(HumanResource resource);
 
     ResourceAssignmentMutator createMutator();
 
-    ProjectResource getCoordinator();
+    HumanResource getCoordinator();
     void clear();
 }
 
 interface MutableResourceAssignmentCollection {
-    ResourceAssignment addAssignment(ProjectResource resource);
+    ResourceAssignment addAssignment(HumanResource resource);
 
-    void deleteAssignment(ProjectResource resource);
+    void deleteAssignment(HumanResource resource);
 }

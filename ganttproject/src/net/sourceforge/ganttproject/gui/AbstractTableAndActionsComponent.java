@@ -61,6 +61,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
             this.action = action;
             this.flags = flags;
         }
+
         public void updateEnabledState(List selectedObjects) {
             if (selectedObjects.isEmpty()) {
                 action.setEnabled(0 != (flags & AbstractTableAndActionsComponent.ENABLED_WITH_EMPTY_SELECTION));

@@ -14,7 +14,7 @@ import java.awt.Color;
 import java.net.URL;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.resource.ResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
@@ -27,7 +27,7 @@ public interface TaskManagerConfig {
 
     TimeUnitStack getTimeUnitStack();
 
-    ResourceManager getResourceManager();
+    HumanResourceManager getResourceManager();
 
     URL getProjectDocumentURL();
 }

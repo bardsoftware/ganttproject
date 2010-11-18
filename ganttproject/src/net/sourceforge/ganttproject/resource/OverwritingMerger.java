@@ -67,7 +67,7 @@ public class OverwritingMerger implements HumanResourceMerger {
             return null;
         }
         if (MergeResourcesOption.BY_ID.equals(myMergeOption.getValue())) {
-            return (HumanResource) nativeMgr.getById(foreign.getId());
+            return nativeMgr.getById(foreign.getId());
         }
         if (MergeResourcesOption.BY_EMAIL.equals(myMergeOption.getValue())) {
             if (myCache.isEmpty()) {
@@ -86,19 +86,18 @@ public class OverwritingMerger implements HumanResourceMerger {
     }
 
     private void buildNameCache(HumanResourceManager nativeMgr) {
-        List<ProjectResource> resources = nativeMgr.getResources();
-        for (int i=0; i<resources.size(); i++) {
-            HumanResource hr = (HumanResource) resources.get(i);
-            myCache.put(hr.getName(), hr);
+		List<HumanResource> resources = nativeMgr.getResources();
+		for (int i = 0; i < resources.size(); i++) {
+			HumanResource hr = resources.get(i);
+			myCache.put(hr.getName(), hr);
         }
     }
 
     private void buildEmailCache(HumanResourceManager nativeMgr) {
-        List<ProjectResource> resources = nativeMgr.getResources();
-        for (int i=0; i<resources.size(); i++) {
-            HumanResource hr = (HumanResource) resources.get(i);
-            myCache.put(hr.getMail(), hr);
+		List<HumanResource> resources = nativeMgr.getResources();
+		for (int i = 0; i < resources.size(); i++) {
+			HumanResource hr = resources.get(i);
+			myCache.put(hr.getMail(), hr);
         }
     }
-
 }

@@ -150,7 +150,7 @@ public class GanttXFIGSaver {
      * @return the textwith of this task for and its children tasks. Determine
      *         width of text labels (task names) in this task assume fixed
      *         width, 14 letters to the inch, 1200 ppi each level is indented
-     * 1/4 inch (300 points @ 1200ppi)
+     *         1/4 inch (300 points @ 1200ppi)
      */
     private float getTaskTextWidth(Task task) {
         if (debug)
@@ -175,8 +175,9 @@ public class GanttXFIGSaver {
      * Write the header of the XFIG FILE Based on the xfig file specification.
      */
     public void xfigheader(OutputStreamWriter fout) throws IOException {
-        if (debug)
+        if (debug) {
             System.out.println("xfigheader begin");
+        }
         fout.write("#FIG 3.2\n"); // version
         fout.write("Landscape\n"); // orientation
         fout.write("Center\n"); // justification
@@ -186,15 +187,17 @@ public class GanttXFIGSaver {
         fout.write("Single\n"); // multiplePage
         fout.write("-2\n"); // transparentColor
         fout.write("1200 2\n"); // resolutionPpi origin
-        if (debug)
+        if (debug) {
             System.out.println("xfigheader end");
+        }
     }
 
     /** Search for the corresponding colors. */
     public void searchUserColor() // TODO continue to write this method
     {
-        if (debug)
+        if (debug) {
             System.out.println("searchUserColor begin");
+        }
         loc.clear(); // clear the list
 
         for (Iterator<Task> it = lot.iterator(); it.hasNext();) {
@@ -205,8 +208,9 @@ public class GanttXFIGSaver {
                 String hexaColor = getHexaColor(color);
             }
         }
-        if (debug)
+        if (debug) {
             System.out.println("searchUserColor end");
+        }
     }
 
     /**
@@ -216,8 +220,9 @@ public class GanttXFIGSaver {
      * and text objects to the project tasks for plotting later
      */
     public void setProjectPlotTimes(float targetWidthPoints, float depthval) {
-        if (debug)
+        if (debug) {
             System.out.println("setProjectPlotTimes begin");
+        }
         float targetwidth = targetWidthPoints - fTtextwidth;
 
         GanttCalendar startDate = null, endDate = null;
@@ -272,15 +277,17 @@ public class GanttXFIGSaver {
                 index++;
             }
         }
-        if (debug)
+        if (debug) {
             System.out.println("setProjectPlotTimes end + index=" + index);
+        }
     }
 
-    /** convert task structureto an xfig text data structure */
+    /** convert task structure to an xfig text data structure */
     public TextObject task2text(GanttTask task, int number, int level,
             int depthval) {
-        if (debug)
+        if (debug) {
             System.out.println("task2text begin");
+        }
 
         /*
          * System.out.println("task : "+task+ " number : "+number+ " level :
@@ -302,8 +309,9 @@ public class GanttXFIGSaver {
         taskText.y = (int) (1200f * 0.25f * (float) number + 5.0f - 1200.0f / 16.0f);
         taskText.x = (int) (1200.0f * 0.25f * ((float) level + 1.0f));
         taskText.str = task.getName();
-        if (debug)
+        if (debug) {
             System.out.println("task2text end");
+        }
         return taskText;
     }
 
@@ -327,8 +335,9 @@ public class GanttXFIGSaver {
 
         boxObject.depth = depthval;
 
-        if (!isLeaf)
+        if (!isLeaf) {
             boxObject.depth -= 2; // ?????
+        }
         // See BoxObject class for other default values
 
         // Construct box corners
@@ -379,10 +388,12 @@ public class GanttXFIGSaver {
          * boxObject.points(2:2:blen) += yShift; boxObject.points(1:2:blen) +=
          * xShift;
          */
-        for (int i = 1; i < blen; i += 2)
+        for (int i = 1; i < blen; i += 2) {
             boxObject.points[i] += yShift;
-        for (int i = 0; i < blen; i += 2)
+        }
+        for (int i = 0; i < blen; i += 2) {
             boxObject.points[i] += xShift;
+        }
         // pointsPct(2:2:10) += yShift;
         // pointsPct(1:2:9) += xShift;
 
@@ -394,8 +405,9 @@ public class GanttXFIGSaver {
 
         // shift boxes by start date
         /* boxObject.points(1:2:blen) += task.start*boxScale; */
-        for (int i = 0; i < blen; i += 2)
+        for (int i = 0; i < blen; i += 2) {
             boxObject.points[i] += task.getStart().diff(dateShift) * scale;
+        }
         // boxObjectPct.points(1:2:9) += task.start*boxScale;
 
         // now shift again by text width (must be calculated and set in
@@ -423,8 +435,9 @@ public class GanttXFIGSaver {
     /** Draw the list of tasks. */
     public void drawTasks(OutputStreamWriter fout) throws IOException {
         try {
-            if (debug)
+            if (debug) {
                 System.out.println("drawTasks begin");
+            }
 
             // loop on tasks
             int i = 0;
@@ -452,8 +465,9 @@ public class GanttXFIGSaver {
                     i++;
                 }
             }
-            if (debug)
+            if (debug) {
                 System.out.println("drawTasks end");
+            }
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -462,8 +476,9 @@ public class GanttXFIGSaver {
     /** Draw text for the taskObject. */
     public void drawtext(OutputStreamWriter fout, TextObject txtObj)
             throws IOException {
-        if (debug)
+        if (debug) {
             System.out.println("drawtext begin");
+        }
         fout.write("4 ");
         fout.write(txtObj.sub_type + " ");
         fout.write(txtObj.color + " ");
@@ -476,15 +491,17 @@ public class GanttXFIGSaver {
         fout.write(txtObj.height + " " + txtObj.length + " ");
         fout.write(txtObj.x + " " + txtObj.y + " ");
         fout.write(txtObj.str + "\\001\n");
-        if (debug)
+        if (debug) {
             System.out.println("drawtext end");
+        }
     }
 
     /** draw the box of the task. */
     public void drawbox(OutputStreamWriter fout, BoxObject boxObject)
             throws IOException {
-        if (debug)
+        if (debug) {
             System.out.println("drawbox begin");
+        }
         // draw an xfig box object;
         fout.write("2 ");
         fout.write(boxObject.sub_type + " ");
@@ -524,41 +541,50 @@ public class GanttXFIGSaver {
             }
         }
 
-        for (int i = 0; i < boxObject.points.length; i++)
+        for (int i = 0; i < boxObject.points.length; i++) {
             fout.write((int) (boxObject.points[i]) + " ");
+        }
 
         fout.write("\n");
-        if (debug)
+        if (debug) {
             System.out.println("drawbox end");
+        }
     }
 
     /** Draw the axes. */
     public void labelAxes(OutputStreamWriter fout) {
-        // TODO write this method
-        if (debug)
+        if (debug) {
             System.out.println("labelAxes begin");
-        if (debug)
+        }
+        // TODO write this method
+        if (debug) {
             System.out.println("labelAxes end");
+        }
     }
 
     /** @return a color as a string like #00FF00 for green color. */
     private String getHexaColor(Color color) {
-        if (debug)
+        if (debug) {
             System.out.println("getHexaColor begin");
+        }
         String sColor = "#"; // result string
 
-        if (color.getRed() <= 15)
+        if (color.getRed() <= 15) {
             sColor += "0";
+        }
         sColor += Integer.toHexString(color.getRed());
-        if (color.getGreen() <= 15)
+        if (color.getGreen() <= 15) {
             sColor += "0";
+        }
         sColor += Integer.toHexString(color.getGreen());
-        if (color.getBlue() <= 15)
+        if (color.getBlue() <= 15) {
             sColor += "0";
+        }
         sColor += Integer.toHexString(color.getBlue());
 
-        if (debug)
+        if (debug) {
             System.out.println("getHexaColor end");
+        }
         return sColor;
     }
 

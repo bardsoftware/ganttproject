@@ -46,7 +46,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class LnFSettingsPanel extends GeneralOptionPanel implements
         ItemListener {
 
-    // combo box to store all looknfeel data
+    // combo box to store all look'n'feel data
     private JComboBox cbLnf;
 
     private JCheckBox cbSmallIcon;
@@ -242,7 +242,7 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method check if the value has changed, and ask for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         if (cbSmallIcon.isSelected() != appli.getOptions().getIconSize()
                 .equals("16"))
@@ -409,7 +409,6 @@ public class LnFSettingsPanel extends GeneralOptionPanel implements
 
         int[] indexes = list.getSelectedIndices();
 
-        int[] indexesDeleted = new int[indexes.length];
         if (indexes.length != 0) {
             for (int i = 0; i < indexes.length; i++) {
 

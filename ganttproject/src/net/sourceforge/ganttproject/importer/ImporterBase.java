@@ -12,6 +12,7 @@ public class ImporterBase {
     private final String myID;
     private UIFacade myUiFacade;
     private IGanttProject myProject;
+    // TODO Field is never read... Remove?
     private Preferences myPrefs;
 
     protected ImporterBase() {

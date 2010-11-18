@@ -1,6 +1,6 @@
 package net.sourceforge.ganttproject.task;
 
-import net.sourceforge.ganttproject.resource.ProjectResource;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 
 /**
@@ -11,7 +11,7 @@ import net.sourceforge.ganttproject.roles.Role;
 public interface ResourceAssignment {
     Task getTask();
 
-    ProjectResource getResource();
+    HumanResource getResource();
 
     float getLoad();
 

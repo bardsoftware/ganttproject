@@ -29,7 +29,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ProjectResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -45,7 +44,7 @@ public class GanttCSVExport {
 
     private final Task[] myTasks;
 
-    List<ProjectResource> resources = new ArrayList<ProjectResource>();
+    List<HumanResource> resources = new ArrayList<HumanResource>();
 
     int iMaxSize = 0;
 
@@ -57,9 +56,8 @@ public class GanttCSVExport {
     public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
     	myProject = project;
         myTasks = project.getTaskManager().getTasks();
-        myHrManager = (HumanResourceManager) project.getHumanResourceManager();
+        myHrManager = project.getHumanResourceManager();
         this.csvOptions = csvOptions;
-
     }
 
     /** Save the project as CSV on a stream 
@@ -215,7 +213,7 @@ public class GanttCSVExport {
     	writeResourceHeaders(out);
         // parse all resources
         for (int i = 0; i < resources.size(); i++) {
-            HumanResource p = (HumanResource) resources.get(i);
+            HumanResource p = resources.get(i);
 
             // ID
             if (csvOptions.bExportResourceID) {
@@ -322,7 +320,7 @@ public class GanttCSVExport {
 
         // parse all resources
         for (int i = 0; i < resources.size(); i++) {
-            HumanResource p = (HumanResource) resources.get(i);
+            HumanResource p = resources.get(i);
 
             if (csvOptions.bExportResourceID) {
                 String s = "" + p.getId();

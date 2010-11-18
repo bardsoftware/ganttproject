@@ -65,12 +65,12 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     private final ColorOption myTaskAheadOfScheduleColor;
     private final ColorOption myTaskBehindScheduleColor;
     private final ColorOption myTaskOnScheduleColor;
-//
-//
+
     private final ChartOptionGroup myStateDiffOptions;
 
     private Set<Task> myHiddenTasks;
 
+    // TODO Class is never used... remove?
     public static class TuningOptions {
         private final boolean renderProgress;
 
@@ -298,7 +298,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     }
 
     java.util.List<Task> getVisibleTasks() {
-        return myVisibleTasks==null ? Collections.EMPTY_LIST : myVisibleTasks;
+        return myVisibleTasks == null ? Collections.<Task>emptyList() : myVisibleTasks;
     }
 
     /*
