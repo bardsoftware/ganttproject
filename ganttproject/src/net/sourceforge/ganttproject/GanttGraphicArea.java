@@ -435,40 +435,32 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         private final Task myTask;
 
-        private final float myInitialDuration;
-
-        protected ChangeTaskBoundaryInteraction(MouseEvent initiatingEvent,
-                TaskBoundaryChartItem taskBoundary) {
-            super(initiatingEvent);
-            myTask = taskBoundary.getTask();
-            myInitialDuration = myTask.getDuration().getLength(
-                    getViewState().getBottomTimeUnit());
+        protected ChangeTaskBoundaryInteraction(Date startDate, Task task) {
+            super(startDate);
+            myTask = task;
         }
 
         public void apply(MouseEvent e) {
-            if (myLastNotes == null) {
-                myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e
-                        .getY());
+            TaskLength currentDuration = getLengthDiff(e);
+            if (!currentDuration.equals(myTask.getDuration())) {
+            	apply(currentDuration);
             }
-            float diff = getLengthDiff(e);
-            apply(diff);
-            myLastNotes.setString(getNotesText());
-            myLastNotes.setX(e.getX());
         }
 
+        protected void updateTooltip(MouseEvent e) {
+            if (myLastNotes == null) {
+                myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
+            }
+            myLastNotes.setString(getNotesText());
+            myLastNotes.setX(e.getX());        	
+        }
+        
         protected Task getTask() {
             return myTask;
         }
 
-        protected float getInitialDuration() {
-            return myInitialDuration;
-        }
-
         public void finish(final TaskMutator mutator) {
             mutator.setIsolationLevel(TaskMutator.READ_UNCOMMITED);
-
-            // if
-            // ((!myInitialEnd.equals(getTask().getEnd()))||(!myInitialStart.equals(getTask().getStart())))
             getUndoManager().undoableEdit("Task boundary changed",
                     new Runnable() {
                         public void run() {
@@ -481,8 +473,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             mutator.commit();
             myLastNotes = null;
             try {
-                getTaskManager().getAlgorithmCollection()
-                        .getRecalculateTaskScheduleAlgorithm().run();
+                getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
             } catch (TaskDependencyException e) {
                 if (!GPLogger.log(e)) {
                     e.printStackTrace(System.err);
@@ -498,7 +489,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
 
-        protected abstract void apply(float diff);
+        protected abstract void apply(TaskLength duration);
 
         protected abstract String getNotesText();
     }
@@ -507,27 +498,21 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             implements MouseInteraction {
         private TaskMutator myMutator;
 
-        public ChangeTaskEndInteraction(MouseEvent initiatingEvent,
-                TaskBoundaryChartItem taskBoundary) {
-            super(initiatingEvent, taskBoundary);
+        public ChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
+            super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask());
             setCursor(E_RESIZE_CURSOR);
             myMutator = getTask().createMutator();
         }
 
-        protected void apply(float diff) {
-            TaskLength newLength = getTaskManager().createLength(
-                    getViewState().getBottomTimeUnit(),
-                    getInitialDuration() + diff);
-            TaskLength translated = getTask().translateDuration(newLength);
-            if (translated.getLength() != 0) {
-                myMutator.setDuration(translated);
-            }
+        protected void apply(TaskLength newDuration) {
+            myMutator.setDuration(newDuration.translate(getTask().getDuration().getTimeUnit()));
         }
 
         protected String getNotesText() {
             return getTask().getEnd().toString();
         }
 
+        @Override
         public void finish() {
             super.finish(myMutator);
         }
@@ -537,36 +522,34 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             implements MouseInteraction {
         private TaskMutator myMutator;
 
-        private GanttCalendar myInitialStart;
-
-        ChangeTaskStartInteraction(MouseEvent e,
-                TaskBoundaryChartItem taskBoundary) {
-            super(e, taskBoundary);
+        ChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary) {
+            super(taskBoundary.getTask().getEnd().getTime(), taskBoundary.getTask());
             setCursor(W_RESIZE_CURSOR);
             myMutator = getTask().createMutator();
-            myInitialStart = getTask().getStart();
         }
 
-        protected void apply(float diff) {
-            TaskLength bottomUnitDiff = getTaskManager().createLength(
-                    getViewState().getBottomTimeUnit(), diff);
-            TaskLength taskUnitDiff = getTask().translateDuration(bottomUnitDiff);
-            if (taskUnitDiff.getValue() != 0) {
-                Date newStart = getTaskManager().shift(myInitialStart.getTime(), taskUnitDiff);
-                myMutator.setStart(new GanttCalendar(newStart));
-                if ((getTask().getThird() != null)
-                        && (getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN))
-                    myMutator.setEnd(getTask().getEnd().Clone());
-                getTask().applyThirdDateConstraint();
-            }
-        }
+        @Override
+		public void apply(MouseEvent e) {
+        	Date dateUnderX = getChartModel().getDateAt(e.getX());
+        	if (!dateUnderX.equals(getStartDate())) {
+        		myMutator.setStart(new GanttCalendar(dateUnderX));
+        		getTask().applyThirdDateConstraint();
+        	}
+        	updateTooltip(e);
+		}
 
+        @Override
         public void finish() {
             super.finish(myMutator);
             getTask().applyThirdDateConstraint();
         }
 
-        protected String getNotesText() {
+        @Override
+		protected void apply(TaskLength duration) {
+        	assert false : "Should not be here";
+		}
+
+		protected String getNotesText() {
             return getTask().getStart().toString();
         }
     }
@@ -579,13 +562,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         private TaskInteractionHintRenderer myLastNotes;
 
-        private int myProgressWas;
-
-        private int myProgressIs;
-
         public ChangeTaskProgressInteraction(MouseEvent e,
                 TaskProgressChartItem taskProgress) {
-            super(e);
+            super(taskProgress.getTask().getStart().getTime());
             try {
                 setCursor(CHANGE_PROGRESS_CURSOR);
             } catch (Exception exept) {
@@ -593,34 +572,28 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
             myTaskProgrssItem = taskProgress;
             myMutator = myTaskProgrssItem.getTask().createMutator();
-            myProgressWas = myTaskProgrssItem.getTask()
-                    .getCompletionPercentage();
         }
 
+        private Task getTask() {
+        	return myTaskProgrssItem.getTask();
+        }
+        
         public void apply(MouseEvent event) {
-            // int deltaProgress =
-            // (int)myTaskProgrssItem.getProgressDelta(event.getX());
-            float deltaUnits = getLengthDiff(event);
-            int deltaPercents = (int) (100 * deltaUnits / myTaskProgrssItem
-                    .getTask().getDuration().getLength(
-                            getViewState().getBottomTimeUnit()));
-            int newProgress = myProgressWas + deltaPercents;
+        	TaskLength currentInterval = getLengthDiff(event).translate(getTask().getDuration().getTimeUnit());
+            int newProgress = (int) (100 * currentInterval.getValue() / getTask().getDuration().getValue());
             if (newProgress > 100) {
                 newProgress = 100;
             }
             if (newProgress < 0) {
                 newProgress = 0;
             }
-            myProgressIs = newProgress;
             myMutator.setCompletionPercentage(newProgress);
             myLastNotes = new TaskInteractionHintRenderer(newProgress + "%",
                     event.getX(), event.getY() - 30);
         }
 
         public void finish() {
-
             myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-
             getUndoManager().undoableEdit("Task progress changed",
                     new Runnable() {
                         public void run() {
@@ -638,20 +611,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                         .getRecalculateTaskScheduleAlgorithm().run();
             } catch (TaskDependencyException e) {
                 getUIFacade().showErrorDialog(e);
-            }
-            if (myProgressIs == myProgressWas) {
-                // getUndoManager ().die ();
-
-                myMutator.commit();
-                repaint();
-                int myProgressIs = myTaskProgrssItem.getTask()
-                        .getCompletionPercentage();
-                if (myProgressIs != myProgressWas) {
-                    // appli.setQuickSave(true);
-                    // appli.quickSave ("Task progress changed");
-
-                }
-
             }
         }
 
@@ -679,7 +638,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         public DrawDependencyInteraction(MouseEvent initiatingEvent,
                 TaskRegularAreaChartItem taskArea, MouseSupport mouseSupport) {
-            super(initiatingEvent);
+            super(null);
             myStartPoint = initiatingEvent.getPoint();
             myTask = taskArea.getTask();
             myArrow = new DependencyInteractionRenderer(myStartPoint.x,
@@ -734,126 +693,53 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         }
     }
 
-    class MoveTaskInteraction extends MouseInteractionBase implements
-            MouseInteraction {
-        private Task myTask;
+    class MoveTaskInteractions extends MouseInteractionBase implements MouseInteraction {
+        private final List<Task> myTasks;
 
-        private TaskMutator myMutator;
-
-        MoveTaskInteraction(MouseEvent e, Task task) {
-            super(e);
-            myTask = task;
-            myMutator = task.createMutator();
-        }
-
-        public void apply(MouseEvent event) {
-            float diff = getChartModel().calculateLengthNoWeekends(getStartX(),
-                    event.getX());
-            TaskLength bottomUnitLength = getTaskManager().createLength(
-                    getViewState().getBottomTimeUnit(), diff);
-            TaskLength taskLength = myTask.translateDuration(bottomUnitLength);
-            int dayDiff = (int) (taskLength.getValue());
-            // System.err.println("[MoveTaskInteraction] apply():
-            // dayDiff="+dayDiff+" bottomUnitLength="+bottomUnitLength+"
-            // translated="+taskLength);
-            if (dayDiff != 0) {
-                myMutator.shift(dayDiff);
-            }
-        }
-
-        public void finish() {
-            myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-            getUndoManager().undoableEdit("Task moved", new Runnable() {
-                public void run() {
-                    doFinish();
-                }
-            });
-
-        }
-
-        private void doFinish() {
-            myMutator.commit();
-            try {
-                getTaskManager().getAlgorithmCollection()
-                        .getRecalculateTaskScheduleAlgorithm().run();
-            } catch (TaskDependencyException e) {
-                getUIFacade().showErrorDialog(e);
-            }
-            GanttGraphicArea.this.repaint();
-        }
-
-    }
-
-    class MoveTaskInteractions extends MouseInteractionBase implements
-            MouseInteraction {
-
-        private List<Task> myTasks; // of Task
-
-        private List<TaskMutator> myMutators; // of TaskMutator
-
-        private List<GanttCalendar> myInitialStarts; // of GanttCalendar
+        private final List<TaskMutator> myMutators;
 
         MoveTaskInteractions(MouseEvent e, List<Task> tasks) {
-            super(e);
+        	super(getChartModel().getDateAt(e.getX()));
             myTasks = tasks;
-            myMutators = new ArrayList<TaskMutator>(myTasks.size());
-            myInitialStarts = new ArrayList<GanttCalendar>(myTasks.size());
-            Iterator<Task> itTasks = myTasks.iterator();
-            while (itTasks.hasNext()) {
-                Task t = itTasks.next();
-                myMutators.add(t.createMutator());
-                myInitialStarts.add(t.getStart());
+            myMutators = new ArrayList<TaskMutator>(tasks.size());
+            for (Task t : tasks) {
+            	myMutators.add(t.createMutator());
             }
         }
 
         public void apply(MouseEvent event) {
-            float diff = getLengthDiff(event);
-            TaskLength bottomUnitLength = getTaskManager().createLength(
-                    getViewState().getBottomTimeUnit(), diff);
-
-            for (int i = 0; i < myTasks.size(); i++) {
-                Task task = myTasks.get(i);
-                TaskLength taskLength = task
-                        .translateDuration(bottomUnitLength);
-                int dayDiff = (int) (taskLength.getValue());
-                if (dayDiff != 0) {
-                    myMutators.get(i).shift(dayDiff);
-                }
+        	TaskLength currentInterval = getLengthDiff(event);
+        	if (currentInterval.getLength() != 0) {
+        		for (TaskMutator mutator : myMutators) {
+        			mutator.shift(currentInterval);
+        		}
+                setStartDate(getChartModel().getDateAt(event.getX()));
             }
         }
 
         public void finish() {
-            Iterator<TaskMutator> itMutators = myMutators.iterator();
-            while (itMutators.hasNext())
-                itMutators.next()
-                        .setIsolationLevel(TaskMutator.READ_COMMITED);
-
+        	for (TaskMutator mutator : myMutators) {
+        		mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
+        	}
             getUndoManager().undoableEdit("Task moved", new Runnable() {
                 public void run() {
                     doFinish();
                 }
             });
-
         }
 
         private void doFinish() {
-            Iterator<TaskMutator> itMutators = myMutators.iterator();
-            while (itMutators.hasNext())
-                itMutators.next().commit();
-
+        	for (TaskMutator mutator : myMutators) {
+        		mutator.commit();
+        	}
             try {
-                getTaskManager().getAlgorithmCollection()
-                        .getRecalculateTaskScheduleAlgorithm().run();
+                getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
             } catch (TaskDependencyException e) {
                 getUIFacade().showErrorDialog(e);
             }
-
-            Iterator<Task> itTasks = myTasks.iterator();
-            while (itTasks.hasNext()) {
-                Task t = itTasks.next();
-                t.applyThirdDateConstraint();
+            for (Task t : myTasks) {
+            	t.applyThirdDateConstraint();
             }
-
             GanttGraphicArea.this.repaint();
         }
     }
@@ -884,7 +770,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 TaskRegularAreaChartItem taskArea,
                 GanttGraphicArea.MouseSupport mouseSupport);
 
-        void beginMoveTaskInteraction(MouseEvent e, Task task);
+//        void beginMoveTaskInteraction(MouseEvent e, Task task);
 
         void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
 
@@ -922,9 +808,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     taskArea, mouseSupport));
         }
 
-        public void beginMoveTaskInteraction(MouseEvent e, Task task) {
-            setActiveInteraction(new MoveTaskInteraction(e, task));
-        }
+//        public void beginMoveTaskInteraction(MouseEvent e, Task task) {
+//            //setActiveInteraction(new MoveTaskInteraction(e, task));
+//        }
 
         public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks));
@@ -1224,7 +1110,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 MouseInteraction mi = myChartComponentImpl
                         .getActiveInteraction();
                 if ((mi instanceof ChangeTaskBoundaryInteraction)
-                        || (mi instanceof MoveTaskInteraction)
                         || (mi instanceof MoveTaskInteractions))
                     appli.recalculateCriticalPath();
             }
