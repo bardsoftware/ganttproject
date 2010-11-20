@@ -15,4 +15,8 @@ public interface TaskLength {
     TimeUnit getTimeUnit();
 
     float getValue();
+    
+    TaskLength reverse();
+
+	TaskLength translate(TimeUnit timeUnit);
 }
