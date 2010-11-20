@@ -66,6 +66,7 @@ import org.jdesktop.swing.JXTreeTable;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -440,13 +441,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             myTask = task;
         }
 
-        public void apply(MouseEvent e) {
-            TaskLength currentDuration = getLengthDiff(e);
-            if (!currentDuration.equals(myTask.getDuration())) {
-            	apply(currentDuration);
-            }
-        }
-
         protected void updateTooltip(MouseEvent e) {
             if (myLastNotes == null) {
                 myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
@@ -489,24 +483,28 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
 
-        protected abstract void apply(TaskLength duration);
-
         protected abstract String getNotesText();
     }
 
     class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
             implements MouseInteraction {
         private TaskMutator myMutator;
-
+        private WorkingUnitCounter myCounter;
+        
         public ChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
             super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask());
             setCursor(E_RESIZE_CURSOR);
             myMutator = getTask().createMutator();
+            myCounter = new WorkingUnitCounter(getTaskManager().getCalendar(), getTask().getDuration().getTimeUnit());
         }
 
-        protected void apply(TaskLength newDuration) {
-            myMutator.setDuration(newDuration.translate(getTask().getDuration().getTimeUnit()));
-        }
+		@Override
+		public void apply(MouseEvent event) {
+			Date dateUnderX = getChartModel().getDateAt(event.getX());
+			TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
+            myMutator.setDuration(newDuration);
+            updateTooltip(event);
+		}
 
         protected String getNotesText() {
             return getTask().getEnd().toString();
@@ -516,6 +514,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         public void finish() {
             super.finish(myMutator);
         }
+
     }
 
     class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction
@@ -544,11 +543,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             getTask().applyThirdDateConstraint();
         }
 
-        @Override
-		protected void apply(TaskLength duration) {
-        	assert false : "Should not be here";
-		}
-
 		protected String getNotesText() {
             return getTask().getStart().toString();
         }
@@ -556,12 +550,14 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     class ChangeTaskProgressInteraction extends MouseInteractionBase implements
             MouseInteraction {
-        private TaskProgressChartItem myTaskProgrssItem;
+        private final TaskProgressChartItem myTaskProgrssItem;
 
-        private TaskMutator myMutator;
+        private final TaskMutator myMutator;
 
         private TaskInteractionHintRenderer myLastNotes;
 
+        private final WorkingUnitCounter myCounter;
+        
         public ChangeTaskProgressInteraction(MouseEvent e,
                 TaskProgressChartItem taskProgress) {
             super(taskProgress.getTask().getStart().getTime());
@@ -572,6 +568,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
             myTaskProgrssItem = taskProgress;
             myMutator = myTaskProgrssItem.getTask().createMutator();
+            myCounter = new WorkingUnitCounter(getTaskManager().getCalendar(), getTask().getDuration().getTimeUnit());
         }
 
         private Task getTask() {
@@ -579,7 +576,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         }
         
         public void apply(MouseEvent event) {
-        	TaskLength currentInterval = getLengthDiff(event).translate(getTask().getDuration().getTimeUnit());
+        	TaskLength currentInterval = myCounter.run(getStartDate(), getChartModel().getDateAt(event.getX()));
             int newProgress = (int) (100 * currentInterval.getValue() / getTask().getDuration().getValue());
             if (newProgress > 100) {
                 newProgress = 100;
@@ -588,8 +585,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 newProgress = 0;
             }
             myMutator.setCompletionPercentage(newProgress);
-            myLastNotes = new TaskInteractionHintRenderer(newProgress + "%",
-                    event.getX(), event.getY() - 30);
+            myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
         }
 
         public void finish() {
@@ -606,12 +602,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         private void doFinish(TaskMutator mutator) {
             mutator.commit();
             myLastNotes = null;
-            try {
-                getTaskManager().getAlgorithmCollection()
-                        .getRecalculateTaskScheduleAlgorithm().run();
-            } catch (TaskDependencyException e) {
-                getUIFacade().showErrorDialog(e);
-            }
         }
 
         public void paint(Graphics g) {
