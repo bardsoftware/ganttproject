@@ -1295,7 +1295,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
                 .getViewState());
-        Action scrollLeft = new ScrollGanttChartLeftAction(scrollingManager,
+        Action scrollLeft = new ScrollGanttChartLeftAction(scrollingManager, getTaskManager(),
                 options.getIconSize());
         myRolloverActions.add(scrollLeft);
         bPrev = new TestGanttRolloverButton(scrollLeft);
@@ -1309,7 +1309,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bScrollCenter.setAutoRepeatMousePressedEvent(300);
         // toolBar.add(bScrollCenter);
 
-        Action scrollRight = new ScrollGanttChartRightAction(scrollingManager,
+        Action scrollRight = new ScrollGanttChartRightAction(scrollingManager, getTaskManager(),
                 options.getIconSize());
         myRolloverActions.add(scrollRight);
         bNext = new TestGanttRolloverButton(scrollRight);
