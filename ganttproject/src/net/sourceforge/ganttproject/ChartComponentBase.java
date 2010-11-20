@@ -176,7 +176,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
         protected TaskLength getLengthDiff(MouseEvent event) {
         	Date dateUnderX = getChartModel().getDateAt(event.getX());
-        	TaskLength result = getTaskManager().createLength(getChartModel().getBottomUnit(), myStartDate, dateUnderX);
+        	TaskLength result = getTaskManager().createLength(
+        			getChartModel().getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
         	return result;
         }
 
