@@ -168,7 +168,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** The differents menus */
+    /** The different menus */
     public JMenu mProject, mMRU, mEdit, mTask, mHuman, mHelp, mServer,
             mCalendar;
 
@@ -188,9 +188,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** The different buttons of toolbar */
     private TestGanttRolloverButton bNew, bOpen, bSave, bExport, bImport,
             bPrint, bPreviewPrint, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties,/*
-                         * bUnlink, bLink, bUp, bDown,
-                         */bPrev, bScrollCenter, bNext, /* bZoomFit, */bAbout;
+            bProperties,/* bUnlink, bLink, bUp, bDown,*/ bPrev,
+            bScrollCenter, bNext, /* bZoomFit, */bAbout;
 
     private TestGanttRolloverButton bShowHiddens;
 
@@ -329,7 +328,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         Mediator.registerTaskSelectionManager(taskSelectionManager);
         /*
          * [bbaranne] I add a Mediator object so that we can get the
-         * GanttProject singleton whereever we are in the source code. Perhaps
+         * GanttProject singleton where ever we are in the source code. Perhaps
          * some of you don't like this, but I believe that it is practical...
          */
         Mediator.registerGanttProject(this);
@@ -621,7 +620,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
             }
         });
-        // Add tabpan on the content pane
+        // Add tab pane on the content pane
         getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
         toolBar = new GPToolBar("GanttProject", options.getToolBarPosition(),
@@ -662,7 +661,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         invisibleItem.setVisible(false);
         bar.add(invisibleItem);
 
-        // update 18-03-2003
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
@@ -673,7 +671,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
 
         });
-        // update 18-03-2003
+
         System.err.println("5. calculating size and packing...");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -727,8 +725,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * Returns a mouseListener that stop the edition in the ganttTreeTable.
-     * 
      * @return A mouseListener that stop the edition in the ganttTreeTable.
      */
     private MouseListener getStopEditingMouseListener() {
@@ -764,7 +760,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mProject.add(myProjectMenu.getSaveProjectAction());
         mProject.add(myProjectMenu.getSaveProjectAsAction());
         mProject.addSeparator();
-        //
+
         mProject.add(myProjectMenu.getImportFileAction());
         mProject.add(myProjectMenu.getExportFileAction());
         mProject.addSeparator();
@@ -857,7 +853,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
                     MENU_MASK));
         }
-
     }
 
     /** Create an item with a label */
@@ -1026,7 +1021,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miChartOptions = changeMenuLabel(miChartOptions, language
                 .getText("chartOptions"));
         miRefresh = changeMenuLabel(miRefresh, language.getText("refresh"));
-        // //////////////////////////////////////////
+
         bPreviewPrint.setToolTipText(getToolTip(correctLabel(language
                 .getText("preview"))));
         bExport.setToolTipText(getToolTip(correctLabel(language
@@ -1194,27 +1189,26 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Create the button on toolbar */
     public void addButtons(JToolBar toolBar) {
         // toolBar.addSeparator(new Dimension(20,0));
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bNew = new TestGanttRolloverButton(myProjectMenu.getNewProjectAction());
         bOpen = new TestGanttRolloverButton(myProjectMenu
                 .getOpenProjectAction());
         bSave = new TestGanttRolloverButton(myProjectMenu
                 .getSaveProjectAction());
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
         bImport = new TestGanttRolloverButton(myProjectMenu
                 .getImportFileAction());
         bExport = new TestGanttRolloverButton(myProjectMenu
                 .getExportFileAction());
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bPrint = new TestGanttRolloverButton(myProjectMenu.getPrintAction());
         bPreviewPrint = new TestGanttRolloverButton(new ImageIcon(
                 getClass().getResource(
                         "/icons/preview_" + options.getIconSize() + ".gif")));
         bPreviewPrint.addActionListener(this);
         // toolBar.add(bPrint);
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         // toolBar.addSeparator(new Dimension(20,0));
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bComparePrev = new TestGanttRolloverButton(
                 new ImageIcon(getClass().getResource(
                         "/icons/comparePrev_" + options.getIconSize() + ".gif")));
@@ -1226,7 +1220,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     bComparePrev.setEnabled(false);
             }
         });
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bSaveCurrent = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource(
                         "/icons/saveCurrentAsPrev_" + options.getIconSize()
@@ -1238,7 +1232,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
             }
         });
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         bCut = new TestGanttRolloverButton(getCutAction());
         bCopy = new TestGanttRolloverButton(getCopyAction());
@@ -1289,7 +1282,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         });
         // if(!isOnlyViewer) toolBar.add(bDelete);
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bProperties = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource(
                         "/icons/properties_" + options.getIconSize() + ".gif")));
@@ -1305,7 +1298,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
             }
         });
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         ScrollingManager scrollingManager = getScrollingManager();
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
@@ -1331,18 +1324,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bNext.setAutoRepeatMousePressedEvent(300);
         // toolBar.add(bNext);
 
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
         Action zoomOut = new ZoomOutAction(getZoomManager(), options
                 .getIconSize());
         myRolloverActions.add(zoomOut);
         bZoomOut = new TestGanttRolloverButton(zoomOut);
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         Action zoomIn = new ZoomInAction(getZoomManager(), options
                 .getIconSize());
         myRolloverActions.add(zoomIn);
         bZoomIn = new TestGanttRolloverButton(zoomIn);
         // toolBar.add(bZoomIn);
-        // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         bAbout = new TestGanttRolloverButton(
                 new ImageIcon(getClass().getResource(
                         "/icons/manual_" + options.getIconSize() + ".gif")));
@@ -1442,39 +1434,26 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JMenuItem) {
             String arg = evt.getActionCommand();
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (arg.equals(language.getText("hideTask"))) {
                 tree.hideSelectedNodes();
             } else if (arg.equals(language.getText("displayHiddenTasks"))) {
                 tree.displayHiddenTasks();
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language.getText("preview")))) {
+            } else if (arg.equals(correctLabel(language.getText("preview")))) {
                 previewPrint();
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language.getText("deleteTask")))) {
+            } else if (arg.equals(correctLabel(language.getText("deleteTask")))) {
                 deleteTasks(true);
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language
+            } else if (arg.equals(correctLabel(language
                     .getText("projectCalendar")))) {
                 System.out.println("Project calendar");
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language.getText("webPage")))) {
+            } else if (arg.equals(correctLabel(language.getText("webPage")))) {
                 try {
                     openWebPage();
                 } catch (Exception e) {
                     System.err.println(e);
                 }
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language.getText("about")))) {
+            } else if (arg.equals(correctLabel(language.getText("about")))) {
                 aboutDialog();
-            }
-            // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            else if (arg.equals(correctLabel(language.getText("sendMail")))) {
+            } else if (arg.equals(correctLabel(language.getText("sendMail")))) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
             } else if (arg.equals(correctLabel(language.getText("settings")))) {
@@ -1490,10 +1469,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                             }
                         });
             }
-        }
-        // //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Test if it's buttons actions
-        else {
+        } else {
+            // Test if it's buttons actions
             if (evt.getSource() == bPreviewPrint) { // print
                 previewPrint();
             }
@@ -1600,10 +1577,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * Delete the currant task
-     * 
+     * Delete the current task
+     *
      * @param confirmation
-     *            TODO
+     *            Unused at the moment, but might be used to show confirmation
+     *            when true
      */
     public void deleteTasks(boolean confirmation) {
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
