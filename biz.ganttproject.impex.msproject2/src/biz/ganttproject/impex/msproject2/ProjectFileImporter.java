@@ -122,6 +122,9 @@ class ProjectFileImporter {
 
     private void importCalendar(ProjectFile pf) {
         ProjectCalendar defaultCalendar = pf.getCalendar();
+        if (defaultCalendar == null) {
+        	return;
+        }
         importWeekends(defaultCalendar);
         List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
         for (ProjectCalendarException e: exceptions) {
@@ -232,6 +235,7 @@ class ProjectFileImporter {
     private void importTask(ProjectFile foreignProject,
             Task t, net.sourceforge.ganttproject.task.Task supertask,
             Map<Integer, GanttTask> foreignId2nativeTask) {
+    	System.err.println("task="+t+"\noutline level="+t.getOutlineLevel());
         GanttTask nativeTask = getTaskManager().createTask();
         myNativeProject.getTaskContainment().move(nativeTask, supertask);
         nativeTask.setName(t.getName());
@@ -384,6 +388,7 @@ class ProjectFileImporter {
                         dependant, dependee);
                 dependency.setConstraint(convertConstraint(r));
                 if (r.getLag().getDuration() != 0.0) {
+                	// TODO(dbarashev): get rid of days
                     dependency.setDifference((int) r.getLag().convertUnits(
                             TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
                 }
