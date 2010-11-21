@@ -40,17 +40,13 @@ public class GanttPreviousState {
 
     private GanttTree2 myTree;
 
-    //TODO myProject is not used... remove?
-    private GanttProject myProject;
-
     private String s = "    "; // the margin
 
-    // constructor for a new previous state
+    /** constructor for a new previous state */
     public GanttPreviousState(String name, GanttProject project)
             throws IOException {
         myName = name;
-        myTree = (GanttTree2) project.getTree();
-        myProject = project;
+        myTree = project.getTree();
         myFile = createTemporaryFile();
         myFile.deleteOnExit();
         os = new OutputStreamWriter(new FileOutputStream(myFile), "UTF-8");
@@ -58,7 +54,7 @@ public class GanttPreviousState {
         saveFile();
     }
 
-    // constructor for a loaded previous state
+    /** constructor for a loaded previous state */
     public GanttPreviousState(String name) throws IOException {
         myName = name;
         myFile = createTemporaryFile();

@@ -821,7 +821,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void restoreOptions() {
-        options.initByDefault(); // options by default
+        options.initDefault();
         iconList = initIconList();
         deletedIconList = initDeletedIconList();
         addButtons();
@@ -1714,8 +1714,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         try {
             PrintPreview preview = new PrintPreview(getProject(),
                     getUIFacade(), chart, startDate, endDate);
-            if (preview != null)
-                preview.setVisible(true);
+            preview.setVisible(true);
         } catch (OutOfMemoryError e) {
             getUIFacade().showErrorDialog(
                     GanttLanguage.getInstance().getText(
@@ -2040,18 +2039,18 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
         CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
         HashMap<String, List<String>> parsedArgs = new HashMap<String, List<String>>();
+        final List<String> emptyList = Collections.<String>emptyList();
         String argName = "";
         for (int i = 0; i < arg.length; i++) {
             String nextWord = arg[i];
             if (nextWord.charAt(0) == '-') {
                 if (argName.length() != 0) {
-                    parsedArgs.put(argName, Collections.<String> emptyList());
+                    parsedArgs.put(argName, emptyList);
                 }
                 argName = nextWord.toLowerCase();
             } else {
                 List<String> values = parsedArgs.get(argName);
-                if (values == null
-                        || values == Collections.<String> emptyList()) {
+                if (values == null || values == emptyList) {
                     values = new ArrayList<String>();
                     parsedArgs.put(argName, values);
                 }
@@ -2062,7 +2061,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         if (argName.length() > 0 && !parsedArgs.containsKey(argName)) {
-            parsedArgs.put(argName, Collections.<String> emptyList());
+            parsedArgs.put(argName, emptyList);
         }
         if (parsedArgs.containsKey("-h") || parsedArgs.containsKey("--help")) {
             usage();

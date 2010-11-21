@@ -57,15 +57,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         Document document = project.getDocument();
         myDocumentManager.addToRecentDocuments(document);
         String title = i18n.getText("appliTitle") + " ["
-        + document.getDescription() + "]";
+                + document.getDescription() + "]";
         myWorkbenchFacade.setWorkbenchTitle(title);
         if (document.isLocal()) {
             URI url = document.getURI();
-            if (url!=null) {
+            if (url != null) {
                 File file = new File(url);
-                if (file!=null) {
-                    myDocumentManager.changeWorkingDirectory(file.getParentFile());            
-                }
+                myDocumentManager.changeWorkingDirectory(file.getParentFile());
             }
         }
         project.setModified(false);
@@ -185,6 +183,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
         
     }
+
     public void openRemoteProject(final IGanttProject project) throws IOException {
         final Document document = showURLDialog(project);
         if (document != null) {

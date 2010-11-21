@@ -51,21 +51,29 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
     
     static class Node {
         private final Task task;
+        private final List<Task> dependees = new ArrayList<Task>();
+        private int numDependants;
+        private final Date est;
+        private final Date eft;
+        private Date lst;
+        private Date lft;
+        private boolean lftFromSupertask = false;
+
         public Node(Task t, Set<Task> taskScope) {
             this.task = t;
+            // TODO Check if t is not null? Or is this impossible?
             this.est = t.getStart().getTime();
             this.eft = t.getEnd().getTime();
             this.lst = null;
             this.lft = null;
-            TaskDependency[] deps = t.getDependenciesAsDependee().toArray(); 
-            for (int i=0; i<deps.length; i++) {
+            numDependants = 0;
+            TaskDependency[] deps = t.getDependenciesAsDependee().toArray();
+            for (int i = 0; i < deps.length; i++) {
                 if (taskScope.contains(deps[i].getDependant())) {
                     numDependants++;
                 }
             }
-            if (t!=null) {
-                collectDependees(t, taskScope);
-            }
+            collectDependees(t, taskScope);
         }
         public Node(Task t, Date est, Date eft, Date lst, Date lft, int numDependants, Set<Task> taskScope) {
             this.task = t;
@@ -74,7 +82,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             this.lst = lst;
             this.lft = lft;
             this.numDependants = numDependants;
-            if (task!=null) {
+            if (task != null) {
                 collectDependees(task, taskScope);
             }
         }
@@ -87,22 +95,14 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                 }
             }            
         }
+
         boolean isCritical() {
             return est.equals(lst);
         }
         
         public String toString() {
-            return task==null ? "[Deadline node " + eft + "]" : task.toString();
+            return task == null ? "[Deadline node " + eft + "]" : task.toString();
         }
-
-
-        List<Task> dependees = new ArrayList<Task>();
-        int numDependants;
-        Date est;
-        Date eft;
-        Date lst;
-        Date lft;
-        boolean lftFromSupertask = false;
     }
     
     public Task[] getCriticalTasks() {
@@ -239,11 +239,9 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             Collision backwardCollision = dep.getConstraint().getBackwardCollision(depNode.lst);
             if (backwardCollision == null) {
                 return depNode.lst;
-            } 
-            else {
+            } else {
                 return backwardCollision.getAcceptableStart().getTime();
             }
-            
         }
     }
 }

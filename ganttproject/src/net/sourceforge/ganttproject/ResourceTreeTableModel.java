@@ -98,28 +98,26 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
 
     public ResourceNode getNodeForResource(HumanResource resource) {
-        ResourceNode res = null;
-        Enumeration childs = root.children();
-        while (childs.hasMoreElements() && res == null) {
-            ResourceNode rn = (ResourceNode) childs.nextElement();
+        Enumeration<ResourceNode> childs = root.children();
+        while (childs.hasMoreElements()) {
+            ResourceNode rn = childs.nextElement();
             if (resource.equals(rn.getUserObject())) {
-                res = rn;
+                return rn;
             }
         }
-        return res;
+        return null;
     }
 
     public AssignmentNode getNodeForAssigment(ResourceAssignment assignement) {
-        AssignmentNode res = null;
-        Enumeration childs = getNodeForResource(assignement.getResource())
-                .children();
-        while (childs.hasMoreElements() && res == null) {
+        Enumeration<AssignmentNode> childs = getNodeForResource(
+                assignement.getResource()).children();
+        while (childs.hasMoreElements()) {
             AssignmentNode an = (AssignmentNode) childs.nextElement();
             if (assignement.equals(an.getUserObject())) {
-                res = an;
+                return an;
             }
         }
-        return res;
+        return null;
     }
 
     private ResourceNode buildTree() {
@@ -164,28 +162,14 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
 
     ResourceNode exists(HumanResource hr) {
-        ResourceNode res = null;
-        Enumeration en = root.children();
-        while (res == null && en.hasMoreElements()) {
-            ResourceNode rn = (ResourceNode) en.nextElement();
+        Enumeration<ResourceNode> en = root.children();
+        while (en.hasMoreElements()) {
+            ResourceNode rn = en.nextElement();
             if (rn.getUserObject().equals(hr)) {
-                res = rn;
+                return rn;
             }
         }
-        return res;
-    }
-
-    // TODO Method is not used... delete?
-    private AssignmentNode exists(ResourceNode rn, ResourceAssignment ra) {
-        AssignmentNode res = null;
-        Enumeration en = rn.children();
-        while (res == null && en.hasMoreElements()) {
-            AssignmentNode an = (AssignmentNode) en.nextElement();
-            if (an.getUserObject().equals(ra)) {
-                res = an;
-            }
-        }
-        return res;
+        return null;
     }
 
     /**
@@ -449,10 +433,8 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     /** Adds a custom column (which is removable) to the datamodel */
     public void addCustomColumn(String title, ResourceColumn col) throws Exception{
-        if (myResourceManager.checkCustomField(title))
-        {
-            /* TODO add translation */
-            throw new Exception("Column exists");
+        if (myResourceManager.checkCustomField(title)) {
+            throw new Exception(language.getText("columnExists"));
         }
         myResourceManager.addCustomField(col);
         columns.put(new Integer(index), col);
@@ -473,7 +455,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
                 return toDel;
             }
         }
-
         return null;
     }
 
@@ -550,8 +531,9 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
             if (!hasWork) {
                 return;
             }
-            for (Enumeration subtree = myChangingSubtreeRoot.depthFirstEnumeration(); subtree.hasMoreElements();) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) subtree.nextElement();
+            for (Enumeration<DefaultMutableTreeNode> subtree = myChangingSubtreeRoot
+                    .depthFirstEnumeration(); subtree.hasMoreElements();) {
+                DefaultMutableTreeNode node = subtree.nextElement();
                 if (node.getUserObject().equals(myModelObject)) {
                     mySelectionModel.setSelectionPath(new TreePath(node.getPath()));
                     break;

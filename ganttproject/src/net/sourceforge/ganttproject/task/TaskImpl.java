@@ -501,45 +501,8 @@ public class TaskImpl implements Task {
 		}
     }
 
+    // TODO Class is same as FieldChange... refactor?
     private static class DurationChange extends FieldChange {
-        // TODO Method is unused... delete?
-        Date getCachedDate(int length) {
-            if (myDates == null) {
-                return null;
-            }
-            int index = length - myMinLength;
-            if (index < 0 || index >= myDates.size()) {
-                return null;
-            }
-            return myDates.get(index);
-        }
-
-        // TODO Method is unused... delete?
-        void cacheDate(Date date, int length) {
-            if (myDates == null) {
-                myDates = new ArrayList<Date>();
-            }
-            int index = length - myMinLength;
-            while (index <= -1) {
-                myDates.add(0, null);
-                index++;
-            }
-            while (index > myDates.size()) {
-                myDates.add(null);
-            }
-            if (index == -1) {
-                myDates.add(0, date);
-            } else if (index == myDates.size()) {
-                myDates.add(date);
-            } else {
-                myDates.set(index, date);
-            }
-        }
-
-        private int myMinLength = 0;
-
-        private List<Date> myDates;
-
     }
 
     private class MutatorImpl implements TaskMutator {
@@ -698,7 +661,6 @@ public class TaskImpl implements Task {
         }
 
         public void setDuration(final TaskLength length) {
-
             // If duration of task was set to 0 or less do not change it
             if (length.getLength() <= 0) {
                 return;
@@ -714,28 +676,29 @@ public class TaskImpl implements Task {
                     return;
                 }
             }
-            TaskLength prevLength = (TaskLength) myDurationChange.myFieldValue;
+
+            // TODO Remove commented code?
+
+            //TaskLength prevLength = (TaskLength) myDurationChange.myFieldValue;
             // System.err.println("new duration="+length+"
             // previous="+prevLength);
             // Date prevEnd =
             // myDurationChange.getCachedDate((int)prevLength.getLength());
-            Date prevEnd = null;
+            //Date prevEnd = null;
             // System.err.println("previously cached shift="+prevEnd);
             myDurationChange.setValue(length);
             GanttCalendar newEnd;
             Date shifted;
-            if (prevEnd == null) {
+            // if (prevEnd == null) {
                 // System.err.println("no prev, length="+length.getLength());
                 shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
-            } else {
+            // } else {
                 // System.err.println("yes prev,
                 // length="+(length.getLength()-prevLength.getLength()));
-                shifted = TaskImpl.this.shiftDate(
-                		prevEnd,
-                		getManager().createLength(
-                				length.getTimeUnit(),
-                				length.getLength() - prevLength.getLength()));
-            }
+            //     shifted = TaskImpl.this.shiftDate(prevEnd, getManager()
+            //             .createLength(length.getTimeUnit(),
+            //                     length.getLength() - prevLength.getLength()));
+            // }
             // System.err.println("caching shift="+shifted+" for
             // duration="+length);
             // myDurationChange.cacheDate(shifted, (int)length.getLength());
@@ -839,7 +802,6 @@ public class TaskImpl implements Task {
         }
 
         public void shift(float unitCount) {
-
             Task result = getPrecomputedShift(unitCount);
             if (result == null) {
                 result = TaskImpl.this.shift(unitCount);
@@ -864,13 +826,6 @@ public class TaskImpl implements Task {
 
         private Task getPrecomputedShift(float unitCount) {
             return null;
-        }
-
-        private TaskInfo myTaskInfo;
-
-        // TODO MEthod is never used... Remove?
-        public TaskInfo getTaskInfo() {
-            return myTaskInfo;
         }
 
         public void setTaskInfo(TaskInfo taskInfo) {

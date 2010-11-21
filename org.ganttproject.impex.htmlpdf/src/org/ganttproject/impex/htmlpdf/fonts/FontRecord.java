@@ -15,7 +15,7 @@ public class FontRecord {
 
     private URI myMetricsLocation;
 
-    private ArrayList myTriplets = new ArrayList();
+    private ArrayList<FontTriplet> myTriplets = new ArrayList<FontTriplet>();
 
     private TTFFileExt myTTFFile;
 
@@ -44,7 +44,7 @@ public class FontRecord {
     }
 
     public FontTriplet[] getFontTriplets() {
-        return (FontTriplet[]) myTriplets.toArray(new FontTriplet[0]);
+        return myTriplets.toArray(new FontTriplet[0]);
     }
 
     public TTFFileExt getTTFFile() {

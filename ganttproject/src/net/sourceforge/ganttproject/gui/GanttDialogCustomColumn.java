@@ -237,7 +237,6 @@ public class GanttDialogCustomColumn  {
         String defValue = null;
 
         if (colName.length() != 0) {
-            Class colClass;
             int colType = getSelectedType(myType.getValue());
             CustomPropertyClass propertyClass = CustomPropertyClass.values()[colType];
             switch (propertyClass) {

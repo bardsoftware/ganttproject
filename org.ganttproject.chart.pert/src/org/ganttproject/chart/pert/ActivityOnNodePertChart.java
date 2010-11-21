@@ -44,8 +44,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -417,43 +415,6 @@ public class ActivityOnNodePertChart extends PertChart {
         } else {
             return new GraphicalNode(taskGraphNode);
         }
-    }
-
-    // TODO Method is never used... Remove?
-    private void correctPositionBecauseOfSuperTasks() {
-        TaskContainmentHierarchyFacade hierarchy = myTaskManager
-                .getTaskHierarchy();
-        Task[] tasks = myTaskManager.getTasks();
-        for (int i = 0; i < tasks.length; i++) {
-            Task task = tasks[i];
-            Task[] nestedTasks = hierarchy.getNestedTasks(task);
-            correctPositions(nestedTasks);
-        }
-    }
-
-    // recursive
-    private void correctPositions(Task[] tasks) {
-        if (tasks == null) {
-            return;
-        }
-        TaskContainmentHierarchyFacade hierarchy = myTaskManager
-                .getTaskHierarchy();
-        for (int j = 0; j < tasks.length; j++) {
-            Task nestedTask = tasks[j];
-            GraphicalNode gn = getGraphicalNodeByID(nestedTask.getTaskID());
-            int oldPosition = gn.col;
-            changePosition(gn, oldPosition + 1);
-            correctPositions(hierarchy.getNestedTasks(nestedTask));
-        }
-    }
-
-    private void changePosition(GraphicalNode graphicalNode, int newCol) {
-        //int oldPosition = graphicalNode.col;
-        //graphicalNode.col = newCol;
-        //boolean remove = ((List) myMapPositionListOfNodes.get(new Integer(
-        //        oldPosition))).remove(graphicalNode);
-        this.remove(graphicalNode);
-        this.add(newCol, graphicalNode);
     }
     
     private void moveDown(GraphicalNode graphicalNode) {

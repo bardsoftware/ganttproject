@@ -15,8 +15,6 @@ import org.eclipse.core.runtime.IAdaptable;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
-import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -25,15 +23,11 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
     private ResourceTreeUIFacade myTreeFacade;
     private Component myResourceChart;
     private JComponent myTabContentPanel;
-    private NavigationPanel myNavigationPanel;
-    private ZoomingPanel myZoomingPanel;
 
     ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, ResourceTreeUIFacade resourceTree, Component resourceChart) {
         super(project, workbenchFacade, (TimelineChart) workbenchFacade.getResourceChart());
         myTreeFacade = resourceTree;
         myResourceChart = resourceChart;
-        myNavigationPanel = new NavigationPanel(project, (TimelineChart) workbenchFacade.getResourceChart(), workbenchFacade);
-        myZoomingPanel = new ZoomingPanel(workbenchFacade);
     }
 
     Component getComponent() {
@@ -48,11 +42,11 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
         upButton.setTextHidden(true);
         buttonBar.add(upButton);
-        //
+
         TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction());
         downButton.setTextHidden(true);
         buttonBar.add(downButton);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;
@@ -77,5 +71,4 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
     protected Component getTreeComponent() {
         return myTreeFacade.getUIComponent();
     }
-
 }

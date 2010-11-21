@@ -24,7 +24,6 @@ public class JDKFontLocator {
     public FontRecord[] getFontRecords() {
         String javaHome = System.getProperty("java.home");
         File fontDirectory = new File(javaHome + "/lib/fonts");
-        // TTFReader ttfReader = new TTFReader();
         File[] children = fontDirectory.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(".ttf");
@@ -33,7 +32,7 @@ public class JDKFontLocator {
         if (children == null) {
             children = new File[0];
         }
-        ArrayList result = new ArrayList(children.length);
+        ArrayList<FontRecord> result = new ArrayList<FontRecord>(children.length);
         for (int i = 0; i < children.length; i++) {
             try {
                 FontRecord record = new FontRecord(children[i],
@@ -53,7 +52,7 @@ public class JDKFontLocator {
             }
 
         }
-        return (FontRecord[]) result.toArray(new FontRecord[0]);
+        return result.toArray(new FontRecord[0]);
     }
 
     private void populateWithTriplets(FontRecord record) {

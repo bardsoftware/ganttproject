@@ -477,24 +477,21 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public void setGraphicArea(ChartComponentBase area) {
         this.area = area;
     }
+
     /** add an object with the expand information */
     public DefaultMutableTreeNode addObjectWithExpand(Object child,
             DefaultMutableTreeNode parent) {
-
         DefaultMutableTreeNode childNode = new TaskNode((Task) child);
 
-        if (parent == null)
+        if (parent == null) {
             parent = rootNode;
+        }
 
         treeModel.insertNodeInto(childNode, parent, parent.getChildCount());
         //forwardScheduling();
 
         // Task task = (Task) (childNode.getUserObject());
-
         boolean res = true;
-
-        if (parent == null)
-            res = false;
 
         // test for expansion
         while (parent != null) {
@@ -636,10 +633,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         Enumeration<DefaultMutableTreeNode> e = base.preorderEnumeration();
         while (e.hasMoreElements()) {
             res = e.nextElement();
-            if (res instanceof TaskNode)
+            if (res instanceof TaskNode) {
                 if (((Task) res.getUserObject()).getTaskID() == id) {
                     return res;
                 }
+            }
         }
         return null;
     }
@@ -653,19 +651,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return res;
     }
 
-    /** @return true if the Project has tasks and false is no tasks on the project */
-    public boolean hasTasks() {
-        Enumeration<TreeNode> e = rootNode.preorderEnumeration();
-        while (e.hasMoreElements()) {
-            Object next = e.nextElement();
-
-            if (rootNode != (DefaultMutableTreeNode) next
-                    && (next instanceof TaskNode))
-                return true;
-        }
-        return false;
-    }
-
     /** @return an ArrayList with all tasks. */
     public ArrayList<TaskNode> getAllTasks() {
         ArrayList<TaskNode> res = new ArrayList<TaskNode>();
@@ -677,7 +662,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
         }
         return res;
-//        return Collections.list(rootNode.preorderEnumeration());
     }
 
     public List<DefaultMutableTreeNode> getAllVisibleNodes() {
@@ -700,8 +684,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         Enumeration e = base.children();
         while (e.hasMoreElements()) {
             Object next = e.nextElement();
-            if (next instanceof TaskNode)
+            if (next instanceof TaskNode) {
                 res.add(next);
+            }
         }
         return res;
     }
@@ -711,8 +696,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return rootNode.getLastLeaf();
     }
 
-    /** Removes the current node.
-     * @param current */
+    /** Removes currentNode */
     void removeCurrentNode(DefaultMutableTreeNode currentNode) {
         TreeNode parent = currentNode.getParent();
         getTaskManager().deleteTask((Task) currentNode.getUserObject());
@@ -927,9 +911,10 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         Task task = (Task) node.getUserObject();
         boolean expand = task.getExpand();
 
-        Enumeration enumeration = node.children();
-        while (enumeration.hasMoreElements())
-            restoreExpand((TaskNode) enumeration.nextElement());
+        Enumeration<TaskNode> enumeration = node.children();
+        while (enumeration.hasMoreElements()) {
+            restoreExpand(enumeration.nextElement());
+        }
 
         if (expand) {
             getTreeTable().getTree().expandPath(new TreePath(node.getPath()));
@@ -1071,37 +1056,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         area.repaint();
     }
 
-    public DefaultMutableTreeNode removeChild(DefaultMutableTreeNode node) {
-        DefaultMutableTreeNode nodeCopy = new DefaultMutableTreeNode(node.getUserObject());
-        Enumeration children = node.children();
-        while (children.hasMoreElements()) {
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode)children.nextElement();
-
-            DefaultMutableTreeNode childCopy = this.removeChild(child);
-            nodeCopy.add(childCopy);
-
-            child.removeFromParent();
-            treeModel.nodesWereRemoved(
-                    node, new int[] { 0 },
-                    new Object[] { child });
-        }
-        return nodeCopy;
-    }
-
-    public void insertChild(DefaultMutableTreeNode node, DefaultMutableTreeNode copy) {
-        Enumeration children = copy.children();
-
-        int index = 0;
-        while (children.hasMoreElements()) {
-            DefaultMutableTreeNode childCopy = (DefaultMutableTreeNode)children.nextElement();
-            DefaultMutableTreeNode child = new DefaultMutableTreeNode(childCopy.getUserObject());
-            node.insert(child, index);
-            treeModel.nodesWereInserted(node, new int[] {index});
-            this.insertChild(child, childCopy);
-            index++;
-        }
-    }
-
     /**
      * Indent several nodes that are selected. Based on the IndentCurrentNode
      * method.
@@ -1135,7 +1089,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 appli.repaint2();
             }
         });
-
     }
 
     /**
@@ -1246,7 +1199,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         forwardScheduling();
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Class for expansion and collapse of node
      */
@@ -1478,8 +1430,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                         DefaultMutableTreeNode source = (DefaultMutableTreeNode) pathSource
                                 .getLastPathComponent();
 
-                        TreePath pathNewChild = null;
-
                         TreeNode sourceFather = source.getParent();
                         int index = sourceFather.getIndex(source);
                         source.removeFromParent();
@@ -1489,14 +1439,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
                         treeModel.insertNodeInto(source, target, 0);
 
-                        pathNewChild = new TreePath(
+                        TreePath pathNewChild = new TreePath(
                                 ((DefaultMutableTreeNode) pathSource
                                         .getLastPathComponent()).getPath());
-
-                        if (pathNewChild != null) {
-                            // Mark this as the selected path in the tree
-                            treetable.getTree().setSelectionPath(pathNewChild); 
-                        }
+                        // Mark this as the selected path in the tree
+                        treetable.getTree().setSelectionPath(pathNewChild); 
 
                         // refreshAllFather(source.getUserObject().toString());
 
@@ -1821,13 +1768,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                     // copyID = new ArrayList ();
                     // pasteID = new ArrayList ();
 
-                    TaskManagerImpl tmi = (TaskManagerImpl) getTaskManager();
                     // for(int i=0; i < cpNodesArrayList.size(); i++) {
                     for (int i = cpNodesArrayList.size() - 1; i >= 0; i--) {
-
-                        if (isAProjectTaskChild)
+                        if (isAProjectTaskChild) {
                             ((Task) ((TaskNode) cpNodesArrayList.get(i))
                                     .getUserObject()).setProjectTask(false);
+                        }
                         /*
                          * this will add new custom columns to the newly created task.
                          */
@@ -1919,10 +1865,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         // if(!child.getParent().equals(parent))
         // parent = (DefaultMutableTreeNode)parent.getParent();
         //
-        //
-        if (parent == null) {
+        //if (parent == null) {
             location = 0;
-        }
+        //}
         if (parent.getChildCount() < location) {
             location = parent.getChildCount();
         }
@@ -1940,7 +1885,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
          */
         newTask.setExpand(false);
         return (TaskNode) cloneChildNode;
-
     }
 
     public void forwardScheduling() {
@@ -1953,7 +1897,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
     private TaskManager getTaskManager() {
         return myTaskManager;
     }

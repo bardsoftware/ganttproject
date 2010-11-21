@@ -46,8 +46,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
 
         // myUIFacade.showDialog(createDialogComponent(), new Action[]{okAction,
         // cancelAction});
-        final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(
-                myProject, myUIFacade);
+        final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
         myUIFacade.showDialog(dialogContent, new Action[] {
                 new OkAction() {
