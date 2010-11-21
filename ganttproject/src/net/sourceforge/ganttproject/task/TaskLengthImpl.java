@@ -58,6 +58,15 @@ public class TaskLengthImpl implements TaskLength {
         return myCount;
     }
 
+    public TaskLength reverse() {
+    	return new TaskLengthImpl(getTimeUnit(), -getLength());
+    }
+    
+    public TaskLength translate(TimeUnit toUnit) {
+    	float translatedLength = getLength(toUnit);
+    	return new TaskLengthImpl(toUnit, translatedLength);
+    }
+    
     public String toString() {
         return "" + myCount + " " + myUnit.getName();
     }

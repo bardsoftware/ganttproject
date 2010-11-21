@@ -14,6 +14,7 @@ import javax.swing.border.LineBorder;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.TaskLength;
 
 public class NavigationPanel {
     private final TimelineChart myChart;
@@ -42,7 +43,7 @@ public class NavigationPanel {
         projectStart.addMouseListener(new HighlightOnMouseOver(projectStart, buttonBar.getBackground(), new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 myChart.setStartDate(myProject.getTaskManager().getProjectStart());
-                myChart.scrollRight();
+                myChart.scrollBy(createTimeInterval(-1));
             }
         }));
 
@@ -68,9 +69,9 @@ public class NavigationPanel {
                 final Date projectEnd = myProject.getTaskManager().getProjectEnd();
                 ganttChart.setStartDate(projectEnd);
                 while(projectEnd.before(ganttChart.getEndDate())) {
-                    ganttChart.scrollRight();
+                    ganttChart.scrollBy(createTimeInterval(-1));
                 }
-                ganttChart.scrollLeft();
+                ganttChart.scrollBy(createTimeInterval(1));
             }
         }));
 
@@ -78,4 +79,8 @@ public class NavigationPanel {
         buttonBar.add(new PanelBorder());
         return buttonBar;
     }
+
+	protected TaskLength createTimeInterval(int i) {
+		return myProject.getTaskManager().createLength(i);
+	}
 }
