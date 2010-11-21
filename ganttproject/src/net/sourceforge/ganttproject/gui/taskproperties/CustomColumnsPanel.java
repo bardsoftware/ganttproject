@@ -52,6 +52,7 @@ public class CustomColumnsPanel extends JPanel {
     private JNTable table;
 
     public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade) {
+    	assert manager != null;
         myCustomPropertyManager = manager;
         myUIfacade = uifacade;
         this.initComponents();
@@ -105,19 +106,19 @@ public class CustomColumnsPanel extends JPanel {
         int selectedRowsIndexes[] = table.getTable().getSelectedRows();
         for (int i = 0; i < selectedRowsIndexes.length; i++) {
             String nameToDel = (String) model.getValueAt(selectedRowsIndexes[i], 0);
-            CustomPropertyDefinition def = myCustomPropertyManager.getCustomPropertyDefinition(nameToDel);
+            CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(selectedRowsIndexes[i]);
             myCustomPropertyManager.deleteDefinition(def);
         }
         model.reload();
     }
 
-    class CustomColumnTableModel extends DefaultTableModel {
-        private final String[] COLUMN_NAMES = new String[] {
-            CustomColumnsPanel.language.getText("name"),
-            CustomColumnsPanel.language.getText("typeClass"),
-            CustomColumnsPanel.language.getText("default")
-        };
+    private static final String[] COLUMN_NAMES = new String[] {
+        CustomColumnsPanel.language.getText("name"),
+        CustomColumnsPanel.language.getText("typeClass"),
+        CustomColumnsPanel.language.getText("default")
+    };
 
+    class CustomColumnTableModel extends DefaultTableModel {
         public CustomColumnTableModel() {
         }
 

@@ -160,76 +160,55 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     // protected abstract MouseWheelListener getMouseWheelListener();
 
     protected interface MouseInteraction {
-        abstract void apply(MouseEvent event);
+        void apply(MouseEvent event);
 
-        abstract void finish();
+        void finish();
 
         void paint(Graphics g);
     }
 
     protected abstract class MouseInteractionBase {
-        private int myStartX;
+		protected Date myStartDate;
 
-        protected MouseInteractionBase(MouseEvent e) {
-            myStartX = e.getX();
+        protected MouseInteractionBase(Date startDate) {
+        	myStartDate = startDate;
         }
 
-        protected float getLengthDiff(MouseEvent event) {
-            float diff = getChartModel().calculateLength(myStartX,
-                    event.getX(), event.getY());
-            return diff;
+        protected TaskLength getLengthDiff(MouseEvent event) {
+        	Date dateUnderX = getChartModel().getDateAt(event.getX());
+        	TaskLength result = getTaskManager().createLength(
+        			getChartModel().getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
+        	return result;
         }
 
         public void paint(Graphics g) {
         }
 
-        protected int getStartX() {
-            return myStartX;
+        protected void setStartDate(Date date) {
+        	myStartDate = date;
+        }
+        
+        protected Date getStartDate() {
+        	return myStartDate;
         }
     }
 
     protected class ScrollViewInteraction extends MouseInteractionBase
             implements MouseInteraction {
-        private float myPreviousAbsoluteDiff;
-
         protected ScrollViewInteraction(MouseEvent e) {
-            super(e);
+            super(getChartModel().getDateAt(e.getX()));
         }
 
         public void apply(MouseEvent event) {
-
-
-           float absoluteDiff = getLengthDiff(event);
-           float relativeDiff = myPreviousAbsoluteDiff - absoluteDiff;
-           TaskLength diff = getTaskManager().createLength(
-                   getViewState().getBottomTimeUnit(), relativeDiff);
-
-            float daysF = diff.getLength(getTimeUnitStack()
-                    .getDefaultTimeUnit());
-
-            int days = (int) daysF;
-            if (days == 0) {
-                return;
-            }
-            if (days > 0) {
-                getUIFacade().getScrollingManager().scrollLeft();
-
-            }
-            if (days < 0) {
-               getUIFacade().getScrollingManager().scrollRight();
-
-            }
-           myPreviousAbsoluteDiff = absoluteDiff;
-           // moves the block of the chart's scroll bar
-//           Mediator.getGanttProjectSingleton().getMyGanttChartTabContent().getCustomScrollPane().setBlockFromChart();
-           //Mediator.getGanttProjectSingleton().getResourcePanel().getCustomScrollPane().setBlockFromChart();
-
-
+        	TaskLength scrollInterval = getLengthDiff(event);
+        	if (scrollInterval.getLength() == 0) {
+        		return;
+        	}
+        	if (Math.abs(scrollInterval.getLength(getChartModel().getBottomUnit())) >= 1) {
+	            getUIFacade().getScrollingManager().scrollBy(scrollInterval.reverse());
+	            setStartDate(getChartModel().getDateAt(event.getX()));
+        	}
         }
-
-
-
-
 
         public void finish() {
         }
@@ -342,13 +321,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return getImplementation().getEndDate();
     }
 
-    public void scrollLeft() {
-        getImplementation().scrollLeft();
-        repaint();
-    }
-
-    public void scrollRight() {
-        getImplementation().scrollRight();
+    public void scrollBy(TaskLength duration) {
+        getImplementation().scrollBy(duration);
         repaint();
     }
 
