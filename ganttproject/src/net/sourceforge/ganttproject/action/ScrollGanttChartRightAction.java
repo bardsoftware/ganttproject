@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Created by IntelliJ IDEA. User: bard
@@ -10,15 +11,17 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 public class ScrollGanttChartRightAction extends GPAction implements
         RolloverAction {
     private final ScrollingManager myScrollingManager;
+	private final TaskManager myTaskManager;
 
-    public ScrollGanttChartRightAction(ScrollingManager scrollingManager,
+    public ScrollGanttChartRightAction(ScrollingManager scrollingManager, TaskManager taskManager,
             String iconSize) {
         super("ScrollRight", iconSize);
         myScrollingManager = scrollingManager;
+        myTaskManager = taskManager;
     }
 
     public void actionPerformed(ActionEvent e) {
-        myScrollingManager.scrollRight();
+        myScrollingManager.scrollBy(myTaskManager.createLength(-1));
     }
 
     protected String getIconFilePrefix() {
