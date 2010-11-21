@@ -75,7 +75,8 @@ public class CustomColumnsStorage {
      *             exists.
      */
     public void addCustomColumn(CustomColumn col) {
-        assert !getCustomColumnsNames().contains(col.getName());
+        assert !getCustomColumnsNames().contains(col.getName()) : 
+        	"column name=" + col.getName() + " already exists:\n" + getCustomColumnsNames();
         String id = col.getId();
         while (id == null) {
             id = ID_PREFIX + nextId++;

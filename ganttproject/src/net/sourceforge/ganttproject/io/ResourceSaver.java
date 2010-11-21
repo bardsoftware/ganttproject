@@ -41,6 +41,10 @@ class ResourceSaver extends SaverBase {
 		for (int i=0; i<properties.size(); i++) {
 			CustomProperty nextProperty = properties.get(i);
 			CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
+			assert nextProperty != null 
+				: "WTF? null property in properties=" + properties;
+			assert nextDefinition != null 
+				: "WTF? null property definition for property=" + i + "(value=" + nextProperty.getValueAsString() + ")";
             if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
     			addAttribute("definition-id", nextDefinition.getID(), attrs);
     			addAttribute("value", nextProperty.getValueAsString(), attrs);

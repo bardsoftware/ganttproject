@@ -804,15 +804,14 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     }
 
     @Override
-    public CustomPropertyDefinition createDefinition(String typeAsString,
-            String colName, String defValue) {
-        // TODO Auto-generated method stub
-        return null;
+    public CustomPropertyDefinition createDefinition(
+    		String typeAsString, String colName, String defValue) {
+        return createDefinition(String.valueOf(getDefinitions().size()), typeAsString, colName, defValue);
     }
 
     @Override
     public void deleteDefinition(CustomPropertyDefinition def) {
-        // TODO Auto-generated method stub
+    	deleteCustomColumn(def.getName());
     }
 
     @Override
