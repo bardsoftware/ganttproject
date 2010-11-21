@@ -68,7 +68,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
-public class ProjectFileImporter {
+class ProjectFileImporter {
     private final IGanttProject myNativeProject;
     private final ProjectReader myReader;
     private final File myForeignFile;
