@@ -102,12 +102,10 @@ public class ExporterToMsProjectFile implements Exporter {
         myUIFacade = uiFacade;
         myLanguageOption = new LocaleOption();
         myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
-        myLanguageOption.lock();
         myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
-        myLanguageOption.commit();
     }
+    
     public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-        myUIFacade.setStatusText("msproject-export");
         ProjectFile outProject = new ProjectFileExporter(myProject).run();
         ProjectWriter writer = createProjectWriter();
         writer.write(outProject, outputFile);

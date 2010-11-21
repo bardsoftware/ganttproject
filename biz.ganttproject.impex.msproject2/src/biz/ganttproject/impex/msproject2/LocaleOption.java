@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.impex.msproject2;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import net.sf.mpxj.mpx.MPXWriter;
@@ -33,8 +34,9 @@ class LocaleOption extends DefaultEnumerationOption {
 		LOCALES = writer.getSupportedLocales();
 		LOCALE_DISPLAY_NAMES = new String[LOCALES.length];
 		for (int i = 0; i < LOCALES.length; i++) {
-			LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayName(GanttLanguage.getInstance().getLocale());
+			LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());
 		}
+		Arrays.sort(LOCALE_DISPLAY_NAMES);
 	}
 	
     LocaleOption() {
@@ -43,7 +45,7 @@ class LocaleOption extends DefaultEnumerationOption {
 
     Locale getSelectedLocale() {
         for (Locale l : LOCALES) {
-            if (l.getDisplayName(GanttLanguage.getInstance().getLocale()).equals(getValue())) {
+            if (l.getDisplayLanguage(GanttLanguage.getInstance().getLocale()).equals(getValue())) {
                 return l;
             }
         }
