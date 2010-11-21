@@ -1,0 +1,96 @@
+<property file="build-user.properties"/>
+<property name="plugin.name.versioned" value="${plugin.name}_${plugin.version}"/>
+<property name="plugin.install.dir" value="${install.dir}/plugins/${plugin.name.versioned}"/>
+
+    <property name="ganttproject-2.0.location" value="../ganttproject"/>
+    <property name="biz.ganttproject.impex.msproject2.location" value="."/>
+    <path id="project.classpath">
+        <path refid="mainproject.classpath"/>
+        <path refid="ganttproject-2.0.classpath"/>
+    </path>
+    <path id="mainproject.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/poi-3.6-20091214.jar"/>
+        <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/mpxj.jar"/>
+    </path>
+    <path id="ganttproject-2.0.classpath">
+        <pathelement location="${ganttproject-2.0.location}/bin"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="init" name="build">
+        <ant antfile="${ganttproject-2.0.location}/build.xml" inheritAll="false"/>
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac destdir="bin" source="1.5" target="1.5" debug="${debug}">
+            <src path="src"/>
+            <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+<target name="help">
+    <echo message="Please run: $ ant -v -projecthelp"/>
+</target>
+
+<target name="message">
+  <echo>
+  ================================================================
+  Installing plugin ${plugin.name.versioned} to
+  ${plugin.install.dir}
+  </echo>
+</target>
+
+<target name="init-install">
+   <mkdir dir="${plugin.install.dir}"/>
+</target>
+
+<target name="jar" depends="init-install,build">
+   <jar destfile="${plugin.install.dir}/${plugin.jar.name}" basedir="bin" compress="yes"/>
+</target>
+
+<target name="copy-libs">
+   <copy todir="${plugin.install.dir}">
+      <fileset dir=".">
+      	<include name="plugin.xml"/>
+      	<include name="lib/**"/>
+      </fileset>
+   </copy>
+</target>
+
+<target name="install" depends="message,clean,jar,copy-libs">
+</target>
+
+<target name="copy-src">
+	<mkdir dir="${install.dir}/biz.ganttproject.impex.msproject2"/>
+  	<copy todir="${install.dir}/biz.ganttproject.impex.msproject2">
+  		<fileset dir=".">
+  			<include name="src/**"/>
+  			<include name="lib/**"/>
+  			<include name="build.xml"/>
+  			<include name="build-user.xml"/>
+  			<include name="build-user.properties"/>
+  			<include name="plugin.xml"/>
+  			<include name="webstart-plugin.xml"/>
+  			<include name=".project"/>
+  			<include name=".classpath"/>
+  			<include name="build.properties"/>
+  		</fileset>
+	</copy>
+</target>
+
+<target name="webstart">
+	<mkdir dir="${webstart.dir}/configuration/${plugin.name.versioned}"/>
+	<copy todir="${webstart.dir}/configuration/${plugin.name.versioned}/" file="webstart-plugin.xml"/>
+	<jar destfile="${webstart.dir}/${plugin.name.versioned}.jar">
+	  <fileset dir="${plugin.install.dir}">
+	    <include name="*.jar"/>
+	    <include name="lib/**"/>
+	  </fileset>
+	  <fileset dir="bin" includes="org/ganttproject/impex/msproject/WebStartIDClass.class"/>
+	</jar>
+	<signjar jar="${webstart.dir}/${plugin.name.versioned}.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
+</target>
