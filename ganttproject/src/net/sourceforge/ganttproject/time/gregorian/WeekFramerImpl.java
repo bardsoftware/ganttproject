@@ -25,9 +25,7 @@ public class WeekFramerImpl implements DateFrameable {
         Calendar c = CalendarFactory.newCalendar();
         c.setTime(myDayFramer.adjustLeft(baseDate));
         while (c.get(Calendar.DAY_OF_WEEK) != c.getFirstDayOfWeek()) {
-            c
-                    .setTime(myDayFramer.adjustLeft(myDayFramer.jumpLeft(c
-                            .getTime())));
+			c.setTime(myDayFramer.adjustLeft(myDayFramer.jumpLeft(c.getTime())));
         }
         return c.getTime();
     }

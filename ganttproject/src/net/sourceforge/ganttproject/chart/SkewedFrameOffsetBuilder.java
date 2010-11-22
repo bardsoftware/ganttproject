@@ -86,14 +86,8 @@ class SkewedFrameOffsetBuilder {
                         currentDate, bottomUnit, defaultUnit);
                 Date endDate = currentFrame.getFinishDate();
                 offsetEnd += getBottomUnitWidth();
-                bottomUnitOffsets.add(
-                        new Offset(
-                                bottomUnit,
-                                myStartDate,
-                                currentFrame.getStartDate(),
-                                endDate,
-                                offsetEnd,
-                                null));
+				bottomUnitOffsets.add(new Offset(bottomUnit, myStartDate,
+						currentFrame.getStartDate(), endDate, offsetEnd, null));
                 currentDate = endDate;
             } while (offsetEnd <= getChartWidth());
         }
@@ -110,19 +104,12 @@ class SkewedFrameOffsetBuilder {
 
                 Date endDate = currentFrame.getFinishDate();
                 offsetEnd += widthFunction.getTimeFrameWidth(currentFrame);
-                topUnitOffsets.add(
-                        new Offset(
-                                topUnit,
-                                myStartDate,
-                                currentFrame.getStartDate(),
-                                endDate,
-                                offsetEnd,
-                                null));
+				topUnitOffsets.add(new Offset(topUnit, myStartDate,
+						currentFrame.getStartDate(), endDate, offsetEnd, null));
                 currentDate = endDate;
             } while (offsetEnd <= getChartWidth());
         }
-   }
-
+    }
 
     private class SkewedFramesWidthFunction {
         private float myWidthPerDefaultUnit;
@@ -139,8 +126,5 @@ class SkewedFrameOffsetBuilder {
                     .getDefaultTimeUnit());
             return (int) (defaultUnitsPerTopUnit * myWidthPerDefaultUnit);
         }
-
     }
-
-
 }
