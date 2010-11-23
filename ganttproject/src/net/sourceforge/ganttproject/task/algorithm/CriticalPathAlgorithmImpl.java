@@ -40,15 +40,15 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Col
 
 public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
     private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);
-    
+
     private final TaskManager myTaskManager;
     private final GPCalendar myCalendar;
-    
+
     public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendar calendar) {
         myTaskManager = taskManager;
         myCalendar = calendar;
     }
-    
+
     static class Node {
         private final Task task;
         private final List<Task> dependees = new ArrayList<Task>();
@@ -60,8 +60,8 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         private boolean lftFromSupertask = false;
 
         public Node(Task t, Set<Task> taskScope) {
+            assert t != null;
             this.task = t;
-            // TODO Check if t is not null? Or is this impossible?
             this.est = t.getStart().getTime();
             this.eft = t.getEnd().getTime();
             this.lst = null;
@@ -75,6 +75,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             }
             collectDependees(t, taskScope);
         }
+
         public Node(Task t, Date est, Date eft, Date lst, Date lft, int numDependants, Set<Task> taskScope) {
             this.task = t;
             this.est = est;
@@ -89,7 +90,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         
         void collectDependees(Task task, Set<Task> taskScope) {
             TaskDependency[] deps = task.getDependenciesAsDependant().toArray();
-            for (int i=0; i<deps.length; i++) {
+            for (int i = 0; i < deps.length; i++) {
                 if (taskScope.contains(deps[i].getDependee())) {
                     dependees.add(deps[i].getDependee());
                 }
@@ -184,9 +185,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                         ourLogger.info("\n\nNode=" + curNode+" is critical\n\n");
                         myResult.add(curNode.task);
                     }
-                    
-                }
-                else {
+                } else {
                     assert curNode.task==null || curNode.lftFromSupertask;
                 }
                 enqueueDependees(newQueue, curNode);
@@ -212,7 +211,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                 }
             }
         }
-            
+
         private Date findLatestFinishTime(Map<Task, Node> task_node, Node curNode) {
             Date result = curNode.lft;
             Node resultNode = null;
@@ -234,7 +233,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             ourLogger.info("latest finish time="+result+" (defined by:"+resultNode+")");
             return result;
         }
-        
+
         Date findLatestFinishTime(Node curNode, Node depNode, TaskDependency dep) {
             Collision backwardCollision = dep.getConstraint().getBackwardCollision(depNode.lst);
             if (backwardCollision == null) {
