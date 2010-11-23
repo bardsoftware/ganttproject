@@ -20,6 +20,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 // import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskProperties;
@@ -49,7 +50,6 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
 
     private Font myFont;
 
-
     static {
         ourInfoList = new ArrayList<String>();
         ourInfoList.add("");
@@ -61,7 +61,6 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
         ourInfoList.add("coordinator");
         ourInfoList.add("resources");
         ourInfoList.add("predecessors");
-
     }
 
     TaskLabelsRendererImpl(ChartModelImpl model, GraphicPrimitiveContainer primitiveContainer) {
@@ -86,6 +85,14 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
                 myLabelOptions, model.getOptionEventDispatcher());
         //model.getTaskManager().getCustomColumnStorage().addCustomColumnsListener(this);
         myFont = model.getChartUIConfiguration().getChartFont();
+    }
+
+    private void addOption(String name) {
+        ourInfoList.add(name);
+    }
+
+    private void removeOption(String name) {
+        ourInfoList.remove(name);
     }
 
     GPOptionGroup getOptionGroup() {
@@ -164,6 +171,15 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
                 result.append(property);
         }
         return result.toString();
+    }
+
+    public void customPropertyChange(CustomPropertyEvent event) {
+        int type = event.getType();
+        if (type == CustomPropertyEvent.EVENT_ADD) {
+            addOption(event.getColName());
+        } else if (type == CustomPropertyEvent.EVENT_REMOVE) {
+            removeOption((event.getColName()));
+        }
     }
 
     private GraphicPrimitiveContainer getPrimitiveContainer() {

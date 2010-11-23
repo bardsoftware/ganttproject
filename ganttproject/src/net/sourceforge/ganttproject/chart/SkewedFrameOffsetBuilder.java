@@ -86,8 +86,8 @@ class SkewedFrameOffsetBuilder {
                         currentDate, bottomUnit, defaultUnit);
                 Date endDate = currentFrame.getFinishDate();
                 offsetEnd += getBottomUnitWidth();
-				bottomUnitOffsets.add(new Offset(bottomUnit, myStartDate,
-						currentFrame.getStartDate(), endDate, offsetEnd, null));
+                bottomUnitOffsets.add(new Offset(bottomUnit, myStartDate,
+                        currentFrame.getStartDate(), endDate, offsetEnd, null));
                 currentDate = endDate;
             } while (offsetEnd <= getChartWidth());
         }

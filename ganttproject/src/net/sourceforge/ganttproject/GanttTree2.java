@@ -1861,13 +1861,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             insertClonedNode(cloneChildNode, (DefaultMutableTreeNode) child
                     .getChildAt(i), i, false);
         }
+
         // if(child.getParent() != null)
         // if(!child.getParent().equals(parent))
         // parent = (DefaultMutableTreeNode)parent.getParent();
-        //
-        //if (parent == null) {
-            location = 0;
-        //}
+        // if (parent == null) {
+        //     location = 0;
+        // }
+
         if (parent.getChildCount() < location) {
             location = parent.getChildCount();
         }
