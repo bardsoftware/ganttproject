@@ -18,19 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.impex.msproject2;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.mpxj.ConstraintType;
+import net.sf.mpxj.DateRange;
+import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
 import net.sf.mpxj.Priority;
+import net.sf.mpxj.ProjectCalendar;
+import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.TimeUnit;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
@@ -50,12 +59,37 @@ class ProjectFileExporter {
 	}
 	
 	ProjectFile run() {
-		Map<Integer, net.sf.mpxj.Task> id2mpxjTask = new HashMap<Integer, net.sf.mpxj.Task>(); 
+		Map<Integer, net.sf.mpxj.Task> id2mpxjTask = new HashMap<Integer, net.sf.mpxj.Task>();
+		exportCalendar();
 		exportTasks(id2mpxjTask);
 		exportDependencies(id2mpxjTask);
 		return myOutputProject;
 	}
 	
+	private void exportCalendar() {
+		ProjectCalendar calendar = myOutputProject.addDefaultBaseCalendar();
+		exportWeekends(calendar);
+		exportHolidays(calendar);
+	}
+
+	private void exportWeekends(ProjectCalendar calendar) {
+		calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WEEKEND);
+	}
+
+	private void exportHolidays(ProjectCalendar calendar) {
+		for (Date d : getCalendar().getPublicHolidays()) {
+			ProjectCalendarException calendarException = calendar.addCalendarException();
+			calendarException.setFromDate(d);
+			calendarException.setToDate(d);
+		}
+	}
+
 	private void exportTasks(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
 		for (Task t : getTaskHierarchy().getNestedTasks(getTaskHierarchy().getRootTask())) {
 			exportTask(t, null, 0, id2mpxjTask);			
@@ -77,6 +111,7 @@ class ProjectFileExporter {
         mpxjTask.setHyperlink(((GanttTask)t).getWebLink());
         mpxjTask.setStart(t.getStart().getTime());
         mpxjTask.setFinish(t.getEnd().getTime());
+        mpxjTask.setDuration(convertDuration(t.getDuration()));
         mpxjTask.setConstraintType(ConstraintType.AS_SOON_AS_POSSIBLE);
         mpxjTask.setPriority(convertPriority(t));
         
@@ -87,6 +122,10 @@ class ProjectFileExporter {
 			exportTask(child, mpxjTask, outlineLevel + 1, id2mpxjTask);
 		}
 		
+	}
+
+	private Object convertDuration(TaskLength duration) {
+		return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);
 	}
 
 	private void exportCustomProperties(Task t, net.sf.mpxj.Task mpxjTask) {
@@ -151,5 +190,9 @@ class ProjectFileExporter {
 	
 	private TaskContainmentHierarchyFacade getTaskHierarchy() {
 		return getTaskManager().getTaskHierarchy();
+	}
+	
+	private GPCalendar getCalendar() {
+		return getTaskManager().getCalendar();
 	}
 }
