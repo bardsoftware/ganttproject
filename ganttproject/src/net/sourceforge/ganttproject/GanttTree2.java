@@ -143,6 +143,10 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** Pointer on application */
     private GanttProject appli;
 
+    private Action myLinkTasksAction;
+
+    private Action myUnlinkTasksAction;
+
     /** An array for expansion */
     // private ArrayList expand = new ArrayList();
 
@@ -225,9 +229,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             return getI18n("downTask");
         }
     };
-
-    private Action myLinkTasksAction;
-    private Action myUnlinkTasksAction;
 
     public GanttTree2(final GanttProject app, TaskManager taskManager,
             TaskSelectionManager selectionManager, UIFacade uiFacade) {
@@ -467,9 +468,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private void createPopupMenu(int x, int y, boolean all) {
         Action[] popupMenuActions = getPopupMenuActions();
         JScrollBar vbar = treetable.getScrollPane().getVerticalScrollBar();
-        myUIFacade.showPopupMenu(this, popupMenuActions, 
-                x - treetable.getScrollPane().getHorizontalScrollBar().getValue() 
-                    + (vbar.isVisible() ? vbar.getWidth() : 0), 
+        myUIFacade.showPopupMenu(this, popupMenuActions,
+                x - treetable.getScrollPane().getHorizontalScrollBar().getValue()
+                    + (vbar.isVisible() ? vbar.getWidth() : 0),
                 y - vbar.getValue() + treetable.getTable().getTableHeader().getHeight());
     }
 
@@ -509,7 +510,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             treetable.getTree().collapsePath(new TreePath(parent.getPath()));
         } //else {
         //    task.setExpand(false);
-        // }        
+        // }
 
         nbTasks++;
         appli.refreshProjectInfos();
@@ -1264,7 +1265,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
              *      .getTreePath().getLastPathComponent());
              * Task task = (Task) node.getUserObject();
              * if (!expand.contains(new Integer(task.getTaskID()))) {
-             *     expand.add(new Integer(task.getTaskID())); 
+             *     expand.add(new Integer(task.getTaskID()));
              * }
              */
 
@@ -1443,7 +1444,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                                 ((DefaultMutableTreeNode) pathSource
                                         .getLastPathComponent()).getPath());
                         // Mark this as the selected path in the tree
-                        treetable.getTree().setSelectionPath(pathNewChild); 
+                        treetable.getTree().setSelectionPath(pathNewChild);
 
                         // refreshAllFather(source.getUserObject().toString());
 
@@ -2146,7 +2147,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     public List<Task> getVisibleNodes(VisibleNodesFilter visibleNodesFilter) {
         return visibleNodesFilter.getVisibleNodes(
-                getJTree(), getTreeTable().getScrollPane().getVerticalScrollBar().getValue(), getHeight(), 
+                getJTree(), getTreeTable().getScrollPane().getVerticalScrollBar().getValue(), getHeight(),
                 getTreeTable().getRowHeight());
     }
 }
