@@ -402,7 +402,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         initOptions();
         area.setUIConfiguration(myUIConfiguration);
         getTree().setGraphicArea(area);
-        //
 
         miChartOptions = new JMenuItem(area.getOptionsDialogAction());
 
@@ -483,8 +482,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mTask.add(myTaskPropertiesAction);
         getTree().setTaskPropertiesAction(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
-        //
-        //
+
         myNewHumanAction = new NewHumanAction(getHumanResourceManager(), this) {
             public void actionPerformed(ActionEvent event) {
                 super.actionPerformed(event);
@@ -1077,14 +1075,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Invoked when a key has been pressed. */
     public void keyPressed(KeyEvent e) {
-        // System.out.println(e.getKeyCode());
-        /*
-         * Consume the event to prevent it to go farther.
-         */
+        // Consume the event to prevent it to go farther.
         int code = e.getKeyCode();
-
-        if (code == KeyEvent.KEY_LOCATION_UNKNOWN)
+        if (code == KeyEvent.KEY_LOCATION_UNKNOWN) {
             e.consume();
+        }
 
         switch (code) {
         case KeyEvent.VK_DELETE:
@@ -1099,12 +1094,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             break;
         case KeyEvent.VK_ENTER:
             break;
-        case KeyEvent.VK_F5: {
+        case KeyEvent.VK_F5:
             e.consume();
             getActiveChart().reset();
             repaint();
             break;
-        }
         }
     }
 
@@ -1167,21 +1161,20 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 next.setIconSize(options.getIconSize());
             }
         } else {
-            if (!myUIConfiguration.isCriticalPathOn())
+            if (!myUIConfiguration.isCriticalPathOn()) {
                 bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
                         "/icons/criticalPathOff_" + options.getIconSize()
                                 + ".gif")));
-            else
+            } else {
                 bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
                         "/icons/criticalPathOn_" + options.getIconSize()
                                 + ".gif")));
+            }
             for (int i = 0; i < myRolloverActions.size(); i++) {
                 RolloverAction next = (RolloverAction) myRolloverActions.get(i);
                 next.isIconVisible(true);
                 next.setIconSize(options.getIconSize());
-
             }
-
         }
         toolBar.updateButtonsLook();
     }
@@ -1666,7 +1659,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Print the project */
     public void printProject() {
-
         Chart chart = getUIFacade().getActiveChart();
 
         if (chart == null) {
@@ -2128,7 +2120,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private static WindowListener ourWindowListener;
 
-    // ///////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
     // IGanttProject implementation
     public String getProjectName() {
         return prjInfos._sProjectName;
@@ -2248,7 +2240,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return myParserFactory;
     }
 
-    // ///////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
     // ResourceView implementation
     public void resourceAdded(ResourceEvent event) {
         if (getStatusBar() != null) {
@@ -2274,7 +2266,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         setAskForSave(true);
     }
 
-    // ///////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
     // UIFacade
 
     public GanttChart getGanttChart() {

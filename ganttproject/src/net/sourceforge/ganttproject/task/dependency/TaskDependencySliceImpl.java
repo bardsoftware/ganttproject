@@ -25,7 +25,8 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
             deps[i].delete();
         }
     }
-    // This function unlinks only tasks that are selected and leaves links to not selected tasks.
+
+    /** Unlinks only tasks that are selected and leaves links to not selected tasks. */
     public void clear(List<Task> selection) {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {
