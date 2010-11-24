@@ -25,7 +25,13 @@ public class UnlinkTasksAction extends TaskActionBase {
     }
 
     protected boolean isEnabled(List<Task> selection) {
-        return false==selection.isEmpty();
+        for (int i = 0; i < selection.size(); i++) {
+            Task nextTask = selection.get(i);
+            if (nextTask.getDependencies().hasLinks(selection)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void run(List<Task> selection) throws Exception {
@@ -33,6 +39,10 @@ public class UnlinkTasksAction extends TaskActionBase {
             Task nextTask = selection.get(i);
             nextTask.getDependencies().clear(selection);
         }
+        // Update (un)link buttons
+        setEnabled(false);
+        LinkTasksAction linkTasksAction = (LinkTasksAction) myUIFacade.getTaskTree().getLinkTasksAction();
+        linkTasksAction.setEnabled(linkTasksAction.isEnabled(selection));
     }
 
 }
