@@ -12,6 +12,8 @@ public interface TaskTreeUIFacade {
     Action getUnindentAction();
     Action getMoveUpAction();
     Action getMoveDownAction();
+    Action getLinkTasksAction();
+    Action getUnlinkTasksAction();
     Component getTreeComponent();
     void setLinkTasksAction(Action action);
     void setUnlinkTasksAction(Action unlinkAction);

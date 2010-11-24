@@ -2173,7 +2173,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         myLinkTasksAction = action;
     }
 
-    private Action getLinkTasksAction() {
+    public Action getLinkTasksAction() {
         return myLinkTasksAction;
     }
 
@@ -2181,7 +2181,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         myUnlinkTasksAction = action;
     }
 
-    private Action getUnlinkTasksAction() {
+    public Action getUnlinkTasksAction() {
         return myUnlinkTasksAction;
     }
 

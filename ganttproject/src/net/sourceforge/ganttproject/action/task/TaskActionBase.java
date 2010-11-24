@@ -17,7 +17,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 abstract class TaskActionBase extends GPAction implements Listener {
     private final TaskManager myTaskManager;
     private List<Task> mySelection;
-    private final UIFacade myUIFacade;
+    protected final UIFacade myUIFacade;
 
     protected TaskActionBase(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
         myTaskManager = taskManager;
