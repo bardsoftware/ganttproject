@@ -41,16 +41,28 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             if (!getChartModel().getTaskManager().getCalendar().isNonWorkingDay(nextOffset.getOffsetStart())) {
                 renderWorkingDay(curX, curDate, nextOffset);
             }
+            renderLabel(curX, curDate, nextOffset);
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
         }
         renderNonWorkingDayColumns();
     }
     
+    private void renderLabel(int curX, Date curDate, Offset curOffset) {
+        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
+        String unitText = timeUnitText.getText(-1);
+        int posY = getTextBaselinePosition();
+        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
+                curX + 2, posY, unitText);
+        myTimelineContainer.bind(text, timeUnitText);
+        text.setMaxLength(curOffset.getOffsetPixels() - curX);
+        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+    }
+
     private void renderNonWorkingDayColumns() {
         int curX = 0;
         boolean firstWeekendDay = true;
-        for (Offset nextOffset : getChartModel().getBottomUnitOffsets()) {
+        for (Offset nextOffset : getChartModel().getDefaultUnitOffsets()) {
             if (nextOffset.getDayType() != GPCalendar.DayType.WORKING){
                 renderNonWorkingDay(curX, nextOffset);
                 if (firstWeekendDay) {
@@ -83,14 +95,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     private void renderWorkingDay(int curX, Date curDate, Offset curOffset) {
-        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
-        String unitText = timeUnitText.getText(-1);
-        int posY = getTextBaselinePosition();
-        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
-                curX + 2, posY, unitText);
-        myTimelineContainer.bind(text, timeUnitText);
-        text.setMaxLength(curOffset.getOffsetPixels() - curX);
-        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+//    	renderLabel(curX, curDate, curOffset);
         myTimelineContainer.createLine(
                 curX, getLineTopPosition(), curX, getLineTopPosition()+10);
     }
