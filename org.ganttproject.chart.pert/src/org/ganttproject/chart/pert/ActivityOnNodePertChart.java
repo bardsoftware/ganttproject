@@ -1095,12 +1095,9 @@ public class ActivityOnNodePertChart extends PertChart {
         // TODO Auto-generated method stub
     }
 
-    public void scrollLeft() {
+    public void scrollBy(TaskLength duration) {
         // TODO Auto-generated method stub
-    }
-
-    public void scrollRight() {
-        // TODO Auto-generated method stub
+        
     }
 
     public void setBottomUnit(TimeUnit bottomUnit) {
