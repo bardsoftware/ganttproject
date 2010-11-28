@@ -32,11 +32,15 @@ import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
+import net.sf.mpxj.Resource;
 import net.sf.mpxj.TimeUnit;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
@@ -63,23 +67,28 @@ class ProjectFileExporter {
 		exportCalendar();
 		exportTasks(id2mpxjTask);
 		exportDependencies(id2mpxjTask);
+		
+		Map<Integer, Resource> id2mpxjResource = new HashMap<Integer, Resource>();
+		exportResources(id2mpxjResource);
+		
+		exportAssignments(id2mpxjTask, id2mpxjResource);
 		return myOutputProject;
 	}
 	
-	private void exportCalendar() {
+    private void exportCalendar() {
 		ProjectCalendar calendar = myOutputProject.addDefaultBaseCalendar();
 		exportWeekends(calendar);
 		exportHolidays(calendar);
 	}
 
 	private void exportWeekends(ProjectCalendar calendar) {
-		calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WEEKEND);
-		calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WEEKEND);
+		calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WORKING);
+		calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WORKING);
 	}
 
 	private void exportHolidays(ProjectCalendar calendar) {
@@ -87,6 +96,7 @@ class ProjectFileExporter {
 			ProjectCalendarException calendarException = calendar.addCalendarException();
 			calendarException.setFromDate(d);
 			calendarException.setToDate(d);
+			calendarException.addRange(new DateRange(d, d));
 		}
 	}
 
@@ -98,9 +108,6 @@ class ProjectFileExporter {
 	
 	private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, int outlineLevel, Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
 		net.sf.mpxj.Task mpxjTask = mpxjParentTask == null ? myOutputProject.addTask() : mpxjParentTask.addTask();
-//		if (mpxjParentTask != null) {
-//			mpxjParentTask.addChildTask(mpxjTask, 1);
-//		}
 		mpxjTask.setOutlineLevel(outlineLevel);
 		mpxjTask.setUniqueID(t.getTaskID());
         mpxjTask.setID(id2mpxjTask.size());
@@ -184,12 +191,53 @@ class ProjectFileExporter {
 		}
 	}
 
-	private TaskManager getTaskManager() {
+	private void exportResources(Map<Integer, Resource> id2mpxjResource) {
+	    for (HumanResource hr : getResourceManager().getResources()) {
+	        exportResource(hr, id2mpxjResource);
+	    }
+	}
+
+	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource) {
+	    Resource mpxjResource = myOutputProject.addResource();
+	    mpxjResource.setUniqueID(hr.getId());
+	    mpxjResource.setName(hr.getName());
+	    mpxjResource.setEmailAddress(hr.getMail());
+	    exportDaysOff(hr, mpxjResource);
+	    exportCustomProperties(hr, mpxjResource);
+	    id2mpxjResource.put(hr.getId(), mpxjResource);
+    }
+
+    private void exportCustomProperties(HumanResource hr, Resource mpxjResource) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private void exportDaysOff(HumanResource hr, Resource mpxjResource) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private void exportAssignments(Map<Integer, net.sf.mpxj.Task> id2mpxjTask, Map<Integer, Resource> id2mpxjResource) {
+        for (Task t : getTaskManager().getTasks()) {
+            net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(t.getTaskID());
+            for (ResourceAssignment ra : t.getAssignments()) {
+                Resource mpxjResource = id2mpxjResource.get(ra.getResource().getId());
+                net.sf.mpxj.ResourceAssignment mpxjAssignment = mpxjTask.addResourceAssignment(mpxjResource);
+                mpxjAssignment.setUnits(ra.getLoad());
+            }
+        }
+    }
+
+    private TaskManager getTaskManager() {
 		return myNativeProject.getTaskManager();
 	}
 	
 	private TaskContainmentHierarchyFacade getTaskHierarchy() {
 		return getTaskManager().getTaskHierarchy();
+	}
+	
+	private HumanResourceManager getResourceManager() {
+	    return myNativeProject.getHumanResourceManager();
 	}
 	
 	private GPCalendar getCalendar() {
