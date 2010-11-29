@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.ganttproject.impex.msproject"
+   name="MS Project import/export"
+   version="2.0.0"
+   provider-name="">
+
+   <runtime>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/ganttproject-msproject.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/jaxb-api.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/jaxb-impl.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/jaxb-libs.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/jax-qname.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/mpxj.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/namespace.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/relaxngDatatype.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.msproject.WebStartIDClass/lib/mpxj/xsdlib.jar">
+         <export name="*"/>
+      </library>      
+   </runtime>
+   <requires>
+      <import plugin="net.sourceforge.ganttproject"/>
+   </requires>
+   <extension point="net.sourceforge.ganttproject.exporter">
+         <exporter class="org.ganttproject.impex.msproject.ExporterToMsProjectFile"/>   
+   </extension>
+   <extension
+         point="net.sourceforge.ganttproject.importer">
+         <importer class="org.ganttproject.impex.msproject.ImporterFromMsProjectFile"/>
+   </extension>
+
+</plugin>

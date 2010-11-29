@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="net.sourceforge.ganttproject"
+   name="Ganttproject Plug-in"
+   version="2.0.0"
+   provider-name="">
+
+   <runtime>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/resources.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/ganttproject.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/commons-httpclient.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/commons-logging.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/commons-transaction-1.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/helpgui-1.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/jakarta-poi-2.5.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/jakarta-slide-webdavlib-2.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/jdnc-modifBen.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/jdom-1.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/jgoodies-looks-1.2.2.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.WebStartIDClass/lib/core/xml-im-exporter1.1.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+   <extension-point id="exporter" name="Exporter" schema="schema/net.sourceforge.ganttproject.export.exsd"/>
+   <extension-point id="importer" name="Importer" schema="schema/net.sourceforge.gantproject.import.exsd"/>
+   <extension-point id="chart" name="Chart" schema="schema/net.sourceforge.ganttproject.chart.exsd"/>
+   <extension-point id="calendar" name="Calendar" schema="schema/net.sourceforge.ganttproject.calendar.exsd"/>
+   <extension-point id="OptionPageProvider" name="OptionPageProvider"/>
+   <extension point="org.eclipse.core.runtime.applications" id="GanttProject">
+        <application>
+          <run class="net.sourceforge.ganttproject.application.MainApplication"/>
+        </application>
+   </extension>
+   <extension point="net.sourceforge.ganttproject.exporter">
+         <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>   
+         <exporter class="net.sourceforge.ganttproject.export.ExporterToCSV"/>   
+   </extension>   
+   <extension
+         point="net.sourceforge.ganttproject.importer">
+         <importer class="net.sourceforge.ganttproject.importer.ImporterFromGanttFile"/>
+         <importer class="net.sourceforge.ganttproject.importer.ImporterFromTxtFile"/>
+   </extension>
+   <extension point="net.sourceforge.ganttproject.OptionPageProvider">
+         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.GanttChartOptionPageProvider"/>
+         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
+   </extension>
+   <extension
+         point="net.sourceforge.ganttproject.calendar">
+      <calendar resource-url="calendar/i18n_de.calendar"/>
+      <calendar resource-url="calendar/i18n_en_canada.calendar"/>
+      <calendar resource-url="calendar/i18n_en_england.calendar"/>
+      <calendar resource-url="calendar/i18n_es.calendar"/>
+      <calendar resource-url="calendar/i18n_fr.calendar"/>
+      <calendar resource-url="calendar/i18n_it.calendar"/>
+      <calendar resource-url="calendar/i18n_no.calendar"/>
+      <calendar resource-url="calendar/i18n_pl.calendar"/>
+      <calendar resource-url="calendar/i18n_pt_brazil.calendar"/>
+      <calendar resource-url="calendar/i18n_sk.calendar"/>
+   </extension>
+   
+<!--   <extension point="net.sourceforge.ganttproject.chart">
+         <exporter class="net.sourceforge.ganttproject.chart.TestChart"/>   
+   </extension> -->
+   
+</plugin>
