@@ -77,7 +77,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
                  * The last pair is reused for the next steps,
                  * so it is needed only once.
                  */
-                new MyTimeUnitPair(YEAR, QUARTER, 0.75f) };
+                /*new MyTimeUnitPair(YEAR, QUARTER, 0.75f)*/ };
     }
 
     public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,

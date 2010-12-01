@@ -32,6 +32,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
     }
 
     public TimeUnit createTimeUnit(Date date) {
+        //TODO Only works if myBaseDate is not a TimeUnitFunctiongOfDateImpl! (Quarter -> Month -> Day fails!)
         return new ParameterizedTimeUnitImpl(date);
     }
 
