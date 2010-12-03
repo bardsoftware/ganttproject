@@ -76,13 +76,21 @@ class OffsetLookup {
         if (startDate.compareTo(offsets.get(start).getOffsetEnd()) > 0) {
             start = findOffset(startDate, comparator, start, end, offsets);
         }
-        int leftX = offsets.get(start).getOffsetPixels();
-
+        if (start < 0) {
+            start = -start - 1;
+        }
+        int leftX = start == offsets.size() ? 
+            offsets.get(start - 1).getOffsetPixels() : offsets.get(start).getOffsetPixels();
+        
         end = offsets.size()-1;
         if (endDate.compareTo(offsets.get(end).getOffsetEnd()) < 0) {
             end = findOffset(endDate, comparator, 0, end, offsets);
         }
-        int rightX = offsets.get(end).getOffsetPixels();
+        if (end < 0) {
+            end = -end - 1;
+        }
+        int rightX = end == offsets.size() ? 
+            offsets.get(end - 1).getOffsetPixels() : offsets.get(end).getOffsetPixels();
         return new int[] {leftX, rightX};
     }
     

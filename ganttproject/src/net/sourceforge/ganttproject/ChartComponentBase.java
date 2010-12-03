@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
@@ -204,7 +205,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         	if (scrollInterval.getLength() == 0) {
         		return;
         	}
-        	if (Math.abs(scrollInterval.getLength(getChartModel().getBottomUnit())) >= 1) {
+        	TimeUnit bottomUnit = getChartModel().getBottomUnit();
+        	if (bottomUnit instanceof TimeUnitFunctionOfDate) {
+        	    bottomUnit = ((TimeUnitFunctionOfDate)bottomUnit).createTimeUnit(getChartModel().getDateAt(event.getX()));
+        	}
+        	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
 	            getUIFacade().getScrollingManager().scrollBy(scrollInterval.reverse());
 	            setStartDate(getChartModel().getDateAt(event.getX()));
         	}
