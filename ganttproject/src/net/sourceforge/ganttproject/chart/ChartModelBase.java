@@ -124,10 +124,12 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public List<Offset> getDefaultUnitOffsets() {
+        if (getBottomUnit().equals(getTimeUnitStack().getDefaultTimeUnit())) {
+            return getBottomUnitOffsets();
+        }
         if (myDefaultUnitOffsets.isEmpty()) {
-            ArrayList<Offset> tmpOffsets = new ArrayList<Offset>();
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
-            offsetBuilder.constructOffsets(tmpOffsets, myDefaultUnitOffsets);
+            offsetBuilder.constructBottomOffsets(getTimeUnitStack().getDefaultTimeUnit(), myDefaultUnitOffsets, 0, getBottomUnitWidth());
         }
         return myDefaultUnitOffsets;
     }
