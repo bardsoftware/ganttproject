@@ -64,7 +64,7 @@ public interface ChartModel {
     List<ChartModelBase.Offset> getTopUnitOffsets();
     List<ChartModelBase.Offset> getBottomUnitOffsets();
     List<Offset> getDefaultUnitOffsets();
-    List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
+    //List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
     Date getDateAt(int x);
     TaskManager getTaskManager();
     TimeUnitStack getTimeUnitStack();

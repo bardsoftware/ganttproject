@@ -13,11 +13,15 @@ public class TimeUnitPair {
 
     private final TimeUnitStack myTimeUnitStack;
 
+    /** Used scale for this TimeUnit */
+    private final double myScale;
+
     protected TimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit,
-            TimeUnitStack timeUnitStack) {
+            TimeUnitStack timeUnitStack, double scale) {
         myTopTimeUnit = topUnit;
         myBottomTimeUnit = bottomUnit;
         myTimeUnitStack = timeUnitStack;
+        myScale = scale;
     }
 
     public TimeUnit getTopTimeUnit() {
@@ -30,5 +34,10 @@ public class TimeUnitPair {
 
     public TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
+    }
+
+    /** @return the scale for this TimeUnit */
+    public double getScale() {
+        return myScale;
     }
 }

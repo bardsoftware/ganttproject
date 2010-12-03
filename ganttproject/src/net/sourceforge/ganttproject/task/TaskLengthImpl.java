@@ -30,8 +30,8 @@ public class TaskLengthImpl implements TaskLength {
         return myCount;
     }
 
-    public long getLength() {
-        return (long) myCount;
+    public int getLength() {
+        return (int) myCount;
     }
 
     public TimeUnit getTimeUnit() {
