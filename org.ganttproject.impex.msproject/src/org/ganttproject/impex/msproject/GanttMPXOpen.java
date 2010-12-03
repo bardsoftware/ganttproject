@@ -25,7 +25,6 @@ package org.ganttproject.impex.msproject;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Locale;
 
 import net.sourceforge.ganttproject.IGanttProject;
 
@@ -37,11 +36,8 @@ import com.tapsterrock.mpx.MPXFile;
  * from an MPX file into the GanttProject application.
  */
 public class GanttMPXOpen extends GanttMPXJOpen {
-    /**
-     * Constructor.
-     */
-    public GanttMPXOpen(IGanttProject project, Locale importLocale) {
-        super(project, importLocale);
+    public GanttMPXOpen(IGanttProject project) {
+        super(project);
     }
 
     /**

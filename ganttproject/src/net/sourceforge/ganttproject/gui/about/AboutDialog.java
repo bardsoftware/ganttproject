@@ -79,17 +79,11 @@ public class AboutDialog extends GeneralDialog {
 
     /** Construct the menu settings. */
     public void constructSections() {
-        // TODO Do something with these local variables:
-        DefaultMutableTreeNode aboutNode = addObject(GanttProject
-                .correctLabel(language.getText("about")), null);
-        DefaultMutableTreeNode authorsNode = addObject(language
-                .getText("authors"), null);
-        DefaultMutableTreeNode jinfosNode = addObject(language
-                .getText("jinfos"), null);
-        DefaultMutableTreeNode licenseNode = addObject(language
-                .getText("license"), null);
-        DefaultMutableTreeNode libraryNode = addObject(language
-                .getText("library"), null);
+        addObject(GanttProject.correctLabel(language.getText("about")), null);
+        addObject(language.getText("authors"), null);
+        addObject(language.getText("jinfos"), null);
+        addObject(language.getText("license"), null);
+        addObject(language.getText("library"), null);
     }
 
 }

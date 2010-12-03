@@ -183,9 +183,6 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         public void delete() {
         }
 
-        public void deleteLocal() {
-        }
-
         public void setCoordinator(boolean responsible) {
             myCoordinator = responsible;
         }

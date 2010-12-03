@@ -45,19 +45,20 @@ public class CustomColumnsValues implements Cloneable {
             throw new CustomColumnsException(
                     CustomColumnsException.DO_NOT_EXIST, customColName);
 
-        Class c1 = myColumnStorage.getCustomColumn(customColName).getType();
-        if (value==null) {
+        if (value == null) {
         	mapCustomColumnValue.remove(customColName);
         	return;
         }
+        Class c1 = myColumnStorage.getCustomColumn(customColName).getType();
         Class c2 = value.getClass();
         // System.out.println(c1 +" - " + c2);
-        if (value != null && !c1.isAssignableFrom(c2))
+        if (!c1.isAssignableFrom(c2)) {
             throw new CustomColumnsException(
                     CustomColumnsException.CLASS_MISMATCH,
                     "Failed to set value="+value+". value class="+c2+", column class="+c1);
-        else
+        } else {
             mapCustomColumnValue.put(customColName, value);
+        }
     }
 
     /**

@@ -88,6 +88,7 @@ public class HumanResourceManager implements CustomPropertyManager {
         }
     }
 
+    /** @return true if title is already used for a custom column */
     public boolean checkCustomField(String title){
         return customFields.containsKey(title);
     }

@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Locale;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -68,20 +67,12 @@ public abstract class GanttMPXJOpen {
 
     private final HashMap<Integer, Integer> m_resourceMap = new HashMap<Integer, Integer>();
 
-    // TODO FIeld is never read... Remove?
-    private final Locale m_mpxImportLocale;
-
     private static final MPXDuration MILESTONE_DURATION = MPXDuration.getInstance(1,
             TimeUnit.DAYS);
 
     protected GanttMPXJOpen(IGanttProject project) {
-        this(project, Locale.ENGLISH);
-    }
-
-    protected GanttMPXJOpen(IGanttProject project, Locale importLocale) {
         m_tasks = project.getTaskManager();
         m_project = project;
-        m_mpxImportLocale = importLocale;
     }
 
     /**
@@ -155,11 +146,11 @@ public abstract class GanttMPXJOpen {
      */
     private void processResources(MPXFile mpx) {
         HumanResourceManager hrm = m_project.getHumanResourceManager();
-        LinkedList resources = mpx.getAllResources();
-        Iterator iter = resources.iterator();
+        LinkedList<Resource> resources = mpx.getAllResources();
+        Iterator<Resource> iter = resources.iterator();
 
         while (iter.hasNext() == true) {
-            Resource resource = (Resource) iter.next();
+            Resource resource = iter.next();
             if (resource.getName() != null) {
                 HumanResource person = hrm.newHumanResource();
                 person.setName(resource.getName());
@@ -182,11 +173,11 @@ public abstract class GanttMPXJOpen {
     private void processTasks(MPXFile mpx) throws Exception {
         TaskManager tm = m_project.getTaskManager();
         MPXCalendar cal = mpx.getBaseCalendar("Standard");
-        LinkedList tasks = mpx.getChildTasks();
-        Iterator iter = tasks.iterator();
+        LinkedList<Task> tasks = mpx.getChildTasks();
+        Iterator<Task> iter = tasks.iterator();
 
         while (iter.hasNext() == true) {
-            processTask(tm, cal, (Task) iter.next(), null);
+            processTask(tm, cal, iter.next(), null);
         }
     }
 
@@ -294,13 +285,12 @@ public abstract class GanttMPXJOpen {
 
         m_taskMap.put(task.getID(), new Integer(gtask.getTaskID()));
 
-        LinkedList children = task.getChildTasks();
-
+        LinkedList<Task> children = task.getChildTasks();
         if (children.size() != 0) {
-            Iterator iter = children.iterator();
+            Iterator<Task> iter = children.iterator();
 
             while (iter.hasNext() == true) {
-                processTask(tm, defaultCalendar, (Task) iter.next(), gtask);
+                processTask(tm, defaultCalendar, iter.next(), gtask);
             }
         }
     }
@@ -311,14 +301,14 @@ public abstract class GanttMPXJOpen {
      * application.
      *
      * @param mpx
-     *            Currenct MPXFile instance
+     *            Current MPXFile instance
      */
     private void processRelationships(MPXFile mpx) {
         TaskManager tm = m_project.getTaskManager();
-        Iterator taskIter = mpx.getAllTasks().iterator();
+        Iterator<Task> taskIter = mpx.getAllTasks().iterator();
 
         while (taskIter.hasNext() == true) {
-            Task task = (Task) taskIter.next();
+            Task task = taskIter.next();
             int gTaskNumber1 = mapTaskNumber(task.getID());
             if (gTaskNumber1 == -1) {
                 continue;
@@ -326,10 +316,10 @@ public abstract class GanttMPXJOpen {
 
             RelationList rels = (RelationList) task.getPredecessors();
             if (rels != null) {
-                Iterator relIter = rels.iterator();
+                Iterator<Relation> relIter = rels.iterator();
 
                 while (relIter.hasNext() == true) {
-                    Relation rel = (Relation) relIter.next();
+                    Relation rel = relIter.next();
 
                     int gTaskNumber2 = mapTaskNumber(new Integer(rel
                             .getTaskIDValue()));
@@ -364,9 +354,7 @@ public abstract class GanttMPXJOpen {
                                             tm.createConstraint(gConstraintType));
                             gTaskDependency.setConstraint(tm
                                     .createConstraint(gConstraintType));
-                        }
-
-                        catch (TaskDependencyException e) {
+                        } catch (TaskDependencyException e) {
                             if (!GPLogger.log(e)) {
                                 e.printStackTrace(System.err);
                             }
@@ -387,12 +375,12 @@ public abstract class GanttMPXJOpen {
     private void processResourceAssignments(MPXFile mpx) {
         TaskManager tm = m_project.getTaskManager();
         HumanResourceManager hrm = m_project.getHumanResourceManager();
-        LinkedList assignments = mpx.getAllResourceAssignments();
-        Iterator iter = assignments.iterator();
+        LinkedList<com.tapsterrock.mpx.ResourceAssignment> assignments = mpx.getAllResourceAssignments();
+        Iterator<com.tapsterrock.mpx.ResourceAssignment> iter = assignments.iterator();
         com.tapsterrock.mpx.ResourceAssignment assignment;
 
         while (iter.hasNext() == true) {
-            assignment = (com.tapsterrock.mpx.ResourceAssignment) iter.next();
+            assignment = iter.next();
             int gTaskID = mapTaskNumber(assignment.getTask().getID());
             int gResourceID = mapResourceNumber(assignment.getResource().getID());
 

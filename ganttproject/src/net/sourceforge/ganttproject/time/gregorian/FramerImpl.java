@@ -12,9 +12,7 @@ package net.sourceforge.ganttproject.time.gregorian;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.DateFrameable;
 
 /**
@@ -59,17 +57,5 @@ public class FramerImpl implements DateFrameable {
         c.setTime(baseDate);
         c.add(myCalendarField, -1);
         return c.getTime();
-    }
-    
-    public static void main(String[] args) {
-        GanttLanguage.getInstance().setLocale(null);
-        Calendar c = (Calendar) GanttLanguage.getInstance().newCalendar();
-        Date now = GregorianCalendar.getInstance().getTime();
-        c.setTime(now);
-        for (int i = Calendar.DAY_OF_MONTH + 1; i <= Calendar.MILLISECOND; i++) {
-            c.clear(i);
-        }
-        Date result = c.getTime();
-        System.err.println(result);
     }
 }

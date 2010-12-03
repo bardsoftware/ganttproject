@@ -67,12 +67,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
                 .createRectangle(0, 0, sizex, spanningHeaderHeight * 2);
         headerRectangle.setBackgroundColor(getChartModel()
                 .getChartUIConfiguration().getSpanningHeaderBackgroundColor());
-        //
-//        GraphicPrimitiveContainer.Rectangle spanningHeaderBorder = myPrimitiveContainer
-//                .createRectangle(0, 0, sizex - 1, spanningHeaderHeight);
-//        spanningHeaderBorder.setForegroundColor(getChartModel()
-//                .getChartUIConfiguration().getHeaderBorderColor());
-        //
+
         GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = getTimelineContainer()
                 .createRectangle(0, spanningHeaderHeight, sizex - 1,
                         spanningHeaderHeight);
@@ -90,16 +85,6 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
                         spanningHeaderHeight * 2);
         bottomGutter.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHorizontalGutterColor1());
-        //
-//        GraphicPrimitiveContainer.Line topGutter = myPrimitiveContainer
-//                .createLine(1, 1, sizex - 2, 1);
-//        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
-//                .getHorizontalGutterColor2());
-        //
-//        myPrimitiveContainer.createLine(
-//                0, spanningHeaderHeight + 1, sizex - 2, spanningHeaderHeight + 1);
-//        topGutter.setForegroundColor(getChartModel().getChartUIConfiguration()
-//                .getHorizontalGutterColor2());
     }
 
     public GraphicPrimitiveContainer paint() {

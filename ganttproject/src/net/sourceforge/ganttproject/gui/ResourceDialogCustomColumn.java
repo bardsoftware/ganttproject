@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -80,8 +79,6 @@ public class ResourceDialogCustomColumn  {
     private JRadioButton radioTrue = null;
 
     private JRadioButton radioFalse = null;
-
-    private JLabel labelDefaultValue = null;
 
     //private GanttCalendar date = null;
     // TODO all the options use the translations for task columns. should create new properties (resourceProperties) and the translations for every one of them
@@ -179,8 +176,6 @@ public class ResourceDialogCustomColumn  {
         GridBagConstraints constraints = new GridBagConstraints();
 
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        // TODO Label is never added to the UI!
-        labelDefaultValue = new JLabel(language.getText("defaultValue") + ": ");
 
         {
             // Text

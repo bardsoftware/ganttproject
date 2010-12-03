@@ -20,6 +20,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 // import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskProperties;
@@ -49,7 +50,6 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
 
     private Font myFont;
 
-
     static {
         ourInfoList = new ArrayList<String>();
         ourInfoList.add("");
@@ -61,17 +61,6 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
         ourInfoList.add("coordinator");
         ourInfoList.add("resources");
         ourInfoList.add("predecessors");
-
-    }
-
-    // TODO This method is never used... Delete?
-    private void addOption(String name) {
-        ourInfoList.add(name);
-    }
-
-    // TODO This method is never used... Delete?
-    private void removeOption(String name) {
-        ourInfoList.remove(name);
     }
 
     TaskLabelsRendererImpl(ChartModelImpl model, GraphicPrimitiveContainer primitiveContainer) {
@@ -98,12 +87,19 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
         myFont = model.getChartUIConfiguration().getChartFont();
     }
 
+    private void addOption(String name) {
+        ourInfoList.add(name);
+    }
+
+    private void removeOption(String name) {
+        ourInfoList.remove(name);
+    }
+
     GPOptionGroup getOptionGroup() {
         return myOptionGroup;
     }
 
     void createRightSideText(Rectangle rectangle) {
-        //java.awt.Rectangle bounds = getBoundingRectangle(0, rectangle, null);
         TaskActivity activity = (TaskActivity) rectangle.getModelObject();
         String text = "";
         int xText, yText;
@@ -177,15 +173,15 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
         return result.toString();
     }
 
-    /*
     public void customPropertyChange(CustomPropertyEvent event) {
         int type = event.getType();
-        if (type == CustomPropertyEvent.EVENT_ADD)
+        if (type == CustomPropertyEvent.EVENT_ADD) {
             addOption(event.getColName());
-        else if (type == CustomPropertyEvent.EVENT_REMOVE)
+        } else if (type == CustomPropertyEvent.EVENT_REMOVE) {
             removeOption((event.getColName()));
+        }
     }
-    */
+
     private GraphicPrimitiveContainer getPrimitiveContainer() {
         return myPrimitiveContainer;
     }

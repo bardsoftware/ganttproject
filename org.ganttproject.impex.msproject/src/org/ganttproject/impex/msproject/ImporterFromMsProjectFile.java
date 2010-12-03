@@ -2,7 +2,6 @@ package org.ganttproject.impex.msproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 import com.tapsterrock.mpx.MPXException;
 
@@ -42,27 +41,23 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
         return new FileDocument(selectedFile);
     }
 
-    GanttMPXJOpen open;
-
     protected void openDocument(final IGanttProject project, final UIFacade uiFacade, Document document) {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
+            GanttMPXJOpen open;
             Thread.currentThread().setContextClassLoader(
                     getClass().getClassLoader());
             if (document.getPath().toLowerCase().endsWith(".mpp")) {
                 open = new GanttMPPOpen(project);
             }
             else if (document.getPath().toLowerCase().endsWith(".mpx")) {
-                open = null;
-                Locale importlocale = myLanguageOption.getSelectedLocale();
-                open = new GanttMPXOpen(project, importlocale);
-            } else if (document.getPath().toLowerCase().endsWith(".xml"))
+                open = new GanttMPXOpen(project);
+            } else if (document.getPath().toLowerCase().endsWith(".xml")) {
                 open = new GanttMSPDIOpen(project);
-            else
+            } else {
                 open = null;
-
+            }
             open.load(document.getInputStream());
-
         } catch (IOException e) {
             uiFacade.showErrorDialog(e);
         } catch (MPXException e) {

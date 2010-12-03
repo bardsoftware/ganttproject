@@ -20,8 +20,6 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,8 +83,6 @@ public class GanttOptions {
     private boolean isloaded;
 
     private boolean automatic;
-
-    // private boolean dragTime;
 
     private boolean redline;
 
@@ -235,7 +231,7 @@ public class GanttOptions {
         myRoleManager = roleManager;
         myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
         this.isOnlyViewer = isOnlyViewer;
-        initByDefault();
+        initDefault();
         try {
             this.workingDir = System.getProperty("user.home");
         } catch (AccessControlException e) {
@@ -247,10 +243,10 @@ public class GanttOptions {
     public Preferences getPluginPreferences() {
         return myPluginPreferencesRootNode;
     }
-    /** Init the options by default. */
-    public void initByDefault() {
+
+    /** Initialize the options with default values. */
+    public void initDefault() {
         automatic = false;
-        // dragTime = true;
         redline = false;
         lockDAVMinutes = 240;
         undoNumber = 50;
@@ -276,7 +272,6 @@ public class GanttOptions {
         iconListAsIntArray = getDefaultIconListIntArray();
         deletedIconListAsString = getDefaultDeletedIconListAsString();
         deletedIconListAsIntArray = getDefaultDeletedIconListIntArray();
-
     }
 
     // iconListAsIntArray = initIconList ();
@@ -447,7 +442,6 @@ public class GanttOptions {
             addAttribute("value", "" + automatic, attrs);
             emptyElement("automatic-launch", attrs, handler);
             // automaticdrag time on the chart
-            // addAttribute("value", ""+dragTime, attrs);
             emptyElement("dragTime", attrs, handler);
             // automatic tips of the day launch
             // Should WebDAV resources be locked, when opening them?
@@ -1048,22 +1042,6 @@ public class GanttOptions {
         }
     }
 
-    // TODO Method is never used... delete?
-    private String getFilePath(String value) {
-        String result = null;
-        String filePath;
-        try {
-            URL fileUrl = new URL(value);
-            filePath = fileUrl.getPath();
-        } catch (MalformedURLException e) {
-            filePath = value;
-        }
-        if (new File(filePath).exists()) {
-            result = filePath;
-        }
-        return result;
-    }
-
     /** @return the language. */
     public GanttLanguage getLanguage() {
         return language;
@@ -1078,12 +1056,6 @@ public class GanttOptions {
     public Color getResourceColor() {
         return getUIConfiguration().getResourceColor();
     }
-
-    // TODO This method was not used...
-    // /** @return the color for resources overload. */
-    // public Color getResourceOverloadColor() {
-    // return getUIConfiguration().getResourceOverloadColor();
-    // }
 
     /** @return the lock DAV Minutes. */
     public int getLockDAVMinutes() {
@@ -1111,10 +1083,6 @@ public class GanttOptions {
                 "/xslfo/ganttproject.xsl").toString();
     }
 
-    /** @return if the mouse is used to drag on the chart. */
-    // public boolean getDragTime() {
-    // return dragTime;
-    // }
     /** @return automatic launch properties box when create a new task. */
     public boolean getAutomatic() {
         return automatic;
@@ -1379,10 +1347,6 @@ public class GanttOptions {
         this.automatic = automatic;
     }
 
-    /** set new drag time with mouse value. */
-    // public void setDragTime(boolean dragTime){
-    // this.dragTime = dragTime;
-    // }
     public void setLookAndFeel(GanttLookAndFeelInfo lookAndFeel) {
         this.lookAndFeel = lookAndFeel;
     }
@@ -1396,58 +1360,34 @@ public class GanttOptions {
         getUIConfiguration().setRedlineOn(isOn);
     }
 
-    /**
-     * @return
-     */
     public String getFTPDirectory() {
         return FTPDirectory;
     }
 
-    /**
-     * @return
-     */
     public String getFTPPwd() {
         return FTPPwd;
     }
 
-    /**
-     * @return
-     */
     public String getFTPUrl() {
         return FTPUrl;
     }
 
-    /**
-     * @return
-     */
     public String getFTPUser() {
         return FTPUser;
     }
 
-    /**
-     * @param pvString
-     */
     public void setFTPDirectory(String pvString) {
         FTPDirectory = pvString;
     }
 
-    /**
-     * @param pvString
-     */
     public void setFTPPwd(String pvString) {
         FTPPwd = pvString;
     }
 
-    /**
-     * @param pvString
-     */
     public void setFTPUrl(String pvString) {
         FTPUrl = pvString;
     }
 
-    /**
-     * @param pvString
-     */
     public void setFTPUser(String pvString) {
         FTPUser = pvString;
     }

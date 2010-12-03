@@ -26,7 +26,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -142,15 +141,10 @@ public abstract class AbstractTableAndActionsComponent<T> {
     }
 
     public JComponent getActionsComponent() {
-        if (buttonBox==null) {
+        if (buttonBox == null) {
             buttonBox = new JPanel(new FlowLayout(FlowLayout.LEADING));
-            JLabel delimiter = null;
             for (InternalAction internalAction: myAdditionalActions) {
-                if (delimiter!=null) {
-                    buttonBox.add(delimiter);
-                }
                 buttonBox.add(new JButton(internalAction.action));
-                //delimiter = new JLabel("|");
             }
             Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
             buttonBox.setBorder(emptyBorder);

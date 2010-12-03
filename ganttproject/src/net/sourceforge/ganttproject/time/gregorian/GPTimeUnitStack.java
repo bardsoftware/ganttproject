@@ -33,9 +33,6 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
     private final TimeUnitPair[] myPairs;
 
-    // Field is never read... Remove?
-    private TimeUnit MONTH_FROM_WEEKS;
-
     public final TimeUnit WEEK_AS_BOTTOM_UNIT;
 
     public GPTimeUnitStack(GanttLanguage i18n) {
@@ -48,8 +45,6 @@ public class GPTimeUnitStack implements TimeUnitStack {
         MONTH.setTextFormatter(new MonthTextFormatter());
         WEEK = ourGraph.createDateFrameableTimeUnit("week", DAY, 7,
                 new WeekFramerImpl());
-        MONTH_FROM_WEEKS = ourGraph.createTimeUnitFunctionOfDate(
-                "month_from_weeks", WEEK, new FramerImpl(Calendar.MONTH));
         WEEK.setTextFormatter(new WeekTextFormatter(i18n.getText("week")
                 + " {0}"));
         WEEK_AS_BOTTOM_UNIT = ourGraph.createDateFrameableTimeUnit("week", DAY,

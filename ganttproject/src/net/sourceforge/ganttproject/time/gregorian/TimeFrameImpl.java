@@ -1,6 +1,21 @@
 /*
- * Created on 08.11.2004
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.time.gregorian;
 
 import java.util.Calendar;
@@ -27,9 +42,6 @@ class TimeFrameImpl implements TimeFrame {
 
     private Date myStartDate;
 
-    // TODO Field is never read... Remove?
-    private DateFrameable myHighestFrameable;
-
     private Date myEndDate;
 
     private LineHeader myLineHeader;
@@ -44,7 +56,6 @@ class TimeFrameImpl implements TimeFrame {
                     .createTimeUnit(baseDate);
         }
         myBaseDate = baseDate;
-        myHighestFrameable = calculateHighestFrameableUnit(topUnit, bottomUnit);
         myLowestFrameable = calculateLowestFrameableUnit(topUnit, bottomUnit);
         // if (myHighestFrameable!=topUnit || myLowestFrameable!=bottomUnit) {
         // throw new RuntimeException("Current implementation requires all units
@@ -83,24 +94,6 @@ class TimeFrameImpl implements TimeFrame {
         // }
         // return lowestFrameable;
         return bottomUnit;
-    }
-
-    private DateFrameable calculateHighestFrameableUnit(TimeUnit topUnit,
-            TimeUnit bottomUnit) {
-        // DateFrameable highestFrameable = null;
-        // for (TimeUnit timeUnit = topUnit; timeUnit!=null; timeUnit =
-        // timeUnit.getDirectAtomUnit()) {
-        // System.err.println("next time unit="+timeUnit);
-        // if (timeUnit instanceof DateFrameable) {
-        // highestFrameable = (DateFrameable)timeUnit;
-        // break;
-        // }
-        // if (timeUnit==bottomUnit) {
-        // break;
-        // }
-        // }
-        // return highestFrameable;
-        return topUnit;
     }
 
     private Date calculateEndDate() {
@@ -200,7 +193,7 @@ class TimeFrameImpl implements TimeFrame {
             fillLine(getLineHeader(), lineHeader);
             return lineHeader.getItemCount();
         }
-        int result = lineHeader == null ? -1 : lineHeader.getItemCount();
+        int result = lineHeader.getItemCount();
         if (result == -1) {
             throw new RuntimeException("There is not time unit=" + unit
                     + " in this time frame");
@@ -350,21 +343,6 @@ class TimeFrameImpl implements TimeFrame {
                 + getBottomUnit();
     }
 
-    // TODO Class is never used... Remove?
-    private static class UnitInfo {
-        final int myTruncatedCount;
-
-        final int myRoundedCount;
-
-        private final Date lastDate;
-
-        public UnitInfo(int myTruncatedCount, int myRoundedCount, Date lastDate) {
-            this.myTruncatedCount = myTruncatedCount;
-            this.myRoundedCount = myRoundedCount;
-            this.lastDate = lastDate;
-        }
-    }
-
     private static class LineHeader {
         final TimeUnit myUnit;
 
@@ -376,16 +354,6 @@ class TimeFrameImpl implements TimeFrame {
 
         public LineHeader(TimeUnit myUnit) {
             this.myUnit = myUnit;
-        }
-
-        // TODO Method is unused... Remove?
-        public String fullDump() {
-            StringBuffer result = new StringBuffer(toString());
-            for (int i = 0; i < getItemCount(); i++) {
-                LineItem next = getLineItem(i);
-                result.append("\n" + next);
-            }
-            return result.toString();
         }
 
         public String toString() {

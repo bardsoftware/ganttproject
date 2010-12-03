@@ -50,7 +50,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -271,13 +270,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     }
 
     static class ChartWriter {
-        // TODO Field is not read... Remove?
-        private final Chart myChart;
         protected final ChartModel myModel;
         private PdfWriter myWriter;
         private Document myDoc;
         ChartWriter(TimelineChart chart, PdfWriter writer, Document doc) {
-            myChart = chart.createCopy();
             myModel = chart.getModel();
             myWriter = writer;
             myDoc = doc;

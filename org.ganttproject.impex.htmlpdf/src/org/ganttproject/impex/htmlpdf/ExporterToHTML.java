@@ -29,7 +29,6 @@ import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -299,25 +298,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         return "html";
     }
 
-    // TODO Class is not used... Remove?
-    private class AdvancedOptionGroup extends GPOptionGroup implements GPOption {
-        public AdvancedOptionGroup(GPOption[] options) {
-            super("exporter.html.advanced", options);
-        }
-
-        public String getPersistentValue() {
-            return null;
-        }
-
-        public void loadPersistentValue(String value) {
-        }
-
-        public boolean isChanged() {
-            return false;
-        }
-
-    }
-
     public String[] getFileExtensions() {
         String s [] = {"html"};
         return s;
@@ -404,7 +384,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         public File getImagesDirectory() {
             try {
                 URL imagesUrl = new URL(getUrl(), "images");
-                assert imagesUrl!=null;
                 File result = new File(imagesUrl.getPath());
                 return result;
             } catch (MalformedURLException e) {

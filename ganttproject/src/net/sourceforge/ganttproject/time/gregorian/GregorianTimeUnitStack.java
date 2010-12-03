@@ -43,9 +43,6 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     public static final TimeUnitFunctionOfDate MONTH;
 
-    // Field is never used... Remove?
-    private static final TimeUnit ATOM_UNIT;
-
     private static final HashMap<TimeUnit, Integer> ourUnit2field = new HashMap<TimeUnit, Integer>();
     static {
         SECOND = ourGraph.createAtomTimeUnit("second");
@@ -59,7 +56,6 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
         MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY,
                 MONTH_FRAMER);
         MONTH.setTextFormatter(new MonthTextFormatter());
-        ATOM_UNIT = SECOND;
         ourUnit2field.put(DAY, new Integer(Calendar.DAY_OF_MONTH));
         ourUnit2field.put(HOUR, new Integer(Calendar.HOUR_OF_DAY));
         ourUnit2field.put(MINUTE, new Integer(Calendar.MINUTE));

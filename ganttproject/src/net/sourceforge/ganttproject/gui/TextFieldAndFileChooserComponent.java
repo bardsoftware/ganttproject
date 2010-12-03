@@ -23,7 +23,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -208,18 +207,6 @@ public abstract class TextFieldAndFileChooserComponent {
         }
     }
 
-    // TODO This method is not used... delete?
-    private void examineFile(File f) {
-        if (!f.exists()) {
-            showFileStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File does not exist", null));
-            return;
-        }
-        if (!f.canRead()) {
-            showFileStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR, "File read error", null));
-            return;
-        }
-        showFileStatus(new Status(IStatus.OK, "foo", IStatus.OK, "  ", null));
-    }
     protected void showFileStatus(IStatus status) {
 
     }

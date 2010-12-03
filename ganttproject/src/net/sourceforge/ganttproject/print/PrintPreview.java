@@ -319,39 +319,36 @@ public class PrintPreview extends JDialog {
         // e1.printStackTrace();
         // }
 
-        if (vMedia != null) {
-            myComboMediaSize = new JComboBox(vMedia);
-            dim = myComboMediaSize.getPreferredSize();
-            dim.setSize(dim.getWidth() + 20, dim.getHeight());
-            myComboMediaSize.setMaximumSize(dim);
-            myComboMediaSize.setPreferredSize(dim);
-            myComboMediaSize.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent arg0) {
-                    run(new Runnable() {
-                        public void run() {
-                            Object selectedItem = myComboMediaSize
-                                    .getSelectedItem();
-                            if (selectedItem != null) {
-                                myMediaSizeName = (MediaSizeName) selectedItem;
-                                MediaSize ms = MediaSize
-                                        .getMediaSizeForName(myMediaSizeName);
-                                Paper p = new Paper();
-                                float[] size = ms.getSize(MediaSize.INCH);
-                                p.setSize(size[0] * 72, size[1] * 72);
-                                p.setImageableArea(72, 72,
-                                        p.getWidth() - 72 * 2,
-                                        p.getHeight() - 72 * 2);
-                                myPageFormat.setPaper(p);
-                                changePageOrientation(myOrientation);
-                                statusBar.setText1(ms.getX(MediaSize.MM)
-                                        + " x " + ms.getY(MediaSize.MM));
-                                myPreviewContainer.repaint();
-                            }
+        myComboMediaSize = new JComboBox(vMedia);
+        dim = myComboMediaSize.getPreferredSize();
+        dim.setSize(dim.getWidth() + 20, dim.getHeight());
+        myComboMediaSize.setMaximumSize(dim);
+        myComboMediaSize.setPreferredSize(dim);
+        myComboMediaSize.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent arg0) {
+                run(new Runnable() {
+                    public void run() {
+                        Object selectedItem = myComboMediaSize
+                                .getSelectedItem();
+                        if (selectedItem != null) {
+                            myMediaSizeName = (MediaSizeName) selectedItem;
+                            MediaSize ms = MediaSize
+                                    .getMediaSizeForName(myMediaSizeName);
+                            Paper p = new Paper();
+                            float[] size = ms.getSize(MediaSize.INCH);
+                            p.setSize(size[0] * 72, size[1] * 72);
+                            p.setImageableArea(72, 72, p.getWidth() - 72 * 2, p
+                                    .getHeight() - 72 * 2);
+                            myPageFormat.setPaper(p);
+                            changePageOrientation(myOrientation);
+                            statusBar.setText1(ms.getX(MediaSize.MM) + " x "
+                                    + ms.getY(MediaSize.MM));
+                            myPreviewContainer.repaint();
                         }
-                    });
-                }
-            });
-        }
+                    }
+                });
+            }
+        });
 
         bPrint.setToolTipText(GanttProject.getToolTip(GanttProject
                 .correctLabel(language.getText("printProject"))));
@@ -410,7 +407,6 @@ public class PrintPreview extends JDialog {
                     });
                 }
             });
-
         } else {
             bZoomOut = null;
             bZoomIn = null;
@@ -427,7 +423,7 @@ public class PrintPreview extends JDialog {
         tb.addSeparator(new Dimension(16, 16));
         tb.add(new JLabel(language.getText("zoom") + " "));
         tb.add(myComboScale);
-        if (vMedia != null && !vMedia.isEmpty()) {
+        if (!vMedia.isEmpty()) {
             tb.addSeparator(new Dimension(16, 16));
             tb.add(new JLabel(language.getText("choosePaperFormat") + " "));
             tb.addSeparator(new Dimension(0, 10));

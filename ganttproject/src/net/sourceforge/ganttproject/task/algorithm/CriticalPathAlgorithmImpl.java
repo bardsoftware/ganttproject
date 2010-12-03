@@ -40,33 +40,42 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Col
 
 public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
     private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);
-    
+
     private final TaskManager myTaskManager;
     private final GPCalendar myCalendar;
-    
+
     public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendar calendar) {
         myTaskManager = taskManager;
         myCalendar = calendar;
     }
-    
+
     static class Node {
         private final Task task;
+        private final List<Task> dependees = new ArrayList<Task>();
+        private int numDependants;
+        private final Date est;
+        private final Date eft;
+        private Date lst;
+        private Date lft;
+        private boolean lftFromSupertask = false;
+
         public Node(Task t, Set<Task> taskScope) {
+            assert t != null;
             this.task = t;
             this.est = t.getStart().getTime();
             this.eft = t.getEnd().getTime();
             this.lst = null;
             this.lft = null;
-            TaskDependency[] deps = t.getDependenciesAsDependee().toArray(); 
-            for (int i=0; i<deps.length; i++) {
+            numDependants = 0;
+            TaskDependency[] deps = t.getDependenciesAsDependee().toArray();
+            for (int i = 0; i < deps.length; i++) {
                 if (taskScope.contains(deps[i].getDependant())) {
                     numDependants++;
                 }
             }
-            if (t!=null) {
-                collectDependees(t, taskScope);
-            }
+            collectDependees(t, taskScope);
         }
+
         public Node(Task t, Date est, Date eft, Date lst, Date lft, int numDependants, Set<Task> taskScope) {
             this.task = t;
             this.est = est;
@@ -74,35 +83,27 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             this.lst = lst;
             this.lft = lft;
             this.numDependants = numDependants;
-            if (task!=null) {
+            if (task != null) {
                 collectDependees(task, taskScope);
             }
         }
         
         void collectDependees(Task task, Set<Task> taskScope) {
             TaskDependency[] deps = task.getDependenciesAsDependant().toArray();
-            for (int i=0; i<deps.length; i++) {
+            for (int i = 0; i < deps.length; i++) {
                 if (taskScope.contains(deps[i].getDependee())) {
                     dependees.add(deps[i].getDependee());
                 }
             }            
         }
+
         boolean isCritical() {
             return est.equals(lst);
         }
         
         public String toString() {
-            return task==null ? "[Deadline node " + eft + "]" : task.toString();
+            return task == null ? "[Deadline node " + eft + "]" : task.toString();
         }
-
-
-        List<Task> dependees = new ArrayList<Task>();
-        int numDependants;
-        Date est;
-        Date eft;
-        Date lst;
-        Date lft;
-        boolean lftFromSupertask = false;
     }
     
     public Task[] getCriticalTasks() {
@@ -184,9 +185,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                         ourLogger.info("\n\nNode=" + curNode+" is critical\n\n");
                         myResult.add(curNode.task);
                     }
-                    
-                }
-                else {
+                } else {
                     assert curNode.task==null || curNode.lftFromSupertask;
                 }
                 enqueueDependees(newQueue, curNode);
@@ -212,7 +211,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                 }
             }
         }
-            
+
         private Date findLatestFinishTime(Map<Task, Node> task_node, Node curNode) {
             Date result = curNode.lft;
             Node resultNode = null;
@@ -234,16 +233,14 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             ourLogger.info("latest finish time="+result+" (defined by:"+resultNode+")");
             return result;
         }
-        
+
         Date findLatestFinishTime(Node curNode, Node depNode, TaskDependency dep) {
             Collision backwardCollision = dep.getConstraint().getBackwardCollision(depNode.lst);
             if (backwardCollision == null) {
                 return depNode.lst;
-            } 
-            else {
+            } else {
                 return backwardCollision.getAcceptableStart().getTime();
             }
-            
         }
     }
 }

@@ -35,6 +35,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -134,13 +136,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     public Action getOptionsDialogAction() {
-        if (myOptionsDialogAction==null) {
-            myOptionsDialogAction = new OptionsDialogAction(getOptionGroups(), getUIFacade()) {
-                protected Component createPreviewComponent() {
-                    return ChartComponentBase.this.createPreviewComponent();
-                }
-
-            };
+        if (myOptionsDialogAction == null) {
+            myOptionsDialogAction = new OptionsDialogAction(getOptionGroups(), getUIFacade());
         }
         return myOptionsDialogAction;
     }
@@ -232,13 +229,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                 return;
             }
             switch (e.getButton()) {
-            case MouseEvent.BUTTON1: {
+            case MouseEvent.BUTTON1:
                 processLeftButton(e);
                 break;
-            }
-            default: {
-
-            }
             }
         }
 
@@ -369,21 +362,21 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     protected static class ChartSelectionImpl implements ChartSelection {
-        private List myTasks = new ArrayList();
-        private List myTasksRO = Collections.unmodifiableList(myTasks);
-        private List myHumanResources = new ArrayList();
-        private List myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
+        private List<Task> myTasks = new ArrayList<Task>();
+        private List<Task> myTasksRO = Collections.unmodifiableList(myTasks);
+        private List<HumanResource> myHumanResources = new ArrayList<HumanResource>();
+        private List<HumanResource> myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
         private boolean isTransactionRunning;
 
         public boolean isEmpty() {
             return myTasks.isEmpty() && myHumanResources.isEmpty();
         }
 
-        public List getTasks() {
+        public List<Task> getTasks() {
             return myTasksRO;
         }
 
-        public List getHumanResources() {
+        public List<HumanResource> getHumanResources() {
             return myHumanResourceRO;
         }
 
@@ -402,7 +395,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                 throw new IllegalStateException("Transaction is already running");
             }
             isTransactionRunning = true;
-
         }
         public void cancelClipboardTransaction() {
             isTransactionRunning = false;

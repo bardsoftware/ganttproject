@@ -325,9 +325,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         drawDependencies(dependencyDrawData);
     }
 
-    /**
-     * @param dependencyDrawData
-     */
     private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
         // if(dependencyDrawData.size() == 0)
         // System.out.println("VIDE");
@@ -350,7 +347,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                         next.myDependeeVector.getPoint().y);
                 Point third = new Point(next.myDependantVector.getPoint(-3).x,
                         next.myDependantVector.getPoint().y);
-                java.awt.Rectangle arrowBoundary = null;
+                java.awt.Rectangle arrowBoundary;
                 String style;
                 if (next.myDependantVector.reaches(third)) {
                     second.x += arrowLength;
@@ -373,12 +370,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                         second.y);
                 primitiveContainer.createLine(second.x, second.y, third.x,
                         third.y);
-                if (arrowBoundary != null) {
-                    Rectangle arrow = primitiveContainer.createRectangle(
-                            arrowBoundary.x, arrowBoundary.y,
-                            arrowBoundary.width, arrowBoundary.height);
-                    arrow.setStyle(style);
-                }
+                Rectangle arrow = primitiveContainer.createRectangle(
+                        arrowBoundary.x, arrowBoundary.y, arrowBoundary.width,
+                        arrowBoundary.height);
+                arrow.setStyle(style);
             } else {
                 Point first = next.myDependeeVector.getPoint(3);
                 if (next.myDependantVector.reaches(first)) {
@@ -431,9 +426,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return value < 0 ? -1 : 1;
     }
 
-    /**
-     * @return
-     */
     private List<DependencyDrawData> prepareDependencyDrawData() {
         List<DependencyDrawData> result = new ArrayList<DependencyDrawData>();
         List<Task> visibleTasks = ((ChartModelImpl) getChartModel()).getVisibleTasks();
@@ -459,7 +451,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle)dependantContainer
                     .getPrimitive(dependant);
             if (dependantRectangle == null) {
-
                 //System.out.println("dependantRectangle == null");
                 continue;
             }
@@ -487,7 +478,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             } else {
                 throw new RuntimeException();
             }
-            //
+
             PointVector dependeeVector;
             if (bounds[1].equals(dependee.getStart())) {
                 dependeeVector = new WestPointVector(new Point(
@@ -571,7 +562,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         public String toString() {
             return "<=" + getPoint().toString();
         }
-
     }
 
     private static class EastPointVector extends PointVector {
@@ -590,7 +580,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         public String toString() {
             return ">=" + getPoint().toString();
         }
-
     }
 
     public boolean isVisible(int index) {
@@ -617,5 +606,4 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     private int getRectangleHeight() {
         return myLabelsRenderer.getFontHeight();
     }
-
 }

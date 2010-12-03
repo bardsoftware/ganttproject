@@ -38,7 +38,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  */
 public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
-    private java.util.List<Task> myVisibleTasks;
+    private List<Task> myVisibleTasks;
 
     private final TaskRendererImpl2 myTaskRendererImpl;
 
@@ -282,7 +282,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
     }
 
-    java.util.List<Task> getVisibleTasks() {
+    List<Task> getVisibleTasks() {
         return myVisibleTasks == null ? Collections.<Task>emptyList() : myVisibleTasks;
     }
 
@@ -367,5 +367,4 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     public EnumerationOption getDependencyHardnessOption() {
         return myDependencyHardnessOption;
     }
-
 }

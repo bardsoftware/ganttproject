@@ -592,16 +592,6 @@ public class TaskManagerImpl implements TaskManager {
         }
     }
 
-    // TODO Method is unused... delete?
-    private void fireTaskRemoved(Task task, Task oldSupertask) {
-        TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, oldSupertask,
-                null);
-        for (int i = 0; i < myListeners.size(); i++) {
-            TaskListener next = myListeners.get(i);
-            next.taskRemoved(e);
-        }
-    }
-
     void fireTaskPropertiesChanged(Task task) {
         if (areEventsEnabled) {
             TaskPropertyEvent e = new TaskPropertyEvent(task);
