@@ -12,7 +12,9 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
+import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -113,7 +115,7 @@ class RegularFrameOffsetBuilder {
         constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getBottomUnitWidth());
     }
 
-    private void constructBottomOffsets(TimeUnit timeUnit, List<Offset> offsets, int initialEnd, int baseUnitWidth) {
+    void constructBottomOffsets(TimeUnit timeUnit, List<Offset> offsets, int initialEnd, int baseUnitWidth) {
         Date currentDate = myStartDate;
         int offsetEnd = 0;
         OffsetStep step = new OffsetStep();
@@ -131,7 +133,7 @@ class RegularFrameOffsetBuilder {
         } while (offsetEnd <= getChartWidth() && (myEndDate == null || currentDate.before(myEndDate)));
     }
 
-    private void constructTopOffsets(TimeUnit timeUnit, List<Offset> topOffsets, List<Offset> bottomOffsets, int initialEnd, int bottomUnitWidth) {
+    private void constructTopOffsets(TimeUnit timeUnit, List<Offset> topOffsets, List<Offset> bottomOffsets, int initialEnd, int baseUnitWidth) {
         OffsetLookup offsetLookup = new OffsetLookup();
         Date currentDate = myStartDate;
         int offsetEnd;
@@ -148,7 +150,12 @@ class RegularFrameOffsetBuilder {
                 if (-bottomOffsetLowerBound > bottomOffsets.size()) {
                     offsetEnd = getChartWidth() + 1;
                 } else {
-                    offsetEnd = bottomOffsets.get(-bottomOffsetLowerBound - 1).getOffsetPixels();
+                    Offset ubOffset = bottomOffsetLowerBound <= -2 ?
+                        bottomOffsets.get(-bottomOffsetLowerBound - 2) : null;
+                    Date ubEndDate = ubOffset == null ? myStartDate : ubOffset.getOffsetEnd();
+                    int ubEndPixel = ubOffset == null ? 0 : ubOffset.getOffsetPixels();
+                    WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendar.PLAIN, baseUnit);               
+                    offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
                 }
             }
             topOffsets.add(new Offset(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
