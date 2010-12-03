@@ -467,17 +467,11 @@ public class TaskManagerImpl implements TaskManager {
             endDate = startDate;
             startDate = temp;
         }
-        if (timeUnit instanceof DateFrameable) {
-            DateFrameable df = (DateFrameable) timeUnit;
-            int unitCount = 0;
-            for (; startDate.before(endDate); unitCount++) {
-                startDate = df.adjustRight(startDate);
-            }
-            result = new TaskLengthImpl(timeUnit, unitCount*sign);
-        } else {
-            throw new IllegalArgumentException("Time unit=" + timeUnit
-                    + " is not date frameable");
+        int unitCount = 0;
+        for (; startDate.before(endDate); unitCount++) {
+            startDate = timeUnit.adjustRight(startDate);
         }
+        result = new TaskLengthImpl(timeUnit, unitCount*sign);
         return result;
     }
 
