@@ -48,9 +48,6 @@ public interface ChartModel {
 
     void paint(Graphics g);
 
-    void setTaskContainment(TaskContainmentHierarchyFacade taskContainment);
-
-
     Rectangle getBoundingRectangle(Task task);
 
     float calculateLength(int fromX, int toX, int y);

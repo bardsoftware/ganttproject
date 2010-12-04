@@ -135,23 +135,11 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private static final int HEADER_OFFSET = 47;
 
-    /** Begin of display. */
-
-//    public GanttCalendar date;
-
-    /** Reference to the GanttTree */
-
     public GanttTree2 tree;
 
-    /** Default color for tasks */
+    public static Color taskDefaultColor = new Color(140, 182, 206);
 
-    public static Color taskDefaultColor
-
-    // = new Color( (float) 0.549, (float) 0.713, (float) 0.807);
-
-    = new Color(140, 182, 206);
-
-    GanttProject appli;
+    private GanttProject appli;
 
     private UIConfiguration myUIConfiguration;
 
@@ -163,15 +151,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private JTableHeader myTableHeader = null;
 
-
-    //private List myItemsToConsider;
-
-    private JPanel myPreviewPanel = new ChartOptionsPreviewPanel();
-
     private TaskTreeImageGenerator myTaskImageGenerator;
 
     private ChartViewState myViewState;
-    /** Constructor */
 
     public GanttGraphicArea(GanttProject app, GanttTree2 ttree,
             TaskManager taskManager, ZoomManager zoomManager,
@@ -215,25 +197,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     try {
                         alg.run(task);
                     } catch (TaskDependencyException e1) {
-                        e1.printStackTrace(); // To change body of catch
-                        // statement use File | Settings
-                        // | File Templates.
+                        e1.printStackTrace();
                     }
-                    // appli.setQuickSave (true);
                 }
             }
         });
 
-//        date = new GanttCalendar();
-//
-//        date.setDay(1);
-
-
         appli = app;
-
-        // creation of the different color use to paint
-
-        // arrayColor[0] = new Color((float)0.905,(float)0.905,(float)0.905);
 
         getProject().getTaskCustomColumnManager().addListener(this);
         myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
@@ -392,13 +362,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private Action[] getPopupMenuActions() {
         return new Action[] { getOptionsDialogAction(),
                 new PublicHolidayDialogAction(getProject(), getUIFacade()) };
-        // actions.add(createMenuAction(GanttProject.correctLabel(language
-        // .getText("editPublicHolidays")), "));
-    }
-
-
-    protected Component createPreviewComponent() {
-        return myPreviewPanel;
     }
 
     public void repaint() {
@@ -417,8 +380,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     class MouseSupport {
         protected Task findTaskUnderMousePointer(int xpos, int ypos) {
-            // int taskID = detectPosition(xpos, ypos, false);
-            // return taskID==-1 ? null : getTaskManager().getTask(taskID);
             ChartItem chartItem = myChartModel.getChartItemWithCoordinates(
                     xpos, ypos);
             return chartItem == null ? null : chartItem.getTask();
@@ -638,8 +599,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         public void apply(MouseEvent event) {
             myArrow.changePoint2(event.getX(), event.getY());
-            // myDependant = myMouseSupport.findTaskUnderMousePointer(
-            // event.getX(), event.getY());
             myLastMouseEvent = event;
         }
 
@@ -798,10 +757,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                     taskArea, mouseSupport));
         }
 
-//        public void beginMoveTaskInteraction(MouseEvent e, Task task) {
-//            //setActiveInteraction(new MoveTaskInteraction(e, task));
-//        }
-
         public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks));
         }
@@ -810,10 +765,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             synchronized(ChartModelBase.STATIC_MUTEX) {
                 GanttGraphicArea.super.paintComponent(g);
                 ChartModel model = myChartModel;
-                model.setTaskContainment(appli.getTaskContainment());
-                // model.setBounds(getSize());
-                // System.err.println("[NewChartComponentImpl] paintComponent. unit
-                // width="+getViewState().getBottomUnitWidth());
                 model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 model.setRowHeight(((GanttTree2) tree).getTreeTable()
                         .getRowHeight());
@@ -831,10 +782,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             synchronized(ChartModelBase.STATIC_MUTEX) {
                 //GanttGraphicArea.super.paintComponent(g);
                 ChartModel model = myChartModel;
-                model.setTaskContainment(appli.getTaskContainment());
-                // model.setBounds(getSize());
-                // System.err.println("[NewChartComponentImpl] paintComponent. unit
-                // width="+getViewState().getBottomUnitWidth());
                 model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 model.setRowHeight(((GanttTree2) tree).getTreeTable()
                         .getRowHeight());
@@ -978,11 +925,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             myScrollingManager.scrollTo(scrollDate);
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sourceforge.ganttproject.action.GPAction#getIconFilePrefix()
-         */
         protected String getIconFilePrefix() {
             return "scrollcenter_";
         }
@@ -1159,161 +1101,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myUIConfiguration = configuration;
     }
 
-    private static class ChartOptionsPreviewPanel extends JPanel implements
-            ChangeValueListener {
-        Text upText, downText, leftText, rightText;
-
-        TaskBar taskBar;
-
-        public ChartOptionsPreviewPanel() {
-            super();
-            addToDispatchers();
-            setBackground(Color.WHITE);
-            setPreferredSize(new Dimension(450, 70));
-
-            taskBar = new TaskBar();
-
-            upText = new Text(Text.UP, taskBar);
-            downText = new Text(Text.DOWN, taskBar);
-            leftText = new Text(Text.LEFT, taskBar);
-            rightText = new Text(Text.RIGHT, taskBar);
-        }
-
-        private void addToDispatchers() {
-            List<ChangeValueDispatcher> dispatchers = Mediator.getChangeValueDispatchers();
-            for (int i = 0; i < dispatchers.size(); i++) {
-                dispatchers.get(i)
-                        .addChangeValueListener(this);
-            }
-        }
-
-        public void paint(Graphics g) {
-            super.paint(g);
-            taskBar.paintMe(g);
-            upText.paintMe(g);
-            downText.paintMe(g);
-            leftText.paintMe(g);
-            rightText.paintMe(g);
-        }
-
-        public void changeValue(ChangeValueEvent event) {
-            Object id = event.getID();
-            if (id.equals("up")) {
-                upText.text = getI18n(event.getNewValue().toString());
-            } else if (id.equals("down")) {
-                downText.text = getI18n(event.getNewValue().toString());
-            } else if (id.equals("left")) {
-                leftText.text = getI18n(event.getNewValue().toString());
-            } else if (id.equals("right")) {
-                rightText.text = getI18n(event.getNewValue().toString());
-            }
-            repaint();
-        }
-
-        static String getI18n(String id) {
-            String res = GanttLanguage.getInstance().getText(
-                    "optionValue." + id + ".label");
-            if (res.startsWith(GanttLanguage.MISSING_RESOURCE)) {
-                res = id;
-            }
-            return res;
-        }
-
-        class TaskBar {
-            int width, height, x, y;
-
-            Color color;
-
-            TaskBar() {
-                width = 100;
-                height = 12;
-                x = (int) (ChartOptionsPreviewPanel.this.getPreferredSize()
-                        .getWidth() / 2 - width / 2);
-                y = (int) (ChartOptionsPreviewPanel.this.getPreferredSize()
-                        .getHeight() / 2 - height / 2);
-                color = new Color(140, 182, 206);
-            }
-
-            void paintMe(Graphics g) {
-                g.setColor(color);
-                g.fillRect(x, y, width, height);
-                g.setColor(Color.BLACK);
-                g.drawRect(x, y, width, height);
-            }
-
-        }
-
-        private static class Text {
-            static final Font FONT = Fonts.PREVIEW_BAR_FONT;
-
-            static final int LEFT = 0;
-
-            static final int RIGHT = 1;
-
-            static final int UP = 2;
-
-            static final int DOWN = 3;
-
-            static final int MARGIN = 3;
-
-            String text = "";
-
-            int position;
-
-            private int x, y;
-
-            TaskBar taskBar;
-
-            Text(int position, TaskBar refBar) {
-                this.position = position;
-                this.taskBar = refBar;
-            }
-
-            void paintMe(Graphics g) {
-                calculateCoordinates(g);
-                g.setFont(FONT);
-                g.drawString(text, x, y);
-            }
-
-            private void calculateCoordinates(Graphics g) {
-
-                int textHeight = g.getFontMetrics(FONT).getHeight();
-                int textWidth = g.getFontMetrics(FONT).stringWidth(text);
-
-                switch (position) {
-                case UP:
-                    y = taskBar.y - MARGIN;
-                    x = taskBar.x + taskBar.width / 2 - textWidth / 2;
-                    break;
-                case DOWN:
-                    x = taskBar.x + taskBar.width / 2 - textWidth / 2;
-                    y = taskBar.y + taskBar.height + textHeight - MARGIN;
-                    break;
-                case LEFT:
-                    y = taskBar.y + taskBar.height / 2 + textHeight / 2
-                            - MARGIN;
-                    x = taskBar.x - MARGIN - textWidth;
-                    break;
-                case RIGHT:
-                    y = taskBar.y + taskBar.height / 2 + textHeight / 2
-                            - MARGIN;
-                    x = taskBar.x + taskBar.width + MARGIN;
-                    break;
-                }
-            }
-
-        }
-    }
-
-    public void editTaskAsNew(Task task) {
-        if (appli.getOptions().getAutomatic()) {
-            appli.propertiesTask();
-        }
-        else {
-        // setQuickSave(true);
-            tree.setEditingTask(task);
-        }
-    }
     public void projectModified() {
         // TODO Auto-generated method stub
 
