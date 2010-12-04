@@ -14,14 +14,14 @@ public class TimeUnitPair {
     private final TimeUnitStack myTimeUnitStack;
 
     /** Used scale for this TimeUnit */
-    private final double myScale;
+    private final int myDefaultUnitWidth;
 
-    protected TimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit,
-            TimeUnitStack timeUnitStack, double scale) {
+    public TimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit,
+            TimeUnitStack timeUnitStack, int defaultUnitWidth) {
         myTopTimeUnit = topUnit;
         myBottomTimeUnit = bottomUnit;
         myTimeUnitStack = timeUnitStack;
-        myScale = scale;
+        myDefaultUnitWidth = defaultUnitWidth;
     }
 
     public TimeUnit getTopTimeUnit() {
@@ -37,7 +37,7 @@ public class TimeUnitPair {
     }
 
     /** @return the scale for this TimeUnit */
-    public double getScale() {
-        return myScale;
+    public int getDefaultUnitWidth() {
+        return myDefaultUnitWidth;
     }
 }
