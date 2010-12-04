@@ -57,22 +57,21 @@ public class GPTimeUnitStack implements TimeUnitStack {
                 new FramerImpl(Calendar.YEAR));
         YEAR.setTextFormatter(new YearTextFormatter());
         myPairs = new TimeUnitPair[] {
-                new MyTimeUnitPair(WEEK, DAY, 0.5f),
-                new MyTimeUnitPair(WEEK, DAY, 0.8f),
-                new MyTimeUnitPair(MONTH, DAY, 0.8f),
-                new MyTimeUnitPair(MONTH, DAY, 4f),
-                new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, 0.75f),
-                new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, 0.75f),
-                new MyTimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, 0.75f),
-                new MyTimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, 0.75f),
-                new MyTimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, 0.75f),
-                new MyTimeUnitPair(YEAR, MONTH, 0.75f),
-                new MyTimeUnitPair(YEAR, MONTH, 0.75f),
+                new TimeUnitPair(WEEK, DAY, this, 65),
+                new TimeUnitPair(WEEK, DAY, this, 55),
+                new TimeUnitPair(MONTH, DAY, this, 44),
+                new TimeUnitPair(MONTH, DAY, this, 34),
+                new TimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, this, 24), 
+                new TimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, this, 21), 
+                new TimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, this, 13),
+                new TimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, this, 8),
+                new TimeUnitPair(YEAR, MONTH, this, 5), 
+                new TimeUnitPair(YEAR, MONTH, this, 3),
                 /*
                  * The last pair is reused for the next steps,
                  * so it is needed only once.
                  */
-                /*new MyTimeUnitPair(YEAR, QUARTER, 0.75f)*/ };
+                /*new TimeUnitPair(YEAR, QUARTER, this, 1)*/ };
     }
 
     public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
@@ -93,12 +92,6 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
     public TimeUnitPair[] getTimeUnitPairs() {
         return myPairs;
-    }
-
-    private class MyTimeUnitPair extends TimeUnitPair {
-        MyTimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit, double scale) {
-            super(topUnit, bottomUnit, GPTimeUnitStack.this, scale);
-        }
     }
 
     public DateFormat[] getDateFormats() {

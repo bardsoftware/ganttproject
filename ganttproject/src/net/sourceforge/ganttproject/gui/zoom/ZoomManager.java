@@ -27,6 +27,10 @@ public class ZoomManager {
             myStateNumber = stateNumber;
         }
 
+        public ZoomState(TimeUnitPair timeUnitPair, int stateNumber) {
+            this(timeUnitPair, timeUnitPair.getDefaultUnitWidth(), stateNumber);
+        }
+
         public String getPersistentName() {
             return myTimeUnitPair.getTimeUnitStack().getName() + ":"
                     + myStateNumber;
@@ -61,12 +65,8 @@ public class ZoomManager {
     public ZoomManager(TimeUnitStack timeUnitStack) {
         TimeUnitPair[] unitPairs = timeUnitStack.getTimeUnitPairs();
         myZoomStates = new ArrayList<ZoomState>(unitPairs.length);
-        int width = 60;
         for (int i = 0; i < unitPairs.length; i++) {
-            myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], width, i));
-            if (i < unitPairs.length - 1) {
-                width = (int) (width * unitPairs[i].getScale());
-            }
+            myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], i));
         }
     }
 
