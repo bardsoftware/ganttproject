@@ -26,13 +26,6 @@ import org.jdesktop.swing.table.TableColumnExt;
         int defaultIndex;
         private int myOrder;
 
-//    	public ResourceColumn(String name, int index, Class type) {
-//    		column = new TableColumnExt(index);
-//    		this.type = type;
-//    		this.setTitle(name);
-//    		defaultIndex = index;
-//    	}
-//
         public ResourceColumn(TableColumnExt col, int index){
             this(col, index, String.class);
         }
@@ -43,14 +36,6 @@ import org.jdesktop.swing.table.TableColumnExt;
             defaultIndex = index;
             visible = true;
         }
-
-//    	public ResourceColumn(TableColumnExt col, int index, Class type, Object def) {
-//    		column = col;
-//    		defaultIndex = index;
-//    		visible = true;
-//    		this.type = type;
-//    		defaultVal = def;
-//    	}
 
         public boolean nameCmp(String name) {
             System.out.println("comparing: "+name+" - "+column.getTitle()+" ");
@@ -77,10 +62,6 @@ import org.jdesktop.swing.table.TableColumnExt;
             return defaultIndex;
         }
 
-//		public void setIndex(int defaultIndex)  {
-//			this.defaultIndex = defaultIndex;
-//		}
-//
         public TableColumnExt getColumn() {
             return column;
         }
@@ -163,4 +144,11 @@ import org.jdesktop.swing.table.TableColumnExt;
             // TODO Auto-generated method stub
             return null;
         }
+
+        @Override
+        public String toString() {
+            return getTitle() + ", " + getTypeAsString();
+        }
+        
+        
     }
