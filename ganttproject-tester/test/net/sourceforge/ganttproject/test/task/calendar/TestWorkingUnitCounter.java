@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.test.task.calendar;
 import java.util.Calendar;
 
 import junit.framework.Assert;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
@@ -36,7 +37,7 @@ public class TestWorkingUnitCounter extends TaskTestCase {
 
         WorkingUnitCounter counter = new WorkingUnitCounter(
                 calendar, GregorianTimeUnitStack.DAY);
-        TaskLength result = counter.run(newMonday().getTime(), newThursday().getTime());
+        TaskLength result = counter.run(TestSetupHelper.newMonday().getTime(), TestSetupHelper.newThursday().getTime());
         Assert.assertEquals(3, result.getLength());
         Assert.assertEquals(GregorianTimeUnitStack.DAY, result.getTimeUnit());
     }
@@ -48,7 +49,7 @@ public class TestWorkingUnitCounter extends TaskTestCase {
 
         WorkingUnitCounter counter = new WorkingUnitCounter(
                 calendar, GregorianTimeUnitStack.DAY);
-        TaskLength result = counter.run(newFriday().getTime(), newTuesday().getTime());
+        TaskLength result = counter.run(TestSetupHelper.newFriday().getTime(), TestSetupHelper.newTuesday().getTime());
         Assert.assertEquals(2, result.getLength());
         Assert.assertEquals(GregorianTimeUnitStack.DAY, result.getTimeUnit());
     }
@@ -57,11 +58,11 @@ public class TestWorkingUnitCounter extends TaskTestCase {
         WeekendCalendarImpl calendar = new WeekendCalendarImpl();
         calendar.setWeekDayType(Calendar.SATURDAY, GPCalendar.DayType.WEEKEND);
         calendar.setWeekDayType(Calendar.SUNDAY, GPCalendar.DayType.WEEKEND);
-        calendar.setPublicHoliDayType(newTuesday().getTime());
+        calendar.setPublicHoliDayType(TestSetupHelper.newTuesday().getTime());
 
         WorkingUnitCounter counter = new WorkingUnitCounter(
                 calendar, GregorianTimeUnitStack.DAY);
-        TaskLength result = counter.run(newMonday().getTime(), newThursday().getTime());
+        TaskLength result = counter.run(TestSetupHelper.newMonday().getTime(), TestSetupHelper.newThursday().getTime());
         Assert.assertEquals(2, result.getLength());
         Assert.assertEquals(GregorianTimeUnitStack.DAY, result.getTimeUnit());
     }

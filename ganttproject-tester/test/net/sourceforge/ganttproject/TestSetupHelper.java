@@ -64,4 +64,34 @@ public class TestSetupHelper {
     public static TaskManagerBuilder newTaskManagerBuilder() {
         return new TaskManagerBuilder();
     }
+    
+    public static GanttCalendar newFriday() {
+        return new GanttCalendar(2004, 9, 15);
+    }
+
+    public static GanttCalendar newSaturday() {
+        return new GanttCalendar(2004, 9, 16);
+    }
+
+    public static GanttCalendar newSunday() {
+        return new GanttCalendar(2004, 9, 17);
+    }
+
+    public static GanttCalendar newTuesday() {
+        return new GanttCalendar(2004, 9, 19);
+    }
+
+    public static GanttCalendar newMonday() {
+        return new GanttCalendar(2004, 9, 18);
+    }
+
+    public static GanttCalendar newWendesday() {
+        return new GanttCalendar(2004, 9, 20);
+    }
+
+    public static GanttCalendar newThursday() {
+        return new GanttCalendar(2004, 9, 21);
+    }
+
+
 }
