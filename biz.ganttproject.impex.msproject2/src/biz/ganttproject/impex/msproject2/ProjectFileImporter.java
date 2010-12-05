@@ -236,7 +236,6 @@ class ProjectFileImporter {
     private void importTask(ProjectFile foreignProject,
             Task t, net.sourceforge.ganttproject.task.Task supertask,
             Map<Integer, GanttTask> foreignId2nativeTask) {
-    	System.err.println("task="+t+"\noutline level="+t.getOutlineLevel());
         GanttTask nativeTask = getTaskManager().createTask();
         myNativeProject.getTaskContainment().move(nativeTask, supertask);
         nativeTask.setName(t.getName());

@@ -36,7 +36,12 @@ import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
+import net.sf.mpxj.ResourceField;
 import net.sf.mpxj.TimeUnit;
+import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -196,25 +201,81 @@ class ProjectFileExporter {
 	}
 
 	private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
+	    Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType = new HashMap<CustomPropertyDefinition, ResourceField>();
+	    collectCustomProperties(customProperty_fieldType);
 	    for (HumanResource hr : getResourceManager().getResources()) {
-	        exportResource(hr, id2mpxjResource);
+	        exportResource(hr, id2mpxjResource, customProperty_fieldType);
 	    }
 	}
 
-	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource) throws MPXJException {
+	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource, Map<CustomPropertyDefinition, 
+	        ResourceField> customProperty_fieldType) throws MPXJException {
 	    Resource mpxjResource = myOutputProject.addResource();
 	    mpxjResource.setUniqueID(hr.getId());
 	    mpxjResource.setID(id2mpxjResource.size() + 1);
 	    mpxjResource.setName(hr.getName());
 	    mpxjResource.setEmailAddress(hr.getMail());
 	    exportDaysOff(hr, mpxjResource);
-	    exportCustomProperties(hr, mpxjResource);
+	    exportCustomProperties(hr, mpxjResource, customProperty_fieldType);
 	    id2mpxjResource.put(hr.getId(), mpxjResource);
     }
 
-    private void exportCustomProperties(HumanResource hr, Resource mpxjResource) {
-        // TODO Auto-generated method stub
-        
+	private void collectCustomProperties(Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType) {
+	    Map<String, Integer> typeCounter = new HashMap<String, Integer>(); 
+	    for (CustomPropertyDefinition def : getResourceManager().getDefinitions()) {
+	        Integer count = typeCounter.get(def.getTypeAsString());
+	        if (count == null) {
+	            count = 1;
+	        } else {
+	            count++;
+	        }
+	        typeCounter.put(def.getTypeAsString(), count);
+	        customProperty_fieldType.put(def, getResourceField(def, count));
+	    }
+	}
+	
+    private ResourceField getResourceField(CustomPropertyDefinition def, Integer count) {
+        String name;
+        switch (def.getPropertyClass()) {
+        case BOOLEAN:
+            name = "FLAG";
+            break;
+        case INTEGER:
+        case DOUBLE:
+            name = "NUMBER";
+            break;
+        case TEXT:
+            name = "TEXT";
+            break;
+        case DATE:
+            name = "DATE";
+            break;
+        default:
+            assert false : "Should not be here";
+            name = "TEXT";
+        }
+        try {
+            return ResourceField.valueOf(name + count);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private void exportCustomProperties(HumanResource hr, Resource mpxjResource, Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType) {
+        for (CustomProperty cp : hr.getCustomProperties()) {
+            ResourceField rf = customProperty_fieldType.get(cp.getDefinition());
+            if (rf != null) {
+                mpxjResource.set(rf, convertValue(cp));
+            }
+        }
+    }
+
+    private Object convertValue(CustomProperty cp) {
+        if (cp.getDefinition().getPropertyClass() == CustomPropertyClass.DATE) {
+            GanttCalendar value = (GanttCalendar) cp.getValue();
+            return value.getTime();
+        }
+        return cp.getValue();
     }
 
     private void exportDaysOff(HumanResource hr, Resource mpxjResource) throws MPXJException {

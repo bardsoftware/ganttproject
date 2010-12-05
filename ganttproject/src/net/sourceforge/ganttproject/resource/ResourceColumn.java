@@ -125,8 +125,7 @@ import org.jdesktop.swing.table.TableColumnExt;
 
         @Override
         public CustomPropertyClass getPropertyClass() {
-            // TODO Auto-generated method stub
-            return null;
+            return CustomPropertyClass.fromJavaClass(type);
         }
 
         @Override
