@@ -37,8 +37,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         private final boolean isCompressedWeekend;
 
         public OffsetBuilderImpl(ChartModelBase model, int width, Date endDate) {
-            super(model.getTimeUnitStack(),
-                  model.getTaskManager().getCalendar(),
+            super(model.getTaskManager().getCalendar(),
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
                   model.getStartDate(),
@@ -129,7 +128,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         if (myDefaultUnitOffsets.isEmpty()) {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
-            offsetBuilder.constructBottomOffsets(getTimeUnitStack().getDefaultTimeUnit(), myDefaultUnitOffsets, 0, getBottomUnitWidth());
+            offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
         }
         return myDefaultUnitOffsets;
     }
@@ -161,7 +160,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myDefaultUnitOffsets.clear();
 
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTimeUnitStack, myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
+            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
             getBottomUnitWidth(), (int)getBounds().getWidth(),
             getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
