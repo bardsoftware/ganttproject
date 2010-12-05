@@ -23,10 +23,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.DefaultListModel;
+
 import net.sf.mpxj.ConstraintType;
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
+import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.Priority;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
@@ -38,6 +41,7 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -62,7 +66,7 @@ class ProjectFileExporter {
 		myOutputProject = new ProjectFile();
 	}
 	
-	ProjectFile run() {
+	ProjectFile run() throws MPXJException {
 		Map<Integer, net.sf.mpxj.Task> id2mpxjTask = new HashMap<Integer, net.sf.mpxj.Task>();
 		exportCalendar();
 		exportTasks(id2mpxjTask);
@@ -191,15 +195,16 @@ class ProjectFileExporter {
 		}
 	}
 
-	private void exportResources(Map<Integer, Resource> id2mpxjResource) {
+	private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
 	    for (HumanResource hr : getResourceManager().getResources()) {
 	        exportResource(hr, id2mpxjResource);
 	    }
 	}
 
-	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource) {
+	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource) throws MPXJException {
 	    Resource mpxjResource = myOutputProject.addResource();
 	    mpxjResource.setUniqueID(hr.getId());
+	    mpxjResource.setID(id2mpxjResource.size() + 1);
 	    mpxjResource.setName(hr.getName());
 	    mpxjResource.setEmailAddress(hr.getMail());
 	    exportDaysOff(hr, mpxjResource);
@@ -212,9 +217,18 @@ class ProjectFileExporter {
         
     }
 
-    private void exportDaysOff(HumanResource hr, Resource mpxjResource) {
-        // TODO Auto-generated method stub
-        
+    private void exportDaysOff(HumanResource hr, Resource mpxjResource) throws MPXJException {
+        DefaultListModel daysOff = hr.getDaysOff();
+        if (!daysOff.isEmpty()) {
+            ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
+            resourceCalendar.setUniqueID(hr.getId());
+            for (int i = 0; i < daysOff.size(); i++) {
+                GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
+                ProjectCalendarException calendarException = resourceCalendar.addCalendarException();
+                calendarException.setFromDate(dayOff.getStart().getTime());
+                calendarException.setToDate(dayOff.getFinish().getTime());
+            }
+        }
     }
 
     private void exportAssignments(Map<Integer, net.sf.mpxj.Task> id2mpxjTask, Map<Integer, Resource> id2mpxjResource) {

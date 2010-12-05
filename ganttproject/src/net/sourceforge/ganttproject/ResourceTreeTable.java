@@ -724,8 +724,9 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         newColumn.setDefaultVal(stubDefinition.getDefaultValue());
         assert String.valueOf(newColumn.getIndex()).equals(id);
         addCustomColumn(newColumn);
-        List<CustomPropertyDefinition> definitions = myResourceManager.getDefinitions();
-        return definitions.get(definitions.size()-1);
+        CustomPropertyDefinition result = myResourceManager.getCustomPropertyManager().getCustomPropertyDefinition(name);
+        assert result != null : "Where is custom property " + name + " I just've created?";
+        return result;
     }
 
     public List<CustomPropertyDefinition> getDefinitions() {
