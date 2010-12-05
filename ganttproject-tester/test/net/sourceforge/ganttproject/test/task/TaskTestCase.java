@@ -5,6 +5,7 @@ import java.net.URL;
 
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -22,45 +23,7 @@ import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
  * Created by IntelliJ IDEA. User: bard
  */
 public abstract class TaskTestCase extends TestCase {
-    protected static class TaskManagerConfigImpl implements TaskManagerConfig {
-        private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-
-        private TimeUnitStack myTimeUnitStack;
-
-        private HumanResourceManager myResourceManager;
-
-        private RoleManager myRoleManager;
-
-        public TaskManagerConfigImpl() {
-            myTimeUnitStack = new GregorianTimeUnitStack();
-            myRoleManager = new RoleManagerImpl();
-            myResourceManager = new HumanResourceManager(myRoleManager
-                    .getDefaultRole());
-        }
-        public Color getDefaultColor() {
-            return null;
-        }
-
-        public GPCalendar getCalendar() {
-            return myFakeCalendar;
-        }
-
-        public TimeUnitStack getTimeUnitStack() {
-            return myTimeUnitStack;
-        }
-
-        public HumanResourceManager getResourceManager() {
-            return myResourceManager;
-        }
-
-        public URL getProjectDocumentURL() {
-            return null;
-        }
-
-
-    }
     private TaskManager myTaskManager;
-
 
     protected TaskManager getTaskManager() {
         return myTaskManager;
@@ -104,7 +67,7 @@ public abstract class TaskTestCase extends TestCase {
     }
 
     protected TaskManager newTaskManager() {
-        return TaskManager.Access.newInstance(null, new TaskManagerConfigImpl());
+        return TestSetupHelper.newTaskManagerBuilder().build();
     }
 
     protected Task createTask() {

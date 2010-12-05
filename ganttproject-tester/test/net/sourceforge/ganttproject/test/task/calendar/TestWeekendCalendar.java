@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject.test.task.calendar;
 
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.task.Task;
@@ -24,29 +25,18 @@ public class TestWeekendCalendar extends TaskTestCase {
     }
 
     protected TaskManager newTaskManager() {
-        return TaskManager.Access.newInstance(null, new TaskManagerConfigImpl() {
-            public GPCalendar getCalendar() {
-                return myWeekendCalendar;
-            }
-        });
+        return TestSetupHelper.newTaskManagerBuilder().withCalendar(myWeekendCalendar).build();
     }
 
     private WeekendCalendarImpl myWeekendCalendar = new WeekendCalendarImpl();
 
     public void testNoWeekendsButHasHolidays() {
-        TaskManager mgr = TaskManager.Access.newInstance(null, new TaskManagerConfigImpl() {
-            private WeekendCalendarImpl myNoWeekendsCalendar = new WeekendCalendarImpl();
-            {
-                for (int i=1; i<=7; i++) {
-                    myNoWeekendsCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);
-                }
-                myNoWeekendsCalendar.setPublicHoliDayType(newMonday().getTime());
-            }
-            @Override
-            public GPCalendar getCalendar() {
-                return myNoWeekendsCalendar;
-            }
-        });
+        WeekendCalendarImpl noWeekendsOneHolidayCalendar = new WeekendCalendarImpl();
+        for (int i=1; i<=7; i++) {
+            noWeekendsOneHolidayCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);
+        }
+        noWeekendsOneHolidayCalendar.setPublicHoliDayType(newMonday().getTime());
+        TaskManager mgr = TestSetupHelper.newTaskManagerBuilder().withCalendar(noWeekendsOneHolidayCalendar).build();
         Task t = mgr.createTask();
         t.setStart(newFriday());
         t.setEnd(newWendesday());
