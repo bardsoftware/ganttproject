@@ -238,8 +238,8 @@ class ProjectFileExporter {
 	    id2mpxjResource.put(hr.getId(), mpxjResource);
     }
 
-	private static void collectCustomProperties(CustomPropertyManager customPropertyManager, 
-	        Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, Class fieldTypeClass) {
+	private static <T extends Enum<T>> void collectCustomProperties(CustomPropertyManager customPropertyManager, 
+	        Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, Class<T> fieldTypeClass) {
 	    Map<String, Integer> typeCounter = new HashMap<String, Integer>(); 
 	    for (CustomPropertyDefinition def : customPropertyManager.getDefinitions()) {
 	        Integer count = typeCounter.get(def.getTypeAsString());
@@ -254,7 +254,7 @@ class ProjectFileExporter {
 	    }
 	}
 	
-    private static FieldType getFieldType(Class enumClass, CustomPropertyDefinition def, Integer count) {
+    private static <T extends Enum<T>> FieldType getFieldType(Class<T> enumClass, CustomPropertyDefinition def, Integer count) {
         String name;
         switch (def.getPropertyClass()) {
         case BOOLEAN:
@@ -275,7 +275,7 @@ class ProjectFileExporter {
             name = "TEXT";
         }
         try {
-            return Enum.valueOf(enumClass, name + count);
+            return (FieldType) Enum.valueOf(enumClass, name + count);
         } catch (IllegalArgumentException e) {
             return null;
         }
