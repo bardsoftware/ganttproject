@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
@@ -29,6 +30,7 @@ import net.sf.mpxj.ConstraintType;
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
+import net.sf.mpxj.FieldType;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.Priority;
 import net.sf.mpxj.ProjectCalendar;
@@ -37,10 +39,13 @@ import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceField;
+import net.sf.mpxj.TaskField;
 import net.sf.mpxj.TimeUnit;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyHolder;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -110,13 +115,19 @@ class ProjectFileExporter {
 	}
 
 	private void exportTasks(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
+        Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
+        collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
+        for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
+            myOutputProject.setTaskFieldAlias((TaskField)e.getValue(), e.getKey().getName());
+        }
 		for (Task t : getTaskHierarchy().getNestedTasks(getTaskHierarchy().getRootTask())) {
-			exportTask(t, null, 0, id2mpxjTask);			
+			exportTask(t, null, 0, id2mpxjTask, customProperty_fieldType);			
 		}
 	}
 	
-	private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, int outlineLevel, Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
-		net.sf.mpxj.Task mpxjTask = mpxjParentTask == null ? myOutputProject.addTask() : mpxjParentTask.addTask();
+	private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, int outlineLevel, 
+	        Map<Integer, net.sf.mpxj.Task> id2mpxjTask, Map<CustomPropertyDefinition, FieldType> customProperty_fieldType) {
+		final net.sf.mpxj.Task mpxjTask = mpxjParentTask == null ? myOutputProject.addTask() : mpxjParentTask.addTask();
 		mpxjTask.setOutlineLevel(outlineLevel);
 		mpxjTask.setUniqueID(t.getTaskID());
         mpxjTask.setID(id2mpxjTask.size());
@@ -131,21 +142,21 @@ class ProjectFileExporter {
         mpxjTask.setConstraintType(ConstraintType.AS_SOON_AS_POSSIBLE);
         mpxjTask.setPriority(convertPriority(t));
         
-        exportCustomProperties(t, mpxjTask);
+        exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
+            public void set(FieldType ft, Object value) {
+                mpxjTask.set(ft, value);
+            }
+        });
         id2mpxjTask.put(t.getTaskID(), mpxjTask);
         
 		for (Task child : getTaskHierarchy().getNestedTasks(t)) {
-			exportTask(child, mpxjTask, outlineLevel + 1, id2mpxjTask);
+			exportTask(child, mpxjTask, outlineLevel + 1, id2mpxjTask, customProperty_fieldType);
 		}
 		
 	}
 
-	private Object convertDuration(TaskLength duration) {
+	private static Object convertDuration(TaskLength duration) {
 		return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);
-	}
-
-	private void exportCustomProperties(Task t, net.sf.mpxj.Task mpxjTask) {
-		// TODO Auto-generated method stub
 	}
 
 	private void exportDependencies(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
@@ -177,7 +188,7 @@ class ProjectFileExporter {
 		}
 	}
 
-	private Duration convertLag(TaskDependency dep) {
+	private static Duration convertLag(TaskDependency dep) {
 		// TODO(dbarashev): Get rid of days
 		return Duration.getInstance(dep.getDifference(), TimeUnit.DAYS);
 	}
@@ -201,28 +212,36 @@ class ProjectFileExporter {
 	}
 
 	private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
-	    Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType = new HashMap<CustomPropertyDefinition, ResourceField>();
-	    collectCustomProperties(customProperty_fieldType);
+	    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
+	    collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType, ResourceField.class);
+        for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
+            myOutputProject.setResourceFieldAlias((ResourceField)e.getValue(), e.getKey().getName());
+        }
 	    for (HumanResource hr : getResourceManager().getResources()) {
 	        exportResource(hr, id2mpxjResource, customProperty_fieldType);
 	    }
 	}
 
-	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource, Map<CustomPropertyDefinition, 
-	        ResourceField> customProperty_fieldType) throws MPXJException {
-	    Resource mpxjResource = myOutputProject.addResource();
+	private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource, 
+	        Map<CustomPropertyDefinition, FieldType> customProperty_fieldType) throws MPXJException {
+	    final Resource mpxjResource = myOutputProject.addResource();
 	    mpxjResource.setUniqueID(hr.getId());
 	    mpxjResource.setID(id2mpxjResource.size() + 1);
 	    mpxjResource.setName(hr.getName());
 	    mpxjResource.setEmailAddress(hr.getMail());
 	    exportDaysOff(hr, mpxjResource);
-	    exportCustomProperties(hr, mpxjResource, customProperty_fieldType);
+	    exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
+            public void set(FieldType ft, Object value) {
+                mpxjResource.set(ft, value);
+            }
+        });
 	    id2mpxjResource.put(hr.getId(), mpxjResource);
     }
 
-	private void collectCustomProperties(Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType) {
+	private static void collectCustomProperties(CustomPropertyManager customPropertyManager, 
+	        Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, Class fieldTypeClass) {
 	    Map<String, Integer> typeCounter = new HashMap<String, Integer>(); 
-	    for (CustomPropertyDefinition def : getResourceManager().getDefinitions()) {
+	    for (CustomPropertyDefinition def : customPropertyManager.getDefinitions()) {
 	        Integer count = typeCounter.get(def.getTypeAsString());
 	        if (count == null) {
 	            count = 1;
@@ -230,11 +249,12 @@ class ProjectFileExporter {
 	            count++;
 	        }
 	        typeCounter.put(def.getTypeAsString(), count);
-	        customProperty_fieldType.put(def, getResourceField(def, count));
+	        FieldType ft = getFieldType(fieldTypeClass, def, count);
+	        customProperty_fieldType.put(def, ft);
 	    }
 	}
 	
-    private ResourceField getResourceField(CustomPropertyDefinition def, Integer count) {
+    private static FieldType getFieldType(Class enumClass, CustomPropertyDefinition def, Integer count) {
         String name;
         switch (def.getPropertyClass()) {
         case BOOLEAN:
@@ -255,22 +275,27 @@ class ProjectFileExporter {
             name = "TEXT";
         }
         try {
-            return ResourceField.valueOf(name + count);
+            return Enum.valueOf(enumClass, name + count);
         } catch (IllegalArgumentException e) {
             return null;
         }
     }
 
-    private void exportCustomProperties(HumanResource hr, Resource mpxjResource, Map<CustomPropertyDefinition, ResourceField> customProperty_fieldType) {
-        for (CustomProperty cp : hr.getCustomProperties()) {
-            ResourceField rf = customProperty_fieldType.get(cp.getDefinition());
-            if (rf != null) {
-                mpxjResource.set(rf, convertValue(cp));
+    private static interface CustomPropertySetter {
+        void set(FieldType ft, Object value);
+    }
+    
+    private static void exportCustomProperties(
+            CustomPropertyHolder holder, Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, CustomPropertySetter setter) {
+        for (CustomProperty cp : holder.getCustomProperties()) {
+            FieldType ft = customProperty_fieldType.get(cp.getDefinition());
+            if (ft != null) {
+                setter.set(ft, convertValue(cp));
             }
         }
     }
 
-    private Object convertValue(CustomProperty cp) {
+    private static Object convertValue(CustomProperty cp) {
         if (cp.getDefinition().getPropertyClass() == CustomPropertyClass.DATE) {
             GanttCalendar value = (GanttCalendar) cp.getValue();
             return value.getTime();

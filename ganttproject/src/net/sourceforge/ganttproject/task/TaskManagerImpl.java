@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
@@ -921,6 +922,10 @@ public class TaskManagerImpl implements TaskManager {
 
     public CustomColumnsStorage getCustomColumnStorage() {
         return myCustomColumnStorage;
+    }
+    
+    public CustomPropertyManager getCustomPropertyManager() {
+        return new CustomColumnsManager(getCustomColumnStorage());
     }
 
     public URL getProjectDocument() {
