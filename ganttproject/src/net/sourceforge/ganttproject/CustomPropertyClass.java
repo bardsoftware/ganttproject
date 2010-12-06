@@ -33,4 +33,12 @@ public enum CustomPropertyClass {
     public String getID() {
         return myI18Ntifier;
     }
+    public static CustomPropertyClass fromJavaClass(Class javaClass) {
+        for (CustomPropertyClass klass : CustomPropertyClass.values()) {
+            if (klass.getJavaClass().equals(javaClass)) {
+                return klass;
+            }
+        }
+        return null;
+    }
 }

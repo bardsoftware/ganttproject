@@ -68,7 +68,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
-public class ProjectFileImporter {
+class ProjectFileImporter {
     private final IGanttProject myNativeProject;
     private final ProjectReader myReader;
     private final File myForeignFile;
@@ -122,6 +122,9 @@ public class ProjectFileImporter {
 
     private void importCalendar(ProjectFile pf) {
         ProjectCalendar defaultCalendar = pf.getCalendar();
+        if (defaultCalendar == null) {
+        	return;
+        }
         importWeekends(defaultCalendar);
         List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
         for (ProjectCalendarException e: exceptions) {
@@ -178,12 +181,13 @@ public class ProjectFileImporter {
         myResourceCustomPropertyMapping = new HashMap<ResourceField, CustomPropertyDefinition>();
         for (Resource r: pf.getAllResources()) {
             HumanResource nativeResource = myNativeProject.getHumanResourceManager().newHumanResource();
+            nativeResource.setId(r.getUniqueID());
             nativeResource.setName(r.getName());
             nativeResource.setMail(r.getEmailAddress());
             myNativeProject.getHumanResourceManager().add(nativeResource);
             importDaysOff(r, nativeResource);
             importCustomProperties(r, nativeResource);
-            foreignId2humanResource.put(r.getID(), nativeResource);
+            foreignId2humanResource.put(r.getUniqueID(), nativeResource);
         }
     }
 
@@ -384,6 +388,7 @@ public class ProjectFileImporter {
                         dependant, dependee);
                 dependency.setConstraint(convertConstraint(r));
                 if (r.getLag().getDuration() != 0.0) {
+                	// TODO(dbarashev): get rid of days
                     dependency.setDifference((int) r.getLag().convertUnits(
                             TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
                 }
@@ -410,7 +415,7 @@ public class ProjectFileImporter {
             Map<Integer, GanttTask> foreignId2nativeTask, Map<Integer, HumanResource> foreignId2nativeResource) {
         for (ResourceAssignment ra: pf.getAllResourceAssignments()) {
             GanttTask nativeTask = foreignId2nativeTask.get(ra.getTask().getID());
-            HumanResource nativeResource = foreignId2nativeResource.get(ra.getResource().getID());
+            HumanResource nativeResource = foreignId2nativeResource.get(ra.getResource().getUniqueID());
             net.sourceforge.ganttproject.task.ResourceAssignment nativeAssignment =
                 nativeTask.getAssignmentCollection().addAssignment(nativeResource);
             nativeAssignment.setLoad(ra.getUnits().floatValue());
