@@ -39,6 +39,7 @@ public class LinkTasksAction extends TaskActionBase {
         return getI18n("link");
     }
 
+
     protected void run(List<Task> selection) throws TaskDependencyException {
         for (int i=0; i<selection.size()-1; i++) {
             Task dependant = selection.get(i+1);
@@ -47,9 +48,22 @@ public class LinkTasksAction extends TaskActionBase {
                 getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
             }
         }
-    }
+        // Update (un)link buttons
+        setEnabled(false);
+        UnlinkTasksAction unlinkTasksAction = (UnlinkTasksAction) myUIFacade.getTaskTree().getUnlinkTasksAction();
+        unlinkTasksAction.setEnabled(unlinkTasksAction.isEnabled(selection));
+    }                
 
     protected boolean isEnabled(List<Task> selection) {
-        return selection.size()>=2;
+        if(selection.size() <= 1) {
+            return false;
+        }
+        for (int i = 0; i < selection.size(); i++) {
+            Task nextTask = selection.get(i);
+            if (nextTask.getDependencies().hasLinks(selection) == false ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
