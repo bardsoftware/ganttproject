@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
+import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -49,17 +50,16 @@ public class LinkTasksAction extends TaskActionBase {
             }
         }
         // Update (un)link buttons
-        setEnabled(false);
-        UnlinkTasksAction unlinkTasksAction = (UnlinkTasksAction) myUIFacade.getTaskTree().getUnlinkTasksAction();
-        unlinkTasksAction.setEnabled(unlinkTasksAction.isEnabled(selection));
+        getSelectionManager().fireSelectionChanged();
     }                
 
     protected boolean isEnabled(List<Task> selection) {
         if(selection.size() <= 1) {
             return false;
         }
-        for (int i = 0; i < selection.size(); i++) {
-            Task nextTask = selection.get(i);
+        Iterator<Task> it = selection.iterator();
+        while (it.hasNext()) {
+            Task nextTask = it.next();
             if (nextTask.getDependencies().hasLinks(selection) == false ) {
                 return true;
             }
