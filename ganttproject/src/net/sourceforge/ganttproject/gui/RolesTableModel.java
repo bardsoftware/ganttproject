@@ -23,63 +23,53 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 
 /**
- * @author athomas Model of table for roles
+ * Model of table for roles
+ * 
+ * @author athomas
  */
 public class RolesTableModel extends AbstractTableModel {
 
-    final String[] columnNames = { GanttLanguage.getInstance().getText("id"),
+    private final String[] columnNames = { GanttLanguage.getInstance().getText("id"),
             GanttLanguage.getInstance().getText("resourceRole") };
 
-    final Object[][] data = new Object[100][];
+    private final Object[][] data = new Object[100][];
 
-    private RoleManager myRoleManager;
+    private final RoleManager myRoleManager;
 
-    /** Constructor */
     public RolesTableModel() {
         myRoleManager = RoleManager.Access.getInstance();
 
         Role[] roles = getRoleManager().getProjectLevelRoles();
         int i;
-        for (i = 0; i < roles.length; i++)
+        for (i = 0; i < roles.length; i++) {
             data[i] = new Object[] { String.valueOf(i), roles[i].getName() };
+        }
         for (int j = i; j < data.length; j++) {
-            data[j] = new Object[2]; // {"", ""};
+            data[j] = new Object[2];
         }
     }
 
-    /** Return the number of colums */
+    /** @return the number of columns */
     public int getColumnCount() {
         return columnNames.length;
     }
 
-    /** Return the number of rows */
+    /** @return the number of rows */
     public int getRowCount() {
         return data.length;
     }
 
-    /** Return the name of the column at col index */
+    /** @return the name of the column at col index */
     public String getColumnName(int col) {
         return columnNames[col];
     }
 
-    /** Return the object a specify cell */
+    /** @return the object a specify cell */
     public Object getValueAt(int row, int col) {
         return data[row][col];
-
     }
 
-    /*
-     * JTable uses this method to determine the default renderer/ editor for
-     * each cell. If we didn't implement this method, then the last column would
-     * contain text ("true"/"false"), rather than a check box.
-     */
-
-    /*
-     * public Class getColumnClass(int c) { if (c == 0 || c == 2) { return new
-     * String().getClass(); } else { return new HumanResource().getClass(); } //
-     * return getValueAt(0, c).getClass(); }
-     */
-
+    /** @return true if the cell is editable */
     public boolean isCellEditable(int row, int col) {
         return col == 1;
     }
@@ -101,11 +91,12 @@ public class RolesTableModel extends AbstractTableModel {
         for (int i = 0; i < getRowCount(); i++) {
             String nextRoleName = (String) getValueAt(i, 1);
             if (nextRoleName != null) {
-                if (i >= roles.length)
+                if (i >= roles.length) {
                     return true;
-
-                if (!nextRoleName.equals(roles[i].getName()))
+                }
+                if (!nextRoleName.equals(roles[i].getName())) {
                     return true;
+                }
             }
         }
         return false;
@@ -119,7 +110,5 @@ public class RolesTableModel extends AbstractTableModel {
                 getRoleManager().add(i, nextRoleName);
             }
         }
-
     }
-
 }

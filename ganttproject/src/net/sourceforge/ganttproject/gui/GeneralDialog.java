@@ -48,37 +48,38 @@ import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas General options dialog box
+ * General options dialog box
+ *
+ * @author athomas
  */
 public abstract class GeneralDialog extends JDialog implements ActionListener,
         TreeSelectionListener {
 
     /** Language of the application. */
-    protected GanttLanguage language = GanttLanguage.getInstance();
+    protected final GanttLanguage language = GanttLanguage.getInstance();
 
-    protected GanttProject appli;
+    protected final GanttProject appli;
 
     /** The tree to set the menus. */
-    protected JTree treeSections;
+    protected final JTree treeSections;
 
     /** The root node of the Tree */
-    protected DefaultMutableTreeNode rootNode;
+    protected final DefaultMutableTreeNode rootNode;
 
     /** The model for the JTree */
-    protected DefaultTreeModel treeModel;
+    protected final DefaultTreeModel treeModel;
 
-    /** some buttons */
-    protected JButton okButton, cancelButton, applyButton;
+    // some buttons
+    protected final JButton okButton, cancelButton;
 
-    /** the panel to create a new settings page. */
-    protected GeneralOptionPanel settingPanel = null;
+    /** The panel to create a new settings page. */
+    protected GeneralOptionPanel settingPanel;
 
     /** The main panel of the dialog. */
-    protected JPanel mainPanel2 = new JPanel();
+    protected final JPanel mainPanel2 = new JPanel();
 
-    protected JPanel southPanel;
+    protected final JPanel southPanel;
 
-    /** Constructor. */
     public GeneralDialog(GanttProject parent, String title, boolean modal,
             GeneralOptionPanel firstPanel) {
         super(parent, GanttProject.correctLabel(title), modal);
@@ -101,10 +102,11 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         treePanel.add(scrollpane);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
-        if (language.getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT)
+        if (language.getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
             mainPanel.add(treePanel, BorderLayout.WEST);
-        else
+        } else {
             mainPanel.add(scrollpane, BorderLayout.EAST);
+        }
         scrollpane.setPreferredSize(new Dimension(150, 450));
 
         // construct the south panel
@@ -113,9 +115,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         okButton = new JButton(language.getText("ok"));
         okButton.addActionListener(this);
         southPanel.add(okButton);
-        applyButton = new JButton(language.getText("apply"));
-        applyButton.addActionListener(this);
-        // southPanel.add(applyButton); //dont use the apply button
+
         cancelButton = new JButton(language.getText("cancel"));
         cancelButton.addActionListener(this);
 
@@ -127,8 +127,9 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         mainPanel.add(southBox, BorderLayout.SOUTH);
 
         // set the ok button as default action for enter
-        if (getRootPane() != null)
+        if (getRootPane() != null) {
             getRootPane().setDefaultButton(okButton);
+        }
 
         // add the main panel into the dialog
         JPanel tmpPanel = new JPanel(new BorderLayout());
@@ -174,34 +175,26 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
 
     /** action performed for listeners. */
     public void actionPerformed(ActionEvent event) {
-        // click the okButton
         if (event.getSource() == okButton) {
-            settingPanel.applyChanges(false); // ask if the panel has
-            // modifications
+            // okButton clicked
+            settingPanel.applyChanges(false);
             this.setVisible(false);
-            appli.getUIFacade().getGanttChart().reset();
+            getUIFacade().getGanttChart().reset();
             dispose();
-        }
-        // click the cancel button
-        else if (event.getSource() == cancelButton) {
+        } else if (event.getSource() == cancelButton) {
+            // cancelButton clicked
             settingPanel.rollback();
             this.setVisible(false);
             dispose();
         }
-        // click the okButton
-        if (event.getSource() == applyButton) {
-            settingPanel.applyChanges(false); // ask if the panel has
-            // modifications
-        }
     }
 
-    // ! Class to render the tree
+    /** Class to render the tree */
     public class SettinsDefaultTreeCellRenderer extends DefaultTreeCellRenderer
             implements TreeCellRenderer {
 
         public SettinsDefaultTreeCellRenderer() {
             setOpaque(true);
-
         }
 
         public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -223,9 +216,8 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
     protected IGanttProject getProject() {
         return appli;
     }
-    
+
     protected UIFacade getUIFacade() {
         return appli.getUIFacade();
     }
-
 }

@@ -35,24 +35,25 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
 /**
- * @author athomas Class to export the project in csv text format
+ * Class to export the project in csv text format
+ * 
+ * @author athomas
  */
 public class GanttCSVExport {
+    private final IGanttProject myProject;
+
     private final CSVOptions csvOptions;
 
     private final HumanResourceManager myHrManager;
 
     private final Task[] myTasks;
 
-    List<HumanResource> resources = new ArrayList<HumanResource>();
+    private List<HumanResource> resources = new ArrayList<HumanResource>();
 
     int iMaxSize = 0;
 
     boolean bFixedSize = false;
 
-	private final IGanttProject myProject;
-
-    /** Constructor. */
     public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
     	myProject = project;
         myTasks = project.getTaskManager().getTasks();
@@ -74,8 +75,9 @@ public class GanttCSVExport {
 
         bFixedSize = csvOptions.bFixedSize;
 
-        if (csvOptions.bFixedSize)
+        if (csvOptions.bFixedSize) {
             getMaxSize();
+        }
 
         writeTasks(out);
         out.write("\n\n\n");
@@ -122,7 +124,7 @@ public class GanttCSVExport {
         if (csvOptions.bExportTaskNotes) {
         	writeCell(out, i18n("notes"));        	        	
         }
-        List/*<String>*/<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         for (int i=0; i<customFields.size(); i++) {
         	writeCell(out, String.valueOf(customFields.get(i)));
         }
@@ -249,63 +251,72 @@ public class GanttCSVExport {
 
 	/** set the maximum size for all strings. */
     void getMaxSize() {
-        List/*<String>*/<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         iMaxSize = 0;
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
 
             if (csvOptions.bExportTaskID) {
-                String s = "" + task.getTaskID();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(task.getTaskID());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskName) {
-                String s = "" + getName(task);
-                if (s.length() > iMaxSize)
+                String s = getName(task);
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskStartDate) {
-                String s = "" + task.getStart();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(task.getStart());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskEndDate) {
-                String s = "" + task.getEnd();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(task.getEnd());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskDuration) {
-                String s = "" + task.getDuration().getLength();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(task.getDuration().getLength());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskPercent) {
-                String s = "" + task.getCompletionPercentage();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(task.getCompletionPercentage());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskWebLink) {
-                String s = "" + getWebLink((GanttTask) task);
-                if (s.length() > iMaxSize)
+                String s = getWebLink((GanttTask) task);
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskResources) {
-                String s = "" + getAssignments(task);
-                if (s.length() > iMaxSize)
+                String s = getAssignments(task);
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             if (csvOptions.bExportTaskNotes) {
-                String s = "" + task.getNotes();
-                if (s.length() > iMaxSize)
+                String s = task.getNotes();
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
 
             CustomColumnsValues customValues = task.getCustomValues();
@@ -323,33 +334,39 @@ public class GanttCSVExport {
             HumanResource p = resources.get(i);
 
             if (csvOptions.bExportResourceID) {
-                String s = "" + p.getId();
-                if (s.length() > iMaxSize)
+                String s = String.valueOf(p.getId());
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
             if (csvOptions.bExportResourceName) {
-                String s = "" + p.getName();
-                if (s.length() > iMaxSize)
+                String s = p.getName();
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
             if (csvOptions.bExportResourceMail) {
-                String s = "" + p.getMail();
+                String s = p.getMail();
                 if (s.length() > iMaxSize)
                     iMaxSize = s.length();
             }
             if (csvOptions.bExportResourcePhone) {
-                String s = "" + p.getPhone();
-                if (s.length() > iMaxSize)
+                String s = p.getPhone();
+                if (s.length() > iMaxSize) {
                     iMaxSize = s.length();
+                }
             }
             if (csvOptions.bExportResourceRole) {
                 Role role = p.getRole();
-                String sRoleID = "0";
-                if (role != null)
+                String sRoleID;
+                if (role != null) {
                     sRoleID = role.getPersistentID();
-                String s = "" + sRoleID;
-                if (s.length() > iMaxSize)
-                    iMaxSize = s.length();
+                } else {
+                    sRoleID = "0";
+                }
+                if (sRoleID.length() > iMaxSize) {
+                    iMaxSize = sRoleID.length();
+                }
             }
             List<CustomProperty> customProps = p.getCustomProperties();
             for (int j=0; j<customProps.size(); j++) {
@@ -364,8 +381,9 @@ public class GanttCSVExport {
 
     /** @return the name of task with the correct level. */
     private String getName(Task task) {
-        if (bFixedSize)
+        if (bFixedSize) {
             return task.getName();
+        }
         String res = "";
         int depth = task.getManager().getTaskHierarchy().getDepth(task);
         for (int i = 0; i < depth; i++) {
@@ -383,16 +401,18 @@ public class GanttCSVExport {
     private String getAssignments(Task task) {
         String res = "";
         ResourceAssignment[] assignment = task.getAssignments();
-        for (int i = 0; i < assignment.length; i++)
+        for (int i = 0; i < assignment.length; i++) {
             res += (assignment[i].getResource() + (i == assignment.length - 1 ? ""
                     : csvOptions.sSeparatedChar.equals(";") ? "," : ";"));
+        }
         return res;
     }
 
     private String correctField(String field) {
         String res = "";
-        for (int i = 0; i < iMaxSize - field.length(); i++)
+        for (int i = 0; i < iMaxSize - field.length(); i++) {
             res += " ";
+        }
         res += field;
         return res;
     }

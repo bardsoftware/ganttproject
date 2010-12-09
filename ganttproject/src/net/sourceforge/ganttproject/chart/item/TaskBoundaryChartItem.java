@@ -15,7 +15,6 @@ public class TaskBoundaryChartItem extends ChartItem {
     public TaskBoundaryChartItem(Task task, boolean isStart) {
         super(task);
         this.isStart = isStart;
-        // TODO Auto-generated constructor stub
     }
 
     public boolean isStartBoundary() {

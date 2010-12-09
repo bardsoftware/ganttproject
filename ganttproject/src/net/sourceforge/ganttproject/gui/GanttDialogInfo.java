@@ -70,7 +70,6 @@ public class GanttDialogInfo extends JDialog {
     /** ok and cancel button */
     public static int YES_NO_CANCEL_OPTION = 2;
 
-    /** Constructor */
     public GanttDialogInfo(Frame parent, int msgtype, int button,
             String message, String title) {
 
@@ -82,18 +81,21 @@ public class GanttDialogInfo extends JDialog {
 
         Box b1 = Box.createVerticalBox();
 
-        if (msgtype == ERROR)
+        switch (msgtype) {
+        case ERROR:
             b1.add(new JLabel(new ImageIcon(getClass().getResource(
                     "/icons/error.png"))));
-        else if (msgtype == WARNING)
+            break;
+        case WARNING:
             b1.add(new JLabel(new ImageIcon(getClass().getResource(
                     "/icons/warning.png"))));
-        else if (msgtype == INFO)
+        case INFO:
             b1.add(new JLabel(new ImageIcon(getClass().getResource(
                     "/icons/info.png"))));
-        else if (msgtype == QUESTION)
+        case QUESTION:
             b1.add(new JLabel(new ImageIcon(getClass().getResource(
                     "/icons/question.png"))));
+        }
 
         getContentPane().add(b1, "West");
 
@@ -105,7 +107,7 @@ public class GanttDialogInfo extends JDialog {
         getContentPane().add(b2, "Center");
 
         JPanel p = new JPanel();
-        // YES BUTTON
+        // YES/OK BUTTON
         JButton yes = new JButton((button == 0) ? language.getText("ok")
                 : language.getText("yes"));
         getRootPane().setDefaultButton(yes);

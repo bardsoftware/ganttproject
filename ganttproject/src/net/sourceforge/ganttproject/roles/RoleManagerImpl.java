@@ -14,12 +14,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 public class RoleManagerImpl implements RoleManager {
 	private final List<Listener> myListeners = new ArrayList<Listener>();
 
-    private RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);
+    private final RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);
 
-    private ArrayList<RoleSet> myRoleSets = new ArrayList<RoleSet>();
+    private final ArrayList<RoleSet> myRoleSets = new ArrayList<RoleSet>();
 
-    final private RoleSetImpl SOFTWARE_DEVELOPMENT_ROLE_SET;
-    final private RoleSetImpl DEFAULT_ROLE_SET;
+    private final RoleSetImpl SOFTWARE_DEVELOPMENT_ROLE_SET;
+    private final RoleSetImpl DEFAULT_ROLE_SET;
 
     public RoleManagerImpl() {
         DEFAULT_ROLE_SET = new RoleSetImpl(RoleSet.DEFAULT, this);
@@ -40,7 +40,7 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     public void clear() {
-        myProjectRoleSet = new RoleSetImpl(null, this);
+        myProjectRoleSet.clear();
         for (int i = 0; i < myRoleSets.size(); i++) {
             RoleSet next = myRoleSets.get(i);
             next.setEnabled(false);

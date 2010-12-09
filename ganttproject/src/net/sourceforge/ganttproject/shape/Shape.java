@@ -1,7 +1,7 @@
 package net.sourceforge.ganttproject.shape;
 
 /**
- **@author Etienne L'kenfack (etienne.lkenfack@itcogita.com)
+ *@author Etienne L'kenfack (etienne.lkenfack@itcogita.com)
  */
 
 import java.awt.BorderLayout;
@@ -18,15 +18,12 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+// TODO class is unused... Remove?
 public class Shape extends JPanel implements ActionListener,
         ListSelectionListener {
-    public static final boolean COMBO = true;
+    protected final ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
 
-    public static final boolean LIST = false;
-
-    protected ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
-
-    protected boolean compactDisplay;
+    protected final boolean compactDisplay;
 
     protected JPaintCombo patternCombo;
 
@@ -40,7 +37,7 @@ public class Shape extends JPanel implements ActionListener,
 
     protected JPaintList backgroundList;
 
-    protected PreviewPanel preview;
+    protected final PreviewPanel preview;
 
     public Shape(boolean compactDisplay) {
         this.compactDisplay = compactDisplay;
@@ -146,13 +143,13 @@ public class Shape extends JPanel implements ActionListener,
         if (compactDisplay) {
             patternCombo.setSelectedItem(new ShapePaint(pattern, Color.black,
                     Color.white));
-            foregroundCombo.setSelectedItem(pattern.foreground);
-            backgroundCombo.setSelectedItem(pattern.background);
+            foregroundCombo.setSelectedItem(pattern.getForeground());
+            backgroundCombo.setSelectedItem(pattern.getBackground());
         } else {
             patternList.setSelectedValue(new ShapePaint(pattern, Color.black,
                     Color.white), true);
-            foregroundList.setSelectedValue(pattern.foreground, true);
-            backgroundList.setSelectedValue(pattern.background, true);
+            foregroundList.setSelectedValue(pattern.getForeground(), true);
+            backgroundList.setSelectedValue(pattern.getBackground(), true);
         }
         fireActionEvent();
     }

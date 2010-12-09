@@ -176,7 +176,6 @@ class ProjectFileImporter {
         }
     }
 
-
     private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
         myResourceCustomPropertyMapping = new HashMap<ResourceField, CustomPropertyDefinition>();
         for (Resource r: pf.getAllResources()) {

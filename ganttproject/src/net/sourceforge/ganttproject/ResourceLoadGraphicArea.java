@@ -25,7 +25,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.Action;
@@ -59,17 +58,16 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private static final int HEADER_OFFSET = 47;
 
-    /* Render the ganttproject version */
+    /** Render the ganttproject version */
     private boolean drawVersion = false;
 
-    /* ! The main application */
+    /** The main application */
     private GanttProject appli;
 
     private ChartModelResource myChartModel;
 
     private ChartViewState myViewState;
 
-    /** Constructor */
     public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
         this.setBackground(Color.WHITE);
@@ -88,7 +86,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return new Dimension(465, 600);
     }
 
-
     protected int getHeaderHeight() {
         return appli.getResourcePanel().table.getTable().getTableHeader().getHeight() + HEADER_OFFSET;
     }
@@ -104,60 +101,15 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 getHeight() - 8);
     }
 
-    // TODO Method is unused... Remove?
-    /** Search for a coef on the arraylist */
-    public int indexOf(ArrayList listOfParam, String coef) {
-        for (int i = 0; i < listOfParam.size(); i++)
-            if (coef == listOfParam.get(i).toString())
-                return i;
-        return -1;
-    }
-
     public BufferedImage getChart(GanttExportSettings settings) {
         RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
         BufferedImage result = renderedImage.getWholeImage();
         repaint();
         return result;
     }
-    /** Return an image with the gantt chart */
 
+    /** @return an image with the gantt chart */
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-
-        /*Date dateStart = settings.getStartDate() == null ? getStartDate()
-                : settings.getStartDate();
-        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings
-                .getEndDate();
-        if (dateStart.after(dateEnd)) {
-            Date tmp = (Date) dateStart.clone();
-            dateStart = (Date) dateEnd.clone();
-            dateEnd = tmp;
-        }
-        TaskLength printedLength = getTaskManager().createLength(
-                getViewState().getBottomTimeUnit(), dateStart, dateEnd);
-        int chartWidth = (int) ((printedLength.getLength(getViewState()
-                .getBottomTimeUnit()) + 1) * getViewState()
-                .getBottomUnitWidth());
-        if (chartWidth<getWidth()) {
-            chartWidth = getWidth();
-        }
-
-        ResourceTreeImageGenerator resourceTreeGenerator = new ResourceTreeImageGenerator(getHumanResourceManager()) {
-            protected boolean isAssignmentVisible(ResourceAssignment assignment) {
-                AssignmentNode an = appli.getResourcePanel()
-                        .getResourceTreeTableModel().getNodeForAssigment(assignment);
-                return appli.getResourcePanel().getResourceTreeTable().isVisible(an);
-            }
-            protected int getRowHeight() {
-                return ResourceLoadGraphicArea.this.getRowHeight();
-            }
-        };
-        BufferedImage resourceTreeImage = resourceTreeGenerator.createImage();
-        final int chartHeight = resourceTreeImage.getHeight();
-
-        RenderedResourceChartImage renderedImage = new RenderedResourceChartImage(myChartModel, myChartImplementation,  resourceTreeImage, chartWidth, chartHeight);
-        return renderedImage;
-        */
-
         ResourceTreeTable treetable = Mediator.getGanttProjectSingleton().getResourcePanel().getResourceTreeTable();
         org.jdesktop.swing.JXTreeTable xtreetable = treetable.getTreeTable();
 
@@ -270,7 +222,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     public void setTaskManager(TaskManager taskManager) {
         // TODO Auto-generated method stub
-
     }
 
     public void reset() {
@@ -328,8 +279,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         public void paste(ChartSelection selection) {
             appli.getResourcePanel().pasteSelection();
         }
-
-
     }
 
     @Override

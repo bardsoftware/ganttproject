@@ -19,34 +19,31 @@ package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 
-/**
- * 
- */
+//TODO Class unused? There is not method to *get* the days from the dayList...
 public class GanttCalendarDays {
-    /** List of non working days */
-    private ArrayList<GanttCalendar> dayList = null;
+    /** List of days */
+    private final ArrayList<GanttCalendar> dayList;
 
-    /* Default constructor */
     public GanttCalendarDays() {
         dayList = new ArrayList<GanttCalendar>();
     }
 
-    /* constructor */
     public GanttCalendarDays(ArrayList<GanttCalendar> dayList) {
         this.dayList = dayList;
     }
 
     /** Insert the day on the daylist */
     public void insert(GanttCalendar day) {
-        if (!dayList.contains(day))
+        if (!dayList.contains(day)) {
             dayList.add(day);
+        }
     }
 
     /** Remove the selected day */
     public void remove(GanttCalendar day) {
         int index = dayList.indexOf(day);
-        if (index >= 0)
+        if (index >= 0) {
             dayList.remove(index);
+        }
     }
-
 }
