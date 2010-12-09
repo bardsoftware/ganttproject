@@ -33,7 +33,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class AboutAuthorPanel extends GeneralOptionPanel {
 
-    /** Constructor. */
     public AboutAuthorPanel() {
         super(GanttLanguage.getInstance().getText("authors"), GanttLanguage
                 .getInstance().getText("settingsAuthors"));
@@ -57,7 +56,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("", ""));
         modelauthors.addField(new AuthorsInfo("BARMEIER Matthias",
                 "matthias.barmeier@sourcepark.de"));
-       modelauthors.addField(new AuthorsInfo("MURAS Joanna",
+        modelauthors.addField(new AuthorsInfo("MURAS Joanna",
        			"zabucha@users.sourceforge.net"));
         modelauthors.addField(new AuthorsInfo("LU Cui", "cuix1@yahoo.com"));
         modelauthors.addField(new AuthorsInfo("SCHULZ Maik",
@@ -150,20 +149,10 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
-     */
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
-     */
     public void initialize() {
         // nothing to change
     }

@@ -30,11 +30,10 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * Class to create a panel with the image above the Tree
  */
 public class GanttImagePanel extends JPanel {
-    int x = 300, y = 42;
+    private final int x, y;
 
     private final ImageIcon image;
 
-    /** Constructor of the panel. */
     public GanttImagePanel(String imagename, int x, int y) {
         super(new GridBagLayout());
         image = new ImageIcon(getClass().getResource("/icons/" + imagename));
@@ -49,7 +48,7 @@ public class GanttImagePanel extends JPanel {
         image.paintIcon(this, g, 0, 0);
     }
 
-    /** The prefered size of this panel */
+    /** The preferred size of this panel */
     public Dimension getPreferredSize() {
         return new Dimension(x, y);
     }
