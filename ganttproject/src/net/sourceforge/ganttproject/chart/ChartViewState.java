@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -32,19 +33,11 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
     // myBottomUnitWidth = 20;
     // }
 
-    public void scrollRight() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                myChart.scrollRight();
-            }
-        });
+    public void scrollBy(TaskLength duration) {
+        myChart.scrollBy(duration);
     }
 
-    public void scrollLeft() {
-        myChart.scrollLeft();
-    }
-
-    public void scrollLeft(Date date) {
+    public void scrollTo(Date date) {
         myChart.setStartDate(date);
     }
 

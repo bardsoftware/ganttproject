@@ -48,9 +48,6 @@ public interface ChartModel {
 
     void paint(Graphics g);
 
-    void setTaskContainment(TaskContainmentHierarchyFacade taskContainment);
-
-
     Rectangle getBoundingRectangle(Task task);
 
     float calculateLength(int fromX, int toX, int y);
@@ -64,7 +61,7 @@ public interface ChartModel {
     List<ChartModelBase.Offset> getTopUnitOffsets();
     List<ChartModelBase.Offset> getBottomUnitOffsets();
     List<Offset> getDefaultUnitOffsets();
-    List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
+    //List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
     Date getDateAt(int x);
     TaskManager getTaskManager();
     TimeUnitStack getTimeUnitStack();

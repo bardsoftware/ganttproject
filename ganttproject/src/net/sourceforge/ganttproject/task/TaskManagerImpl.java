@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
@@ -467,17 +468,11 @@ public class TaskManagerImpl implements TaskManager {
             endDate = startDate;
             startDate = temp;
         }
-        if (timeUnit instanceof DateFrameable) {
-            DateFrameable df = (DateFrameable) timeUnit;
-            int unitCount = 0;
-            for (; startDate.before(endDate); unitCount++) {
-                startDate = df.adjustRight(startDate);
-            }
-            result = new TaskLengthImpl(timeUnit, unitCount*sign);
-        } else {
-            throw new IllegalArgumentException("Time unit=" + timeUnit
-                    + " is not date frameable");
+        int unitCount = 0;
+        for (; startDate.before(endDate); unitCount++) {
+            startDate = timeUnit.adjustRight(startDate);
         }
+        result = new TaskLengthImpl(timeUnit, unitCount*sign);
         return result;
     }
 
@@ -805,7 +800,7 @@ public class TaskManagerImpl implements TaskManager {
         Task[] nested = importRoot.getManager().getTaskHierarchy()
                 .getNestedTasks(importRoot);
         for (int i = nested.length - 1; i >= 0; i--) {
-            Task nextImported = createTask();
+            Task nextImported = createTask(nested[i].getTaskID());
             registerTask(nextImported);
             nextImported.setName(nested[i].getName());
             nextImported.setStart(nested[i].getStart().Clone());
@@ -911,6 +906,10 @@ public class TaskManagerImpl implements TaskManager {
 
     public CustomColumnsStorage getCustomColumnStorage() {
         return myCustomColumnStorage;
+    }
+    
+    public CustomPropertyManager getCustomPropertyManager() {
+        return new CustomColumnsManager(getCustomColumnStorage());
     }
 
     public URL getProjectDocument() {

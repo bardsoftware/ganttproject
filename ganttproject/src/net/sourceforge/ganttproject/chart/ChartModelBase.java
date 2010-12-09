@@ -37,8 +37,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         private final boolean isCompressedWeekend;
 
         public OffsetBuilderImpl(ChartModelBase model, int width, Date endDate) {
-            super(model.getTimeUnitStack(),
-                  model.getTaskManager().getCalendar(),
+            super(model.getTaskManager().getCalendar(),
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
                   model.getStartDate(),
@@ -49,22 +48,20 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   endDate);
             isCompressedWeekend = model.getTopUnit().isConstructedFrom(model.getBottomUnit());
         }
-        protected void calculateNextStep(OffsetStep step, TimeFrame currentFrame, Date startDate) {
-            float offsetStep = getOffsetStep(currentFrame);
+        
+        @Override
+        protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
+            float offsetStep = getOffsetStep(timeUnit);
             DayType dayType = ChartModelBase.this.getTaskManager().getCalendar().getDayTypeDate(startDate);
-            if (dayType == DayType.WORKING) {
-            	step.dayType = GPCalendar.DayType.WORKING;
-            }
-            else {
-              step.dayType = dayType;
-              if (isCompressedWeekend) {
+            step.dayType = dayType;
+            if (dayType != DayType.WORKING && isCompressedWeekend) {
                   offsetStep = offsetStep / RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
-              }                
             }
             step.parrots += offsetStep;
         }
-        protected float getOffsetStep(TimeFrame timeFrame) {
-            int offsetUnitCount = timeFrame.getUnitCount(getTimeUnitStack().getDefaultTimeUnit());
+        @Override
+        protected float getOffsetStep(TimeUnit timeUnit) {
+            int offsetUnitCount = timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
             return 1f / offsetUnitCount;
         }
     }
@@ -126,10 +123,12 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public List<Offset> getDefaultUnitOffsets() {
+        if (getBottomUnit().equals(getTimeUnitStack().getDefaultTimeUnit())) {
+            return getBottomUnitOffsets();
+        }
         if (myDefaultUnitOffsets.isEmpty()) {
-            ArrayList<Offset> tmpOffsets = new ArrayList<Offset>();
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
-            offsetBuilder.constructOffsets(tmpOffsets, myDefaultUnitOffsets);
+            offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
         }
         return myDefaultUnitOffsets;
     }
@@ -155,58 +154,18 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
     }
 
-    public List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset) {
-        Range range = new Range(startOffset, endOffset);
-        List<Offset> result = myRange2DefaultUnitOffsets.get(range);
-        if (result!=null) {
-            return result;
-        }
-        ArrayList<Offset> tmpOffsets = new ArrayList<Offset>();
-        result = new ArrayList<Offset>();
-
-        int initialEnd = startOffset==null ? 0 : startOffset.getOffsetPixels();
-        Date startDate = startOffset==null ? myStartDate : startOffset.getOffsetEnd();
-        RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-                getTimeUnitStack(),
-                myTaskManager.getCalendar(),
-                endOffset.getOffsetUnit(),
-                getTimeUnitStack().getDefaultTimeUnit(),
-                startDate,
-                getBottomUnitWidth(),
-                endOffset.getOffsetPixels(),
-                1f) {
-            protected float getOffsetStep(TimeFrame timeFrame) {
-                int offsetUnitCount = timeFrame.getUnitCount(getTimeUnitStack().getDefaultTimeUnit());
-                return 1f / offsetUnitCount;
-            }
-        };
-        offsetBuilder.constructOffsets(tmpOffsets, result, initialEnd);
-        myRange2DefaultUnitOffsets.put(range, result);
-        return result;
-    }
-
     protected void constructOffsets() {
         myTopUnitOffsets.clear();
         myBottomUnitOffsets.clear();
         myDefaultUnitOffsets.clear();
 
-        if (getTopUnit().isConstructedFrom(getBottomUnit())) {
-            // It is the case when top unit can always be constructed from integer number of bottom units,
-            // and bounds of top unit and start/end bottom units are aligned
-            // e.g. week can be constructed from days
-            RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-                    myTimeUnitStack, myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
-                    getBottomUnitWidth(), (int)getBounds().getWidth(), RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR);
-            offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-        }
-        else {
-            // In this case top unit can't be constructed from integer number of bottom units
-            // and unit boundaries aren't aligned. Thus, month and weeks are skewed units
-            SkewedFrameOffsetBuilder offsetBuilder = new SkewedFrameOffsetBuilder(
-                    myTimeUnitStack, myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
-                    getBottomUnitWidth(), (int)getBounds().getWidth());
-            offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-        }
+        RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
+            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
+            getBottomUnitWidth(), (int)getBounds().getWidth(),
+            getTopUnit().isConstructedFrom(getBottomUnit()) ?
+                RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+        offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
+
     }
 
     public void paint(Graphics g) {

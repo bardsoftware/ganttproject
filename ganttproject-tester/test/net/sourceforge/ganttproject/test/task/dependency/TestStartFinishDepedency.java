@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.test.task.dependency;
 
 
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
@@ -30,7 +31,7 @@ public class TestStartFinishDepedency extends TaskTestCase {
         Task t1 = createTask();
         Task t2 = createTask();
 
-        GanttCalendar dependeeStart = newFriday(); 
+        GanttCalendar dependeeStart = TestSetupHelper.newFriday(); 
         t1.setStart(dependeeStart);
         TaskDependency dep = createDependency(t2, t1);
         dep.setConstraint(new StartFinishConstraintImpl());
@@ -43,14 +44,14 @@ public class TestStartFinishDepedency extends TaskTestCase {
         Task t1 = createTask();
         Task t2 = createTask();
 
-        GanttCalendar dependeeStart = newFriday(); 
+        GanttCalendar dependeeStart = TestSetupHelper.newFriday(); 
         t1.setStart(dependeeStart);
         TaskDependency dep = createDependency(t2, t1);
         dep.setDifference(3);
         dep.setConstraint(new StartFinishConstraintImpl());
         
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        assertEquals(newMonday(), t2.getEnd());
+        assertEquals(TestSetupHelper.newMonday(), t2.getEnd());
     }
     
     public void testSFChain() throws Exception {
@@ -58,7 +59,7 @@ public class TestStartFinishDepedency extends TaskTestCase {
         Task t2 = createTask();
         Task t3 = createTask();
 
-        t1.setStart(newMonday());
+        t1.setStart(TestSetupHelper.newMonday());
         TaskDependency dep_t2_t1 = createDependency(t2, t1);
         dep_t2_t1.setConstraint(new StartFinishConstraintImpl());
         
@@ -66,8 +67,8 @@ public class TestStartFinishDepedency extends TaskTestCase {
         dep_t3_t2.setConstraint(new StartFinishConstraintImpl());
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         
-        assertEquals(newSunday(), t2.getStart());
-        assertEquals(newSaturday(), t3.getStart());
+        assertEquals(TestSetupHelper.newSunday(), t2.getStart());
+        assertEquals(TestSetupHelper.newSaturday(), t3.getStart());
     }
 
 }

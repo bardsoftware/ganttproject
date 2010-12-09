@@ -10,9 +10,13 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 public interface TaskLength {
     float getLength(TimeUnit unit);
 
-    long getLength();
+    int getLength();
 
     TimeUnit getTimeUnit();
 
     float getValue();
+    
+    TaskLength reverse();
+
+	TaskLength translate(TimeUnit timeUnit);
 }

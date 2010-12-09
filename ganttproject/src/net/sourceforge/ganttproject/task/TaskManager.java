@@ -7,6 +7,7 @@ package net.sourceforge.ganttproject.task;
 import java.util.Date;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -104,4 +105,5 @@ public interface TaskManager {
     public void deleteTask(Task tasktoRemove);
 
     CustomColumnsStorage getCustomColumnStorage();
+    CustomPropertyManager getCustomPropertyManager();
 }

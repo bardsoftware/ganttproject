@@ -1,8 +1,16 @@
 package net.sourceforge.ganttproject.task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyHolder;
+import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
  * This class handles the custom columns for one single task. It associate a
@@ -13,18 +21,20 @@ import java.util.Map;
  *
  * @author bbaranne Mar 2, 2005
  */
-public class CustomColumnsValues implements Cloneable {
+public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     /**
      * CustomColumnName(String) -> Value (Object)
      */
-    private final Map<Object, Object> mapCustomColumnValue = new HashMap<Object, Object>();
+    private final Map<String, Object> mapCustomColumnValue = new HashMap<String, Object>();
 	private final CustomColumnsStorage myColumnStorage;
+    private final CustomColumnsManager myManager;
 
     /**
      * Creates an instance of CustomColumnsValues.
      */
     public CustomColumnsValues(CustomColumnsStorage columnStorage) {
         myColumnStorage = columnStorage;
+        myManager = new CustomColumnsManager(myColumnStorage);
     }
 
     /**
@@ -91,16 +101,76 @@ public class CustomColumnsValues implements Cloneable {
 
     public Object clone() {
         CustomColumnsValues res = new CustomColumnsValues(myColumnStorage);
-        Iterator<Object> it = mapCustomColumnValue.keySet().iterator();
-        while (it.hasNext()) {
-            Object k = it.next();
-            res.mapCustomColumnValue.put(k, mapCustomColumnValue.get(k));
-        }
+        res.mapCustomColumnValue.putAll(this.mapCustomColumnValue);
         return res;
     }
 
     public String toString() {
         return mapCustomColumnValue.toString();
+    }
+
+    @Override
+    public List<CustomProperty> getCustomProperties() {
+        List<CustomProperty> result = new ArrayList<CustomProperty>(mapCustomColumnValue.size());
+        for (Entry<String, Object> entry : mapCustomColumnValue.entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
+            CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, name);
+            if (def != null) {
+                result.add(new CustomPropertyImpl(def, value));
+            }
+        }
+        return result;
+    }
+
+    private static CustomPropertyDefinition getCustomPropertyDefinition(CustomPropertyManager manager, String name) {
+        for (CustomPropertyDefinition def : manager.getDefinitions()) {
+            if (name.equals(def.getName())) {
+                return def;
+            }
+        }
+        return null;
+    }
+    @Override
+    public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private static class CustomPropertyImpl implements CustomProperty {
+        private CustomPropertyDefinition myDefinition;
+        private Object myValue;
+
+        public CustomPropertyImpl(CustomPropertyDefinition definition,
+                Object value) {
+            myDefinition = definition;
+            myValue = value;
+        }
+
+        public CustomPropertyDefinition getDefinition() {
+            return myDefinition;
+        }
+
+        public Object getValue() {
+            return myValue;
+        }
+
+        public String getValueAsString() {
+            return CustomColumnsValues.getValueAsString(myValue);
+        }
+    }
+
+    static String getValueAsString(Object value) {
+        String result = null;
+        if (value != null) {
+            if (value instanceof GanttCalendar) {
+                result = ((GanttCalendar)value).toXMLString();
+            }
+            else {
+                result = String.valueOf(value);
+            }
+        }
+        return result;
     }
 
 }

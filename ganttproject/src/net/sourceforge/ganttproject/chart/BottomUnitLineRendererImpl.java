@@ -1,16 +1,32 @@
 /*
- * Created on 13.11.2004
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2004-2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**
- * @author bard
+ * @author dbarashev (Dmitry Barashev)
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
     private final GraphicPrimitiveContainer myPrimitiveContainer;
@@ -35,54 +51,19 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     public void render() {
-        int curX = 0;
-        Date curDate = getChartModel().getStartDate();
-        for (Offset nextOffset : getBottomUnitOffsets()) {
-            if (!getChartModel().getTaskManager().getCalendar().isNonWorkingDay(nextOffset.getOffsetStart())) {
-                renderWorkingDay(curX, curDate, nextOffset);
+        Offset prevOffset = null;
+        for (Offset offset : getBottomUnitOffsets()) {
+            int xpos = prevOffset == null ? 0 : prevOffset.getOffsetPixels();
+            if (offset.getDayType() == GPCalendar.DayType.WORKING) {
+                renderWorkingDay(xpos, offset, prevOffset);
             }
-            curX = nextOffset.getOffsetPixels();
-            curDate = nextOffset.getOffsetEnd();
+            renderLabel(xpos, offset.getOffsetStart(), offset);
+            prevOffset = offset;
         }
         renderNonWorkingDayColumns();
     }
     
-    private void renderNonWorkingDayColumns() {
-        int curX = 0;
-        boolean firstWeekendDay = true;
-        for (Offset nextOffset : getChartModel().getBottomUnitOffsets()) {
-            if (nextOffset.getDayType() != GPCalendar.DayType.WORKING){
-                renderNonWorkingDay(curX, nextOffset);
-                if (firstWeekendDay) {
-                    myTimelineContainer.createLine(
-                            curX, getLineTopPosition(), curX, getLineTopPosition()+10);
-                    firstWeekendDay = false;
-                }
-            } else {
-                firstWeekendDay = true;
-            }
-            curX = nextOffset.getOffsetPixels();
-        }
-    }
-
-    private void renderNonWorkingDay(int curX, Offset curOffset) {
-        GraphicPrimitiveContainer.Rectangle r =
-            getPrimitiveContainer().createRectangle(
-                    curX,
-                    getLineBottomPosition()+1,
-                    curOffset.getOffsetPixels() - curX,
-                    getHeight());
-        if (curOffset.getDayType() == GPCalendar.DayType.WEEKEND) {
-            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
-        }
-        else if (curOffset.getDayType() == GPCalendar.DayType.HOLIDAY) {
-            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
-        }
-        r.setStyle("calendar.holiday");
-        getPrimitiveContainer().bind(r, curOffset.getDayType());
-    }
-
-    private void renderWorkingDay(int curX, Date curDate, Offset curOffset) {
+    private void renderLabel(int curX, Date curDate, Offset curOffset) {
         TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
         String unitText = timeUnitText.getText(-1);
         int posY = getTextBaselinePosition();
@@ -91,8 +72,49 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         myTimelineContainer.bind(text, timeUnitText);
         text.setMaxLength(curOffset.getOffsetPixels() - curX);
         text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-        myTimelineContainer.createLine(
-                curX, getLineTopPosition(), curX, getLineTopPosition()+10);
+    }
+
+    private void renderNonWorkingDayColumns() {
+        int curX = 0;
+        for (Offset offset : getChartModel().getDefaultUnitOffsets()) {
+            if (offset.getDayType() != GPCalendar.DayType.WORKING){
+                renderNonWorkingDay(curX, offset);
+                    Rectangle r = myTimelineContainer.createRectangle(
+                            curX, getLineTopPosition() + 1, 
+                            offset.getOffsetPixels() - curX, 
+                            getLineBottomPosition() - getLineTopPosition() + 1);
+                    applyRectangleStyle(r, offset.getDayType());
+            }
+            curX = offset.getOffsetPixels();
+        }
+    }
+
+    private void renderNonWorkingDay(int curX, Offset curOffset) {
+        GraphicPrimitiveContainer.Rectangle r =
+            getPrimitiveContainer().createRectangle(
+                    curX,
+                    getLineBottomPosition(),
+                    curOffset.getOffsetPixels() - curX,
+                    getHeight());
+        applyRectangleStyle(r, curOffset.getDayType());
+        getPrimitiveContainer().bind(r, curOffset.getDayType());
+    }
+
+    private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
+        if (dayType == GPCalendar.DayType.WEEKEND) {
+            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
+        }
+        else if (dayType == GPCalendar.DayType.HOLIDAY) {
+            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
+        }
+        r.setStyle("calendar.holiday");        
+    }
+    private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
+        if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {
+            myTimelineContainer.createLine(
+                    prevOffset.getOffsetPixels(), getLineTopPosition(), 
+                    prevOffset.getOffsetPixels(), getLineTopPosition()+10);
+        }
     }
 
     protected int getLineTopPosition() {

@@ -9,6 +9,7 @@ import javax.swing.Icon;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -25,8 +26,15 @@ public interface Chart extends IAdaptable {
     public Date getStartDate();
     void setStartDate(Date startDate);
     public Date getEndDate();
-    public void scrollLeft();
-    public void scrollRight();
+
+    /**
+     * Scrolls the chart by a number of days
+     *
+     * @param days
+     *            are the number of days to scroll. If days < 0 it scrolls to
+     *            the right otherwise to the left.
+     */
+    public void scrollBy(TaskLength duration);
 
     void setDimensions(int height, int width);
 

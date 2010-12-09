@@ -49,10 +49,10 @@ public class ChartUIConfiguration {
     ChartUIConfiguration(UIConfiguration projectConfig) {
         mySpanningRowTextFont = Fonts.TOP_UNIT_FONT;
         myBottomUnitFont = projectConfig.getChartMainFont();
-        mySpanningHeaderBackgroundColor = new Color(0.930f, 0.930f, 0.930f);
+        mySpanningHeaderBackgroundColor = new Color(0.93f, 0.93f, 0.93f);
         myHeaderBorderColor = new Color(0.482f, 0.482f, 0.482f);
         myWorkingTimeBackgroundColor = Color.WHITE;
-        myHolidayTimeBackgroundColor = new Color(0.930f, 0.930f, 0.930f);
+        myHolidayTimeBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
         myPublicHolidayTimeBackgroundColor = new Color(240, 220, 240);
         // myHeaderBorderColor = new Color(0f, 1f, 0f);
         myBottomUnitGridColor = new Color(0.482f, 0.482f, 0.482f);

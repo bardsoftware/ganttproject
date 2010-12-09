@@ -28,16 +28,32 @@ import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
  * @author dbarashev (Dmitry Barashev)
  */
 class OffsetLookup {
-    private int findOffset(Date date, int start, int end, List<Offset> offsets) {
-        for (int compare = date.compareTo(offsets.get(start).getOffsetEnd()); compare != 0; compare = date.compareTo(offsets.get(start).getOffsetEnd())) {
+	static interface ComparatorBy<T> {
+		int compare(T point, int offsetIdx, List<Offset> offsets);
+	}
+	
+	static class ComparatorByEndDate implements ComparatorBy<Date> {
+		@Override
+		public int compare(Date point, int offsetIdx, List<Offset> offsets) {
+			return point.compareTo(offsets.get(offsetIdx).getOffsetEnd());
+		}		
+	}
+	
+    private <Type> int findOffset(Type point, ComparatorBy<Type> comparator, int start, int end, List<Offset> offsets) {
+        if (comparator.compare(point, end, offsets) > 0) {
+            return -end - 2;
+        }
+        if (comparator.compare(point, start, offsets) < 0) {
+            return start;
+        }
+        
+        for (int compare = comparator.compare(point, start, offsets); compare != 0; compare = comparator.compare(point, start, offsets)) {
             if (end == start) {
-                if (start!=0 && end!=offsets.size()-1) {
-                    throw new IllegalStateException("end="+end+" start="+start+" date="+date+" offset="+offsets.get(start)+" #offsets="+offsets.size());
-                }
+                start = -start - 1;
                 break;
             }
             if (end < start) {
-                throw new IllegalStateException("end="+end+" start="+start+" date="+date+" offset="+offsets.get(start));
+                throw new IllegalStateException("end="+end+" start="+start+" date="+point+" offset="+offsets.get(start));
             }
             int diff = end - start;
             if (compare == 1) {
@@ -55,16 +71,55 @@ class OffsetLookup {
         int end = offsets.size()-1;
         int start = 0;
 
+        ComparatorByEndDate comparator = new ComparatorByEndDate();
+        
         if (startDate.compareTo(offsets.get(start).getOffsetEnd()) > 0) {
-            start = findOffset(startDate, start, end, offsets);
+            start = findOffset(startDate, comparator, start, end, offsets);
         }
-        int leftX = offsets.get(start).getOffsetPixels();
-
+        if (start < 0) {
+            start = -start - 1;
+        }
+        int leftX = start == offsets.size() ? 
+            offsets.get(start - 1).getOffsetPixels() : offsets.get(start).getOffsetPixels();
+        
         end = offsets.size()-1;
         if (endDate.compareTo(offsets.get(end).getOffsetEnd()) < 0) {
-            end = findOffset(endDate, 0, end, offsets);
+            end = findOffset(endDate, comparator, 0, end, offsets);
         }
-        int rightX = offsets.get(end).getOffsetPixels();
+        if (end < 0) {
+            end = -end - 1;
+        }
+        int rightX = end == offsets.size() ? 
+            offsets.get(end - 1).getOffsetPixels() : offsets.get(end).getOffsetPixels();
         return new int[] {leftX, rightX};
+    }
+    
+    int lookupOffsetByEndDate(Date endDate, List<Offset> offsets) {
+        ComparatorByEndDate comparator = new ComparatorByEndDate();
+        return findOffset(endDate, comparator, 0, offsets.size() - 1, offsets);
+    }
+    
+    static class ComparatorByPixels implements ComparatorBy<Integer> {
+		@Override
+		public int compare(Integer point, int offsetIdx, List<Offset> offsets) {
+			Offset offset = offsets.get(offsetIdx);
+			if (offset.getOffsetPixels() > point) {
+				return 1;
+			}
+			if (offsetIdx == offsets.size() - 1) {
+				return 0;
+			}
+			Offset rightOffset = offsets.get(offsetIdx + 1);
+			if (rightOffset.getOffsetPixels() > point) {
+				return 0;
+			}
+			return -1;
+		}
+    }
+    
+    Date lookupDateByPixels(int pixels, List<Offset> offsets) {
+    	int offsetIdx = findOffset(pixels, new ComparatorByPixels(), 0, offsets.size() - 1, offsets);
+    	Offset offset = offsets.get(offsetIdx);
+    	return offset.getOffsetStart();
     }
 }
