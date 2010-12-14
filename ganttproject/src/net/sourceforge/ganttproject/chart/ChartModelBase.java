@@ -1,7 +1,7 @@
 /*
  * This code is provided under the terms of GPL version 2.
  * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
+ * (C) Dmitry Barashev, GanttProject team, 2004-2010
  */
 package net.sourceforge.ganttproject.chart;
 
@@ -21,7 +21,6 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -48,7 +47,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   endDate);
             isCompressedWeekend = model.getTopUnit().isConstructedFrom(model.getBottomUnit());
         }
-        
+
         @Override
         protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
             float offsetStep = getOffsetStep(timeUnit);
@@ -102,7 +101,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
         myPainter = new StyledPainterImpl(myChartUIConfiguration);
         myTimeUnitStack = timeUnitStack;
-        // timeUnitStack.addTimeUnitStackListener(this);
         myChartHeader = new ChartHeaderImpl(this, projectConfig);
         myBackgroundRenderer = new BackgroundRendererImpl(this);
         addRenderer(myBackgroundRenderer);
@@ -142,15 +140,16 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         @Override
         public boolean equals(Object that) {
-            if (false==that instanceof Range) {
+            if (false == that instanceof Range) {
                 return false;
             }
             Range thatRange = (Range) that;
-            return (this.start==null ? thatRange.start==null : this.start.equals(thatRange.start)) && thatRange.end.equals(this.end);
+            return (this.start == null ? thatRange.start == null : this.start.equals(thatRange.start))
+                    && thatRange.end.equals(this.end);
         }
         @Override
         public int hashCode() {
-            return ((this.start==null ? 0:7*this.start.hashCode()) + 11*this.end.hashCode()) / 13;
+            return ((this.start == null ? 0 : 7 * this.start.hashCode()) + 11 * this.end.hashCode()) / 13;
         }
     }
 
@@ -293,7 +292,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myTimeUnitStack;
     }
 
-    //private final OffsetCalculatorImpl myOffsetCalculator;
     protected final ChartUIConfiguration myChartUIConfiguration;
 
     public ChartUIConfiguration getChartUIConfiguration() {
@@ -443,7 +441,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
     }
 
-
     public static class Offset {
         private Date myOffsetAnchor;
         private Date myOffsetEnd;
@@ -495,10 +492,5 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         public int hashCode() {
             return myOffsetEnd.hashCode();
         }
-
-
-    }
-
-    public void timeUnitStackChanged() {
     }
 }

@@ -5,8 +5,6 @@ import java.util.Date;
 import net.sourceforge.ganttproject.time.TimeUnitGraph.Composition;
 
 /**
- * Created by IntelliJ IDEA.
- *
  * @author bard Date: 01.02.2004
  */
 public class TimeUnitImpl implements TimeUnit {
@@ -78,5 +76,4 @@ public class TimeUnitImpl implements TimeUnit {
         throw new UnsupportedOperationException("Time unit=" + this
                 + " doesnt support this operation");
     }
-
 }

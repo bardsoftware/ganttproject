@@ -1,7 +1,7 @@
 /*
  * This code is provided under the terms of GPL version 2.
  * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
+ * (C) Dmitry Barashev, GanttProject team, 2004-2010
  */
 package net.sourceforge.ganttproject.chart;
 
@@ -143,8 +143,7 @@ class RegularFrameOffsetBuilder {
 
     protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
         float offsetStep = getOffsetStep(timeUnit);
-        step.dayType = getCalendar().getDayTypeDate(startDate);// ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
-        //step.dayType = GPCalendar.DayType.WORKING;
+        step.dayType = getCalendar().getDayTypeDate(startDate);
         if (getCalendar().isNonWorkingDay(startDate)) {
             offsetStep = offsetStep / myWeekendDecreaseFactor;
         }
@@ -152,8 +151,8 @@ class RegularFrameOffsetBuilder {
     }
 
     /**
-     * @returns a common TimeUnit for the given units or null if none if found
-     *          (should not happen since all should be derived from atom)
+     * @return a common TimeUnit for the given units or null if none if found
+     *         (should not happen since all should be derived from atom)
      */
     //TODO Method might be nice for other things... If so, refactor to a more common location
     private TimeUnit findCommonUnit(TimeUnit unit1, TimeUnit unit2) {
