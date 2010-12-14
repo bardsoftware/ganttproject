@@ -2,8 +2,6 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 
-import javax.swing.SwingUtilities;
-
 import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingListener;
@@ -15,7 +13,7 @@ import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * @author bard
  */
 public class ChartViewState implements ScrollingListener, ZoomListener {
     private ZoomState myCurrentZoomState;
@@ -43,44 +41,36 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
 
     public void zoomChanged(ZoomEvent e) {
         myCurrentZoomState = e.getNewZoomState();
-        Date date = null;
+        Date date;
         if (myUIFacade.getViewIndex() == UIFacade.GANTT_INDEX) {
             Date d = Mediator.getTaskSelectionManager().getEarliestStart();
             // boolean zoomin = e.getZoomValue() < e.getOldValue();
-            // if (zoomin && myZoomStateIndex>0) {
-            // myZoomStateIndex--;
+            // if (zoomin && myZoomStateIndex > 0) {
+            //     myZoomStateIndex--;
+            // } else if (!zoomin && myZoomStateIndex < myZoomStates.length - 1) {
+            //     myZoomStateIndex++;
             // }
-            // else if (!zoomin && myZoomStateIndex<myZoomStates.length-1) {
-            // myZoomStateIndex++;
-            // }
-
-            // myCurrentTimeFrame = scrollTimeFrame(d==null ? getStartDate() :
-            // d);
+            //
+            // myCurrentTimeFrame = scrollTimeFrame(d == null ? getStartDate() : d);
             date = d == null ? myChart.getStartDate() : d;
-        } else
+        } else {
             date = myChart.getStartDate();
+        }
 
         myChart.setTopUnit(getTopTimeUnit());
         myChart.setBottomUnit(getBottomTimeUnit());
         myChart.setBottomUnitWidth(getBottomUnitWidth());
-        myChart.setStartDate(date==null ? new Date() : date);
+        myChart.setStartDate(date == null ? new Date() : date);
     }
-
 
     public int getBottomUnitWidth() {
         return getCurrentZoomState().getBottomUnitWidth();
     }
 
-    /**
-     * @return
-     */
     public TimeUnit getTopTimeUnit() {
         return getCurrentZoomState().getTimeUnitPair().getTopTimeUnit();
     }
 
-    /**
-     * @return
-     */
     public TimeUnit getBottomTimeUnit() {
         return getCurrentZoomState().getTimeUnitPair().getBottomTimeUnit();
     }
