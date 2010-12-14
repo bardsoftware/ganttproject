@@ -23,7 +23,8 @@ public class TestDependencyCycle extends TaskTestCase {
         Task supertask = getTaskManager().createTask(); supertask.setName("supertask");
         Task nestedTask = getTaskManager().createTask(); nestedTask.setName("nestedtask");
         nestedTask.move(supertask);
-        Task dependantTask = getTaskManager().createTask(); dependantTask.setName("dependanttask");
+        Task dependantTask = getTaskManager().createTask(); 
+        dependantTask.setName("dependanttask");
         getTaskManager().getDependencyCollection().createDependency(dependantTask, nestedTask);
         assertIsLooping(supertask, dependantTask);
     }

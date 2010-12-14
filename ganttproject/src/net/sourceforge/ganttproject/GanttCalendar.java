@@ -35,16 +35,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
          {
     private GanttLanguage language = GanttLanguage.getInstance();
 
-    private boolean isFixed;
-
-    public boolean isFixed() {
-        return isFixed;
-    }
-
-    public void setFixed(boolean fixed) {
-        isFixed = fixed;
-    }
-
     /** Default constructor */
     public GanttCalendar() {
         super();
@@ -97,88 +87,50 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
     /** Return a clone of the calendar */
     public GanttCalendar Clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
-        clone.setFixed(isFixed());
         return clone;
     }
 
     /** Return the date to A string */
     public String toString() {
         return (language.formatShortDate(this));
-    	//return (language.formatDate(this));
     }
 
     public String toXMLString() {
-        // return getDate() + "/" + (getMonth() + 1) + "/" + getYear();
         return DateParser.getIsoDateNoHours(getTime());
     }
 
-    /** Return the year */
     public int getYear() {
         return this.get(Calendar.YEAR);
     }
 
-    /** Return the month */
     public int getMonth() {
         return this.get(Calendar.MONTH);
     }
 
-    /** Return the day */
     public int getDate() {
         return this.get(Calendar.DATE);
     }
 
-    /** Return the day */
     public int getDay() {
         return this.get(Calendar.DAY_OF_MONTH);
     }
 
-    /** Return the number of the day on the week */
     public int getDayWeek() {
         return this.get(Calendar.DAY_OF_WEEK);
     }
 
-    /** Return the numbner of the week on the year */
     public int getWeek() {
         return this.get(Calendar.WEEK_OF_YEAR);
     }
 
-    /** Return an array with all name of month */
-    public String[] getDayMonthLanguage() {
-        String[] res = new String[12];
-        for (int i = 0; i < 12; i++)
-            res[i] = language.getMonth(i);
-        return res;
-    }
-
-    /** Return an array with all name of day */
-    public String[] getDayWeekLanguage() {
-        String[] res = new String[7];
-        for (int i = 0; i < 7; i++)
-            res[i] = language.getDay(i);
-        return res;
-    }
-
-    /** Change the year of the date */
-    public void setYear(int y) {
-        this.set(Calendar.YEAR, y);
-    }
-
-    /** Change the month of the date */
-    public void setMonth(int m) {
-        this.set(Calendar.MONTH, m);
-    }
-
-    /** Change the date of the date */
-    public void setDay(int d) {
-        this.set(Calendar.DAY_OF_MONTH, d);
-    }
-
     /** Add a number of day to the current date */
+    @Deprecated
     public void add(int dayNumber) {
         this.add(Calendar.DATE, dayNumber);
     }
 
     /** Change the year of the date, and return a copy */
+    @Deprecated
     public GanttCalendar newAdd(int dayNumber) {
         GanttCalendar gc = new GanttCalendar(getYear(), getMonth(), getDate());
         gc.add(Calendar.DATE, dayNumber);
@@ -188,6 +140,7 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
     /**
      * @deprecated Use TimeUnit related methods
      * Return the difference (in day) between two date */
+    @Deprecated
     public int diff(GanttCalendar d) {
         int res = 0;
         GanttCalendar d1;
@@ -209,21 +162,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
             res++;
         }
         return res;
-    }
-
-    /** Return the string of the month. */
-    public String getdayMonth() {
-        return language.getMonth(getMonth());
-    }
-
-    /** Return the string of the day. */
-    public String getdayWeek() {
-        return language.getDay(this.get(Calendar.DAY_OF_WEEK) - 1);
-    }
-
-    /** Return the number of day on the month */
-    public int getNumberOfDay() {
-        return this.getActualMaximum(Calendar.DATE);
     }
 
     /**
@@ -265,21 +203,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
     public boolean equals(GanttCalendar when) {
         return getYear() == when.getYear() && getMonth() == when.getMonth()
                 && getDay() == when.getDay();
-    }
-
-    /** Change date to next month. */
-    public void goNextMonth() {
-        this.add(Calendar.MONTH, 1);
-    }
-
-    /** Change date to previous month. */
-    public void goPrevMonth() {
-        this.add(Calendar.MONTH, -1);
-    }
-
-    /** Change the value of a filed */
-    public void go(int field, int value) {
-        this.add(field, value);
     }
 
     /** Return the actually date */
