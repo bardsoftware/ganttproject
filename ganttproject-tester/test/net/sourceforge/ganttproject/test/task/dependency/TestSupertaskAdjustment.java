@@ -8,6 +8,7 @@ import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.TestSetupHelper;
 
 public class TestSupertaskAdjustment extends TaskTestCase {
     public void testSupetaskDurationGrowsWhenNestedTasksGrow()
@@ -84,21 +85,21 @@ public class TestSupertaskAdjustment extends TaskTestCase {
     	Task level2task1 = taskManager.createTask();
     	level2task1.move(level1task2);
 
-    	supertask.setStart(newMonday());
-    	supertask.setEnd(newTuesday());
-    	level1task1.setStart(newMonday());
-    	level1task1.setEnd(newTuesday());
-    	level1task2.setStart(newMonday());
-    	level1task2.setEnd(newTuesday());
-    	level2task1.setStart(newMonday());
-    	level2task1.setEnd(newTuesday());
+    	supertask.setStart(TestSetupHelper.newMonday());
+    	supertask.setEnd(TestSetupHelper.newTuesday());
+    	level1task1.setStart(TestSetupHelper.newMonday());
+    	level1task1.setEnd(TestSetupHelper.newTuesday());
+    	level1task2.setStart(TestSetupHelper.newMonday());
+    	level1task2.setEnd(TestSetupHelper.newTuesday());
+    	level2task1.setStart(TestSetupHelper.newMonday());
+    	level2task1.setEnd(TestSetupHelper.newTuesday());
 
-    	level2task1.setEnd(newWendesday());
+    	level2task1.setEnd(TestSetupHelper.newWendesday());
 
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { level2task1 });
 
-        assertEquals("Unexpected end of the topleveltask="+supertask, newWendesday(), supertask.getEnd());
+        assertEquals("Unexpected end of the topleveltask="+supertask, TestSetupHelper.newWendesday(), supertask.getEnd());
     }
 
 }

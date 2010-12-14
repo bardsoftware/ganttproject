@@ -5,6 +5,8 @@ package net.sourceforge.ganttproject.test.time;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import net.sourceforge.ganttproject.time.gregorian.WeekFramerImpl;
 import junit.framework.TestCase;
@@ -13,8 +15,15 @@ import junit.framework.TestCase;
  * @author bard
  */
 public class TestWeekFramer extends TestCase {
+    static class TestCalendarFactory implements WeekFramerImpl.ICalendarFactory {
+        @Override
+        public Calendar newCalendar() {
+            return GregorianCalendar.getInstance(Locale.UK);  // Monday is the first day of week in UK locale.
+        }
+    }
+    
     public void testAdjustLeft() {
-        WeekFramerImpl framer = new WeekFramerImpl();
+        WeekFramerImpl framer = new WeekFramerImpl(new TestCalendarFactory());
         Date adjusted = framer.adjustLeft(newMonday());
         Calendar c = (Calendar) Calendar.getInstance().clone();
         c.setTime(adjusted);
@@ -29,7 +38,7 @@ public class TestWeekFramer extends TestCase {
     }
 
     public void testAdjustRight() {
-        WeekFramerImpl framer = new WeekFramerImpl();
+        WeekFramerImpl framer = new WeekFramerImpl(new TestCalendarFactory());
         Date adjustedMonday = framer.adjustRight(newMonday());
         Date adjustedSunday = framer.adjustRight(newSunday());
         assertEquals(adjustedMonday, adjustedSunday);
@@ -43,7 +52,7 @@ public class TestWeekFramer extends TestCase {
     }
 
     public void testJumpLeft() {
-        WeekFramerImpl framer = new WeekFramerImpl();
+        WeekFramerImpl framer = new WeekFramerImpl(new TestCalendarFactory());
         Date adjustedMonday = framer.jumpLeft(newMonday());
         Date adjustedSunday = framer.jumpLeft(newSunday());
         assertNotSame(adjustedMonday, adjustedSunday);
@@ -59,7 +68,7 @@ public class TestWeekFramer extends TestCase {
     }
 
     private Date newMonday() {
-        Calendar c = (Calendar) Calendar.getInstance().clone();
+        Calendar c = new TestCalendarFactory().newCalendar();
         c.clear();
         c.set(Calendar.YEAR, 2004);
         c.set(Calendar.MONTH, Calendar.NOVEMBER);
@@ -68,7 +77,7 @@ public class TestWeekFramer extends TestCase {
     }
 
     private Date newSunday() {
-        Calendar c = (Calendar) Calendar.getInstance().clone();
+        Calendar c = new TestCalendarFactory().newCalendar();
         c.clear();
         c.set(Calendar.YEAR, 2004);
         c.set(Calendar.MONTH, Calendar.NOVEMBER);

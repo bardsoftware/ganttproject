@@ -109,6 +109,6 @@ public class TestDependencyActivityBinding extends TaskTestCase {
         binding = dep.getActivityBinding();
         assertEquals(binding.getDependantActivity(),
                 dependant.getActivities()[0]);
-        assertEquals(binding.getDependeeActivity(), dependee.getActivities()[1]);
+        assertEquals(binding.getDependeeActivity(), dependee.getActivities()[0]);
     }
 }

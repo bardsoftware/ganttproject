@@ -16,7 +16,6 @@ import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Builds grid offsets for timelines where top cells are always constructed from the integer
@@ -30,11 +29,10 @@ class RegularFrameOffsetBuilder {
     // We want weekend units to be less wide than working ones. This constant
     // is a decrease factor
     public static final int WEEKEND_UNIT_WIDTH_DECREASE_FACTOR = 10;
-    private final TimeUnitStack myTimeUnitStack;
     private final TimeUnit myTopUnit;
     private final TimeUnit myBottomUnit;
     private final Date myStartDate;
-    private final int myBottomUnitWidth;
+    private final int myDefaultUnitWidth;
     private final int myChartWidth;
     private final GPCalendar myCalendar;
     private final float myWeekendDecreaseFactor;
@@ -42,65 +40,53 @@ class RegularFrameOffsetBuilder {
     private final TimeUnit baseUnit; 
 
     RegularFrameOffsetBuilder(
-            TimeUnitStack timeUnitStack, GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-            int bottomUnitWidth, int chartWidth, float weekendDecreaseFactor) {
-        this( timeUnitStack,  calendar,  topUnit,  bottomUnit,  startDate,
-                 bottomUnitWidth,  chartWidth,  weekendDecreaseFactor, null);
+            GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+            int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor) {
+        this(calendar,  topUnit,  bottomUnit,  startDate,
+                 defaultUnitWidth,  chartWidth,  weekendDecreaseFactor, null);
     }
 
     RegularFrameOffsetBuilder(
-            TimeUnitStack timeUnitStack, GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-            int bottomUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
-        myTimeUnitStack = timeUnitStack;
+            GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+            int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
         myCalendar = calendar;
         myStartDate = startDate;
         myTopUnit = topUnit;
         myBottomUnit = bottomUnit;
-        myBottomUnitWidth = bottomUnitWidth;
+        myDefaultUnitWidth = defaultUnitWidth;
         myChartWidth = chartWidth;
         myWeekendDecreaseFactor = weekendDecreaseFactor;
         myEndDate = endDate;
         baseUnit = findCommonUnit(bottomUnit, topUnit);
     }
 
-    protected TimeUnit getBottomUnit() {
+    private TimeUnit getBottomUnit() {
         return myBottomUnit;
     }
 
-    protected TimeUnit getTopUnit() {
+    private TimeUnit getTopUnit() {
         return myTopUnit;
     }
 
-    protected TimeUnit getTopUnit(Date startDate) {
-        TimeUnit result = myTopUnit;
-        if (myTopUnit instanceof TimeUnitFunctionOfDate) {
-            if (startDate == null) {
-                throw new RuntimeException("No date is set");
-            } else {
-                result = ((TimeUnitFunctionOfDate) myTopUnit).createTimeUnit(startDate);
-            }
-        }
-        return result;
+    private static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
+        return (timeUnit instanceof TimeUnitFunctionOfDate) ?
+            ((TimeUnitFunctionOfDate) timeUnit).createTimeUnit(date) : timeUnit;
     }
 
-    protected int getBottomUnitWidth() {
-        return myBottomUnitWidth;
+    private int getDefaultUnitWidth() {
+        return myDefaultUnitWidth;
     }
 
     protected float getOffsetStep(TimeUnit timeUnit) {
         return timeUnit.getAtomCount(baseUnit);
     }
 
-    protected int getChartWidth() {
+    private int getChartWidth() {
         return myChartWidth;
     }
 
-    protected GPCalendar getCalendar() {
+    private GPCalendar getCalendar() {
         return myCalendar;
-    }
-
-    protected TimeUnitStack getTimeUnitStack() {
-        return myTimeUnitStack;
     }
 
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
@@ -109,23 +95,19 @@ class RegularFrameOffsetBuilder {
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets, int initialEnd) {
 
         bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
-        constructBottomOffsets(getBottomUnit(), bottomUnitOffsets, initialEnd, getBottomUnitWidth());
-        //constructBottomOffsets(getTopUnit(), topUnitOffsets, initialEnd, getBottomUnitWidth());
-        constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getBottomUnitWidth());
+        constructBottomOffsets(bottomUnitOffsets, initialEnd);
+        constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getDefaultUnitWidth());
     }
 
-    void constructBottomOffsets(TimeUnit timeUnit, List<Offset> offsets, int initialEnd, int baseUnitWidth) {
+    void constructBottomOffsets(List<Offset> offsets, int initialEnd) {
         Date currentDate = myStartDate;
         int offsetEnd = 0;
         OffsetStep step = new OffsetStep();
-        TimeUnit concreteTimeUnit = timeUnit;
         do {
-            if (timeUnit instanceof TimeUnitFunctionOfDate) {
-                concreteTimeUnit = ((TimeUnitFunctionOfDate)timeUnit).createTimeUnit(currentDate);
-            }
+            TimeUnit concreteTimeUnit = getConcreteUnit(getBottomUnit(), currentDate);
             calculateNextStep(step, concreteTimeUnit, currentDate);
             Date endDate = concreteTimeUnit.adjustRight(currentDate);
-            offsetEnd = (int) (step.parrots * baseUnitWidth);
+            offsetEnd = (int) (step.parrots * getDefaultUnitWidth());
             offsets.add(new Offset(
                 concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType));
             currentDate = endDate;
@@ -136,11 +118,8 @@ class RegularFrameOffsetBuilder {
         OffsetLookup offsetLookup = new OffsetLookup();
         Date currentDate = myStartDate;
         int offsetEnd;
-        TimeUnit concreteTimeUnit = timeUnit;
         do {
-            if (timeUnit instanceof TimeUnitFunctionOfDate) {
-                concreteTimeUnit = ((TimeUnitFunctionOfDate)timeUnit).createTimeUnit(currentDate);
-            }
+            TimeUnit concreteTimeUnit = getConcreteUnit(timeUnit, currentDate);
             Date endDate = concreteTimeUnit.adjustRight(currentDate);
             int bottomOffsetLowerBound = offsetLookup.lookupOffsetByEndDate(endDate, bottomOffsets);
             if (bottomOffsetLowerBound >= 0) {

@@ -42,13 +42,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     private final TaskRendererImpl2 myTaskRendererImpl;
 
-    private TaskContainmentHierarchyFacade myTaskContainment;
-
-    // private final TaskGridRendererImpl myTaskGridRendererImpl;
-
-    // private final ResourcesRendererImpl myResourcesRendererImpl;
-
-    // private final TaskProgressRendererImpl myTaskProgressRendererImpl;
     private TaskManager taskManager;
 
     private boolean isPreviousState = false;
@@ -76,14 +69,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         this.taskManager = taskManager;
         myTaskRendererImpl = new TaskRendererImpl2(this);
         addRenderer(myTaskRendererImpl);
-
-        // myTaskGridRendererImpl = new TaskGridRendererImpl(this);
-        // addRenderer(myTaskGridRendererImpl);
-
-        //myResourcesRendererImpl = new ResourcesRendererImpl(this);
-        // myTaskProgressRendererImpl = new TaskProgressRendererImpl(this);
-        //myTimeUnitVisitors.add(myTaskGridRendererImpl);
-        //myTimeUnitVisitors.add(myTaskRendererImpl);
 
         class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
             private NewTaskColorOption() {
@@ -170,8 +155,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
                             myTaskBehindScheduleColor },
                     getOptionEventDispatcher());
         }
-        // myTimeUnitVisitors.add(myResourcesRendererImpl);
-        // myTimeUnitVisitors.add(myTaskProgressRendererImpl);
     }
 
     public void setVisibleTasks(List<Task> visibleTasks) {
@@ -181,18 +164,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     public void setExplicitlyHiddenTasks(Set<Task> hiddenTasks) {
         myHiddenTasks = hiddenTasks;
     }
-
-//    public Task findTaskWithCoordinates(int x, int y) {
-//        y = y + getVerticalOffset();
-//        GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl
-//                .getPrimitiveContainer().getPrimitive(x,
-//                        y - getChartUIConfiguration().getHeaderHeight());
-//        if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
-//            TaskActivity activity = (TaskActivity) primitive.getModelObject();
-//            return activity == null ? null : activity.getTask();
-//        }
-//        return null;
-//    }
 
     public ChartItem getChartItemWithCoordinates(int x, int y) {
         y = y + getVerticalOffset();
@@ -286,17 +257,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return myVisibleTasks == null ? Collections.<Task>emptyList() : myVisibleTasks;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.chart.ChartModel#setTaskContainment(net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade)
-     */
-    // TODO myTaskContainment is never used... remove from ChartModel interface??
-    public void setTaskContainment(
-            TaskContainmentHierarchyFacade taskContainment) {
-        myTaskContainment = taskContainment;
-    }
-
     TaskContainmentHierarchyFacade getTaskContainment() {
         return myTaskManager.getTaskHierarchy();
     }
@@ -324,7 +284,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     public int getRowHeight() {
         return rowHeight;
-        //return getChartUIConfiguration().getRowHeight();
     }
 
     public GPOptionGroup[] getChartOptionGroups() {
@@ -345,7 +304,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             isPreviousState = false;
         else
             isPreviousState = true;
-        //myTaskRendererImpl.setPreviousStateTasks(tasks);
         return (calculateRowHeight());
     }
 
