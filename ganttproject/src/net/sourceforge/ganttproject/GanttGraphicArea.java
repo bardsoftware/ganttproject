@@ -107,6 +107,7 @@ import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -294,13 +295,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         //draw the tree on the image
         gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
 
-        Date dateStart = null;
-        Date dateEnd = null;
-
-        TimeUnit unit = getViewState().getBottomTimeUnit();
-
-        dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
+        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
+        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
 
         if (dateStart.after(dateEnd)) {
             Date tmp = (Date) dateStart.clone();
@@ -308,9 +304,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             dateEnd = tmp;
         }
 
-        TaskLength printedLength = getTaskManager().createLength(unit, dateStart, dateEnd);
-        System.err.println("start date="+dateStart+" end date="+dateEnd+" unit="+unit+" printed length="+printedLength);
-        int chartWidth = (int) ((printedLength.getLength(getViewState().getBottomTimeUnit()) + 1) * getViewState().getBottomUnitWidth());
+        TimeUnit unit = getViewState().getBottomTimeUnit();
+        System.err.println("start date="+dateStart+" end date="+dateEnd+" unit="+unit);
+
+        int chartWidth = calculateWidth(dateStart, dateEnd, unit);
         if (chartWidth<this.getWidth()) {
             chartWidth = this.getWidth();
         }
@@ -318,6 +315,41 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
 
         return new RenderedGanttChartImage(myChartModel, myChartComponentImpl, GanttTree2.convertNodesListToItemList(myItemsToConsider), task_image, chartWidth, chartHeight);
+    }
+
+    /** Calculates the width in pixels for the given date range and unit */
+    protected int calculateWidth(Date dateStart, Date dateEnd, TimeUnit unit)
+    {
+        Date currentDate = dateStart;
+        TimeUnit concreteTimeUnit = unit;
+        OffsetStep step = new OffsetStep();
+        do {
+            if (unit instanceof TimeUnitFunctionOfDate) {
+                concreteTimeUnit = ((TimeUnitFunctionOfDate) unit).createTimeUnit(currentDate);
+            }
+            calculateNextStep(step, concreteTimeUnit, currentDate);
+            currentDate = concreteTimeUnit.adjustRight(currentDate);;
+        } while (currentDate.before(dateEnd));
+
+        return (int) (step.parrots * getViewState().getBottomUnitWidth());
+    }
+
+    // TODO Copied from RegularFrameOffsetBuilder.java, better made publicly available somewhere
+    protected static class OffsetStep {
+        public float parrots;
+        public GPCalendar.DayType dayType;
+    }
+
+    // TODO Copied from RegularFrameOffsetBuilder.java, better made publicly available somewhere
+    protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
+        float offsetStep = 1f / timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
+        step.dayType = getTaskManager().getCalendar().getDayTypeDate(startDate);// ? GPCalendar.DayType.WORKING : GPCalendar.DayType.WEEKEND;
+        // TODO Check whether 'weekend compression' is active for timeUnit/current view
+        if (getTaskManager().getCalendar().isNonWorkingDay(startDate)) {
+            // TODO Better use a (static) field instead of 10...
+            offsetStep = offsetStep / 10; // RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
+        }
+        step.parrots += offsetStep;
     }
 
     GPUndoManager getUndoManager() {
