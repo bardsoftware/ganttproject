@@ -229,23 +229,30 @@ class ProjectFileImporter {
     private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask) {
         myTaskCustomPropertyMapping = new HashMap<TaskField, CustomPropertyDefinition>();
         for (Task t: foreignProject.getChildTasks()) {
-            importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
+      		importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
         }
     }
 
     private void importTask(ProjectFile foreignProject,
             Task t, net.sourceforge.ganttproject.task.Task supertask,
             Map<Integer, GanttTask> foreignId2nativeTask) {
+    	if (t.getUniqueID() == 0) { 
+            for (Task child: t.getChildTasks()) {
+                importTask(foreignProject, child, getTaskManager().getRootTask(), foreignId2nativeTask);
+            }
+            return;
+    	}
+    		
         GanttTask nativeTask = getTaskManager().createTask();
         myNativeProject.getTaskContainment().move(nativeTask, supertask);
         nativeTask.setName(t.getName());
-        nativeTask.setStart(new GanttCalendar(t.getStart()));
+        nativeTask.setStart(convertStartTime(t.getStart()));
         nativeTask.setNotes(t.getNotes());
         nativeTask.setWebLink(t.getHyperlink());
         nativeTask.setPriority(convertPriority(t.getPriority()));
         if (t.getChildTasks().isEmpty()) {
-            if (t.getPhysicalPercentComplete() != null) {
-                nativeTask.setCompletionPercentage(t.getPhysicalPercentComplete());
+            if (t.getPercentageComplete() != null) {
+                nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
             }
             nativeTask.setMilestone(t.getMilestone());
             nativeTask.setDuration(convertDuration(t));
@@ -259,9 +266,13 @@ class ProjectFileImporter {
         foreignId2nativeTask.put(t.getID(), nativeTask);
     }
 
-    private void importCustomFields(Task t, GanttTask nativeTask) {
+    private GanttCalendar convertStartTime(Date start) {
+		return new GanttCalendar(myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustLeft(start));
+	}
+
+	private void importCustomFields(Task t, GanttTask nativeTask) {
         for (TaskField tf : TaskField.values()) {
-            if (t.getCurrentValue(tf) == null || !isCustomField(tf)) {
+            if (!isCustomField(tf) || t.getCurrentValue(tf) == null) {
                 continue;
             }
             CustomPropertyDefinition def = myTaskCustomPropertyMapping.get(tf);
@@ -287,7 +298,8 @@ class ProjectFileImporter {
 
     private static Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
     private boolean isCustomField(FieldType tf) {
-        return ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
+        return tf != null && tf.getName() != null 
+            && ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
     }
 
     private String convertDataType(FieldType tf) {
