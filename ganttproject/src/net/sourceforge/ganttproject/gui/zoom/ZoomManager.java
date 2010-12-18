@@ -14,11 +14,11 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  */
 public class ZoomManager {
     public static class ZoomState {
-        final TimeUnitPair myTimeUnitPair;
+        private final TimeUnitPair myTimeUnitPair;
 
-        final int myBottomUnitWidth;
+        private final int myBottomUnitWidth;
 
-        final private int myStateNumber;
+        private final int myStateNumber;
 
         ZoomState(TimeUnitPair timeUnitPair, int bottomUnitWidth,
                 int stateNumber) {

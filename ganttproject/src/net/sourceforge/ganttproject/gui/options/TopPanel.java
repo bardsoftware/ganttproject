@@ -33,12 +33,12 @@ import javax.swing.JTextArea;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas A panel to show the top.gif image and write a title and a
- *         comment.
+ * A panel to show the top.gif image and write a title and a comment.
+ * 
+ * @author athomas
  */
 public class TopPanel extends JPanel {
 
-    /** Constructor. */
     public TopPanel(String title, String comment) {
         setLayout(new BorderLayout());
         Box vb = Box.createVerticalBox();
@@ -92,7 +92,7 @@ public class TopPanel extends JPanel {
             icon.paintIcon(this, g, 0, 3);
         }
 
-        /** The prefered size of this panel */
+        /** The preferred size of this panel */
         public Dimension getPreferredSize() {
             return new Dimension(140, 20);
         }

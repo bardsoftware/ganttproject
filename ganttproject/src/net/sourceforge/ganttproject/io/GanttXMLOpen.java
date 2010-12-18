@@ -36,7 +36,6 @@ import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParsingContext;
@@ -50,46 +49,23 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Class allow the programm to load a gantt file from xml format Use Sax parser
+ * Allows to load a gantt file from xml format, using SAX parser
  */
 public class GanttXMLOpen implements GPParser {
-
-    /** The tree that contains data */
-    // GanttTree treePanel;
-    // /** The main frame */
-    // GanttProject prj;
-    private PrjInfos myProjectInfo = null;
-
-    /** The ressources */
-    // GanttResourcePanel peop;
     /** 0-->description of project, 1->note for task */
     int typeChar = -1;
 
-    /** The graphic area */
-    //GanttGraphicArea area;
+    private String indent = "";
 
-    /** A stack of all father */
-    // ArrayList lot = new ArrayList();
-    /* List for depends */
-    // ArrayList lod = new ArrayList();
-    /** The id of the current task */
-    // int taskID;
-    // GanttDependStructure gds; //By CL
-    String indent = "";
+    private final String margin = "    "; // the margin
+    
+    final static Pattern IGNORABLE_WHITESPACE = Pattern.compile("^\\s*$");
 
-    String marge = "    "; // the marge
+    private final ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
-    /** The language */
-    GanttLanguage language = GanttLanguage.getInstance();
+    private final ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
-    // boolean bImport = false;
-    // int maxID = 0;
-
-    private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
-
-    private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
-
-    private ParsingContext myContext;
+    private final ParsingContext myContext;
 
     private final TaskManager myTaskManager;
 
@@ -99,34 +75,23 @@ public class GanttXMLOpen implements GPParser {
 
     private int resourceDividerLocation;
 
+    private PrjInfos myProjectInfo = null;
+
     private UIFacade myUIFacade = null;
 
     private boolean bMerge = false;
 
 	private UIConfiguration myUIConfig;
 
-    /**
-     * Constructor
-     * 
-     * @param uiFacade
-     *            TODO
-     */
     public GanttXMLOpen(PrjInfos info, UIConfiguration uiConfig,
             TaskManager taskManager, UIFacade uiFacade) {
         this(taskManager);
-        // this.treePanel = tree;
         myProjectInfo = info;
         myUIConfig = uiConfig;
-        // this.peop = resources;
-        //this.area = gra;
-        // this.bImport = bImport;
         this.viewIndex = 0;
 
-        this.ganttDividerLocation = 300; // todo does this arbitrary value is
-        // right ?
+        this.ganttDividerLocation = 300; // TODO is this arbitrary value right ?
         this.resourceDividerLocation = 300;
-        // if(bImport)
-        // maxID = ((TaskManagerImpl)taskManager).getMaxID();
         myUIFacade = uiFacade;
     }
 
@@ -136,14 +101,10 @@ public class GanttXMLOpen implements GPParser {
     }
 
     public boolean load(String filename) {
-        boolean temp = load(new File(filename));
-        // constructRelationship();
-        return temp;
-
+        return load(new File(filename));
     }
 
     public boolean load(InputStream inStream) throws IOException {
-
         // Use an instance of ourselves as the SAX event handler
         myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm()
                 .setEnabled(false);
@@ -173,14 +134,13 @@ public class GanttXMLOpen implements GPParser {
                 .getRecalculateTaskScheduleAlgorithm().setEnabled(true);
         myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm()
                 .setEnabled(true);
-        // treePanel.refreshAllId(treePanel.getRoot());
-        // treePanel.forwardScheduling();
 
         if (!bMerge) {
             myUIFacade.setViewIndex(viewIndex);
             myUIFacade.setGanttDividerLocation(ganttDividerLocation);
-            if (resourceDividerLocation != 0)
+            if (resourceDividerLocation != 0) {
                 myUIFacade.setResourceDividerLocation(resourceDividerLocation);
+            }
         }
         return true;
 
@@ -194,26 +154,13 @@ public class GanttXMLOpen implements GPParser {
         // Use the default (non-validating) parser
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
-
             // Parse the input
             SAXParser saxParser = factory.newSAXParser();
             saxParser.parse(file, handler);
         } catch (Exception e) {
             myUIFacade.showErrorDialog(e);
-            /*
-            GanttDialogInfo gdi = new GanttDialogInfo((JFrame) myUIFacade,
-                    GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
-                            .getText("msg2")
-                            + file.getAbsolutePath(), language.getText("error"));
-            gdi.show();
-            */
             return false;
         }
-
-        // if(treePanel!=null) {
-        // treePanel.forwardScheduling();//refreshAllId(treePanel.getRoot());
-        // }
-
         return true;
     }
 
@@ -239,8 +186,7 @@ public class GanttXMLOpen implements GPParser {
             indent += "    ";
             String eName = sName; // element name
             if ("".equals(eName)) {
-                eName = qName; // not namespaceAware
-
+                eName = qName; // not namespace aware
             }
             if (eName.equals("description")) {
                 myCharacterBuffer = new StringBuffer();
@@ -249,48 +195,25 @@ public class GanttXMLOpen implements GPParser {
             if (eName.equals("notes")) {
                 myCharacterBuffer = new StringBuffer();
                 typeChar = 1;
-                // barmeier: we know that this tag has only attibutes no nested
+                // barmeier: we know that this tag has only attributes no nested
                 // tags
                 // we can do we need here.
             }
-            /*
-             * if (eName.equals("allocation")) { String aName; int taskId = 0;
-             * int resourceId = 0; int load = 0; for (int i = 0; i <
-             * attrs.getLength(); i++) { aName = attrs.getQName(i); if
-             * (aName.equals("task-id")) { taskId = new
-             * Integer(attrs.getValue(i)).intValue(); } else if
-             * (aName.equals("resource-id")) { resourceId = new
-             * Integer(attrs.getValue(i)).intValue(); } else if
-             * (aName.equals("load")) { load = new
-             * Integer(attrs.getValue(i)).intValue(); } } // if no load is
-             * specified I assume 100% load // this should only be the case if
-             * old files // were loaded. if (load == 0) { load = 100; }
-             * GanttTask the_task = treePanel.getTask(taskId); HumanResource
-             * user = peop.getUserByNumber(resourceId - 1); //
-             * user.setLoad(load+user.getMaximumUnitsPerDay());
-             * the_task.taskUser(peop.getUserByNumber(resourceId - 1), load); }
-             */
-            // int task_id = 0;
-            // GanttTask task = new GanttTask(new String(), new GanttCalendar(),
-            // 1);
-            // GanttTask task = myTaskManager.createTask();
 
-            // task.setLength(1);
             if (attrs != null) {
                 for (int i = 0; i < attrs.getLength(); i++) {
                     String aName = attrs.getLocalName(i); // Attr name
                     if ("".equals(aName)) {
                         aName = attrs.getQName(i);
-
                         // The project part
                     }
                     if (eName.equals("project") && myTagStack.size()==1) {
                         if (aName.equals("name")) {
-                            myProjectInfo._sProjectName = attrs.getValue(i);
+                            myProjectInfo.setName(attrs.getValue(i));
                         } else if (aName.equals("company")) {
-                            myProjectInfo._sOrganization = attrs.getValue(i);
+                            myProjectInfo.setOrganization(attrs.getValue(i));
                         } else if (aName.equals("webLink")) {
-                            myProjectInfo._sWebLink = attrs.getValue(i);
+                            myProjectInfo.setWebLink(attrs.getValue(i));
                         }
                         // TODO: 1.12 repair scrolling to the saved date
                         else if (aName.equals("view-date")) {
@@ -306,7 +229,6 @@ public class GanttXMLOpen implements GPParser {
                             resourceDividerLocation = new Integer(attrs
                                     .getValue(i)).intValue();
                         }
-
                     } else if (eName.equals("tasks")) {
                         if (aName.equals("color")) {
                             myUIConfig.setProjectLevelTaskColor(determineColor(attrs
@@ -320,8 +242,8 @@ public class GanttXMLOpen implements GPParser {
         public void endElement(String namespaceURI, String sName, String qName) {
             indent = indent.substring(0, indent.length() - 4);
             if ("description".equals(qName)) {
-                myProjectInfo._sDescription = getCorrectString(myCharacterBuffer
-                        .toString());
+                myProjectInfo.setDescription(getCorrectString(myCharacterBuffer
+                        .toString()));
             } else if ("notes".equals(qName)) {
                 Task currentTask = myTaskManager.getTask(getContext()
                         .getTaskID());
@@ -340,13 +262,12 @@ public class GanttXMLOpen implements GPParser {
             b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
             return new Color(r, g, b);
         }
-
     }
 
     private String getCorrectString(String s) {
         // return s.replaceAll("\n" + indent, "\n");
         s = s.replaceAll("\n" + indent, "\n");
-        s = s.replaceAll(marge, "");
+        s = s.replaceAll(margin, "");
         while (s.startsWith("\n")) {
             s = s.substring(1, s.length());
         }
@@ -380,7 +301,6 @@ public class GanttXMLOpen implements GPParser {
             myTagStack.clear();
         }
 
-        
         public void endDocument() throws SAXException {
             for (int i = 0; i < myListeners.size(); i++) {
                 ParsingListener l = myListeners.get(i);
@@ -416,9 +336,6 @@ public class GanttXMLOpen implements GPParser {
 
         public void characters(char buf[], int offset, int len)
                 throws SAXException {
-
-            // len=0;
-            // for(int i=0;i+offset<buf.length && buf[i+offset]!='<';i++,len++);
             String s = new String(buf, offset, len);
             if (typeChar >= 0) {
                 if (IGNORABLE_WHITESPACE.matcher(s).matches()) {
@@ -428,13 +345,5 @@ public class GanttXMLOpen implements GPParser {
                 myCharacterBuffer.append(s);
             }
         }
-
     }
-
-    static Pattern IGNORABLE_WHITESPACE = Pattern.compile("^\\s*$");
-
-    // unused code
-    // public int getViewIndex() {
-    // return viewIndex;
-    // }
 }

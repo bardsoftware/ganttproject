@@ -20,25 +20,23 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public class ChartModelResource extends ChartModelBase {
 
-    private ResourceLoadRenderer myResourceLoadRenderer;
+    private final HumanResourceManager myManager;
 
-    private HumanResourceManager myManager;
+    private final GPOptionGroup myColorOptions;
 
-    private GPOptionGroup myColorOptions;
+    private final ColorOption myResourceNormalLoadOption;
 
-    private ColorOption myResourceNormalLoadOption;
+    private final ColorOption myResourceOverloadOption;
 
-    private ColorOption myResourceOverloadOption;
+    private final ColorOption myResourceUnderloadOption;
 
-    private ColorOption myResourceUnderloadOption;
-
-    private ColorOption myDayOffOption;
+    private final ColorOption myDayOffOption;
 
     private final ResourceChart myResourceChart;
 
     private static class ResourceLoadOption extends DefaultColorOption implements GP1XOptionConverter {
-        private String myTagName;
-        private String myAttributeName;
+        private final String myTagName;
+        private final String myAttributeName;
 
         ResourceLoadOption(String id, String tagName, String attributeName) {
             super(id);
@@ -63,8 +61,8 @@ public class ChartModelResource extends ChartModelBase {
             final UIConfiguration projectConfig, ResourceChart resourceChart) {
         super(taskManager, timeUnitStack, projectConfig);
         myResourceChart = resourceChart;
-        myResourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);
-        addRenderer(myResourceLoadRenderer);
+        ResourceLoadRenderer resourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);
+        addRenderer(resourceLoadRenderer);
         myManager = resourceManager;
         {
             myResourceNormalLoadOption = new ResourceLoadOption("resourceChartColors.normalLoad", "colors", "resources") {
@@ -110,7 +108,10 @@ public class ChartModelResource extends ChartModelBase {
             myDayOffOption.setValue(new Color(0.9f, 1f, 0.17f));
             myDayOffOption.commit();
         }
-        myColorOptions = new GPOptionGroup("resourceChartColors", new GPOption[] {myResourceNormalLoadOption, myResourceOverloadOption, myResourceUnderloadOption, myDayOffOption});
+        myColorOptions = new GPOptionGroup("resourceChartColors",
+                new GPOption[] { myResourceNormalLoadOption,
+                        myResourceOverloadOption, myResourceUnderloadOption,
+                        myDayOffOption });
     }
 
 //    public void paint(Graphics g) {
@@ -138,7 +139,8 @@ public class ChartModelResource extends ChartModelBase {
 
     @Override
     public ChartModelBase createCopy() {
-        ChartModelBase result = new ChartModelResource(myTaskManager, myManager, myTimeUnitStack, getProjectConfig(), myResourceChart);
+        ChartModelBase result = new ChartModelResource(myTaskManager,
+                myManager, myTimeUnitStack, getProjectConfig(), myResourceChart);
         super.setupCopy(result);
         return result;
     }
@@ -164,5 +166,4 @@ public class ChartModelResource extends ChartModelBase {
     public int calculateRowHeight() {
         return getChartUIConfiguration().getRowHeight();
     }
-
 }

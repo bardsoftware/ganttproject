@@ -30,8 +30,6 @@ public class GanttTask extends TaskImpl
 implements Serializable {
 
     /**
-     * Constructor
-     *
      * @param name of the new Task
      * @param start date of the new Task
      * @param length of the new Task
@@ -50,43 +48,26 @@ implements Serializable {
     }
 
     /**
-     * Constructor. Will make a copy of the given GanttTask
-     * 
+     * Will make a copy of the given GanttTask
+     *
      * @param copy task to copy
      */
     public GanttTask(GanttTask copy) {
         super(copy, false);
-        // for (int i = 0; i < getPredecessorsOld().size(); i++) {
-        // GanttTaskRelationship tempRel = (GanttTaskRelationship) ( (
-        // GanttTaskRelationship) getPredecessorsOld().get(i)).clone();
-        // addPredecessor(tempRel);
-        // }
-
-        // for (int i = 0; i < successors.size(); i++) {
-        // GanttTaskRelationship tempRel = (GanttTaskRelationship) ( (
-        // GanttTaskRelationship) successors.get(i)).clone();
-        // addSuccessor(tempRel);
-        // }
         enableEvents(true);
     }
 
-    /**
-     * @return a clone of the Task
-     */
+    /** @return a clone of the Task */
     public GanttTask Clone() {
         return new GanttTask(this);
     }
 
     /** @deprecated Use TimeUnit class instead and method getDuration() */ 
     public int getLength() {
-
         return (int) getDuration().getLength();
-
     }
 
-    /**
-     * @deprecated Use setDuration() 
-     */
+    /** @deprecated Use setDuration() */
     public void setLength(int l) {
         if (l <= 0) {
             throw new IllegalArgumentException(
@@ -100,8 +81,8 @@ implements Serializable {
     }
 
     /**
-     * Sets the task ID. the uniqueness of ID should be check before using this
-     * method
+     * Sets the task ID. The uniqueness of ID needs to be checked before using
+     * this method
      * 
      * @param taskID
      */

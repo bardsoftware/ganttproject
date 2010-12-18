@@ -31,11 +31,9 @@ import org.w3c.util.InvalidDateException;
 /**
  * Class use for calendar
  */
-public class GanttCalendar extends GregorianCalendar implements Serializable
-         {
-    private GanttLanguage language = GanttLanguage.getInstance();
+public class GanttCalendar extends GregorianCalendar implements Serializable {
+    private final GanttLanguage language = GanttLanguage.getInstance();
 
-    /** Default constructor */
     public GanttCalendar() {
         super();
         set(Calendar.HOUR_OF_DAY, 0);
@@ -44,12 +42,10 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         set(Calendar.MILLISECOND, 0);
     }
 
-    /** Constructor with a year, a month and a day */
     public GanttCalendar(int year, int month, int date) {
         super(year, month, date);
     }
 
-    /** Copy constructor */
     public GanttCalendar(GanttCalendar g) {
         super(g.getYear(), g.getMonth(), g.getDate());
     }
@@ -59,8 +55,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         setTime(date);
     }
 
-    // ////////////////////////////////////////////////////////////////////////////////////////////////////
-
     public static GanttCalendar parseXMLDate(String s) {
         GanttCalendar result = new GanttCalendar();
         result.clear();
@@ -68,10 +62,10 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
             Date date = DateParser.parse(s);
             result.setTime(date);
         } catch (InvalidDateException e) {
-            // Get "/" caracters
+            // Get "/" characters
             int fb = s.indexOf('/');
             int sb = s.indexOf('/', fb + 1);
-            // Get all fiels
+            // Get all fields
             String d = s.substring(0, fb);
             String m = s.substring(fb + 1, sb);
             String y = s.substring(sb + 1);
@@ -84,13 +78,13 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return result;
     }
 
-    /** Return a clone of the calendar */
+    /** @return a clone of the calendar */
     public GanttCalendar Clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         return clone;
     }
 
-    /** Return the date to A string */
+    /** @return the date to as a string */
     public String toString() {
         return (language.formatShortDate(this));
     }
@@ -139,15 +133,16 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
 
     /**
      * @deprecated Use TimeUnit related methods
-     * Return the difference (in day) between two date */
+     * @returns the difference (in days) between two date */
     @Deprecated
     public int diff(GanttCalendar d) {
         int res = 0;
         GanttCalendar d1;
         GanttCalendar d2;
 
-        if (this.compareTo(d) == 0)
+        if (this.compareTo(d) == 0) {
             return res;
+        }
 
         else if (compareTo(d) < 0) {
             d1 = this.Clone();
@@ -164,27 +159,26 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return res;
     }
 
-    /**
-     * This function returns the signal represented by an int
-     */
+    /** @return the sign represented by an integer */
     private int module(int number) {
-        if (number > 0)
+        if (number > 0) {
             return 1;
-        else if (number < 0)
+        } else if (number < 0) {
             return -1;
-        else
+        } else {
             return 0;
+        }
     }
 
+    final static private int[] comparissons = { Calendar.YEAR, Calendar.MONTH, Calendar.DATE };
     /**
-     * This function compare two date
-     *
-     * @return 0 If the two date are equals
-     * @return -1 if the date is before when
-     * @return 1 if the date is after when
+     * This function compares the calendar date with the given date
+     * 
+     * @return 0 If the two date are equals<br/>
+     *         -1 if the date is before 'when'<br/>
+     *         1 if the date is after 'when'
      */
     public int compareTo(GanttCalendar when) {
-        int[] comparissons = { Calendar.YEAR, Calendar.MONTH, Calendar.DATE };
         for (int i = 0; i < comparissons.length; i++) {
             switch (module(this.get(comparissons[i])
                     - when.get(comparissons[i]))) {
@@ -199,22 +193,17 @@ public class GanttCalendar extends GregorianCalendar implements Serializable
         return 0;
     }
 
-    /** Is the date equals to when */
+    /** @return true if the calendar date equals to 'when' */
     public boolean equals(GanttCalendar when) {
         return getYear() == when.getYear() && getMonth() == when.getMonth()
                 && getDay() == when.getDay();
     }
 
-    /** Return the actually date */
+    /** @return the actually date */
     public static String getDateAndTime() {
         GanttCalendar c = new GanttCalendar();
         return c.toString() + " - " + GanttLanguage.getInstance().formatTime(c);
     }
-
-    public int compareTo(Calendar o) {
-        return compareTo((GanttCalendar) o);
-    }
-
 
     public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
         public int compare(GanttCalendar o1, GanttCalendar o2) {

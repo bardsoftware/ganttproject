@@ -65,7 +65,7 @@ public class TaskImpl implements Task {
 
     private TaskLength myLength;
 
-    private List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
+    private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
 
 //    private boolean isStartFixed;
 
@@ -75,13 +75,13 @@ public class TaskImpl implements Task {
 
     // private final TaskDependencyCollection myDependencies = new
     // TaskDependencyCollectionImpl();
-    private ResourceAssignmentCollectionImpl myAssignments;
+    private final ResourceAssignmentCollectionImpl myAssignments;
 
-    private TaskDependencySlice myDependencySlice;
+    private final TaskDependencySlice myDependencySlice;
 
-    private TaskDependencySlice myDependencySliceAsDependant;
+    private final TaskDependencySlice myDependencySliceAsDependant;
 
-    private TaskDependencySlice myDependencySliceAsDependee;
+    private final TaskDependencySlice myDependencySliceAsDependee;
 
     private boolean myEventsEnabled;
 

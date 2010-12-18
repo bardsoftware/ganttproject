@@ -168,13 +168,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** The different menus */
+    /** Menu */
     public JMenu mProject, mMRU, mEdit, mTask, mHuman, mHelp, mServer,
             mCalendar;
 
     // public JMenu mView;
 
-    /** The different menuitem */
+    /** Menuitem */
     public JMenuItem miPreview,/* miCut, miCopy, miPaste, */miOptions,
             miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
             miPrjCal, miWebPage, miAbout, miRefresh, miChartOptions;
@@ -185,7 +185,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
-    /** The different buttons of toolbar */
+    /** Toolbar button */
     private TestGanttRolloverButton bNew, bOpen, bSave, bExport, bImport,
             bPrint, bPreviewPrint, bCopy, bCut, bPaste, bNewTask, bDelete,
             bProperties,/* bUnlink, bLink, bUp, bDown,*/ bPrev,
@@ -227,7 +227,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private final TaskManager myTaskManager;
 
-    private FacadeInvalidator myFacadeInvalidator;
+    private final FacadeInvalidator myFacadeInvalidator;
 
     private UIConfiguration myUIConfiguration;
 
@@ -318,7 +318,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myUIConfiguration = options.getUIConfiguration();
     }
 
-    /** Constructor */
     public GanttProject(boolean isOnlyViewer, boolean isApplet) {
         System.err.println("Creating main frame...");
         ToolTipManager.sharedInstance().setInitialDelay(200);
@@ -2123,11 +2122,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /////////////////////////////////////////////////////////
     // IGanttProject implementation
     public String getProjectName() {
-        return prjInfos._sProjectName;
+        return prjInfos.getName();
     }
 
     public void setProjectName(String projectName) {
-        prjInfos._sProjectName = projectName;
+        prjInfos.setName(projectName);
         setAskForSave(true);
     }
 
@@ -2136,7 +2135,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void setDescription(String description) {
-        prjInfos._sDescription = description;
+        prjInfos.setDescription(description);
         setAskForSave(true);
     }
 
@@ -2145,7 +2144,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void setOrganization(String organization) {
-        prjInfos._sOrganization = organization;
+        prjInfos.setOrganization(organization);
         setAskForSave(true);
     }
 
@@ -2154,7 +2153,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void setWebLink(String webLink) {
-        prjInfos._sWebLink = webLink;
+        prjInfos.setWebLink(webLink);
         setAskForSave(true);
     }
 
@@ -2317,7 +2316,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             return new GanttXMLSaver(GanttProject.this, (GanttTree2) getTree(),
                     getResourcePanel(), getArea(), getUIFacade());
         }
-
     }
 
     public void setRowHeight(int value) {
@@ -2343,79 +2341,82 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         String sIcons = "";
         if (list != null) {
             int i = 0;
-            if (list.equals(deletedIconList))
+            if (list.equals(deletedIconList)) {
                 i++;
+            }
             for (; i < list.size(); i++) {
-                if (!sIcons.equals(""))
+                if (!sIcons.equals("")) {
                     sIcons = sIcons + ",";
-                if (list.elementAt(i).equals(GPToolBar.SEPARATOR_OBJECT))
+                }
+                if (list.elementAt(i).equals(GPToolBar.SEPARATOR_OBJECT)) {
                     sIcons = sIcons + GanttOptions.SEPARATOR;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bNew)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNew) {
                     sIcons = sIcons + GanttOptions.NEW;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bOpen)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bOpen) {
                     sIcons = sIcons + GanttOptions.OPEN;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bSave)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSave) {
                     sIcons = sIcons + GanttOptions.SAVE;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bImport)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bImport) {
                     sIcons = sIcons + GanttOptions.IMPORT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bExport)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bExport) {
                     sIcons = sIcons + GanttOptions.EXPORT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bPrint)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPrint) {
                     sIcons = sIcons + GanttOptions.PRINT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bPreviewPrint)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPreviewPrint) {
                     sIcons = sIcons + GanttOptions.PREVIEWPRINT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bCut)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCut) {
                     sIcons = sIcons + GanttOptions.CUT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bCopy)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCopy) {
                     sIcons = sIcons + GanttOptions.COPY;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bPaste)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPaste) {
                     sIcons = sIcons + GanttOptions.PASTE;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bNewTask)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNewTask) {
                     sIcons = sIcons + GanttOptions.NEWTASK;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bDelete)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bDelete) {
                     sIcons = sIcons + GanttOptions.DELETE;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bProperties)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bProperties) {
                     sIcons = sIcons + GanttOptions.PROPERTIES;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bUnlink)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
+                // bUnlink) {
                 // sIcons = sIcons + GanttOptions.UNLINK;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bLink)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
+                // bLink) {
                 // sIcons = sIcons + GanttOptions.LINK;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) == bInd)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) == bInd) {
                 // sIcons = sIcons + GanttOptions.IND;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bUnind)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
+                // bUnind) {
                 // sIcons = sIcons + GanttOptions.UNIND;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) == bUp)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) == bUp) {
                 // sIcons = sIcons + GanttOptions.UP;
-                // else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bDown)
+                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
+                // bDown) {
                 // sIcons = sIcons + GanttOptions.DOWN;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bPrev)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPrev) {
                     sIcons = sIcons + GanttOptions.PREV;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bScrollCenter)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bScrollCenter) {
                     sIcons = sIcons + GanttOptions.CENTER;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bNext)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNext) {
                     sIcons = sIcons + GanttOptions.NEXT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomOut)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomOut) {
                     sIcons = sIcons + GanttOptions.ZOOMOUT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomIn)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomIn) {
                     sIcons = sIcons + GanttOptions.ZOOMIN;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bUndo)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bUndo) {
                     sIcons = sIcons + GanttOptions.UNDO;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo) {
                     sIcons = sIcons + GanttOptions.REDO;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical) {
                     sIcons = sIcons + GanttOptions.CRITICAL;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout) {
                     sIcons = sIcons + GanttOptions.ABOUT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bSaveCurrent)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSaveCurrent) {
                     sIcons = sIcons + GanttOptions.SAVECURRENT;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bComparePrev)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bComparePrev) {
                     sIcons = sIcons + GanttOptions.COMPAREPREV;
-                else if ((TestGanttRolloverButton) list.elementAt(i) == bRefresh)
+                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRefresh) {
                     sIcons = sIcons + GanttOptions.REFRESH;
+                }
             }
         }
         return sIcons;
@@ -2555,9 +2556,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             ArrayList<DefaultMutableTreeNode> projectTasks = tree
                     .getProjectTasks();
             if (projectTasks.size() != 0) {
-                for (int i = 0; i < projectTasks.size(); i++)
+                for (int i = 0; i < projectTasks.size(); i++) {
                     getTaskManager().processCriticalPath(
                             (TaskNode) projectTasks.get(i));
+                }
             }
             repaint();
         }
@@ -2583,9 +2585,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
         ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
         if (projectTasks.size() != 0) {
-            for (int i = 0; i < projectTasks.size(); i++)
+            for (int i = 0; i < projectTasks.size(); i++) {
                 getTaskManager().processCriticalPath(
                         (TaskNode) projectTasks.get(i));
+            }
         }
 
         getResourcePanel().getResourceTreeTableModel().updateResources();

@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class AboutJavaInfosPanel extends GeneralOptionPanel {
 
-    /** Constructor. */
     public AboutJavaInfosPanel() {
         super(GanttLanguage.getInstance().getText("jinfos"), GanttLanguage
                 .getInstance().getText("settingsJavaInfos"));
@@ -72,20 +71,10 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
-     */
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
-     */
     public void initialize() {
     }
 
