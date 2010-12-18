@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
+import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -40,7 +41,14 @@ public class UnlinkTasksAction extends TaskActionBase {
     }
 
     protected boolean isEnabled(List<Task> selection) {
-        return false==selection.isEmpty();
+        Iterator<Task> it = selection.iterator();
+        while (it.hasNext()) {
+            Task nextTask = it.next();
+            if (nextTask.getDependencies().hasLinks(selection)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void run(List<Task> selection) throws Exception {
@@ -48,5 +56,7 @@ public class UnlinkTasksAction extends TaskActionBase {
             Task nextTask = selection.get(i);
             nextTask.getDependencies().clear(selection);
         }
+        // Update (un)link buttons
+        getSelectionManager().fireSelectionChanged();
     }
 }

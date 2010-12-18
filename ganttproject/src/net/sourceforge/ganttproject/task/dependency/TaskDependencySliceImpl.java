@@ -36,6 +36,16 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
         }
     }
 
+    public boolean hasLinks(List<Task> selection) {
+        TaskDependency[] deps = toArray();
+        for (int i = 0; i < deps.length; i++) {
+            if (selection.contains(deps[i].getDependant()) && selection.contains(deps[i].getDependee())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected Task getTask() {
         return myTask;
     }

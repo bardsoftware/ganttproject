@@ -144,7 +144,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
         myListeners.remove(listener);
     }
 
-    private void fireSelectionChanged() {
+    public void fireSelectionChanged() {
         for (int i=0; i<myListeners.size(); i++) {
             Listener next = myListeners.get(i);
             next.selectionChanged(Collections.unmodifiableList(selectedTasks));

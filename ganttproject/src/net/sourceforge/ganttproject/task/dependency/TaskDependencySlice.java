@@ -9,4 +9,5 @@ public interface TaskDependencySlice {
 
     void clear();
     void clear(List<Task> selection);
+    boolean hasLinks(List<Task> selection);
 }
