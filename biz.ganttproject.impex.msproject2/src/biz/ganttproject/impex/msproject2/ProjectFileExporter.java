@@ -39,7 +39,9 @@ import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceField;
+import net.sf.mpxj.ResourceType;
 import net.sf.mpxj.TaskField;
+import net.sf.mpxj.TaskMode;
 import net.sf.mpxj.TimeUnit;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyClass;
@@ -62,6 +64,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
@@ -74,6 +77,9 @@ class ProjectFileExporter {
 	public ProjectFileExporter(IGanttProject nativeProject) {
 		myNativeProject = nativeProject;
 		myOutputProject = new ProjectFile();
+		myOutputProject.setAutoOutlineLevel(true);
+		myOutputProject.setAutoWBS(true);
+		myOutputProject.setAutoOutlineNumber(true);
 	}
 	
 	ProjectFile run() throws MPXJException {
@@ -107,9 +113,7 @@ class ProjectFileExporter {
 
 	private void exportHolidays(ProjectCalendar calendar) {
 		for (Date d : getCalendar().getPublicHolidays()) {
-			ProjectCalendarException calendarException = calendar.addCalendarException();
-			calendarException.setFromDate(d);
-			calendarException.setToDate(d);
+			ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
 			calendarException.addRange(new DateRange(d, d));
 		}
 	}
@@ -120,26 +124,58 @@ class ProjectFileExporter {
         for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
             myOutputProject.setTaskFieldAlias((TaskField)e.getValue(), e.getKey().getName());
         }
+        net.sf.mpxj.Task rootTask = myOutputProject.addTask();
+        rootTask.setID(0);
+        rootTask.setUniqueID(0);
+        rootTask.setOutlineLevel(0);
+        rootTask.setWBS("0");
+        rootTask.setOutlineNumber("0");
+        rootTask.setStart(convertStartTime(getTaskManager().getProjectStart()));
+        rootTask.setFinish(convertFinishTime(getTaskManager().getProjectEnd()));
+        rootTask.setDuration(convertDuration(getTaskManager().createLength(
+        		getTaskManager().getRootTask().getDuration().getTimeUnit(), 
+        		getTaskManager().getProjectStart(), getTaskManager().getProjectEnd())));
+        rootTask.setDurationFormat(TimeUnit.DAYS);
+        rootTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
+        
+        int i = 0;
 		for (Task t : getTaskHierarchy().getNestedTasks(getTaskHierarchy().getRootTask())) {
-			exportTask(t, null, 0, id2mpxjTask, customProperty_fieldType);			
+			exportTask(t, null, 1, ++i, id2mpxjTask, customProperty_fieldType);			
 		}
 	}
 	
-	private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, int outlineLevel, 
+	private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, 
+			int outlineLevel, int ordinalNum, 
 	        Map<Integer, net.sf.mpxj.Task> id2mpxjTask, Map<CustomPropertyDefinition, FieldType> customProperty_fieldType) {
 		final net.sf.mpxj.Task mpxjTask = mpxjParentTask == null ? myOutputProject.addTask() : mpxjParentTask.addTask();
 		mpxjTask.setOutlineLevel(outlineLevel);
-		mpxjTask.setUniqueID(t.getTaskID());
-        mpxjTask.setID(id2mpxjTask.size());
+		String wbs = (mpxjParentTask==null ? "" : mpxjParentTask.getWBS() + ".") + String.valueOf(ordinalNum);
+		mpxjTask.setWBS(wbs);
+		mpxjTask.setOutlineNumber(wbs);
+		mpxjTask.setUniqueID(convertTaskId(t.getTaskID()));
+        mpxjTask.setID(id2mpxjTask.size() + 1);
 		mpxjTask.setName(t.getName());
 		mpxjTask.setNotes(t.getNotes());
 		mpxjTask.setMilestone(t.isMilestone());
-        mpxjTask.setPhysicalPercentComplete(t.getCompletionPercentage());
+        mpxjTask.setPercentageComplete(t.getCompletionPercentage());
         mpxjTask.setHyperlink(((GanttTask)t).getWebLink());
-        mpxjTask.setStart(t.getStart().getTime());
-        mpxjTask.setFinish(t.getEnd().getTime());
+        mpxjTask.setIgnoreResourceCalendar(true);
+        
+        Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
+        if (nestedTasks.length > 0) {
+        	mpxjTask.setSummary(true);
+//        	mpxjTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
+        } else { 
+        }
+        mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
+
+        mpxjTask.setStart(convertStartTime(t.getStart().getTime()));
+        mpxjTask.setFinish(convertFinishTime(t.getEnd().getTime()));
         mpxjTask.setDuration(convertDuration(t.getDuration()));
-        mpxjTask.setConstraintType(ConstraintType.AS_SOON_AS_POSSIBLE);
+        mpxjTask.setDurationFormat(TimeUnit.DAYS);
+        Duration[] durations = getActualAndRemainingDuration(mpxjTask);
+        mpxjTask.setActualDuration(durations[0]);
+        mpxjTask.setRemainingDuration(durations[1]);
         mpxjTask.setPriority(convertPriority(t));
         
         exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
@@ -147,25 +183,56 @@ class ProjectFileExporter {
                 mpxjTask.set(ft, value);
             }
         });
-        id2mpxjTask.put(t.getTaskID(), mpxjTask);
+        id2mpxjTask.put(mpxjTask.getUniqueID(), mpxjTask);
         
-		for (Task child : getTaskHierarchy().getNestedTasks(t)) {
-			exportTask(child, mpxjTask, outlineLevel + 1, id2mpxjTask, customProperty_fieldType);
+        int i = 0;
+		for (Task child : nestedTasks) {
+			exportTask(child, mpxjTask, outlineLevel + 1, ++i, id2mpxjTask, customProperty_fieldType);
 		}
 		
 	}
 
-	private static Object convertDuration(TaskLength duration) {
-		return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);
+	private Date convertStartTime(Date gpStartDate) {
+		Date startTime = myOutputProject.getCalendar().getStartTime(gpStartDate);
+		Calendar c = (Calendar) Calendar.getInstance().clone();
+		c.setTime(gpStartDate);
+		c.set(Calendar.HOUR, startTime.getHours());
+		c.set(Calendar.MINUTE, startTime.getMinutes());
+		return c.getTime();
+	}
+	
+	private Date convertFinishTime(Date gpFinishDate) {
+		Calendar c = (Calendar) Calendar.getInstance().clone();
+		c.setTime(gpFinishDate);
+		c.add(Calendar.DAY_OF_YEAR, -1);
+		Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
+		
+		c.set(Calendar.HOUR, finishTime.getHours());
+		c.set(Calendar.MINUTE, finishTime.getMinutes());
+		return c.getTime();
+		
+	}
+	private Duration convertDuration(TaskLength duration) {
+		return Duration.getInstance(duration.getLength() * 8, TimeUnit.HOURS);
 	}
 
+	private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask) {
+        TimeUnit durationUnits = mpxjTask.getDuration().getUnits();
+        double actualWork = (mpxjTask.getDuration().getDuration() * mpxjTask.getPercentageComplete().doubleValue()) / 100;
+        double remainingWork = mpxjTask.getDuration().getDuration() - actualWork;
+
+        return new Duration[] {
+        		Duration.getInstance(actualWork, durationUnits), 
+        		Duration.getInstance(remainingWork, durationUnits)};
+
+	}
 	private void exportDependencies(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
 		for (Task t : getTaskManager().getTasks()) {
-			net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(t.getTaskID());
+			net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(convertTaskId(t.getTaskID()));
 			
 			TaskDependencySlice dependencies = t.getDependenciesAsDependant();
 			for (TaskDependency dep : dependencies.toArray()) {
-				net.sf.mpxj.Task mpxjPredecessor = id2mpxjTask.get(dep.getDependee().getTaskID());
+				net.sf.mpxj.Task mpxjPredecessor = id2mpxjTask.get(convertTaskId(dep.getDependee().getTaskID()));
 				assert mpxjPredecessor != null : "Can't find mpxj task for id=" + dep.getDependee().getTaskID();
 				mpxjTask.addPredecessor(mpxjPredecessor, convertConstraint(dep), convertLag(dep));
 			}
@@ -211,6 +278,19 @@ class ProjectFileExporter {
 		}
 	}
 
+	private int convertTaskId(int taskId) {
+		return taskId == 0 ? getMaxTaskID() + 1 : taskId;
+	}
+	
+	private int getMaxTaskID() {
+		int maxID = 0;
+		for (Task t : getTaskManager().getTasks()) {
+			if (t.getTaskID() > maxID) {
+				maxID = t.getTaskID();
+			}
+		}
+		return maxID;
+	}
 	private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
 	    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
 	    collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType, ResourceField.class);
@@ -229,6 +309,8 @@ class ProjectFileExporter {
 	    mpxjResource.setID(id2mpxjResource.size() + 1);
 	    mpxjResource.setName(hr.getName());
 	    mpxjResource.setEmailAddress(hr.getMail());
+	    mpxjResource.setType(ResourceType.WORK);
+	    
 	    exportDaysOff(hr, mpxjResource);
 	    exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
             public void set(FieldType ft, Object value) {
@@ -307,23 +389,29 @@ class ProjectFileExporter {
         DefaultListModel daysOff = hr.getDaysOff();
         if (!daysOff.isEmpty()) {
             ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
-            resourceCalendar.setUniqueID(hr.getId());
+            resourceCalendar.setBaseCalendar(myOutputProject.getCalendar());
+//            resourceCalendar.setUniqueID(hr.getId());
             for (int i = 0; i < daysOff.size(); i++) {
                 GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
-                ProjectCalendarException calendarException = resourceCalendar.addCalendarException();
-                calendarException.setFromDate(dayOff.getStart().getTime());
-                calendarException.setToDate(dayOff.getFinish().getTime());
+                resourceCalendar.addCalendarException(dayOff.getStart().getTime(), dayOff.getFinish().getTime());
             }
         }
     }
 
     private void exportAssignments(Map<Integer, net.sf.mpxj.Task> id2mpxjTask, Map<Integer, Resource> id2mpxjResource) {
         for (Task t : getTaskManager().getTasks()) {
-            net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(t.getTaskID());
+            net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(convertTaskId(t.getTaskID()));
             for (ResourceAssignment ra : t.getAssignments()) {
                 Resource mpxjResource = id2mpxjResource.get(ra.getResource().getId());
                 net.sf.mpxj.ResourceAssignment mpxjAssignment = mpxjTask.addResourceAssignment(mpxjResource);
                 mpxjAssignment.setUnits(ra.getLoad());
+                mpxjAssignment.setStart(mpxjTask.getStart());
+                mpxjAssignment.setFinish(mpxjTask.getFinish());
+                
+                mpxjAssignment.setWork(mpxjTask.getDuration());
+                Duration[] durations = getActualAndRemainingDuration(mpxjTask);
+                mpxjAssignment.setActualWork(durations[0]);
+                mpxjAssignment.setRemainingWork(durations[1]);
             }
         }
     }
