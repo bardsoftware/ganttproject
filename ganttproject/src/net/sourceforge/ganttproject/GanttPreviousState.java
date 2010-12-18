@@ -28,19 +28,18 @@ import org.xml.sax.SAXException;
 
 /**
  * @author nbohn
- * 
  */
 public class GanttPreviousState {
     private final String myName;
 
+    private final File myFile;
 
-    private File myFile;
+    private final OutputStreamWriter os;
 
-    private OutputStreamWriter os;
-
+    // TODO myTree is not defined for 2nd constructor...!
     private GanttTree2 myTree;
 
-    private String s = "    "; // the margin
+    private final String s = "    "; // the margin
 
     /** constructor for a new previous state */
     public GanttPreviousState(String name, GanttProject project)

@@ -31,7 +31,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class AboutLicensePanel extends GeneralOptionPanel {
 
-    /** Constructor. */
     public AboutLicensePanel() {
         super(GanttLanguage.getInstance().getText("license"), GanttLanguage
                 .getInstance().getText("settingsLicense"));
@@ -59,21 +58,10 @@ public class AboutLicensePanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
-     */
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
-     */
     public void initialize() {
     }
-
 }

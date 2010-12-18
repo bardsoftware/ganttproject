@@ -36,9 +36,6 @@ import com.tapsterrock.mspdi.MSPDIFile;
  * from an MSPDI file into the GanttProject application.
  */
 public class GanttMSPDIOpen extends GanttMPXJOpen {
-    /**
-     * Constructor.
-     */
     public GanttMSPDIOpen(IGanttProject project) {
         super(project);
     }

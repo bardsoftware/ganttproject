@@ -5,9 +5,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * <p>
- * Title:
- * </p>
- * <p>
  * Description: This class model the four relationships between different tasks.
  * <p>
  * Start-start: As soon as the predecessor task starts, the successor task can
@@ -36,10 +33,8 @@ public class GanttTaskRelationship {
 
     public static final int FF = 3; // Finish to finish
 
-    public static final int SF = 4; // start to finsih
+    public static final int SF = 4; // start to finish
 
-    // private GanttTask predecessorTask; //predecessor;
-    // private GanttTask successorTask; //successor;
     private int predecessorTaskID = -1;
 
     private int successorTaskID = -1;
@@ -50,7 +45,6 @@ public class GanttTaskRelationship {
 
     private final TaskManager myTaskManager;
 
-    /** Constructor, do nothing */
     public GanttTaskRelationship() {
         this(null);
     }
@@ -59,7 +53,6 @@ public class GanttTaskRelationship {
         myTaskManager = taskManager;
     }
 
-    /** Constructor */
     public GanttTaskRelationship(int predecessorTaskID, int successorTaskID,
             int relationshipType, int difference, TaskManager taskManager) {
         this(taskManager);
@@ -70,7 +63,7 @@ public class GanttTaskRelationship {
     }
 
     // getters and setters
-    /** get the predecessor task */
+    /** @return the predecessor task */
     public GanttTask getPredecessorTask() {
         if (predecessorTaskID != -1) {
             return getManager().getTask(predecessorTaskID);
@@ -79,7 +72,7 @@ public class GanttTaskRelationship {
         }
     }
 
-    /** get the predecessor task ID or -1 if there is no such ID */
+    /** @return the predecessor task ID or -1 if there is no such ID */
     public int getPredecessorTaskID() {
         return predecessorTaskID;
     }
@@ -87,7 +80,6 @@ public class GanttTaskRelationship {
     /** set the predecessor task by GanttTask object */
     public void setPredecessorTask(Task predecessorTask) {
         this.predecessorTaskID = predecessorTask.getTaskID();
-        // this.predecessorTask=predecessorTask;
     }
 
     /**
@@ -100,7 +92,7 @@ public class GanttTaskRelationship {
         this.predecessorTaskID = predecessorTaskID;
     }
 
-    /** get the successor task */
+    /** @return the successor task */
     public Task getSuccessorTask() {
         if (successorTaskID != -1) {
             return getManager().getTask(successorTaskID);
@@ -124,7 +116,6 @@ public class GanttTaskRelationship {
      */
     public void setSuccessorTask(Task successorTask) {
         this.successorTaskID = successorTask.getTaskID();
-        // this.successorTask = successorTask;
     }
 
     /**
@@ -137,12 +128,12 @@ public class GanttTaskRelationship {
         this.successorTaskID = seccessorTaskID;
     }
 
-    /** get the relationship type */
+    /** @return the relationship type */
     public int getRelationshipType() {
         return relationshipType;
     }
 
-    /** get the difference */
+    /** @return the difference */
     public int getDifference() {
         return difference;
     }

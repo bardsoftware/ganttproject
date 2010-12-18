@@ -33,12 +33,11 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class LanguageSettingsPanel extends GeneralOptionPanel implements
         ItemListener {
 
-    // combo box to store all languages data
+    /** combo box to store all languages data */
     private final JComboBox cbLanguage;
 
     private final GanttProject appli;
 
-    /** Constructor. */
     public LanguageSettingsPanel(GanttProject parent) {
         super(GanttLanguage.getInstance().getText("languages"), GanttLanguage
                 .getInstance().getText("settingsLanguages"));

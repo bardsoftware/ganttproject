@@ -29,8 +29,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author athomas New dialog box for about GanttProject :)
  */
 public class AboutDialog extends GeneralDialog {
-
-    /** Constructor. */
     public AboutDialog(GanttProject parent) {
         super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
                 .getText("about"))
@@ -54,16 +52,17 @@ public class AboutDialog extends GeneralDialog {
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttProject.correctLabel(language.getText("about"))))
+        if (sNode.equals(GanttProject.correctLabel(language.getText("about")))) {
             settingPanel = new AboutPanel();
-        else if (sNode.equals(language.getText("authors")))
+        } else if (sNode.equals(language.getText("authors"))) {
             settingPanel = new AboutAuthorPanel();
-        else if (sNode.equals(language.getText("jinfos")))
+        } else if (sNode.equals(language.getText("jinfos"))) {
             settingPanel = new AboutJavaInfosPanel();
-        else if (sNode.equals(language.getText("license")))
+        } else if (sNode.equals(language.getText("license"))) {
             settingPanel = new AboutLicensePanel();
-        else if (sNode.equals(language.getText("library")))
+        } else if (sNode.equals(language.getText("library"))) {
             settingPanel = new AboutLibraryPanel();
+        }
 
         Box vb = Box.createVerticalBox();
         vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel
@@ -85,5 +84,4 @@ public class AboutDialog extends GeneralDialog {
         addObject(language.getText("license"), null);
         addObject(language.getText("library"), null);
     }
-
 }

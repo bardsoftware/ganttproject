@@ -36,25 +36,14 @@ import com.tapsterrock.mpx.MPXException;
  * from an MPP file into the GanttProject application.
  */
 public class GanttMPPOpen extends GanttMPXJOpen {
-    /**
-     * Constructor.
-     */
     public GanttMPPOpen(IGanttProject project) {
         super(project);
     }
 
-    /**
-     * @throws MPXException
-     * @see GanttMPXJOpen#load(java.io.File)
-     */
     public boolean load(File file) throws MPXException {
         return (load(new MPPFile(file)));
     }
 
-    /**
-     * @throws MPXException
-     * @see GanttMPXJOpen#load(InputStream is)
-     */
     public boolean load(InputStream is) throws MPXException {
         return (load(new MPPFile(is)));
     }

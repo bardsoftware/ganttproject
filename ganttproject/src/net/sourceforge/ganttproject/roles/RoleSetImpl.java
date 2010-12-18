@@ -42,7 +42,7 @@ public class RoleSetImpl implements RoleSet {
         myRoles.remove(role);
         myRoleManager.fireRolesChanged(this);
     }
-    
+
     public void changeRole(String name, int roleID) {
         Role role = findRole(roleID);
         if (role != null) {
@@ -81,7 +81,6 @@ public class RoleSetImpl implements RoleSet {
 
     public void clear() {
         myRoles.clear();
-
     }
 
     void importData(RoleSet original) {
@@ -91,5 +90,4 @@ public class RoleSetImpl implements RoleSet {
             createRole(nextRole.getName(), nextRole.getID());
         }
     }
-
 }
