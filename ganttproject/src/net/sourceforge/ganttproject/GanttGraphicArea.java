@@ -31,10 +31,8 @@
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -56,7 +54,6 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JPanel;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -85,9 +82,6 @@ import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
@@ -95,7 +89,6 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskMutator;
@@ -209,20 +202,17 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
     }
 
-    /** Return the color of the task */
-
+    /** @return the color of the task */
     public Color getTaskColor() {
         return myUIConfiguration.getTaskColor();
     }
 
     /** Change the color of the task */
-
     public void setProjectLevelTaskColor(Color c) {
         myUIConfiguration.setProjectLevelTaskColor(c);
     }
 
-    /** The size of the panel. */
-
+    /** @return the preferred size of the panel. */
     public Dimension getPreferredSize() {
 
         return new Dimension(465, 600);
@@ -244,9 +234,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return GanttLanguage.getInstance().getText("gantt");
     }
 
-    /** Return an image with the gantt chart */
+    /** @return an image with the gantt chart */
     // TODO: 1.11 take into account flags "render this and don't render that"
-
     public BufferedImage getChart(GanttExportSettings settings) {
         RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
         int width = renderedImage.getWidth();
@@ -262,7 +251,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         GPTreeTableBase treetable = Mediator.getGanttProjectSingleton().getTree().getTreeTable();
         JXTreeTable xtreetable = treetable.getTreeTable();
 
-//      I don't know why we need to add 67 to the height to make it fit the real height
+        // I don't know why we need to add 67 to the height to make it fit the real height
         int tree_height = xtreetable.getHeight()+67;
 
         GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 44);
@@ -282,16 +271,16 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         Graphics2D gtree = tree.createGraphics();
         xtreetable.printAll(gtree);
 
-        //create a new image that will contain the logo, the table/tree and the chart
+        // Create a new image that will contain the logo, the table/tree and the chart
         BufferedImage task_image = new BufferedImage(xtreetable.getWidth(), tree_height+logo_panel.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         Graphics2D gimage = task_image.createGraphics();
 
-        //draw the logo on the image
+        // Draw the logo on the image
         gimage.drawImage(logo, 0, 0, tree.getWidth(), logo.getHeight(), Color.WHITE, null);
-        //draw the header on the image
+        // Draw the header on the image
         gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
-        //draw the tree on the image
+        // Draw the tree on the image
         gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
 
         Date dateStart = null;
@@ -311,7 +300,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         TaskLength printedLength = getTaskManager().createLength(unit, dateStart, dateEnd);
         System.err.println("start date="+dateStart+" end date="+dateEnd+" unit="+unit+" printed length="+printedLength);
         int chartWidth = (int) ((printedLength.getLength(getViewState().getBottomTimeUnit()) + 1) * getViewState().getBottomUnitWidth());
-        if (chartWidth<this.getWidth()) {
+        if (chartWidth < this.getWidth()) {
             chartWidth = this.getWidth();
         }
         int chartHeight = task_image.getHeight();
@@ -366,7 +355,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void repaint() {
         try {
-            if (myChartModel!=null) {
+            if (myChartModel != null) {
                 myChartModel.setHeaderHeight(myTableHeader.getHeight()
                         + HEADER_OFFSET);
             }
@@ -1081,7 +1070,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void setTaskManager(TaskManager taskManager) {
         // TODO Auto-generated method stub
-
     }
 
     public void reset() {
@@ -1103,12 +1091,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void projectModified() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectSaved() {
         // TODO Auto-generated method stub
-
     }
 
     public void projectClosed() {
