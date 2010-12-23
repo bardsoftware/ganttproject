@@ -781,7 +781,7 @@ public class TaskManagerImpl implements TaskManager {
             Task nextImported = createTask(nested[i].getTaskID());
             registerTask(nextImported);
             nextImported.setName(nested[i].getName());
-            nextImported.setStart(nested[i].getStart().Clone());
+            nextImported.setStart(nested[i].getStart().clone());
             nextImported.setDuration(nested[i].getDuration());
             nextImported.setMilestone(nested[i].isMilestone());
             nextImported.setColor(nested[i].getColor());
@@ -792,7 +792,7 @@ public class TaskManagerImpl implements TaskManager {
             nextImported.setTaskInfo(nested[i].getTaskInfo());
             nextImported.setExpand(nested[i].getExpand());
             if (nested[i].getThird() != null) {
-                nextImported.setThirdDate(nested[i].getThird().Clone());
+                nextImported.setThirdDate(nested[i].getThird().clone());
                 nextImported.setThirdDateConstraint(nested[i]
                         .getThirdDateConstraint());
             }

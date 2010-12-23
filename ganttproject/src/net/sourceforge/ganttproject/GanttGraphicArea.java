@@ -889,10 +889,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 GanttCalendar dStart = t.getStart();
                 GanttCalendar dEnd = t.getEnd();
 
-                min = min == null ? dStart.Clone()
-                        : (min.compareTo(dStart) > 0 ? dStart.Clone() : min);
-                max = max == null ? dEnd.Clone()
-                        : (max.compareTo(dEnd) < 0 ? dEnd.Clone() : max);
+                min = min == null ? dStart.clone()
+                        : (min.compareTo(dStart) > 0 ? dStart.clone() : min);
+                max = max == null ? dEnd.clone()
+                        : (max.compareTo(dEnd) < 0 ? dEnd.clone() : max);
             }
 
             //no tasks defined, nothing to do

@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.task.dependency.constraint;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -13,8 +14,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
 
 /**
- * Dependant task finishes not earlier than dependee starts Created by IntelliJ
- * IDEA. User: bard
+ * Dependent task finishes not earlier than dependee starts
+ * @author bard
  */
 public class StartFinishConstraintImpl extends ConstraintImpl implements
         TaskDependencyConstraint {
@@ -29,17 +30,17 @@ public class StartFinishConstraintImpl extends ConstraintImpl implements
         Task dependant = getDependency().getDependant();
         GanttCalendar dependeeStart = dependee.getStart();
         GanttCalendar dependantEnd = dependant.getEnd();
-        //
+
         int difference = getDependency().getDifference();
-        GanttCalendar comparisonDate = dependeeStart.Clone();
-        comparisonDate.add(difference);
+        GanttCalendar comparisonDate = dependeeStart.clone();
+        comparisonDate.add(Calendar.DATE, difference);
 
         boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ? dependantEnd
                 .compareTo(comparisonDate) < 0 : dependantEnd
                 .compareTo(comparisonDate) != 0;
 
         // GanttCalendar acceptableStart = dependant.getStart();
-        GanttCalendar acceptableStart = dependee.getStart().Clone();
+        GanttCalendar acceptableStart = dependee.getStart().clone();
         if (isActive) {
             Task clone = dependee.unpluggedClone();
             TaskMutator mutator = clone.createMutator();
@@ -55,7 +56,7 @@ public class StartFinishConstraintImpl extends ConstraintImpl implements
 
     public Collision getBackwardCollision(Date dependantStart) {
         Task dependee = getDependency().getDependee();
-        GanttCalendar dependeeEnd = dependee.getEnd().Clone();
+        GanttCalendar dependeeEnd = dependee.getEnd().clone();
 
         Date barrier = shift(
                 dependantStart, 
@@ -70,7 +71,6 @@ public class StartFinishConstraintImpl extends ConstraintImpl implements
                 new GanttCalendar(barrier),
                 TaskDependencyConstraint.Collision.START_EARLIER_VARIATION,
                 isActive);
-        
     }
     
     public ActivityBinding getActivityBinding() {
@@ -83,5 +83,4 @@ public class StartFinishConstraintImpl extends ConstraintImpl implements
         return new DependencyActivityBindingImpl(theDependant, theDependee,
                 new Date[] { theDependant.getEnd(), theDependee.getStart() });
     }
-
 }
