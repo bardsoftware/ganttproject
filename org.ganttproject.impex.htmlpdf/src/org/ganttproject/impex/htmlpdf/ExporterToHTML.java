@@ -17,7 +17,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.xml.sax.SAXException;
@@ -68,7 +67,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         Job result = new ExportJob("generate gantt chart") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
-                    Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
                     return Status.CANCEL_STATUS;
                 }
                 try {
@@ -97,7 +96,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         Job result = new ExportJob("Generate resource chart") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
-                    Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
                     return Status.CANCEL_STATUS;
                 }
                 try {
@@ -126,7 +125,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
 
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
-                    Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
                     return Status.CANCEL_STATUS;
                 }
                 try {
@@ -186,7 +185,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         Job result = new ExportJob("Copying images") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
-                    Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
                     return Status.CANCEL_STATUS;
                 }
                 try {

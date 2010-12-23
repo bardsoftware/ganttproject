@@ -551,7 +551,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return childNode;
     }
 
-    /** Return the selected task */
+    /** @return the selected task */
     private GanttTask getSelectedTask() {
         DefaultMutableTreeNode node = getSelectedTaskNode();
         if (node == null)
@@ -559,7 +559,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return (GanttTask) (node.getUserObject());
     }
 
-    /** Return the selected node */
+    /** @return the selected node */
     public DefaultMutableTreeNode getSelectedNode() {
         TreePath currentSelection = treetable.getTree().getSelectionPath();
         if (currentSelection == null) {
@@ -570,7 +570,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return dmtnselected;
     }
 
-    /** Return the selected node */
+    /** @return the selected node */
     private DefaultMutableTreeNode getSelectedTaskNode() {
         TreePath currentSelection = treetable.getTree().getSelectionPath();
         if (currentSelection == null
@@ -627,7 +627,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return resAsList.toArray(new TaskNode[0]);
     }
 
-    /** Return the DefaultMutableTreeNode with the name name. */
+    /** @return the DefaultMutableTreeNode with the name name. */
     public DefaultMutableTreeNode getNode(int id /* String name */) {
         DefaultMutableTreeNode res, base;
         base = (DefaultMutableTreeNode) treetable.getTreeTableModel().getRoot();
