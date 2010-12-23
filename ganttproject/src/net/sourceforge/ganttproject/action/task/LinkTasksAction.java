@@ -57,8 +57,7 @@ public class LinkTasksAction extends TaskActionBase {
         if(selection.size() <= 1) {
             return false;
         }
-        Iterator<Task> it = selection.iterator();
-        while (it.hasNext()) {
+        for (Iterator<Task> it = selection.iterator(); it.hasNext();) {
             Task nextTask = it.next();
             if (nextTask.getDependencies().hasLinks(selection) == false ) {
                 return true;
