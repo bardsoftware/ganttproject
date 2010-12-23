@@ -13,7 +13,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.FileLocator;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -59,13 +59,13 @@ public abstract class GPAction extends AbstractAction implements
     }
 
     protected Icon createIcon(String iconSize) {
-        if (iconSize == null || false==iconVisible) {
+        if (iconSize == null || false == iconVisible) {
             return null;
         }
         URL resource = getClass().getResource(
                 getIconFileDirectory() + "/" + getIconFilePrefix() + iconSize
                 + ".gif");
-        return resource==null ? null : new ImageIcon(resource);
+        return resource == null ? null : new ImageIcon(resource);
     }
 
     protected String getIconFileDirectory() {
@@ -78,12 +78,13 @@ public abstract class GPAction extends AbstractAction implements
 
     protected String getTooltipText() {
         String localizedName = getLocalizedName();
-        return localizedName==null ? "" : GanttLanguage.getInstance().correctLabel(getLocalizedName());
+        return localizedName == null ? "" : GanttLanguage.getInstance().correctLabel(getLocalizedName());
     }
 
     protected String getI18n(String key) {
         return GanttLanguage.getInstance().getText(key);
     }
+
     protected abstract String getIconFilePrefix();
 
     public void setIconVisible(boolean isVisible) {
@@ -122,19 +123,19 @@ public abstract class GPAction extends AbstractAction implements
 
     public static KeyStroke getKeyStroke(String keystrokeID) {
         String keystrokeText = getKeyStrokeText(keystrokeID);
-        return keystrokeText==null ? null : KeyStroke.getKeyStroke(keystrokeText);
+        return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
     }
 
     public static String getKeyStrokeText(String keystrokeID) {
-        if (ourProperties==null) {
+        if (ourProperties == null) {
             ourProperties = new Properties();
             URL url = GPAction.class.getResource("/keyboard.properties");
-            if (url==null) {
+            if (url == null) {
                 return null;
             }
             URL resolvedUrl;
             try {
-                resolvedUrl = Platform.resolve(url);
+                resolvedUrl = FileLocator.resolve(url);
                 ourProperties.load(resolvedUrl.openStream());
             } catch (IOException e) {
                 if (!GPLogger.log(e)) {

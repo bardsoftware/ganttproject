@@ -48,7 +48,6 @@ public class GanttLanguage {
         public GanttLanguage getLanguage() {
             return (GanttLanguage) getSource();
         }
-
     }
 
     public interface Listener extends EventListener {
@@ -59,6 +58,25 @@ public class GanttLanguage {
 
     private ArrayList<Listener> myListeners = new ArrayList<Listener>();
 
+    private Locale currentLocale = null;
+
+    private final CharSetMap myCharSetMap;
+
+    private ResourceBundle i18n = null;
+
+    private SimpleDateFormat currentDateFormat = null;
+
+    private SimpleDateFormat shortCurrentDateFormat = null;
+
+    private SimpleDateFormat myLongFormat;
+
+    private DateFormat currentTimeFormat = null;
+
+    private GanttLanguage() {
+        myCharSetMap = new CharSetMap();
+        setLocale(Locale.getDefault());
+    }
+
     public static GanttLanguage getInstance() {
         if (ganttLanguage == null) {
             ganttLanguage = new GanttLanguage();
@@ -66,32 +84,16 @@ public class GanttLanguage {
         return ganttLanguage;
     }
 
-    Locale currentLocale = null;
-    CharSetMap myCharSetMap;
-
-    ResourceBundle i18n = null;
-
-    SimpleDateFormat currentDateFormat = null;
     public DateFormat getMediumDateFormat() {
     	return currentDateFormat;
     }
 
-    SimpleDateFormat shortCurrentDateFormat = null;
     public DateFormat getShortDateFormat() {
     	return shortCurrentDateFormat;
     }
 
-    SimpleDateFormat myLongFormat;
     public DateFormat getLongDateFormat() {
     	return myLongFormat;
-    }
-
-    DateFormat currentTimeFormat = null;
-    public static final String MISSING_RESOURCE = "Missing Resource";
-
-    private GanttLanguage() {
-        myCharSetMap = new CharSetMap();
-        setLocale(Locale.getDefault());
     }
 
     public void setLocale(Locale locale) {
@@ -115,7 +117,7 @@ public class GanttLanguage {
         UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
         UIManager.put("JXDatePicker.numColumns", new Integer(10));
         String[] dayShortNames = new String[7];
-        for (int i=0; i<7; i++) {
+        for (int i = 0; i < 7; i++) {
         	dayShortNames[i] = getDay(i).substring(0, 1);
         }
         UIManager.put("JXMonthView.daysOfTheWeek", dayShortNames);
@@ -126,11 +128,7 @@ public class GanttLanguage {
         fireLanguageChanged();
     }
 
-    /**
-     * Return the current Locale.
-     *
-     * @return The current Locale.
-     */
+    /** @return The current Locale */
     public Locale getLocale() {
         return currentLocale;
     }
@@ -138,11 +136,8 @@ public class GanttLanguage {
     public String getCharSet() {
         return myCharSetMap.getCharSet(getLocale());
     }
-    /**
-     * Return the current DateFormat.
-     *
-     * @return The current DateFormat.
-     */
+
+    /** @return The current DateFormat */
     public DateFormat getDateFormat() {
         return currentDateFormat;
     }
@@ -151,9 +146,8 @@ public class GanttLanguage {
         return currentDateFormat.format(date.getTime());
     }
 
-    public String formatShortDate(GanttCalendar date)
-    {
-    	return shortCurrentDateFormat.format(date.getTime());
+    public String formatShortDate(GanttCalendar date) {
+        return shortCurrentDateFormat.format(date.getTime());
     }
 
     public String formatTime(GanttCalendar date) {
@@ -196,7 +190,6 @@ public class GanttLanguage {
         try {
             return i18n.getString(key);
         } catch (MissingResourceException e) {
-            //return MISSING_RESOURCE + " '" + key + "'";
             return null;
         }
     };

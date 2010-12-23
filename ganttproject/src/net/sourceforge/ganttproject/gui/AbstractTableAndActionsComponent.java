@@ -53,7 +53,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     public static final int ENABLED_WITH_EMPTY_SELECTION = 1;
     public static final int DISABLED_WITH_MULTI_SELECTION = 2;
 
-    private static class InternalAction {
+    private static class InternalAction<T> {
         final Action action;
         final int flags;
         InternalAction(Action action, int flags) {
@@ -61,7 +61,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
             this.flags = flags;
         }
 
-        public void updateEnabledState(List selectedObjects) {
+        public void updateEnabledState(List<T> selectedObjects) {
             if (selectedObjects.isEmpty()) {
                 action.setEnabled(0 != (flags & AbstractTableAndActionsComponent.ENABLED_WITH_EMPTY_SELECTION));
             } else if (selectedObjects.size() > 1) {
@@ -71,7 +71,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
             }
         }
     }
-    private final List<InternalAction> myAdditionalActions = new ArrayList<InternalAction>();
+    private final List<InternalAction<T>> myAdditionalActions = new ArrayList<InternalAction<T>>();
     private final List<SelectionListener<T>> myListeners = new ArrayList<SelectionListener<T>>();
     private final JTable myTable;
     private JPanel buttonBox;
@@ -93,7 +93,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     }
 
     public void addAction(Action action, int flags) {
-        myAdditionalActions.add(new InternalAction(action, flags));
+        myAdditionalActions.add(new InternalAction<T>(action, flags));
         if (action instanceof SelectionListener) {
             addSelectionListener((SelectionListener<T>) action);
         }
@@ -135,7 +135,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
         for (SelectionListener<T> l : myListeners) {
             l.selectionChanged(selectedObjects);
         }
-        for (InternalAction internalAction : myAdditionalActions) {
+        for (InternalAction<T> internalAction : myAdditionalActions) {
             internalAction.updateEnabledState(selectedObjects);
         }
     }
@@ -143,7 +143,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     public JComponent getActionsComponent() {
         if (buttonBox == null) {
             buttonBox = new JPanel(new FlowLayout(FlowLayout.LEADING));
-            for (InternalAction internalAction: myAdditionalActions) {
+            for (InternalAction<T> internalAction: myAdditionalActions) {
                 buttonBox.add(new JButton(internalAction.action));
             }
             Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);

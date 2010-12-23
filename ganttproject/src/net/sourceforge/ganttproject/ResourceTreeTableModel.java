@@ -292,9 +292,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return myResourceManager.getResources();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public int getColumnCount() {
         return columns.size();
     }
@@ -304,14 +301,11 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return new ArrayList<ResourceColumn>(columns.values());
     }
 
-    /** Returns the ResourceColumn associated to the given index */
+    /** @return the ResourceColumn associated to the given index */
     public ResourceColumn getColumn(int index) {
         return columns.get(new Integer(index));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Class getColumnClass(int colIndex) {
         if (colIndex == 0) {
             return hierarchicalColumnClass;
@@ -324,9 +318,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return columns.get(new Integer(column)).getTitle();
     }
 
-    /**
-     * @inheritDoc
-     */
     public boolean isCellEditable(Object node, int column) {
         return (node instanceof ResourceNode && (column == INDEX_RESOURCE_EMAIL
                 || column == INDEX_RESOURCE_NAME
@@ -336,9 +327,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
                 || column > INDEX_RESOURCE_ROLE_TASK);
     }
 
-    /**
-     * @inheritDoc
-     */
     public Object getValueAt(Object node, int column) {
         Object res = null;
         ResourceNode rn = null;
@@ -398,9 +386,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return res;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void setValueAt(Object value, Object node, int column) {
         if (isCellEditable(node, column))
             switch (column) {

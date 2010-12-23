@@ -49,7 +49,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.ProgressProvider;
 
@@ -67,7 +66,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myZoomManager = new ZoomManager(project.getTimeUnitStack());
         myStatusBar = statusBar;
         myFallbackDelegate = fallbackDelegate;
-        Platform.getJobManager().setProgressProvider(this);
+        Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
     }
     public ScrollingManager getScrollingManager() {

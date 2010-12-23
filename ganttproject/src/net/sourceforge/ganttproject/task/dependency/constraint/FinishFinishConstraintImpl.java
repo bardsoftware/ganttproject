@@ -29,13 +29,12 @@ public class FinishFinishConstraintImpl extends ConstraintImpl implements
         Task dependant = getDependency().getDependant();
         GanttCalendar dependeeEnd = dependee.getEnd();
         GanttCalendar dependantEnd = dependant.getEnd();
-        //
-        
+
         int difference = getDependency().getDifference();
         
         GanttCalendar comparisonDate = dependeeEnd.Clone();
         comparisonDate.add(difference);
-        
+
         boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ? dependantEnd
                 .compareTo(comparisonDate) < 0 : dependantEnd
                 .compareTo(comparisonDate) != 0;
@@ -53,7 +52,7 @@ public class FinishFinishConstraintImpl extends ConstraintImpl implements
         result = new TaskDependencyConstraint.DefaultCollision(acceptableStart,
                 TaskDependencyConstraint.Collision.START_LATER_VARIATION,
                 isActive);
-        
+
         return result;
     }
 
@@ -68,7 +67,7 @@ public class FinishFinishConstraintImpl extends ConstraintImpl implements
         boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ?
                 dependeeEnd.getTime().compareTo(barrier) > 0
                 : dependeeEnd.getTime().compareTo(barrier) != 0;
-        
+
         return new TaskDependencyConstraint.DefaultCollision(
                 new GanttCalendar(barrier),
                 TaskDependencyConstraint.Collision.START_EARLIER_VARIATION,
