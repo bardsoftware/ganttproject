@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -321,7 +322,7 @@ public class TaskImpl implements Task {
     }
 
     GanttCalendar calculateEnd() {
-        GanttCalendar result = getStart().Clone();
+        GanttCalendar result = getStart().clone();
         Date newEnd = shiftDate(result.getTime(), getDuration());
         result.setTime(newEnd);
         return result;
@@ -845,7 +846,7 @@ public class TaskImpl implements Task {
 
     public void setMilestone(boolean milestone) {
         if(milestone)
-            setEnd(getStart().newAdd(1));
+            setEnd(getStart().newAdd(Calendar.DATE, 1));
         isMilestone = milestone;
     }
 
@@ -1137,8 +1138,8 @@ public class TaskImpl implements Task {
                 // TODO: TIME UNIT (assumption about days)
                 if (getThird().after(getStart())) {
                     int difference = getThird().diff(getStart());
-                    GanttCalendar _start = getStart().newAdd(difference);
-                    GanttCalendar _end = getEnd().newAdd(difference);
+                    GanttCalendar _start = getStart().newAdd(Calendar.DATE, difference);
+                    GanttCalendar _end = getEnd().newAdd(Calendar.DATE, difference);
                     setEnd(_end);
                     setStart(_start);
                     setDuration(length);

@@ -151,7 +151,7 @@ public class TaskNode extends DefaultMutableTreeNode {
             switch (task.getThirdDateConstraint()) {
             case TaskImpl.EARLIESTBEGIN:
                 if (task.getThird().after(getStart())) {
-                    task.setStart(task.getThird().newAdd(0));
+                    task.setStart(task.getThird().clone());
                 }
             }
     }

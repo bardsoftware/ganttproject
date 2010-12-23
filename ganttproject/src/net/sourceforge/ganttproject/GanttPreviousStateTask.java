@@ -3,6 +3,8 @@
  */
 package net.sourceforge.ganttproject;
 
+import java.util.Calendar;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.task.Task;
 
@@ -53,18 +55,17 @@ public class GanttPreviousStateTask {
 
     public GanttCalendar getEnd(GPCalendar calendar) {
         int duration = myDuration;
-        GanttCalendar end = myStart.newAdd(myDuration);
+        GanttCalendar end = myStart.newAdd(Calendar.DATE, myDuration);
 		for (int i = 0; i < duration; i++) {
 //			if (myId == 1)
 //				System.out.println (myStart.newAdd(i).getTime() + " is workingDay : " + calendar.isNonWorkingDay(myStart.newAdd(i).getTime()));
-			if (calendar.isNonWorkingDay(myStart.newAdd(i).getTime())) {
-                end.add(1);
+			if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
+                end.add(Calendar.DATE, 1);
                 duration++;
             }
         }
         return end;
     }
-	
 
     public int getDuration() {
         return myDuration;
@@ -94,9 +95,11 @@ public class GanttPreviousStateTask {
 		else
 			setState(GanttPreviousStateTask.NORMAL);
 	}
+
 	public void setIsAPart (boolean isAPart) {
 		this.isAPart = isAPart;
 	}
+
 	public boolean isAPart () {
 		return isAPart;
 	}
