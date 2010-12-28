@@ -846,7 +846,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public void setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
-        int rowHeight = myChartModel.setPreviousStateTasks(tasks);
+        int rowHeight = myChartModel.setBaseline(tasks);
         ((GanttTree2) appli.getTree()).getTable().setRowHeight(rowHeight);
     }
 

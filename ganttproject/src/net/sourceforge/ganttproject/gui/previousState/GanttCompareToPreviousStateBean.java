@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,7 +28,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class GanttCompareToPreviousStateBean extends JPanel {
     private GanttLanguage lang = GanttLanguage.getInstance();
 
-    private ArrayList<GanttPreviousState> myPreviousStates;
+    private List<GanttPreviousState> myPreviousStates;
 
     private JPanel southPanel;
 
@@ -36,7 +37,7 @@ public class GanttCompareToPreviousStateBean extends JPanel {
     private JComboBox nameComboBox;
 
     public GanttCompareToPreviousStateBean(GanttProject project) {
-        myPreviousStates = project.getPreviouStates();
+        myPreviousStates = project.getBaselines();
         init();
     }
 

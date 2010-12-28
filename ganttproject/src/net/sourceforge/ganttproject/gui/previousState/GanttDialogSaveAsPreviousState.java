@@ -55,8 +55,8 @@ public class GanttDialogSaveAsPreviousState extends JDialog implements
             if (button.getName().equals("ok")) {
 
                 boolean overWrite = true;
-                for (int i = 0; i < myProject.getPreviouStates().size(); i++)
-                    if (myProject.getPreviouStates().get(
+                for (int i = 0; i < myProject.getBaselines().size(); i++)
+                    if (myProject.getBaselines().get(
                             i).getName().equals(previousStateBean.getName())) {
                         GanttDialogInfo gdi = new GanttDialogInfo(myProject,
                                 GanttDialogInfo.WARNING,
@@ -66,7 +66,7 @@ public class GanttDialogSaveAsPreviousState extends JDialog implements
                                         .getText("warning"));
                         gdi.setVisible(true);
                         if (gdi.res == GanttDialogInfo.YES)
-                            myProject.getPreviouStates().remove(i);
+                            myProject.getBaselines().remove(i);
                         else
                             overWrite = false;
                         break;

@@ -1382,12 +1382,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    public ArrayList<GanttPreviousState> getPreviouStates() {
-        return myPreviousStates;
-    }
-
     public List<GanttPreviousState> getBaselines() {
-        return getPreviouStates();
+        return myPreviousStates;
     }
 
     protected void compareToPreviousState() {

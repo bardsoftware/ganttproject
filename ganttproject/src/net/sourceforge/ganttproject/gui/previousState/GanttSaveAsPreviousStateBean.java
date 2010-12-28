@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -36,7 +37,7 @@ public class GanttSaveAsPreviousStateBean extends JPanel {
 
     private JComboBox nameComboBox;
 
-    private ArrayList<GanttPreviousState> myPreviousStates;
+    private List<GanttPreviousState> myPreviousStates;
 
     private GanttLanguage lang = GanttLanguage.getInstance();
 
@@ -46,7 +47,7 @@ public class GanttSaveAsPreviousStateBean extends JPanel {
     private static int count = 1;
 
     public GanttSaveAsPreviousStateBean(GanttProject project) {
-        myPreviousStates = project.getPreviouStates();
+        myPreviousStates = project.getBaselines();
         if (myPreviousStates.size() == 0) {
             defaultName = GanttLanguage.getInstance().getText("save");
             count = 1;

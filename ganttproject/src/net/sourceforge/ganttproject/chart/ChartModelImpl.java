@@ -44,7 +44,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     private TaskManager taskManager;
 
-    private boolean isPreviousState = false;
+    //private boolean isPreviousState = false;
 
     private int rowHeight = 20;
 
@@ -62,6 +62,8 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     private final ChartOptionGroup myStateDiffOptions;
 
     private Set<Task> myHiddenTasks;
+
+    private List<GanttPreviousStateTask> myBaseline;
 
     public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack,
             final UIConfiguration projectConfig) {
@@ -263,7 +265,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     public int calculateRowHeight() {
         rowHeight = myTaskRendererImpl.calculateRowHeight();
-        if (isPreviousState) {
+        if (myBaseline != null) {
             rowHeight = rowHeight + 8;
         }
         return rowHeight;
@@ -299,18 +301,15 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     }
 
 
-    public int setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
-        if (tasks == null)
-            isPreviousState = false;
-        else
-            isPreviousState = true;
+    public int setBaseline(ArrayList<GanttPreviousStateTask> tasks) {
+        myBaseline = tasks;
         return (calculateRowHeight());
     }
 
-    public boolean isPrevious() {
-        return isPreviousState;
+    List<GanttPreviousStateTask> getBaseline() {
+        return myBaseline;
     }
-
+    
     public ChartModelBase createCopy() {
         ChartModelBase result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
         super.setupCopy(result);
