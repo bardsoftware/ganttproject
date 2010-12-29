@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
@@ -17,33 +18,30 @@ class HighlightOnMouseOver extends MouseAdapter {
         Integer.toHexString(backgroundColor.getRed()) +
         Integer.toHexString(backgroundColor.getGreen()) +
         Integer.toHexString(backgroundColor.getBlue());
-    private JComponent myComponent;
+    private AbstractButton myComponent;
     private Color myColorNoMouse;
     private Action myActionOnClick;
+    private Color myNormalBackground;
+    private Color myNormalForeground;
 
-    HighlightOnMouseOver(JComponent component, Color colNoMouse, Action onClick) {
+    HighlightOnMouseOver(AbstractButton component, Action onClick) {
         myComponent = component;
-        myColorNoMouse = colNoMouse;
-        myComponent.setOpaque(true);
         myActionOnClick = onClick;
     }
+    @Override
     public void mouseEntered(MouseEvent arg0) {
-        myComponent.setBackground(getSelectionBackground());
-        myComponent.setForeground(Color.WHITE);
+        if (myComponent.isEnabled()) {
+            myComponent.setBorderPainted(true);
+        }
     }
     @Override
     public void mouseExited(MouseEvent arg0) {
-        myComponent.setBackground(myColorNoMouse);
-        myComponent.setForeground(Color.BLACK);
+        myComponent.setBorderPainted(false);        
     }
     @Override
     public void mouseClicked(MouseEvent arg0) {
         if (myActionOnClick!=null) {
             myActionOnClick.actionPerformed(null);
         }
-    }
-
-    static Color getSelectionBackground() {
-        return UIManager.getColor("MenuItem.selectionBackground");
     }
 }

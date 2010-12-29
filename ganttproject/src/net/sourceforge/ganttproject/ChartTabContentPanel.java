@@ -7,7 +7,9 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -93,6 +95,11 @@ abstract class ChartTabContentPanel {
         panelsBox.add(Box.createHorizontalStrut(10));
         panelsBox.add(createNavigationPanel());
         result.add(panelsBox, BorderLayout.WEST);
+        result.setBackground(new JButton().getBackground());
+        result.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+        result.setBackground(new Color(0.93f, 0.93f, 0.93f));
+        
+        
         return result;
     }
 
