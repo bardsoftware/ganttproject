@@ -21,15 +21,19 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -85,19 +89,19 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     private void renderTasksAboveAndBelowViewport(List<Task> tasksAboveViewport, List<Task> tasksBelowViewport, List<Offset> defaultUnitOffsets) {
         for (Task nextAbove : tasksAboveViewport) {
-            TaskActivity[] activities = nextAbove.isMilestone() ?
-                    new TaskActivity[] {new MilestoneTaskFakeActivity(nextAbove)} :
-                    nextAbove.getActivities();
-            List<Rectangle> rectangles = renderActivities(-1, activities, defaultUnitOffsets);
+            List<TaskActivity> activities = nextAbove.isMilestone() ?
+                    Collections.<TaskActivity>singletonList(new MilestoneTaskFakeActivity(nextAbove)) :
+                    Arrays.asList(nextAbove.getActivities());
+            List<Rectangle> rectangles = renderActivities(-1, nextAbove, activities, defaultUnitOffsets);
             for (Rectangle nextRectangle : rectangles) {
                 nextRectangle.setVisible(false);
             }
         }
         for (Task nextBelow : tasksBelowViewport) {
-            TaskActivity[] activities = nextBelow.isMilestone() ?
-                    new TaskActivity[] {new MilestoneTaskFakeActivity(nextBelow)} :
-                    nextBelow.getActivities();
-            List<Rectangle> rectangles = renderActivities(getVisibleTasks().size()+1, activities, defaultUnitOffsets);
+            List<TaskActivity> activities = nextBelow.isMilestone() ?
+                Collections.<TaskActivity>singletonList(new MilestoneTaskFakeActivity(nextBelow)) :
+                Arrays.asList(nextBelow.getActivities());
+            List<Rectangle> rectangles = renderActivities(getVisibleTasks().size()+1, nextBelow, activities, defaultUnitOffsets);
             for (Rectangle nextRectangle : rectangles) {
                 nextRectangle.setVisible(false);
             }
@@ -106,37 +110,63 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     private void renderVisibleTasks(List<Task> visibleTasks, List<Offset> defaultUnitOffsets) {
         int rowNum = 0;
-        for (Task nextTask : visibleTasks) {
-            TaskActivity[] activities = nextTask.isMilestone() ?
-                    new TaskActivity[] {new MilestoneTaskFakeActivity(nextTask)} :
-                    nextTask.getActivities();
-            renderActivities(rowNum++, activities, defaultUnitOffsets);
+        for (Task t : visibleTasks) {
+            List<TaskActivity> activities = t.isMilestone() ?
+                    Collections.<TaskActivity>singletonList(new MilestoneTaskFakeActivity(t)) :
+                    Arrays.asList(t.getActivities());
+            renderActivities(rowNum, t, activities, defaultUnitOffsets);
+            renderBaseline(t, rowNum, defaultUnitOffsets);
+            rowNum++;
             GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(
                     0, rowNum*getRowHeight(), (int) getChartModel().getBounds().getWidth(), rowNum*getRowHeight());
             nextLine.setForegroundColor(Color.GRAY);
         }
     }
 
-    private List<Rectangle> renderActivities(final int rowNum, TaskActivity[] activities, List<Offset> defaultUnitOffsets) {
-        List<Rectangle> rectangles = new ArrayList<Rectangle>(activities.length);
-        for (TaskActivity nextActivity : activities) {
-            if (nextActivity.isFirst() || nextActivity.isLast()) {
-                if (nextActivity.getIntensity() == 0f) {
-                    continue;
+    private void renderBaseline(Task t, int rowNum, List<Offset> defaultUnitOffsets) {
+        TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(getCalendar());
+        List<GanttPreviousStateTask> baseline = myModel.getBaseline();
+        if (baseline != null) {
+            for (GanttPreviousStateTask taskBaseline : baseline) {
+                if (taskBaseline.getId() == t.getTaskID()) {
+                    Date startDate = taskBaseline.getStart().getTime();
+                    TaskLength duration = getChartModel().getTaskManager().createLength(taskBaseline.getDuration());
+                    Date endDate = getCalendar().shiftDate(startDate, duration);
+                    
+                    StringBuilder style = new StringBuilder("previousStateTask");
+                    if (t.isMilestone()) {
+                        style.append(".milestone");
+                    }
+                    if (endDate.compareTo(t.getEnd().getTime()) < 0) {
+                        style.append(".later");
+                    } else {
+                        style.append(".earlier");
+                    }
+                    List<TaskActivity> baselineActivities = new ArrayList<TaskActivity>();
+                    if (t.isMilestone()) {
+                        baselineActivities.add(new MilestoneTaskFakeActivity(t, startDate, endDate));
+                    } else {
+                        alg.recalculateActivities(t, baselineActivities, startDate, endDate);
+                    }
+                    TaskActivityRenderer activityRenderer = new TaskActivityRenderer(
+                        myModel, getPrimitiveContainer(), myLabelsRenderer, 
+                        new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight()/2));
+                    List<Rectangle> baselineRectangles = activityRenderer.renderActivities(
+                        rowNum, baselineActivities, defaultUnitOffsets);
+                    for (Rectangle r : baselineRectangles) {
+                        r.setStyle(style.toString());
+                    }
+                    return;
                 }
             }
-            final Rectangle nextRectangle;
-            if (nextActivity.getEnd().compareTo(getChartModel().getStartDate()) <= 0) {
-                nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity);
-            }
-            else if (nextActivity.getStart().compareTo(getChartModel().getEndDate()) >= 0) {
-                nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity);
-            }
-            else {
-                nextRectangle = processRegularActivity(rowNum, nextActivity, defaultUnitOffsets);
-            }
-            rectangles.add(nextRectangle);
-        }
+        }        
+    }
+    private List<Rectangle> renderActivities(
+            final int rowNum, Task t, List<TaskActivity> activities, List<Offset> defaultUnitOffsets) {
+        TaskActivityRenderer activityRenderer = new TaskActivityRenderer(
+            myModel, getPrimitiveContainer(), myLabelsRenderer, 
+            new TaskActivityRenderer.Style(0, getRectangleHeight()));
+        List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
         if (!rectangles.isEmpty()) {
             Rectangle lastRectangle = rectangles.get(rectangles.size()-1);
             if (lastRectangle.myLeftX < getWidth()) {
@@ -147,7 +177,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             Rectangle firstRectangle = rectangles.get(0);
             myLabelsRenderer.createLeftSideText(firstRectangle);
         }
-        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(activities[0].getTask())) {
+        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
             renderProgressBar(rectangles);
         }
         return rectangles;
@@ -193,25 +223,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         //createDownSideText(lastProgressRectangle);
     }
 
-    private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity) {
-        GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
-        int startx = getWidth()+1;
-        int topy = rowNum*getRowHeight()+4;
-        Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
-        container.bind(rectangle, nextActivity);
-        rectangle.setVisible(false);
-        return rectangle;
-    }
-
-    private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity) {
-        GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
-        int startx = -10;
-        int topy = rowNum*getRowHeight()+4;
-        Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
-        container.bind(rectangle, nextActivity);
-        rectangle.setVisible(false);
-        return rectangle;
-    }
 
     private void collectTasksAboveAndBelowViewport(
             List<Task> visibleTasks,
@@ -236,88 +247,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                 addTo = null;
             }
         }
-    }
-
-    private java.awt.Rectangle getBoundingRectangle(int rowNum, TaskActivity activity, List<Offset> offsets) {
-    	OffsetLookup offsetLookup = new OffsetLookup();
-    	int[] bounds = offsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
-    	int leftX = bounds[0];
-    	int rightX = bounds[1];
-        if (activity.getTask().isMilestone()) {
-            rightX += 10;
-        }
-        int topY = rowNum*getRowHeight();
-        return new java.awt.Rectangle(leftX, topY, rightX - leftX, getRowHeight());
-    }
-
-    private Rectangle processRegularActivity(int rowNum, TaskActivity nextStarted, List<Offset> offsets) {
-        Task nextTask = nextStarted.getTask();
-        if (nextTask.isMilestone() && !nextStarted.isFirst()) {
-            return null;
-        }
-        java.awt.Rectangle nextBounds = getBoundingRectangle(rowNum, nextStarted, offsets);
-        myLabelsRenderer.stripVerticalLabelSpace(nextBounds);
-        final int nextLength = (int) nextBounds.width;
-        final int topy = nextBounds.y;
-
-        GraphicPrimitiveContainer.Rectangle nextRectangle;
-        boolean nextHasNested = ((ChartModelImpl) getChartModel())
-                .getTaskContainment().hasNestedTasks(nextTask); // JA Switch to
-        GraphicPrimitiveContainer container = getContainerFor(nextTask);
-        nextRectangle = container.createRectangle(
-                nextBounds.x, topy, (int) nextLength, getRectangleHeight());
-        if (nextStarted.getTask().isMilestone()) {
-            nextRectangle.setStyle("task.milestone");
-        } else if (nextTask.isProjectTask()) {
-            nextRectangle.setStyle("task.projectTask");
-            if (nextStarted.isFirst()) {
-                GraphicPrimitiveContainer.Rectangle supertaskStart = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
-                supertaskStart.setStyle("task.projectTask.start");
-            }
-            if (nextStarted.isLast()) {
-                GraphicPrimitiveContainer.Rectangle supertaskEnd = container.createRectangle(
-                        nextRectangle.myLeftX - 1, topy, (int) nextLength, getRectangleHeight());
-                supertaskEnd.setStyle("task.projectTask.end");
-
-            }
-        } else if (nextHasNested) {
-            nextRectangle.setStyle("task.supertask");
-            if (nextStarted.isFirst()) {
-                // CodeReview: why 12, not 15?
-                GraphicPrimitiveContainer.Rectangle supertaskStart = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
-                supertaskStart.setStyle("task.supertask.start");
-            }
-            if (nextStarted.isLast()) {
-                // CodeReview: why 12, not 15?
-                GraphicPrimitiveContainer.Rectangle supertaskEnd = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
-                supertaskEnd.setStyle("task.supertask.end");
-
-            }
-        } else if (nextStarted.getIntensity() == 0f) {
-            nextRectangle.setStyle("task.holiday");
-        } else {
-            if (nextStarted.isFirst() && nextStarted.isLast()) {
-                nextRectangle.setStyle("task.startend");
-            }
-            else if (false==nextStarted.isFirst() ^ nextStarted.isLast()) {
-                nextRectangle.setStyle("task");
-            }
-            else if (nextStarted.isFirst()) {
-                nextRectangle.setStyle("task.start");
-            }
-            else if (nextStarted.isLast()) {
-                nextRectangle.setStyle("task.end");
-            }
-        }
-        if (!"task.holiday".equals(nextRectangle.getStyle())
-                && !"task.supertask".equals(nextRectangle.getStyle())) {
-            nextRectangle.setBackgroundColor(nextStarted.getTask().getColor());
-        }
-        container.bind(nextRectangle, nextStarted);
-        return nextRectangle;
     }
 
     private void createDependencyLines() {

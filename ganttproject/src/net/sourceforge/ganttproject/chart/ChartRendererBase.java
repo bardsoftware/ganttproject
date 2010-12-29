@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.chart;
 
+import net.sourceforge.ganttproject.calendar.GPCalendar;
+
 /**
  * Created by IntelliJ IDEA. User: bard Date: 12.10.2004 Time: 0:56:19 To change
  * this template use Options | File Templates.
@@ -45,6 +47,9 @@ public class ChartRendererBase {
         return myChartModel;
     }
 
+    protected GPCalendar getCalendar() {
+        return myChartModel.getTaskManager().getCalendar();
+    }
     public boolean isEnabled() {
         return isEnabled;
     }
