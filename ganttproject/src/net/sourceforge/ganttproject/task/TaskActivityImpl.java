@@ -18,13 +18,13 @@ class TaskActivityImpl implements TaskActivity {
 
     private float myIntensity;
 
-    private final TaskImpl myTask;
+    private final Task myTask;
 
-    TaskActivityImpl(TaskImpl task, Date startDate, Date endDate) {
+    TaskActivityImpl(Task task, Date startDate, Date endDate) {
         this(task, startDate, endDate, 1.0f);
     }
 
-    TaskActivityImpl(TaskImpl task, Date startDate, Date endDate,
+    TaskActivityImpl(Task task, Date startDate, Date endDate,
             float intensity) {
         myStartDate = startDate;
         myEndDate = endDate;
@@ -58,20 +58,10 @@ class TaskActivityImpl implements TaskActivity {
         return myTask;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.task.TaskActivity#isFirst()
-     */
     public boolean isFirst() {
         return this == getTask().getActivities()[0];
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.task.TaskActivity#isLast()
-     */
     public boolean isLast() {
         TaskActivity[] all = getTask().getActivities();
         return this == all[all.length - 1];
