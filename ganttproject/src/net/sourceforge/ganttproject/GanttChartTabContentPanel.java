@@ -13,6 +13,7 @@ import javax.swing.Box;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.border.AbstractBorder;
 
 import net.sourceforge.ganttproject.action.task.LinkTasksAction;
@@ -74,9 +75,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     }
 
     protected Component createButtonPanel() {
-        Box buttonBar = Box.createHorizontalBox();
-        //JToolBar buttonBar = new JToolBar();
-        //buttonBar.setFloatable(false);
+        //Box buttonBar = Box.createHorizontalBox();
+        JToolBar buttonBar = new JToolBar();
+        buttonBar.setFloatable(false);
 
         //
 //        TestGanttRolloverButton expandAllButton = new TestGanttRolloverButton(myTreeFacade.getExpandAllAction()) {
