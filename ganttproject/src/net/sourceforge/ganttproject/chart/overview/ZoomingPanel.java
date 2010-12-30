@@ -3,14 +3,12 @@ package net.sourceforge.ganttproject.chart.overview;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 
 import net.sourceforge.ganttproject.action.ZoomInAction;
 import net.sourceforge.ganttproject.action.ZoomOutAction;
@@ -26,24 +24,20 @@ public class ZoomingPanel {
     }
 
     public Component getComponent() {
-        //final Box buttonBar = Box.createHorizontalBox();
-        //final JPanel buttonBar = new JPanel(new GridLayout(1, 3));
-        //buttonBar.setBackground(Color.DARK_GRAY.brighter());
         JToolBar buttonBar = new JToolBar();
         buttonBar.setBackground(new Color(0.93f, 0.93f, 0.93f));
         buttonBar.setFloatable(false);
-        buttonBar.add(Box.createHorizontalStrut(20));
+        buttonBar.setBorderPainted(false);
         final JButton zoomIn = new JButton("<html><b>&nbsp;Zoom In&nbsp;</b></html>");
         zoomIn.setBorderPainted(false);
         zoomIn.setMargin(new Insets(0, 0, 0, 0));
-//        zoomIn.setBorder(BorderFactory.createCompoundBorder(
-//            BorderFactory.createEmptyBorder(3, 0, 3, 0), 
-//            BorderFactory.createMatteBorder(0, 3, 0, 0, zoomIn.getForeground())));
+        zoomIn.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
+        zoomIn.setHorizontalTextPosition(SwingConstants.CENTER);
+        zoomIn.setVerticalTextPosition(SwingConstants.CENTER);
         zoomIn.addMouseListener(new HighlightOnMouseOver(zoomIn, null));
         zoomIn.setRolloverEnabled(true);
         zoomIn.setBorderPainted(false);
         zoomIn.addActionListener(myZoomInAction);
-        //zoomIn.setBorder(new RoundedBorder(5));
         buttonBar.add(zoomIn);
         buttonBar.add(new JLabel(" | "));
         JButton zoomOut = new JButton("<html><b>&nbsp;Zoom Out&nbsp;</b></html>");
@@ -51,14 +45,9 @@ public class ZoomingPanel {
         zoomOut.setRolloverEnabled(true);
         zoomOut.setBorderPainted(false);
         zoomOut.addActionListener(myZoomOutAction);
-//        zoomOut.setBorder(BorderFactory.createCompoundBorder(
-//            BorderFactory.createEmptyBorder(3, 0, 3, 0),
-//            BorderFactory.createMatteBorder(0, 0, 0, 3, zoomOut.getForeground())));
         zoomOut.addMouseListener(new HighlightOnMouseOver(zoomOut, null));
         buttonBar.add(zoomOut);
         
-        //buttonStrip.setPreferredSize(new Dimension(100, 20));
         return buttonBar;
     }
-
 }

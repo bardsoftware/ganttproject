@@ -356,8 +356,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     public void repaint() {
         try {
             if (myChartModel != null) {
-                myChartModel.setHeaderHeight(myTableHeader.getHeight()
-                        + HEADER_OFFSET);
+                if (isShowing()) {
+                    Point headerLocation = myTableHeader.getLocationOnScreen();
+                    Point treeLocation = tree.getLocationOnScreen();
+                    myChartModel.setHeaderHeight(
+                        HEADER_OFFSET + (headerLocation.y - treeLocation.y) + myTableHeader.getHeight());
+                }
             }
         } catch (NullPointerException e) {
             if (!GPLogger.log(e)) {
