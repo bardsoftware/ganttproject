@@ -21,4 +21,5 @@ public interface TimelineChart extends Chart {
 
     ChartModel getModel();
 
+    ChartUIConfiguration getStyle();
 }
