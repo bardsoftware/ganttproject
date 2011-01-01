@@ -95,10 +95,6 @@ public class TestGanttRolloverButton extends JButton {
         setIcon(iconOn);
     }
 
-
-    /**
-     * Make the border visible/invisible on rollovers
-     */
     class MouseOverHandler extends MouseAdapter {
         public void mouseEntered(MouseEvent e) {
             if (isEnabled()) {
@@ -133,10 +129,9 @@ public class TestGanttRolloverButton extends JButton {
         private ActionEvent myEvent;
 
         Worker(MouseEvent e) {
-            myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
-                    getActionCommand(), EventQueue.getMostRecentEventTime(), e
-                            .getModifiers());
-            ;
+            myEvent = new ActionEvent(
+                this, ActionEvent.ACTION_PERFORMED, getActionCommand(), EventQueue.getMostRecentEventTime(), 
+                e.getModifiers());
         }
 
         public void run() {
