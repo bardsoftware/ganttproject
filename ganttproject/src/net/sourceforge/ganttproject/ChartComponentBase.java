@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
+import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.OptionsDialogAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -149,6 +150,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public ChartModel getModel() {
         return getChartModel();
     }
+    
+    public ChartUIConfiguration getStyle() {
+        return getChartModel().getChartUIConfiguration();
+    }
+    
     protected abstract ChartModelBase getChartModel();
 
     protected abstract MouseListener getMouseListener();

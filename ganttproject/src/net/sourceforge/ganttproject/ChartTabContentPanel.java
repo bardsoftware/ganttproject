@@ -27,7 +27,7 @@ abstract class ChartTabContentPanel {
 
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         myNavigationPanel = new NavigationPanel(project, chart, workbenchFacade);
-        myZoomingPanel = new ZoomingPanel(workbenchFacade);
+        myZoomingPanel = new ZoomingPanel(workbenchFacade, chart);
     }
     protected JComponent createContentComponent() {
         JPanel tabContentPanel = new JPanel(new BorderLayout());
