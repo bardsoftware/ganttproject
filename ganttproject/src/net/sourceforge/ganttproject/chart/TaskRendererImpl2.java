@@ -57,6 +57,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight());
         getPrimitiveContainer().newLayer();
         getPrimitiveContainer().newLayer();
+        getPrimitiveContainer().newLayer();
 
         myLabelsRenderer = new TaskLabelsRendererImpl(model, getPrimitiveContainer());
         myOptionGroups = new GPOptionGroup[] {myLabelsRenderer.getOptionGroup()};
@@ -70,8 +71,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         getPrimitiveContainer().clear();
         getPrimitiveContainer().getLayer(0).clear();
         getPrimitiveContainer().getLayer(1).clear();
+        getPrimitiveContainer().getLayer(2).clear();        
         getPrimitiveContainer().setOffset(0, myModel.getChartUIConfiguration().getHeaderHeight()-myModel.getVerticalOffset());
-
+        getPrimitiveContainer().getLayer(2).setOffset(0, myModel.getChartUIConfiguration().getHeaderHeight()-myModel.getVerticalOffset());
         List<Task> tasksAboveViewport = new ArrayList<Task>();
         List<Task> tasksBelowViewport = new ArrayList<Task>();
 
@@ -151,7 +153,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                         alg.recalculateActivities(t, baselineActivities, startDate, endDate);
                     }
                     TaskActivityRenderer activityRenderer = new TaskActivityRenderer(
-                        myModel, getPrimitiveContainer(), myLabelsRenderer, 
+                        myModel, getPrimitiveContainer().getLayer(2), myLabelsRenderer, 
                         new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight()/2));
                     List<Rectangle> baselineRectangles = activityRenderer.renderActivities(
                         rowNum, baselineActivities, defaultUnitOffsets);
