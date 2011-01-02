@@ -273,6 +273,12 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         repaint();
     }
 
+    @Override
+    public void setStartOffset(int pixels) {
+        getImplementation().setStartOffset(pixels);
+        repaint();
+    }
+
     public void setDimensions(int height, int width) {
         getImplementation().setDimensions(height, width);
     }

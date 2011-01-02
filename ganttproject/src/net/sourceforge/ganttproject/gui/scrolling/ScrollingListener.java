@@ -22,4 +22,6 @@ public interface ScrollingListener {
 
     /** Scrolls the view to the given Date */
     void scrollTo(Date date);
+
+    void scrollBy(int pixels);
 }
