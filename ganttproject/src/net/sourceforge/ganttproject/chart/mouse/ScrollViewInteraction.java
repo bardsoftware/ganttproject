@@ -53,6 +53,9 @@ public class ScrollViewInteraction extends MouseInteractionBase
     	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
             myScrollingManager.scrollBy(scrollInterval.reverse());
             setStartDate(getChartDateGrid().getDateAt(event.getX()));
+    	} else {
+            myScrollingManager.scrollBy(event.getX() - myStartX);
+            myStartX = event.getX();    	    
     	}
     }
 

@@ -168,17 +168,16 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void paint(Graphics g) {
-        if (myHorizontalOffset == 0) {
-            constructOffsets();
-            int height = (int) getBounds().getHeight();
-            for (ChartRendererBase renderer: getRenderers()) {
-                renderer.clear();
-                renderer.setHeight(height);
-            }
-            for (ChartRendererBase renderer: getRenderers()) {
-                renderer.render();
-            }
-        } else {
+        constructOffsets();
+        int height = (int) getBounds().getHeight();
+        for (ChartRendererBase renderer: getRenderers()) {
+            renderer.clear();
+            renderer.setHeight(height);
+        }
+        for (ChartRendererBase renderer: getRenderers()) {
+            renderer.render();
+        }
+        if (myHorizontalOffset != 0) {
             g.translate(myHorizontalOffset, 0);
         }
         myPainter.setGraphics(g);
@@ -390,6 +389,10 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myHorizontalOffset = pixels;
     }
 
+    protected int getHorizontalOffset() {
+        return myHorizontalOffset;
+    }
+    
     public TimeUnit getBottomUnit() {
         return myBottomUnit;
     }
