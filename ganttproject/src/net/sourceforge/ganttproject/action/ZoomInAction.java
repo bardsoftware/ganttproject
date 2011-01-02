@@ -4,6 +4,7 @@
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
@@ -40,4 +41,8 @@ public class ZoomInAction extends GPAction implements ZoomListener {
         setIconVisible(isNull);
     }
 
+    @Override
+    protected String getLocalizedName() {
+        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("zoomIn"));
+    }
 }

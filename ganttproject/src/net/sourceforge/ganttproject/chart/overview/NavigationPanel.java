@@ -1,17 +1,30 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import java.util.Date;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
@@ -26,58 +39,44 @@ public class NavigationPanel {
     }
 
     public Component getComponent() {
-        final Box buttonBar = Box.createHorizontalBox();
-        //final JPanel buttonBar = new JPanel(new GridLayout(1, 3));
-        //buttonBar.setBackground(Color.DARK_GRAY.brighter());
-        Border border = BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 20, 0, 0),
-                new LineBorder(HighlightOnMouseOver.backgroundColor, 1));
-        buttonBar.setBorder(border);
-        //buttonBar.add(Box.createHorizontalStrut(10));
-
-        buttonBar.add(new PanelBorder());
-
-        final JLabel projectStart = new JLabel("<html><b>&nbsp;Start&nbsp;</b></html>");
-        projectStart.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonBar.add(projectStart);
-        projectStart.addMouseListener(new HighlightOnMouseOver(projectStart, buttonBar.getBackground(), new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
+        class ScrollToProjectStart extends GPAction {
+            @Override
+            public void actionPerformed(ActionEvent e) {
                 myChart.setStartDate(myProject.getTaskManager().getProjectStart());
                 myChart.scrollBy(createTimeInterval(-1));
             }
-        }));
-
-        buttonBar.add(new JLabel(" | "));
-
-        final JLabel today = new JLabel("<html><b>&nbsp;Today&nbsp;</b></html>");
-        today.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonBar.add(today);
-        today.addMouseListener(new HighlightOnMouseOver(today, buttonBar.getBackground(), new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
+            @Override
+            protected String getLocalizedName() {
+                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("start"));
+            }
+        }
+        class ScrollToProjectEnd extends GPAction {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Date projectEnd = myProject.getTaskManager().getProjectEnd();
+                myChart.setStartDate(projectEnd);
+                while(projectEnd.before(myChart.getEndDate())) {
+                    myChart.scrollBy(createTimeInterval(-1));
+                }
+                myChart.scrollBy(createTimeInterval(1));
+            }
+            @Override
+            protected String getLocalizedName() {
+                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("end"));
+            }
+        }
+        class ScrollToToday extends GPAction {
+            @Override
+            public void actionPerformed(ActionEvent e) {
                 myChart.setStartDate(new Date());
             }
-        }));
-
-        buttonBar.add(new JLabel(" | "));
-
-        final JLabel projectEnd = new JLabel("<html><b>&nbsp;End&nbsp;</b></html>");
-        projectEnd.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonBar.add(projectEnd);
-        projectEnd.addMouseListener(new HighlightOnMouseOver(projectEnd, buttonBar.getBackground(), new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
-                final TimelineChart ganttChart = myChart;
-                final Date projectEnd = myProject.getTaskManager().getProjectEnd();
-                ganttChart.setStartDate(projectEnd);
-                while(projectEnd.before(ganttChart.getEndDate())) {
-                    ganttChart.scrollBy(createTimeInterval(-1));
-                }
-                ganttChart.scrollBy(createTimeInterval(1));
+            @Override
+            protected String getLocalizedName() {
+                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", "Today");
             }
-        }));
-
-
-        buttonBar.add(new PanelBorder());
-        return buttonBar;
+        }
+        return new ToolbarBuilder(myChart).addButton(new ScrollToProjectStart()).addButton(new ScrollToToday())
+            .addButton(new ScrollToProjectEnd()).build();
     }
 
 	protected TaskLength createTimeInterval(int i) {

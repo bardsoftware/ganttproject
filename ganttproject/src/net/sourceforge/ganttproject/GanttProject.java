@@ -2093,6 +2093,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         "mac os x")) {
                     OSXAdapter.registerMacOSXApplication(ganttFrame);
                 }
+                ganttFrame.getActiveChart().reset();
             } catch (Throwable e) {
                 e.printStackTrace();
                 return;

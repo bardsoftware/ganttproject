@@ -20,6 +20,7 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
     private UIFacade myUIFacade;
 
     private final TimelineChart myChart;
+    private int myOffsetPixels;
 
     public ChartViewState(TimelineChart chart, UIFacade uiFacade) {
         myChart = chart;
@@ -27,12 +28,16 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
         uiFacade.getZoomManager().addZoomListener(this);
     }
 
-    // private void setDefaultBottomUnitWidth() {
-    // myBottomUnitWidth = 20;
-    // }
-
     public void scrollBy(TaskLength duration) {
         myChart.scrollBy(duration);
+        myOffsetPixels = 0;
+        myChart.setStartOffset(myOffsetPixels);
+    }
+
+    @Override
+    public void scrollBy(int pixels) {
+        myOffsetPixels += pixels;
+        myChart.setStartOffset(myOffsetPixels);
     }
 
     public void scrollTo(Date date) {
@@ -44,14 +49,6 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
         Date date;
         if (myUIFacade.getViewIndex() == UIFacade.GANTT_INDEX) {
             Date d = Mediator.getTaskSelectionManager().getEarliestStart();
-            // boolean zoomin = e.getZoomValue() < e.getOldValue();
-            // if (zoomin && myZoomStateIndex > 0) {
-            //     myZoomStateIndex--;
-            // } else if (!zoomin && myZoomStateIndex < myZoomStates.length - 1) {
-            //     myZoomStateIndex++;
-            // }
-            //
-            // myCurrentTimeFrame = scrollTimeFrame(d == null ? getStartDate() : d);
             date = d == null ? myChart.getStartDate() : d;
         } else {
             date = myChart.getStartDate();

@@ -6,14 +6,11 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Graphics;
 
 import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.border.AbstractBorder;
+import javax.swing.JToolBar;
 
 import net.sourceforge.ganttproject.action.task.LinkTasksAction;
 import net.sourceforge.ganttproject.action.task.UnlinkTasksAction;
@@ -25,13 +22,12 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import org.eclipse.core.runtime.IAdaptable;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptable {
-    private Container myTaskTree;
-    private JComponent myGanttChart;
+    private final Container myTaskTree;
+    private final JComponent myGanttChart;
     private final TaskTreeUIFacade myTreeFacade;
-    //private JPanel myTabContentPanel;
     private final IGanttProject myProject;
     private final UIFacade myWorkbenchFacade;
-    //private  CustomScrollPane scrollPane2 ;
+
     GanttChartTabContentPanel(
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
             JComponent ganttChart) {
@@ -41,43 +37,16 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         myTreeFacade = treeFacade;
         myTaskTree = (Container) treeFacade.getTreeComponent();
         myGanttChart = ganttChart;
-        //scrollPane2 = new CustomScrollPane(myGanttChart);
     }
 
     Component getComponent() {
         return createContentComponent();
     }
 
-
-    class BorderImpl extends AbstractBorder {
-        @Override
-        public boolean isBorderOpaque() {
-            return true;
-        }
-
-        @Override
-        public void paintBorder(Component arg0, Graphics g, int x, int y, int width, int height) {
-            int thickness = 2;
-            for (int i = 0; i < thickness; i++) {
-                g.drawRoundRect(x, y, width, height, thickness, thickness);
-                x += 1;
-              y+= 1;
-              width -= 2;
-              height -= 2;
-            }
-        }
-
-    }
-
-    protected void onChangingZoom(DefaultBoundedRangeModel model) {
-
-    }
-
     protected Component createButtonPanel() {
-        Box buttonBar = Box.createHorizontalBox();
-        //JToolBar buttonBar = new JToolBar();
-        //buttonBar.setFloatable(false);
-
+        JToolBar buttonBar = new JToolBar();
+        buttonBar.setFloatable(false);
+        buttonBar.setBorderPainted(false);
         //
 //        TestGanttRolloverButton expandAllButton = new TestGanttRolloverButton(myTreeFacade.getExpandAllAction()) {
 //            public String getText() {
@@ -95,7 +64,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
 //        //
 //        buttonBar.add(Box.createHorizontalStrut(8));
         //
-
         TestGanttRolloverButton unindentButton = new TestGanttRolloverButton(myTreeFacade.getUnindentAction()) {
             public String getText() {
                 return null;
@@ -109,8 +77,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
             }
         };
         buttonBar.add(indentButton);
-        //
-        buttonBar.add(Box.createHorizontalStrut(3));
         //
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
             public String getText() {
@@ -126,7 +92,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         };
         buttonBar.add(downButton);
         //
-        buttonBar.add(Box.createHorizontalStrut(8));
         Action linkAction = new LinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setLinkTasksAction(linkAction);
         TestGanttRolloverButton linkButton = new TestGanttRolloverButton(linkAction) {

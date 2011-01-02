@@ -174,25 +174,27 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             renderer.clear();
             renderer.setHeight(height);
         }
-        int maxLayers = 0;
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.render();
-            int layers = renderer.getPrimitiveContainer().getLayers().size();
-            if (maxLayers < layers) {
-                maxLayers = layers;
-            }
+        }
+        if (myHorizontalOffset != 0) {
+            g.translate(myHorizontalOffset, 0);
         }
         myPainter.setGraphics(g);
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.getPrimitiveContainer().paint(myPainter, g);
         }
-        for (int layer = 0; layer < maxLayers; layer++) {
+        for (int layer = 0; ; layer++) {
+            boolean layerPainted = false;
             for (ChartRendererBase renderer: getRenderers()) {
                 List<GraphicPrimitiveContainer> layers = renderer.getPrimitiveContainer().getLayers();
                 if (layer < layers.size()) {
                     layers.get(layer).paint(myPainter, g);
+                    layerPainted = true;
                 }
-                //renderer.getPrimitiveContainer().paint(myPainter, g);
+            }
+            if (!layerPainted) {
+                break;
             }
         }
     }
@@ -302,6 +304,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private int myVerticalOffset;
 
+    private int myHorizontalOffset;
+
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
@@ -381,6 +385,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myVerticalOffset;
     }
 
+    public void setHorizontalOffset(int pixels) {
+        myHorizontalOffset = pixels;
+    }
+
+    protected int getHorizontalOffset() {
+        return myHorizontalOffset;
+    }
+    
     public TimeUnit getBottomUnit() {
         return myBottomUnit;
     }

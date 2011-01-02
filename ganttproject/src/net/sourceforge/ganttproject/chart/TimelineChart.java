@@ -17,8 +17,22 @@ public interface TimelineChart extends Chart {
     void addRenderer(ChartRendererBase renderer);
     void resetRenderers();
 
+    /**
+     * Scrolls the chart by a number of days
+     *
+     * @param days
+     *            are the number of days to scroll. If days < 0 it scrolls to
+     *            the right otherwise to the left.
+     */
+    public void scrollBy(TaskLength duration);
+
+
     TaskLength calculateLength(int posX);
 
     ChartModel getModel();
+
+    ChartUIConfiguration getStyle();
+
+    void setStartOffset(int pixels);
 
 }
