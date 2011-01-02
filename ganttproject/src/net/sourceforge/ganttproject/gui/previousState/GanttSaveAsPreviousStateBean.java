@@ -120,7 +120,7 @@ public class GanttSaveAsPreviousStateBean extends JPanel {
         return box;
     }
 
-    public String getName() {
+    public String getBaselineName() {
         return nameTextField.getText();
     }
 

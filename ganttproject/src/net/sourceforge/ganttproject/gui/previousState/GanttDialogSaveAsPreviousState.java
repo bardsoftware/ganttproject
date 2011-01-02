@@ -57,7 +57,7 @@ public class GanttDialogSaveAsPreviousState extends JDialog implements
                 boolean overWrite = true;
                 for (int i = 0; i < myProject.getBaselines().size(); i++)
                     if (myProject.getBaselines().get(
-                            i).getName().equals(previousStateBean.getName())) {
+                            i).getName().equals(previousStateBean.getBaselineName())) {
                         GanttDialogInfo gdi = new GanttDialogInfo(myProject,
                                 GanttDialogInfo.WARNING,
                                 GanttDialogInfo.YES_NO_OPTION,
@@ -74,7 +74,7 @@ public class GanttDialogSaveAsPreviousState extends JDialog implements
                 if (overWrite) {
                     try {
                         myPreviousState = new GanttPreviousState(
-                                previousStateBean.getName(), myProject);
+                                previousStateBean.getBaselineName(), myProject);
                         isSaved = true;
                         previousStateBean.setDefaultName();
 
