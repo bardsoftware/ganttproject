@@ -20,6 +20,8 @@ public interface ScrollingManager {
      */
     void scrollBy(TaskLength taskLength);
 
+    void scrollBy(int pixels);
+    
     /** Scrolls the view to the given Date */
     void scrollTo(Date date);
 

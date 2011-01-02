@@ -7,17 +7,17 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 
-import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-
-import org.eclipse.core.runtime.IAdaptable;
+import javax.swing.JToolBar;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import org.eclipse.core.runtime.IAdaptable;
 
 class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdaptable {
     private ResourceTreeUIFacade myTreeFacade;
@@ -38,7 +38,10 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
     }
 
     protected Component createButtonPanel() {
-        Box buttonBar = Box.createHorizontalBox();
+        JToolBar buttonBar = new JToolBar();        
+        buttonBar.setFloatable(false);
+        buttonBar.setBorderPainted(false);
+        
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
         upButton.setTextHidden(true);
         buttonBar.add(upButton);

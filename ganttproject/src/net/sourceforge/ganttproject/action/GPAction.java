@@ -84,7 +84,9 @@ public abstract class GPAction extends AbstractAction implements
     protected String getI18n(String key) {
         return GanttLanguage.getInstance().getText(key);
     }
-    protected abstract String getIconFilePrefix();
+    protected String getIconFilePrefix() {
+        return null;
+    }
 
     public void setIconVisible(boolean isVisible) {
         iconVisible = isVisible;

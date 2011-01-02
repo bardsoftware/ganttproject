@@ -9,13 +9,13 @@ class PanelBorder extends JLabel {
     PanelBorder() {
         super("<html><b>&nbsp;&nbsp;&nbsp;</b></html>");
         setOpaque(true);
-        setBackground(HighlightOnMouseOver.getSelectionBackground());
+        //setBackground(HighlightOnMouseOver.getSelectionBackground());
     }
 
     @Override
     public void updateUI() {
         super.updateUI();
-        setBackground(HighlightOnMouseOver.getSelectionBackground());
+        //setBackground(HighlightOnMouseOver.getSelectionBackground());
     }
 
 

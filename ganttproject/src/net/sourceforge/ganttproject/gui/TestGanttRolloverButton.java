@@ -23,10 +23,7 @@ package net.sourceforge.ganttproject.gui;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.awt.AlphaComposite;
 import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -36,34 +33,23 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
-
-import net.sourceforge.ganttproject.action.RolloverAction;
 
 /**
  * Special button for tests on TaskPropertiesBeans
  */
 public class TestGanttRolloverButton extends JButton {
 
-    protected Icon _iconOn = null;
-
-    protected Icon _iconOff = null;
-
-    private Icon myIcon;
-
     private int myAutoRepeatMilliseconds;
 
-    public TestGanttRolloverButton() {
-        setBorder(new EtchedBorder());
+    private TestGanttRolloverButton() {
         setBorderPainted(false);
         setMargin(new Insets(0, 0, 0, 0));
-
-        setRequestFocusEnabled(false);
 
         addMouseListener(new MouseOverHandler());
         addMouseListener(new AutoRepeatHandler());
         setHorizontalTextPosition(SwingConstants.CENTER);
         setVerticalTextPosition(SwingConstants.BOTTOM);
+        setRolloverEnabled(true);
     }
 
     public TestGanttRolloverButton(Action action) {
@@ -72,34 +58,12 @@ public class TestGanttRolloverButton extends JButton {
         Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
         if (smallIcon != null) {
             setIcon(smallIcon);
-            _iconOff = smallIcon;
-            myIcon = smallIcon;
         }
-        if (action instanceof RolloverAction) {
-            _iconOn = ((RolloverAction) action).getIconOnMouseOver();
-        }
-
     }
 
     public TestGanttRolloverButton(Icon icon) {
         this();
         setIcon(icon);
-        _iconOn = icon;
-        myIcon = icon;
-    }
-
-    public TestGanttRolloverButton(Icon iconOn, Icon iconOff) {
-        this();
-        setIcon(iconOff);
-        _iconOn = iconOn;
-        _iconOff = iconOff;
-    }
-
-    public TestGanttRolloverButton(Icon icon, String text) {
-        this();
-        setIcon(icon);
-        _iconOn = icon;
-        setText(text);
     }
 
     public void setAutoRepeatMousePressedEvent(int milliseconds) {
@@ -107,11 +71,6 @@ public class TestGanttRolloverButton extends JButton {
     }
 
     public void setIconHidden(boolean isHidden) {
-        if (isHidden) {
-            setDefaultIcon(null);
-        } else {
-            setDefaultIcon(myIcon);
-        }
     }
 
     public void setTextHidden(boolean isHidden) {
@@ -126,65 +85,25 @@ public class TestGanttRolloverButton extends JButton {
     };
 
     public void setIcon(Icon icon) {
-        Action a = getAction();
-        if (a != null) {
-            // a.putValue(Action.SMALL_ICON,icon);
-            _iconOn = icon;
+        if (icon != null) {
+            setRolloverIcon(icon);
         }
         super.setIcon(icon);
     }
 
-    public void setIcon(Icon iconOn, Icon iconOff) {
-        setIcon(iconOff);
-        _iconOn = iconOn;
-        _iconOff = iconOff;
-    }
-
     public void setDefaultIcon(Icon iconOn) {
         setIcon(iconOn);
-        _iconOn = iconOn;
     }
 
-    public boolean isOpaque() {
-        return false;
-    }
-
-    public void setEnabled(boolean b) {
-        super.setEnabled(b);
-        setBorderPainted(false);
-        repaint();
-    }
-
-    public void paint(Graphics g) {
-        if (isEnabled()) {
-            super.paint(g);
-        } else {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setComposite(c);
-            super.paint(g2);
-        }
-    }
-
-    private static AlphaComposite c = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER, 0.5f);
-
-    /**
-     * Make the border visible/invisible on rollovers
-     */
     class MouseOverHandler extends MouseAdapter {
         public void mouseEntered(MouseEvent e) {
             if (isEnabled()) {
                 setBorderPainted(true);
-                setIcon(_iconOn);
             }
         }
 
         public void mouseExited(MouseEvent e) {
             setBorderPainted(false);
-            if (getAction() instanceof RolloverAction)
-                setIcon(((RolloverAction) getAction()).getIconOnMouseOver());
-            else if (_iconOff != null)
-                setIcon(_iconOff);
         }
     }
 
@@ -210,10 +129,9 @@ public class TestGanttRolloverButton extends JButton {
         private ActionEvent myEvent;
 
         Worker(MouseEvent e) {
-            myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
-                    getActionCommand(), EventQueue.getMostRecentEventTime(), e
-                            .getModifiers());
-            ;
+            myEvent = new ActionEvent(
+                this, ActionEvent.ACTION_PERFORMED, getActionCommand(), EventQueue.getMostRecentEventTime(), 
+                e.getModifiers());
         }
 
         public void run() {
