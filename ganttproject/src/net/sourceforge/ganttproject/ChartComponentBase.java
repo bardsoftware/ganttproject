@@ -31,6 +31,9 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.OptionsDialogAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
+import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
+import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -41,7 +44,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
@@ -163,66 +165,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     // protected abstract MouseWheelListener getMouseWheelListener();
 
-    protected interface MouseInteraction {
-        void apply(MouseEvent event);
-
-        void finish();
-
-        void paint(Graphics g);
-    }
-
-    protected abstract class MouseInteractionBase {
-		protected Date myStartDate;
-
-        protected MouseInteractionBase(Date startDate) {
-        	myStartDate = startDate;
-        }
-
-        protected TaskLength getLengthDiff(MouseEvent event) {
-        	Date dateUnderX = getChartModel().getDateAt(event.getX());
-        	TaskLength result = getTaskManager().createLength(
-        			getChartModel().getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
-        	return result;
-        }
-
-        public void paint(Graphics g) {
-        }
-
-        protected void setStartDate(Date date) {
-        	myStartDate = date;
-        }
-        
-        protected Date getStartDate() {
-        	return myStartDate;
-        }
-    }
-
-    protected class ScrollViewInteraction extends MouseInteractionBase
-            implements MouseInteraction {
-        protected ScrollViewInteraction(MouseEvent e) {
-            super(getChartModel().getDateAt(e.getX()));
-        }
-
-        public void apply(MouseEvent event) {
-        	TaskLength scrollInterval = getLengthDiff(event);
-        	if (scrollInterval.getLength() == 0) {
-        		return;
-        	}
-        	TimeUnit bottomUnit = getChartModel().getBottomUnit();
-        	if (bottomUnit instanceof TimeUnitFunctionOfDate) {
-        	    bottomUnit = ((TimeUnitFunctionOfDate)bottomUnit).createTimeUnit(getChartModel().getDateAt(event.getX()));
-        	}
-        	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
-	            getUIFacade().getScrollingManager().scrollBy(scrollInterval.reverse());
-	            setStartDate(getChartModel().getDateAt(event.getX()));
-        	}
-        }
-
-        public void finish() {
-        }
-
-    }
-
     protected class MouseListenerBase extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
@@ -249,6 +191,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
             getImplementation().finishInteraction();
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
         public void mouseEntered(MouseEvent e) {
@@ -412,6 +355,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     public MouseInteraction newScrollViewInteraction(MouseEvent e) {
-        return new ScrollViewInteraction(e);
+        return new ScrollViewInteraction(
+            e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(), 
+            getChartModel().getBottomUnit());
     }
 }
