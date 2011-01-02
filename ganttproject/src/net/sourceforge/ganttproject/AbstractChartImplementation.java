@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -13,7 +12,6 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
-import net.sourceforge.ganttproject.ChartComponentBase.MouseInteraction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -22,6 +20,7 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
