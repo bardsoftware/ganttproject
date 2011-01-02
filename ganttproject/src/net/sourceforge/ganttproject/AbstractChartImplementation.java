@@ -110,7 +110,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public void scrollBy(TaskLength duration) {
     	setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
     }
-
+    
+    @Override
+    public void setStartOffset(int pixels) {
+        getChartModel().setHorizontalOffset(pixels);
+    }
+    
     private TimeFrame scrollTimeFrame(Date scrolledDate) {
         TimeFrame result = null;
         if (getTopTimeUnit().isConstructedFrom(getBottomTimeUnit())) {

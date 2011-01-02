@@ -27,15 +27,6 @@ public interface Chart extends IAdaptable {
     void setStartDate(Date startDate);
     public Date getEndDate();
 
-    /**
-     * Scrolls the chart by a number of days
-     *
-     * @param days
-     *            are the number of days to scroll. If days < 0 it scrolls to
-     *            the right otherwise to the left.
-     */
-    public void scrollBy(TaskLength duration);
-
     void setDimensions(int height, int width);
 
     public String getName();

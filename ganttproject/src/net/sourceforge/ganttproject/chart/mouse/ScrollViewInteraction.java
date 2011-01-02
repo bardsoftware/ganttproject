@@ -29,17 +29,21 @@ public class ScrollViewInteraction extends MouseInteractionBase
         implements MouseInteraction {
     private final ScrollingManager myScrollingManager;
     private final TimeUnit myBottomUnit;
+    private int myStartX;
 
     public ScrollViewInteraction(
             MouseEvent e, TimelineFacade chartDateGrid, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
         super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
         myScrollingManager = scrollingManager;
         myBottomUnit = bottomUnit;
+        myStartX = e.getX();
     }
 
     public void apply(MouseEvent event) {
     	TaskLength scrollInterval = getLengthDiff(event);
     	if (scrollInterval.getLength() == 0) {
+    	    myScrollingManager.scrollBy(event.getX() - myStartX);
+    	    myStartX = event.getX();
     		return;
     	}
     	TimeUnit bottomUnit = myBottomUnit;
