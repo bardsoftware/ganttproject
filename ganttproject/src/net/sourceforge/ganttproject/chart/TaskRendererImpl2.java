@@ -132,15 +132,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                     Date startDate = taskBaseline.getStart().getTime();
                     TaskLength duration = getChartModel().getTaskManager().createLength(taskBaseline.getDuration());
                     Date endDate = getCalendar().shiftDate(startDate, duration);
-                    
-                    StringBuilder style = new StringBuilder("previousStateTask");
+                    if (endDate.equals(t.getEnd().getTime())) {
+                        return;
+                    }
+                    List<String> styles = new ArrayList<String>();
                     if (t.isMilestone()) {
-                        style.append(".milestone");
+                        styles.add("milestone");
                     }
                     if (endDate.compareTo(t.getEnd().getTime()) < 0) {
-                        style.append(".later");
+                        styles.add("later");
                     } else {
-                        style.append(".earlier");
+                        styles.add("earlier");
                     }
                     List<TaskActivity> baselineActivities = new ArrayList<TaskActivity>();
                     if (t.isMilestone()) {
@@ -153,8 +155,18 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                         new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight()/2));
                     List<Rectangle> baselineRectangles = activityRenderer.renderActivities(
                         rowNum, baselineActivities, defaultUnitOffsets);
-                    for (Rectangle r : baselineRectangles) {
-                        r.setStyle(style.toString());
+                    for (int i = 0; i < baselineRectangles.size(); i++) {
+                        Rectangle r = baselineRectangles.get(i);
+                        r.setStyle("previousStateTask");
+                        for (String s : styles) {
+                            r.addStyle(s);
+                        }
+                        if (i == 0) {
+                            r.addStyle("start");
+                        }
+                        if (i == baselineRectangles.size() - 1) {
+                            r.addStyle("end");
+                        }
                     }
                     return;
                 }

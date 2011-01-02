@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -42,6 +43,23 @@ public class GraphicPrimitiveContainer {
 
         private boolean isVisible = true;
 
+        private LinkedHashSet<String> myStyles;
+        
+        private LinkedHashSet<String> getStyles() {
+            if (myStyles == null) {
+                myStyles = new LinkedHashSet<String>();
+            }
+            return myStyles;
+        }
+        
+        public void addStyle(String style) {
+            getStyles().add(style);
+        }
+        
+        public boolean hasStyle(String style) {
+            return getStyles().contains(style);
+        }
+        
         public void setStyle(String styleName) {
             myStyleName = styleName;
         }
