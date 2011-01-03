@@ -36,8 +36,9 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
     }
     @Override
     public Date getDateAt(int x) {
-        return myChartModel.getDateAt(x);
+        return myChartModel.getOffsetAt(x).getOffsetStart();
     }
+    
     @Override
     public TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
         return myTaskManager.createLength(timeUnit, startDate, endDate);
@@ -49,6 +50,10 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
     @Override
     public GPCalendar getCalendar() {
         return myTaskManager.getCalendar();
+    }
+    @Override
+    public Date getEndDateAt(int x) {
+        return myChartModel.getOffsetAt(x).getOffsetEnd();
     }
     
 }
