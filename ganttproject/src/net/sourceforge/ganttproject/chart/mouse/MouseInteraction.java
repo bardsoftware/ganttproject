@@ -39,5 +39,6 @@ public interface MouseInteraction {
         TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
         TimeUnitStack getTimeUnitStack();
         GPCalendar getCalendar();
+        Date getEndDateAt(int i);
     }
 }

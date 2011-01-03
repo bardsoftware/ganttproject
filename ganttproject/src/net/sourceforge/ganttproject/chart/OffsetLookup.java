@@ -119,6 +119,9 @@ class OffsetLookup {
     
     Date lookupDateByPixels(int pixels, List<Offset> offsets) {
     	int offsetIdx = findOffset(pixels, new ComparatorByPixels(), 0, offsets.size() - 1, offsets);
+    	if (offsetIdx < 0) {
+    	    offsetIdx = -offsetIdx - 1;
+    	}
     	Offset offset = offsets.get(offsetIdx);
     	return offset.getOffsetStart();
     }
