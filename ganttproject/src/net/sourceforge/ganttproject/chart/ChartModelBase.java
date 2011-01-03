@@ -414,7 +414,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setHorizontalOffset(int pixels) {
-        myHorizontalOffset = pixels;
+        //myHorizontalOffset = pixels;
     }
 
     protected int getHorizontalOffset() {

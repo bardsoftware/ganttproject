@@ -35,26 +35,29 @@ public class ScrollViewInteraction extends MouseInteractionBase
 
     public ScrollViewInteraction(
             MouseEvent e, TimelineFacade chartDateGrid, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
-        super(chartDateGrid.getDateAt(0), chartDateGrid);
+        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
         myScrollingManager = scrollingManager;
         myBottomUnit = bottomUnit;
         myStartX = e.getX();
         myStartX2 = e.getX();
     }
 
-    public void apply(MouseEvent event) {
+    private TaskLength getScrollIntervalNew(MouseEvent event) {
         int pixelDiff = event.getX() - myStartX2;
         Date dateUnderX = getChartDateGrid().getDateAt(pixelDiff);
         Date startDate = pixelDiff < 0 ? getChartDateGrid().getDateAt(0) : getChartDateGrid().getEndDateAt(0);
         if (pixelDiff > 0 && dateUnderX.before(startDate)) {
             dateUnderX = startDate;
         }
-        TaskLength scrollInterval = getChartDateGrid().createTimeInterval(
+        return getChartDateGrid().createTimeInterval(
                 getChartDateGrid().getTimeUnitStack().getDefaultTimeUnit(), startDate,dateUnderX);
-    	//TaskLength scrollInterval = getLengthDiff(event);
+        
+    }
+    public void apply(MouseEvent event) {
+    	TaskLength scrollInterval = getLengthDiff(event);
     	//System.err.println("dateUnderX="+dateUnderX+" startDate="+startDate+" scroll interval=" + scrollInterval);
     	if (scrollInterval.getLength() == 0) {
-    	    myScrollingManager.scrollBy(event.getX() - myStartX);
+    	    //myScrollingManager.scrollBy(event.getX() - myStartX);
     	    myStartX = event.getX();
     		return;
     	}
@@ -64,12 +67,12 @@ public class ScrollViewInteraction extends MouseInteractionBase
     	}
     	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
             myScrollingManager.scrollBy(scrollInterval.reverse());
-            //Date newStartDate = getChartDateGrid().getDateAt(event.getX()); 
-            //setStartDate(newStartDate);
+            Date newStartDate = getChartDateGrid().getDateAt(event.getX()); 
+            setStartDate(newStartDate);
             //System.err.println("start date=" + newStartDate);
             myStartX2 = event.getX();
     	} else {
-            myScrollingManager.scrollBy(event.getX() - myStartX);
+            //myScrollingManager.scrollBy(event.getX() - myStartX);
     	}
         myStartX = event.getX();            
     }
