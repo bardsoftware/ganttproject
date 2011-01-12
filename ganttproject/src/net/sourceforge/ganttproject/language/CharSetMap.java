@@ -115,7 +115,7 @@ public class CharSetMap
     /**
      * An array of available charset mappers.
      */
-    private Map mappers[] = new Map[6];
+    private final Map<String, String> mappers[] = new Map[6];
 
     /**
      * Loads mappings from a stream.
@@ -124,7 +124,7 @@ public class CharSetMap
      * @return the mappings.
      * @throws IOException for an incorrect stream.
      */
-    protected static Map loadStream(InputStream input)
+    protected static Map<String, String> loadStream(InputStream input)
         throws IOException
     {
         Properties props = new Properties();
@@ -139,7 +139,7 @@ public class CharSetMap
      * @return the mappings.
      * @throws IOException for an incorrect file.
      */
-    protected static Map loadFile(File file)
+    protected static Map<String, String> loadFile(File file)
         throws IOException
     {
         return loadStream(new FileInputStream(file));
@@ -152,7 +152,7 @@ public class CharSetMap
      * @return the mappings.
      * @throws IOException for an incorrect file.
      */
-    protected static Map loadPath(String path)
+    protected static Map<String, String> loadPath(String path)
         throws IOException
     {
         return loadFile(new File(path));
@@ -164,7 +164,7 @@ public class CharSetMap
      * @param name a resource name.
      * @return the mappings.
      */
-    protected static Map loadResource(String name)
+    protected static Map<String, String> loadResource(String name)
     {
         InputStream input = CharSetMap.class.getResourceAsStream(name);
         if (input != null)
@@ -222,7 +222,7 @@ public class CharSetMap
         mappers[MAP_COM] = commonMapper;
 
         // Set the cache mapper to have the highest priority.
-        mappers[MAP_CACHE] = new Hashtable();
+        mappers[MAP_CACHE] = new Hashtable<String, String>();
     }
 
     /**
@@ -286,7 +286,7 @@ public class CharSetMap
     {
         HashMap<String, String> mapper = (HashMap<String, String>) mappers[MAP_PROG];
         mapper = mapper != null ?
-            (HashMap<String, String>) mapper.clone() : new HashMap();
+            (HashMap<String, String>) mapper.clone() : new HashMap<String, String>();
         mapper.put(key,charset);
         mappers[MAP_PROG] = mapper;
         mappers[MAP_CACHE].clear();
@@ -500,7 +500,7 @@ public class CharSetMap
             (key.length() > 0))
         {
             // Go through mappers.
-            Map mapper;
+            Map<String, String> mapper;
             String charset;
             for (int i = 0; i < mappers.length; i++)
             {
@@ -532,10 +532,9 @@ public class CharSetMap
      * @param key the key for the charset.
      * @param charset the corresponding charset.
      */
-    protected synchronized void setCommonCharSet(String key,
-                                                 String charset)
+    protected synchronized void setCommonCharSet(String key, String charset)
     {
-        HashMap<String, String> mapper = (HashMap<String, String>) ((HashMap<String, String>) mappers[MAP_COM]).clone();
+        HashMap<String, String> mapper = new HashMap<String, String>(mappers[MAP_COM]);
         mapper.put(key,charset);
         mappers[MAP_COM] = mapper;
         mappers[MAP_CACHE].clear();

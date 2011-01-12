@@ -9,7 +9,6 @@ import java.util.List;
 import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;

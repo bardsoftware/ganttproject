@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.test.task.event;
 
+import java.util.Calendar;
+
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -18,8 +20,8 @@ public class TestTaskScheduleEvent extends TaskTestCase {
         Task task1 = taskManager.createTask();
         TaskListenerImpl listener = new TaskListenerImpl(taskManager);
         taskManager.addTaskListener(listener);
-        GanttCalendar taskEnd = task1.getEnd().Clone();
-        taskEnd.add(1);
+        GanttCalendar taskEnd = task1.getEnd().clone();
+        taskEnd.add(Calendar.DATE, 1);
         TaskMutator mutator = task1.createMutator();
         mutator.setEnd(taskEnd);
         mutator.commit();
@@ -32,8 +34,8 @@ public class TestTaskScheduleEvent extends TaskTestCase {
         Task task1 = taskManager.createTask();
         TaskListenerImpl listener = new TaskListenerImpl(taskManager);
         taskManager.addTaskListener(listener);
-        GanttCalendar taskStart = task1.getStart().Clone();
-        taskStart.add(-1);
+        GanttCalendar taskStart = task1.getStart().clone();
+        taskStart.add(Calendar.DATE, -1);
         TaskMutator mutator = task1.createMutator();
         mutator.setStart(taskStart);
         mutator.commit();

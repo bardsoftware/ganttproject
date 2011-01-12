@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Calendar;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -165,6 +166,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         form.add(Box.createRigidArea(new Dimension(1, 10)));
         form.add(Box.createRigidArea(new Dimension(1, 10)));    	
     }
+
     /** Construct the general panel */
     private void constructGeneralPanel() {
         JPanel propertiesPanel = new JPanel(new SpringLayout());
@@ -192,7 +194,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 	        propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
 	        myEndDatePicker = createDatePicker(new ActionListener() {
 	            public void actionPerformed(ActionEvent e) {
-	                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(1), false);
+	                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(Calendar.DATE, 1), false);
 	            }
 	        });
 	        propertiesPanel.add(myEndDatePicker);
@@ -378,7 +380,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     	resourcesPanel = myAllocationsPanel.getComponent();
     }
 
-    /** construct the notes panel */
+    /** Construct the notes panel */
     private void constructNotesPanel() {
         secondRowPanelNotes = new JPanel(new BorderLayout());
         UIUtil.createTitle(secondRowPanelNotes, language.getText("notesTask"));
@@ -537,7 +539,6 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
 
         return returnTask;
-
     }
 
     private void setSelectedTask() {
@@ -545,7 +546,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         setName(selectedTasks[0].toString());
 
-        durationField1.setText(selectedTasks[0].getLength() + "");
+        durationField1.setText(String.valueOf(selectedTasks[0].getLength()));
 
         percentCompleteSlider.setValue(new Integer(selectedTasks[0]
                 .getCompletionPercentage()));
@@ -553,12 +554,12 @@ public class GanttTaskPropertiesBean extends JPanel {
         priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority().ordinal());
 
         if (selectedTasks[0].getThird() != null) {
-            setThird(selectedTasks[0].getThird().Clone(), true);
+            setThird(selectedTasks[0].getThird().clone(), true);
         }
 
-        setStart(selectedTasks[0].getStart().Clone(), true);
+        setStart(selectedTasks[0].getStart().clone(), true);
 
-        setEnd(selectedTasks[0].getEnd().Clone(), true);
+        setEnd(selectedTasks[0].getEnd().clone(), true);
 
         thirdDateComboBox.setSelectedIndex(selectedTasks[0].getThirdDateConstraint());
 
@@ -677,14 +678,14 @@ public class GanttTaskPropertiesBean extends JPanel {
         if (this.start.compareTo(this.end) < 0) {
             adjustLength();
         } else {
-            GanttCalendar _end = start.newAdd(this.taskLength);
+            GanttCalendar _end = start.newAdd(Calendar.DATE, this.taskLength);
             this.end = _end;
             this.myEndDatePicker.setDate(this.end.getTime());
         }
     }
 
     private void setEnd(GanttCalendar dend, boolean test) {
-        myEndDatePicker.setDate(dend.newAdd(-1).getTime());
+        myEndDatePicker.setDate(dend.newAdd(Calendar.DATE, -1).getTime());
         this.end = dend;
         if (test == true) {
             return;
@@ -692,7 +693,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         if (this.start.compareTo(this.end) < 0) {
             adjustLength();
         } else {
-            GanttCalendar _start = this.end.newAdd(-1 * getLength());
+            GanttCalendar _start = this.end.newAdd(Calendar.DATE, -1 * getLength());
             this.start = _start;
         }
     }
@@ -726,7 +727,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private boolean canBeProjectTask(Task testedTask, TaskContainmentHierarchyFacade taskHierarchy) {
         Task[] nestedTasks = taskHierarchy.getNestedTasks(testedTask);
-        if (nestedTasks.length==0) {
+        if (nestedTasks.length == 0) {
             return false;
         }
         for (Task parent = taskHierarchy.getContainer(testedTask); parent!=null; parent = taskHierarchy.getContainer(parent)) {
@@ -734,7 +735,7 @@ public class GanttTaskPropertiesBean extends JPanel {
                 return false;
             }
         }
-        for (int i=0; i<nestedTasks.length; i++) {
+        for (int i = 0; i<nestedTasks.length; i++) {
             if (isProjectTaskOrContainsProjectTask(nestedTasks[i])) {
                 return false;
             }
@@ -748,7 +749,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         }
         boolean result = false;
         Task[] nestedTasks = task.getNestedTasks();
-        for (int i=0; i<nestedTasks.length; i++) {
+        for (int i = 0; i < nestedTasks.length; i++) {
             if (isProjectTaskOrContainsProjectTask(nestedTasks[i])) {
                 result = true;
                 break;
@@ -765,29 +766,26 @@ public class GanttTaskPropertiesBean extends JPanel {
         boolean canBeProjectTask = true;
         boolean canBeMilestone = true;
         TaskContainmentHierarchyFacade taskHierarchy = myTaskManager.getTaskHierarchy();
-        for (int i = 0 ; i < selectedTasks.length ; i++) {
+        for (int i = 0; i < selectedTasks.length ; i++) {
             canBeMilestone &= !taskHierarchy.hasNestedTasks(selectedTasks[i]);
             canBeProjectTask &= canBeProjectTask(selectedTasks[i], taskHierarchy);
         }
-        assert false==(canBeProjectTask && canBeMilestone);
+        assert false == (canBeProjectTask && canBeMilestone);
 
         final Pair<String, JCheckBox> result;
         if (canBeProjectTask) {
             projectTaskCheckBox1 = new JCheckBox ();
         	result = Pair.create(language.getText("projectTask"), projectTaskCheckBox1);
-        }
-        else if (canBeMilestone) {
+        } else if (canBeMilestone) {
             mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
                 public void actionPerformed(ActionEvent arg0) {
                     enableMilestoneUnfriendlyControls(!isMilestone());
                 }
             });
             result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);
-        }
-        else {
+        } else {
             throw new IllegalStateException("Can't be here");
         }
         return result;
     }
-
 }

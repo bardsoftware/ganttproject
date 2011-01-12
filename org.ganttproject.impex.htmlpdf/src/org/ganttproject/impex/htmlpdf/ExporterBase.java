@@ -43,7 +43,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
@@ -101,7 +100,7 @@ abstract class ExporterBase {
 
     public void run(final File outputFile,
             final ExportFinalizationJob finalizationJob) throws Exception {
-        final IJobManager jobManager = Platform.getJobManager();
+        final IJobManager jobManager = Job.getJobManager();
         final List<File> resultFiles = new ArrayList<File>();
         final Job[] jobs = createJobs(outputFile, resultFiles);
         final IProgressMonitor monitor = jobManager.createProgressGroup();

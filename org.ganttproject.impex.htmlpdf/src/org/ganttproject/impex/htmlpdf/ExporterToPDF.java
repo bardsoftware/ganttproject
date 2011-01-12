@@ -35,7 +35,6 @@ import org.apache.fop.apps.Options;
 import org.apache.fop.image.FopImageFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.FontRecord;
@@ -82,7 +81,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         Job result = new ExportJob("generate gantt chart") {
             protected IStatus run(IProgressMonitor monitor) {
             	if (monitor.isCanceled()) {
-            		Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
             		return Status.CANCEL_STATUS;
             	}
                 try {
@@ -116,7 +115,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         Job result = new ExportJob("Generate resource chart") {
             protected IStatus run(IProgressMonitor monitor) {
             	if (monitor.isCanceled()) {
-            		Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
             		return Status.CANCEL_STATUS;
             	}
                 try {
@@ -148,7 +147,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         Job result = new ExportJob("Initializing FOP") {
             protected IStatus run(IProgressMonitor monitor) {
             	if (monitor.isCanceled()) {
-            		Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
             		return Status.CANCEL_STATUS;
             	}
                 try {
@@ -174,7 +173,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         Job result = new ExportJob("Generating PDF") {
             protected IStatus run(IProgressMonitor monitor) {
             	if (monitor.isCanceled()) {
-            		Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
             		return Status.CANCEL_STATUS;
             	}
                 assert myStylesheet!=null;

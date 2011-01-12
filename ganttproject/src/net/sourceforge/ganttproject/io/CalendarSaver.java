@@ -55,10 +55,10 @@ public class CalendarSaver extends SaverBase {
             if (d.getYear() == 1 - 1900) {
                 addAttribute("year", "", attrs);
             } else {
-                addAttribute("year", (d.getYear() + 1900) + "", attrs);
+                addAttribute("year", String.valueOf(d.getYear() + 1900), attrs);
             }
-            addAttribute("month", (d.getMonth() + 1) + "", attrs);
-            addAttribute("date", d.getDate() + "", attrs);
+            addAttribute("month", String.valueOf(d.getMonth() + 1) , attrs);
+            addAttribute("date", String.valueOf(d.getDate()), attrs);
             emptyElement("date", attrs, handler);
         }
 

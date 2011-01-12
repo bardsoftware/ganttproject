@@ -84,11 +84,6 @@ class LocaleChooserPanel extends JPanel {
             return (Locale) mapLocales.get(combo.getSelectedItem());
         }
 
-        // TODO Method is unused... Remove?
-        private static Locale getLocale(String locale) {
-            return (Locale) mapLocales.get(locale);
-        }
-
         private static String getString(Locale locale) {
             String res = null;
             Iterator<String> it = mapLocales.keySet().iterator();

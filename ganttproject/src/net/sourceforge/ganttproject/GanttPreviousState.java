@@ -1,5 +1,20 @@
-/**
- * 
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2002-2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
@@ -36,10 +51,10 @@ public class GanttPreviousState {
 
     private final OutputStreamWriter os;
 
-    // TODO myTree is not defined for 2nd constructor...!
-    private GanttTree2 myTree;
+    private final GanttTree2 myTree;
 
-    private final String s = "    "; // the margin
+    /** String used to indent */
+    private final String s = "    ";
 
     /** constructor for a new previous state */
     public GanttPreviousState(String name, GanttProject project)
@@ -56,6 +71,7 @@ public class GanttPreviousState {
     /** constructor for a loaded previous state */
     public GanttPreviousState(String name) throws IOException {
         myName = name;
+        myTree = null;
         myFile = createTemporaryFile();
         myFile.deleteOnExit();
         os = new OutputStreamWriter(new FileOutputStream(myFile), "UTF-8");
@@ -86,6 +102,8 @@ public class GanttPreviousState {
     }
 
     private void writeTasks() {
+        assert myTree != null : "myTree is not initialised, used wrong constructor to create this object!";
+
         Enumeration children = ((DefaultMutableTreeNode) myTree.getJTree()
                 .getModel().getRoot()).children();
         write(s + "<previous-tasks name=\"" + myName + "\">\n");
@@ -173,6 +191,8 @@ public class GanttPreviousState {
 
     /** Simple write information of tasks */
     public void writeTask(Writer fout, DefaultMutableTreeNode node) {
+        assert myTree != null : "myTree is not initialised, used wrong constructor to create this object!";
+
         /** List of tasks */
         ArrayList<Task> lot = new ArrayList<Task>();
         try {
