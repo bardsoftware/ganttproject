@@ -71,7 +71,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.Task;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -224,7 +223,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     continue;
                 }
                 try {
-                    URL resolvedDir = FileLocator.resolve(dirUrl);
+                    URL resolvedDir = Platform.resolve(dirUrl);
                     myFontCache.registerDirectory(resolvedDir.getPath(), true);
                 } catch (IOException e) {
                    GPLogger.log(e);

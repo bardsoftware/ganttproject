@@ -7,10 +7,9 @@ import java.net.URL;
 
 import net.sourceforge.ganttproject.GPLogger;
 
-import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
 
 abstract class StylesheetFactoryImpl {
     Stylesheet[] createStylesheets(Class stylesheetInterface) {
@@ -28,7 +27,7 @@ abstract class StylesheetFactoryImpl {
                 String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL stylesheetUrl = Platform.getBundle(namespace).getResource(pluginRelativeUrl);
                 assert stylesheetUrl != null : "Failed to resolve url=" + pluginRelativeUrl;
-                URL resolvedUrl = FileLocator.resolve(stylesheetUrl);
+                URL resolvedUrl = Platform.resolve(stylesheetUrl);
                 assert resolvedUrl != null : "Failed to resolve URL=" + stylesheetUrl;
                 result[i] = newStylesheet(resolvedUrl, localizedName);
             }
