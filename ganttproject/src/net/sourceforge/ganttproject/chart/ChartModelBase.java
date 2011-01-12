@@ -31,7 +31,10 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * grid cells)
  */
 public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ ChartModel {
-
+    public static interface ScrollingSession {
+        void setScrollValue(int value);
+    }
+    
     class OffsetBuilderImpl extends RegularFrameOffsetBuilder {
         private final boolean isCompressedWeekend;
 
@@ -192,12 +195,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.render();
         }
-        //if (myHorizontalOffset != 0) {
-  //      System.err.println("will shift:"+(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels()));
-    //        System.err.println("offset="+getBottomUnitOffsets().get(1));
-//            g.translate(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels(), 0);
-            //g.translate(myHorizontalOffset, 0);
-        //}
         myPainter.setGraphics(g);
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.getPrimitiveContainer().paint(myPainter, g);
@@ -256,15 +253,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     public Date getEndDate() {
         List<Offset> offsets = getBottomUnitOffsets();
         return offsets.get(offsets.size()-1).getOffsetEnd();
-//        for (int i = offsets.size()-1; i>=0; i--) {
-//            if (offsets.get(i).getOffsetPixels()>getBounds().getWidth()) {
-//                lastOutOfBounds = offsets.get(i);
-//            }
-//            else {
-//                return lastOutOfBounds.getOffsetEnd();
-//            }
-//        }
-//        throw new IllegalStateException();
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
@@ -384,11 +372,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return workPixels / (float) getBottomUnitWidth();
     }
 
-    public float calculateLengthNoWeekends(int fromX, int toX) {
-        int totalPixels = toX - fromX;
-        return totalPixels / (float) getBottomUnitWidth();
-    }
-
     /**
      * @return A length of the visible part of this chart area measured in the
      *         bottom line time units
@@ -414,7 +397,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setHorizontalOffset(int pixels) {
-        //myHorizontalOffset = pixels;
+        myHorizontalOffset = pixels;
     }
 
     protected int getHorizontalOffset() {
@@ -478,62 +461,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     public class OptionEventDispatcher {
         void optionsChanged() {
             fireOptionsChanged();
-        }
-    }
-
-    public static class Offset {
-        private Date myOffsetAnchor;
-        private Date myOffsetEnd;
-        private int myOffsetPixels;
-        private TimeUnit myOffsetUnit;
-        private GPCalendar.DayType myDayType;
-        private Date myOffsetStart;
-
-        Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels, GPCalendar.DayType dayType) {
-            myOffsetAnchor = offsetAnchor;
-            myOffsetStart = offsetStart;
-            myOffsetEnd = offsetEnd;
-            myOffsetPixels = offsetPixels;
-            myOffsetUnit = offsetUnit;
-            myDayType = dayType;
-        }
-        Date getOffsetAnchor() {
-            return myOffsetAnchor;
-        }
-        public Date getOffsetStart() {
-            return myOffsetStart;
-        }
-        public Date getOffsetEnd() {
-            return myOffsetEnd;
-        }
-        public int getOffsetPixels() {
-            return myOffsetPixels;
-        }
-        void shift(int pixels) {
-            myOffsetPixels += pixels;
-        }
-        TimeUnit getOffsetUnit() {
-            return myOffsetUnit;
-        }
-        public DayType getDayType() {
-            return myDayType;
-        }
-        public String toString() {
-            return "end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels+" time unit: "+myOffsetUnit.getName();
-        }
-        @Override
-        public boolean equals(Object that) {
-            if (false==that instanceof Offset) {
-                return false;
-            }
-            Offset thatOffset = (Offset) that;
-            return myOffsetPixels==thatOffset.myOffsetPixels &&
-                   myOffsetEnd.equals(thatOffset.myOffsetEnd) &&
-                   myOffsetAnchor.equals(thatOffset.myOffsetAnchor);
-        }
-        @Override
-        public int hashCode() {
-            return myOffsetEnd.hashCode();
         }
     }
 }

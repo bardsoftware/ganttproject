@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import junit.framework.TestCase;

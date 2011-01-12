@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
