@@ -13,7 +13,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -137,7 +137,7 @@ public abstract class GPAction extends AbstractAction implements
             }
             URL resolvedUrl;
             try {
-                resolvedUrl = FileLocator.resolve(url);
+                resolvedUrl = Platform.resolve(url);
                 ourProperties.load(resolvedUrl.openStream());
             } catch (IOException e) {
                 if (!GPLogger.log(e)) {
