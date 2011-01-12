@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.chart;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;

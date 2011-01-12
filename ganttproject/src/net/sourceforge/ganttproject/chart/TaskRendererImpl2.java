@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;

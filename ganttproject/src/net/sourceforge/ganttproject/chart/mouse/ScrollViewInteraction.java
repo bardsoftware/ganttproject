@@ -35,7 +35,7 @@ public class ScrollViewInteraction extends MouseInteractionBase
 
     public ScrollViewInteraction(
             MouseEvent e, TimelineFacade chartDateGrid, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
-        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
+        super(chartDateGrid.getDateAt(0), chartDateGrid);
         myScrollingManager = scrollingManager;
         myBottomUnit = bottomUnit;
         myStartX = e.getX();
@@ -54,10 +54,11 @@ public class ScrollViewInteraction extends MouseInteractionBase
         
     }
     public void apply(MouseEvent event) {
-    	TaskLength scrollInterval = getLengthDiff(event);
+    	//TaskLength scrollInterval = getLengthDiff(event);
+        TaskLength scrollInterval = getScrollIntervalNew(event);
     	//System.err.println("dateUnderX="+dateUnderX+" startDate="+startDate+" scroll interval=" + scrollInterval);
     	if (scrollInterval.getLength() == 0) {
-    	    //myScrollingManager.scrollBy(event.getX() - myStartX);
+    	    myScrollingManager.scrollBy(event.getX() - myStartX);
     	    myStartX = event.getX();
     		return;
     	}
@@ -72,7 +73,7 @@ public class ScrollViewInteraction extends MouseInteractionBase
             //System.err.println("start date=" + newStartDate);
             myStartX2 = event.getX();
     	} else {
-            //myScrollingManager.scrollBy(event.getX() - myStartX);
+            myScrollingManager.scrollBy(event.getX() - myStartX);
     	}
         myStartX = event.getX();            
     }

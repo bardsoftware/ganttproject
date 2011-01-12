@@ -8,7 +8,6 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
