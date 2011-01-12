@@ -22,7 +22,6 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
@@ -582,8 +581,10 @@ public class TaskImpl implements Task {
             if (myActivities == null && (myStartChange != null)
                     || (myDurationChange != null)) {
                 myActivities = new ArrayList<TaskActivity>();
-                TaskImpl.this.recalculateActivities(myActivities, getStart()
-                        .getTime(), TaskImpl.this.getEnd().getTime());
+                TaskImpl.recalculateActivities(
+                    myManager.getConfig().getCalendar(), TaskImpl.this,
+                    myActivities, getStart().getTime(), 
+                    TaskImpl.this.getEnd().getTime());
             }
             return myActivities;
         }
@@ -989,7 +990,7 @@ public class TaskImpl implements Task {
         if (myLength == null || myManager == null) {
             return;
         }
-        recalculateActivities(myActivities, myStart.getTime(), getEnd().getTime());
+        recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, myStart.getTime(), getEnd().getTime());
         int length = 0;
         for (int i = 0; i < myActivities.size(); i++) {
             TaskActivity next = (TaskActivity) myActivities.get(i);
@@ -1001,27 +1002,9 @@ public class TaskImpl implements Task {
         myLength = getManager().createLength(myLength.getTimeUnit(), length);
     }
 
-    private void recalculateActivities(List<TaskActivity> output, Date startDate, Date endDate) {
-        GPCalendar calendar = myManager.getConfig().getCalendar();
-        List<GPCalendarActivity> activities = calendar.getActivities(startDate, endDate);
-        output.clear();
-        for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity nextCalendarActivity = activities
-                    .get(i);
-            TaskActivity nextTaskActivity;
-            if (nextCalendarActivity.isWorkingTime()) {
-                nextTaskActivity = new TaskActivityImpl(this,
-                        nextCalendarActivity.getStart(), nextCalendarActivity
-                                .getEnd());
-            } else if (i > 0 && i + 1 < activities.size()) {
-                nextTaskActivity = new TaskActivityImpl(this,
-                        nextCalendarActivity.getStart(), nextCalendarActivity
-                                .getEnd(), 0);
-            } else {
-                continue;
-            }
-            output.add( nextTaskActivity);
-        }
+    private static void recalculateActivities(GPCalendar calendar, Task task, List<TaskActivity> output, Date startDate, Date endDate) {
+        TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(calendar);
+        alg.recalculateActivities(task, output, startDate, endDate);
     }
 
     public void setCompletionPercentage(int percentage) {
@@ -1033,14 +1016,6 @@ public class TaskImpl implements Task {
             progressEventSender.fireEvent();
         }
     }
-
-//    public void setStartFixed(boolean isFixed) {
-//        isStartFixed = isFixed;
-//    }
-
-//    public void setFinishFixed(boolean isFixed) {
-//        isFinishFixed = isFixed;
-//    }
 
     public void setShape(ShapePaint shape) {
         myShape = shape;

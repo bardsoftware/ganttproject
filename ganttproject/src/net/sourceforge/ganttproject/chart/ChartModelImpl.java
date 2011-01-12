@@ -44,7 +44,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     private TaskManager taskManager;
 
-    private boolean isPreviousState = false;
+    //private boolean isPreviousState = false;
 
     private int rowHeight = 20;
 
@@ -62,6 +62,8 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     private final ChartOptionGroup myStateDiffOptions;
 
     private Set<Task> myHiddenTasks;
+
+    private List<GanttPreviousStateTask> myBaseline;
 
     public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack,
             final UIConfiguration projectConfig) {
@@ -167,6 +169,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     public ChartItem getChartItemWithCoordinates(int x, int y) {
         y = y + getVerticalOffset();
+        x = x - getHorizontalOffset();
         ChartItem result = findTaskProgressItem(x, y);
         if (result == null) {
             result = findTaskBoundaryItem(x, y);
@@ -224,7 +227,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         java.awt.Rectangle result = null;
         TaskActivity[] activities = task.getActivities();
         for (int i = 0; i < activities.length; i++) {
-            GraphicPrimitiveContainer.Rectangle nextRectangle = (GraphicPrimitiveContainer.Rectangle) myTaskRendererImpl
+            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
                     .getPrimitive(activities[i]);
             if (nextRectangle != null) {
                 java.awt.Rectangle nextAwtRectangle = new java.awt.Rectangle(
@@ -244,7 +247,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         List<Rectangle> result = new ArrayList<Rectangle>();
         TaskActivity[] activities = task.getActivities();
         for (int i = 0; i < activities.length; i++) {
-            GraphicPrimitiveContainer.Rectangle nextRectangle = (GraphicPrimitiveContainer.Rectangle) myTaskRendererImpl
+            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
                     .getPrimitive(activities[i]);
             if (nextRectangle!=null) {
                 result.add(nextRectangle);
@@ -263,7 +266,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     public int calculateRowHeight() {
         rowHeight = myTaskRendererImpl.calculateRowHeight();
-        if (isPreviousState) {
+        if (myBaseline != null) {
             rowHeight = rowHeight + 8;
         }
         return rowHeight;
@@ -282,7 +285,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return taskManager;
     }
 
-    public int getRowHeight() {
+    int getRowHeight() {
         return rowHeight;
     }
 
@@ -299,16 +302,13 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     }
 
 
-    public int setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
-        if (tasks == null)
-            isPreviousState = false;
-        else
-            isPreviousState = true;
+    public int setBaseline(ArrayList<GanttPreviousStateTask> tasks) {
+        myBaseline = tasks;
         return (calculateRowHeight());
     }
 
-    public boolean isPrevious() {
-        return isPreviousState;
+    List<GanttPreviousStateTask> getBaseline() {
+        return myBaseline;
     }
 
     public ChartModelBase createCopy() {

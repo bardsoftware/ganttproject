@@ -73,30 +73,7 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("load.underload.first", myResourceLoadPainter);
         myStyle2painter.put("load.underload.last", myResourceLoadPainter);
         myStyle2painter.put("load.underload.first.last", myResourceLoadPainter);
-        myStyle2painter.put("previousStateTask",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.earlier",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.later",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.milestone",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.milestone.earlier",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.milestone.later",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super.earlier",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super.later",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super.apart",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super.apart.earlier",
-                myPreviousStateTaskRectanglePainter);
-        myStyle2painter.put("previousStateTask.super.apart.later",
-                myPreviousStateTaskRectanglePainter);
+        myStyle2painter.put("previousStateTask", myPreviousStateTaskRectanglePainter);
         myTextLengthCalculator = new TextLengthCalculatorImpl(myGraphics);
         margin = myConfig.getMargin();
     }
@@ -111,8 +88,7 @@ public class StyledPainterImpl implements Painter {
             throw new RuntimeException("Graphics is null");
         }
         Graphics g = myGraphics;
-        RectanglePainter painter = myStyle2painter.get(next
-                .getStyle());
+        RectanglePainter painter = myStyle2painter.get(next.getStyle());
         if (painter != null) {
             painter.paint(next);
         } else {
@@ -546,56 +522,53 @@ public class StyledPainterImpl implements Painter {
 
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Graphics g = myGraphics;
-            String style = next.getStyle();
-            Color c;
-
-            if (style.indexOf("earlier") > 0)
+            final Color c;
+            if (next.hasStyle("earlier")) {
                 c = myConfig.getEarlierPreviousTaskColor();
-            else if (style.indexOf("later") > 0)
+            } else if (next.hasStyle("later")) {
                 c = myConfig.getLaterPreviousTaskColor();
-            else
+            } else {
                 c = myConfig.getPreviousTaskColor();
+            }
             g.setColor(c);
-            if (style.indexOf("milestone") > 0) {
-                int middleX = (next.myWidth <= next.myHeight) ? next
-                        .getRightX()
-                        - next.myWidth / 2 : next.myLeftX + next.myHeight / 2;
+            
+            if (next.hasStyle("milestone")) {
+                int middleX = (next.myWidth <= next.myHeight) ? 
+                    next.getRightX() - next.myWidth / 2 : next.myLeftX + next.myHeight / 2;
                 int middleY = next.getBottomY() - next.myHeight / 2;
 
                 myXPoints[0] = next.myLeftX + 2;
-                ;
+                
                 myXPoints[1] = middleX + 3;
                 myXPoints[2] = (next.myWidth <= next.myHeight) ? next
                         .getRightX() + 4 : next.myLeftX + next.myHeight + 4;
                 myXPoints[3] = middleX + 3;
                 myYPoints[0] = middleY;
                 myYPoints[1] = next.myTopY - 1;
-                ;
+                
                 myYPoints[2] = middleY;
                 myYPoints[3] = next.getBottomY() + 1;
-                ;
+                
 
                 g.fillPolygon(myXPoints, myYPoints, 4);
-            } else if (style.indexOf("super") > 0) {
+            } else if (next.hasStyle("super")) {
                 g.fillRect(next.myLeftX, next.myTopY + next.myHeight - 6,
                         next.myWidth, 3);
                 int topy = next.myTopY + next.myHeight - 3;
-                // if the super task is completely displayed, we draw the left triangle
-                if (style.indexOf("apart") <= 0)
-                    g.fillPolygon(new int[] { next.myLeftX, next.myLeftX + 3,
-                            next.myLeftX }, new int[] { topy, topy, topy + 3 },
-                            3);
-
                 int rightx = next.myLeftX + next.myWidth;
                 g.fillPolygon(new int[] { rightx - 3, rightx, rightx },
                         new int[] { topy, topy, topy + 3 }, 3);
             } else {
-
-                g.fillRect(next.myLeftX, next.myTopY, next.myWidth,
-                        next.myHeight);
+                g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
                 g.setColor(Color.black);
-                g.drawRect(next.myLeftX, next.myTopY, next.myWidth,
-                        next.myHeight);
+                g.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
+                g.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
+                if (next.hasStyle("start")) {
+                    g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());                    
+                }
+                if (next.hasStyle("end")) {
+                    g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());                    
+                }                
             }
         }
 

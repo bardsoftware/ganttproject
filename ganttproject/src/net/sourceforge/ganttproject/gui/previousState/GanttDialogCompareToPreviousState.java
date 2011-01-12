@@ -51,7 +51,7 @@ public class GanttDialogCompareToPreviousState extends JDialog implements
                 if (compareToPreviousBean.getSelected() != 0) {
                     try {
                         ArrayList<GanttPreviousStateTask> tasks = myProject
-                                .getPreviouStates()
+                                .getBaselines()
                                 .get(compareToPreviousBean.getSelected() - 1)
                                 .load();
                         myProject.getArea().setPreviousStateTasks(tasks);

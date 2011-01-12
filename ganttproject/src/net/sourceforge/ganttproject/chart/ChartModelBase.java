@@ -112,6 +112,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
 
+    private int myShiftPixels;
+
     public List<Offset> getTopUnitOffsets() {
         return myTopUnitOffsets;
     }
@@ -127,6 +129,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         if (myDefaultUnitOffsets.isEmpty()) {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
             offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
+            shiftOffsets(myDefaultUnitOffsets, myShiftPixels);
         }
         return myDefaultUnitOffsets;
     }
@@ -158,15 +161,27 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myBottomUnitOffsets.clear();
         myDefaultUnitOffsets.clear();
 
+        Date startDate = (myHorizontalOffset > 0) ?
+            getBottomUnit().jumpLeft(myStartDate) : myStartDate;
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), myStartDate,
-            getBottomUnitWidth(), (int)getBounds().getWidth(),
+            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), startDate,
+            getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
             getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-
+        //System.err.println("startDate=" + startDate);
+        myShiftPixels = (myHorizontalOffset <= 0) ? 
+            myHorizontalOffset : myHorizontalOffset - myBottomUnitOffsets.get(1).getOffsetPixels();
+        shiftOffsets(myBottomUnitOffsets, myShiftPixels);
+        shiftOffsets(myTopUnitOffsets, myShiftPixels);
     }
 
+    private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
+        //System.err.println(" shift pixels=" + shiftPixels);
+        for (Offset o : offsets) {
+            o.shift(shiftPixels);
+        }        
+    }
     public void paint(Graphics g) {
         constructOffsets();
         int height = (int) getBounds().getHeight();
@@ -174,25 +189,30 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             renderer.clear();
             renderer.setHeight(height);
         }
-        int maxLayers = 0;
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.render();
-            int layers = renderer.getPrimitiveContainer().getLayers().size();
-            if (maxLayers < layers) {
-                maxLayers = layers;
-            }
         }
+        //if (myHorizontalOffset != 0) {
+  //      System.err.println("will shift:"+(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels()));
+    //        System.err.println("offset="+getBottomUnitOffsets().get(1));
+//            g.translate(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels(), 0);
+            //g.translate(myHorizontalOffset, 0);
+        //}
         myPainter.setGraphics(g);
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.getPrimitiveContainer().paint(myPainter, g);
         }
-        for (int layer = 0; layer < maxLayers; layer++) {
+        for (int layer = 0; ; layer++) {
+            boolean layerPainted = false;
             for (ChartRendererBase renderer: getRenderers()) {
                 List<GraphicPrimitiveContainer> layers = renderer.getPrimitiveContainer().getLayers();
                 if (layer < layers.size()) {
                     layers.get(layer).paint(myPainter, g);
+                    layerPainted = true;
                 }
-                //renderer.getPrimitiveContainer().paint(myPainter, g);
+            }
+            if (!layerPainted) {
+                break;
             }
         }
     }
@@ -218,6 +238,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setStartDate(Date startDate) {
+        //System.err.println("ChartModelBase.setStartDate: " + startDate);
+        myHorizontalOffset = 0;
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
         }
@@ -233,16 +255,16 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     public Date getEndDate() {
         List<Offset> offsets = getBottomUnitOffsets();
-        Offset lastOutOfBounds = null;
-        for (int i = offsets.size()-1; i>=0; i--) {
-            if (offsets.get(i).getOffsetPixels()>getBounds().getWidth()) {
-                lastOutOfBounds = offsets.get(i);
-            }
-            else {
-                return lastOutOfBounds.getOffsetEnd();
-            }
-        }
-        throw new IllegalStateException();
+        return offsets.get(offsets.size()-1).getOffsetEnd();
+//        for (int i = offsets.size()-1; i>=0; i--) {
+//            if (offsets.get(i).getOffsetPixels()>getBounds().getWidth()) {
+//                lastOutOfBounds = offsets.get(i);
+//            }
+//            else {
+//                return lastOutOfBounds.getOffsetEnd();
+//            }
+//        }
+//        throw new IllegalStateException();
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
@@ -302,6 +324,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private int myVerticalOffset;
 
+    private int myHorizontalOffset;
+
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
@@ -310,13 +334,21 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myChartHeader;
     }
 
-    public Date getDateAt(int x) {
+    public Offset getOffsetAt(int x) {
+        //x = x + myHorizontalOffset;
+       // System.err.println("x=" + x + " horoffset=" + myHorizontalOffset+ " offsets:\n" + getDefaultUnitOffsets());
+//        OffsetLookup lookup = new OffsetLookup();
+//        Date result = lookup.lookupDateByPixels(x, getDefaultUnitOffsets());
+//        System.err.println("result=" + result);
+//        return result;
         for (Offset offset : getDefaultUnitOffsets()) {
             if (offset.getOffsetPixels()>=x) {
-                return offset.getOffsetEnd();
+                //System.err.println("result=" + offset);
+                return offset;
             }
         }
-        return getEndDate();
+        List<Offset> offsets = getBottomUnitOffsets();
+        return offsets.get(offsets.size()-1);
     }
 
     public float calculateLength(int fromX, int toX, int y) {
@@ -381,6 +413,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myVerticalOffset;
     }
 
+    public void setHorizontalOffset(int pixels) {
+        //myHorizontalOffset = pixels;
+    }
+
+    protected int getHorizontalOffset() {
+        return myHorizontalOffset;
+    }
+    
     public TimeUnit getBottomUnit() {
         return myBottomUnit;
     }
@@ -460,7 +500,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         Date getOffsetAnchor() {
             return myOffsetAnchor;
         }
-        Date getOffsetStart() {
+        public Date getOffsetStart() {
             return myOffsetStart;
         }
         public Date getOffsetEnd() {
@@ -468,6 +508,9 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         public int getOffsetPixels() {
             return myOffsetPixels;
+        }
+        void shift(int pixels) {
+            myOffsetPixels += pixels;
         }
         TimeUnit getOffsetUnit() {
             return myOffsetUnit;

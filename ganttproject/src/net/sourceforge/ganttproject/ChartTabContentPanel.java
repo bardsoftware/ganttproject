@@ -27,24 +27,23 @@ abstract class ChartTabContentPanel {
 
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         myNavigationPanel = new NavigationPanel(project, chart, workbenchFacade);
-        myZoomingPanel = new ZoomingPanel(workbenchFacade);
+        myZoomingPanel = new ZoomingPanel(workbenchFacade, chart);
     }
     protected JComponent createContentComponent() {
         JPanel tabContentPanel = new JPanel(new BorderLayout());
         JPanel left = new JPanel(new BorderLayout());
         Box treeHeader = Box.createVerticalBox();
-        treeHeader.add(createButtonPanel());
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 42);
+        Component buttonPanel = createButtonPanel();
+        treeHeader.add(buttonPanel);
+        GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         treeHeader.add(but);
         left.add(treeHeader, BorderLayout.NORTH);
 
         left.add(getTreeComponent(), BorderLayout.CENTER);
-        left.setPreferredSize(new Dimension(315, 600));
-        left.setBackground(new Color(102, 153, 153));
 
         JPanel right = new JPanel(new BorderLayout());
         right.add(createChartPanels(), BorderLayout.NORTH);
-        // scrollPane2 = new CustomScrollPane(myGanttChart);
+        right.setBackground(new Color(0.93f, 0.93f, 0.93f));
         right.add(getChartComponent(), BorderLayout.CENTER);
 
         // A splitpane is used
@@ -63,7 +62,6 @@ abstract class ChartTabContentPanel {
         }
         mySplitPane.setOneTouchExpandable(true);
         mySplitPane.setPreferredSize(new Dimension(800, 500));
-        // myTabContentPanel.add(createButtonPanel(), BorderLayout.NORTH);
         tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
 
         tabContentPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(GPAction.getKeyStroke("overview.shortcut"), "overview");
@@ -93,6 +91,8 @@ abstract class ChartTabContentPanel {
         panelsBox.add(Box.createHorizontalStrut(10));
         panelsBox.add(createNavigationPanel());
         result.add(panelsBox, BorderLayout.WEST);
+        result.setBackground(new Color(0.93f, 0.93f, 0.93f));
+        
         return result;
     }
 

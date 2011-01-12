@@ -19,18 +19,19 @@ public class ScrollingManagerImpl implements ScrollingManager {
     }
 
     public void scrollBy(TaskLength duration) {
-        for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = myListeners
-                    .get(i);
-            nextListener.scrollBy(duration);
+        for (ScrollingListener l : myListeners) {
+            l.scrollBy(duration);
+        }
+    }
+    public void scrollBy(int pixels) {
+        for (ScrollingListener l : myListeners) {
+            l.scrollBy(pixels);
         }
     }
 
     public void scrollTo(Date date) {
-        for (int i = 0; i < myListeners.size(); i++) {
-            ScrollingListener nextListener = myListeners
-                    .get(i);
-            nextListener.scrollTo(date);
+        for (ScrollingListener l : myListeners) {
+            l.scrollTo(date);
         }
     }
 

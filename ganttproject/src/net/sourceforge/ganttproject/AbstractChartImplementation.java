@@ -12,14 +12,15 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
-import net.sourceforge.ganttproject.ChartComponentBase.MouseInteraction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
+import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
@@ -107,15 +108,14 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public void scrollBy(TaskLength duration) {
-//        Calendar c = (Calendar) Calendar.getInstance().clone();
-//        c.setTime(getStartDate());
-//        c.add(Calendar.DAY_OF_MONTH, -days);
-//        c.add(Calendar.MILLISECOND, days > 0 ? -1 : 1);
-//        Date scrolledDate = c.getTime();
-//        setStartDate(scrolledDate);
     	setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
     }
-
+    
+    @Override
+    public void setStartOffset(int pixels) {
+        getChartModel().setHorizontalOffset(pixels);
+    }
+    
     private TimeFrame scrollTimeFrame(Date scrolledDate) {
         TimeFrame result = null;
         if (getTopTimeUnit().isConstructedFrom(getBottomTimeUnit())) {
@@ -221,4 +221,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public ChartModel getModel() {
         return myChartModel;
     }
+    @Override
+    public ChartUIConfiguration getStyle() {
+        return myChartModel.getChartUIConfiguration();
+    }
+    
 }

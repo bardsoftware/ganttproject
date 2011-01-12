@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
@@ -29,6 +30,7 @@ import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.table.JTableHeader;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
@@ -87,7 +89,10 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     protected int getHeaderHeight() {
-        return appli.getResourcePanel().table.getTable().getTableHeader().getHeight() + HEADER_OFFSET;
+        JTableHeader tableHeader = appli.getResourcePanel().table.getTable().getTableHeader();
+        Point headerLocation = tableHeader.getLocationOnScreen();
+        Point treeLocation = appli.getResourcePanel().getLocationOnScreen();
+        return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
     }
 
     protected int getRowHeight() {
@@ -243,7 +248,9 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
             synchronized (ChartModelBase.STATIC_MUTEX) {
                 // LaboPM
                 // ResourceLoadGraphicArea.super.paintComponent(g);
-                myChartModel.setHeaderHeight(getHeaderHeight());
+                if (isShowing()) {
+                    myChartModel.setHeaderHeight(getHeaderHeight());
+                }
                 myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
                 myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());

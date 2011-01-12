@@ -1382,12 +1382,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    public ArrayList<GanttPreviousState> getPreviouStates() {
-        return myPreviousStates;
-    }
-
     public List<GanttPreviousState> getBaselines() {
-        return getPreviouStates();
+        return myPreviousStates;
     }
 
     protected void compareToPreviousState() {
@@ -2097,6 +2093,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         "mac os x")) {
                     OSXAdapter.registerMacOSXApplication(ganttFrame);
                 }
+                ganttFrame.getActiveChart().reset();
             } catch (Throwable e) {
                 e.printStackTrace();
                 return;

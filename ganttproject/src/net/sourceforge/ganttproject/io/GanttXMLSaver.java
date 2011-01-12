@@ -124,7 +124,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     }
 
     private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-        List<GanttPreviousState> history = ((GanttProject) myProject).getPreviouStates();
+        List<GanttPreviousState> history = ((GanttProject) myProject).getBaselines();
         new HistorySaver().save(history, handler);
     }
 

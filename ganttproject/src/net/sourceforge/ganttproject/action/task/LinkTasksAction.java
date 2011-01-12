@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -57,10 +56,8 @@ public class LinkTasksAction extends TaskActionBase {
         if(selection.size() <= 1) {
             return false;
         }
-        Iterator<Task> it = selection.iterator();
-        while (it.hasNext()) {
-            Task nextTask = it.next();
-            if (nextTask.getDependencies().hasLinks(selection) == false ) {
+        for (Task task : selection) {
+            if (task.getDependencies().hasLinks(selection) == false ) {
                 return true;
             }
         }

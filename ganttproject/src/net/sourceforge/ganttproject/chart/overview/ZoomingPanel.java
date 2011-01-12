@@ -1,51 +1,42 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-
 import net.sourceforge.ganttproject.action.ZoomInAction;
 import net.sourceforge.ganttproject.action.ZoomOutAction;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class ZoomingPanel {
     private final ZoomInAction myZoomInAction;
     private final ZoomOutAction myZoomOutAction;
+    private final TimelineChart myChart;
 
-    public ZoomingPanel(UIFacade workbenchFacade) {
-        myZoomInAction = new ZoomInAction(workbenchFacade.getZoomManager(), "16");
-        myZoomOutAction = new ZoomOutAction(workbenchFacade.getZoomManager(), "16");
+    public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
+        myZoomInAction = new ZoomInAction(uiFacade.getZoomManager(), "16");
+        myZoomOutAction = new ZoomOutAction(uiFacade.getZoomManager(), "16");
+        myChart = chart;
     }
-
 
     public Component getComponent() {
-        final Box buttonBar = Box.createHorizontalBox();
-        //final JPanel buttonBar = new JPanel(new GridLayout(1, 3));
-        //buttonBar.setBackground(Color.DARK_GRAY.brighter());
-        Border border = BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 20, 0, 0),
-                new LineBorder(HighlightOnMouseOver.backgroundColor, 1));
-        buttonBar.setBorder(border);
-
-        buttonBar.add(new PanelBorder());
-        final JLabel zoomIn = new JLabel("<html><b>&nbsp;Zoom In&nbsp;</b></html>");
-        zoomIn.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonBar.add(zoomIn);
-        zoomIn.addMouseListener(new HighlightOnMouseOver(zoomIn, buttonBar.getBackground(), myZoomInAction));
-
-        buttonBar.add(new JLabel(" | "));
-
-        final JLabel zoomOut = new JLabel("<html><b>&nbsp;Zoom Out&nbsp;</b></html>");
-        zoomOut.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonBar.add(zoomOut);
-        zoomOut.addMouseListener(new HighlightOnMouseOver(zoomOut, buttonBar.getBackground(), myZoomOutAction));
-
-        buttonBar.add(new PanelBorder());
-        return buttonBar;
+        return new ToolbarBuilder(myChart).addButton(myZoomInAction).addButton(myZoomOutAction).build();
     }
-
 }

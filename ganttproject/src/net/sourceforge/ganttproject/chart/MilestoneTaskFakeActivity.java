@@ -8,10 +8,18 @@ import net.sourceforge.ganttproject.task.TaskLength;
 
 class MilestoneTaskFakeActivity implements TaskActivity {
     private final Task myTask;
+    private final Date myStartTime;
+    private final Date myEndTime;
 
     MilestoneTaskFakeActivity(Task task) {
+        this(task, task.getStart().getTime(), task.getEnd().getTime());
+    }
+
+    MilestoneTaskFakeActivity(Task task, Date startTime, Date endTime) {
         assert task.isMilestone();
         myTask = task;
+        myStartTime = startTime;
+        myEndTime = endTime;
     }
 
     public TaskLength getDuration() {
@@ -19,7 +27,7 @@ class MilestoneTaskFakeActivity implements TaskActivity {
     }
 
     public Date getEnd() {
-        return myTask.getEnd().getTime();
+        return myEndTime;
     }
 
     public float getIntensity() {
@@ -27,7 +35,7 @@ class MilestoneTaskFakeActivity implements TaskActivity {
     }
 
     public Date getStart() {
-        return myTask.getStart().getTime();
+        return myStartTime;
     }
 
     public Task getTask() {
