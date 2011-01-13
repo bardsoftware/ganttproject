@@ -9,9 +9,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
@@ -32,7 +30,63 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  */
 public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ ChartModel {
     public static interface ScrollingSession {
-        void setScrollValue(int value);
+        void setXpos(int value);
+        void finish();
+    }
+    
+    private class ScrollingSessionImpl implements ScrollingSession {
+        private int myPrevXpos;
+
+        private List<Offset> myTopOffsets;
+        private List<Offset> myBottomOffsets;
+        private List<Offset> myDefaultOffsets;
+        
+        private ScrollingSessionImpl(int startXpos) {
+            //System.err.println("start xpos=" + startXpos);
+            myPrevXpos = startXpos;
+            ChartModelBase.this.myScrollingSession = this;
+            ChartModelBase.this.constructOffsets();
+            myTopOffsets = getTopUnitOffsets();
+            myBottomOffsets = getBottomUnitOffsets();
+            myDefaultOffsets = getDefaultUnitOffsets();
+            shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
+            //System.err.println(myBottomOffsets.subList(0, 3));
+        }
+        
+        @Override
+        public void setXpos(int xpos) {
+            int shift = xpos - myPrevXpos;
+            //System.err.println("xpos="+xpos+" shift=" + shift);
+            shiftOffsets(shift);
+            if (myBottomOffsets.get(0).getOffsetPixels() > 0) {
+                int currentExceed = myBottomOffsets.get(0).getOffsetPixels();
+                ChartModelBase.this.setStartDate(getBottomUnit().jumpLeft(getStartDate()));
+                shiftOffsets(-myBottomOffsets.get(1).getOffsetPixels() + currentExceed);
+                //System.err.println("one time unit to the left. start date=" + ChartModelBase.this.getStartDate());
+                //System.err.println(myBottomOffsets.subList(0, 3));
+            } else if (myBottomOffsets.get(1).getOffsetPixels() <= 0) {
+                ChartModelBase.this.setStartDate(myBottomOffsets.get(2).getOffsetStart());
+                shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
+                //System.err.println("one time unit to the right. start date=" + ChartModelBase.this.getStartDate());
+                System.err.println(myBottomOffsets.subList(0, 3));
+            }
+            myPrevXpos = xpos;
+        }
+        @Override
+        public void finish() {
+            ChartModelBase.this.myScrollingSession = null;
+        }
+        private void shiftOffsets(int shiftPixels) {
+            shiftOffsets(myBottomOffsets, shiftPixels);
+            shiftOffsets(myTopOffsets, shiftPixels);
+            //shiftOffsets(myDefaultOffsets, shiftPixels);            
+        }
+        private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
+            //System.err.println(" shift pixels=" + shiftPixels);
+            for (Offset o : offsets) {
+                o.shift(shiftPixels);
+            }        
+        }
     }
     
     class OffsetBuilderImpl extends RegularFrameOffsetBuilder {
@@ -93,8 +147,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private final UIConfiguration myProjectConfig;
 
-    private final Map<Range, List<Offset>> myRange2DefaultUnitOffsets = new HashMap<Range, List<Offset>>();
-
     private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
 
     public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack,
@@ -115,7 +167,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
 
-    private int myShiftPixels;
+    //private int myShiftPixels;
 
     public List<Offset> getTopUnitOffsets() {
         return myTopUnitOffsets;
@@ -132,40 +184,18 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         if (myDefaultUnitOffsets.isEmpty()) {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
             offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
-            shiftOffsets(myDefaultUnitOffsets, myShiftPixels);
         }
         return myDefaultUnitOffsets;
     }
 
-    class Range {
-        Offset start;
-        Offset end;
-        public Range(Offset startOffset, Offset endOffset) {
-            start = startOffset;
-            end = endOffset;
-        }
-        @Override
-        public boolean equals(Object that) {
-            if (false == that instanceof Range) {
-                return false;
-            }
-            Range thatRange = (Range) that;
-            return (this.start == null ? thatRange.start == null : this.start.equals(thatRange.start))
-                    && thatRange.end.equals(this.end);
-        }
-        @Override
-        public int hashCode() {
-            return ((this.start == null ? 0 : 7 * this.start.hashCode()) + 11 * this.end.hashCode()) / 13;
-        }
-    }
-
-    protected void constructOffsets() {
+    private void constructOffsets() {
         myTopUnitOffsets.clear();
         myBottomUnitOffsets.clear();
         myDefaultUnitOffsets.clear();
 
-        Date startDate = (myHorizontalOffset > 0) ?
-            getBottomUnit().jumpLeft(myStartDate) : myStartDate;
+        Date startDate = myScrollingSession == null ? 
+            myStartDate : getBottomUnit().jumpLeft(myStartDate);
+        System.err.println("offsets start date=" + startDate);
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
             myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), startDate,
             getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
@@ -173,20 +203,12 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
         //System.err.println("startDate=" + startDate);
-        myShiftPixels = (myHorizontalOffset <= 0) ? 
-            myHorizontalOffset : myHorizontalOffset - myBottomUnitOffsets.get(1).getOffsetPixels();
-        shiftOffsets(myBottomUnitOffsets, myShiftPixels);
-        shiftOffsets(myTopUnitOffsets, myShiftPixels);
     }
 
-    private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
-        //System.err.println(" shift pixels=" + shiftPixels);
-        for (Offset o : offsets) {
-            o.shift(shiftPixels);
-        }        
-    }
     public void paint(Graphics g) {
-        constructOffsets();
+        if (myScrollingSession == null) {
+            constructOffsets();
+        }
         int height = (int) getBounds().getHeight();
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.clear();
@@ -240,7 +262,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
         }
-        myRange2DefaultUnitOffsets.clear();
         if (myBounds!=null) {
             constructOffsets();
         }
@@ -313,6 +334,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     private int myVerticalOffset;
 
     private int myHorizontalOffset;
+
+    private ScrollingSessionImpl myScrollingSession;
 
     public TaskManager getTaskManager() {
         return myTaskManager;
@@ -438,9 +461,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     protected void fireOptionsChanged() {
-        for (int i = 0; i < myOptionListeners.size(); i++) {
-            GPOptionChangeListener next = myOptionListeners
-                    .get(i);
+        for (GPOptionChangeListener next : myOptionListeners) {
             next.optionsChanged();
         }
     }
@@ -462,5 +483,10 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         void optionsChanged() {
             fireOptionsChanged();
         }
+    }
+    
+    public ScrollingSession createScrollingSession(int startXpos) {
+        assert myScrollingSession == null;
+        return new ScrollingSessionImpl(startXpos);
     }
 }
