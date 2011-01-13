@@ -22,6 +22,7 @@ import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -54,6 +55,10 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
     @Override
     public Date getEndDateAt(int x) {
         return myChartModel.getOffsetAt(x).getOffsetEnd();
+    }
+    @Override
+    public ScrollingSession createScrollingSession(int xpos) {
+        return myChartModel.createScrollingSession(xpos);
     }
     
 }

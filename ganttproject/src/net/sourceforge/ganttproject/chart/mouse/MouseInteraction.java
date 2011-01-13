@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -35,6 +36,7 @@ public interface MouseInteraction {
     void paint(Graphics g);
     
     static interface TimelineFacade {
+        ScrollingSession createScrollingSession(int xpos);
         Date getDateAt(int x);
         TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
         TimeUnitStack getTimeUnitStack();
