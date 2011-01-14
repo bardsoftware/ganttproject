@@ -68,7 +68,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                 ChartModelBase.this.setStartDate(myBottomOffsets.get(2).getOffsetStart());
                 shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
                 //System.err.println("one time unit to the right. start date=" + ChartModelBase.this.getStartDate());
-                System.err.println(myBottomOffsets.subList(0, 3));
+                //System.err.println(myBottomOffsets.subList(0, 3));
             }
             myPrevXpos = xpos;
         }
@@ -79,10 +79,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         private void shiftOffsets(int shiftPixels) {
             shiftOffsets(myBottomOffsets, shiftPixels);
             shiftOffsets(myTopOffsets, shiftPixels);
-            //shiftOffsets(myDefaultOffsets, shiftPixels);            
+            if (myDefaultOffsets != myBottomOffsets) {
+                if (myDefaultOffsets.isEmpty()) {
+                    myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
+                }
+                shiftOffsets(myDefaultOffsets, shiftPixels);
+            }
         }
         private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
-            //System.err.println(" shift pixels=" + shiftPixels);
             for (Offset o : offsets) {
                 o.shift(shiftPixels);
             }        
@@ -195,7 +199,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
         Date startDate = myScrollingSession == null ? 
             myStartDate : getBottomUnit().jumpLeft(myStartDate);
-        System.err.println("offsets start date=" + startDate);
+        //System.err.println("offsets start date=" + startDate);
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
             myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), startDate,
             getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
