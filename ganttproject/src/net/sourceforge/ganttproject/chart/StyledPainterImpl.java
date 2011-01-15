@@ -624,6 +624,9 @@ public class StyledPainterImpl implements Painter {
             if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
                 return;
             }
+            if (next.getLeftX() + actualLength < 0) {
+                return;
+            }
         }
         int fontHeight = myGraphics.getFont().getSize();
         int xleft = next.getLeftX();

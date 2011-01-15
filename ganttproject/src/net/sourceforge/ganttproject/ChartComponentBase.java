@@ -305,9 +305,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public void resetRenderers() {
         getImplementation().resetRenderers();
     }
-    public TaskLength calculateLength(int x) {
-        return getImplementation().calculateLength(x);
-    }
+//    public TaskLength calculateLength(int x) {
+//        return getImplementation().calculateLength(x);
+//    }
 
     /** draw the panel */
     public void paintComponent(Graphics g) {

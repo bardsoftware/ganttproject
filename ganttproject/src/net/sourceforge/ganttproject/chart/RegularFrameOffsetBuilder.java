@@ -13,7 +13,6 @@ import java.util.List;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 
@@ -37,7 +36,8 @@ class RegularFrameOffsetBuilder {
     private final GPCalendar myCalendar;
     private final float myWeekendDecreaseFactor;
     private final Date myEndDate;
-    private final TimeUnit baseUnit; 
+    private final TimeUnit baseUnit;
+    private int myRightMarginBottomUnitCount; 
 
     RegularFrameOffsetBuilder(
             GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
@@ -68,7 +68,7 @@ class RegularFrameOffsetBuilder {
         return myTopUnit;
     }
 
-    private static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
+    static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
         return (timeUnit instanceof TimeUnitFunctionOfDate) ?
             ((TimeUnitFunctionOfDate) timeUnit).createTimeUnit(date) : timeUnit;
     }
@@ -89,17 +89,21 @@ class RegularFrameOffsetBuilder {
         return myCalendar;
     }
 
+    void setRightMarginBottomUnitCount(int value) {
+        myRightMarginBottomUnitCount = value;
+    }
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
         constructOffsets(topUnitOffsets, bottomUnitOffsets, 0);
     }
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets, int initialEnd) {
 
-        bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
+        //bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
         constructBottomOffsets(bottomUnitOffsets, initialEnd);
         constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getDefaultUnitWidth());
     }
 
     void constructBottomOffsets(List<Offset> offsets, int initialEnd) {
+        int marginUnitCount = myRightMarginBottomUnitCount;
         Date currentDate = myStartDate;
         int offsetEnd = 0;
         OffsetStep step = new OffsetStep();
@@ -111,10 +115,22 @@ class RegularFrameOffsetBuilder {
             offsets.add(new Offset(
                 concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType));
             currentDate = endDate;
-        } while (offsetEnd <= getChartWidth() && (myEndDate == null || currentDate.before(myEndDate)));
+            
+            boolean hasNext = true;
+            if (offsetEnd > getChartWidth()) {
+                hasNext &= marginUnitCount-- > 0;
+            }
+            if (hasNext && myEndDate != null) {
+                hasNext &= currentDate.before(myEndDate);
+            }
+            if (!hasNext) {
+                return;
+            }
+        } while (true);
     }
 
     private void constructTopOffsets(TimeUnit timeUnit, List<Offset> topOffsets, List<Offset> bottomOffsets, int initialEnd, int baseUnitWidth) {
+        int lastBottomOffset = bottomOffsets.get(bottomOffsets.size()-1).getOffsetPixels();
         OffsetLookup offsetLookup = new OffsetLookup();
         Date currentDate = myStartDate;
         int offsetEnd;
@@ -126,7 +142,7 @@ class RegularFrameOffsetBuilder {
                 offsetEnd = bottomOffsets.get(bottomOffsetLowerBound).getOffsetPixels();
             } else {
                 if (-bottomOffsetLowerBound > bottomOffsets.size()) {
-                    offsetEnd = getChartWidth() + 1;
+                    offsetEnd = lastBottomOffset + 1;
                 } else {
                     Offset ubOffset = bottomOffsetLowerBound <= -2 ?
                         bottomOffsets.get(-bottomOffsetLowerBound - 2) : null;
@@ -138,7 +154,8 @@ class RegularFrameOffsetBuilder {
             }
             topOffsets.add(new Offset(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
             currentDate = endDate;
-        } while (offsetEnd <= getChartWidth() && (myEndDate==null || currentDate.before(myEndDate)));
+            
+        } while (offsetEnd <= lastBottomOffset && (myEndDate==null || currentDate.before(myEndDate)));
     }
 
     protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {

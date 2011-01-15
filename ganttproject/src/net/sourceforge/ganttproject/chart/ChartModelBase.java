@@ -9,9 +9,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
@@ -31,7 +29,71 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * grid cells)
  */
 public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ ChartModel {
+    public static interface ScrollingSession {
+        void setXpos(int value);
+        void finish();
+    }
+    
+    private class ScrollingSessionImpl implements ScrollingSession {
+        private int myPrevXpos;
 
+        private List<Offset> myTopOffsets;
+        private OffsetList myBottomOffsets;
+        private List<Offset> myDefaultOffsets;
+        
+        private ScrollingSessionImpl(int startXpos) {
+            //System.err.println("start xpos=" + startXpos);
+            myPrevXpos = startXpos;
+            ChartModelBase.this.myScrollingSession = this;
+            ChartModelBase.this.constructOffsets();
+            myTopOffsets = getTopUnitOffsets();
+            myBottomOffsets = getBottomUnitOffsets();
+            myDefaultOffsets = getDefaultUnitOffsets();
+            shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
+            //System.err.println(myBottomOffsets.subList(0, 3));
+        }
+        
+        @Override
+        public void setXpos(int xpos) {
+            int shift = xpos - myPrevXpos;
+            //System.err.println("xpos="+xpos+" shift=" + shift);
+            shiftOffsets(shift);
+            if (myBottomOffsets.get(0).getOffsetPixels() > 0) {
+                int currentExceed = myBottomOffsets.get(0).getOffsetPixels();
+                ChartModelBase.this.setStartDate(getBottomUnit().jumpLeft(getStartDate()));
+                shiftOffsets(-myBottomOffsets.get(1).getOffsetPixels() + currentExceed);
+                //System.err.println("one time unit to the left. start date=" + ChartModelBase.this.getStartDate());
+                //System.err.println(myBottomOffsets.subList(0, 3));
+            } else if (myBottomOffsets.get(1).getOffsetPixels() <= 0) {
+                ChartModelBase.this.setStartDate(myBottomOffsets.get(2).getOffsetStart());
+                shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
+                //System.err.println("one time unit to the right. start date=" + ChartModelBase.this.getStartDate());
+                //System.err.println(myBottomOffsets.subList(0, 3));
+            }
+            myPrevXpos = xpos;
+        }
+        @Override
+        public void finish() {
+            ChartModelBase.this.myScrollingSession = null;
+        }
+        private void shiftOffsets(int shiftPixels) {
+            shiftOffsets(myBottomOffsets, shiftPixels);
+            shiftOffsets(myTopOffsets, shiftPixels);
+            if (myDefaultOffsets != myBottomOffsets) {
+                if (myDefaultOffsets.isEmpty()) {
+                    myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
+                }
+                shiftOffsets(myDefaultOffsets, shiftPixels);
+            }
+            myBottomOffsets.setStartPx(myBottomOffsets.getStartPx() + shiftPixels);
+        }
+        private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
+            for (Offset o : offsets) {
+                o.shift(shiftPixels);
+            }        
+        }
+    }
+    
     class OffsetBuilderImpl extends RegularFrameOffsetBuilder {
         private final boolean isCompressedWeekend;
 
@@ -39,7 +101,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             super(model.getTaskManager().getCalendar(),
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
-                  model.getStartDate(),
+                  model.getOffsetAnchorDate(),
                   model.getBottomUnitWidth(),
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
@@ -90,8 +152,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private final UIConfiguration myProjectConfig;
 
-    private final Map<Range, List<Offset>> myRange2DefaultUnitOffsets = new HashMap<Range, List<Offset>>();
-
     private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
 
     public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack,
@@ -108,17 +168,17 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     private List<Offset> myTopUnitOffsets = new ArrayList<Offset>();
-    private List<Offset> myBottomUnitOffsets = new ArrayList<Offset>();
+    private OffsetList myBottomUnitOffsets = new OffsetList();
 
     private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
 
-    private int myShiftPixels;
+    //private int myShiftPixels;
 
     public List<Offset> getTopUnitOffsets() {
         return myTopUnitOffsets;
     }
 
-    public List<Offset> getBottomUnitOffsets() {
+    public OffsetList getBottomUnitOffsets() {
         return myBottomUnitOffsets;
     }
 
@@ -128,62 +188,39 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         if (myDefaultUnitOffsets.isEmpty()) {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
+            int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
+                getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
+            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit*2);
             offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
-            shiftOffsets(myDefaultUnitOffsets, myShiftPixels);
         }
         return myDefaultUnitOffsets;
     }
 
-    class Range {
-        Offset start;
-        Offset end;
-        public Range(Offset startOffset, Offset endOffset) {
-            start = startOffset;
-            end = endOffset;
-        }
-        @Override
-        public boolean equals(Object that) {
-            if (false == that instanceof Range) {
-                return false;
-            }
-            Range thatRange = (Range) that;
-            return (this.start == null ? thatRange.start == null : this.start.equals(thatRange.start))
-                    && thatRange.end.equals(this.end);
-        }
-        @Override
-        public int hashCode() {
-            return ((this.start == null ? 0 : 7 * this.start.hashCode()) + 11 * this.end.hashCode()) / 13;
-        }
+    Date getOffsetAnchorDate() {
+        return myScrollingSession == null ? 
+            myStartDate : getBottomUnit().jumpLeft(myStartDate);
     }
-
-    protected void constructOffsets() {
+    
+    private void constructOffsets() {
         myTopUnitOffsets.clear();
         myBottomUnitOffsets.clear();
         myDefaultUnitOffsets.clear();
 
-        Date startDate = (myHorizontalOffset > 0) ?
-            getBottomUnit().jumpLeft(myStartDate) : myStartDate;
+        //System.err.println("offsets start date=" + startDate);
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), startDate,
-            getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
+            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), getOffsetAnchorDate(),
+            getBottomUnitWidth(), (int)getBounds().getWidth(),
             getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+        offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : 1);
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
         //System.err.println("startDate=" + startDate);
-        myShiftPixels = (myHorizontalOffset <= 0) ? 
-            myHorizontalOffset : myHorizontalOffset - myBottomUnitOffsets.get(1).getOffsetPixels();
-        shiftOffsets(myBottomUnitOffsets, myShiftPixels);
-        shiftOffsets(myTopUnitOffsets, myShiftPixels);
     }
 
-    private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
-        //System.err.println(" shift pixels=" + shiftPixels);
-        for (Offset o : offsets) {
-            o.shift(shiftPixels);
-        }        
-    }
     public void paint(Graphics g) {
-        constructOffsets();
+        if (myScrollingSession == null) {
+            constructOffsets();
+        }
         int height = (int) getBounds().getHeight();
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.clear();
@@ -192,12 +229,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.render();
         }
-        //if (myHorizontalOffset != 0) {
-  //      System.err.println("will shift:"+(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels()));
-    //        System.err.println("offset="+getBottomUnitOffsets().get(1));
-//            g.translate(myHorizontalOffset - getBottomUnitOffsets().get(1).getOffsetPixels(), 0);
-            //g.translate(myHorizontalOffset, 0);
-        //}
         myPainter.setGraphics(g);
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.getPrimitiveContainer().paint(myPainter, g);
@@ -243,7 +274,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
         }
-        myRange2DefaultUnitOffsets.clear();
         if (myBounds!=null) {
             constructOffsets();
         }
@@ -256,15 +286,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     public Date getEndDate() {
         List<Offset> offsets = getBottomUnitOffsets();
         return offsets.get(offsets.size()-1).getOffsetEnd();
-//        for (int i = offsets.size()-1; i>=0; i--) {
-//            if (offsets.get(i).getOffsetPixels()>getBounds().getWidth()) {
-//                lastOutOfBounds = offsets.get(i);
-//            }
-//            else {
-//                return lastOutOfBounds.getOffsetEnd();
-//            }
-//        }
-//        throw new IllegalStateException();
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
@@ -326,6 +347,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private int myHorizontalOffset;
 
+    private ScrollingSessionImpl myScrollingSession;
+
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
@@ -384,11 +407,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return workPixels / (float) getBottomUnitWidth();
     }
 
-    public float calculateLengthNoWeekends(int fromX, int toX) {
-        int totalPixels = toX - fromX;
-        return totalPixels / (float) getBottomUnitWidth();
-    }
-
     /**
      * @return A length of the visible part of this chart area measured in the
      *         bottom line time units
@@ -414,7 +432,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setHorizontalOffset(int pixels) {
-        //myHorizontalOffset = pixels;
+        myHorizontalOffset = pixels;
     }
 
     protected int getHorizontalOffset() {
@@ -425,6 +443,10 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myBottomUnit;
     }
 
+    private TimeUnit getDefaultUnit() {
+        return getTimeUnitStack().getDefaultTimeUnit();
+    }
+    
     private void setTopUnit(TimeUnit myTopUnit) {
         this.myTopUnit = myTopUnit;
     }
@@ -455,9 +477,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     protected void fireOptionsChanged() {
-        for (int i = 0; i < myOptionListeners.size(); i++) {
-            GPOptionChangeListener next = myOptionListeners
-                    .get(i);
+        for (GPOptionChangeListener next : myOptionListeners) {
             next.optionsChanged();
         }
     }
@@ -480,60 +500,9 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             fireOptionsChanged();
         }
     }
-
-    public static class Offset {
-        private Date myOffsetAnchor;
-        private Date myOffsetEnd;
-        private int myOffsetPixels;
-        private TimeUnit myOffsetUnit;
-        private GPCalendar.DayType myDayType;
-        private Date myOffsetStart;
-
-        Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels, GPCalendar.DayType dayType) {
-            myOffsetAnchor = offsetAnchor;
-            myOffsetStart = offsetStart;
-            myOffsetEnd = offsetEnd;
-            myOffsetPixels = offsetPixels;
-            myOffsetUnit = offsetUnit;
-            myDayType = dayType;
-        }
-        Date getOffsetAnchor() {
-            return myOffsetAnchor;
-        }
-        public Date getOffsetStart() {
-            return myOffsetStart;
-        }
-        public Date getOffsetEnd() {
-            return myOffsetEnd;
-        }
-        public int getOffsetPixels() {
-            return myOffsetPixels;
-        }
-        void shift(int pixels) {
-            myOffsetPixels += pixels;
-        }
-        TimeUnit getOffsetUnit() {
-            return myOffsetUnit;
-        }
-        public DayType getDayType() {
-            return myDayType;
-        }
-        public String toString() {
-            return "end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels+" time unit: "+myOffsetUnit.getName();
-        }
-        @Override
-        public boolean equals(Object that) {
-            if (false==that instanceof Offset) {
-                return false;
-            }
-            Offset thatOffset = (Offset) that;
-            return myOffsetPixels==thatOffset.myOffsetPixels &&
-                   myOffsetEnd.equals(thatOffset.myOffsetEnd) &&
-                   myOffsetAnchor.equals(thatOffset.myOffsetAnchor);
-        }
-        @Override
-        public int hashCode() {
-            return myOffsetEnd.hashCode();
-        }
+    
+    public ScrollingSession createScrollingSession(int startXpos) {
+        assert myScrollingSession == null;
+        return new ScrollingSessionImpl(startXpos);
     }
 }
