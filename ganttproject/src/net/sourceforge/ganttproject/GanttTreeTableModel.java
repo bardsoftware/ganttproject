@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -461,15 +462,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     public Task[] getNestedTasks(Task container) {
         TaskNode r = (TaskNode) root;
         Enumeration<TaskNode> e = r.children();
-
-        Vector<TaskNode> v = new Vector<TaskNode>();
-        while (e.hasMoreElements()) {
-            v.add(e.nextElement());
-        }
-        Task[] res = new Task[v.size()];
-        v.toArray(res);
-        return res;
-
+        return Collections.list(e).toArray(new Task[0]);
     }
 
     public Task[] getDeepNestedTasks(Task container) {

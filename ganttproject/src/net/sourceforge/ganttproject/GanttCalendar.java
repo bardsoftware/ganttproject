@@ -79,6 +79,7 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
     }
 
     /** @return a copy of the current date */
+    @Override
     public GanttCalendar clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         return clone;
@@ -118,6 +119,7 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
     }
 
     /** Create of copy of the current date and add the specified (signed) amount of time */
+    @Deprecated
     public GanttCalendar newAdd(int field, int dayNumber) {
         GanttCalendar gc = clone();
         gc.add(field, dayNumber);
