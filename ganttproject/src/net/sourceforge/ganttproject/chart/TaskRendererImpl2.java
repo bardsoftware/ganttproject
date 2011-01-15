@@ -188,7 +188,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                 myLabelsRenderer.createUpSideText(lastRectangle);
             }
             Rectangle firstRectangle = rectangles.get(0);
-            myLabelsRenderer.createLeftSideText(firstRectangle);
+            if (firstRectangle.isVisible()) {
+                myLabelsRenderer.createLeftSideText(firstRectangle);
+            }
         }
         if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
             renderProgressBar(rectangles);

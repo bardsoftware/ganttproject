@@ -38,7 +38,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         private int myPrevXpos;
 
         private List<Offset> myTopOffsets;
-        private List<Offset> myBottomOffsets;
+        private OffsetList myBottomOffsets;
         private List<Offset> myDefaultOffsets;
         
         private ScrollingSessionImpl(int startXpos) {
@@ -85,6 +85,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                 }
                 shiftOffsets(myDefaultOffsets, shiftPixels);
             }
+            myBottomOffsets.setStartPx(myBottomOffsets.getStartPx() + shiftPixels);
         }
         private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
             for (Offset o : offsets) {
@@ -167,7 +168,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     private List<Offset> myTopUnitOffsets = new ArrayList<Offset>();
-    private List<Offset> myBottomUnitOffsets = new ArrayList<Offset>();
+    private OffsetList myBottomUnitOffsets = new OffsetList();
 
     private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
 
@@ -177,7 +178,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myTopUnitOffsets;
     }
 
-    public List<Offset> getBottomUnitOffsets() {
+    public OffsetList getBottomUnitOffsets() {
         return myBottomUnitOffsets;
     }
 
@@ -189,13 +190,13 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
             int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
                 getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
-            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit);
+            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit*2);
             offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
         }
         return myDefaultUnitOffsets;
     }
 
-    private Date getOffsetAnchorDate() {
+    Date getOffsetAnchorDate() {
         return myScrollingSession == null ? 
             myStartDate : getBottomUnit().jumpLeft(myStartDate);
     }

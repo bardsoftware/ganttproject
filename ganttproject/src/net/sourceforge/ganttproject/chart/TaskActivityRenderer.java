@@ -60,11 +60,11 @@ class TaskActivityRenderer {
                 }
             }
             final Rectangle nextRectangle;
-            if (nextActivity.getEnd().compareTo(getChartModel().getStartDate()) <= 0) {
-                nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity);
+            if (nextActivity.getEnd().compareTo(getChartModel().getOffsetAnchorDate()) <= 0) {
+                nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity, offsets);
             }
             else if (nextActivity.getStart().compareTo(getChartModel().getEndDate()) >= 0) {
-                nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity);
+                nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity, offsets);
             }
             else {
                 nextRectangle = processRegularActivity(rowNum, nextActivity, offsets);
@@ -74,9 +74,9 @@ class TaskActivityRenderer {
         return rectangles;
     }
 
-    private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity) {
+    private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity, List<Offset> offsets) {
         GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
-        int startx = getWidth()+1;
+        int startx = getChartModel().getBottomUnitOffsets().getEndPx()+1;
         int topy = rowNum*getRowHeight()+4;
         Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
         container.bind(rectangle, nextActivity);
@@ -88,9 +88,9 @@ class TaskActivityRenderer {
         return myGraphicPrimitiveContainer;
     }
 
-    private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity) {
+    private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity, List<Offset> offsets) {
         GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
-        int startx = -10;
+        int startx = getChartModel().getBottomUnitOffsets().getStartPx() - 1;
         int topy = rowNum*getRowHeight()+4;
         Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
         container.bind(rectangle, nextActivity);
