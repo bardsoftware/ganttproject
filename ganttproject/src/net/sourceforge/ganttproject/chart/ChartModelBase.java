@@ -83,7 +83,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                 if (myDefaultOffsets.isEmpty()) {
                     myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
                 }
-                System.err.println("shifting default offsets by " + shiftPixels);
                 shiftOffsets(myDefaultOffsets, shiftPixels);
             }
         }
@@ -188,6 +187,9 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         if (myDefaultUnitOffsets.isEmpty()) {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
+            int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
+                getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
+            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit);
             offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
         }
         return myDefaultUnitOffsets;
@@ -206,9 +208,10 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         //System.err.println("offsets start date=" + startDate);
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
             myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), getOffsetAnchorDate(),
-            getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
+            getBottomUnitWidth(), (int)getBounds().getWidth(),
             getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+        offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : 1);
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
         //System.err.println("startDate=" + startDate);
     }
@@ -439,6 +442,10 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myBottomUnit;
     }
 
+    private TimeUnit getDefaultUnit() {
+        return getTimeUnitStack().getDefaultTimeUnit();
+    }
+    
     private void setTopUnit(TimeUnit myTopUnit) {
         this.myTopUnit = myTopUnit;
     }
