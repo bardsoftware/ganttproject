@@ -133,7 +133,6 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             todayOffsetIdx = -todayOffsetIdx - 1;
         }
         Offset yesterdayOffset = todayOffsetIdx == 0 ? null : getChartModel().getDefaultUnitOffsets().get(todayOffsetIdx - 1);
-        System.err.println("date=" + date+" yesterday offset=" + yesterdayOffset);
         if (yesterdayOffset == null) {
             return;
         }

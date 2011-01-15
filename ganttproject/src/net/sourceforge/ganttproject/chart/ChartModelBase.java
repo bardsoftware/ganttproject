@@ -83,6 +83,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                 if (myDefaultOffsets.isEmpty()) {
                     myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
                 }
+                System.err.println("shifting default offsets by " + shiftPixels);
                 shiftOffsets(myDefaultOffsets, shiftPixels);
             }
         }
@@ -100,7 +101,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             super(model.getTaskManager().getCalendar(),
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
-                  model.getStartDate(),
+                  model.getOffsetAnchorDate(),
                   model.getBottomUnitWidth(),
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
@@ -192,16 +193,19 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myDefaultUnitOffsets;
     }
 
+    private Date getOffsetAnchorDate() {
+        return myScrollingSession == null ? 
+            myStartDate : getBottomUnit().jumpLeft(myStartDate);
+    }
+    
     private void constructOffsets() {
         myTopUnitOffsets.clear();
         myBottomUnitOffsets.clear();
         myDefaultUnitOffsets.clear();
 
-        Date startDate = myScrollingSession == null ? 
-            myStartDate : getBottomUnit().jumpLeft(myStartDate);
         //System.err.println("offsets start date=" + startDate);
         RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), startDate,
+            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), getOffsetAnchorDate(),
             getBottomUnitWidth(), (int)getBounds().getWidth() + getBottomUnitWidth()*2,
             getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
