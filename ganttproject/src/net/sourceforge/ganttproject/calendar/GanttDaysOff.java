@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject.calendar;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -52,11 +53,11 @@ public class GanttDaysOff {
     }
 
     public int isADayOffInWeek(Date date) {
-        GanttCalendar start = myStart.Clone();
-        GanttCalendar finish = myFinish.Clone();
+        GanttCalendar start = myStart.clone();
+        GanttCalendar finish = myFinish.clone();
         for (int i = 0; i < 7; i++) {
-            start.add(-1);
-            finish.add(-1);
+            start.add(Calendar.DATE, -1);
+            finish.add(Calendar.DATE, -1);
             if (date.equals(start.getTime())
                     || date.equals(finish.getTime())
                     || (date.before(finish.getTime()) && date.after(start
@@ -71,7 +72,7 @@ public class GanttDaysOff {
     }
 
     public static GanttDaysOff create(GanttDaysOff from) {
-        return new GanttDaysOff(from.myStart.Clone(), from.myFinish.Clone());
+        return new GanttDaysOff(from.myStart.clone(), from.myFinish.clone());
     }
 
 }

@@ -78,15 +78,16 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
         return result;
     }
 
-    /** @return a clone of the calendar */
-    public GanttCalendar Clone() {
+    /** @return a copy of the current date */
+    @Override
+    public GanttCalendar clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         return clone;
     }
 
     /** @return the date to as a string */
     public String toString() {
-        return (language.formatShortDate(this));
+        return language.formatShortDate(this);
     }
 
     public String toXMLString() {
@@ -117,17 +118,11 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
         return this.get(Calendar.WEEK_OF_YEAR);
     }
 
-    /** Add a number of day to the current date */
+    /** Create of copy of the current date and add the specified (signed) amount of time */
     @Deprecated
-    public void add(int dayNumber) {
-        this.add(Calendar.DATE, dayNumber);
-    }
-
-    /** Change the year of the date, and return a copy */
-    @Deprecated
-    public GanttCalendar newAdd(int dayNumber) {
-        GanttCalendar gc = new GanttCalendar(getYear(), getMonth(), getDate());
-        gc.add(Calendar.DATE, dayNumber);
+    public GanttCalendar newAdd(int field, int dayNumber) {
+        GanttCalendar gc = clone();
+        gc.add(field, dayNumber);
         return gc;
     }
 
@@ -145,15 +140,15 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
         }
 
         else if (compareTo(d) < 0) {
-            d1 = this.Clone();
+            d1 = this.clone();
             d2 = new GanttCalendar(d);
         } else {
             d1 = new GanttCalendar(d);
-            d2 = this.Clone();
+            d2 = this.clone();
         }
 
         while (d1.compareTo(d2) != 0) {
-            d1.add(1);
+            d1.add(Calendar.DATE, 1);
             res++;
         }
         return res;

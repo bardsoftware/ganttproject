@@ -1,6 +1,8 @@
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -202,9 +204,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return nbColTot;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Class getColumnClass(int column) {
         switch (column) {
         case 0:
@@ -244,9 +243,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     }
 
-    /**
-     * @inheritDoc
-     */
     public boolean isCellEditable(Object node, int column) {
         if (node instanceof TaskNode) {
             Task task = (Task) ((TaskNode) node).getUserObject();
@@ -276,9 +272,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     //
     // }
 
-    /**
-     * @inheritDoc
-     */
     public Object getValueAt(Object node, int column) {
         Object res = null;
         if (!(node instanceof TaskNode))
@@ -324,7 +317,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             res = tn.getStart();
             break;
         case 5:
-            res = tn.getEnd().newAdd(-1);
+            res = tn.getEnd().newAdd(Calendar.DATE, -1);
             break;
         case 6:
             res = new Integer(tn.getDuration());
@@ -374,9 +367,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return res;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void setValueAt(final Object value, final Object node,
             final int column) {
         if (value==null) {
@@ -424,7 +414,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             ((TaskNode) node).applyThirdDateConstraint();
             break;
         case 5:
-            ((TaskNode) node).setEnd(((GanttCalendar) value).newAdd(1));
+            ((TaskNode) node).setEnd(((GanttCalendar) value).newAdd(Calendar.DATE, 1));
             break;
         case 6:
             Task task = (Task) ((TaskNode) node).getUserObject();
@@ -449,57 +439,30 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     }
 
-    /**
-     * @inheritDoc
-     */
     public void columnAdded(TableColumnModelEvent arg0) {
         nbCol++;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void columnRemoved(TableColumnModelEvent arg0) {
         nbCol--;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void columnMoved(TableColumnModelEvent arg0) {
         // TODO Auto-generated method stub
-
     }
 
-    /**
-     * @inheritDoc
-     */
     public void columnMarginChanged(ChangeEvent arg0) {
         // TODO Auto-generated method stub
-
     }
 
-    /**
-     * @inheritDoc
-     */
     public void columnSelectionChanged(ListSelectionEvent arg0) {
         // TODO Auto-generated method stub
     }
 
-    /**
-     * @inheritDoc
-     */
     public Task[] getNestedTasks(Task container) {
         TaskNode r = (TaskNode) root;
-        Enumeration e = r.children();
-
-        Vector<TaskNode> v = new Vector<TaskNode>();
-        while (e.hasMoreElements())
-            v.add((TaskNode) e.nextElement());
-        Task[] res = new Task[v.size()];
-        v.toArray(res);
-        return res;
-
+        Enumeration<TaskNode> e = r.children();
+        return Collections.list(e).toArray(new Task[0]);
     }
 
     public Task[] getDeepNestedTasks(Task container) {
@@ -508,7 +471,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     /**
-     * Purpose: Should return true if this Tasks has any nested subtasks.
+     * @return true if this Tasks has any nested subtasks.
      */
     public boolean hasNestedTasks(Task container) {
         TaskNode r = (TaskNode) root;
@@ -519,15 +482,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public Task getRootTask() {
         return (Task) ((TaskNode) this.getRoot()).getUserObject();
     }
 
     /**
-     * Returns the corresponding task node according to the given task.
+     * @return the corresponding task node according to the given task.
      *
      * @param task
      *            The task whose TaskNode we want to get.
@@ -537,34 +497,27 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         Enumeration enumeration = ((TaskNode) getRoot()).preorderEnumeration();
         while (enumeration.hasMoreElements()) {
             Object next = enumeration.nextElement();
-            if (!(next instanceof TaskNode))
+            if (!(next instanceof TaskNode)) {
                 continue;
+            }
             TaskNode tn = (TaskNode) next;
             Task t = (Task) tn.getUserObject();
-            if (t.equals(task))
+            if (t.equals(task)) {
                 return tn;
+            }
         }
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public Task getContainer(Task nestedTask) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void move(Task whatMove, Task whereMove) {
         // TODO Auto-generated method stub
     }
 
-    /**
-     * @inheritDoc
-     */
     public boolean areUnrelated(Task dependant, Task dependee) {
         // TODO Auto-generated method stub
         return false;
@@ -586,5 +539,4 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     public boolean contains(Task task) {
         throw new UnsupportedOperationException();
     }
-
 }

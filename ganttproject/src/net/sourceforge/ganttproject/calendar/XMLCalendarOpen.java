@@ -154,9 +154,9 @@ public class XMLCalendarOpen {
         IConfigurationElement[] calendarExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor(GPCalendar.EXTENSION_POINT_ID);
         myCalendarLabels = new String[calendarExtensions.length];
         for (int i = 0; i < calendarExtensions.length; i++) {
-            Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespace());
+            Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespaceIdentifier());
             URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
-            if (calendarUrl!=null) {
+            if (calendarUrl != null) {
                 try {
 					load(calendarUrl.openStream());
 				} catch (IOException e) {

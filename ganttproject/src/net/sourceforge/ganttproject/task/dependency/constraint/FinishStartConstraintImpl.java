@@ -26,13 +26,13 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements
         TaskDependencyConstraint.Collision result = null;
         Task dependee = getDependency().getDependee();
         Task dependant = getDependency().getDependant();
-        GanttCalendar dependeeEnd = dependee.getEnd().Clone();
+        GanttCalendar dependeeEnd = dependee.getEnd().clone();
         // GanttCalendar dependeeEnd = dependee.getEnd();
         GanttCalendar dependantStart = dependant.getStart();
 
         addDelay(dependeeEnd);
 //        int difference = getDependency().getDifference();
-        GanttCalendar comparisonDate = dependantStart.Clone();
+        GanttCalendar comparisonDate = dependantStart.clone();
 //        comparisonDate.add(difference);
 
         boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ? 
@@ -53,7 +53,7 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements
             System.err.println();
         }
         Task dependee = getDependency().getDependee();
-        GanttCalendar dependeeEnd = dependee.getEnd().Clone();
+        GanttCalendar dependeeEnd = dependee.getEnd().clone();
 
         Date barrier = shift(dependantStart, -getDependency().getDifference());
         boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ?

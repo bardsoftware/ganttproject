@@ -66,8 +66,6 @@ public class ExporterToMsProjectFile implements Exporter {
     
     private IGanttProject myProject;
 
-    private UIFacade myUIFacade;
-
     public ExporterToMsProjectFile() {
         myOptions.setTitled(false);
         myMPXOptions.setTitled(false);
@@ -99,7 +97,6 @@ public class ExporterToMsProjectFile implements Exporter {
 
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myProject = project;
-        myUIFacade = uiFacade;
         myLanguageOption = new LocaleOption();
         myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
         myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());

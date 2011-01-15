@@ -13,7 +13,7 @@ import java.util.Map.Entry;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.Mediator;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.Job;
 
 public class CommandLineExportApplication {
     private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
@@ -56,7 +56,7 @@ public class CommandLineExportApplication {
                 return true;
             }
 
-            Platform.getJobManager().setProgressProvider(null);
+            Job.getJobManager().setProgressProvider(null);
             File outputFile;
             if (values.size()>1) {
                 outputFile = new File(values.get(1));

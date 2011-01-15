@@ -50,7 +50,6 @@ import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
-import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -68,7 +67,6 @@ public class TaskManagerImpl implements TaskManager {
     private final List<TaskListener> myListeners = new ArrayList<TaskListener>();
 
     private int myMaxID = -1;
-
 
     private Task myRoot;
 
@@ -205,11 +203,6 @@ public class TaskManagerImpl implements TaskManager {
         myAlgorithmCollection = new AlgorithmCollection(alg1, alg2, alg3, alg4, alg5, alg6);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.task.TaskManager#getTask(int)
-     */
     public GanttTask getTask(int taskId) {
         return (GanttTask) myTaskMap.getTask(taskId);
     }
@@ -223,11 +216,6 @@ public class TaskManagerImpl implements TaskManager {
         //return (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.task.TaskManager#clear()
-     */
     public void projectClosed() {
         myTaskMap.clear();
         setMaxID(-1);
@@ -259,11 +247,6 @@ public class TaskManagerImpl implements TaskManager {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.task.TaskManager#createTask(int)
-     */
     public GanttTask createTask(int taskID) {
         GanttTask result = new GanttTask("", new GanttCalendar(), 1, this,
                 taskID);
@@ -277,11 +260,6 @@ public class TaskManagerImpl implements TaskManager {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.task.TaskManager#registerTask(net.sourceforge.ganttproject.GanttTask)
-     */
     public void registerTask(Task task) {
         int taskID = task.getTaskID();
         if (myTaskMap.getTask(taskID) == null) { // if the taskID is
@@ -803,7 +781,7 @@ public class TaskManagerImpl implements TaskManager {
             Task nextImported = createTask(nested[i].getTaskID());
             registerTask(nextImported);
             nextImported.setName(nested[i].getName());
-            nextImported.setStart(nested[i].getStart().Clone());
+            nextImported.setStart(nested[i].getStart().clone());
             nextImported.setDuration(nested[i].getDuration());
             nextImported.setMilestone(nested[i].isMilestone());
             nextImported.setColor(nested[i].getColor());
@@ -814,7 +792,7 @@ public class TaskManagerImpl implements TaskManager {
             nextImported.setTaskInfo(nested[i].getTaskInfo());
             nextImported.setExpand(nested[i].getExpand());
             if (nested[i].getThird() != null) {
-                nextImported.setThirdDate(nested[i].getThird().Clone());
+                nextImported.setThirdDate(nested[i].getThird().clone());
                 nextImported.setThirdDateConstraint(nested[i]
                         .getThirdDateConstraint());
             }

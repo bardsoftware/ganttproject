@@ -216,7 +216,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             if (Boolean.TRUE.toString().equalsIgnoreCase(configElements[i].getAttribute("absolute"))) {
                 myFontCache.registerDirectory(dirName, true);
             } else {
-                String namespace = configElements[i].getDeclaringExtension().getNamespace();
+                String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
                 if (dirUrl==null) {
                     GPLogger.getLogger(getClass()).warning("Failed to find directory " + dirName + " in plugin " + namespace);
@@ -242,7 +242,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         Job result = new ExportJob("Generating PDF") {
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
-                    Platform.getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
                     return Status.CANCEL_STATUS;
                 }
                 assert myStylesheet!=null;

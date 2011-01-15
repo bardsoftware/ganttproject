@@ -8,7 +8,6 @@ import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.time.DateFrameable;
-import net.sourceforge.ganttproject.time.gregorian.WeekFramerImpl.ICalendarFactory;
 
 public class WeekFramerImpl implements DateFrameable {
     private final FramerImpl myDayFramer = new FramerImpl(Calendar.DATE);
