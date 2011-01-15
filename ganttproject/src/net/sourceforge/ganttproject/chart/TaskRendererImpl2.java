@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
@@ -189,7 +188,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                 myLabelsRenderer.createUpSideText(lastRectangle);
             }
             Rectangle firstRectangle = rectangles.get(0);
-            myLabelsRenderer.createLeftSideText(firstRectangle);
+            if (firstRectangle.isVisible()) {
+                myLabelsRenderer.createLeftSideText(firstRectangle);
+            }
         }
         if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
             renderProgressBar(rectangles);

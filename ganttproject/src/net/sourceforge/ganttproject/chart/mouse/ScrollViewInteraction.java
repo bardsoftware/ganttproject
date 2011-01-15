@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -28,56 +29,61 @@ import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 
 public class ScrollViewInteraction extends MouseInteractionBase
         implements MouseInteraction {
-    private final ScrollingManager myScrollingManager;
-    private final TimeUnit myBottomUnit;
-    private int myStartX;
-    private int myStartX2;
+//    private final ScrollingManager myScrollingManager;
+//    private final TimeUnit myBottomUnit;
+//    private int myStartX;
+//    private int myStartX2;
+    private ScrollingSession myScrollingSession;
 
     public ScrollViewInteraction(
-            MouseEvent e, TimelineFacade chartDateGrid, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
-        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
-        myScrollingManager = scrollingManager;
-        myBottomUnit = bottomUnit;
-        myStartX = e.getX();
-        myStartX2 = e.getX();
+            MouseEvent e, TimelineFacade timelineFacade, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
+        super(timelineFacade.getDateAt(0), timelineFacade);
+        myScrollingSession = timelineFacade.createScrollingSession(e.getX());
+//        myScrollingManager = scrollingManager;
+//        myBottomUnit = bottomUnit;
+//        myStartX = e.getX();
+//        myStartX2 = e.getX();
     }
 
-    private TaskLength getScrollIntervalNew(MouseEvent event) {
-        int pixelDiff = event.getX() - myStartX2;
-        Date dateUnderX = getChartDateGrid().getDateAt(pixelDiff);
-        Date startDate = pixelDiff < 0 ? getChartDateGrid().getDateAt(0) : getChartDateGrid().getEndDateAt(0);
-        if (pixelDiff > 0 && dateUnderX.before(startDate)) {
-            dateUnderX = startDate;
-        }
-        return getChartDateGrid().createTimeInterval(
-                getChartDateGrid().getTimeUnitStack().getDefaultTimeUnit(), startDate,dateUnderX);
-        
-    }
+//    private TaskLength getScrollIntervalNew(MouseEvent event) {
+//        int pixelDiff = event.getX() - myStartX2;
+//        Date dateUnderX = getChartDateGrid().getDateAt(pixelDiff);
+//        Date startDate = pixelDiff < 0 ? getChartDateGrid().getDateAt(0) : getChartDateGrid().getEndDateAt(0);
+//        if (pixelDiff > 0 && dateUnderX.before(startDate)) {
+//            dateUnderX = startDate;
+//        }
+//        return getChartDateGrid().createTimeInterval(
+//                getChartDateGrid().getTimeUnitStack().getDefaultTimeUnit(), startDate,dateUnderX);
+//        
+//    }
     public void apply(MouseEvent event) {
-    	TaskLength scrollInterval = getLengthDiff(event);
-    	//System.err.println("dateUnderX="+dateUnderX+" startDate="+startDate+" scroll interval=" + scrollInterval);
-    	if (scrollInterval.getLength() == 0) {
-    	    //myScrollingManager.scrollBy(event.getX() - myStartX);
-    	    myStartX = event.getX();
-    		return;
-    	}
-    	TimeUnit bottomUnit = myBottomUnit;
-    	if (bottomUnit instanceof TimeUnitFunctionOfDate) {
-    	    bottomUnit = ((TimeUnitFunctionOfDate)bottomUnit).createTimeUnit(getChartDateGrid().getDateAt(event.getX()));
-    	}
-    	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
-            myScrollingManager.scrollBy(scrollInterval.reverse());
-            Date newStartDate = getChartDateGrid().getDateAt(event.getX()); 
-            setStartDate(newStartDate);
-            //System.err.println("start date=" + newStartDate);
-            myStartX2 = event.getX();
-    	} else {
-            //myScrollingManager.scrollBy(event.getX() - myStartX);
-    	}
-        myStartX = event.getX();            
+        myScrollingSession.setXpos(event.getX());
+//    	//TaskLength scrollInterval = getLengthDiff(event);
+//        TaskLength scrollInterval = getScrollIntervalNew(event);
+//    	//System.err.println("dateUnderX="+dateUnderX+" startDate="+startDate+" scroll interval=" + scrollInterval);
+//    	if (scrollInterval.getLength() == 0) {
+//    	    myScrollingManager.scrollBy(event.getX() - myStartX);
+//    	    myStartX = event.getX();
+//    		return;
+//    	}
+//    	TimeUnit bottomUnit = myBottomUnit;
+//    	if (bottomUnit instanceof TimeUnitFunctionOfDate) {
+//    	    bottomUnit = ((TimeUnitFunctionOfDate)bottomUnit).createTimeUnit(getChartDateGrid().getDateAt(event.getX()));
+//    	}
+//    	if (Math.abs(scrollInterval.getLength(bottomUnit)) >= 1) {
+//            myScrollingManager.scrollBy(scrollInterval.reverse());
+//            Date newStartDate = getChartDateGrid().getDateAt(event.getX()); 
+//            setStartDate(newStartDate);
+//            //System.err.println("start date=" + newStartDate);
+//            myStartX2 = event.getX();
+//    	} else {
+//            myScrollingManager.scrollBy(event.getX() - myStartX);
+//    	}
+//        myStartX = event.getX();            
     }
 
     public void finish() {
+        myScrollingSession.finish();
     }
 
 }

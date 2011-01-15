@@ -6,7 +6,6 @@ import java.awt.Rectangle;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -57,8 +56,8 @@ public interface ChartModel {
 
     void addRenderer(ChartRendererBase renderer);
 
-    List<ChartModelBase.Offset> getTopUnitOffsets();
-    List<ChartModelBase.Offset> getBottomUnitOffsets();
+    List<Offset> getTopUnitOffsets();
+    List<Offset> getBottomUnitOffsets();
     List<Offset> getDefaultUnitOffsets();
     //List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
     Offset getOffsetAt(int x);
