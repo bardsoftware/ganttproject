@@ -1,0 +1,42 @@
+<!ELEMENT allocations EMPTY >
+
+<!ELEMENT depend EMPTY >
+<!ATTLIST depend id NMTOKEN #REQUIRED >
+<!ATTLIST depend type NMTOKEN #REQUIRED >
+
+<!ELEMENT description ( #PCDATA ) >
+
+<!ELEMENT project ( description, tasks, resources, allocations, roles ) >
+<!ATTLIST project company CDATA #REQUIRED >
+<!ATTLIST project name NMTOKEN #REQUIRED >
+<!ATTLIST project version NMTOKEN #REQUIRED >
+<!ATTLIST project view-date CDATA #REQUIRED >
+<!ATTLIST project view-zoom NMTOKEN #REQUIRED >
+
+<!ELEMENT resource EMPTY >
+<!ATTLIST resource contacts CDATA #REQUIRED >
+<!ATTLIST resource function NMTOKEN #REQUIRED >
+<!ATTLIST resource id NMTOKEN #REQUIRED >
+<!ATTLIST resource name CDATA #REQUIRED >
+<!ATTLIST resource phone CDATA #REQUIRED >
+
+<!ELEMENT resources ( resource ) >
+
+<!ELEMENT role EMPTY >
+<!ATTLIST role id NMTOKEN #REQUIRED >
+<!ATTLIST role name CDATA #REQUIRED >
+
+<!ELEMENT roles ( role ) >
+
+<!ELEMENT task ( depend | task )* >
+<!ATTLIST task color CDATA #IMPLIED >
+<!ATTLIST task complete NMTOKEN #REQUIRED >
+<!ATTLIST task duration NMTOKEN #REQUIRED >
+<!ATTLIST task id NMTOKEN #REQUIRED >
+<!ATTLIST task meeting NMTOKEN #REQUIRED >
+<!ATTLIST task name CDATA #REQUIRED >
+<!ATTLIST task priority NMTOKEN #REQUIRED >
+<!ATTLIST task start CDATA #REQUIRED >
+
+<!ELEMENT tasks ( task+ ) >
+<!ATTLIST tasks color CDATA #REQUIRED >
