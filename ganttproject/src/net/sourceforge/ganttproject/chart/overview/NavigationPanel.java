@@ -29,8 +29,8 @@ import javax.swing.Action;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -48,17 +48,19 @@ public class NavigationPanel {
 
     public Component getComponent() {
         class ScrollToProjectStart extends GPAction {
+            ScrollToProjectStart() {
+                super("scrollToStart");
+            }
             @Override
             public void actionPerformed(ActionEvent e) {
                 myChart.setStartDate(myProject.getTaskManager().getProjectStart());
                 myChart.scrollBy(createTimeInterval(-1));
             }
-            @Override
-            protected String getLocalizedName() {
-                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("start"));
-            }
         }
         class ScrollToProjectEnd extends GPAction {
+            ScrollToProjectEnd() {
+                super("scrollToEnd");
+            }
             @Override
             public void actionPerformed(ActionEvent e) {
                 Date projectEnd = myProject.getTaskManager().getProjectEnd();
@@ -68,38 +70,34 @@ public class NavigationPanel {
                 }
                 myChart.scrollBy(createTimeInterval(1));
             }
-            @Override
-            protected String getLocalizedName() {
-                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("end"));
-            }
         }
         class ScrollToToday extends GPAction {
+            ScrollToToday() {
+                super("scrollToToday");
+            }
             @Override
             public void actionPerformed(ActionEvent e) {
                 myChart.setStartDate(new Date());
             }
-            @Override
-            protected String getLocalizedName() {
-                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", "Today");
-            }
         }
         class ScrollToSelection extends GPAction implements TaskSelectionManager.Listener {
             ScrollToSelection() {
+                super("scrollToSelection");
                 myUiFacade.getTaskSelectionManager().addSelectionListener(this);
             }
             @Override
             public void actionPerformed(ActionEvent e) {
                 Date earliestStartDate = null;
-                for (Task selectedTask : myUiFacade.getTaskSelectionManager().getSelectedTasks()) {
+                List<Task> selectedTasks = myUiFacade.getTaskSelectionManager().getSelectedTasks();
+                if (selectedTasks == null || selectedTasks.isEmpty()) {
+                    return;
+                }
+                for (Task selectedTask : selectedTasks) {
                     if (earliestStartDate == null || earliestStartDate.after(selectedTask.getStart().getTime())) {
                         earliestStartDate = selectedTask.getStart().getTime();
                     }
                 }
                 myChart.setStartDate(earliestStartDate);
-            }
-            @Override
-            protected String getLocalizedName() {
-                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", "Selection");
             }
             @Override
             public void selectionChanged(List<Task> currentSelection) {
@@ -109,12 +107,33 @@ public class NavigationPanel {
             public void userInputConsumerChanged(Object newConsumer) {
             }
         }
+        Action[] scrollActions = new Action[] {
+            new ScrollToProjectStart(), new ScrollToToday(), new ScrollToProjectEnd(), new ScrollToSelection()};
+        class ScrollTimeIntervalAction extends GPAction {
+            private final ScrollingManager myScrollingManager;
+            private final int myIntervalLength;
+
+            ScrollTimeIntervalAction(String name, int intervalLength, ScrollingManager scrollingManager) {
+                super(name);
+                myIntervalLength = intervalLength;
+                myScrollingManager = scrollingManager;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                myScrollingManager.scrollBy(myProject.getTaskManager().createLength(
+                    myChart.getModel().getBottomUnit(), myIntervalLength));
+            }
+            @Override
+            protected String getLocalizedName() {
+                return MessageFormat.format("<html><b>{0}</b></html>", getI18n(getKey()));
+            }
+            
+        }
         return new ToolbarBuilder(myChart)
-            .addComboBox(new Action[] {
-                            new ScrollToProjectStart(), new ScrollToToday(), new ScrollToProjectEnd(), new ScrollToSelection()})
+            .addComboBox(scrollActions, scrollActions[1])
+            .addButton(new ScrollTimeIntervalAction("backDate", -1, myUiFacade.getScrollingManager()))
+            .addButton(new ScrollTimeIntervalAction("forwardDate", 1, myUiFacade.getScrollingManager()))
             .build();
-//        return new ToolbarBuilder(myChart).addButton(new ScrollToProjectStart()).addButton(new ScrollToToday())
-//            .addButton(new ScrollToProjectEnd()).addButton(new ScrollToSelection()).build();
     }
 
 	protected TaskLength createTimeInterval(int i) {

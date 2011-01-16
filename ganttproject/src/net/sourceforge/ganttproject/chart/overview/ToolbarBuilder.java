@@ -19,36 +19,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.event.ListDataListener;
 
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
+import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 class ToolbarBuilder {
     private final JToolBar myToolbar;
@@ -75,57 +66,104 @@ class ToolbarBuilder {
         myToolbar.add(button);
         return this;
     }
-    ToolbarBuilder addComboBox(final Action[] actions) {
-        class ComboBoxModelImpl extends AbstractListModel implements ComboBoxModel {
-            private Object mySelectedItem;
-            @Override
-            public Object getElementAt(int idx) {
-                return actions[idx].getValue(Action.NAME);
-            }
-            @Override
-            public int getSize() {
-                return actions.length;
-            }
-            @Override
-            public Object getSelectedItem() {
-                return mySelectedItem;
-            }
-            @Override
-            public void setSelectedItem(Object item) {
-                mySelectedItem = item;
+    ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
+        class MyComboBox extends TestGanttRolloverButton {
+            private Action mySelectedAction = null;
+            private final Action[] myActions;
+            private Rectangle myIconRect;
+            private Dimension myPreferredSize;
+
+            private MyComboBox(Action[] actions) {
+                myActions = actions;
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        onMouseClicked(e);
+                    }
+                });
+                setIcon(new ImageIcon(getClass().getResource("/icons/dropdown_16.png")) {
+                    @Override
+                    public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+                        super.paintIcon(c, g, x, y);
+                        if (myIconRect == null) {
+                            myIconRect = new Rectangle(x, y, 16, 16);
+                        }
+                    }
+                });
+                setHorizontalTextPosition(LEADING);
+                setVerticalTextPosition(SwingConstants.CENTER);
+                int maxLength = 0;
                 for (Action a : actions) {
-                    if (a.getValue(Action.NAME).equals(item)) {
-                        a.actionPerformed(null);
-                        break;
+                    if (getActionName(a).length() > maxLength) {
+                        maxLength = getActionName(a).length();
                     }
                 }
+                setSelectedAction(selected);
+                setHorizontalAlignment(SwingConstants.RIGHT);
             }
-        }
-        final JButton button = new TestGanttRolloverButton();
-        button.setAction(new AbstractAction("foooobar") {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                JPopupMenu popupMenu = new JPopupMenu();
-                for (Action a : actions) {
-                    popupMenu.add(a);
+            private void setSelectedAction(Action selected) {
+                mySelectedAction = selected;
+                getButton().setText(formatActionName(selected));
+            }
+            private String getActionName(Action a) {
+                return a.getValue(Action.NAME).toString();
+            }
+            private String formatActionName(Action a) {
+                String name = getActionName(a);
+                return MessageFormat.format("<html><b>{0}</b></html>", name);
+            }
+            protected void onMouseClicked(MouseEvent e) {
+                if (myIconRect.contains(e.getX(), e.getY())) {
+                    showPopup();
+                } else {
+                    mySelectedAction.actionPerformed(null);
                 }
-                popupMenu.show(myToolbar, button.getLocation().x, button.getLocation().y+20);
             }
-        });
-//        JComboBox result = new JComboBox(new ComboBoxModelImpl());
-//        final JButton buttonComponent = (JButton) result.getComponent(0);
-//        buttonComponent.setRolloverEnabled(true);
-//        buttonComponent.setBorderPainted(false);
-//        result.getComponent(0).addMouseListener(new MouseAdapter() {
-//            public void mouseEntered(MouseEvent e) {
-//                buttonComponent.setBorderPainted(true);
-//            }
-//    
-//            public void mouseExited(MouseEvent e) {
-//                buttonComponent.setBorderPainted(false);
-//            }
-//        });
-//        
+            private void showPopup() {
+                JPopupMenu popupMenu = new JPopupMenu();
+                for (final Action a : myActions) {
+                    popupMenu.add(new AbstractAction(a.getValue(Action.NAME).toString()) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            a.actionPerformed(e);
+                            setSelectedAction(a);
+                        }
+                    });
+                }
+                popupMenu.show(myToolbar, getButton().getLocation().x, getButton().getHeight());                
+            }
+            private JButton getButton() {
+                return MyComboBox.this;
+            }
+            @Override
+            public Dimension getPreferredSize() {
+                if (myPreferredSize != null) {
+                    return myPreferredSize;
+                }
+                Dimension d = super.getPreferredSize();
+                Graphics g = getGraphics();
+                if (g == null) {
+                    return d;
+                }
+                int maxLength = 0;
+                TextLengthCalculatorImpl textLength = new TextLengthCalculatorImpl(g);
+                for (Action a : myActions) {
+                    int length = textLength.getTextLength(a.getValue(Action.NAME).toString());
+                    if (maxLength < length) {
+                        maxLength = length;
+                    }
+                }
+                int width = (int)(maxLength*1.1) + 16 + getIconTextGap();
+                Insets insets = getInsets();
+                myPreferredSize = new Dimension(width + insets.left + insets.right, d.height);
+                return myPreferredSize;
+        }
+        }
+        final MyComboBox button = new MyComboBox(actions);
+        
+        if (myToolbar.getComponentCount() != 0) {
+            myToolbar.add(new JLabel(" | "));
+        }
         myToolbar.add(button);
         return this;
     }
