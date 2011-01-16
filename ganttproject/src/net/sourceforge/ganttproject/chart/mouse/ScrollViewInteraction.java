@@ -19,13 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseEvent;
-import java.util.Date;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 
 public class ScrollViewInteraction extends MouseInteractionBase
         implements MouseInteraction {

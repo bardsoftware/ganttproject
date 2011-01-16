@@ -6,7 +6,6 @@ package net.sourceforge.ganttproject.gui.previousState;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Box;
