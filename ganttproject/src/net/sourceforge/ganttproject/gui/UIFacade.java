@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
@@ -82,6 +83,7 @@ public interface UIFacade {
     ResourceTreeUIFacade getResourceTree();
     //void changeWorkingDirectory(File parentFile);
 
+    TaskSelectionManager getTaskSelectionManager();
 	TaskSelectionContext getTaskSelectionContext();
 
 }

@@ -47,6 +47,7 @@ import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -62,6 +63,7 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -212,6 +214,16 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
+    }
+
+    @Override
+    public TaskSelectionContext getTaskSelectionContext() {
+        return myUIFacade.getTaskSelectionContext();
+    }
+    
+    @Override
+    public TaskSelectionManager getTaskSelectionManager() {
+        return myUIFacade.getTaskSelectionManager();
     }
 
 //    public void changeWorkingDirectory(File directory) {

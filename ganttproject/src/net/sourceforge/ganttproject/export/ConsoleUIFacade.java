@@ -14,6 +14,7 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class ConsoleUIFacade implements UIFacade {
@@ -145,5 +146,10 @@ public class ConsoleUIFacade implements UIFacade {
 		// TODO Auto-generated method stub
 		return null;
 	}
+    @Override
+    public TaskSelectionManager getTaskSelectionManager() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

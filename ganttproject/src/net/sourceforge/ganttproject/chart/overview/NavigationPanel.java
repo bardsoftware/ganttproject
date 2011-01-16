@@ -22,20 +22,28 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
+
+import javax.swing.Action;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class NavigationPanel {
     private final TimelineChart myChart;
     private final IGanttProject myProject;
+    private final UIFacade myUiFacade;
 
-    public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade workbenchFacade) {
+    public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade uiFacade) {
         myProject = project;
         myChart = chart;
+        myUiFacade = uiFacade;
     }
 
     public Component getComponent() {
@@ -75,8 +83,38 @@ public class NavigationPanel {
                 return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", "Today");
             }
         }
-        return new ToolbarBuilder(myChart).addButton(new ScrollToProjectStart()).addButton(new ScrollToToday())
-            .addButton(new ScrollToProjectEnd()).build();
+        class ScrollToSelection extends GPAction implements TaskSelectionManager.Listener {
+            ScrollToSelection() {
+                myUiFacade.getTaskSelectionManager().addSelectionListener(this);
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Date earliestStartDate = null;
+                for (Task selectedTask : myUiFacade.getTaskSelectionManager().getSelectedTasks()) {
+                    if (earliestStartDate == null || earliestStartDate.after(selectedTask.getStart().getTime())) {
+                        earliestStartDate = selectedTask.getStart().getTime();
+                    }
+                }
+                myChart.setStartDate(earliestStartDate);
+            }
+            @Override
+            protected String getLocalizedName() {
+                return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", "Selection");
+            }
+            @Override
+            public void selectionChanged(List<Task> currentSelection) {
+                setEnabled(!currentSelection.isEmpty());
+            }
+            @Override
+            public void userInputConsumerChanged(Object newConsumer) {
+            }
+        }
+        return new ToolbarBuilder(myChart)
+            .addComboBox(new Action[] {
+                            new ScrollToProjectStart(), new ScrollToToday(), new ScrollToProjectEnd(), new ScrollToSelection()})
+            .build();
+//        return new ToolbarBuilder(myChart).addButton(new ScrollToProjectStart()).addButton(new ScrollToToday())
+//            .addButton(new ScrollToProjectEnd()).addButton(new ScrollToSelection()).build();
     }
 
 	protected TaskLength createTimeInterval(int i) {

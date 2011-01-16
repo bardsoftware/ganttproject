@@ -323,8 +323,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         ToolTipManager.sharedInstance().setInitialDelay(200);
         ToolTipManager.sharedInstance().setDismissDelay(60000);
 
-        TaskSelectionManager taskSelectionManager = new TaskSelectionManager();
-        Mediator.registerTaskSelectionManager(taskSelectionManager);
+        Mediator.registerTaskSelectionManager(getTaskSelectionManager());
         /*
          * [bbaranne] I add a Mediator object so that we can get the
          * GanttProject singleton where ever we are in the source code. Perhaps
@@ -2297,10 +2296,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public ResourceTreeUIFacade getResourceTree() {
         return getResourcePanel();
-    }
-
-    public TaskSelectionContext getTaskSelectionContext() {
-        return Mediator.getTaskSelectionManager();
     }
 
     private class ParserFactoryImpl implements ParserFactory {
