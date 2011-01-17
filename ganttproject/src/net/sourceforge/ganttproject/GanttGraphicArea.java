@@ -713,8 +713,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         private MouseSupport myMouseSupport = new MouseSupport();
 
         public void mouseDragged(MouseEvent e) {
-            if (appli.isOnlyViewer)
-                return;
             super.mouseDragged(e);
             /*
              * Add the repaint in order to repaint the treetable when an action
@@ -731,9 +729,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                         || (mi instanceof MoveTaskInteractions))
                     appli.recalculateCriticalPath();
             }
-            GanttGraphicArea.this.repaint();
-            // avant
-
         }
 
         // Move the move on the area
