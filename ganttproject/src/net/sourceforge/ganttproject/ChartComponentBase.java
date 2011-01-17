@@ -214,6 +214,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                     .getActiveInteraction();
             if (activeInteraction != null) {
                 activeInteraction.apply(e);
+                reset();
                 // myUIFacade.repaint2();
                 // e.consume();
                 // return;
@@ -224,9 +225,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     protected class MouseWheelListenerBase implements MouseWheelListener {
         public void mouseWheelMoved(MouseWheelEvent e) {
             if (isRotationUp(e)) {
-                fireZoomOut();
-            } else {
                 fireZoomIn();
+            } else {
+                fireZoomOut();
             }
         }
 
