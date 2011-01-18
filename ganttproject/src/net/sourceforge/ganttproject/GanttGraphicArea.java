@@ -39,6 +39,8 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.OffsetBuilder;
+import net.sourceforge.ganttproject.chart.OffsetList;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
 import net.sourceforge.ganttproject.chart.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.RenderedGanttChartImage;
@@ -221,7 +223,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
 
-        GPTreeTableBase treetable = Mediator.getGanttProjectSingleton().getTree().getTreeTable();
+        GPTreeTableBase treetable = this.tree.getTreeTable();
         JXTreeTable xtreetable = treetable.getTreeTable();
 
         // I don't know why we need to add 67 to the height to make it fit the real height
@@ -256,13 +258,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         // Draw the tree on the image
         gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
 
-        Date dateStart = null;
-        Date dateEnd = null;
-
-        TimeUnit unit = getViewState().getBottomTimeUnit();
-
-        dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
+        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
+        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
 
         if (dateStart.after(dateEnd)) {
             Date tmp = (Date) dateStart.clone();
@@ -270,9 +267,14 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             dateEnd = tmp;
         }
 
-        TaskLength printedLength = getTaskManager().createLength(unit, dateStart, dateEnd);
-        System.err.println("start date="+dateStart+" end date="+dateEnd+" unit="+unit+" printed length="+printedLength);
-        int chartWidth = (int) ((printedLength.getLength(getViewState().getBottomTimeUnit()) + 1) * getViewState().getBottomUnitWidth());
+        OffsetBuilder offsetBuilder = myChartModel.createOffsetBuilderFactory()
+            .withStartDate(dateStart)
+            .withEndDate(dateEnd)
+            .withEndOffset(Integer.MAX_VALUE)
+            .build();
+        OffsetList bottomOffsets = new OffsetList();
+        offsetBuilder.constructOffsets(null, bottomOffsets);
+        int chartWidth = bottomOffsets.getEndPx();
         if (chartWidth < this.getWidth()) {
             chartWidth = this.getWidth();
         }

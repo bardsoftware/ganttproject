@@ -106,7 +106,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
                           RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f,
-                  endDate);
+                  endDate,
+                  0);
             isCompressedWeekend = model.getTopUnit().isConstructedFrom(model.getBottomUnit());
         }
 
@@ -207,16 +208,23 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myDefaultUnitOffsets.clear();
 
         //System.err.println("offsets start date=" + startDate);
-        RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), getOffsetAnchorDate(),
-            getBottomUnitWidth(), (int)getBounds().getWidth(),
-            getTopUnit().isConstructedFrom(getBottomUnit()) ?
-                RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
-        offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : 1);
+        OffsetBuilder offsetBuilder = createOffsetBuilderFactory().build();
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-        //System.err.println("startDate=" + startDate);
     }
 
+    public OffsetBuilder.Factory createOffsetBuilderFactory() {
+        return new RegularFrameOffsetBuilder.FactoryImpl()
+            .withAtomicUnitWidth(getBottomUnitWidth())
+            .withBottomUnit(getBottomUnit())
+            .withCalendar(myTaskManager.getCalendar())
+            .withEndOffset((int)getBounds().getWidth())
+            .withRightMargin(myScrollingSession==null ? 0 : 1)
+            .withStartDate(getOffsetAnchorDate())
+            .withTopUnit(myTopUnit)
+            .withWeekendDecreaseFactor(getTopUnit().isConstructedFrom(getBottomUnit()) ?
+                RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+    }
+    
     public void paint(Graphics g) {
         if (myScrollingSession == null) {
             constructOffsets();
@@ -316,7 +324,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
                 this, Integer.MAX_VALUE, getTaskManager().getProjectEnd());
         List<Offset> topUnitOffsets = new ArrayList<Offset>();
-        List<Offset> bottomUnitOffsets = new ArrayList<Offset>();
+        OffsetList bottomUnitOffsets = new OffsetList();
         offsetBuilder.constructOffsets(topUnitOffsets, bottomUnitOffsets);
         int width = topUnitOffsets.get(topUnitOffsets.size()-1).getOffsetPixels();
         int height = calculateRowHeight()*getRowCount();
