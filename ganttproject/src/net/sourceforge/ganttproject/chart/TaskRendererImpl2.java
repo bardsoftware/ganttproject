@@ -182,7 +182,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
         if (!rectangles.isEmpty()) {
             Rectangle lastRectangle = rectangles.get(rectangles.size()-1);
-            if (lastRectangle.myLeftX < getWidth()) {
+            
+            if (lastRectangle.isVisible()) {
                 myLabelsRenderer.createRightSideText(lastRectangle);
                 myLabelsRenderer.createDownSideText(lastRectangle);
                 myLabelsRenderer.createUpSideText(lastRectangle);
@@ -407,6 +408,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                     .getPrimitive(dependee);
             if (dependeeRectangle == null) {
                 //System.out.println("dependeeRectangle == null");
+                continue;
+            }
+            if (!dependantRectangle.isVisible() && !dependeeRectangle.isVisible()) {
                 continue;
             }
             Date[] bounds = activityBinding.getAlignedBounds();
