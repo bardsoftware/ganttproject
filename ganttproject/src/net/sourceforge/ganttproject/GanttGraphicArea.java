@@ -101,8 +101,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private static final Cursor CHANGE_PROGRESS_CURSOR;
 
-    private static final int HEADER_OFFSET = 47;
-
     public GanttTree2 tree;
 
     public static Color taskDefaultColor = new Color(140, 182, 206);
@@ -209,6 +207,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return GanttLanguage.getInstance().getText("gantt");
     }
 
+    private int getHeaderHeight() {
+        return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getTable());
+    }
+    
     /** @return an image with the gantt chart */
     // TODO: 1.11 take into account flags "render this and don't render that"
     public BufferedImage getChart(GanttExportSettings settings) {
@@ -223,40 +225,45 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
 
-        GPTreeTableBase treetable = this.tree.getTreeTable();
-        JXTreeTable xtreetable = treetable.getTreeTable();
+        //GPTreeTableBase treetable = this.tree.getTreeTable();
+        //JXTreeTable xtreetable = treetable.getTreeTable();
 
-        // I don't know why we need to add 67 to the height to make it fit the real height
-        int tree_height = xtreetable.getHeight()+67;
+        final int headerHeight = AbstractChartImplementation.LOGO.getIconHeight();//getHeaderHeight();
+        int treeHeight = tree.getTreeTable().getHeight() + headerHeight;
 
-        GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 44);
-        BufferedImage tree  = new BufferedImage(xtreetable.getWidth(), tree_height, BufferedImage.TYPE_INT_RGB);
-        BufferedImage treeview = new BufferedImage(treetable.getWidth(), treetable.getHeight(), BufferedImage.TYPE_INT_RGB);
-        BufferedImage logo  = new BufferedImage(xtreetable.getWidth(), 44, BufferedImage.TYPE_INT_RGB);
+        //GanttImagePanel logo_panel= new GanttImagePanel("big.png", xtreetable.getWidth(), headerHeight);
+        BufferedImage treeImage  = new BufferedImage(this.tree.getWidth(), treeHeight, BufferedImage.TYPE_INT_RGB);
+//        BufferedImage treeview = new BufferedImage(this.tree.getWidth(), this.tree.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage logo  = new BufferedImage(
+            treeImage.getWidth(), AbstractChartImplementation.LOGO.getIconHeight(), BufferedImage.TYPE_INT_RGB);
 
         Graphics2D glogo = logo.createGraphics();
-        logo_panel.paintComponent(glogo);
+        glogo.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        //logo_panel.paintComponent(glogo);
 
-        Graphics2D gtreeview = treeview.createGraphics();
-        treetable.paintComponents(gtreeview);
+//        Graphics2D gtreeview = treeview.createGraphics();
+//        treetable.paintComponents(gtreeview);
 
-        BufferedImage header = treeview.getSubimage(0, 0, treeview.getWidth(), treetable.getRowHeight()+3);
-        treeview.flush();
+//        BufferedImage header = treeview.getSubimage(0, 0, treeview.getWidth(), treetable.getRowHeight()+3);
+//        treeview.flush();
 
-        Graphics2D gtree = tree.createGraphics();
-        xtreetable.printAll(gtree);
+        Graphics2D gtree = treeImage.createGraphics();
+        this.tree.getTreeTable().printAll(gtree);
 
         // Create a new image that will contain the logo, the table/tree and the chart
-        BufferedImage task_image = new BufferedImage(xtreetable.getWidth(), tree_height+logo_panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage task_image = new BufferedImage(
+            treeImage.getWidth(), 
+            treeHeight, 
+            BufferedImage.TYPE_INT_RGB);
 
         Graphics2D gimage = task_image.createGraphics();
 
         // Draw the logo on the image
-        gimage.drawImage(logo, 0, 0, tree.getWidth(), logo.getHeight(), Color.WHITE, null);
+        gimage.drawImage(logo, 0, 0, treeImage.getWidth(), logo.getHeight(), Color.WHITE, null);
         // Draw the header on the image
-        gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
+//        gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
         // Draw the tree on the image
-        gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
+        gimage.drawImage(treeImage, 0, logo.getHeight(), treeImage.getWidth(), treeImage.getHeight(), null);
 
         Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
         Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
@@ -275,13 +282,23 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
         int chartWidth = bottomOffsets.getEndPx();
-        if (chartWidth < this.getWidth()) {
-            chartWidth = this.getWidth();
-        }
+//        if (chartWidth < this.getWidth()) {
+//            chartWidth = this.getWidth();
+//        }
         int chartHeight = task_image.getHeight();
         List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
 
-        return new RenderedGanttChartImage(myChartModel, myChartComponentImpl, GanttTree2.convertNodesListToItemList(myItemsToConsider), task_image, chartWidth, chartHeight);
+        ChartModelBase modelCopy = myChartModel.createCopy();
+        RenderedGanttChartImage result = new RenderedGanttChartImage(
+            modelCopy, 
+            myChartComponentImpl, 
+            GanttTree2.convertNodesListToItemList(myItemsToConsider), 
+            task_image, 
+            chartWidth, 
+            chartHeight);
+        result.setChartVerticalOffset(
+            getHeaderHeight() - getImplementation().getHeaderHeight(tree.getTreeTable(), tree.getTreeTable().getTable()));
+        return result;
     }
 
     GPUndoManager getUndoManager() {
@@ -329,19 +346,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public void repaint() {
-        try {
-            if (myChartModel != null) {
-                if (isShowing()) {
-                    Point headerLocation = myTableHeader.getLocationOnScreen();
-                    Point treeLocation = tree.getLocationOnScreen();
-                    myChartModel.setHeaderHeight(
-                        HEADER_OFFSET + (headerLocation.y - treeLocation.y) + myTableHeader.getHeight());
-                }
-            }
-        } catch (NullPointerException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
+        if (myChartModel != null && isShowing()) {
+            myChartModel.setHeaderHeight(getHeaderHeight());
         }
         super.repaint();
     }

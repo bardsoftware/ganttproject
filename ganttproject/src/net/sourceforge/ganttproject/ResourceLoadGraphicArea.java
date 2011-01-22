@@ -58,7 +58,6 @@ import org.eclipse.core.runtime.Status;
 public class ResourceLoadGraphicArea extends ChartComponentBase implements
         ResourceChart {
 
-    private static final int HEADER_OFFSET = 47;
 
     /** Render the ganttproject version */
     private boolean drawVersion = false;
@@ -88,13 +87,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return new Dimension(465, 600);
     }
 
-    protected int getHeaderHeight() {
-        JTableHeader tableHeader = appli.getResourcePanel().table.getTable().getTableHeader();
-        Point headerLocation = tableHeader.getLocationOnScreen();
-        Point treeLocation = appli.getResourcePanel().getLocationOnScreen();
-        return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
-    }
-
     protected int getRowHeight() {
         return appli.getResourcePanel().table.getRowHeight();
     }
@@ -121,13 +113,13 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 //      I don't know why we need to add 62 to the height to make it fit the real height
         int tree_height = xtreetable.getHeight()+62;
 
-        GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 40);
+        //GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 40);
         BufferedImage tree  = new BufferedImage(xtreetable.getWidth(), tree_height, BufferedImage.TYPE_INT_RGB);
         BufferedImage treeview = new BufferedImage(treetable.getWidth(), treetable.getHeight(), BufferedImage.TYPE_INT_RGB);
         BufferedImage logo  = new BufferedImage(xtreetable.getWidth(), 40, BufferedImage.TYPE_INT_RGB);
 
         Graphics2D glogo = logo.createGraphics();
-        logo_panel.paintComponent(glogo);
+        glogo.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
 
         Graphics2D gtreeview = treeview.createGraphics();
         treetable.paintComponents(gtreeview);
@@ -139,7 +131,10 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         xtreetable.printAll(gtree);
 
         //create a new image that will contain the logo, the table/tree and the chart
-        BufferedImage resource_image = new BufferedImage(xtreetable.getWidth(), tree_height+logo_panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage resource_image = new BufferedImage(
+            xtreetable.getWidth(), 
+            tree_height+AbstractChartImplementation.LOGO.getIconHeight(), 
+            BufferedImage.TYPE_INT_RGB);
 
         Graphics2D gimage = resource_image.createGraphics();
 
@@ -240,7 +235,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private class ResourcechartImplementation extends AbstractChartImplementation {
 
-        public ResourcechartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
+        public ResourcechartImplementation(
+                IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
             super(project, chartModel, chartComponent);
             // TODO Auto-generated constructor stub
         }
@@ -249,7 +245,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 // LaboPM
                 // ResourceLoadGraphicArea.super.paintComponent(g);
                 if (isShowing()) {
-                    myChartModel.setHeaderHeight(getHeaderHeight());
+                    myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(
+                        appli.getResourcePanel(), appli.getResourcePanel().table.getTable()));
                 }
                 myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());

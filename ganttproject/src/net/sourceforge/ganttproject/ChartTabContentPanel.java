@@ -16,6 +16,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
+import net.sourceforge.ganttproject.gui.GanttImagePanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -35,8 +36,7 @@ abstract class ChartTabContentPanel {
         Box treeHeader = Box.createVerticalBox();
         Component buttonPanel = createButtonPanel();
         treeHeader.add(buttonPanel);
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
-        treeHeader.add(but);
+        treeHeader.add(new GanttImagePanel(AbstractChartImplementation.LOGO, 300, AbstractChartImplementation.LOGO.getIconHeight()));
         left.add(treeHeader, BorderLayout.NORTH);
 
         left.add(getTreeComponent(), BorderLayout.CENTER);
