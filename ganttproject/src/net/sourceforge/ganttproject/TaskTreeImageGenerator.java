@@ -109,10 +109,10 @@ class TaskTreeImageGenerator {
         g2.fillRect(0, 0, getWidth(), d.height);
         printTasks(g2, taskNodes);
 
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
+        //GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         g2.setColor(new Color(102, 153, 153));
-        g2.fillRect(0, 0, getWidth(), but.getHeight());
-        but.paintComponent(g2);
+        g2.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        //but.paintComponent(g2);
     }
 
     private int getWidth() {

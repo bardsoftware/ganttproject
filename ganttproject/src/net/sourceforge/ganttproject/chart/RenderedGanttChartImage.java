@@ -10,6 +10,7 @@ import net.sourceforge.ganttproject.task.Task;
 public class RenderedGanttChartImage extends RenderedChartImage {
     private final List<Task> myVisibleTasks;
     private ChartImplementation myChartImplementation;
+    private int myChartVoffsetPx;
 
     public RenderedGanttChartImage(ChartModelBase chartModel, ChartImplementation chartImplementation, List<Task> tasks, BufferedImage taskImage, int chartWidth, int chartHeight) {
         super(chartModel, taskImage, chartWidth, chartHeight);
@@ -17,10 +18,14 @@ public class RenderedGanttChartImage extends RenderedChartImage {
         myChartImplementation = chartImplementation;
     }
 
+    public void setChartVerticalOffset(int px) {
+        myChartVoffsetPx = px;
+    }
     protected void paintChart(Graphics g) {
         if (myVisibleTasks.isEmpty()) {
             myChartImplementation.paintChart(g);
         } else {
+            g.translate(0, -myChartVoffsetPx);
             myChartImplementation.paintComponent(g, myVisibleTasks);
         }
     }

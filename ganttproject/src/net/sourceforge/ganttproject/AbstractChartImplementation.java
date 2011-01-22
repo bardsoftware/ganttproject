@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -11,6 +12,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.table.JTableHeader;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -33,6 +38,9 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import org.eclipse.core.runtime.IStatus;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
+    static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));
+    private static final int HEADER_OFFSET = LOGO.getIconHeight();
+
     private final ChartModelBase myChartModel;
     private final IGanttProject myProject;
     private Set<ChartSelectionListener> mySelectionListeners= new LinkedHashSet<ChartSelectionListener>();
@@ -216,6 +224,13 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     @Override
     public ChartUIConfiguration getStyle() {
         return myChartModel.getChartUIConfiguration();
+    }
+    public int getHeaderHeight(JComponent tableContainer, JTable table) {
+        JTableHeader tableHeader = table.getTableHeader();
+        Point headerLocation = tableHeader.getLocationOnScreen();
+        Point treeLocation = tableContainer.getLocationOnScreen();
+        return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
+
     }
     
 }
