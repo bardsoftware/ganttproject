@@ -17,6 +17,8 @@ public interface MutableTask {
 
     void setPriority(Task.Priority priority);
 
+    void setHasFixedDates(boolean hasFixedDates);
+    
     void setStart(GanttCalendar start);
 
     void setEnd(GanttCalendar end);

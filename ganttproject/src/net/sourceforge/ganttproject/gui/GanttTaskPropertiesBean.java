@@ -106,6 +106,8 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private JCheckBox mileStoneCheckBox1;
 
+    private JCheckBox fixedDatesCheckBox;
+
     private JCheckBox projectTaskCheckBox1;
 
     private boolean isColorChanged;
@@ -127,6 +129,8 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private boolean taskIsMilestone;
 
+    private boolean taskHasFixedDates;
+    
     private GanttCalendar taskStartDate;
 
     private GanttCalendar taskThirdDate;
@@ -183,6 +187,10 @@ public class GanttTaskPropertiesBean extends JPanel {
 	        addEmptyRow(propertiesPanel);
         }        
         {
+            propertiesPanel.add(new JLabel(language.getText("hasFixedDates")));
+            fixedDatesCheckBox = new JCheckBox("");
+            propertiesPanel.add(fixedDatesCheckBox);
+            
 	        propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
 	        myStartDatePicker = createDatePicker(new ActionListener() {
 	            public void actionPerformed(ActionEvent e) {
@@ -333,7 +341,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 	        propertiesPanel.add(new JLabel(language.getText("webLink")));
 	        propertiesPanel.add(weblinkBox);
         }
-        SpringUtilities.makeCompactGrid(propertiesPanel, 14, 2, 1, 1, 5, 5);
+        SpringUtilities.makeCompactGrid(propertiesPanel, 15, 2, 1, 1, 5, 5);
         
         generalPanel = new JPanel(new SpringLayout());
         generalPanel.add(propertiesPanel);
@@ -492,6 +500,9 @@ public class GanttTaskPropertiesBean extends JPanel {
                     mutator.setProjectTask(isProjectTask());
                 }
             }
+            if (this.taskHasFixedDates != getTaskHasFixedDates()) {
+                mutator.setHasFixedDates(getTaskHasFixedDates());
+            }
             if (!this.taskStartDate.equals(getStart())) {
                 mutator.setStart(getStart());
             }
@@ -556,6 +567,8 @@ public class GanttTaskPropertiesBean extends JPanel {
         if (selectedTasks[0].getThird() != null) {
             setThird(selectedTasks[0].getThird().clone(), true);
         }
+        
+        fixedDatesCheckBox.setSelected(selectedTasks[0].hasFixedDates());
 
         setStart(selectedTasks[0].getStart().clone(), true);
 
@@ -661,6 +674,10 @@ public class GanttTaskPropertiesBean extends JPanel {
         return Task.Priority.getPriority(priorityComboBox.getSelectedIndex());
     }
 
+    private boolean getTaskHasFixedDates() {
+        return fixedDatesCheckBox.isSelected();
+    }
+    
     private GanttCalendar getStart() {
         return start;
     }
@@ -714,6 +731,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     private void setInitialValues(GanttTask task) {
         this.taskWebLink = task.getWebLink();
         this.taskIsMilestone = task.isMilestone();
+        this.taskHasFixedDates = task.hasFixedDates();
         this.taskStartDate = task.getStart();
         this.taskLength = task.getLength();
         this.taskNotes = task.getNotes();

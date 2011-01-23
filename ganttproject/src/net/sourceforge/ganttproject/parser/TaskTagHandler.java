@@ -66,6 +66,8 @@ public class TaskTagHandler implements TagHandler {
         String project = attrs.getValue("project");
         if (project != null)
             task.setProjectTask(true);
+        
+        task.setHasFixedDates(Boolean.parseBoolean(attrs.getValue("fixedDates")));
 
         String start = attrs.getValue("start");
         if (start != null) {
