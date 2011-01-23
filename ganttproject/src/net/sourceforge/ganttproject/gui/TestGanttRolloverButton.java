@@ -41,7 +41,7 @@ public class TestGanttRolloverButton extends JButton {
 
     private int myAutoRepeatMilliseconds;
 
-    private TestGanttRolloverButton() {
+    public TestGanttRolloverButton() {
         setBorderPainted(false);
         setMargin(new Insets(0, 0, 0, 0));
 

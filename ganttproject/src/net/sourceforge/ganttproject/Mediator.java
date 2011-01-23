@@ -41,32 +41,10 @@ public class Mediator {
         ganttprojectSingleton = gp;
     }
 
-    /**
-     * Registers the unique CustomColumnsManager instance.
-     * 
-     * @param managerThe
-     *            unique CustomColumnsManager instance.
-     */
-//    public static void registerCustomColumnsManager(CustomColumnsManager manager) {
-//        customColumnsManager = manager;
-//    }
-//
-//    public static void registerCustomColumnsStorage(CustomColumnsStorage storage) {
-//        customColumnsStorage = storage;
-//    }
-//
     public static void registerTaskSelectionManager(
             TaskSelectionManager taskSelection) {
         taskSelectionManager = taskSelection;
     }
-
-//    public static void registerRoleManager(RoleManager roleMgr) {
-//        roleManager = roleMgr;
-//    }
-//
-//    public static void registerTaskManager(TaskManager taskMgr) {
-//        taskManager = taskMgr;
-//    }
 
     public static void registerUndoManager(GPUndoManager undoMgr) {
         undoManager = undoMgr;
@@ -85,44 +63,22 @@ public class Mediator {
      * 
      * @return The unique GanttProject instance.
      */
+    @Deprecated
     public static GanttProject getGanttProjectSingleton() {
         return ganttprojectSingleton;
     }
 
-    /**
-     * Returns the unique CustomColumnsStorage instance.
-     * 
-     * @return The unique CustomColumnsStorage instance.
-     */
-//    public static CustomColumnsStorage getCustomColumnsStorage() {
-//        return customColumnsStorage;
-//    }
-
-    /**
-     * Returns the unique CustomColumnsManager instance.
-     * 
-     * @return The unique CustomColumnsManager instance.
-     */
-//    public static CustomColumnsManager getCustomColumnsManager() {
-//        return customColumnsManager;
-//    }
-
+    @Deprecated
     public static TaskSelectionManager getTaskSelectionManager() {
         return taskSelectionManager;
     }
 
-//    public static RoleManager getRoleManager() {
-//        return roleManager;
-//    }
-
-//    public static TaskManager getTaskManager() {
-//        return taskManager;
-//    }
-
+    @Deprecated
     public static GPUndoManager getUndoManager() {
         return undoManager;
     }
 
+    @Deprecated
     public static DelayManager getDelayManager() {
         return delayManager;
     }

@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 
 /**
  * Finds the bounds of the given date range in the given list of offsets.

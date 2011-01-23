@@ -46,6 +46,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -59,6 +60,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final GanttStatusBar myStatusBar;
     private final UIFacade myFallbackDelegate;
     private final ErrorNotifier myErrorNotifier;
+    private final TaskSelectionManager myTaskSelectionManager;
     
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
@@ -68,6 +70,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myFallbackDelegate = fallbackDelegate;
         Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
+        myTaskSelectionManager = new TaskSelectionManager();
     }
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
@@ -406,8 +409,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 		return myFallbackDelegate.getResourceTree();
 	}
 	public TaskSelectionContext getTaskSelectionContext() {
-		return myFallbackDelegate.getTaskSelectionContext();
+		return myTaskSelectionManager;
 	}
-    
+    public TaskSelectionManager getTaskSelectionManager() {
+        return myTaskSelectionManager;
+    }
+	
 }
 
