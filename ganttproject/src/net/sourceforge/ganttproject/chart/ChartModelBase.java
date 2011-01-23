@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -383,39 +381,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         List<Offset> offsets = getBottomUnitOffsets();
         return offsets.get(offsets.size()-1);
-    }
-
-    public float calculateLength(int fromX, int toX, int y) {
-        // return toX - fromX;
-
-        int curX = fromX;
-        int totalPixels = toX - fromX;
-        int holidayPixels = 0;
-        while (curX < toX) {
-            GraphicPrimitiveContainer.GraphicPrimitive nextPrimitive = myChartHeader
-                    .getPrimitiveContainer().getPrimitive(curX,
-                            y - getChartUIConfiguration().getHeaderHeight());
-            if (nextPrimitive instanceof GraphicPrimitiveContainer.Rectangle
-                    && GPCalendar.DayType.WEEKEND == nextPrimitive
-                            .getModelObject()) {
-                GraphicPrimitiveContainer.Rectangle nextRect = (Rectangle) nextPrimitive;
-                holidayPixels += nextRect.getRightX() - curX;
-                if (nextRect.myLeftX < curX) {
-                    holidayPixels -= curX - nextRect.myLeftX;
-                }
-                if (nextRect.myLeftX < fromX) {
-                    holidayPixels -= fromX - nextRect.myLeftX;
-                }
-                if (nextRect.getRightX() > toX) {
-                    holidayPixels -= nextRect.getRightX() - toX;
-                }
-                curX = nextRect.getRightX() + 1;
-            } else {
-                curX += getBottomUnitWidth();
-            }
-        }
-        float workPixels = (float) totalPixels - (float) holidayPixels;
-        return workPixels / (float) getBottomUnitWidth();
     }
 
     /**
