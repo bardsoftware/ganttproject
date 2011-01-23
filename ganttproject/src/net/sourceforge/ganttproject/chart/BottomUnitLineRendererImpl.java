@@ -19,9 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
+import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
@@ -52,13 +52,18 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
 
     public void render() {
         Offset prevOffset = null;
-        for (Offset offset : getBottomUnitOffsets()) {
-            int xpos = prevOffset == null ? 0 : prevOffset.getOffsetPixels();
+        List<Offset> bottomOffsets = getBottomUnitOffsets();
+        int xpos = bottomOffsets.get(0).getOffsetPixels();
+        if (xpos > 0) {
+            xpos = 0;
+        }
+        for (Offset offset : bottomOffsets) {
             if (offset.getDayType() == GPCalendar.DayType.WORKING) {
                 renderWorkingDay(xpos, offset, prevOffset);
             }
             renderLabel(xpos, offset.getOffsetStart(), offset);
             prevOffset = offset;
+            xpos = prevOffset.getOffsetPixels();
         }
         renderNonWorkingDayColumns();
     }
@@ -75,15 +80,22 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     private void renderNonWorkingDayColumns() {
-        int curX = 0;
-        for (Offset offset : getChartModel().getDefaultUnitOffsets()) {
+        List<Offset> defaultOffsets = getChartModel().getDefaultUnitOffsets();
+        int curX = defaultOffsets.get(0).getOffsetPixels();
+        if (curX > 0) {
+            curX = 0;
+        }
+        for (Offset offset : defaultOffsets) {
             if (offset.getDayType() != GPCalendar.DayType.WORKING){
+                // Create a non-working day bar in the main area
                 renderNonWorkingDay(curX, offset);
-                    Rectangle r = myTimelineContainer.createRectangle(
-                            curX, getLineTopPosition() + 1, 
-                            offset.getOffsetPixels() - curX, 
-                            getLineBottomPosition() - getLineTopPosition() + 1);
-                    applyRectangleStyle(r, offset.getDayType());
+                // And expand it to the timeline area.
+                Rectangle r = myTimelineContainer.createRectangle(
+                    curX, getLineTopPosition() + 1, 
+                    offset.getOffsetPixels() - curX, 
+                    getLineBottomPosition() - getLineTopPosition() + 1);
+                //System.err.println(offset.getDayType()+": " + r);
+                applyRectangleStyle(r, offset.getDayType());
             }
             curX = offset.getOffsetPixels();
         }
@@ -117,23 +129,23 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         }
     }
 
-    protected int getLineTopPosition() {
+    private int getLineTopPosition() {
         return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
     }
 
-    protected int getLineBottomPosition() {
+    private int getLineBottomPosition() {
         return getLineTopPosition() + getLineHeight();
     }
 
-    protected int getLineHeight() {
+    private int getLineHeight() {
         return getLineTopPosition();
     }
 
-    protected int getTextBaselinePosition() {
+    private int getTextBaselinePosition() {
         return getLineBottomPosition() - 5;
     }
 
-    protected Iterable<Offset> getBottomUnitOffsets() {
+    private List<Offset> getBottomUnitOffsets() {
         return getChartModel().getBottomUnitOffsets();
     }
 }

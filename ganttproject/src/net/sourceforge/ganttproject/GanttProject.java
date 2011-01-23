@@ -188,14 +188,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Toolbar button */
     private TestGanttRolloverButton bNew, bOpen, bSave, bExport, bImport,
             bPrint, bPreviewPrint, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties,/* bUnlink, bLink, bUp, bDown,*/ bPrev,
-            bScrollCenter, bNext, /* bZoomFit, */bAbout;
+            bProperties,/* bUnlink, bLink, bUp, bDown, bPrev,
+            bScrollCenter, bNext,  bZoomFit, */bAbout;
 
     private TestGanttRolloverButton bShowHiddens;
 
     private JPopupMenu menu = new JPopupMenu();;
-
-    private TestGanttRolloverButton bZoomIn, bZoomOut;
 
     private TestGanttRolloverButton bUndo, bRedo;
 
@@ -323,8 +321,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         ToolTipManager.sharedInstance().setInitialDelay(200);
         ToolTipManager.sharedInstance().setDismissDelay(60000);
 
-        TaskSelectionManager taskSelectionManager = new TaskSelectionManager();
-        Mediator.registerTaskSelectionManager(taskSelectionManager);
+        Mediator.registerTaskSelectionManager(getTaskSelectionManager());
         /*
          * [bbaranne] I add a Mediator object so that we can get the
          * GanttProject singleton where ever we are in the source code. Perhaps
@@ -546,8 +543,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             public void stateChanged(ChangeEvent e) {
                 bCritical
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-                bScrollCenter
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
                 bComparePrev
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
                 bSaveCurrent
@@ -562,20 +557,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
 
                 bProperties
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-
-                bZoomIn
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-
-                bZoomOut
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-                bPrev
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-                bNext
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
 
@@ -1038,16 +1019,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getText("deleteTask"))));
         bProperties.setToolTipText(getToolTip(correctLabel(language
                 .getText("propertiesTask"))));
-        bPrev.setToolTipText(getToolTip(correctLabel(language
-                .getText("backDate"))));
-        bScrollCenter.setToolTipText(getToolTip(correctLabel(language
-                .getText("centerOnSelectedTasks"))));
-        bNext.setToolTipText(getToolTip(correctLabel(language
-                .getText("forwardDate"))));
-        bZoomIn.setToolTipText(getToolTip(correctLabel(language
-                .getText("zoomIn"))));
-        bZoomOut.setToolTipText(getToolTip(correctLabel(language
-                .getText("zoomOut"))));
         bAbout
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("about"))));
@@ -1132,12 +1103,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                             .getText(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? "propertiesTask"
                                     : "propertiesHuman")));
 
-            bPrev.setText(correctLabel(language.getText("backDate")));
-            bScrollCenter.setText(correctLabel(language
-                    .getText("centerOnSelectedTasks")));
-            bNext.setText(correctLabel(language.getText("forwardDate")));
-            bZoomOut.setText(correctLabel(language.getText("zoomOut")));
-            bZoomIn.setText(correctLabel(language.getText("zoomIn")));
             bAbout.setText(correctLabel(language.getText("about")));
             bUndo.setText(correctLabel(language.getText("undo")));
             bRedo.setText(correctLabel(language.getText("redo")));
@@ -1295,38 +1260,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
                 .getViewState());
-        Action scrollLeft = new ScrollGanttChartLeftAction(scrollingManager, getTaskManager(),
-                options.getIconSize());
-        myRolloverActions.add(scrollLeft);
-        bPrev = new TestGanttRolloverButton(scrollLeft);
-        bPrev.setAutoRepeatMousePressedEvent(300);
-        // toolBar.add(bPrev);
-
-        Action scrollCenter = area.getScrollCenterAction(scrollingManager,
-                Mediator.getTaskSelectionManager(), options.getIconSize());
-        myRolloverActions.add(scrollCenter);
-        bScrollCenter = new TestGanttRolloverButton(scrollCenter);
-        bScrollCenter.setAutoRepeatMousePressedEvent(300);
-        // toolBar.add(bScrollCenter);
-
-        Action scrollRight = new ScrollGanttChartRightAction(scrollingManager, getTaskManager(),
-                options.getIconSize());
-        myRolloverActions.add(scrollRight);
-        bNext = new TestGanttRolloverButton(scrollRight);
-        bNext.setAutoRepeatMousePressedEvent(300);
-        // toolBar.add(bNext);
-
-        Action zoomOut = new ZoomOutAction(getZoomManager(), options
-                .getIconSize());
-        myRolloverActions.add(zoomOut);
-        bZoomOut = new TestGanttRolloverButton(zoomOut);
-
-        Action zoomIn = new ZoomInAction(getZoomManager(), options
-                .getIconSize());
-        myRolloverActions.add(zoomIn);
-        bZoomIn = new TestGanttRolloverButton(zoomIn);
-        // toolBar.add(bZoomIn);
-
         bAbout = new TestGanttRolloverButton(
                 new ImageIcon(getClass().getResource(
                         "/icons/manual_" + options.getIconSize() + ".gif")));
@@ -2299,10 +2232,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return getResourcePanel();
     }
 
-    public TaskSelectionContext getTaskSelectionContext() {
-        return Mediator.getTaskSelectionManager();
-    }
-
     private class ParserFactoryImpl implements ParserFactory {
         public GPParser newParser() {
             return new GanttXMLOpen(prjInfos, getUIConfiguration(),
@@ -2373,32 +2302,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     sIcons = sIcons + GanttOptions.DELETE;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bProperties) {
                     sIcons = sIcons + GanttOptions.PROPERTIES;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bUnlink) {
-                // sIcons = sIcons + GanttOptions.UNLINK;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bLink) {
-                // sIcons = sIcons + GanttOptions.LINK;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) == bInd) {
-                // sIcons = sIcons + GanttOptions.IND;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bUnind) {
-                // sIcons = sIcons + GanttOptions.UNIND;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) == bUp) {
-                // sIcons = sIcons + GanttOptions.UP;
-                // } else if ((TestGanttRolloverButton) list.elementAt(i) ==
-                // bDown) {
-                // sIcons = sIcons + GanttOptions.DOWN;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPrev) {
-                    sIcons = sIcons + GanttOptions.PREV;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bScrollCenter) {
-                    sIcons = sIcons + GanttOptions.CENTER;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNext) {
-                    sIcons = sIcons + GanttOptions.NEXT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomOut) {
-                    sIcons = sIcons + GanttOptions.ZOOMOUT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bZoomIn) {
-                    sIcons = sIcons + GanttOptions.ZOOMIN;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bUndo) {
                     sIcons = sIcons + GanttOptions.UNDO;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo) {
@@ -2480,21 +2383,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             break;
         case (GanttOptions.PROPERTIES):
             list.addElement(bProperties);
-            break;
-        case (GanttOptions.PREV):
-            list.addElement(bPrev);
-            break;
-        case (GanttOptions.CENTER):
-            list.addElement(bScrollCenter);
-            break;
-        case (GanttOptions.NEXT):
-            list.addElement(bNext);
-            break;
-        case (GanttOptions.ZOOMOUT):
-            list.addElement(bZoomOut);
-            break;
-        case (GanttOptions.ZOOMIN):
-            list.addElement(bZoomIn);
             break;
         case (GanttOptions.UNDO):
             list.addElement(bUndo);

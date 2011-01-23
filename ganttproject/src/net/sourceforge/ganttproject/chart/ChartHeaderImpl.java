@@ -7,8 +7,8 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.util.Date;
+import java.util.List;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase.Offset;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -100,18 +100,24 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     /** Draws cells of the top line in the time line
      */
     private void renderTopUnits() {
-        int curX = 0;
         Date curDate = getChartModel().getStartDate();
+        List<Offset> topOffsets = getChartModel().getTopUnitOffsets();
+        int curX = topOffsets.get(0).getOffsetPixels();
+        if (curX > 0) {
+            curX = 0;
+        }
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        for (Offset nextOffset : getChartModel().getTopUnitOffsets()) {
-            TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
-            String unitText = timeUnitText.getText(-1);
-            int posY = topUnitHeight - 5;
-            GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);
-            getTimelineContainer().bind(text, timeUnitText);
-            text.setMaxLength(nextOffset.getOffsetPixels() - curX -5 );
-            text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-            getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
+        for (Offset nextOffset : topOffsets) {
+            if (curX >= 0) {
+                TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
+                String unitText = timeUnitText.getText(-1);
+                int posY = topUnitHeight - 5;
+                GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);
+                getTimelineContainer().bind(text, timeUnitText);
+                text.setMaxLength(nextOffset.getOffsetPixels() - curX -5 );
+                text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+                getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
+            }
             curX = nextOffset.getOffsetPixels();
             curDate = nextOffset.getOffsetEnd();
         }
@@ -127,7 +133,10 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             todayOffsetIdx = -todayOffsetIdx - 1;
         }
         Offset yesterdayOffset = todayOffsetIdx == 0 ? null : getChartModel().getDefaultUnitOffsets().get(todayOffsetIdx - 1);
-        int yesterdayEndPixel = yesterdayOffset == null ? 0 : yesterdayOffset.getOffsetPixels();
+        if (yesterdayOffset == null) {
+            return;
+        }
+        int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
         Line line = getPrimitiveContainer().createLine(
             yesterdayEndPixel + 2, topUnitHeight*2, 
             yesterdayEndPixel + 2, getHeight()+topUnitHeight*2);

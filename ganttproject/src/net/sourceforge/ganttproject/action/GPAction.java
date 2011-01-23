@@ -30,12 +30,15 @@ public abstract class GPAction extends AbstractAction implements
     protected boolean iconVisible = true;
     private Icon myIcon = null;
 
+    private final String myKey;
+
     protected GPAction() {
         this(null, "16");
     }
 
     protected GPAction(String name, String iconSize) {
         super(name);
+        myKey = name;
         setIconSize(iconSize);
         updateName();
         updateTooltip();
@@ -73,9 +76,12 @@ public abstract class GPAction extends AbstractAction implements
     }
 
     protected String getLocalizedName() {
-        return "";
+        return getKey()==null ? null : getI18n(getKey());
     }
 
+    protected String getKey() {
+        return myKey;
+    }
     protected String getTooltipText() {
         String localizedName = getLocalizedName();
         return localizedName == null ? "" : GanttLanguage.getInstance().correctLabel(getLocalizedName());

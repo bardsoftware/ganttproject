@@ -141,7 +141,6 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public void setDimensions(int height, int width) {
-        //int width = (int)projectLength.getLength(getChartModel().getBottomUnit())*getChartModel().getBottomUnitWidth();
         Dimension bounds = new Dimension(width, height);
         getChartModel().setBounds(bounds);
     }
@@ -208,15 +207,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public void addRenderer(ChartRendererBase renderer) {
         myChartModel.addRenderer(renderer);
     }
-//    public void addTimeUnitVisitor(TimeUnitVisitor visitor) {
-//        myChartModel.addTimeUnitVisitor(visitor);
-//    }
     public void resetRenderers() {
         myChartModel.resetRenderers();
-    }
-    public TaskLength calculateLength(int x) {
-        float units = myChartModel.calculateLengthNoWeekends(0, x);
-        return myChartModel.getTaskManager().createLength(myChartModel.getBottomUnit(), units);
     }
     public ChartModel getModel() {
         return myChartModel;

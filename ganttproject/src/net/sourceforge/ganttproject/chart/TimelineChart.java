@@ -26,9 +26,6 @@ public interface TimelineChart extends Chart {
      */
     public void scrollBy(TaskLength duration);
 
-
-    TaskLength calculateLength(int posX);
-
     ChartModel getModel();
 
     ChartUIConfiguration getStyle();
