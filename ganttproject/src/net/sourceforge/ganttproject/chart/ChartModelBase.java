@@ -152,6 +152,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     private final List<GPOptionChangeListener> myOptionListeners = new ArrayList<GPOptionChangeListener>();
 
     private final UIConfiguration myProjectConfig;
+    private ChartUIConfiguration myChartUIConfiguration;
 
     private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
 
@@ -343,12 +344,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myTimeUnitStack;
     }
 
-    protected final ChartUIConfiguration myChartUIConfiguration;
-
     public ChartUIConfiguration getChartUIConfiguration() {
         return myChartUIConfiguration;
     }
 
+    private void setChartUIConfiguration(ChartUIConfiguration chartConfig) {
+        myChartUIConfiguration = chartConfig;
+    }
+    
     protected final TaskManager myTaskManager;
 
     private int myVerticalOffset;
@@ -497,6 +500,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         copy.setBottomTimeUnit(getBottomUnit());
         copy.setBottomUnitWidth(getBottomUnitWidth());
         copy.setStartDate(getStartDate());
+        copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
+        GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
+        GPOptionGroup[] thisOptions = getChartOptionGroups();
+        assert copyOptions.length == thisOptions.length;
+        for (int i = 0; i < copyOptions.length; i++) {
+            copyOptions[i].copyFrom(thisOptions[i]);
+        }
+        copy.calculateRowHeight();
     }
 
     public OptionEventDispatcher getOptionEventDispatcher() {

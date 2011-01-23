@@ -25,8 +25,10 @@ public class RenderedGanttChartImage extends RenderedChartImage {
         if (myVisibleTasks.isEmpty()) {
             myChartImplementation.paintChart(g);
         } else {
-            g.translate(0, -myChartVoffsetPx);
-            myChartImplementation.paintComponent(g, myVisibleTasks);
+            getChartModel().paint(g);
+            //g.translate(0, -myChartVoffsetPx);
+            //myChartImplementation.paintComponent(g, myVisibleTasks);
+            
         }
     }
 
