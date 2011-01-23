@@ -49,6 +49,8 @@ public class TaskImpl implements Task {
 
     private boolean isMilestone;
 
+    private boolean myHasFixedDates;
+    
     boolean isProjectTask;
 
     private Priority myPriority;
@@ -131,6 +133,7 @@ public class TaskImpl implements Task {
         myNotes = "";
         bExpand = true;
         myColor = null;
+        myHasFixedDates = false;
 
         customValues = new CustomColumnsValues(myManager.getCustomColumnStorage());
     }
@@ -150,6 +153,7 @@ public class TaskImpl implements Task {
         myName = copy.myName;
         myWebLink = copy.myWebLink;
         isMilestone = copy.isMilestone;
+        myHasFixedDates = copy.myHasFixedDates;
         isProjectTask = copy.isProjectTask;
         myPriority = copy.myPriority;
         myStart = copy.myStart;
@@ -290,6 +294,13 @@ public class TaskImpl implements Task {
     }
     public boolean isMilestone() {
         return isMilestone;
+    }
+
+    /**
+     * @return true if the date related fields cannot be updated automatically
+     */
+    public boolean hasFixedDates() {
+        return myHasFixedDates;
     }
 
     public Priority getPriority() {
@@ -621,6 +632,14 @@ public class TaskImpl implements Task {
             });
         }
 
+        public void setHasFixedDates(final boolean hasFixedDates) {
+            myCommands.add(new Runnable() {
+                public void run() {
+                    TaskImpl.this.setHasFixedDates(hasFixedDates);
+                }
+            });
+        }
+
         public void setStart(final GanttCalendar start) {
         	assert start!=null;
         	GanttCalendar currentStart = getStart();
@@ -851,6 +870,11 @@ public class TaskImpl implements Task {
         isMilestone = milestone;
     }
 
+    public void setHasFixedDates(boolean hasFixedDates)
+    {
+        myHasFixedDates = hasFixedDates;
+    }
+    
     public void setPriority(Priority priority) {
         myPriority = priority;
     }
