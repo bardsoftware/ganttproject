@@ -60,11 +60,12 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
      */
     private void createGreyRectangleWithNiceBorders() {
         int sizex = getWidth();
-        int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
+        final int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
                 .getSpanningHeaderHeight();
-
+        final int headerHeight =  getChartModel().getChartUIConfiguration().getHeaderHeight();
+        
         GraphicPrimitiveContainer.Rectangle headerRectangle = getTimelineContainer()
-                .createRectangle(0, 0, sizex, spanningHeaderHeight * 2);
+                .createRectangle(0, 0, sizex, headerHeight);
         headerRectangle.setBackgroundColor(getChartModel()
                 .getChartUIConfiguration().getSpanningHeaderBackgroundColor());
 
@@ -81,8 +82,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
                 .getChartUIConfiguration().getHorizontalGutterColor1());
         //
         GraphicPrimitiveContainer.Line bottomGutter = getTimelineContainer()
-                .createLine(0, spanningHeaderHeight * 2, sizex - 2,
-                        spanningHeaderHeight * 2);
+                .createLine(0, headerHeight, sizex - 2, headerHeight);
         bottomGutter.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHorizontalGutterColor1());
     }

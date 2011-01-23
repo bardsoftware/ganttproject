@@ -238,7 +238,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             treeImage.getWidth(), AbstractChartImplementation.LOGO.getIconHeight(), BufferedImage.TYPE_INT_RGB);
 
         Graphics2D glogo = logo.createGraphics();
+        glogo.setBackground(Color.WHITE);
+        glogo.clearRect(0, 0, treeImage.getWidth(), getHeaderHeight());
         glogo.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        
         //logo_panel.paintComponent(glogo);
 
 //        Graphics2D gtreeview = treeview.createGraphics();
@@ -289,6 +292,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
 
         ChartModelBase modelCopy = myChartModel.createCopy();
+        modelCopy.setHeaderHeight(headerHeight + this.tree.getTable().getTableHeader().getHeight());
         RenderedGanttChartImage result = new RenderedGanttChartImage(
             modelCopy, 
             myChartComponentImpl, 
@@ -296,8 +300,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             task_image, 
             chartWidth, 
             chartHeight);
-        result.setChartVerticalOffset(
-            getHeaderHeight() - getImplementation().getHeaderHeight(tree.getTreeTable(), tree.getTreeTable().getTable()));
+//        result.setChartVerticalOffset(
+//            getHeaderHeight() - getImplementation().getHeaderHeight(tree.getTreeTable(), tree.getTreeTable().getTable()));
         return result;
     }
 

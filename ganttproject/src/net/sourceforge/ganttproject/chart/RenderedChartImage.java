@@ -82,7 +82,10 @@ public abstract class RenderedChartImage extends SimpleRenderedImage {
         paintChart(g2);
         //myChartModel.setTuningOptions(ChartModelImpl.TuningOptions.DEFAULT);
         return result;
-
+    }
+    
+    protected ChartModelBase getChartModel() {
+        return myChartModel;
     }
     
 }
