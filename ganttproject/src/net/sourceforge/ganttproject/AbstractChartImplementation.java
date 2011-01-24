@@ -38,7 +38,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import org.eclipse.core.runtime.IStatus;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
-    static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));
+    public static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));
     private static final int HEADER_OFFSET = LOGO.getIconHeight();
 
     private final ChartModelBase myChartModel;

@@ -36,23 +36,6 @@ class TaskTreeImageGenerator {
         return myTreeView;
     }
 
-    List<DefaultMutableTreeNode> getPrintableNodes(GanttExportSettings settings) {
-        List<DefaultMutableTreeNode> myItemsToConsider;
-        if (settings.isOnlySelectedItem()) {
-            myItemsToConsider = Arrays.asList(getTree().getSelectedNodes());
-        } else {
-            myItemsToConsider = getTree().getAllVisibleNodes();
-        }
-        System.out.println("TaskToConsider.size = " + myItemsToConsider.size());
-
-        for (int i = 0; i < myItemsToConsider.size(); i++) {
-            if (myItemsToConsider.get(i).isRoot()) {
-                myItemsToConsider.remove(i);
-                break;
-            }
-        }
-        return myItemsToConsider;
-    }
 
     protected Dimension calculateDimension(List<DefaultMutableTreeNode> taskNodes) {
         BufferedImage tmpImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
