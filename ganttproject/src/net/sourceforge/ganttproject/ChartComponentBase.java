@@ -10,6 +10,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -31,6 +32,7 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.OptionsDialogAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
@@ -365,5 +367,19 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return new ScrollViewInteraction(
             e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(), 
             getChartModel().getBottomUnit());
+    }
+    
+    protected RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
+        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
+        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
+
+        if (dateStart.after(dateEnd)) {
+            Date tmp = (Date) dateStart.clone();
+            dateStart = (Date) dateEnd.clone();
+            dateEnd = tmp;
+        }
+        settings.setStartDate(dateStart);
+        settings.setEndDate(dateEnd);
+        return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, treeTable);
     }
 }

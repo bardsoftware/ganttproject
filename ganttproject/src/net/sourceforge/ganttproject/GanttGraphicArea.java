@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.action.GPAction;
@@ -36,7 +35,6 @@ import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
-import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -214,17 +212,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
-
-        if (dateStart.after(dateEnd)) {
-            Date tmp = (Date) dateStart.clone();
-            dateStart = (Date) dateEnd.clone();
-            dateEnd = tmp;
-        }
-        settings.setStartDate(dateStart);
-        settings.setEndDate(dateEnd);
-
         List<DefaultMutableTreeNode> visibleNodes = settings.isOnlySelectedItem() ?
             Arrays.asList(this.tree.getSelectedNodes()) :
             this.tree.getAllVisibleNodes();
@@ -236,7 +223,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
         settings.setVisibleTasks(GanttTree2.convertNodesListToItemList(visibleNodes));
-        return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, tree.getTreeTable());
+        return getRenderedImage(settings, tree.getTreeTable());
     }
 
     GPUndoManager getUndoManager() {
