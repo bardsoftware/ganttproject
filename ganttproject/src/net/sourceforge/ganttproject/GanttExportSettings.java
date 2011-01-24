@@ -1,6 +1,9 @@
 package net.sourceforge.ganttproject;
 
 import java.util.Date;
+import java.util.List;
+
+import net.sourceforge.ganttproject.task.Task;
 
 /** Class to store 3 boolean values */
 public class GanttExportSettings {
@@ -11,6 +14,8 @@ public class GanttExportSettings {
     public boolean name, percent, depend, border3d, ok;
     
     private boolean onlySelectedItems;
+
+    private List<Task> myVisibleTasks;
 
     public GanttExportSettings() {
         name = percent = depend = ok = true;
@@ -49,5 +54,13 @@ public class GanttExportSettings {
 
     public Date getEndDate() {
         return endDate;
+    }
+
+    public void setVisibleTasks(List<Task> visibleTasks) {
+        myVisibleTasks = visibleTasks;
+    }
+    
+    public List<Task> getVisibleTasks() {
+        return myVisibleTasks;
     }
 }

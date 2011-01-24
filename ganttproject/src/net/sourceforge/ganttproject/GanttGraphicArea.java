@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -27,10 +26,6 @@ import javax.swing.Icon;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.jdesktop.swing.JXTreeTable;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -39,12 +34,10 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.chart.OffsetBuilder;
-import net.sourceforge.ganttproject.chart.OffsetList;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
-import net.sourceforge.ganttproject.chart.RenderedChartImage;
-import net.sourceforge.ganttproject.chart.RenderedGanttChartImage;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
+import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
@@ -53,10 +46,10 @@ import net.sourceforge.ganttproject.chart.mouse.ChangeTaskBoundaryInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
+import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
@@ -77,6 +70,9 @@ import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * Class for the graphic part of the soft
@@ -115,10 +111,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private GPUndoManager myUndoManager;
 
-    private JTableHeader myTableHeader = null;
-
-    private TaskTreeImageGenerator myTaskImageGenerator;
-
     private ChartViewState myViewState;
 
     public GanttGraphicArea(GanttProject app, GanttTree2 ttree,
@@ -138,7 +130,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         });
         this.tree = ttree;
-        myTableHeader = tree.getTreeTable().getTable().getTableHeader();
         myViewState = new ChartViewState(this, app.getUIFacade());
         super.setStartDate(GregorianCalendar.getInstance().getTime());
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
@@ -172,7 +163,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         appli = app;
 
         getProject().getTaskCustomColumnManager().addListener(this);
-        myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
     }
 
     /** @return the color of the task */
@@ -224,50 +214,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-
-        //GPTreeTableBase treetable = this.tree.getTreeTable();
-        //JXTreeTable xtreetable = treetable.getTreeTable();
-
-        final int headerHeight = AbstractChartImplementation.LOGO.getIconHeight();//getHeaderHeight();
-        int treeHeight = tree.getTreeTable().getHeight() + headerHeight;
-
-        //GanttImagePanel logo_panel= new GanttImagePanel("big.png", xtreetable.getWidth(), headerHeight);
-        BufferedImage treeImage  = new BufferedImage(this.tree.getWidth(), treeHeight, BufferedImage.TYPE_INT_RGB);
-//        BufferedImage treeview = new BufferedImage(this.tree.getWidth(), this.tree.getHeight(), BufferedImage.TYPE_INT_RGB);
-        BufferedImage logo  = new BufferedImage(
-            treeImage.getWidth(), AbstractChartImplementation.LOGO.getIconHeight(), BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D glogo = logo.createGraphics();
-        glogo.setBackground(Color.WHITE);
-        glogo.clearRect(0, 0, treeImage.getWidth(), getHeaderHeight());
-        glogo.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
-        
-        //logo_panel.paintComponent(glogo);
-
-//        Graphics2D gtreeview = treeview.createGraphics();
-//        treetable.paintComponents(gtreeview);
-
-//        BufferedImage header = treeview.getSubimage(0, 0, treeview.getWidth(), treetable.getRowHeight()+3);
-//        treeview.flush();
-
-        Graphics2D gtree = treeImage.createGraphics();
-        this.tree.getTreeTable().printAll(gtree);
-
-        // Create a new image that will contain the logo, the table/tree and the chart
-        BufferedImage task_image = new BufferedImage(
-            treeImage.getWidth(), 
-            treeHeight, 
-            BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D gimage = task_image.createGraphics();
-
-        // Draw the logo on the image
-        gimage.drawImage(logo, 0, 0, treeImage.getWidth(), logo.getHeight(), Color.WHITE, null);
-        // Draw the header on the image
-//        gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
-        // Draw the tree on the image
-        gimage.drawImage(treeImage, 0, logo.getHeight(), treeImage.getWidth(), treeImage.getHeight(), null);
-
         Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
         Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
 
@@ -276,33 +222,21 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             dateStart = (Date) dateEnd.clone();
             dateEnd = tmp;
         }
+        settings.setStartDate(dateStart);
+        settings.setEndDate(dateEnd);
 
-        OffsetBuilder offsetBuilder = myChartModel.createOffsetBuilderFactory()
-            .withStartDate(dateStart)
-            .withEndDate(dateEnd)
-            .withEndOffset(Integer.MAX_VALUE)
-            .build();
-        OffsetList bottomOffsets = new OffsetList();
-        offsetBuilder.constructOffsets(null, bottomOffsets);
-        int chartWidth = bottomOffsets.getEndPx();
-//        if (chartWidth < this.getWidth()) {
-//            chartWidth = this.getWidth();
-//        }
-        int chartHeight = task_image.getHeight();
-        List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
+        List<DefaultMutableTreeNode> visibleNodes = settings.isOnlySelectedItem() ?
+            Arrays.asList(this.tree.getSelectedNodes()) :
+            this.tree.getAllVisibleNodes();
 
-        ChartModelBase modelCopy = myChartModel.createCopy();
-        modelCopy.setHeaderHeight(headerHeight + this.tree.getTable().getTableHeader().getHeight());
-        RenderedGanttChartImage result = new RenderedGanttChartImage(
-            modelCopy, 
-            myChartComponentImpl, 
-            GanttTree2.convertNodesListToItemList(myItemsToConsider), 
-            task_image, 
-            chartWidth, 
-            chartHeight);
-//        result.setChartVerticalOffset(
-//            getHeaderHeight() - getImplementation().getHeaderHeight(tree.getTreeTable(), tree.getTreeTable().getTable()));
-        return result;
+        for (int i = 0; i < visibleNodes.size(); i++) {
+            if (visibleNodes.get(i).isRoot()) {
+                visibleNodes.remove(i);
+                break;
+            }
+        }
+        settings.setVisibleTasks(GanttTree2.convertNodesListToItemList(visibleNodes));
+        return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, tree.getTreeTable());
     }
 
     GPUndoManager getUndoManager() {

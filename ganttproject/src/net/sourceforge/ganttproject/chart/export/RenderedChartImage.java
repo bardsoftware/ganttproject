@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package net.sourceforge.ganttproject.chart;
+package net.sourceforge.ganttproject.chart.export;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +15,10 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 
-public abstract class RenderedChartImage extends SimpleRenderedImage {
+import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
+
+public class RenderedChartImage extends SimpleRenderedImage {
 
     private BufferedImage myTaskImage;
     ColorModel myColorModel = new DirectColorModel(32,
@@ -69,7 +72,9 @@ public abstract class RenderedChartImage extends SimpleRenderedImage {
 		return myCurrentRaster;
     }
 
-    protected abstract void paintChart(Graphics g);
+    protected void paintChart(Graphics g) {
+        myChartModel.paint(g);
+    }
     
     private BufferedImage getChart(int offsetx, int offsety,  int width, int height, int chartWidth, int chartHeight) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB );
