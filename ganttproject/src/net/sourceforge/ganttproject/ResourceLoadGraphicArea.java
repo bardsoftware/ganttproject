@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
-import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -101,17 +100,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
-
-        if (dateStart.after(dateEnd)) {
-            Date tmp = (Date) dateStart.clone();
-            dateStart = (Date) dateEnd.clone();
-            dateEnd = tmp;
-        }
-        settings.setStartDate(dateStart);
-        settings.setEndDate(dateEnd);
-        return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
+        return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
     }
     
     public String getName() {
