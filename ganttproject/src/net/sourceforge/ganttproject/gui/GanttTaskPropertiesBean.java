@@ -409,11 +409,11 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private JXDatePicker createDatePicker(ActionListener listener) {
         ImageIcon calendarImage = new ImageIcon(getClass().getResource(
-        "/icons/calendar_16.gif"));
-        Icon nextMonth = new ImageIcon(getClass()
-                .getResource("/icons/nextmonth.gif"));
-        Icon prevMonth = new ImageIcon(getClass()
-                .getResource("/icons/prevmonth.gif"));
+                "/icons/calendar_16.gif"));
+        Icon nextMonth = new ImageIcon(getClass().getResource(
+                "/icons/nextmonth.gif"));
+        Icon prevMonth = new ImageIcon(getClass().getResource(
+                "/icons/prevmonth.gif"));
         UIManager.put("JXDatePicker.arrowDown.image", calendarImage);
         UIManager.put("JXMonthView.monthUp.image", prevMonth);
         UIManager.put("JXMonthView.monthDown.image", nextMonth);
@@ -422,6 +422,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         result.addActionListener(listener);
         return result;
     }
+
     /** Init the widgets */
     private void init() {
         constructNotesPanel();
