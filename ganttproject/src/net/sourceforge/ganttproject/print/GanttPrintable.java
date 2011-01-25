@@ -57,7 +57,7 @@ public class GanttPrintable implements Printable {
         System.err.println("[GanttPrintable] print(): numrows=" + numRows
                 + " pagesPerRow=" + pagesPerRow);
         int totalPages = pagesPerRow * numRows;
-        if (pageIndex >= totalPages) {
+        if (pageIndex+1 >= totalPages) {
             return Printable.NO_SUCH_PAGE;
         }
 
