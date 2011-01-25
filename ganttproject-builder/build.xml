@@ -49,6 +49,8 @@
             	<include name="install-linux.sh"/>
                 <include name="ganttproject.command"/>
                 <include name="ganttproject.bat"/>
+            	<include name="ganttproject.desktop"/>
+            	<include name="ganttproject_32_2.ico"/>
                 <include name="GanttProject.app/**"/>
                 <include name="HouseBuildingSample.gan"/>
             </fileset>
@@ -91,6 +93,8 @@
 				<include name="ganttproject.bat"/>
 				<include name="ganttproject.sh"/>
 				<include name="install-linux.sh"/>
+			    <include name="ganttproject.desktop"/>
+                <include name="ganttproject_32_2.ico"/>
 				<include name="ganttproject.command"/>
 				<include name="ganttproject-eclipsito-config.xml"/>
 				<include name="ganttproject-webstart-config.xml"/>
