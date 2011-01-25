@@ -60,29 +60,28 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
      */
     private void createGreyRectangleWithNiceBorders() {
         int sizex = getWidth();
-        int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
+        final int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
                 .getSpanningHeaderHeight();
-
-        GraphicPrimitiveContainer.Rectangle headerRectangle = getTimelineContainer()
-                .createRectangle(0, 0, sizex, spanningHeaderHeight * 2);
+        final int headerHeight =  getChartModel().getChartUIConfiguration().getHeaderHeight();
+        GraphicPrimitiveContainer container = getPrimitiveContainer().getLayer(0);
+        GraphicPrimitiveContainer.Rectangle headerRectangle = container
+                .createRectangle(0, 0, sizex, headerHeight);
         headerRectangle.setBackgroundColor(getChartModel()
                 .getChartUIConfiguration().getSpanningHeaderBackgroundColor());
 
-        GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = getTimelineContainer()
+        GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = container
                 .createRectangle(0, spanningHeaderHeight, sizex - 1,
                         spanningHeaderHeight);
         timeunitHeaderBorder.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHeaderBorderColor());
         //
-        GraphicPrimitiveContainer.Line middleGutter1 = getTimelineContainer()
-                .createLine(1, spanningHeaderHeight - 1, sizex - 2,
-                        spanningHeaderHeight - 1);
-        middleGutter1.setForegroundColor(getChartModel()
-                .getChartUIConfiguration().getHorizontalGutterColor1());
+//        GraphicPrimitiveContainer.Line middleGutter1 = getTimelineContainer()
+//                .createLine(1, spanningHeaderHeight - 1, sizex - 2, spanningHeaderHeight - 1);
+//        middleGutter1.setForegroundColor(getChartModel()
+//                .getChartUIConfiguration().getHorizontalGutterColor1());
         //
         GraphicPrimitiveContainer.Line bottomGutter = getTimelineContainer()
-                .createLine(0, spanningHeaderHeight * 2, sizex - 2,
-                        spanningHeaderHeight * 2);
+                .createLine(0, headerHeight-1, sizex - 2, headerHeight-1);
         bottomGutter.setForegroundColor(getChartModel()
                 .getChartUIConfiguration().getHorizontalGutterColor1());
     }
@@ -147,7 +146,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
      */
     private void renderBottomUnits() {
         BottomUnitLineRendererImpl bottomUnitLineRenderer =
-            new BottomUnitLineRendererImpl(getChartModel(), getTimelineContainer(), getPrimitiveContainer());
+            new BottomUnitLineRendererImpl(getChartModel(), getPrimitiveContainer().getLayer(1), getPrimitiveContainer());
         bottomUnitLineRenderer.setHeight(getHeight());
         bottomUnitLineRenderer.render();
         if (myRedlineOption.isChecked()) {
