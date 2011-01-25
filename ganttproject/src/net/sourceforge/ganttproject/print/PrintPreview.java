@@ -18,11 +18,13 @@ import java.awt.print.Paper;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Vector;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -32,6 +34,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -40,7 +43,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
@@ -159,8 +161,6 @@ public class PrintPreview extends JDialog {
 //        myExportSettings.setEndDate(myEndDate);
         myPrintable = new GanttPrintable(myChart.getChart(myExportSettings),
                 GanttPrintable.REDUCE_FACTOR_DEFAULT);
-        JToolBar tb = new JToolBar();
-        JToolBar tb2 = new JToolBar();
 
         JButton bPrint = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource("/icons/print_16.gif")));
@@ -304,51 +304,46 @@ public class PrintPreview extends JDialog {
                 }
             });
         }
-        Vector<MediaSizeName> vMedia = new Vector<MediaSizeName>();
-
-        // try {
-        // vMedia = getAllMediaSizeNameAvailable();
-        vMedia.add(MediaSizeName.ISO_A0);
-        vMedia.add(MediaSizeName.ISO_A1);
-        vMedia.add(MediaSizeName.ISO_A2);
-        vMedia.add(MediaSizeName.ISO_A3);
-        vMedia.add(MediaSizeName.ISO_A4);
-        vMedia.add(MediaSizeName.ISO_A5);
-        vMedia.add(MediaSizeName.ISO_A6);
-        // } catch (ClassNotFoundException e1) {
-        // e1.printStackTrace();
-        // }
-
-        myComboMediaSize = new JComboBox(vMedia);
-        dim = myComboMediaSize.getPreferredSize();
-        dim.setSize(dim.getWidth() + 20, dim.getHeight());
-        myComboMediaSize.setMaximumSize(dim);
-        myComboMediaSize.setPreferredSize(dim);
-        myComboMediaSize.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
+        List<MediaSizeName> sizes = new ArrayList<MediaSizeName>();
+        try {
+            Field[] fields = MediaSizeName.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].getType().equals(MediaSizeName.class)) {
+                    sizes.add((MediaSizeName) fields[i].get(null));
+                }
+            }
+        } catch (IllegalArgumentException e1) {
+            e1.printStackTrace();
+        } catch (IllegalAccessException e1) {
+            e1.printStackTrace();
+        }
+        myComboMediaSize = new JComboBox(sizes.toArray());
+        myComboMediaSize.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
                 run(new Runnable() {
                     public void run() {
-                        Object selectedItem = myComboMediaSize
-                                .getSelectedItem();
+                        Object selectedItem = myComboMediaSize.getSelectedItem();
                         if (selectedItem != null) {
                             myMediaSizeName = (MediaSizeName) selectedItem;
-                            MediaSize ms = MediaSize
-                                    .getMediaSizeForName(myMediaSizeName);
+                            MediaSize ms = MediaSize.getMediaSizeForName(myMediaSizeName);
                             Paper p = new Paper();
                             float[] size = ms.getSize(MediaSize.INCH);
                             p.setSize(size[0] * 72, size[1] * 72);
-                            p.setImageableArea(72, 72, p.getWidth() - 72 * 2, p
-                                    .getHeight() - 72 * 2);
+                            p.setImageableArea(72, 72, p.getWidth() - 72 * 2, p.getHeight() - 72 * 2);
                             myPageFormat.setPaper(p);
                             changePageOrientation(myOrientation);
-                            statusBar.setText1(ms.getX(MediaSize.MM) + " x "
-                                    + ms.getY(MediaSize.MM));
+                            statusBar.setText1(ms.getX(MediaSize.MM) + " x " + ms.getY(MediaSize.MM));
                             myPreviewContainer.repaint();
                         }
                     }
                 });
             }
         });
+//        dim = myComboMediaSize.getPreferredSize();
+//        dim.setSize(dim.getWidth() + 20, dim.getHeight());
+//        myComboMediaSize.setMaximumSize(dim);
+//        myComboMediaSize.setPreferredSize(dim);
 
         bPrint.setToolTipText(GanttProject.getToolTip(GanttProject
                 .correctLabel(language.getText("printProject"))));
@@ -412,31 +407,30 @@ public class PrintPreview extends JDialog {
             bZoomIn = null;
         }
 
-        tb2.setFloatable(false);
-        tb.setFloatable(false);
+        Box tb = Box.createHorizontalBox();
         tb.add(bClose);
-        tb.addSeparator(new Dimension(16, 16));
+        tb.add(Box.createHorizontalStrut(16));
         tb.add(bPrint);
-        tb.addSeparator(new Dimension(16, 16));
+        tb.add(Box.createHorizontalStrut(16));
         tb.add(bPortrait);
         tb.add(bLandscape);
-        tb.addSeparator(new Dimension(16, 16));
+        tb.add(Box.createHorizontalStrut(16));
         tb.add(new JLabel(language.getText("zoom") + " "));
         tb.add(myComboScale);
-        if (!vMedia.isEmpty()) {
-            tb.addSeparator(new Dimension(16, 16));
-            tb.add(new JLabel(language.getText("choosePaperFormat") + " "));
-            tb.addSeparator(new Dimension(0, 10));
-            tb.add(myComboMediaSize);
-        }
+        tb.add(Box.createHorizontalStrut(16));
+        tb.add(new JLabel(language.getText("choosePaperFormat") + " "));
+        tb.add(Box.createHorizontalStrut(3));
+        tb.add(myComboMediaSize);
+        tb.add(Box.createHorizontalGlue());
 
+        Box tb2 = Box.createHorizontalBox();
         if (isDate) {
             tb2.add(bZoomOut);
-            tb2.addSeparator(new Dimension(5, 0));
+            tb2.add(Box.createHorizontalStrut(5));
             tb2.add(bZoomIn);
-            tb2.addSeparator(new Dimension(20, 0));
+            tb2.add(Box.createHorizontalStrut(5));
             tb2.add(myWholeProjectButton);
-            tb2.addSeparator(new Dimension(16, 16));
+            tb2.add(Box.createHorizontalStrut(16));
             OptionsPageBuilder builder = new OptionsPageBuilder();
             builder.setOptionKeyPrefix("");
             tb2.add(builder.createStandaloneOptionPanel(myStart));
@@ -539,14 +533,22 @@ public class PrintPreview extends JDialog {
             PagePreview pp = (PagePreview) comps[k];
             pp.setScale(myScale);
         }
+        PagePreview.clearCache();
         myPreviewContainer.doLayout();
         myPreviewContainer.getParent().getParent().validate();
     }
 
     private void run(Runnable runnable) {
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        runnable.run();
-        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            runnable.run();
+        }
+        catch (Exception e) {
+            GPLogger.log(e);
+        }
+        finally {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     private void changePageOrientation(int newOrientation) {
@@ -561,7 +563,7 @@ public class PrintPreview extends JDialog {
         myPreviewContainer.doLayout();
         myPreviewContainer.getParent().getParent().validate();
         myPreviewContainer.validate();
-
+        PagePreview.clearCache();
     }
 
     private void print() {
@@ -677,24 +679,27 @@ public class PrintPreview extends JDialog {
     }
 
     static class PagePreview extends JPanel {
-    	static SortedMap<Integer, BufferedImage> ourImageCache = new TreeMap<Integer, BufferedImage>();
+    	static SortedMap<Integer, Image> ourImageCache = new TreeMap<Integer, Image>();
 		private final int myPageIndex;
 		private final PageFormat myPageFormat;
-		private final Printable myChart;
+		private final Printable myPrintableChart;
 		private int myScalePercents;
 		
         public PagePreview(int pageIndex, PageFormat pageFormat, Printable chart, int scalePercents) {
         	myScalePercents = scalePercents;
             myPageIndex = pageIndex;
             myPageFormat = pageFormat;
-            myChart = chart;
+            myPrintableChart = chart;
             setBackground(Color.white);
             setBorder(new MatteBorder(1, 1, 2, 2, Color.black));
         }
 
+        public static void clearCache() {
+            ourImageCache.clear();
+        }
+
         void setScale(int scale) {
         	myScalePercents = scale; 
-            repaint();
         }
 
         private int getScaledWidth() {
@@ -722,31 +727,28 @@ public class PrintPreview extends JDialog {
 
         protected void paintComponent(Graphics g) {
         	super.paintComponent(g);
-        	BufferedImage bufferImage = ourImageCache.get(new Integer (myPageIndex));
-        	if (bufferImage==null) {
-	        	bufferImage = new BufferedImage(
+        	Image scaledImage = ourImageCache.get(new Integer (myPageIndex));
+        	if (scaledImage==null) {
+	        	BufferedImage bufferImage = new BufferedImage(
 	        			(int)myPageFormat.getWidth(), 
 	        			(int)myPageFormat.getHeight(), 
 	        			BufferedImage.TYPE_INT_RGB);
-	        	if (ourImageCache.size() >= 4) {
-	        		ourImageCache.remove(ourImageCache.firstKey());
-	        	}
-	        	ourImageCache.put(new Integer(myPageIndex), bufferImage);
+                Graphics bufferGraphics = bufferImage.getGraphics();
+                {
+    	            bufferGraphics.setColor(Color.white);
+    	            bufferGraphics.fillRect(0, 0, bufferImage.getWidth(), bufferImage.getHeight());
+    	            try {
+    					myPrintableChart.print(bufferGraphics, myPageFormat, myPageIndex);
+    				} catch (PrinterException e) {
+    		        	if (!GPLogger.log(e)) {
+    		        		e.printStackTrace(System.err);
+    		        	}
+    				}
+                }
+                scaledImage = bufferImage.getScaledInstance(
+                    getScaledWidth(), getScaledHeight(), Image.SCALE_SMOOTH);
+                ourImageCache.put(new Integer(myPageIndex), scaledImage);
         	}
-            Graphics bufferGraphics = bufferImage.getGraphics();
-            {
-	            bufferGraphics.setColor(Color.white);
-	            bufferGraphics.fillRect(0, 0, bufferImage.getWidth(), bufferImage.getHeight());
-	            try {
-					myChart.print(bufferGraphics, myPageFormat, myPageIndex);
-				} catch (PrinterException e) {
-		        	if (!GPLogger.log(e)) {
-		        		e.printStackTrace(System.err);
-		        	}
-				}
-            }
-            Image scaledImage = bufferImage.getScaledInstance(
-            		getScaledWidth(), getScaledHeight(), Image.SCALE_SMOOTH);
             g.setColor(getBackground());
             g.fillRect(0, 0, getWidth(), getHeight());
             g.drawImage(scaledImage, 0, 0, null);
