@@ -46,6 +46,7 @@
         <copy todir="${install.dir}">
             <fileset dir=".">
                 <include name="ganttproject.sh"/>
+            	<include name="install-linux.sh"/>
                 <include name="ganttproject.command"/>
                 <include name="ganttproject.bat"/>
                 <include name="GanttProject.app/**"/>
@@ -89,13 +90,13 @@
 				<include name="build.private.properties"/>
 				<include name="ganttproject.bat"/>
 				<include name="ganttproject.sh"/>
+				<include name="install-linux.sh"/>
 				<include name="ganttproject.command"/>
 				<include name="ganttproject-eclipsito-config.xml"/>
 				<include name="ganttproject-webstart-config.xml"/>
 				<include name="ganttproject.jnlp"/>
 				<include name="HouseBuildingSample.gan"/>
 				<include name=".project"/>
-				
 			</fileset>
 		</copy>
 	</target>
