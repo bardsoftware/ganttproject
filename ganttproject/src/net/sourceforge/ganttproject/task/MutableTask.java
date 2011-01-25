@@ -6,8 +6,6 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 
 /**
- * Created by IntelliJ IDEA.
- * 
  * @author bard Date: 06.02.2004
  */
 public interface MutableTask {
