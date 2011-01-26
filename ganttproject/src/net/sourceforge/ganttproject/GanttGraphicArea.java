@@ -645,25 +645,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private class OldMouseMotionListenerImpl extends MouseMotionListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
 
-        public void mouseDragged(MouseEvent e) {
-            super.mouseDragged(e);
-            /*
-             * Add the repaint in order to repaint the treetable when an action
-             * occurs on the GraphicArea. here mousedragged because all actions
-             * modifying task properties on the graphics are made through
-             * mousedragged (I think !)
-             */
-            // Mediator.getGanttProjectSingleton().repaint();
-            // getUIFacade().repaint2();
-            if (myUIConfiguration.isCriticalPathOn()) {
-                MouseInteraction mi = myChartComponentImpl
-                        .getActiveInteraction();
-                if ((mi instanceof ChangeTaskBoundaryInteraction)
-                        || (mi instanceof MoveTaskInteractions))
-                    appli.recalculateCriticalPath();
-            }
-        }
-
         // Move the move on the area
         public void mouseMoved(MouseEvent e) {
             ChartItem itemUnderPoint = myMouseSupport
