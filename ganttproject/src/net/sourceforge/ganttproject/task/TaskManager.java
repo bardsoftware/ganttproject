@@ -100,8 +100,10 @@ public interface TaskManager {
      *            The root of the tasks to consider in the critical path
      *            finding.
      */
+    @Deprecated
     public void processCriticalPath(TaskNode root);
-
+    public void processCriticalPath(Task root);
+    
     public void deleteTask(Task tasktoRemove);
 
     CustomColumnsStorage getCustomColumnStorage();

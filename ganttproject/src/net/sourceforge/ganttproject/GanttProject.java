@@ -74,7 +74,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.NewArtefactAction;
@@ -84,12 +83,8 @@ import net.sourceforge.ganttproject.action.RedoAction;
 import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
 import net.sourceforge.ganttproject.action.RolloverAction;
-import net.sourceforge.ganttproject.action.ScrollGanttChartLeftAction;
-import net.sourceforge.ganttproject.action.ScrollGanttChartRightAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.UndoAction;
-import net.sourceforge.ganttproject.action.ZoomInAction;
-import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -108,7 +103,6 @@ import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -141,7 +135,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -196,8 +189,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private JPopupMenu menu = new JPopupMenu();;
 
     private TestGanttRolloverButton bUndo, bRedo;
-
-    private TestGanttRolloverButton bCritical;
 
     private TestGanttRolloverButton bSaveCurrent, bComparePrev;
 
@@ -269,16 +260,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private MouseListener myStopEditingMouseListener = null;
 
     private DelayManager myDelayManager;
-
-    // private boolean bQuickSave;//to know if gantt has to quicksave the
-    // project
-    // private int currentQuickSave;
-    // private ArrayList aQuick;//List of all the quicksaves
-    // private int lastQuickSave;
-    // private int firstQuickSave;
-    // private int undoNumber;
-
-    // private JSplitPane mySplitPane;
 
     private ProjectMenu myProjectMenu;
 
@@ -403,37 +384,16 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         getZoomManager().addZoomListener(area.getZoomListener());
 
-        /*
-         * myCopyAction = new CopyAction((GanttTree2) getTree(), options
-         * .getIconSize());
-         */
-
-        // myCopyAction = new CopyAction(this, options.getIconSize());
-        //
-        // /*myPasteAction = new PasteAction((GanttTree2) getTree(), options
-        // .getIconSize());*/
-        //
-        // myPasteAction = new PasteAction(this, options.getIconSize());
-        //
-        // /*myCutAction = new CutAction((GanttTree2) getTree(), options
-        // .getIconSize());*/
-        //
-        // myCutAction = new CutAction(this, options.getIconSize());
 
         System.err.println("3. creating menu...");
         myRefreshAction = new RefreshViewAction(getUIFacade(), options);
 
-        // myRolloverActions.add(myCopyAction);
-        // myRolloverActions.add(myPasteAction);
-        // myRolloverActions.add(myCutAction);
         myRolloverActions.add(myRefreshAction);
         getTree().setActions();
 
         // Create the menus
 
         bar = new JMenuBar();
-        if (!isOnlyViewer)
-            setJMenuBar(bar);
         // Allocation of the menus
         mProject = new JMenu();
         mMRU = new JMenu();
@@ -473,8 +433,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
-        myTaskPropertiesAction = new TaskPropertiesAction(getProject(),
-                Mediator.getTaskSelectionManager(), getUIFacade());
+        myTaskPropertiesAction = new TaskPropertiesAction(getProject(), getTaskSelectionManager(), getUIFacade());
         mTask.add(myTaskPropertiesAction);
         getTree().setTaskPropertiesAction(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
@@ -522,8 +481,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // to create a default project
         // createDefaultTree(tree);
         System.err.println("4. creating views...");
-        myGanttChartTabContent = new GanttChartTabContentPanel(getProject(),
-                getUIFacade(), tree, area);
+        myGanttChartTabContent = new GanttChartTabContentPanel(
+            getProject(), getUIFacade(), getTaskTree(), area, getUIConfiguration());
         GPView ganttView = getViewManager().createView(myGanttChartTabContent,
                 new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
@@ -541,8 +500,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         getTabs().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                bCritical
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
                 bComparePrev
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
                 bSaveCurrent
@@ -1028,9 +985,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bRedo
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("redo"))));
-        // bZoomFit.setToolTipText(getToolTip(language.zoomFit()));
-
-        bCritical.setToolTipText(getToolTip(language.getText("criticalPath")));
         bComparePrev
                 .setToolTipText(getToolTip(language.getText("comparePrev")));
         bSaveCurrent
@@ -1106,7 +1060,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bAbout.setText(correctLabel(language.getText("about")));
             bUndo.setText(correctLabel(language.getText("undo")));
             bRedo.setText(correctLabel(language.getText("redo")));
-            bCritical.setText(language.getText("criticalPath"));
             bComparePrev.setText(correctLabel(language.getText("comparePrev")));
             bSaveCurrent.setText(correctLabel(language.getText("saveCurrent")));
             bRefresh.setText(correctLabel(language.getText("refresh")));
@@ -1125,15 +1078,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 next.setIconSize(options.getIconSize());
             }
         } else {
-            if (!myUIConfiguration.isCriticalPathOn()) {
-                bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
-                        "/icons/criticalPathOff_" + options.getIconSize()
-                                + ".gif")));
-            } else {
-                bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
-                        "/icons/criticalPathOn_" + options.getIconSize()
-                                + ".gif")));
-            }
             for (int i = 0; i < myRolloverActions.size(); i++) {
                 RolloverAction next = (RolloverAction) myRolloverActions.get(i);
                 next.isIconVisible(true);
@@ -1278,24 +1222,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myRolloverActions.add(redo);
         bRedo = new TestGanttRolloverButton(redo);
 
-        Action critic = new CalculateCriticalPathAction(getTaskManager(), tree,
-                options, getUIConfiguration(), this);
-        myRolloverActions.add(critic);
-        bCritical = new TestGanttRolloverButton(critic);
-        bRefresh = new TestGanttRolloverButton(new ImageIcon(
-                getClass().getResource(
-                        "/icons/refresh_" + options.getIconSize() + ".gif")));
-        bRefresh.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getUIFacade().setStatusText(
-                        GanttLanguage.getInstance().getText("refresh"));
-                getUIFacade().refresh();
-            }
-        });
-
-        bShowHiddens = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource("/icons/showHiddens.gif")));
-        bShowHiddens.addActionListener(this);
         iconList = initIconList();
         deletedIconList = initDeletedIconList();
         addButtons();
@@ -1919,8 +1845,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public GanttTree2 getTree() {
         if (this.tree == null) {
-            this.tree = new GanttTree2(this, getTaskManager(), Mediator
-                    .getTaskSelectionManager(), getUIFacade());
+            this.tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
         }
         return this.tree;
     }
@@ -2306,8 +2231,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     sIcons = sIcons + GanttOptions.UNDO;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo) {
                     sIcons = sIcons + GanttOptions.REDO;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical) {
-                    sIcons = sIcons + GanttOptions.CRITICAL;
+//                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical) {
+//                    sIcons = sIcons + GanttOptions.CRITICAL;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout) {
                     sIcons = sIcons + GanttOptions.ABOUT;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bSaveCurrent) {
@@ -2390,9 +2315,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         case (GanttOptions.REDO):
             list.addElement(bRedo);
             break;
-        case (GanttOptions.CRITICAL):
-            list.addElement(bCritical);
-            break;
+//        case (GanttOptions.CRITICAL):
+//            list.addElement(bCritical);
+//            break;
         case (GanttOptions.ABOUT):
             list.addElement(bAbout);
             break;
@@ -2467,15 +2392,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void refresh() {
-        getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-        ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
-        if (projectTasks.size() != 0) {
-            for (int i = 0; i < projectTasks.size(); i++) {
-                getTaskManager().processCriticalPath(
-                        (TaskNode) projectTasks.get(i));
-            }
-        }
-
+        getTaskManager().processCriticalPath(getTaskManager().getRootTask());
         getResourcePanel().getResourceTreeTableModel().updateResources();
         getResourcePanel().getResourceTreeTable().setRowHeight(20);
         if (myDelayManager != null)

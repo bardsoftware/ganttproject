@@ -117,6 +117,11 @@ public abstract class GPAction extends AbstractAction implements
         }
     }
 
+    protected void updateAction() {
+        updateName();
+        updateTooltip();
+    }
+    
     private void updateTooltip() {
         putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getTooltipText() + "</body></html>");
     }
