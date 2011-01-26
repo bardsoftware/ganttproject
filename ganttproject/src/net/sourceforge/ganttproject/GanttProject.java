@@ -184,15 +184,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bProperties,/* bUnlink, bLink, bUp, bDown, bPrev,
             bScrollCenter, bNext,  bZoomFit, */bAbout;
 
-    private TestGanttRolloverButton bShowHiddens;
-
     private JPopupMenu menu = new JPopupMenu();;
 
     private TestGanttRolloverButton bUndo, bRedo;
 
     private TestGanttRolloverButton bSaveCurrent, bComparePrev;
-
-    private TestGanttRolloverButton bRefresh;
 
     /** The project filename */
     public Document projectDocument = null;
@@ -394,6 +390,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // Create the menus
 
         bar = new JMenuBar();
+        setJMenuBar(bar);
         // Allocation of the menus
         mProject = new JMenu();
         mMRU = new JMenu();
@@ -989,9 +986,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .setToolTipText(getToolTip(language.getText("comparePrev")));
         bSaveCurrent
                 .setToolTipText(getToolTip(language.getText("saveCurrent")));
-        bRefresh.setToolTipText(getToolTip(language.getText("refresh")));
-        bShowHiddens
-                .setToolTipText(getToolTip(language.getText("showHiddens")));
         getTabs().setTitleAt(1, correctLabel(language.getText("human")));
         setButtonText();
         toolBar.updateButtonsLook();
@@ -1062,9 +1056,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bRedo.setText(correctLabel(language.getText("redo")));
             bComparePrev.setText(correctLabel(language.getText("comparePrev")));
             bSaveCurrent.setText(correctLabel(language.getText("saveCurrent")));
-            bRefresh.setText(correctLabel(language.getText("refresh")));
-            // bShowHiddens.setText
-            // (correctLabel(language.getText("showHiddens")));
         }
     }
 
@@ -2239,8 +2230,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     sIcons = sIcons + GanttOptions.SAVECURRENT;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bComparePrev) {
                     sIcons = sIcons + GanttOptions.COMPAREPREV;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRefresh) {
-                    sIcons = sIcons + GanttOptions.REFRESH;
                 }
             }
         }
@@ -2327,9 +2316,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         case (GanttOptions.COMPAREPREV):
             list.addElement(bComparePrev);
             break;
-        case (GanttOptions.REFRESH):
-            list.addElement(bRefresh);
-            break;
         default:
             break;
         }
@@ -2400,55 +2386,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         super.repaint();
     }
 
-    public void showHiddenButtonsPaneMenu() {
-        menu.applyComponentOrientation(language.getComponentOrientation());
-        menu.show(toolBar, bShowHiddens.getX(), bShowHiddens.getY());
-    }
-
     public void setHiddens() {
-        menu.removeAll();
-        addButtons();
-
-        int separatorSize = Integer.parseInt(options.getIconSize());
-
-        double toolBarlength = 0.;
-        int buttonSize = 0;
-        int lastDisplayedIndex = 0;
-        Component[] buttons = toolBar.getComponents();
-
-        if (toolBar.getOrientation() == JToolBar.HORIZONTAL) {
-            toolBarlength = toolBar.getSize().getWidth();
-        } else {
-            toolBarlength = toolBar.getSize().getHeight();
-        }
-        int position = 10;
-
-        // searching for hidden buttons
-        for (int i = 0; i < buttons.length; i++) {
-            if (buttons[i].getClass() == TestGanttRolloverButton.class) {
-                if (toolBar.getOrientation() == JToolBar.HORIZONTAL) {
-                    buttonSize = buttons[i].getWidth();
-                } else {
-                    buttonSize = buttons[i].getHeight();
-                }
-                position = position + buttonSize;
-                if (position + 2 * bShowHiddens.getWidth() / 3 < toolBarlength) {
-                    lastDisplayedIndex = i;
-                } else {
-                    menu.add(buttons[i]);
-                }
-            } else {
-                position = position + separatorSize;
-            }
-        }
-
-        // if there is hidden buttons
-        if (menu.getComponentCount() != 0) {
-            for (int i = lastDisplayedIndex + 1; i < buttons.length; i++) {
-                toolBar.remove(buttons[i]);
-            }
-            toolBar.add(bShowHiddens);
-        }
     }
 
     public CustomPropertyManager getResourceCustomPropertyManager() {
