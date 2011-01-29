@@ -83,6 +83,7 @@ import net.sourceforge.ganttproject.action.RedoAction;
 import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
 import net.sourceforge.ganttproject.action.RolloverAction;
+import net.sourceforge.ganttproject.action.SettingsDialogAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.UndoAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -168,7 +169,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // public JMenu mView;
 
     /** Menuitem */
-    public JMenuItem miPreview,/* miCut, miCopy, miPaste, */miOptions,
+    public JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
             miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
             miPrjCal, miWebPage, miAbout, miRefresh, miChartOptions;
 
@@ -424,9 +425,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // miPaste = new JMenuItem(myPasteAction);
         mEdit.add(getViewManager().getPasteAction());
         mEdit.addSeparator();
-        miOptions = createNewItem("/icons/settings_16.gif");
-        mEdit.add(miOptions);
-        myNewTaskAction = new NewTaskAction((IGanttProject) this);
+        mEdit.add(new SettingsDialogAction(getProject(), getUIFacade()));
+        myNewTaskAction = new NewTaskAction(getProject());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
@@ -779,12 +779,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MENU_MASK));
         // --REDO----------------------------------
         miRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MENU_MASK));
-        if (!isOnlyViewer) {
-            miOptions.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
-                    MENU_MASK));
-            miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
-                    MENU_MASK));
-        }
+        miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
+                MENU_MASK));
     }
 
     /** Create an item with a label */
@@ -931,7 +927,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         miUndo = changeMenuLabel(miUndo, language.getText("undo"));
         miRedo = changeMenuLabel(miRedo, language.getText("redo"));
-        miOptions = changeMenuLabel(miOptions, language.getText("settings"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language
@@ -1294,8 +1289,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             } else if (arg.equals(correctLabel(language.getText("sendMail")))) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
-            } else if (arg.equals(correctLabel(language.getText("settings")))) {
-                launchOptionsDialog();
             }
         } else if (evt.getSource() instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {
@@ -1314,14 +1307,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         // repaint();
-    }
-
-    /** Launch the options dialog */
-    public void launchOptionsDialog() {
-        getUIFacade().setStatusText(language.getText("settingsPreferences"));
-        SettingsDialog dialogOptions = new SettingsDialog(this);
-        dialogOptions.setVisible(true);
-        area.repaint();
     }
 
     public HumanResource newHumanResource() {
