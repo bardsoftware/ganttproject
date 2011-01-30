@@ -275,7 +275,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
         if (options.load()) {
-            language = options.getLanguage();
             GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
 
             HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());

@@ -107,14 +107,14 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
         boolean bHasChange = settingPanel.applyChanges(true);
 
         // construct the sections
-        if ((settingPanel instanceof LanguageSettingsPanel) && bHasChange) {
-            reinit = true;
-            rootNode.removeAllChildren();
-            treeModel.setRoot(rootNode);
-            treeModel.reload();
-            constructSections();
-            reinit = false;
-        }
+//        if ((settingPanel instanceof LanguageSettingsPanel) && bHasChange) {
+//            reinit = true;
+//            rootNode.removeAllChildren();
+//            treeModel.setRoot(rootNode);
+//            treeModel.reload();
+//            constructSections();
+//            reinit = false;
+//        }
 
         // - remove the settingPanel
         mainPanel2.remove(0);
@@ -130,9 +130,11 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
 
         // - Create the new panel
             String sNode = (String) (node.getUserObject());
-            if (sNode.equals(language.getText("languages"))) {
-                settingPanel = new LanguageSettingsPanel(appli);
-            } else if (sNode.equals(GanttProject.correctLabel(language
+//            if (sNode.equals(language.getText("languages"))) {
+//                settingPanel = new LanguageSettingsPanel(appli);
+//            } 
+//            else 
+                if (sNode.equals(GanttProject.correctLabel(language
                     .getText("project")))) {
                 settingPanel = new ProjectSettingsPanel(getProject());
             } else if (sNode.equals(GanttProject.correctLabel(language
