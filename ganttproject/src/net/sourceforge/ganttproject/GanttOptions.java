@@ -24,7 +24,6 @@ import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -42,8 +41,6 @@ import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -75,10 +72,6 @@ public class GanttOptions {
     // private Color color;
 
     private int x = 0, y = 0, width = 800, height = 600;
-
-    private String styleClass = "", styleName = "";
-
-    private GanttLookAndFeelInfo lookAndFeel;
 
     private boolean isloaded;
 
@@ -337,10 +330,6 @@ public class GanttOptions {
             handler.startElement("", "ganttproject-options",
                     "ganttproject-options", attrs);
             //
-            attrs.addAttribute("", "selection", "selection", "CDATA", language
-                    .getText("shortLanguage"));
-            handler.startElement("", "language", "language", attrs);
-            handler.endElement("", "language", "language");
             attrs.clear();
             // write the task Color
             /*
@@ -388,11 +377,6 @@ public class GanttOptions {
             addAttribute("width", "" + width, attrs);
             addAttribute("height", "" + height, attrs);
             emptyElement("geometry", attrs, handler);
-            // look'n'feel
-            addAttribute("name", lookAndFeel.getName(), attrs);
-            addAttribute("class", lookAndFeel.getClassName(), attrs);
-            emptyElement("looknfeel", attrs, handler);
-
             // ToolBar position
             addAttribute("position", "" + toolBarPosition, attrs);
             addAttribute("icon-size", "" + iconSize, attrs);
@@ -591,18 +575,6 @@ public class GanttOptions {
             SAXParser saxParser = factory.newSAXParser();
             saxParser.parse(file, handler);
 
-            GanttLookAndFeelInfo info = GanttLookAndFeels
-                    .getGanttLookAndFeels().getInfoByClass(styleClass);
-            if (null == info)
-                info = GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(
-                        styleName);
-            if (null != info)
-                lookAndFeel = info;
-
-            if (null == lookAndFeel)
-                lookAndFeel = GanttLookAndFeels.getGanttLookAndFeels()
-                        .getDefaultInfo();
-
             loadRoleSets(file);
 
         } catch (Exception e) {
@@ -735,121 +707,7 @@ public class GanttOptions {
                         converter.loadValue(value);
                         continue;
                     }
-                    if (qName.equals("language")) {
-                        if (aName == "selection") {
-                            if (value.equals("English") || value.equals("en")) {
-                                language.setLocale(Locale.US);
-                            } else if (value.equals("English (UK)") || value.equals("en_GB")) {
-                                language.setLocale(Locale.UK);
-                            } else if (value.equals("English (Australia)") || value.equals("en_AU")) {
-                                language.setLocale(new Locale("en", "AU"));
-                            } else if (value.equals("Fran\u00e7ais")
-                                    || value.equals("fr")) {
-                                language.setLocale(Locale.FRANCE);
-
-                            } else if (value.equals("Espa\u00f1ol")
-                                    || value.equals("es")) {
-                                language.setLocale(new Locale("es", "ES"));
-
-                            } else if (value.equals("Portugues")
-                                    || value.equals("pt")) {
-                                language.setLocale(new Locale("pt", "PT"));
-
-                            } else if (value.equals("Portugu\u00eas do Brasil")
-                                    || value.equals("pt_BR")) {
-                                language.setLocale(new Locale("pt", "BR"));
-
-                            } else if (value.equals("Deutsch")
-                                    || value.equals("de")) {
-                                language.setLocale(Locale.GERMANY);
-
-                            } else if (value.equals("Norsk")
-                                    || value.equals("no")) {
-                                language.setLocale(new Locale("no", "NO"));
-
-                            } else if (value.equals("Italiano")
-                                    || value.equals("it")) {
-                                language.setLocale(Locale.ITALY);
-
-                            } else if (value.equals("Japanese")
-                                    || value.equals("jpn")) {
-                                language.setLocale(new Locale("ja", "JP"));
-
-                            } else if (value.equals("T\u00FCrk\u00E7e")
-                                    || value.equals("tr")) {
-                                language.setLocale(new Locale("tr", "TR"));
-
-                            } else if (value.equals("Simplified Chinese")
-                                    || value.equals("SIMPLIFIED_CHINESE")
-                                    || value.equals("CHINA")
-                                    || value.equals("zh_CN")) {
-                                language.setLocale(Locale.CHINA);
-
-                            } else if (value.equals("Traditional Chinese")
-                                    || value.equals("TRADITIONAL_CHINESE")
-                                    || value.equals("TAIWAN")
-                                    || value.equals("zh_TW")) {
-                                language.setLocale(Locale.TAIWAN);
-
-                            } else if (value.equals("Polski")
-                                    || value.equals("pl")) {
-                                language.setLocale(new Locale("pl", "PL"));
-
-                            } else if (value
-                                    .equals("\u0420\u0443\u0441\u0441\u043a\u0438\u0439")
-                                    || value.equals("ru")) {
-                                language.setLocale(new Locale("ru", "RU"));
-
-                            } else if (value.equals("Estonian")
-                                    || value.equals("et")) {
-                                language.setLocale(new Locale("et", "ET"));
-
-                            } else if (value.equals("fi")) {
-                                language.setLocale(new Locale("fi", "FI"));
-                            } else if (value.equals("Hungarian")
-                                    || value.equals("hu")) {
-                                language.setLocale(new Locale("hu", "HU"));
-                            } else if (value.equals("Hrvatski")
-                                || value.equals("hr")) {
-                            language.setLocale(new Locale("hr", "HR"));
-                            } else if (value
-                                    .equals("\u05d0\u05e0\u05d2\u05dc\u05d9\u05ea")
-                                    || value.equals("iw")) {
-                                language.setLocale(new Locale("iw", "IW"));
-
-                            } else if (value.equals("Sloven\u0161\u010dina")
-                                    || value.equals("si")) {
-                                language.setLocale(new Locale("sl", "SL"));
-                            } else if (value.equals("Slovensky")
-                                    || value.equals("sk")) {
-                                language.setLocale(new Locale("sk", "SK"));
-
-                            } else if (value.equals("Svenska")
-                                    || value.equals("sv")) {
-                                language.setLocale(new Locale("sv", "SV"));
-
-                            } else if (value.equals("Romanian")
-                                    || value.equals("ro")) {
-                                language.setLocale(new Locale("ro", "RO"));
-
-                            } else if (value.equals("Nederlands")
-                                    || value.equals("nl")) {
-                                language.setLocale(new Locale("nl", "NL"));
-
-                            } else if (value.equals("\u010cesky")
-                                    || value.equals("cz")) {
-                                language.setLocale(new Locale("cs", "CZ"));
-
-                            } else if (value.equals("Dansk")
-                                    || value.equals("da")) {
-                                language.setLocale(new Locale("da", "DK"));
-
-                            } else if (value.equals("Ti\u1ebfng anh")
-                                    || value.equals("vi")) {
-                                language.setLocale(new Locale("vi", "VN"));
-                            }
-                        }
-                    } else if (qName.equals("task-color")) {
+                    if (qName.equals("task-color")) {
                         if (aName.equals("red")) {
                             r = new Integer(value).hashCode();
                         } else if (aName.equals("green")) {
@@ -869,13 +727,6 @@ public class GanttOptions {
                         }
                         if (aName.equals("height")) {
                             height = new Integer(value).hashCode();
-                        }
-                    } else if (qName.equals("looknfeel")) {
-                        if (aName.equals("name")) {
-                            styleName = value;
-                        }
-                        if (aName.equals("class")) {
-                            styleClass = value;
                         }
                     } else if (qName.equals("file")) {
                         if (aName.equals("path")) {
@@ -1042,11 +893,6 @@ public class GanttOptions {
         }
     }
 
-    /** @return the language. */
-    public GanttLanguage getLanguage() {
-        return language;
-    }
-
     /** @return the default color for tasks. */
     public Color getDefaultColor() {
         return getUIConfiguration().getTaskColor();
@@ -1086,11 +932,6 @@ public class GanttOptions {
     /** @return automatic launch properties box when create a new task. */
     public boolean getAutomatic() {
         return automatic;
-    }
-
-    /** @return the lookAndFeel infos. */
-    public GanttLookAndFeelInfo getLnfInfos() {
-        return lookAndFeel;
     }
 
     /** @return true is options are loaded from the options file. */
@@ -1345,10 +1186,6 @@ public class GanttOptions {
     /** set new automatic launch value. */
     public void setAutomatic(boolean automatic) {
         this.automatic = automatic;
-    }
-
-    public void setLookAndFeel(GanttLookAndFeelInfo lookAndFeel) {
-        this.lookAndFeel = lookAndFeel;
     }
 
     public void setTaskNamePrefix(String taskNamePrefix) {
