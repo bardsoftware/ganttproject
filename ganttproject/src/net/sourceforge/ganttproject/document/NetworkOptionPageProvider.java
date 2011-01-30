@@ -27,8 +27,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class NetworkOptionPageProvider implements OptionPageProvider{
 
-    public GPOptionGroup[] getOptionGroups(IGanttProject project, UIFacade uiFacade) {
-        return project.getDocumentManager().getNetworkOptionGroups();
+    private IGanttProject myProject;
+    private UIFacade myUiFacade;
+
+    @Override
+    public void init(IGanttProject project, UIFacade uiFacade) {
+        myProject = project;
+        myUiFacade = uiFacade;
+    }
+
+    public GPOptionGroup[] getOptionGroups() {
+        return myProject.getDocumentManager().getNetworkOptionGroups();
     }
 
     public String getPageID() {
@@ -43,7 +52,7 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
         return true;
     }
 
-    public Component buildPageComponent(IGanttProject project, final UIFacade uiFacade) {
+    public Component buildPageComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
         builder.setI18N(new OptionsPageBuilder.I18N() {
 
@@ -76,13 +85,13 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
                 return super.getOptionLabel(group, option);
             }
         });
-        final GPOptionGroup ftpGroup = project.getDocumentManager().getNetworkOptionGroups()[0];
+        final GPOptionGroup ftpGroup = myProject.getDocumentManager().getNetworkOptionGroups()[0];
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
         final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);
         final DefaultStringOption dirnameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.DIRECTORYNAME_OPTION_ID);
         final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
  
-        final JComponent optionsPane = builder.buildPage(project.getDocumentManager().getNetworkOptionGroups(), getPageID());
+        final JComponent optionsPane = builder.buildPage(myProject.getDocumentManager().getNetworkOptionGroups(), getPageID());
         final Action testConnectionAction = new AbstractAction() {
             {
                 putValue(Action.NAME, GanttLanguage.getInstance().getText("testFTPConnection"));
@@ -111,7 +120,7 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
                             GanttLanguage.getInstance().getText("success"),
                             JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException e2) {
-                    uiFacade.showErrorDialog(e2);
+                    myUiFacade.showErrorDialog(e2);
 //                    JOptionPane.showMessageDialog(, GanttLanguage
 //                            .getInstance().getText("errorFTPConnection"),
 //                            GanttLanguage.getInstance().getText("error"),

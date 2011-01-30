@@ -163,7 +163,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
         vb.add(textSeparatorFieldPanel);
         textSeparatorFieldPanel.add(new JLabel(language
                 .getText("textSeparator")));
-        cbTextSeparator = new JComboBox(appli.getOptions().getCSVOptions()
+        cbTextSeparator = new JComboBox(appli.getGanttOptions().getCSVOptions()
                 .getSeparatedTextChars());
         textSeparatorFieldPanel.add(new JLabel("  "));
         textSeparatorFieldPanel.add(cbTextSeparator);
@@ -263,7 +263,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
      */
     public boolean applyChanges(boolean askForApply) {
-        CSVOptions csvOptions = appli.getOptions().getCSVOptions();
+        CSVOptions csvOptions = appli.getGanttOptions().getCSVOptions();
 
         if (getFixed() == csvOptions.bFixedSize
                 && getTaskID() == csvOptions.bExportTaskID
@@ -315,36 +315,36 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
      */
     public void initialize() {
 
-        cbTaskID.setSelected(appli.getOptions().getCSVOptions().bExportTaskID);
+        cbTaskID.setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskID);
         cbTaskName
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskName);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskName);
         cbStartDate
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskStartDate);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskStartDate);
         cbEndDate
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskEndDate);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskEndDate);
         cbTaskPercent
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskPercent);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskPercent);
         cbTaskDuration
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskDuration);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskDuration);
         cbTaskWebLink
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskWebLink);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskWebLink);
         cbTaskResources
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskResources);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskResources);
         cbTaskNotes
-                .setSelected(appli.getOptions().getCSVOptions().bExportTaskNotes);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportTaskNotes);
 
         cbResID
-                .setSelected(appli.getOptions().getCSVOptions().bExportResourceID);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportResourceID);
         cbResName
-                .setSelected(appli.getOptions().getCSVOptions().bExportResourceName);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportResourceName);
         cbResMail
-                .setSelected(appli.getOptions().getCSVOptions().bExportResourceMail);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportResourceMail);
         cbResPhone
-                .setSelected(appli.getOptions().getCSVOptions().bExportResourcePhone);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportResourcePhone);
         cbResRole
-                .setSelected(appli.getOptions().getCSVOptions().bExportResourceRole);
+                .setSelected(appli.getGanttOptions().getCSVOptions().bExportResourceRole);
 
-        boolean bfixed = appli.getOptions().getCSVOptions().bFixedSize;
+        boolean bfixed = appli.getGanttOptions().getCSVOptions().bFixedSize;
 
         if (bfixed) {
             bFixedSize.setSelected(true);
@@ -354,7 +354,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
             enableSeparatedButton(true);
         }
 
-        String sSeparatedChar = appli.getOptions().getCSVOptions().sSeparatedChar;
+        String sSeparatedChar = appli.getGanttOptions().getCSVOptions().sSeparatedChar;
 
         if (",".equals(sSeparatedChar)) {
             unselectOther(bComa);
@@ -368,7 +368,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
             unselectOther(bOther);
             tfOther.setText(sSeparatedChar);
         }
-        if ("\"".equals(appli.getOptions().getCSVOptions().sSeparatedTextChar)) {
+        if ("\"".equals(appli.getGanttOptions().getCSVOptions().sSeparatedTextChar)) {
             cbTextSeparator.setSelectedIndex(1);
         }
 
@@ -481,7 +481,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
     }
 
     public boolean separatCharHasChange() {
-        CSVOptions csvOptions = appli.getOptions().getCSVOptions();
+        CSVOptions csvOptions = appli.getGanttOptions().getCSVOptions();
         if (bDoubleDot.isSelected() && csvOptions.sSeparatedChar.equals(":")) {
             return false;
         }

@@ -46,6 +46,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
@@ -53,18 +54,28 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
 public class SettingsDialog2 {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
-    private OptionPageProviderPanel myCurPanel;
+    private List<ListItem> myItems;
+    private final OptionPageProvider[] myProviders;
+    private final List<GPOptionGroup> myOptionGroups = new ArrayList<GPOptionGroup>();
 
     public SettingsDialog2(IGanttProject project, UIFacade uifacade) {
         myProject = project;
         myUIFacade = uifacade;
+        myProviders = (OptionPageProvider[]) PluginManager.getExtensions(
+            "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
+        for (OptionPageProvider p : myProviders) {
+            p.init(project, uifacade);
+            for (GPOptionGroup optionGroup : p.getOptionGroups()) {
+                myOptionGroups.add(optionGroup);
+            }
+        }
     }
     
     public void show() {
         OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
-                if (myCurPanel != null) {
-                    myCurPanel.applyChanges(false);
+                for (GPOptionGroup optionGroup : myOptionGroups) {
+                    optionGroup.commit();
                 }
             }
         };
@@ -92,20 +103,18 @@ public class SettingsDialog2 {
     private Component getComponent() {
         final JPanel contentPanel = new JPanel(new CardLayout());
         
-        final OptionPageProvider[] providers = (OptionPageProvider[]) PluginManager.getExtensions(
-                "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
-        final List<ListItem> items = getListItems(providers);
-        for (ListItem li : items) {
+        myItems = getListItems(myProviders);
+        for (ListItem li : myItems) {
             contentPanel.add(li.component, li.name);
         }
         final JList pagesList = new JList(new AbstractListModel() {
             @Override
             public Object getElementAt(int idx) {
-                return items.get(idx);
+                return myItems.get(idx);
             }
             @Override
             public int getSize() {
-                return items.size();
+                return myItems.size();
             }
         });
         pagesList.setCellRenderer(new DefaultListCellRenderer() {
@@ -126,7 +135,7 @@ public class SettingsDialog2 {
                         BorderFactory.createMatteBorder(1, 0,0,0, Color.ORANGE.darker()),
                         BorderFactory.createEmptyBorder(2, 3, 2, 5)));
                 } else {
-                    defaultResult.setFont(font.deriveFont(font.getSize()+3.0f));
+                    defaultResult.setFont(font.deriveFont(font.getSize()+2.0f));
                     wrapper.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
                 }
                 wrapper.setBackground(defaultResult.getBackground());
@@ -134,7 +143,9 @@ public class SettingsDialog2 {
                 if (listItem.isGroupHeader) {
                     JPanel headerWrapper = new JPanel(new BorderLayout());
                     headerWrapper.setBackground(list.getBackground());
-                    headerWrapper.add(new JLabel(" "), BorderLayout.NORTH);
+                    if (idx > 0) {
+                        headerWrapper.add(new JLabel(" "), BorderLayout.NORTH);
+                    }
                     headerWrapper.add(wrapper, BorderLayout.CENTER);
                     return headerWrapper;
                 } else {
