@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -29,19 +30,30 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import net.sourceforge.ganttproject.UIFacadeImpl.LafOption;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.DialogAligner;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
+import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.gui.options.model.GPOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -61,6 +73,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final UIFacade myFallbackDelegate;
     private final ErrorNotifier myErrorNotifier;
     private final TaskSelectionManager myTaskSelectionManager;
+    private final GPOptionGroup myOptions;
+    private LafOption myLafOption;
     
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
@@ -71,6 +85,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
         myTaskSelectionManager = new TaskSelectionManager();
+        
+        myLafOption = new LafOption(this);
+        GPOption[] options = new GPOption[] {myLafOption};
+        myOptions = new GPOptionGroup("ui", options);
+        I18N i18n = new OptionsPageBuilder.I18N();
+        myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
     }
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
@@ -414,6 +434,70 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public TaskSelectionManager getTaskSelectionManager() {
         return myTaskSelectionManager;
     }
-	
+    public GanttLookAndFeelInfo getLookAndFeel() {
+        return myLafOption.getLookAndFeel();
+    }
+    @Override
+    public void setLookAndFeel(final GanttLookAndFeelInfo laf) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (!doSetLookAndFeel(laf)) {
+                    doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
+                }
+            }
+        });
+    }
+    private boolean doSetLookAndFeel(GanttLookAndFeelInfo laf) {
+        try {
+            UIManager.setLookAndFeel(laf.getClassName());
+            SwingUtilities.updateComponentTreeUI(myMainFrame);
+            return true;
+        } catch (Exception e) {
+            GPLogger.getLogger(UIFacade.class).log(
+                Level.SEVERE, "Can't find the LookAndFeel\n" + laf.getClassName() + "\n" + laf.getName());
+            return false;
+        }
+    }
+
+    static class LafOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+        private final UIFacade myUiFacade;
+        LafOption(UIFacade uiFacade) {
+            super("laf", GanttLookAndFeels.getGanttLookAndFeels().getInstalledLookAndFeels());
+            myUiFacade = uiFacade;
+        }
+        public GanttLookAndFeelInfo getLookAndFeel() {
+            return GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue());            
+        }
+        @Override
+        protected String objectToString(Object value) {
+            GanttLookAndFeelInfo laf = (GanttLookAndFeelInfo) value;
+            return laf.getName();
+        }
+        @Override
+        public void commit() {
+            super.commit();
+            myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue()));
+        }
+        @Override
+        public String getTagName() {
+            return "looknfeel";
+        }
+        @Override
+        public String getAttributeName() {
+            return "name";
+        }
+        @Override
+        public void loadValue(String legacyValue) {
+            setValue(legacyValue, true);
+            myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
+        }
+    }
+    
+    @Override
+    public GPOptionGroup getOptions() {
+        return myOptions;
+    }
+
 }
 

@@ -122,7 +122,8 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
         Box vb = Box.createVerticalBox();        
         Object userObject = node.getUserObject();
         if (userObject instanceof OptionPageProvider) {
-            settingPanel = new OptionPageProviderPanel((OptionPageProvider) userObject, getProject(), getUIFacade());
+            //settingPanel = new OptionPageProviderPanel((OptionPageProvider) userObject, getProject(), getUIFacade());
+            settingPanel = null;
         } else {
 
         // - ask the settingPanel if parameters are changed
@@ -144,7 +145,7 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
                     .getText("resourceRole")))) {
                 settingPanel = new RolesSettingsPanel(appli);
             } else if (sNode.equals(language.getText("looknfeel"))) {
-                settingPanel = new LnFSettingsPanel(appli);
+                //settingPanel = new LnFSettingsPanel(appli);
             } else if (sNode.equals(GanttProject.correctLabel(language
                     .getText("export")))) {
                 settingPanel = new ExportSettingsPanel(appli);

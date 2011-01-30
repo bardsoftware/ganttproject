@@ -65,9 +65,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -101,15 +99,12 @@ import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
@@ -200,9 +195,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Boolean to know if the file has been modify */
     public boolean askForSave = false;
 
-    /** The info for the look'n'feel */
-    public GanttLookAndFeelInfo lookAndFeel;
-
     /** Is the application only for viewer. */
     public boolean isOnlyViewer;
 
@@ -282,12 +274,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // myApplicationConfig.register(options);
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         if (options.load()) {
             language = options.getLanguage();
             GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
 
-            lookAndFeel = options.getLnfInfos();
             HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
         }
 
@@ -314,7 +304,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             setTitle("GanttViewer");
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
-        lookAndFeel = GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo();
         options = new GanttOptions(getRoleManager(), getDocumentManager(),
                 isOnlyViewer);
         myUIConfiguration = options.getUIConfiguration();
@@ -362,13 +351,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getProject().addProjectEventListener(myFacadeInvalidator);
         area = new GanttGraphicArea(this, getTree(), getTaskManager(),
                 getZoomManager(), getUndoManager());
-        options
-                .addOptionGroups(getUIFacade().getGanttChart()
-                        .getOptionGroups());
-        options.addOptionGroups(getUIFacade().getResourceChart()
-                .getOptionGroups());
-        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade()
-                .getOptionGroup() });
+        options.addOptionGroups(new GPOptionGroup[] {getUIFacade().getOptions()});
+        options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
+        options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
+        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
         options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
         myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
         area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
@@ -556,7 +542,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
         toolBar = new GPToolBar("GanttProject", options.getToolBarPosition(),
-                getOptions());
+                getGanttOptions());
         toolBar.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent arg0) {
@@ -618,8 +604,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         // changeUndoNumber ();
         System.err.println("7. changing look'n'feel ...");
-        changeLookAndFeel(lookAndFeel);
-        changeLookAndFeel(lookAndFeel); // Twice call for update font on menu
+        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         if (options.isLoaded()) {
             setBounds(options.getX(), options.getY(), options.getWidth(),
                     options.getHeight());
@@ -748,7 +733,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** @return the options of ganttproject. */
-    public GanttOptions getOptions() {
+    public GanttOptions getGanttOptions() {
         return options;
     }
 
@@ -826,32 +811,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 iconList.removeElementAt(i);
                 iconList.add(i, GPToolBar.SEPARATOR_OBJECT);
             }
-    }
-
-    /** Change the style of the application */
-    public void changeLookAndFeel(GanttLookAndFeelInfo lookAndFeel) {
-        try {
-            UIManager.setLookAndFeel(lookAndFeel.getClassName());
-            SwingUtilities.updateComponentTreeUI(this);
-            this.lookAndFeel = lookAndFeel;
-        } catch (Exception e) {
-            GanttLookAndFeelInfo info = GanttLookAndFeels
-                    .getGanttLookAndFeels().getDefaultInfo();
-            System.out.println("Can't find the LookAndFeel\n"
-                    + lookAndFeel.getClassName() + "\n" + lookAndFeel.getName()
-                    + "\nSetting the default Look'n'Feel" + info.getName());
-            try {
-                UIManager.setLookAndFeel(info.getClassName());
-                SwingUtilities.updateComponentTreeUI(this);
-                this.lookAndFeel = info;
-            } catch (Exception ex) {
-            }
-        }
-        // MetalLookAndFeel.setCurrentTheme(new GanttMetalTheme());
-        // must force to do that instead of the task on tree are not in
-        // continuity of the calendar
-        if (tree.getTable().getRowHeight() <= 22)
-            tree.getTable().setRowHeight(20);
     }
 
     /**
@@ -1640,7 +1599,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     + ")$", document.getFilePath())) {
                 try {
                     nextImporter.setContext(getProject(), getUIFacade(),
-                            getOptions().getPluginPreferences());
+                            getGanttOptions().getPluginPreferences());
                     nextImporter.run(new File(document.getFilePath()));
                     success = true;
                     break;
@@ -1702,7 +1661,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.setWindowSize(getWidth(), getHeight());
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         options.setToolBarPosition(toolBar.getOrientation());
         options.save();
         if (getProjectUIFacade().ensureProjectSaved(getProject())) {

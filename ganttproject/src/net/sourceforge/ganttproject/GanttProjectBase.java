@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
@@ -52,6 +53,7 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -174,6 +176,19 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade.getMainFrame();
     }
 
+    @Override
+    public void setLookAndFeel(GanttLookAndFeelInfo laf) {
+        myUIFacade.setLookAndFeel(laf);
+    }
+    @Override
+    public GanttLookAndFeelInfo getLookAndFeel() {
+        return myUIFacade.getLookAndFeel();
+    }
+    @Override
+    public GPOptionGroup getOptions() {
+        return myUIFacade.getOptions();
+    }
+
     public ScrollingManager getScrollingManager() {
         return myUIFacade.getScrollingManager();
     }
@@ -215,7 +230,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
-
+    
     @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myUIFacade.getTaskSelectionContext();

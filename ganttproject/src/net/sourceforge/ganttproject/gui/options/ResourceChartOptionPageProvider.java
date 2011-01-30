@@ -10,9 +10,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ResourceChartOptionPageProvider implements OptionPageProvider {
 
-    public GPOptionGroup[] getOptionGroups(IGanttProject project,
-            UIFacade uiFacade) {
-        return uiFacade.getResourceChart().getOptionGroups();
+    private IGanttProject myProject;
+    private UIFacade myUiFacade;
+
+    @Override
+    public void init(IGanttProject project, UIFacade uiFacade) {
+        myProject = project;
+        myUiFacade = uiFacade;
+    }
+
+    public GPOptionGroup[] getOptionGroups() {
+        return myUiFacade.getResourceChart().getOptionGroups();
     }
 
     public String getPageID() {
@@ -26,7 +34,7 @@ public class ResourceChartOptionPageProvider implements OptionPageProvider {
     public boolean hasCustomComponent() {
         return false;
     }
-    public Component buildPageComponent(IGanttProject project, UIFacade uiFacade) {
+    public Component buildPageComponent() {
         throw new UnsupportedOperationException();
     }
     

@@ -33,7 +33,7 @@ public class ProjectMenu {
         myExitAction = new ExitAction(mainFrame);
         myImportFileAction = new ImportFileAction(mainFrame.getUIFacade(), mainFrame);
         myExportFileAction = new ExportFileAction(
-                mainFrame.getUIFacade(), (IGanttProject)mainFrame, mainFrame.getOptions());
+                mainFrame.getUIFacade(), (IGanttProject)mainFrame, mainFrame.getGanttOptions());
 
     }
     public GPAction getNewProjectAction() {

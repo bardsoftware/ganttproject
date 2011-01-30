@@ -84,18 +84,18 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
      */
     public boolean applyChanges(boolean askForApply) {
-        if (getExportName() == appli.getOptions().getExportName()
-                && getExportComplete() == appli.getOptions()
+        if (getExportName() == appli.getGanttOptions().getExportName()
+                && getExportComplete() == appli.getGanttOptions()
                         .getExportComplete()
-                && getExportRelations() == appli.getOptions()
+                && getExportRelations() == appli.getGanttOptions()
                         .getExportRelations()) {
             bHasChange = false;
         } else {
             bHasChange = true;
             if (!askForApply || (askForApply && askForApplyChanges())) {
-                appli.getOptions().setExportName(getExportName());
-                appli.getOptions().setExportComplete(getExportComplete());
-                appli.getOptions().setExportRelations(getExportRelations());
+                appli.getGanttOptions().setExportName(getExportName());
+                appli.getGanttOptions().setExportComplete(getExportComplete());
+                appli.getGanttOptions().setExportRelations(getExportRelations());
             }
         }
         return bHasChange;
@@ -107,9 +107,9 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
      */
     public void initialize() {
-        cbName.setSelected(appli.getOptions().getExportName());
-        cbComplete.setSelected(appli.getOptions().getExportComplete());
-        cbRelations.setSelected(appli.getOptions().getExportRelations());
+        cbName.setSelected(appli.getGanttOptions().getExportName());
+        cbComplete.setSelected(appli.getGanttOptions().getExportComplete());
+        cbRelations.setSelected(appli.getGanttOptions().getExportRelations());
         // cb3dBorder.setSelected(appli.getOptions().getExport3dBorders());
     }
 
