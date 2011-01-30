@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Locale;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -74,7 +75,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final ErrorNotifier myErrorNotifier;
     private final TaskSelectionManager myTaskSelectionManager;
     private final GPOptionGroup myOptions;
-    private LafOption myLafOption;
+    private final LafOption myLafOption;
     
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
@@ -87,10 +88,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myTaskSelectionManager = new TaskSelectionManager();
         
         myLafOption = new LafOption(this);
-        GPOption[] options = new GPOption[] {myLafOption};
+        LanguageOption languageOption = new LanguageOption();
+        GPOption[] options = new GPOption[] {myLafOption, languageOption};
         myOptions = new GPOptionGroup("ui", options);
         I18N i18n = new OptionsPageBuilder.I18N();
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
+        myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
     }
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
@@ -492,6 +495,70 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             setValue(legacyValue, true);
             myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
         }
+    }
+    
+    static class LanguageOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+        public LanguageOption() {
+            super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));             
+        }
+        @Override
+        protected String objectToString(Object value) {
+            Locale locale = (Locale) value;
+            String englishName = locale.getDisplayLanguage(Locale.US);
+            String localName = locale.getDisplayLanguage(locale);
+            if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage())) {
+                if (!locale.getCountry().isEmpty()) {
+                    englishName += " - " + locale.getDisplayCountry(Locale.US);
+                    localName += " - " + locale.getDisplayCountry(locale);
+                }                
+            }
+            if (localName.equals(englishName)) {
+                return englishName;
+            }
+            return englishName + " (" + localName + ")";
+        }
+        @Override
+        public void commit() {
+            Locale l = (Locale) stringToObject(getValue());
+            GanttLanguage.getInstance().setLocale(l);
+        }
+        @Override
+        public String getTagName() {
+            return "language";
+        }
+        @Override
+        public String getAttributeName() {
+            return "selection";
+        }
+        @Override
+        public void loadValue(String legacyValue) {
+            loadPersistentValue(legacyValue);
+        }
+        @Override
+        public String getPersistentValue() {
+            Locale l = (Locale) stringToObject(getValue());
+            assert l != null;
+            String result = l.getLanguage();
+            if (!l.getCountry().isEmpty()) {
+                result += "_" + l.getCountry();
+            }
+            return result;
+        }
+        @Override
+        public void loadPersistentValue(String value) {
+            String[] lang_country = value.split("_");
+            Locale l;
+            if (lang_country.length == 2) {
+                l = new Locale(lang_country[0], lang_country[1]);
+            } else {
+                l = new Locale(lang_country[0]);
+            }
+            value = objectToString(l);
+            if (value != null) {
+                setValue(value, true);
+            }
+        }
+        
     }
     
     @Override
