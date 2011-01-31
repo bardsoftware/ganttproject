@@ -187,11 +187,11 @@ public class SettingsDialog2 {
             pageId_provider.put(p.getPageID(), p);
         }
         List<ListItem> items = new ArrayList<ListItem>();
-        String[] listConfig = GanttLanguage.getInstance().getText("settings.pages").split(",");
+        String[] listConfig = GanttLanguage.getInstance().getText("settings.pageOrder").split(",");
         for (String s : listConfig) {
             ListItem li;
-            if (s.startsWith("group.")) {
-                String groupNameKey = s.substring("group.".length());
+            if (s.startsWith("pageGroup.")) {
+                String groupNameKey = s;
                 li = new ListItem(
                     true, 
                     GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)), 
