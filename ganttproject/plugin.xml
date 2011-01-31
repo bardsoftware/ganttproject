@@ -65,6 +65,7 @@
    <extension point="net.sourceforge.ganttproject.OptionPageProvider">
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.GanttChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider"/>
+         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectBasicOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
    </extension>
