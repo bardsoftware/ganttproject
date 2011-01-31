@@ -26,7 +26,7 @@ public class InterfaceOptionPageProvider implements OptionPageProvider {
 
     @Override
     public String getPageID() {
-        return "ui";
+        return "ui.general";
     }
 
     @Override
@@ -41,6 +41,6 @@ public class InterfaceOptionPageProvider implements OptionPageProvider {
 
     @Override
     public String toString() {
-        return GanttLanguage.getInstance().getText("looknfeel");
+        return GanttLanguage.getInstance().getText(new OptionsPageBuilder.I18N().getCanonicalOptionPageTitleKey(getPageID()));
     }
 }

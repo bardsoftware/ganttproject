@@ -390,8 +390,7 @@ public class OptionsPageBuilder {
         }
 
         public String getPageTitle(String pageID) {
-            return GanttLanguage.getInstance().getText(
-                    myOptionPageKeyPrefix + pageID + ".title");
+            return getValue(getCanonicalOptionPageTitleKey(pageID));
         }
 
         public String getPageDescription(String pageID) {
@@ -409,6 +408,9 @@ public class OptionsPageBuilder {
             return getValue(group, canonicalKey);
         }
 
+        public final String getCanonicalOptionPageTitleKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".title";
+        }
         public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
             return myOptionGroupKeyPrefix + group.getID() + ".label";
         }
