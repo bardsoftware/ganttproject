@@ -4,10 +4,10 @@ import java.awt.Component;
 
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
-public class ProjectBasicOptionPageProvider extends OptionPageProviderBase {
-    private ProjectSettingsPanel mySettingsPanel;
-    public ProjectBasicOptionPageProvider() {
-        super("project.basic");
+public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
+    private WeekendsSettingsPanel myWeekendsPanel;
+    public ProjectCalendarOptionPageProvider() {
+        super("project.calendar");
     }
     @Override
     public GPOptionGroup[] getOptionGroups() {
@@ -19,12 +19,13 @@ public class ProjectBasicOptionPageProvider extends OptionPageProviderBase {
     }
     @Override
     public Component buildPageComponent() {
-        mySettingsPanel = new ProjectSettingsPanel(getProject());
+        myWeekendsPanel = new WeekendsSettingsPanel(getProject());
+        myWeekendsPanel.initialize();
         return OptionPageProviderBase.wrapContentComponent(
-            mySettingsPanel, mySettingsPanel.getTitle(), mySettingsPanel.getComment());
+            myWeekendsPanel, myWeekendsPanel.getTitle(), myWeekendsPanel.getComment());
     }
     @Override
     public void commit() {
-        mySettingsPanel.applyChanges(false);
+        myWeekendsPanel.applyChanges(false);
     }
 }

@@ -14,34 +14,23 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class NetworkOptionPageProvider implements OptionPageProvider{
+public class NetworkOptionPageProvider extends OptionPageProviderBase {
 
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
-
-    @Override
-    public void init(IGanttProject project, UIFacade uiFacade) {
-        myProject = project;
-        myUiFacade = uiFacade;
+    public NetworkOptionPageProvider() {
+        super("ftpexport");
     }
-
+    
     public GPOptionGroup[] getOptionGroups() {
-        return myProject.getDocumentManager().getNetworkOptionGroups();
-    }
-
-    public String getPageID() {
-        return "ftpexport";
+        return getProject().getDocumentManager().getNetworkOptionGroups();
     }
 
     public String toString() {
@@ -85,13 +74,13 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
                 return super.getOptionLabel(group, option);
             }
         });
-        final GPOptionGroup ftpGroup = myProject.getDocumentManager().getNetworkOptionGroups()[0];
+        final GPOptionGroup ftpGroup = getProject().getDocumentManager().getNetworkOptionGroups()[0];
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
         final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);
         final DefaultStringOption dirnameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.DIRECTORYNAME_OPTION_ID);
         final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
  
-        final JComponent optionsPane = builder.buildPage(myProject.getDocumentManager().getNetworkOptionGroups(), getPageID());
+        final JComponent optionsPane = builder.buildPage(getProject().getDocumentManager().getNetworkOptionGroups(), getPageID());
         final Action testConnectionAction = new AbstractAction() {
             {
                 putValue(Action.NAME, GanttLanguage.getInstance().getText("testFTPConnection"));
@@ -120,11 +109,7 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
                             GanttLanguage.getInstance().getText("success"),
                             JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException e2) {
-                    myUiFacade.showErrorDialog(e2);
-//                    JOptionPane.showMessageDialog(, GanttLanguage
-//                            .getInstance().getText("errorFTPConnection"),
-//                            GanttLanguage.getInstance().getText("error"),
-//                            JOptionPane.ERROR_MESSAGE);
+                    getUiFacade().showErrorDialog(e2);
                 } finally {
 
                 }

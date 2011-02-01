@@ -94,6 +94,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         I18N i18n = new OptionsPageBuilder.I18N();
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
+        myOptions.setTitled(false);
     }
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
