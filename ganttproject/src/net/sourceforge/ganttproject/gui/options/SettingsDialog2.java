@@ -46,7 +46,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
@@ -56,7 +55,6 @@ public class SettingsDialog2 {
     private final UIFacade myUIFacade;
     private List<ListItem> myItems;
     private final OptionPageProvider[] myProviders;
-    private final List<GPOptionGroup> myOptionGroups = new ArrayList<GPOptionGroup>();
 
     public SettingsDialog2(IGanttProject project, UIFacade uifacade) {
         myProject = project;
@@ -65,17 +63,14 @@ public class SettingsDialog2 {
             "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
         for (OptionPageProvider p : myProviders) {
             p.init(project, uifacade);
-            for (GPOptionGroup optionGroup : p.getOptionGroups()) {
-                myOptionGroups.add(optionGroup);
-            }
         }
     }
     
     public void show() {
         OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
-                for (GPOptionGroup optionGroup : myOptionGroups) {
-                    optionGroup.commit();
+                for (OptionPageProvider p : myProviders) {
+                    p.commit();
                 }
             }
         };
@@ -92,9 +87,11 @@ public class SettingsDialog2 {
         final boolean isGroupHeader;
         final String name;
         final Container component;
+        final String id;
         
-        ListItem(boolean isGroupHeader, String name, Container component) {
+        ListItem(boolean isGroupHeader, String id, String name, Container component) {
             this.isGroupHeader = isGroupHeader;
+            this.id = id;
             this.name = name;
             this.component = component;
         }
@@ -105,7 +102,7 @@ public class SettingsDialog2 {
         
         myItems = getListItems(myProviders);
         for (ListItem li : myItems) {
-            contentPanel.add(li.component, li.name);
+            contentPanel.add(li.component, li.id);
         }
         final JList pagesList = new JList(new AbstractListModel() {
             @Override
@@ -159,7 +156,7 @@ public class SettingsDialog2 {
             public void valueChanged(ListSelectionEvent e) {
                 CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
                 ListItem listItem = (ListItem) pagesList.getSelectedValue();
-                cardLayout.show(contentPanel, listItem.name);
+                cardLayout.show(contentPanel, listItem.id);
             }
         });
         pagesList.setBorder(BorderFactory.createEtchedBorder());
@@ -193,13 +190,14 @@ public class SettingsDialog2 {
             if (s.startsWith("pageGroup.")) {
                 String groupNameKey = s;
                 li = new ListItem(
-                    true, 
+                    true,
+                    groupNameKey,
                     GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)), 
                     new JPanel());
             } else {
                 OptionPageProvider p = pageId_provider.get(s);
                 assert p != null : "OptionPageProvider with pageID=" + s + " not found";
-                li = new ListItem(false, p.toString(), 
+                li = new ListItem(false, p.getPageID(), p.toString(),  
                     (Container)new OptionPageProviderPanel(p, myProject, myUIFacade).getComponent());
             }
             items.add(li);

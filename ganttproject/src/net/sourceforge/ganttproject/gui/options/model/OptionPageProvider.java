@@ -14,4 +14,6 @@ public interface OptionPageProvider {
     Component buildPageComponent();
 
     void init(IGanttProject project, UIFacade uiFacade);
+    
+    void commit();
 }
