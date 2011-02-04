@@ -103,18 +103,12 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
                 &&
                 // getDragTime() == appli.getOptions().getDragTime() &&
-                getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()
-                &&
-                // getUndoNumber() == appli.getOptions().getUndoNumber() &&
-                (getTaskNamePrefix() == null || getTaskNamePrefix().equals(
-                        appli.getGanttOptions().getTrueTaskNamePrefix()))) {
+                getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
             bHasChange = false;
         } else {
             bHasChange = true;
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 appli.getGanttOptions().setAutomatic(getAutomatic());
-                // appli.getOptions().setDragTime(getDragTime());
-                appli.getGanttOptions().setTaskNamePrefix(getTaskNamePrefix());
 
                 // WebDAV Locking
                 appli.getGanttOptions().setLockDAVMinutes(getLockDAVMinutes());
@@ -129,11 +123,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     /** Initialize the component. */
     public void initialize() {
         cbAutomatic.setSelected(appli.getGanttOptions().getAutomatic());
-        // cbDrag.setSelected(appli.getOptions().getDragTime());
-        tfTaskPrefix.setText(appli.getGanttOptions().getTaskNamePrefix());
         spLockDAV.setValue(new Integer(appli.getGanttOptions().getLockDAVMinutes()));
-        // spUndoNumber.setValue(new
-        // Integer(appli.getOptions().getUndoNumber()));
     }
 
     /** @return the automatic launch value. */
