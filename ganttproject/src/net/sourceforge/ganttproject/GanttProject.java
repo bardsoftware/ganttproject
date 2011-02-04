@@ -1305,28 +1305,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
-        String nameOfTask = options.getTaskNamePrefix(); // language.getText("newTask");
-        // if (current != null) {
-        // current.setMilestone(false);
-        // node = (TaskNode) tree.getSelectedNode();
-        // cal = current.getStart();
-        // if (!node.isRoot())
-        // nameOfTask = current.toString();
-        // }
+        String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
         GanttTask task = getTaskManager().createTask();
         task.setStart(cal);
-        task.setLength(1);
-        getTaskManager().registerTask(task);// create a new task in the tab
-        // paneneed to register it
+        task.setDuration(getTaskManager().createLength(1));
+        getTaskManager().registerTask(task);
         task.setName(nameOfTask + "_" + task.getTaskID());
         task.setColor(area.getTaskColor());
-        // if (current != null) {
-        // if (current.colorDefined()) {
-        // task.setColor(current.getColor());
-        // }
-        // if (current.shapeDefined())
-        // task.setShape(current.getShape());
-        // }
         tree.addObject(task, node, index);
 
         /*

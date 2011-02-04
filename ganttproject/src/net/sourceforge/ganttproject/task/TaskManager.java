@@ -10,6 +10,7 @@ import java.util.Map;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade.Factory;
@@ -108,4 +109,6 @@ public interface TaskManager {
 
     CustomColumnsStorage getCustomColumnStorage();
     CustomPropertyManager getCustomPropertyManager();
+    
+    StringOption getTaskNamePrefixOption();
 }
