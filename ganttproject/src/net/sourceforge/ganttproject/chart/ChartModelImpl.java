@@ -55,6 +55,8 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
     private final ChartOptionGroup myDefaultColorOptions;
 
+    private final GPOptionGroup myTaskDefaultsOptions;
+    
     private final ColorOption myTaskAheadOfScheduleColor;
     private final ColorOption myTaskBehindScheduleColor;
     private final ColorOption myTaskOnScheduleColor;
@@ -157,6 +159,8 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
                             myTaskBehindScheduleColor },
                     getOptionEventDispatcher());
         }
+        myTaskDefaultsOptions = new GPOptionGroup(
+            "ganttChartDefaults", new GPOption[] {taskManager.getTaskNamePrefixOption()});
     }
 
     public void setVisibleTasks(List<Task> visibleTasks) {
@@ -294,6 +298,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
         result.addAll(Arrays.asList(superGroups));
+        result.add(myTaskDefaultsOptions);
         result.addAll(Arrays.asList(rendererGroups));
         result.add(myDependencyOptions);
         result.add(myDefaultColorOptions);
