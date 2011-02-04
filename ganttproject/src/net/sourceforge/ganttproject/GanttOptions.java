@@ -47,7 +47,6 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.IconPositionTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.roles.Role;
@@ -66,10 +65,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * This class is able to load and save options on the file
  */
 public class GanttOptions {
-
-    private GanttLanguage language = GanttLanguage.getInstance();
-
-    // private Color color;
 
     private int x = 0, y = 0, width = 800, height = 600;
 
@@ -96,8 +91,6 @@ public class GanttOptions {
     private UIConfiguration myUIConfig;
 
     private Font myChartMainFont;
-
-    private String sTaskNamePrefix;
 
     private int toolBarPosition;
 
@@ -246,7 +239,6 @@ public class GanttOptions {
         xslDir = GanttOptions.class.getResource("/xslt").toString();
         xslFo = GanttOptions.class.getResource("/xslfo/ganttproject.xsl")
                 .toString();
-        sTaskNamePrefix = "";
         toolBarPosition = JToolBar.HORIZONTAL;
         bShowStatusBar = true;
         iconSize = "16"; // must be 16 small, 24 for big (32 for extra big
@@ -440,9 +432,6 @@ public class GanttOptions {
             // write the working directory directory
             addAttribute("dir", workingDir, attrs);
             emptyElement("working-dir", attrs, handler);
-            // write the task name prefix
-            addAttribute("prefix", sTaskNamePrefix, attrs);
-            emptyElement("task-name", attrs, handler);
             // The last opened files
             {
                 startElement("files", attrs, handler);
@@ -756,9 +745,6 @@ public class GanttOptions {
                             if (new File(value).exists())
                                 workingDir = value;
                         }
-                    } else if (qName.equals("task-name")) {
-                        if (aName.equals("prefix"))
-                            sTaskNamePrefix = value;
                     } else if (qName.equals("toolBar")) {
                         if (aName.equals("position"))
                             toolBarPosition = (new Integer(value)).intValue();
@@ -974,20 +960,6 @@ public class GanttOptions {
         return csvOptions;
     }
 
-    /** @return the task name prefix. */
-    public String getTaskNamePrefix() {
-        if (sTaskNamePrefix == null || sTaskNamePrefix.equals(""))
-            return language.getText("newTask");
-        return sTaskNamePrefix;
-    }
-
-    public String getTrueTaskNamePrefix() {
-        if (sTaskNamePrefix == null || sTaskNamePrefix.equals("")
-                || sTaskNamePrefix.equals(language.getText("newTask")))
-            return null;
-        return sTaskNamePrefix;
-    }
-
     /** @return the toolbar position. */
     public int getToolBarPosition() {
         return toolBarPosition;
@@ -1186,10 +1158,6 @@ public class GanttOptions {
     /** set new automatic launch value. */
     public void setAutomatic(boolean automatic) {
         this.automatic = automatic;
-    }
-
-    public void setTaskNamePrefix(String taskNamePrefix) {
-        sTaskNamePrefix = taskNamePrefix;
     }
 
     public void setRedline(boolean isOn) {
