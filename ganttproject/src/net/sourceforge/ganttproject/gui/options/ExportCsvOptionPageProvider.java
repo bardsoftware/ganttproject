@@ -26,8 +26,15 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
+    private CSVSettingsPanel myCsvSettings;
+
     public ExportCsvOptionPageProvider() {
         super("impex.csv");
+    }
+
+    @Override
+    public void commit() {
+        myCsvSettings.applyChanges(false);
     }
 
     @Override
@@ -42,11 +49,10 @@ public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
     @Override
     public Component buildPageComponent() {
-        CSVSettingsPanel csvSettings = new CSVSettingsPanel(
-            ((GanttProject)getProject()).getGanttOptions().getCSVOptions());
-        csvSettings.initialize();
+        myCsvSettings = new CSVSettingsPanel(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
+        myCsvSettings.initialize();
         return OptionPageProviderBase.wrapContentComponent(
-            csvSettings,
+            myCsvSettings,
             GanttLanguage.getInstance().getText("csvexport"),
             GanttLanguage.getInstance().getText("settingsCVSExport"));
     }
