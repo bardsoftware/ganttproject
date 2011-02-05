@@ -17,122 +17,101 @@
 
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SpringLayout;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.UIFacade.Choice;
+import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Class to select a file from th web
  */
-public class GanttURLChooser extends JDialog {
-    /** JTextField for the name of project on the server. */
+public class GanttURLChooser {
     private JTextField urlField;
 
     private JTextField userNameField;
 
     private JPasswordField passwordField;
 
-    /** La langue utilisee. */
-    GanttLanguage language = GanttLanguage.getInstance();
+    private final GanttLanguage language = GanttLanguage.getInstance();
 
-    /** The result of the file */
-    public String fileurl;
+    private final UIFacade myUiFacade;
 
-    public String userName;
+    private String myUrl;
 
-    public String password;
+    private String myUsername;
 
-    /** true if the ok button was pressed */
-    public boolean change = false;
+    private String myPassword;
 
-    /** The constructor */
-    public GanttURLChooser(Frame parent, boolean opening,
-            String currentURL, String currentUser, String currentPass) {
-        super(parent, opening ? (GanttProject.correctLabel(GanttLanguage
-                .getInstance().getText("openFromServer"))) : (GanttProject
-                .correctLabel(GanttLanguage.getInstance().getText(
-                        "saveToServer"))), true);
+    private Choice myChoice;
 
-        JPanel inputPanel = new JPanel(new BorderLayout());
-
-        Box serverBox = Box.createVerticalBox();
-        serverBox.add(new JLabel(language.getText("fileFromServer")));
-        String sDefaultURL = "http://ganttproject.sourceforge.net/tmp/testGantt.xml";
-        urlField = new JTextField((null != currentURL) ? currentURL
-                : sDefaultURL);
-        serverBox.add(urlField);
-
-        inputPanel.add(serverBox, BorderLayout.NORTH);
-
-        Box hb = Box.createHorizontalBox(); // horizontal box
-
-        Box ivbw = Box.createVerticalBox(); // inner vertical box west
-        Box ivbe = Box.createVerticalBox(); // inner vertical box east
-
-        ivbw.add(new JLabel(language.getText("userName")));
-        userNameField = new JTextField(currentUser);
-        ivbw.add(userNameField);
-
-        ivbe.add(new JLabel(language.getText("password")));
-        passwordField = new JPasswordField(currentPass);
-        ivbe.add(passwordField);
-
-        hb.add(ivbw);
-        hb.add(ivbe);
-
-        inputPanel.add(hb, BorderLayout.SOUTH);
-        JPanel centerPanel = new JPanel(new FlowLayout());
-        centerPanel.add(inputPanel, BorderLayout.CENTER);
-        getContentPane().add(centerPanel, BorderLayout.CENTER);
-
-        JPanel southPanel = new JPanel();
-        JButton ok = new JButton(language.getText("ok"));
-        getRootPane().setDefaultButton(ok);
-        southPanel.add(ok);
-
-        // Listener sur le bouton ok
-        ok.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                setVisible(false);
-                dispose();
-                fileurl = urlField.getText();
-                userName = userNameField.getText();
-                password = new String(passwordField.getPassword());
-                change = true;
-            }
-        });
-
-        // bouton cancel
-        JButton cancel = new JButton(language.getText("cancel"));
-        southPanel.add(cancel);
-        cancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                setVisible(false);
-                dispose();
-            }
-        });
-
-        getContentPane().add(southPanel, BorderLayout.SOUTH);
-
-        pack();
-        setResizable(true);
-
-        DialogAligner.center(this, getParent());
-
-        applyComponentOrientation(language.getComponentOrientation());
+    public GanttURLChooser(UIFacade uiFacade, String url, String username, String password) {
+        myUiFacade = uiFacade;
+        myUrl = url;
+        myUsername = username;
+        myPassword = password;
+        myChoice = UIFacade.Choice.CANCEL;
     }
 
+    public void show(boolean isOpenUrl) {
+        JPanel panel = new JPanel(new SpringLayout());
+
+        panel.add(new JLabel(language.getText("fileFromServer")));
+        String sDefaultURL = "http://ganttproject.sourceforge.net/tmp/testGantt.xml";
+        urlField = new JTextField((null != myUrl) ? myUrl : sDefaultURL);
+        panel.add(urlField);
+
+        panel.add(new JLabel(language.getText("userName")));
+        userNameField = new JTextField(myUsername);
+        panel.add(userNameField);
+
+        panel.add(new JLabel(language.getText("password")));
+        passwordField = new JPasswordField(myPassword);
+        panel.add(passwordField);
+
+        SpringUtilities.makeCompactGrid(panel, 3, 2, 0, 0, 3, 3);
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        OkAction okAction = new OkAction() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                myUrl = urlField.getText();
+                myUsername = userNameField.getText();
+                myPassword = new String(passwordField.getPassword());
+                myChoice = UIFacade.Choice.OK;
+            }
+        };
+        CancelAction cancelAction = new CancelAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
+        myUiFacade.showDialog(panel, new Action[] {okAction, cancelAction},
+            isOpenUrl ? language.getText("openFromServer") : language.getText("saveToServer"));
+    }
+
+    UIFacade.Choice getChoice() {
+        return myChoice;
+    }
+
+    String getUsername() {
+        return myUsername;
+    }
+
+    String getUrl() {
+        return myUrl;
+    }
+
+    String getPassword() {
+        return myPassword;
+    }
 }
