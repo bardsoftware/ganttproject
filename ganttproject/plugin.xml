@@ -63,6 +63,7 @@
          <importer class="net.sourceforge.ganttproject.importer.ImporterFromTxtFile"/>
    </extension>
    <extension point="net.sourceforge.ganttproject.OptionPageProvider">
+         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ExportCsvOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.GanttChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectBasicOptionPageProvider"/>
