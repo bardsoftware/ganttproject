@@ -49,14 +49,11 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     private int rowHeight = 20;
 
     private final EnumerationOption myDependencyHardnessOption;
-    private final GPOptionGroup myDependencyOptions;
 
     private final ColorOption myTaskDefaultColorOption;
 
-    private final ChartOptionGroup myDefaultColorOptions;
-
     private final GPOptionGroup myTaskDefaultsOptions;
-    
+
     private final ColorOption myTaskAheadOfScheduleColor;
     private final ColorOption myTaskBehindScheduleColor;
     private final ColorOption myTaskOnScheduleColor;
@@ -76,7 +73,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
         class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
             private NewTaskColorOption() {
-                super("newTaskDefaultColor");
+                super("taskDefaultColor");
             }
             public String getTagName() {
                 return "colors";
@@ -97,28 +94,6 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             }
 
         };
-        myTaskDefaultColorOption = new NewTaskColorOption();
-        myDependencyHardnessOption = new DefaultEnumerationOption("dependencyDefaultHardness", new String[] {
-                "Strong", "Rubber"
-             });
-             myDependencyHardnessOption.lock();
-             myDependencyHardnessOption.setValue("Strong");
-             myDependencyHardnessOption.commit();
-             myDependencyOptions = new GPOptionGroup("dependency", new GPOption[] {myDependencyHardnessOption});
-             myDependencyOptions.setTitled(true);
-             myDependencyOptions.setI18Nkey(
-                     new OptionsPageBuilder.I18N().getCanonicalOptionGroupLabelKey(myDependencyOptions),
-                     "link");
-             myDependencyOptions.setI18Nkey(
-                     new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(myDependencyHardnessOption),
-                     "hardness");
-             myDependencyOptions.setI18Nkey(
-                     OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
-                     "hardness.strong");
-             myDependencyOptions.setI18Nkey(
-                     OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Rubber"),
-                     "hardness.rubber");
-        myDefaultColorOptions = new ChartOptionGroup("ganttChartDefaultColors", new GPOption[] {myTaskDefaultColorOption, projectConfig.getWeekendAlphaRenderingOption()}, getOptionEventDispatcher());
         {
             myTaskAheadOfScheduleColor = new DefaultColorOption(
                     "ganttChartStateDiffColors.taskAheadOfScheduleColor") {
@@ -159,8 +134,30 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
                             myTaskBehindScheduleColor },
                     getOptionEventDispatcher());
         }
+
+
+        myTaskDefaultColorOption = new NewTaskColorOption();
+        myDependencyHardnessOption = new DefaultEnumerationOption(
+            "dependencyDefaultHardness", new String[] {"Strong", "Rubber"}) {
+            {
+                setValue("Strong", true);
+            }
+        };
         myTaskDefaultsOptions = new GPOptionGroup(
-            "ganttChartDefaults", new GPOption[] {taskManager.getTaskNamePrefixOption()});
+            "ganttChartDefaults", new GPOption[] {
+                taskManager.getTaskNamePrefixOption(),
+                myTaskDefaultColorOption,
+                myDependencyHardnessOption});
+        myTaskDefaultsOptions.setI18Nkey(
+            new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(myDependencyHardnessOption),
+            "hardness");
+        myTaskDefaultsOptions.setI18Nkey(
+                OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
+                "hardness.strong");
+        myTaskDefaultsOptions.setI18Nkey(
+                OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Rubber"),
+                "hardness.rubber");
+
     }
 
     public void setVisibleTasks(List<Task> visibleTasks) {
@@ -297,11 +294,9 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         GPOptionGroup[] superGroups = super.getChartOptionGroups();
         GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
-        result.addAll(Arrays.asList(superGroups));
         result.add(myTaskDefaultsOptions);
+        result.addAll(Arrays.asList(superGroups));
         result.addAll(Arrays.asList(rendererGroups));
-        result.add(myDependencyOptions);
-        result.add(myDefaultColorOptions);
         result.add(myStateDiffOptions);
         return result.toArray(new GPOptionGroup[result.size()]);
     }
