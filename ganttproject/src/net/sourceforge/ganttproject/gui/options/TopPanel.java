@@ -1,5 +1,5 @@
 /***************************************************************************
- TopPanel.java 
+ TopPanel.java
  ------------------------------------------
  begin                : 24 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -34,7 +34,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * A panel to show the top.gif image and write a title and a comment.
- * 
+ *
  * @author athomas
  */
 public class TopPanel extends JPanel {
@@ -64,15 +64,16 @@ public class TopPanel extends JPanel {
         topPanel.setPreferredSize(new Dimension(iWidth, 26));
 
         vb.add(topPanel);
-        JTextArea textArea = new JTextArea(comment);
-        textArea.setEditable(false);
-        textArea.setDragEnabled(false);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setMargin(new Insets(3, 0, 3, 5));
-        textArea.setBackground(getBackground());
-        vb.add(textArea);
-
+        if (comment != null && !comment.isEmpty()) {
+            JTextArea textArea = new JTextArea(comment);
+            textArea.setEditable(false);
+            textArea.setDragEnabled(false);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setMargin(new Insets(3, 0, 3, 5));
+            textArea.setBackground(getBackground());
+            vb.add(textArea);
+        }
         // vb.setBorder(LineBorder.createBlackLineBorder());
         applyComponentOrientation(GanttLanguage.getInstance()
                 .getComponentOrientation());

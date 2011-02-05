@@ -34,6 +34,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -65,7 +66,7 @@ public class SettingsDialog2 {
             p.init(project, uifacade);
         }
     }
-    
+
     public void show() {
         OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
@@ -88,7 +89,7 @@ public class SettingsDialog2 {
         final String name;
         final Container component;
         final String id;
-        
+
         ListItem(boolean isGroupHeader, String id, String name, Container component) {
             this.isGroupHeader = isGroupHeader;
             this.id = id;
@@ -99,7 +100,7 @@ public class SettingsDialog2 {
 
     private Component getComponent() {
         final JPanel contentPanel = new JPanel(new CardLayout());
-        
+
         myItems = getListItems(myProviders);
         for (ListItem li : myItems) {
             contentPanel.add(li.component, li.id);
@@ -115,21 +116,23 @@ public class SettingsDialog2 {
             }
         });
         pagesList.setCellRenderer(new DefaultListCellRenderer() {
+            private final JButton EMPTY_BUTTON = new JButton();
+
             @Override
             public Component getListCellRendererComponent(
                     JList list, Object value, int idx, boolean isSelected, boolean cellHasFocus) {
                 ListItem listItem = (ListItem) value;
                 Component defaultResult = super.getListCellRendererComponent(
                     list, listItem.name, idx, isSelected, false);
-                Font font = defaultResult.getFont(); 
-                
+                Font font = defaultResult.getFont();
+
                 JPanel wrapper = new JPanel(new BorderLayout());
                 if (listItem.isGroupHeader) {
                     defaultResult.setFont(font.deriveFont(Font.BOLD, font.getSize()+2.0f));
-                    defaultResult.setBackground(Color.ORANGE);
-                    defaultResult.setForeground(Color.BLACK);
+                    defaultResult.setBackground(EMPTY_BUTTON.getBackground());
+                    defaultResult.setForeground(EMPTY_BUTTON.getForeground());
                     wrapper.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(1, 0,0,0, Color.ORANGE.darker()),
+                        BorderFactory.createMatteBorder(1, 0,0,0, EMPTY_BUTTON.getBackground().darker()),
                         BorderFactory.createEmptyBorder(2, 3, 2, 5)));
                 } else {
                     defaultResult.setFont(font.deriveFont(font.getSize()+2.0f));
@@ -160,7 +163,7 @@ public class SettingsDialog2 {
             }
         });
         pagesList.setBorder(BorderFactory.createEtchedBorder());
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -170,14 +173,14 @@ public class SettingsDialog2 {
 
         final JPanel pagesPanel = new JPanel(new BorderLayout());
         pagesPanel.add(pagesList, BorderLayout.CENTER);
-        
+
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(pagesPanel, BorderLayout.WEST);
-        rootPanel.add(contentPanel, BorderLayout.CENTER);    
+        rootPanel.add(contentPanel, BorderLayout.CENTER);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         return rootPanel;
     }
-    
+
     private List<ListItem> getListItems(OptionPageProvider[] providers) {
         Map<String, OptionPageProvider> pageId_provider = new HashMap<String, OptionPageProvider>();
         for (OptionPageProvider p : providers) {
@@ -192,12 +195,12 @@ public class SettingsDialog2 {
                 li = new ListItem(
                     true,
                     groupNameKey,
-                    GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)), 
+                    GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)),
                     new JPanel());
             } else {
                 OptionPageProvider p = pageId_provider.get(s);
                 assert p != null : "OptionPageProvider with pageID=" + s + " not found";
-                li = new ListItem(false, p.getPageID(), p.toString(),  
+                li = new ListItem(false, p.getPageID(), p.toString(),
                     (Container)new OptionPageProviderPanel(p, myProject, myUIFacade).getComponent());
             }
             items.add(li);

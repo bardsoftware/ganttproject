@@ -98,7 +98,7 @@ public class OptionsPageBuilder {
             optionsPanel.add(createGroupComponent(optionGroups[i]));
         }
         SpringUtilities.makeCompactGrid(optionsPanel, optionGroups.length, 1,
-                0, 0, 5, 5);
+                0, 0, 5, 15);
         JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.add(optionsPanel, BorderLayout.NORTH);
         resultPanel.addFocusListener(new FocusAdapter() {
