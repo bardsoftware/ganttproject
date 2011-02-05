@@ -113,7 +113,7 @@ public class OptionsPageBuilder {
     public JComponent createGroupComponent(GPOptionGroup group) {
         JPanel optionsPanel = new JPanel(new SpringLayout());
         if (group.isTitled()) {
-        	UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
+            UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
         }
         GPOption[] options = group.getOptions();
         for (int i = 0; i < options.length; i++) {
@@ -146,9 +146,9 @@ public class OptionsPageBuilder {
     }
 
     private boolean needsLabel(GPOptionGroup group, GPOption nextOption) {
-        if (nextOption instanceof BooleanOption) {
-            return !isCheckboxOption(group, nextOption);
-        }
+//        if (nextOption instanceof BooleanOption) {
+//            return !isCheckboxOption(group, nextOption);
+//        }
         return true;
     }
 
@@ -250,7 +250,7 @@ public class OptionsPageBuilder {
             return createRadioButtonBooleanComponent(group, option);
         }
         JCheckBox result = new JCheckBox(new BooleanOptionAction(option));
-        result.setText(myi18n.getOptionLabel(group, option));
+        //result.setText(myi18n.getOptionLabel(group, option));
         result.setHorizontalAlignment(JCheckBox.LEFT);
         result.setHorizontalTextPosition(SwingConstants.TRAILING);
         result.setSelected(option.isChecked());
