@@ -24,11 +24,11 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
     public String getPageID() {
         return myPageID;
     }
-    
+
     public boolean hasCustomComponent() {
         return false;
     }
-    
+
     public Component buildPageComponent() {
         return null;
     }
@@ -37,7 +37,7 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         myProject = project;
         myUiFacade = uiFacade;
     }
-    
+
     public void commit() {
         for (GPOptionGroup optionGroup : getOptionGroups()) {
             optionGroup.commit();
@@ -45,11 +45,11 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
     }
 
     public abstract GPOptionGroup[] getOptionGroups();
-    
+
     protected IGanttProject getProject() {
         return myProject;
     }
-    
+
     protected UIFacade getUiFacade() {
         return myUiFacade;
     }
@@ -60,10 +60,13 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
     }
 
     protected static JPanel wrapContentComponent(Component contentComponent, String title, String description) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.add(new TopPanel(title, description), BorderLayout.NORTH);
+        panel.add(contentComponent, BorderLayout.CENTER);
+
         JPanel result = new JPanel(new BorderLayout());
-        result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        result.add(new TopPanel(title, description), BorderLayout.NORTH);
-        result.add(contentComponent, BorderLayout.CENTER);
+        result.add(panel, BorderLayout.NORTH);
         return result;
 
     }

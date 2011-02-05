@@ -1,261 +1,162 @@
-/***************************************************************************
- CSVSettingsPanel.java
- -----------------
- begin                : 7 juil. 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas@ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2004-2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
+import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSeparator;
-import javax.swing.JTextField;
+import javax.swing.SpringLayout;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
+ * @author dbarashev@gmail.com Major rewrite.
  * @author athomas Panel to edit the text export parameters
  */
-public class CSVSettingsPanel extends GeneralOptionPanel implements
-        ActionListener {
+public class CSVSettingsPanel extends GeneralOptionPanel {
 
-    private final JRadioButton bFixedSize;
+    private JComboBox cbTextSeparator;
 
-    private final JRadioButton bSeparatedText;
+    private JCheckBox cbTaskID;
 
-    private final JRadioButton bDoubleDot;
+    private JCheckBox cbTaskName;
 
-    private final JRadioButton bDotComa;
+    private JCheckBox cbStartDate;
 
-    private final JRadioButton bComa;
+    private JCheckBox cbEndDate;
 
-    private final JRadioButton bSpace;
+    private JCheckBox cbTaskPercent;
 
-    private final JRadioButton bOther;
+    private JCheckBox cbTaskDuration;
 
-    private final JComboBox cbTextSeparator;
+    private JCheckBox cbTaskWebLink;
 
-    private final JTextField tfOther;
+    private JCheckBox cbTaskResources;
 
-    private final JCheckBox cbTaskID;
+    private JCheckBox cbTaskNotes;
 
-    private final JCheckBox cbTaskName;
+    private JCheckBox cbResID;
 
-    private final JCheckBox cbStartDate;
+    private JCheckBox cbResName;
 
-    private final JCheckBox cbEndDate;
+    private JCheckBox cbResMail;
 
-    private final JCheckBox cbTaskPercent;
+    private JCheckBox cbResPhone;
 
-    private final JCheckBox cbTaskDuration;
-
-    private final JCheckBox cbTaskWebLink;
-
-    private final JCheckBox cbTaskResources;
-
-    private final JCheckBox cbTaskNotes;
-
-    private final JCheckBox cbResID;
-
-    private final JCheckBox cbResName;
-
-    private final JCheckBox cbResMail;
-
-    private final JCheckBox cbResPhone;
-
-    private final JCheckBox cbResRole;
+    private JCheckBox cbResRole;
 
     private final CSVOptions myCsvOptions;
+
+    private JComboBox myFieldSeparatorCombo;
 
     public CSVSettingsPanel(CSVOptions csvOptions) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "csvexport")), GanttLanguage.getInstance().getText(
                 "settingsCVSExport"));
         myCsvOptions = csvOptions;
-        vb.add(new JSeparator());
-        JPanel genePanel = new JPanel(new BorderLayout());
-        JLabel lblSeparatedField = new JLabel(language
-                .getText("separatedFields"));
-        lblSeparatedField.setFont(new Font(lblSeparatedField.getFont()
-                .getFontName(), Font.BOLD, lblSeparatedField.getFont()
-                .getSize()));
-        genePanel.add(lblSeparatedField, BorderLayout.WEST);
-        vb.add(genePanel);
 
-        JPanel fixedPanel = new JPanel(new BorderLayout());
-        fixedPanel.add(bFixedSize = new JRadioButton(), BorderLayout.WEST);
-        // bFixedSize.setEnabled(false);
-        bFixedSize.addActionListener(this);
-        fixedPanel.add(new JLabel(language.getText("fixedWidth")),
-                BorderLayout.CENTER);
-        vb.add(fixedPanel);
-
-        JPanel separatedPanel = new JPanel(new BorderLayout());
-        separatedPanel.add(bSeparatedText = new JRadioButton(),
-                BorderLayout.WEST);
-        bSeparatedText.addActionListener(this);
-        separatedPanel.add(new JLabel(language.getText("separated")),
-                BorderLayout.CENTER);
-        vb.add(separatedPanel);
-
-        JPanel separatorFieldPanel = new JPanel(new GridBagLayout());
-        vb.add(separatorFieldPanel);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets.right = 15;
-        gbc.insets.left = 10;
-        gbc.insets.top = 10;
-
-        addUsingGBL(separatorFieldPanel, bDoubleDot = new JRadioButton(), gbc,
-                0, 0, 1, 1);
-        bDoubleDot.addActionListener(this);
-        addUsingGBL(separatorFieldPanel, new JLabel(language
-                .getText("doubledot")), gbc, 1, 0, 1, 1);
-        addUsingGBL(separatorFieldPanel, bDotComa = new JRadioButton(), gbc, 3,
-                0, 1, 1);
-        bDotComa.addActionListener(this);
-        addUsingGBL(separatorFieldPanel,
-                new JLabel(language.getText("dotComa")), gbc, 4, 0, 1, 1);
-        addUsingGBL(separatorFieldPanel, bComa = new JRadioButton(), gbc, 6, 0,
-                1, 1);
-        bComa.addActionListener(this);
-        addUsingGBL(separatorFieldPanel, new JLabel(language.getText("coma")),
-                gbc, 7, 0, 1, 1);
-        bSpace = new JRadioButton();
-        // addUsingGBL(separatorFieldPanel, bSpace , gbc, 0, 1, 1, 1);
-        bSpace.addActionListener(this);
-        // addUsingGBL(separatorFieldPanel, new
-        // JLabel(language.getText("space")), gbc, 1, 1, 1, 1);
-        addUsingGBL(separatorFieldPanel, bOther = new JRadioButton(), gbc, 6,
-                1, 1, 1);
-        bOther.addActionListener(this);
-        addUsingGBL(separatorFieldPanel, new JLabel(language.getText("other")),
-                gbc, 7, 1, 1, 1);
-        addUsingGBL(separatorFieldPanel, tfOther = new JTextField(5), gbc, 8,
-                1, 1, 1);
-
-        JPanel textSeparatorFieldPanel = new JPanel(new FlowLayout());
-        vb.add(textSeparatorFieldPanel);
-        textSeparatorFieldPanel.add(new JLabel(language
-                .getText("textSeparator")));
-        cbTextSeparator = new JComboBox(getCsvOptions()
-                .getSeparatedTextChars());
-        textSeparatorFieldPanel.add(new JLabel("  "));
-        textSeparatorFieldPanel.add(cbTextSeparator);
-
-        vb.add(new JPanel());
-
-        vb.add(new JSeparator());
-        JPanel taskPanel = new JPanel(new BorderLayout());
-        JLabel lblTaskField = new JLabel(language.getText("taskFields"));
-        lblTaskField.setFont(new Font(lblTaskField.getFont().getFontName(),
-                Font.BOLD, lblTaskField.getFont().getSize()));
-        taskPanel.add(lblTaskField, BorderLayout.WEST);
-        vb.add(taskPanel);
-        JPanel taskFieldPanel = new JPanel(new GridBagLayout());
-        vb.add(taskFieldPanel);
-        addUsingGBL(taskFieldPanel, cbTaskID = new JCheckBox(), gbc, 0, 0, 1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("id")), gbc, 1,
-                0, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskName = new JCheckBox(), gbc, 3, 0, 1,
-                1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("name")), gbc,
-                4, 0, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskDuration = new JCheckBox(), gbc, 6,
-                0, 1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("length")),
-                gbc, 7, 0, 1, 1);
-        addUsingGBL(taskFieldPanel, cbStartDate = new JCheckBox(), gbc, 0, 1,
-                1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language
-                .getText("dateOfBegining")), gbc, 1, 1, 1, 1);
-        addUsingGBL(taskFieldPanel, cbEndDate = new JCheckBox(), gbc, 3, 1, 1,
-                1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("dateOfEnd")),
-                gbc, 4, 1, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskPercent = new JCheckBox(), gbc, 6, 1,
-                1, 1);
-        addUsingGBL(taskFieldPanel,
-                new JLabel(language.getText("advancement")), gbc, 7, 1, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskWebLink = new JCheckBox(), gbc, 0, 2,
-                1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("webLink")),
-                gbc, 1, 2, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskResources = new JCheckBox(), gbc, 3,
-                2, 1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("resources")),
-                gbc, 4, 2, 1, 1);
-        addUsingGBL(taskFieldPanel, cbTaskNotes = new JCheckBox(), gbc, 6, 2,
-                1, 1);
-        addUsingGBL(taskFieldPanel, new JLabel(language.getText("notes")), gbc,
-                7, 2, 1, 1);
-
-        vb.add(new JPanel());
-
-        vb.add(new JSeparator());
-        JPanel resPanel = new JPanel(new BorderLayout());
-        JLabel lblResField = new JLabel(language.getText("resFields"));
-        lblResField.setFont(new Font(lblResField.getFont().getFontName(),
-                Font.BOLD, lblResField.getFont().getSize()));
-        resPanel.add(lblResField, BorderLayout.WEST);
-        vb.add(resPanel);
-        JPanel resFieldPanel = new JPanel(new GridBagLayout());
-        vb.add(resFieldPanel);
-        addUsingGBL(resFieldPanel, cbResID = new JCheckBox(), gbc, 0, 0, 1, 1);
-        addUsingGBL(resFieldPanel, new JLabel(language.getText("id")), gbc, 1,
-                0, 1, 1);
-        addUsingGBL(resFieldPanel, cbResName = new JCheckBox(), gbc, 3, 0, 1, 1);
-        addUsingGBL(resFieldPanel, new JLabel(language.getText("colName")),
-                gbc, 4, 0, 1, 1);
-        addUsingGBL(resFieldPanel, cbResMail = new JCheckBox(), gbc, 6, 0, 1, 1);
-        addUsingGBL(resFieldPanel, new JLabel(language.getText("colMail")),
-                gbc, 7, 0, 1, 1);
-        addUsingGBL(resFieldPanel, cbResPhone = new JCheckBox(), gbc, 0, 1, 1,
-                1);
-        addUsingGBL(resFieldPanel, new JLabel(language.getText("colPhone")),
-                gbc, 1, 1, 1, 1);
-        addUsingGBL(resFieldPanel, cbResRole = new JCheckBox(), gbc, 3, 1, 1, 1);
-        addUsingGBL(resFieldPanel, new JLabel(language.getText("colRole")),
-                gbc, 4, 1, 1, 1);
+        vb.add(createSeparatorSettingsPanel());
+        vb.add(Box.createVerticalStrut(15));
+        vb.add(createTaskExportFieldsPanel());
+        vb.add(Box.createVerticalStrut(15));
+        vb.add(createResourceExportFieldsPanel());
+        vb.add(Box.createVerticalGlue());
 
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** add a component to container by using GridBagConstraints. */
-    private void addUsingGBL(Container container, Component component,
-            GridBagConstraints gbc, int x, int y, int w, int h) {
-        gbc.gridx = x;
-        gbc.gridy = y;
-        gbc.gridwidth = w;
-        gbc.gridheight = h;
-        gbc.weighty = 0;
-        container.add(component, gbc);
+    JComponent createSeparatorSettingsPanel() {
+        JPanel result = new JPanel(new SpringLayout());
+        result.add(new JLabel(language.getText("textSeparator")));
+        cbTextSeparator = new JComboBox(getCsvOptions().getSeparatedTextChars());
+        result.add(cbTextSeparator);
+
+        result.add(new JLabel(language.getText("separatedFields")));
+        myFieldSeparatorCombo = new JComboBox(new String[] {
+            language.getText("fixedWidth"),
+            language.getText("doubledot"),
+            language.getText("dotComa"),
+            language.getText("coma")
+        });
+        myFieldSeparatorCombo.setEditable(true);
+        result.add(myFieldSeparatorCombo);
+        SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
+        return result;
+    }
+
+    JComponent createTaskExportFieldsPanel() {
+        JPanel panel = new JPanel(new SpringLayout());
+        cbTaskID = new JCheckBox(language.getText("id"));
+        panel.add(cbTaskID);
+        cbTaskName = new JCheckBox(language.getText("name"));
+        panel.add(cbTaskName);
+        cbTaskDuration = new JCheckBox(language.getText("length"));
+        panel.add(cbTaskDuration);
+        cbStartDate = new JCheckBox(language.getText("dateOfBegining"));
+        panel.add(cbStartDate);
+        cbEndDate = new JCheckBox(language.getText("dateOfEnd"));
+        panel.add(cbEndDate);
+        cbTaskPercent = new JCheckBox(language.getText("advancement"));
+        panel.add(cbTaskPercent);
+        cbTaskWebLink = new JCheckBox(language.getText("webLink"));
+        panel.add(cbTaskWebLink);
+        cbTaskResources = new JCheckBox(language.getText("resources"));
+        panel.add(cbTaskResources);
+        cbTaskNotes = new JCheckBox(language.getText("notes"));
+        panel.add(cbTaskNotes);
+        SpringUtilities.makeCompactGrid(panel, 3, 3, 0, 0, 3, 3);
+        UIUtil.createTitle(panel, language.getText("taskFields"));
+
+        Box result = Box.createHorizontalBox();
+        result.add(panel);
+        result.add(Box.createHorizontalGlue());
+        return result;
+    }
+
+    JComponent createResourceExportFieldsPanel() {
+        JPanel panel = new JPanel(new SpringLayout());
+        cbResID = new JCheckBox(language.getText("id"));
+        panel.add(cbResID);
+        cbResName = new JCheckBox(language.getText("colName"));
+        panel.add(cbResName);
+        cbResMail = new JCheckBox(language.getText("colMail"));
+        panel.add(cbResMail);
+        cbResPhone = new JCheckBox(language.getText("colPhone"));
+        panel.add(cbResPhone);
+        cbResRole = new JCheckBox(language.getText("colRole"));
+        panel.add(cbResRole);
+        panel.add(new JPanel());
+
+        SpringUtilities.makeCompactGrid(panel, 3, 2, 0, 0, 3, 3);
+        UIUtil.createTitle(panel, language.getText("resFields"));
+
+        Box result = Box.createHorizontalBox();
+        result.add(panel);
+        result.add(Box.createHorizontalGlue());
+        return result;
+
     }
 
     public boolean applyChanges(boolean askForApply) {
@@ -276,7 +177,6 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
                 && getResourceMail() == csvOptions.bExportResourceMail
                 && getResourcePhone() == csvOptions.bExportResourcePhone
                 && getResourceRole() == csvOptions.bExportResourceRole
-                && !separatCharHasChange()
                 && getTextSeparat().equals(csvOptions.sSeparatedTextChar)) {
             bHasChange = false;
         } else {
@@ -307,112 +207,48 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
     public void initialize() {
 
         cbTaskID.setSelected(getCsvOptions().bExportTaskID);
-        cbTaskName
-                .setSelected(getCsvOptions().bExportTaskName);
-        cbStartDate
-                .setSelected(getCsvOptions().bExportTaskStartDate);
-        cbEndDate
-                .setSelected(getCsvOptions().bExportTaskEndDate);
-        cbTaskPercent
-                .setSelected(getCsvOptions().bExportTaskPercent);
-        cbTaskDuration
-                .setSelected(getCsvOptions().bExportTaskDuration);
-        cbTaskWebLink
-                .setSelected(getCsvOptions().bExportTaskWebLink);
-        cbTaskResources
-                .setSelected(getCsvOptions().bExportTaskResources);
-        cbTaskNotes
-                .setSelected(getCsvOptions().bExportTaskNotes);
+        cbTaskName.setSelected(getCsvOptions().bExportTaskName);
+        cbStartDate.setSelected(getCsvOptions().bExportTaskStartDate);
+        cbEndDate.setSelected(getCsvOptions().bExportTaskEndDate);
+        cbTaskPercent.setSelected(getCsvOptions().bExportTaskPercent);
+        cbTaskDuration.setSelected(getCsvOptions().bExportTaskDuration);
+        cbTaskWebLink.setSelected(getCsvOptions().bExportTaskWebLink);
+        cbTaskResources.setSelected(getCsvOptions().bExportTaskResources);
+        cbTaskNotes.setSelected(getCsvOptions().bExportTaskNotes);
 
-        cbResID
-                .setSelected(getCsvOptions().bExportResourceID);
-        cbResName
-                .setSelected(getCsvOptions().bExportResourceName);
-        cbResMail
-                .setSelected(getCsvOptions().bExportResourceMail);
-        cbResPhone
-                .setSelected(getCsvOptions().bExportResourcePhone);
-        cbResRole
-                .setSelected(getCsvOptions().bExportResourceRole);
+        cbResID.setSelected(getCsvOptions().bExportResourceID);
+        cbResName.setSelected(getCsvOptions().bExportResourceName);
+        cbResMail.setSelected(getCsvOptions().bExportResourceMail);
+        cbResPhone.setSelected(getCsvOptions().bExportResourcePhone);
+        cbResRole.setSelected(getCsvOptions().bExportResourceRole);
 
         boolean bfixed = getCsvOptions().bFixedSize;
 
+        String selectedSeparator;
         if (bfixed) {
-            bFixedSize.setSelected(true);
-            enableSeparatedButton(false);
+            selectedSeparator = language.getText("fixedWidth");
         } else {
-            bSeparatedText.setSelected(true);
-            enableSeparatedButton(true);
-        }
+            String sSeparatedChar = getCsvOptions().sSeparatedChar;
 
-        String sSeparatedChar = getCsvOptions().sSeparatedChar;
-
-        if (",".equals(sSeparatedChar)) {
-            unselectOther(bComa);
-        } else if (";".equals(sSeparatedChar)) {
-            unselectOther(bDotComa);
-        } else if (":".equals(sSeparatedChar)) {
-            unselectOther(bDoubleDot);
-        } else if (" ".equals(sSeparatedChar)) {
-            unselectOther(bSpace);
-        } else {
-            unselectOther(bOther);
-            tfOther.setText(sSeparatedChar);
+            if (",".equals(sSeparatedChar)) {
+                selectedSeparator = language.getText("coma");
+            } else if (";".equals(sSeparatedChar)) {
+                selectedSeparator = language.getText("dotComa");
+            } else if (":".equals(sSeparatedChar)) {
+                selectedSeparator = language.getText("doubledot");
+            } else {
+                selectedSeparator = sSeparatedChar;
+            }
         }
+        myFieldSeparatorCombo.setSelectedItem(selectedSeparator);
         if ("\"".equals(getCsvOptions().sSeparatedTextChar)) {
             cbTextSeparator.setSelectedIndex(1);
         }
 
     }
 
-    /** Action performed. */
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() instanceof JRadioButton) {
-            JRadioButton selectedButton = (JRadioButton) e.getSource();
-            if (!selectedButton.isSelected())
-                selectedButton.setSelected(true);
-        }
-
-        if (e.getSource() == bFixedSize && bFixedSize.isSelected()) {
-            bSeparatedText.setSelected(false);
-            enableSeparatedButton(false);
-        } else if (e.getSource() == bSeparatedText
-                && bSeparatedText.isSelected()) {
-            bFixedSize.setSelected(false);
-            enableSeparatedButton(true);
-        } else if (e.getSource() == bDoubleDot && bDoubleDot.isSelected()) {
-            unselectOther(bDoubleDot);
-        } else if (e.getSource() == bDotComa && bDotComa.isSelected()) {
-            unselectOther(bDotComa);
-        } else if (e.getSource() == bComa && bComa.isSelected()) {
-            unselectOther(bComa);
-        } else if (e.getSource() == bSpace && bSpace.isSelected()) {
-            unselectOther(bSpace);
-        } else if (e.getSource() == bOther && bOther.isSelected()) {
-            unselectOther(bOther);
-        }
-    }
-
-    private void unselectOther(JRadioButton selectedButton) {
-        bDoubleDot.setSelected(selectedButton == bDoubleDot);
-        bDotComa.setSelected(selectedButton == bDotComa);
-        bComa.setSelected(selectedButton == bComa);
-        bSpace.setSelected(selectedButton == bSpace);
-        bOther.setSelected(selectedButton == bOther);
-        tfOther.setEnabled(selectedButton == bOther);
-    }
-
-    private void enableSeparatedButton(boolean enabled) {
-        bDoubleDot.setEnabled(enabled);
-        bDotComa.setEnabled(enabled);
-        bComa.setEnabled(enabled);
-        bSpace.setEnabled(enabled);
-        bOther.setEnabled(enabled);
-        tfOther.setEnabled(enabled && bOther.isSelected());
-    }
-
     private boolean getFixed() {
-        return bFixedSize.isSelected();
+        return language.getText("fixedWidth").equals(myFieldSeparatorCombo.getSelectedItem());
     }
 
     private boolean getTaskID() {
@@ -471,26 +307,6 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
         return cbResRole.isSelected();
     }
 
-    private boolean separatCharHasChange() {
-        CSVOptions csvOptions = getCsvOptions();
-        if (bDoubleDot.isSelected() && csvOptions.sSeparatedChar.equals(":")) {
-            return false;
-        }
-        if (bComa.isSelected() && csvOptions.sSeparatedChar.equals(",")) {
-            return false;
-        }
-        if (bDotComa.isSelected() && csvOptions.sSeparatedChar.equals(";")) {
-            return false;
-        }
-        if (bSpace.isSelected() && csvOptions.sSeparatedChar.equals(" ")) {
-            return false;
-        }
-        if (bOther.isSelected()
-                && csvOptions.sSeparatedChar.equals(tfOther.getText())) {
-            return false;
-        }
-        return true;
-    }
 
     private String getTextSeparat() {
         if (cbTextSeparator.getSelectedIndex() == 0) {
@@ -500,15 +316,17 @@ public class CSVSettingsPanel extends GeneralOptionPanel implements
     }
 
     private String getSeparat() {
-        if (bDoubleDot.isSelected())
+        String selectedSeparator = (String) myFieldSeparatorCombo.getSelectedItem();
+        if (selectedSeparator.equals(language.getText("doubledot"))) {
             return ":";
-        if (bComa.isSelected())
+        }
+        if (selectedSeparator.equals(language.getText("coma"))) {
             return ",";
-        if (bDotComa.isSelected())
+        }
+        if (selectedSeparator.equals(language.getText("dotComa"))) {
             return ";";
-        if (bSpace.isSelected())
-            return " ";
-        return tfOther.getText();
+        }
+        return selectedSeparator;
     }
 
     private CSVOptions getCsvOptions() {
