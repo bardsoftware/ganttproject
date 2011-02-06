@@ -14,75 +14,48 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class NetworkOptionPageProvider implements OptionPageProvider{
+public class NetworkOptionPageProvider extends OptionPageProviderBase {
 
-    public GPOptionGroup[] getOptionGroups(IGanttProject project, UIFacade uiFacade) {
-        return project.getDocumentManager().getNetworkOptionGroups();
+    public NetworkOptionPageProvider() {
+        super("impex.ftp");
     }
 
-    public String getPageID() {
-        return "ftpexport";
-    }
-
-    public String toString() {
-        return "FTP";
+    public GPOptionGroup[] getOptionGroups() {
+        return getProject().getDocumentManager().getNetworkOptionGroups();
     }
 
     public boolean hasCustomComponent() {
         return true;
     }
 
-    public Component buildPageComponent(IGanttProject project, final UIFacade uiFacade) {
+    public Component buildPageComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        builder.setI18N(new OptionsPageBuilder.I18N() {
+        final GPOptionGroup ftpGroup = getProject().getDocumentManager().getNetworkOptionGroups()[0];
+        I18N i18n = new OptionsPageBuilder.I18N();
 
-            public String getPageTitle(String pageID) {
-                return getValue("ftpexport");            
-            }
-
-            public String getPageDescription(String pageID) {
-                return getValue("settingsFTPExport");
-            }
-
-            public String getOptionGroupLabel(GPOptionGroup group) {
-                return getValue("ftpexport");
-            }
-
-            public String getOptionLabel(GPOptionGroup group, GPOption option) {
-                final String id = option.getID();
-                if (DocumentCreator.DIRECTORYNAME_OPTION_ID.equals(id)) {
-                    return getValue("ftpdirectory");
-                }
-                if (DocumentCreator.PASSWORD_OPTION_ID.equals(id)) {
-                    return getValue("ftppwd");
-                }
-                if (DocumentCreator.SERVERNAME_OPTION_ID.equals(id)) {
-                    return getValue("ftpserver");
-                }
-                if (DocumentCreator.USERNAME_OPTION_ID.equals(id)) {
-                    return getValue("ftpuser");
-                }
-                return super.getOptionLabel(group, option);
-            }
-        });
-        final GPOptionGroup ftpGroup = project.getDocumentManager().getNetworkOptionGroups()[0];
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
+        ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(usernameOption), "ftpuser");
+
         final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);
+        ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(servernameOption), "ftpserver");
+
         final DefaultStringOption dirnameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.DIRECTORYNAME_OPTION_ID);
+        ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(dirnameOption), "ftpdirectory");
+
         final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
- 
-        final JComponent optionsPane = builder.buildPage(project.getDocumentManager().getNetworkOptionGroups(), getPageID());
+        ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(passwordOption), "ftppwd");
+
+        final JComponent optionsPane = builder.buildPage(getProject().getDocumentManager().getNetworkOptionGroups(), getPageID());
         final Action testConnectionAction = new AbstractAction() {
             {
                 putValue(Action.NAME, GanttLanguage.getInstance().getText("testFTPConnection"));
@@ -111,15 +84,11 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
                             GanttLanguage.getInstance().getText("success"),
                             JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException e2) {
-                    uiFacade.showErrorDialog(e2);
-//                    JOptionPane.showMessageDialog(, GanttLanguage
-//                            .getInstance().getText("errorFTPConnection"),
-//                            GanttLanguage.getInstance().getText("error"),
-//                            JOptionPane.ERROR_MESSAGE);
+                    getUiFacade().showErrorDialog(e2);
                 } finally {
 
                 }
-            }                
+            }
         };
         ChangeValueListener listener = new ChangeValueListener() {
             public void changeValue(ChangeValueEvent event) {
@@ -134,7 +103,7 @@ public class NetworkOptionPageProvider implements OptionPageProvider{
         result.add(new JButton(testConnectionAction));
         return result;
     }
-    
+
     private boolean canEnableTestAction(GPOptionGroup ftpGroup) {
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
         final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);

@@ -1,5 +1,5 @@
 /***************************************************************************
- SettingsDialog.java    
+ SettingsDialog.java
  -----------------------------------------------------
  begin                : jun 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -107,31 +107,34 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
         boolean bHasChange = settingPanel.applyChanges(true);
 
         // construct the sections
-        if ((settingPanel instanceof LanguageSettingsPanel) && bHasChange) {
-            reinit = true;
-            rootNode.removeAllChildren();
-            treeModel.setRoot(rootNode);
-            treeModel.reload();
-            constructSections();
-            reinit = false;
-        }
+//        if ((settingPanel instanceof LanguageSettingsPanel) && bHasChange) {
+//            reinit = true;
+//            rootNode.removeAllChildren();
+//            treeModel.setRoot(rootNode);
+//            treeModel.reload();
+//            constructSections();
+//            reinit = false;
+//        }
 
         // - remove the settingPanel
         mainPanel2.remove(0);
-        
-        Box vb = Box.createVerticalBox();        
+
+        Box vb = Box.createVerticalBox();
         Object userObject = node.getUserObject();
         if (userObject instanceof OptionPageProvider) {
-            settingPanel = new OptionPageProviderPanel((OptionPageProvider) userObject, getProject(), getUIFacade());
+            //settingPanel = new OptionPageProviderPanel((OptionPageProvider) userObject, getProject(), getUIFacade());
+            settingPanel = null;
         } else {
 
         // - ask the settingPanel if parameters are changed
 
         // - Create the new panel
             String sNode = (String) (node.getUserObject());
-            if (sNode.equals(language.getText("languages"))) {
-                settingPanel = new LanguageSettingsPanel(appli);
-            } else if (sNode.equals(GanttProject.correctLabel(language
+//            if (sNode.equals(language.getText("languages"))) {
+//                settingPanel = new LanguageSettingsPanel(appli);
+//            }
+//            else
+                if (sNode.equals(GanttProject.correctLabel(language
                     .getText("project")))) {
                 settingPanel = new ProjectSettingsPanel(getProject());
             } else if (sNode.equals(GanttProject.correctLabel(language
@@ -144,12 +147,12 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
                     .getText("resourceRole")))) {
                 settingPanel = new RolesSettingsPanel(appli);
             } else if (sNode.equals(language.getText("looknfeel"))) {
-                settingPanel = new LnFSettingsPanel(appli);
+                //settingPanel = new LnFSettingsPanel(appli);
             } else if (sNode.equals(GanttProject.correctLabel(language
                     .getText("export")))) {
                 settingPanel = new ExportSettingsPanel(appli);
             } else if (sNode.equals("csv")) {
-                settingPanel = new CSVSettingsPanel(appli);
+//                settingPanel = new CSVSettingsPanel(appli);
             } else {
                 settingPanel = new WelcomeSettingsPanel(appli);
             }
@@ -175,7 +178,7 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
             settingPanel.rollback();
         }
     }
-    
-    
+
+
 
 }

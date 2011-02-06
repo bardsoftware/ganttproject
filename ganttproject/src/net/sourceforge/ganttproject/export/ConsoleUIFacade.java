@@ -8,10 +8,12 @@ import javax.swing.Action;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -148,6 +150,21 @@ public class ConsoleUIFacade implements UIFacade {
 	}
     @Override
     public TaskSelectionManager getTaskSelectionManager() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    @Override
+    public void setLookAndFeel(GanttLookAndFeelInfo laf) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public GPOptionGroup getOptions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    @Override
+    public GanttLookAndFeelInfo getLookAndFeel() {
         // TODO Auto-generated method stub
         return null;
     }

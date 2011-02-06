@@ -33,7 +33,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         myProjectDatesOption= projectConfig.getProjectBoundariesOption();
         myOptions = new ChartOptionGroup(
                 "ganttChartGridDetails",
-                new GPOption[] {myRedlineOption, myProjectDatesOption},
+                new GPOption[] {myRedlineOption, myProjectDatesOption, projectConfig.getWeekendAlphaRenderingOption()},
                 model.getOptionEventDispatcher());
         myPrimitiveContainer = new GraphicPrimitiveContainer();
     }
@@ -137,10 +137,10 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         }
         int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
         Line line = getPrimitiveContainer().createLine(
-            yesterdayEndPixel + 2, topUnitHeight*2, 
+            yesterdayEndPixel + 2, topUnitHeight*2,
             yesterdayEndPixel + 2, getHeight()+topUnitHeight*2);
-        line.setForegroundColor(color);            
-        
+        line.setForegroundColor(color);
+
     }
     /** Draws cells of the bottom line in the time line
      */

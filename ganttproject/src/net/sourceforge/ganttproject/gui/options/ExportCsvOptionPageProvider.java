@@ -18,15 +18,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.options;
 
+import java.awt.Component;
+
+import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
-public class ResourceChartOptionPageProvider extends OptionPageProviderBase {
+public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
-    public ResourceChartOptionPageProvider() {
-        super("resourceChart");
+    private CSVSettingsPanel myCsvSettings;
+
+    public ExportCsvOptionPageProvider() {
+        super("impex.csv");
     }
 
+    @Override
+    public void commit() {
+        myCsvSettings.applyChanges(false);
+    }
+
+    @Override
     public GPOptionGroup[] getOptionGroups() {
-        return getUiFacade().getResourceChart().getOptionGroups();
+        return new GPOptionGroup[0];
+    }
+
+    @Override
+    public boolean hasCustomComponent() {
+        return getProject() instanceof GanttProject;
+    }
+
+    @Override
+    public Component buildPageComponent() {
+        myCsvSettings = new CSVSettingsPanel(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
+        myCsvSettings.initialize();
+        return OptionPageProviderBase.wrapContentComponent(myCsvSettings, getCanonicalPageTitle(), null);
     }
 }

@@ -9,6 +9,7 @@ import javax.swing.Action;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -35,6 +36,10 @@ public interface UIFacade {
 
     ZoomManager getZoomManager();
     GPUndoManager getUndoManager();
+    
+    void setLookAndFeel(GanttLookAndFeelInfo laf);
+    GanttLookAndFeelInfo getLookAndFeel();
+    
     Choice showConfirmationDialog(String message, String title);
 
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
@@ -85,5 +90,7 @@ public interface UIFacade {
 
     TaskSelectionManager getTaskSelectionManager();
 	TaskSelectionContext getTaskSelectionContext();
+
+    GPOptionGroup getOptions();
 
 }

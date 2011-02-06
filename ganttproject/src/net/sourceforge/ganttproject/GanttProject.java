@@ -65,9 +65,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -83,6 +81,7 @@ import net.sourceforge.ganttproject.action.RedoAction;
 import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
 import net.sourceforge.ganttproject.action.RolloverAction;
+import net.sourceforge.ganttproject.action.SettingsDialogAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.UndoAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -100,15 +99,12 @@ import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
@@ -168,7 +164,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // public JMenu mView;
 
     /** Menuitem */
-    public JMenuItem miPreview,/* miCut, miCopy, miPaste, */miOptions,
+    public JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
             miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
             miPrjCal, miWebPage, miAbout, miRefresh, miChartOptions;
 
@@ -198,9 +194,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Boolean to know if the file has been modify */
     public boolean askForSave = false;
-
-    /** The info for the look'n'feel */
-    public GanttLookAndFeelInfo lookAndFeel;
 
     /** Is the application only for viewer. */
     public boolean isOnlyViewer;
@@ -281,12 +274,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // myApplicationConfig.register(options);
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         if (options.load()) {
-            language = options.getLanguage();
             GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
 
-            lookAndFeel = options.getLnfInfos();
             HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
         }
 
@@ -313,7 +303,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             setTitle("GanttViewer");
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
-        lookAndFeel = GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo();
         options = new GanttOptions(getRoleManager(), getDocumentManager(),
                 isOnlyViewer);
         myUIConfiguration = options.getUIConfiguration();
@@ -361,13 +350,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getProject().addProjectEventListener(myFacadeInvalidator);
         area = new GanttGraphicArea(this, getTree(), getTaskManager(),
                 getZoomManager(), getUndoManager());
-        options
-                .addOptionGroups(getUIFacade().getGanttChart()
-                        .getOptionGroups());
-        options.addOptionGroups(getUIFacade().getResourceChart()
-                .getOptionGroups());
-        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade()
-                .getOptionGroup() });
+        options.addOptionGroups(new GPOptionGroup[] {getUIFacade().getOptions()});
+        options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
+        options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
+        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
         options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
         myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
         area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
@@ -424,9 +410,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // miPaste = new JMenuItem(myPasteAction);
         mEdit.add(getViewManager().getPasteAction());
         mEdit.addSeparator();
-        miOptions = createNewItem("/icons/settings_16.gif");
-        mEdit.add(miOptions);
-        myNewTaskAction = new NewTaskAction((IGanttProject) this);
+        mEdit.add(new SettingsDialogAction(getProject(), getUIFacade()));
+        myNewTaskAction = new NewTaskAction(getProject());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
@@ -556,7 +541,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
         toolBar = new GPToolBar("GanttProject", options.getToolBarPosition(),
-                getOptions());
+                getGanttOptions());
         toolBar.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent arg0) {
@@ -618,8 +603,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         // changeUndoNumber ();
         System.err.println("7. changing look'n'feel ...");
-        changeLookAndFeel(lookAndFeel);
-        changeLookAndFeel(lookAndFeel); // Twice call for update font on menu
+        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         if (options.isLoaded()) {
             setBounds(options.getX(), options.getY(), options.getWidth(),
                     options.getHeight());
@@ -684,6 +668,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mServer.setIcon(new ImageIcon(getClass().getResource(
                 "/icons/server_16.gif")));
         myProjectMenu = new ProjectMenu(this);
+        mProject.add(myProjectMenu.getProjectSettingsAction());
         mProject.add(myProjectMenu.getNewProjectAction());
         mProject.add(myProjectMenu.getOpenProjectAction());
         mProject.add(mMRU);
@@ -748,7 +733,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** @return the options of ganttproject. */
-    public GanttOptions getOptions() {
+    public GanttOptions getGanttOptions() {
         return options;
     }
 
@@ -779,12 +764,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MENU_MASK));
         // --REDO----------------------------------
         miRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MENU_MASK));
-        if (!isOnlyViewer) {
-            miOptions.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
-                    MENU_MASK));
-            miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
-                    MENU_MASK));
-        }
+        miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
+                MENU_MASK));
     }
 
     /** Create an item with a label */
@@ -830,32 +811,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 iconList.removeElementAt(i);
                 iconList.add(i, GPToolBar.SEPARATOR_OBJECT);
             }
-    }
-
-    /** Change the style of the application */
-    public void changeLookAndFeel(GanttLookAndFeelInfo lookAndFeel) {
-        try {
-            UIManager.setLookAndFeel(lookAndFeel.getClassName());
-            SwingUtilities.updateComponentTreeUI(this);
-            this.lookAndFeel = lookAndFeel;
-        } catch (Exception e) {
-            GanttLookAndFeelInfo info = GanttLookAndFeels
-                    .getGanttLookAndFeels().getDefaultInfo();
-            System.out.println("Can't find the LookAndFeel\n"
-                    + lookAndFeel.getClassName() + "\n" + lookAndFeel.getName()
-                    + "\nSetting the default Look'n'Feel" + info.getName());
-            try {
-                UIManager.setLookAndFeel(info.getClassName());
-                SwingUtilities.updateComponentTreeUI(this);
-                this.lookAndFeel = info;
-            } catch (Exception ex) {
-            }
-        }
-        // MetalLookAndFeel.setCurrentTheme(new GanttMetalTheme());
-        // must force to do that instead of the task on tree are not in
-        // continuity of the calendar
-        if (tree.getTable().getRowHeight() <= 22)
-            tree.getTable().setRowHeight(20);
     }
 
     /**
@@ -931,7 +886,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         miUndo = changeMenuLabel(miUndo, language.getText("undo"));
         miRedo = changeMenuLabel(miRedo, language.getText("redo"));
-        miOptions = changeMenuLabel(miOptions, language.getText("settings"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language
@@ -1294,8 +1248,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             } else if (arg.equals(correctLabel(language.getText("sendMail")))) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
-            } else if (arg.equals(correctLabel(language.getText("settings")))) {
-                launchOptionsDialog();
             }
         } else if (evt.getSource() instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {
@@ -1314,14 +1266,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         }
         // repaint();
-    }
-
-    /** Launch the options dialog */
-    public void launchOptionsDialog() {
-        getUIFacade().setStatusText(language.getText("settingsPreferences"));
-        SettingsDialog dialogOptions = new SettingsDialog(this);
-        dialogOptions.setVisible(true);
-        area.repaint();
     }
 
     public HumanResource newHumanResource() {
@@ -1362,28 +1306,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
-        String nameOfTask = options.getTaskNamePrefix(); // language.getText("newTask");
-        // if (current != null) {
-        // current.setMilestone(false);
-        // node = (TaskNode) tree.getSelectedNode();
-        // cal = current.getStart();
-        // if (!node.isRoot())
-        // nameOfTask = current.toString();
-        // }
+        String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
         GanttTask task = getTaskManager().createTask();
         task.setStart(cal);
-        task.setLength(1);
-        getTaskManager().registerTask(task);// create a new task in the tab
-        // paneneed to register it
+        task.setDuration(getTaskManager().createLength(1));
+        getTaskManager().registerTask(task);
         task.setName(nameOfTask + "_" + task.getTaskID());
         task.setColor(area.getTaskColor());
-        // if (current != null) {
-        // if (current.colorDefined()) {
-        // task.setColor(current.getColor());
-        // }
-        // if (current.shapeDefined())
-        // task.setShape(current.getShape());
-        // }
         tree.addObject(task, node, index);
 
         /*
@@ -1655,7 +1584,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     + ")$", document.getFilePath())) {
                 try {
                     nextImporter.setContext(getProject(), getUIFacade(),
-                            getOptions().getPluginPreferences());
+                            getGanttOptions().getPluginPreferences());
                     nextImporter.run(new File(document.getFilePath()));
                     success = true;
                     break;
@@ -1717,7 +1646,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.setWindowSize(getWidth(), getHeight());
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         options.setToolBarPosition(toolBar.getOrientation());
         options.save();
         if (getProjectUIFacade().ensureProjectSaved(getProject())) {
