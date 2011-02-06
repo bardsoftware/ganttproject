@@ -31,6 +31,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
@@ -67,6 +68,8 @@ class GanttURLChooser {
     private GTextField myLockTimeout;
 
     private int myTimeout;
+
+    protected boolean isTimeoutEnabled;
 
     GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
         myUiFacade = uiFacade;
@@ -126,7 +129,19 @@ class GanttURLChooser {
                 myUsername = userNameField.getText();
                 myPassword = new String(passwordField.getPassword());
                 myChoice = UIFacade.Choice.OK;
-                myTimeout = lockCheckbox.isSelected() ? Integer.parseInt(myLockTimeout.getText()) : -1;
+                isTimeoutEnabled = lockCheckbox.isSelected();
+                if (isTimeoutEnabled) {
+                    String timeoutString = myLockTimeout.getText().trim();
+                    try {
+                        myTimeout = Integer.parseInt(timeoutString);
+                    } catch (NumberFormatException e) {
+                        GPLogger.log(e);
+                        myTimeout = 0;
+                        isTimeoutEnabled = false;
+                    }
+                } else {
+                    myTimeout = 0;
+                }
             }
         };
         CancelAction cancelAction = new CancelAction() {
@@ -156,5 +171,9 @@ class GanttURLChooser {
 
     int getTimeout() {
         return myTimeout;
+    }
+
+    boolean isTimeoutEnabled() {
+        return isTimeoutEnabled;
     }
 }

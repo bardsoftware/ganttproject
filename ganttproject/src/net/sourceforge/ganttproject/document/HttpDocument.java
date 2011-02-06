@@ -164,10 +164,14 @@ public class HttpDocument extends AbstractURLDocument {
      * @see net.sourceforge.ganttproject.document.Document#releaseLock()
      */
     public void releaseLock() {
-        if (null == getWebdavResource())
+        if (null == getWebdavResource()) {
             return;
+        }
         try {
             locked = false;
+            if (!getWebdavResource().isLocked()) {
+                return;
+            }
             getWebdavResource().unlockMethod();
         } catch (HttpException e) {
             if (!GPLogger.log(e)) {
@@ -188,6 +192,8 @@ public class HttpDocument extends AbstractURLDocument {
         } catch (HttpException e) {
             throw new IOException(e.getMessage() + "(" + e.getReasonCode()
                     + ")");
+        } catch (IOException e) {
+            throw new IOException("Status code=" + getWebdavResource().getStatusCode(), e);
         }
     }
 

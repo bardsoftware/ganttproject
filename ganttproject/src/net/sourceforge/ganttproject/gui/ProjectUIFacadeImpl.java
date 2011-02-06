@@ -247,9 +247,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             myDocumentManager.getLastWebDAVDocumentOption().lock();
             myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
             myDocumentManager.getLastWebDAVDocumentOption().commit();
-            HttpDocument.setLockDAVMinutes(uc.getTimeout());
-            myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-            myDocumentManager.getWebDavLockTimeoutOption().commit();
+            if (uc.isTimeoutEnabled()) {
+                HttpDocument.setLockDAVMinutes(uc.getTimeout());
+                myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
+                myDocumentManager.getWebDavLockTimeoutOption().commit();
+            } else {
+                HttpDocument.setLockDAVMinutes(-1);
+            }
         }
         else {
             document = null;
