@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 public class SettingsDialogAction extends GPAction {
     private final UIFacade myUiFacade;
     private final IGanttProject myProject;
-    
+
     public SettingsDialogAction(IGanttProject project, UIFacade uiFacade) {
         super("settings");
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, MENU_MASK));
@@ -40,7 +40,7 @@ public class SettingsDialogAction extends GPAction {
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade);
+        SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder");
         dialog.show();
     }
 }

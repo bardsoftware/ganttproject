@@ -668,6 +668,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mServer.setIcon(new ImageIcon(getClass().getResource(
                 "/icons/server_16.gif")));
         myProjectMenu = new ProjectMenu(this);
+        mProject.add(myProjectMenu.getProjectSettingsAction());
         mProject.add(myProjectMenu.getNewProjectAction());
         mProject.add(myProjectMenu.getOpenProjectAction());
         mProject.add(mMRU);

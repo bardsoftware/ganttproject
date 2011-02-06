@@ -230,12 +230,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
-    
+
     @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myUIFacade.getTaskSelectionContext();
     }
-    
+
     @Override
     public TaskSelectionManager getTaskSelectionManager() {
         return myUIFacade.getTaskSelectionManager();
@@ -458,7 +458,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myTabPane;
     }
 
-    protected IGanttProject getProject() {
+    public IGanttProject getProject() {
         return this;
     }
     public TimeUnitStack getTimeUnitStack() {
