@@ -54,10 +54,12 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
 public class SettingsDialog2 {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
-    private List<ListItem> myItems;
+    private final List<ListItem> myItems;
     private final List<OptionPageProvider> myProviders = new ArrayList<OptionPageProvider>();
+    private final String myPageOrderKey;
 
-    public SettingsDialog2(IGanttProject project, UIFacade uifacade) {
+    public SettingsDialog2(IGanttProject project, UIFacade uifacade, String pageOrderKey) {
+        myPageOrderKey = pageOrderKey;
         myProject = project;
         myUIFacade = uifacade;
         OptionPageProvider[] providers = (OptionPageProvider[]) PluginManager.getExtensions(
@@ -194,7 +196,7 @@ public class SettingsDialog2 {
             pageId_provider.put(p.getPageID(), p);
         }
         List<ListItem> items = new ArrayList<ListItem>();
-        String[] listConfig = GanttLanguage.getInstance().getText("settings.pageOrder").split(",");
+        String[] listConfig = GanttLanguage.getInstance().getText(myPageOrderKey).split(",");
         for (String s : listConfig) {
             ListItem li;
             if (s.startsWith("pageGroup.")) {
