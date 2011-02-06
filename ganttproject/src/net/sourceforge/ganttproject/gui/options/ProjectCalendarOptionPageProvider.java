@@ -18,15 +18,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.options;
 
+import java.awt.Component;
+
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
-public class ResourceChartOptionPageProvider extends OptionPageProviderBase {
-
-    public ResourceChartOptionPageProvider() {
-        super("resourceChart");
+public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
+    private WeekendsSettingsPanel myWeekendsPanel;
+    public ProjectCalendarOptionPageProvider() {
+        super("project.calendar");
     }
-
+    @Override
     public GPOptionGroup[] getOptionGroups() {
-        return getUiFacade().getResourceChart().getOptionGroups();
+        return new GPOptionGroup[0];
+    }
+    @Override
+    public boolean hasCustomComponent() {
+        return true;
+    }
+    @Override
+    public Component buildPageComponent() {
+        myWeekendsPanel = new WeekendsSettingsPanel(getProject());
+        myWeekendsPanel.initialize();
+        return OptionPageProviderBase.wrapContentComponent(
+            myWeekendsPanel, myWeekendsPanel.getTitle(), myWeekendsPanel.getComment());
+    }
+    @Override
+    public void commit() {
+        myWeekendsPanel.applyChanges(false);
     }
 }

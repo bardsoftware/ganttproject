@@ -12,6 +12,7 @@ import javax.swing.filechooser.FileFilter;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
@@ -93,7 +94,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                 fc.removeChoosableFileFilter(filefilters[i]);
             }
         }
-        
+
         try {
             for(;;) {
                 int userChoice = fc.showSaveDialog(myWorkbenchFacade.getMainFrame());
@@ -105,14 +106,14 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                 if (!"gan".equals(extension) && !"xml".equals(extension)) {
                     projectfile = FileUtil.replaceExtension(projectfile, "gan");
                 }
-    
+
                 if (projectfile.exists()) {
                     UIFacade.Choice overwritingChoice = myWorkbenchFacade.showConfirmationDialog(projectfile + "\n" + i18n.getText("msg18"), i18n.getText("warning"));
                     if (overwritingChoice!=UIFacade.Choice.YES) {
                         continue;
                     }
                 }
-    
+
                 Document document = myDocumentManager.getDocument(projectfile.getAbsolutePath());
                 saveProject(document);
                 project.setDocument(document);
@@ -126,7 +127,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
 
     public void saveProjectRemotely(IGanttProject project) {
-        Document document = showURLDialog(project);
+        Document document = showURLDialog(project, false);
         if (document != null) {
             project.setDocument(document);
             saveProject(project);
@@ -136,12 +137,12 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     /**
      * Check if the project has been modified, before creating or opening
      * another project
-     * 
+     *
      * @return true when the project is <b>not</b> modified or is allowed to be discarded
      */
     public boolean ensureProjectSaved(IGanttProject project) {
         if (project.isModified()) {
-            UIFacade.Choice saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"), i18n.getText("warning")); 
+            UIFacade.Choice saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"), i18n.getText("warning"));
             if (UIFacade.Choice.CANCEL==saveChoice) {
                 return false;
             }
@@ -178,16 +179,16 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             final JFileChooser jfc = fc;
             Document document = getDocumentManager().getDocument(
-                    jfc.getSelectedFile().getAbsolutePath()); 
+                    jfc.getSelectedFile().getAbsolutePath());
             openProject(document, project);
         }
-        
+
     }
 
     public void openRemoteProject(final IGanttProject project) throws IOException {
-        final Document document = showURLDialog(project);
+        final Document document = showURLDialog(project, true);
         if (document != null) {
-        	openProject(document, project);
+            openProject(document, project);
         }
     }
 
@@ -196,7 +197,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         project.close();
         project.open(document);
     }
-    
+
     private void beforeClose() {
         myWorkbenchFacade.setWorkbenchTitle(i18n.getText("appliTitle"));
         getUndoManager().die();
@@ -220,32 +221,39 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         NewProjectWizard wizard = new NewProjectWizard();
         wizard.createNewProject(project, myWorkbenchFacade);
     }
-    
+
     public GPOptionGroup getOptionGroup() {
         return myDocumentManager.getOptionGroup();
     }
-    
+
     private GPUndoManager getUndoManager() {
         return myUndoManager;
     }
-    
+
     private DocumentManager getDocumentManager() {
         return myDocumentManager;
     }
-    
-    private Document showURLDialog(IGanttProject project) {
+
+    private Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
         Document document = project.getDocument();
-        GanttURLChooser uc = new GanttURLChooser(myWorkbenchFacade.getMainFrame(), false,
-                (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
-                (null != document) ? document.getUsername() : null,
-                (null != document) ? document.getPassword() : null);
-        uc.setVisible(true);
-        if (uc.change) {
-            document = myDocumentManager.getDocument(uc.fileurl,
-                        uc.userName, uc.password);
+        GanttURLChooser uc = new GanttURLChooser(myWorkbenchFacade,
+            (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
+            (null != document) ? document.getUsername() : null,
+            (null != document) ? document.getPassword() : null,
+            myDocumentManager.getWebDavLockTimeoutOption().getValue());
+        uc.show(isOpenUrl);
+        if (uc.getChoice() == UIFacade.Choice.OK) {
+            document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
             myDocumentManager.getLastWebDAVDocumentOption().lock();
-            myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.fileurl);
+            myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
             myDocumentManager.getLastWebDAVDocumentOption().commit();
+            if (uc.isTimeoutEnabled()) {
+                HttpDocument.setLockDAVMinutes(uc.getTimeout());
+                myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
+                myDocumentManager.getWebDavLockTimeoutOption().commit();
+            } else {
+                HttpDocument.setLockDAVMinutes(-1);
+            }
         }
         else {
             document = null;

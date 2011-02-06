@@ -3,11 +3,15 @@
  */
 package net.sourceforge.ganttproject.action.project;
 
+import java.awt.event.ActionEvent;
+
 import javax.swing.Action;
+
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.export.ExportFileAction;
+import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.importer.ImportFileAction;
 
 public class ProjectMenu {
@@ -21,8 +25,17 @@ public class ProjectMenu {
     private GPAction myPrintAction;
     private ImportFileAction myImportFileAction;
     private ExportFileAction myExportFileAction;
+    private Action myProjectSettingsAction;
 
-    public ProjectMenu(GanttProject mainFrame) {
+    public ProjectMenu(final GanttProject mainFrame) {
+        myProjectSettingsAction = new GPAction("projectProperties") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SettingsDialog2 settingsDialog = new SettingsDialog2(
+                    mainFrame.getProject(), mainFrame.getUIFacade(), "settings.project.pageOrder");
+                settingsDialog.show();
+            }
+        };
         myNewProjectAction = new NewProjectAction(mainFrame);
         myOpenProjectAction = new OpenProjectAction(mainFrame);
         mySaveProjectAction =new SaveProjectAction(mainFrame);
@@ -33,7 +46,7 @@ public class ProjectMenu {
         myExitAction = new ExitAction(mainFrame);
         myImportFileAction = new ImportFileAction(mainFrame.getUIFacade(), mainFrame);
         myExportFileAction = new ExportFileAction(
-                mainFrame.getUIFacade(), (IGanttProject)mainFrame, mainFrame.getOptions());
+                mainFrame.getUIFacade(), (IGanttProject)mainFrame, mainFrame.getGanttOptions());
 
     }
     public GPAction getNewProjectAction() {
@@ -65,5 +78,8 @@ public class ProjectMenu {
     }
     public Action getExportFileAction() {
         return myExportFileAction;
+    }
+    public Action getProjectSettingsAction() {
+        return myProjectSettingsAction;
     }
 }
