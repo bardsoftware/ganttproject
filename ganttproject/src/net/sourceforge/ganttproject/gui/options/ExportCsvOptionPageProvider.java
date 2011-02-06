@@ -22,7 +22,6 @@ import java.awt.Component;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
@@ -51,14 +50,6 @@ public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
     public Component buildPageComponent() {
         myCsvSettings = new CSVSettingsPanel(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
         myCsvSettings.initialize();
-        return OptionPageProviderBase.wrapContentComponent(
-            myCsvSettings,
-            GanttLanguage.getInstance().getText("csvexport"),
-            GanttLanguage.getInstance().getText("settingsCVSExport"));
-    }
-
-    @Override
-    public String toString() {
-        return GanttLanguage.getInstance().getText("csvexport");
+        return OptionPageProviderBase.wrapContentComponent(myCsvSettings, getCanonicalPageTitle(), null);
     }
 }

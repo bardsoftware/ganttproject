@@ -408,9 +408,16 @@ public class OptionsPageBuilder {
             return getValue(group, canonicalKey);
         }
 
+        public final String getCanonicalOptionPageLabelKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".label";
+        }
         public final String getCanonicalOptionPageTitleKey(String pageID) {
             return myOptionPageKeyPrefix + pageID + ".title";
         }
+        public String getCanonicalOptionPageDescriptionKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".description";
+        }
+
         public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
             return myOptionGroupKeyPrefix + group.getID() + ".label";
         }
