@@ -56,7 +56,7 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
 
     @Override
     public String toString() {
-        return GanttLanguage.getInstance().getText(new OptionsPageBuilder.I18N().getCanonicalOptionPageTitleKey(getPageID()));
+        return GanttLanguage.getInstance().getText(new OptionsPageBuilder.I18N().getCanonicalOptionPageLabelKey(getPageID()));
     }
 
     protected static JPanel wrapContentComponent(Component contentComponent, String title, String description) {
@@ -68,6 +68,10 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
         return result;
+    }
 
+    protected String getCanonicalPageTitle() {
+        return GanttLanguage.getInstance().getText(
+            new OptionsPageBuilder.I18N().getCanonicalOptionPageTitleKey(getPageID()));
     }
 }

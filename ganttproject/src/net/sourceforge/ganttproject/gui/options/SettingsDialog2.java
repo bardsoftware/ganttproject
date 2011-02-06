@@ -20,13 +20,13 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -55,15 +55,24 @@ public class SettingsDialog2 {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
     private List<ListItem> myItems;
-    private final OptionPageProvider[] myProviders;
+    private final List<OptionPageProvider> myProviders = new ArrayList<OptionPageProvider>();
 
     public SettingsDialog2(IGanttProject project, UIFacade uifacade) {
         myProject = project;
         myUIFacade = uifacade;
-        myProviders = (OptionPageProvider[]) PluginManager.getExtensions(
+        OptionPageProvider[] providers = (OptionPageProvider[]) PluginManager.getExtensions(
             "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
-        for (OptionPageProvider p : myProviders) {
-            p.init(project, uifacade);
+        myItems = getListItems(providers);
+        HashSet<String> pageIds = new HashSet<String>();
+        for (ListItem li : myItems) {
+            pageIds.add(li.id);
+        }
+
+        for (OptionPageProvider p : providers) {
+            if (pageIds.contains(p.getPageID())) {
+                p.init(project, uifacade);
+                myProviders.add(p);
+            }
         }
     }
 
@@ -100,8 +109,6 @@ public class SettingsDialog2 {
 
     private Component getComponent() {
         final JPanel contentPanel = new JPanel(new CardLayout());
-
-        myItems = getListItems(myProviders);
         for (ListItem li : myItems) {
             contentPanel.add(li.component, li.id);
         }
