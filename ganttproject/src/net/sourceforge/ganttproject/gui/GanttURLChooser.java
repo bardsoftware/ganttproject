@@ -1,26 +1,30 @@
-/***************************************************************************
- GanttURLChooser.java  -  description
- -------------------
- begin                : july 2003
- copyright            : (C) 2003 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2003-2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -34,9 +38,12 @@ import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * Class to select a file from th web
+ * Dialog for Open/Save file from/to WebDAV resource.
+ *
+ * @author Dmitry Barashev (major rewrite).
+ * @author Alexandre Thomas (initial version).
  */
-public class GanttURLChooser {
+class GanttURLChooser {
     private JTextField urlField;
 
     private JTextField userNameField;
@@ -55,15 +62,22 @@ public class GanttURLChooser {
 
     private Choice myChoice;
 
-    public GanttURLChooser(UIFacade uiFacade, String url, String username, String password) {
+    private JCheckBox lockCheckbox;
+
+    private GTextField myLockTimeout;
+
+    private int myTimeout;
+
+    GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
         myUiFacade = uiFacade;
         myUrl = url;
         myUsername = username;
         myPassword = password;
+        myTimeout = timeout;
         myChoice = UIFacade.Choice.CANCEL;
     }
 
-    public void show(boolean isOpenUrl) {
+    void show(boolean isOpenUrl) {
         JPanel panel = new JPanel(new SpringLayout());
 
         panel.add(new JLabel(language.getText("fileFromServer")));
@@ -79,7 +93,31 @@ public class GanttURLChooser {
         passwordField = new JPasswordField(myPassword);
         panel.add(passwordField);
 
-        SpringUtilities.makeCompactGrid(panel, 3, 2, 0, 0, 3, 3);
+        panel.add(new JPanel());
+        panel.add(new JPanel());
+
+        panel.add(new JLabel(language.getText("webdav.lockResource.label")));
+        lockCheckbox = new JCheckBox();
+        lockCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                myLockTimeout.setEnabled(lockCheckbox.isSelected());
+            }
+        });
+        panel.add(lockCheckbox);
+
+        panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
+        myLockTimeout = new GTextField();
+        myLockTimeout.setPattern(GTextField.PATTERN_INTEGER);
+        if (myTimeout >= 0) {
+            myLockTimeout.setText(String.valueOf(myTimeout));
+            lockCheckbox.setSelected(true);
+        } else {
+            lockCheckbox.setSelected(false);
+        }
+        panel.add(myLockTimeout);
+        SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 3, 3);
+
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         OkAction okAction = new OkAction() {
             @Override
@@ -88,6 +126,7 @@ public class GanttURLChooser {
                 myUsername = userNameField.getText();
                 myPassword = new String(passwordField.getPassword());
                 myChoice = UIFacade.Choice.OK;
+                myTimeout = lockCheckbox.isSelected() ? Integer.parseInt(myLockTimeout.getText()) : -1;
             }
         };
         CancelAction cancelAction = new CancelAction() {
@@ -113,5 +152,9 @@ public class GanttURLChooser {
 
     String getPassword() {
         return myPassword;
+    }
+
+    int getTimeout() {
+        return myTimeout;
     }
 }

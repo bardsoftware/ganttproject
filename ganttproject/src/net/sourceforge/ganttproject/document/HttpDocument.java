@@ -21,7 +21,7 @@ import org.apache.webdav.lib.WebdavResource;
 /**
  * This class implements the interface Document for file access on HTTP-servers
  * and WebDAV-enabled-servers.
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class HttpDocument extends AbstractURLDocument {
@@ -123,7 +123,7 @@ public class HttpDocument extends AbstractURLDocument {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see net.sourceforge.ganttproject.document.Document#acquireLock(java.lang.String)
      */
     public boolean acquireLock() {
@@ -137,29 +137,30 @@ public class HttpDocument extends AbstractURLDocument {
                 userName = " (" + System.getProperty("user.name")
                         + "@GanttProject)";
             } catch (AccessControlException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
-            int lockSeconds = (lockDAVMinutes > 0) ? lockDAVMinutes * 60 : 15;
-            locked = getWebdavResource().lockMethod(
-                    httpURL.getUser() + userName, lockSeconds);
+            if (lockDAVMinutes < 0) {
+                return true;
+            }
+            locked = getWebdavResource().lockMethod(httpURL.getUser() + userName, lockDAVMinutes * 60);
             return locked;
         } catch (HttpException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         } catch (IOException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
         return false;
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see net.sourceforge.ganttproject.document.Document#releaseLock()
      */
     public void releaseLock() {
@@ -169,13 +170,13 @@ public class HttpDocument extends AbstractURLDocument {
             locked = false;
             getWebdavResource().unlockMethod();
         } catch (HttpException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         } catch (IOException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 
@@ -240,7 +241,7 @@ public class HttpDocument extends AbstractURLDocument {
 
     public void write() throws IOException {
         // TODO Auto-generated method stub
-        
+
     }
 
     public URI getURI() {
@@ -254,6 +255,6 @@ public class HttpDocument extends AbstractURLDocument {
     public boolean isLocal() {
         return false;
     }
-    
-    
+
+
 }

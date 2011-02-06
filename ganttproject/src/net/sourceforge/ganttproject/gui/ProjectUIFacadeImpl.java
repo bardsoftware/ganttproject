@@ -12,6 +12,7 @@ import javax.swing.filechooser.FileFilter;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
@@ -236,15 +237,19 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     private Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
         Document document = project.getDocument();
         GanttURLChooser uc = new GanttURLChooser(myWorkbenchFacade,
-                (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
-                (null != document) ? document.getUsername() : null,
-                (null != document) ? document.getPassword() : null);
+            (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
+            (null != document) ? document.getUsername() : null,
+            (null != document) ? document.getPassword() : null,
+            myDocumentManager.getWebDavLockTimeoutOption().getValue());
         uc.show(isOpenUrl);
         if (uc.getChoice() == UIFacade.Choice.OK) {
             document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
             myDocumentManager.getLastWebDAVDocumentOption().lock();
             myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
             myDocumentManager.getLastWebDAVDocumentOption().commit();
+            HttpDocument.setLockDAVMinutes(uc.getTimeout());
+            myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
+            myDocumentManager.getWebDavLockTimeoutOption().commit();
         }
         else {
             document = null;
