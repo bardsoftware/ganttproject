@@ -342,7 +342,7 @@ public class OptionsPageBuilder {
         return colorButton;
     }
 
-    private Component createDateComponent(final DateOption option) {
+    public JComponent createDateComponent(final DateOption option) {
         final JXDatePicker result = new JXDatePicker();
         result.setDate(option.getValue());
         class OptionValueUpdater implements ActionListener, PropertyChangeListener {

@@ -39,6 +39,10 @@ public abstract class GPAbstractOption<T> implements GPOption, ChangeValueDispat
         setValue(value, false);
     }
 
+    protected T getInitialValue() {
+        return myInitialValue;
+    }
+
     protected void setValue(T value, boolean resetInitial) {
         if (resetInitial) {
             myInitialValue = value;
