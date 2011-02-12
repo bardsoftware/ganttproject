@@ -1,0 +1,53 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.task;
+
+import java.util.Date;
+import java.util.List;
+
+import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
+
+public class TaskActivitiesAlgorithm {
+    private final GPCalendar myCalendar;
+
+    public TaskActivitiesAlgorithm(GPCalendar calendar) {
+        myCalendar = calendar;
+    }
+    
+    public void recalculateActivities(Task task, List<TaskActivity> output, Date startDate, Date endDate) {
+        output.clear();
+        List<GPCalendarActivity> activities = myCalendar.getActivities(startDate, endDate);
+        for (int i = 0; i < activities.size(); i++) {
+            GPCalendarActivity nextCalendarActivity = activities.get(i);
+            TaskActivity nextTaskActivity;
+            if (nextCalendarActivity.isWorkingTime()) {
+                nextTaskActivity = new TaskActivityImpl(
+                    task, nextCalendarActivity.getStart(), nextCalendarActivity.getEnd());
+            } else if (i > 0 && i + 1 < activities.size()) {
+                nextTaskActivity = new TaskActivityImpl(
+                    task, nextCalendarActivity.getStart(), nextCalendarActivity.getEnd(), 0);
+            } else {
+                continue;
+            }
+            output.add(nextTaskActivity);
+        }
+    }
+
+}
