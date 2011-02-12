@@ -11,15 +11,15 @@ import java.util.Locale;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-class LocaleOption extends DefaultEnumerationOption {
+class LocaleOption extends DefaultEnumerationOption<Locale> {
     private final Locale[] LOCALES = new Locale[] {Locale.FRANCE, Locale.US, new Locale("pt", "PT")};
 
-	private Locale myLocale;
+    private Locale myLocale;
 
     LocaleOption() {
-    	super("impex.msproject.mpx.language", new String[] {
-    			Locale.FRANCE.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), Locale.US.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), new Locale("pt", "PT").getDisplayLanguage(GanttLanguage.getInstance().getLocale())    			
-    	});
+        super("impex.msproject.mpx.language", new String[] {
+                Locale.FRANCE.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), Locale.US.getDisplayLanguage(GanttLanguage.getInstance().getLocale()), new Locale("pt", "PT").getDisplayLanguage(GanttLanguage.getInstance().getLocale())
+        });
     }
 
     public void commit() {
@@ -28,7 +28,7 @@ class LocaleOption extends DefaultEnumerationOption {
     }
 
     Locale getSelectedLocale() {
-    	return myLocale;
+        return myLocale;
     }
 
     private void setSelectedLocale(String value) {
@@ -40,7 +40,7 @@ class LocaleOption extends DefaultEnumerationOption {
         }
     }
 
-	public void setSelectedLocale(Locale locale) {
-		setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
-	}
+    public void setSelectedLocale(Locale locale) {
+        setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
+    }
 }

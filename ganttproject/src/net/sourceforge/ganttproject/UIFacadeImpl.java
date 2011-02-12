@@ -35,7 +35,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
-import net.sourceforge.ganttproject.UIFacadeImpl.LafOption;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -76,7 +75,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final TaskSelectionManager myTaskSelectionManager;
     private final GPOptionGroup myOptions;
     private final LafOption myLafOption;
-    
+
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
         myScrollingManager = new ScrollingManagerImpl();
@@ -86,7 +85,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
         myTaskSelectionManager = new TaskSelectionManager();
-        
+
         myLafOption = new LafOption(this);
         LanguageOption languageOption = new LanguageOption();
         GPOption[] options = new GPOption[] {myLafOption, languageOption};
@@ -103,11 +102,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public ZoomManager getZoomManager() {
         return myZoomManager;
     }
-    
+
     public GPUndoManager getUndoManager() {
         return myFallbackDelegate.getUndoManager();
     }
-    
+
     class MyDialog {
         boolean result;
         final Component contentComponent;
@@ -163,7 +162,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     public void showDialog(Component content, Action[] buttonActions) {
-    	showDialog(content, buttonActions, "");
+        showDialog(content, buttonActions, "");
     }
 
     public void showDialog(Component content, Action[] buttonActions, String title) {
@@ -240,16 +239,16 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         GPLogger.log(e);
     }
 
-	public void logErrorMessage(Throwable e) {
-		myErrorNotifier.add(e);
-		myStatusBar.setErrorNotifier(myErrorNotifier);
-	}
-	
-	void resetErrorLog() {
-		myStatusBar.setErrorNotifier(null);
-	}
-	
-	private Component createDialogContentComponent(int dialogType, String message) {
+    public void logErrorMessage(Throwable e) {
+        myErrorNotifier.add(e);
+        myStatusBar.setErrorNotifier(myErrorNotifier);
+    }
+
+    void resetErrorLog() {
+        myStatusBar.setErrorNotifier(null);
+    }
+
+    private Component createDialogContentComponent(int dialogType, String message) {
         JLabel label;
         switch (dialogType) {
         case GanttDialogInfo.ERROR:
@@ -276,13 +275,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         JTextArea textArea = new JTextArea(message);
         textArea.setEditable(false);
         textArea.setBackground(new JLabel().getBackground());
-        
+
         JPanel result = new JPanel(new BorderLayout());
         result.add(imagePanel, BorderLayout.WEST);
         result.add(textArea, BorderLayout.CENTER);
         return result;
     }
-    
+
     public GanttChart getGanttChart() {
         return myFallbackDelegate.getGanttChart();
     }
@@ -391,11 +390,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         };
     }
 
-    
+
     private static GanttLanguage getLanguage() {
         return GanttLanguage.getInstance();
     }
-    
+
     static String getExceptionReport(Throwable e) {
         StringBuffer result = new StringBuffer();
         result.append(e.getMessage() + "\n\n");
@@ -407,10 +406,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return result.toString();
     }
     public void setWorkbenchTitle(String title) {
-        myMainFrame.setTitle(title);        
-        
+        myMainFrame.setTitle(title);
+
     }
-        
+
     public IProgressMonitor createMonitor(Job job) {
         return myStatusBar.createProgressMonitor();
     }
@@ -426,15 +425,15 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public IProgressMonitor getDefaultMonitor() {
         return null;
     }
-	public TaskTreeUIFacade getTaskTree() {
-		return myFallbackDelegate.getTaskTree();
-	}
-	public ResourceTreeUIFacade getResourceTree() {
-		return myFallbackDelegate.getResourceTree();
-	}
-	public TaskSelectionContext getTaskSelectionContext() {
-		return myTaskSelectionManager;
-	}
+    public TaskTreeUIFacade getTaskTree() {
+        return myFallbackDelegate.getTaskTree();
+    }
+    public ResourceTreeUIFacade getResourceTree() {
+        return myFallbackDelegate.getResourceTree();
+    }
+    public TaskSelectionContext getTaskSelectionContext() {
+        return myTaskSelectionManager;
+    }
     public TaskSelectionManager getTaskSelectionManager() {
         return myTaskSelectionManager;
     }
@@ -464,18 +463,17 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
-    static class LafOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+    static class LafOption extends DefaultEnumerationOption<GanttLookAndFeelInfo> implements GP1XOptionConverter {
         private final UIFacade myUiFacade;
         LafOption(UIFacade uiFacade) {
             super("laf", GanttLookAndFeels.getGanttLookAndFeels().getInstalledLookAndFeels());
             myUiFacade = uiFacade;
         }
         public GanttLookAndFeelInfo getLookAndFeel() {
-            return GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue());            
+            return GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue());
         }
         @Override
-        protected String objectToString(Object value) {
-            GanttLookAndFeelInfo laf = (GanttLookAndFeelInfo) value;
+        protected String objectToString(GanttLookAndFeelInfo laf) {
             return laf.getName();
         }
         @Override
@@ -497,21 +495,20 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
         }
     }
-    
-    static class LanguageOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+
+    static class LanguageOption extends DefaultEnumerationOption<Locale> implements GP1XOptionConverter {
         public LanguageOption() {
-            super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));             
+            super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
         }
         @Override
-        protected String objectToString(Object value) {
-            Locale locale = (Locale) value;
+        protected String objectToString(Locale locale) {
             String englishName = locale.getDisplayLanguage(Locale.US);
             String localName = locale.getDisplayLanguage(locale);
             if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage())) {
                 if (!locale.getCountry().isEmpty()) {
                     englishName += " - " + locale.getDisplayCountry(Locale.US);
                     localName += " - " + locale.getDisplayCountry(locale);
-                }                
+                }
             }
             if (localName.equals(englishName)) {
                 return englishName;
@@ -559,9 +556,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 setValue(value, true);
             }
         }
-        
+
     }
-    
+
     @Override
     public GPOptionGroup getOptions() {
         return myOptions;
