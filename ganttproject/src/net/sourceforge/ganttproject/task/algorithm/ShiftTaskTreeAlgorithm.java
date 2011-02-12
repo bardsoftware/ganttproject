@@ -12,6 +12,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 public class ShiftTaskTreeAlgorithm {
     public static final boolean DEEP = true;
 
+    public static final boolean SHALLOW = false;
+
     private final TaskManagerImpl myTaskManager;
     private final RecalculateTaskScheduleAlgorithm myRescheduleAlgorithm;
 
