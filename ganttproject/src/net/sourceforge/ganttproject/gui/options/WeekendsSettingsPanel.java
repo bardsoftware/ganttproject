@@ -37,34 +37,31 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
     }
 
     public boolean applyChanges(boolean askForApply) {
+        weekendConfigurationPanel.setActive(false);
         GPCalendar projectCalendar = project.getActiveCalendar();
-        bHasChange = calendar.getOnlyShowWeekends() != projectCalendar.getOnlyShowWeekends();
+        bHasChange = weekendConfigurationPanel.isChanged();
         for(int i = 1; i < 8; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
                 bHasChange = true;
             }
         }
-
+        for(int i = 1; i < 8; i++) {
+            projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
+        }
         if (bHasChange) {
-            // apply changes
-            if (!askForApply || (askForApply && askForApplyChanges())) {
-                for(int i = 1; i < 8; i++) {
-                    projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
-                }
-                projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
-                // Update tasks for the new weekends
-                // By setting their end dates to null it gets recalculated
-                Task[] tasks = project.getTaskManager().getTasks();
-                for(int i = 0; i < tasks.length; i++) {
-                    tasks[i].setEnd(null);
-                }
-                try {
-                    TaskManager taskManager = project.getTaskManager();
-                    taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
-                } catch (TaskDependencyException e) {
-                    GPLogger.log(e);
-                }
+            // Update tasks for the new weekends
+            // By setting their end dates to null it gets recalculated
+            Task[] tasks = project.getTaskManager().getTasks();
+            for(int i = 0; i < tasks.length; i++) {
+                tasks[i].setEnd(null);
+            }
+            projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
+            try {
+                TaskManager taskManager = project.getTaskManager();
+                taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+                taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
+            } catch (TaskDependencyException e) {
+                GPLogger.log(e);
             }
         }
         return bHasChange;

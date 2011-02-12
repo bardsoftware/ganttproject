@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -59,10 +60,12 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         return GanttLanguage.getInstance().getText(new OptionsPageBuilder.I18N().getCanonicalOptionPageLabelKey(getPageID()));
     }
 
-    protected static JPanel wrapContentComponent(Component contentComponent, String title, String description) {
+    protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         panel.add(new TopPanel(title, description), BorderLayout.NORTH);
+        contentComponent.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(5, 0, 0, 0), contentComponent.getBorder()));
         panel.add(contentComponent, BorderLayout.CENTER);
 
         JPanel result = new JPanel(new BorderLayout());

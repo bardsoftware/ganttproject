@@ -77,6 +77,10 @@ public class OptionsPageBuilder {
         myi18n = i18n;
     }
 
+    public I18N getI18N() {
+        return myi18n;
+    }
+
     public void setOptionKeyPrefix(String optionKeyPrefix) {
         myi18n.myOptionKeyPrefix = optionKeyPrefix;
     }
@@ -108,6 +112,12 @@ public class OptionsPageBuilder {
 
         });
         return resultPanel;
+    }
+
+    public JComponent createLabeledComponent(GPOption option) {
+        GPOptionGroup fake = new GPOptionGroup("", new GPOption[] {option});
+        fake.setTitled(false);
+        return createGroupComponent(fake);
     }
 
     public JComponent createGroupComponent(GPOptionGroup group) {

@@ -168,7 +168,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
 
         updateMoveOptions(getProject().getTaskManager().createLength(0));
         return OptionPageProviderBase.wrapContentComponent(
-            result, myWeekendsPanel.getTitle(), myWeekendsPanel.getComment());
+            result, myWeekendsPanel.getTitle(), null);
     }
 
     protected void updateMoveOptions(TaskLength moveDuration) {
