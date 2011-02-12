@@ -180,8 +180,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bProperties,/* bUnlink, bLink, bUp, bDown, bPrev,
             bScrollCenter, bNext,  bZoomFit, */bAbout;
 
-    private JPopupMenu menu = new JPopupMenu();;
-
     private TestGanttRolloverButton bUndo, bRedo;
 
     private TestGanttRolloverButton bSaveCurrent, bComparePrev;
