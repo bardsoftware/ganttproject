@@ -12,11 +12,14 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.task.LinkTasksAction;
 import net.sourceforge.ganttproject.action.task.UnlinkTasksAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,16 +30,24 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     private final TaskTreeUIFacade myTreeFacade;
     private final IGanttProject myProject;
     private final UIFacade myWorkbenchFacade;
-
+    private final CalculateCriticalPathAction myCriticalPathAction;
+    
     GanttChartTabContentPanel(
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
-            JComponent ganttChart) {
+            JComponent ganttChart, UIConfiguration uiConfiguration) {
         super(project, workbenchFacade, workbenchFacade.getGanttChart());
         myProject = project;
         myWorkbenchFacade = workbenchFacade;
         myTreeFacade = treeFacade;
         myTaskTree = (Container) treeFacade.getTreeComponent();
         myGanttChart = ganttChart;
+        myCriticalPathAction = new CalculateCriticalPathAction(
+            project.getTaskManager(), "16", uiConfiguration, workbenchFacade);
+        addChartPanel(createSchedulePanel());
+    }
+
+    private Component createSchedulePanel() {
+        return new ToolbarBuilder(myWorkbenchFacade.getGanttChart()).addButton(myCriticalPathAction).build();
     }
 
     Component getComponent() {

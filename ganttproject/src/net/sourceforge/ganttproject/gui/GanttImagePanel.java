@@ -15,41 +15,29 @@
  *                                                                         *
  ***************************************************************************/
 
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.gui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.GridBagLayout;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Class to create a panel with the image above the Tree
  */
 public class GanttImagePanel extends JPanel {
-    private final int x, y;
-
     private final ImageIcon image;
 
-    public GanttImagePanel(String imagename, int x, int y) {
-        super(new GridBagLayout());
-        image = new ImageIcon(getClass().getResource("/icons/" + imagename));
-        this.x = x;
-        this.y = y;
-        applyComponentOrientation(GanttLanguage.getInstance()
-                .getComponentOrientation());
+    public GanttImagePanel(ImageIcon image, int width, int height) {
+        super();
+        this.image = image;
+        setPreferredSize(new Dimension(width, height));
     }
 
-    /** Repaint the component */
+    @Override
     public void paintComponent(Graphics g) {
         image.paintIcon(this, g, 0, 0);
     }
 
-    /** The preferred size of this panel */
-    public Dimension getPreferredSize() {
-        return new Dimension(x, y);
-    }
 }

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -24,12 +23,7 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.jdesktop.swing.JXTreeTable;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -40,21 +34,19 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
-import net.sourceforge.ganttproject.chart.RenderedChartImage;
-import net.sourceforge.ganttproject.chart.RenderedGanttChartImage;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskBoundaryInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
+import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
@@ -75,6 +67,9 @@ import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * Class for the graphic part of the soft
@@ -99,8 +94,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private static final Cursor CHANGE_PROGRESS_CURSOR;
 
-    private static final int HEADER_OFFSET = 47;
-
     public GanttTree2 tree;
 
     public static Color taskDefaultColor = new Color(140, 182, 206);
@@ -114,10 +107,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private final TaskManager myTaskManager;
 
     private GPUndoManager myUndoManager;
-
-    private JTableHeader myTableHeader = null;
-
-    private TaskTreeImageGenerator myTaskImageGenerator;
 
     private ChartViewState myViewState;
 
@@ -138,7 +127,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         });
         this.tree = ttree;
-        myTableHeader = tree.getTreeTable().getTable().getTableHeader();
         myViewState = new ChartViewState(this, app.getUIFacade());
         super.setStartDate(GregorianCalendar.getInstance().getTime());
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
@@ -172,7 +160,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         appli = app;
 
         getProject().getTaskCustomColumnManager().addListener(this);
-        myTaskImageGenerator = new TaskTreeImageGenerator(ttree, app.getUIConfiguration());
     }
 
     /** @return the color of the task */
@@ -207,6 +194,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return GanttLanguage.getInstance().getText("gantt");
     }
 
+    private int getHeaderHeight() {
+        return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getTable());
+    }
+    
     /** @return an image with the gantt chart */
     // TODO: 1.11 take into account flags "render this and don't render that"
     public BufferedImage getChart(GanttExportSettings settings) {
@@ -220,66 +211,18 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
+        List<DefaultMutableTreeNode> visibleNodes = settings.isOnlySelectedItem() ?
+            Arrays.asList(this.tree.getSelectedNodes()) :
+            this.tree.getAllVisibleNodes();
 
-        GPTreeTableBase treetable = Mediator.getGanttProjectSingleton().getTree().getTreeTable();
-        JXTreeTable xtreetable = treetable.getTreeTable();
-
-        // I don't know why we need to add 67 to the height to make it fit the real height
-        int tree_height = xtreetable.getHeight()+67;
-
-        GanttImagePanel logo_panel= new GanttImagePanel("big.png", 1024, 44);
-        BufferedImage tree  = new BufferedImage(xtreetable.getWidth(), tree_height, BufferedImage.TYPE_INT_RGB);
-        BufferedImage treeview = new BufferedImage(treetable.getWidth(), treetable.getHeight(), BufferedImage.TYPE_INT_RGB);
-        BufferedImage logo  = new BufferedImage(xtreetable.getWidth(), 44, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D glogo = logo.createGraphics();
-        logo_panel.paintComponent(glogo);
-
-        Graphics2D gtreeview = treeview.createGraphics();
-        treetable.paintComponents(gtreeview);
-
-        BufferedImage header = treeview.getSubimage(0, 0, treeview.getWidth(), treetable.getRowHeight()+3);
-        treeview.flush();
-
-        Graphics2D gtree = tree.createGraphics();
-        xtreetable.printAll(gtree);
-
-        // Create a new image that will contain the logo, the table/tree and the chart
-        BufferedImage task_image = new BufferedImage(xtreetable.getWidth(), tree_height+logo_panel.getHeight(), BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D gimage = task_image.createGraphics();
-
-        // Draw the logo on the image
-        gimage.drawImage(logo, 0, 0, tree.getWidth(), logo.getHeight(), Color.WHITE, null);
-        // Draw the header on the image
-        gimage.drawImage(header, 0, logo.getHeight(), header.getWidth(), header.getHeight(), null);
-        // Draw the tree on the image
-        gimage.drawImage(tree, 0, logo.getHeight()+header.getHeight(), tree.getWidth(), tree.getHeight(), null);
-
-        Date dateStart = null;
-        Date dateEnd = null;
-
-        TimeUnit unit = getViewState().getBottomTimeUnit();
-
-        dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
-
-        if (dateStart.after(dateEnd)) {
-            Date tmp = (Date) dateStart.clone();
-            dateStart = (Date) dateEnd.clone();
-            dateEnd = tmp;
+        for (int i = 0; i < visibleNodes.size(); i++) {
+            if (visibleNodes.get(i).isRoot()) {
+                visibleNodes.remove(i);
+                break;
+            }
         }
-
-        TaskLength printedLength = getTaskManager().createLength(unit, dateStart, dateEnd);
-        System.err.println("start date="+dateStart+" end date="+dateEnd+" unit="+unit+" printed length="+printedLength);
-        int chartWidth = (int) ((printedLength.getLength(getViewState().getBottomTimeUnit()) + 1) * getViewState().getBottomUnitWidth());
-        if (chartWidth < this.getWidth()) {
-            chartWidth = this.getWidth();
-        }
-        int chartHeight = task_image.getHeight();
-        List<DefaultMutableTreeNode> myItemsToConsider = myTaskImageGenerator.getPrintableNodes(settings);
-
-        return new RenderedGanttChartImage(myChartModel, myChartComponentImpl, GanttTree2.convertNodesListToItemList(myItemsToConsider), task_image, chartWidth, chartHeight);
+        settings.setVisibleTasks(GanttTree2.convertNodesListToItemList(visibleNodes));
+        return getRenderedImage(settings, tree.getTreeTable());
     }
 
     GPUndoManager getUndoManager() {
@@ -327,19 +270,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public void repaint() {
-        try {
-            if (myChartModel != null) {
-                if (isShowing()) {
-                    Point headerLocation = myTableHeader.getLocationOnScreen();
-                    Point treeLocation = tree.getLocationOnScreen();
-                    myChartModel.setHeaderHeight(
-                        HEADER_OFFSET + (headerLocation.y - treeLocation.y) + myTableHeader.getHeight());
-                }
-            }
-        } catch (NullPointerException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
+        if (myChartModel != null && isShowing()) {
+            myChartModel.setHeaderHeight(getHeaderHeight());
         }
         super.repaint();
     }
@@ -711,25 +643,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private class OldMouseMotionListenerImpl extends MouseMotionListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
-
-        public void mouseDragged(MouseEvent e) {
-            super.mouseDragged(e);
-            /*
-             * Add the repaint in order to repaint the treetable when an action
-             * occurs on the GraphicArea. here mousedragged because all actions
-             * modifying task properties on the graphics are made through
-             * mousedragged (I think !)
-             */
-            // Mediator.getGanttProjectSingleton().repaint();
-            // getUIFacade().repaint2();
-            if (myUIConfiguration.isCriticalPathOn()) {
-                MouseInteraction mi = myChartComponentImpl
-                        .getActiveInteraction();
-                if ((mi instanceof ChangeTaskBoundaryInteraction)
-                        || (mi instanceof MoveTaskInteractions))
-                    appli.recalculateCriticalPath();
-            }
-        }
 
         // Move the move on the area
         public void mouseMoved(MouseEvent e) {

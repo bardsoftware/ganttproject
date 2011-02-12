@@ -20,15 +20,15 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.ArrayList;
 
-class OffsetList extends ArrayList<Offset> {
+public class OffsetList extends ArrayList<Offset> {
     private int myStartPx;
     void setStartPx(int startPx) {
         myStartPx = startPx;
     }
-    int getStartPx() {
+    public int getStartPx() {
         return myStartPx;
     }
-    int getEndPx() {
+    public int getEndPx() {
         return get(size()-1).getOffsetPixels();
     }
     @Override

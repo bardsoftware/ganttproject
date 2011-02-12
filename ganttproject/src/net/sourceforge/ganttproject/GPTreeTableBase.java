@@ -35,7 +35,7 @@ import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.table.TableColumnExt;
 import org.jdesktop.swing.treetable.TreeTableModel;
 
-class GPTreeTableBase extends JNTreeTable{
+public class GPTreeTableBase extends JNTreeTable{
 	private final IGanttProject myProject;
 	protected IGanttProject getProject() {
 		return myProject;

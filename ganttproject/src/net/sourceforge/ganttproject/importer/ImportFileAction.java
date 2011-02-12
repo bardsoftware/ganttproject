@@ -29,7 +29,7 @@ public class ImportFileAction extends GPAction {
 
     public void actionPerformed(ActionEvent e) {
         ImportFileWizardImpl wizard = new ImportFileWizardImpl(
-                myUIFacade, myProject, myProject.getOptions());
+                myUIFacade, myProject, myProject.getGanttOptions());
         wizard.show();
     }
 

@@ -41,11 +41,11 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
-class ToolbarBuilder {
+public class ToolbarBuilder {
     private final JToolBar myToolbar;
     private final TimelineChart myChart;
 
-    ToolbarBuilder(TimelineChart chart) {
+    public ToolbarBuilder(TimelineChart chart) {
         myChart = chart;
         myToolbar = new JToolBar();
         myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
@@ -54,7 +54,7 @@ class ToolbarBuilder {
         myToolbar.setRollover(true);
     }
     
-    ToolbarBuilder addButton(Action action) {
+    public ToolbarBuilder addButton(Action action) {
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
         }
@@ -66,7 +66,7 @@ class ToolbarBuilder {
         myToolbar.add(button);
         return this;
     }
-    ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
+    public ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
         class MyComboBox extends TestGanttRolloverButton {
             private Action mySelectedAction = null;
             private final Action[] myActions;
@@ -168,7 +168,7 @@ class ToolbarBuilder {
         return this;
     }
     
-    JToolBar build() {
+    public JToolBar build() {
         return myToolbar;
     }
 }

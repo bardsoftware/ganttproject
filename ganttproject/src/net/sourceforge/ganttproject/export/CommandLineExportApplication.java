@@ -67,7 +67,7 @@ public class CommandLineExportApplication {
             System.err.println("[CommandLineExportApplication] export(): exporting with "+exporter);
             exporter.setContext(project, consoleUI, null);
             if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
-                ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getOptions());
+                ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());
             }
             try {
             	ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {

@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -36,23 +35,6 @@ class TaskTreeImageGenerator {
         return myTreeView;
     }
 
-    List<DefaultMutableTreeNode> getPrintableNodes(GanttExportSettings settings) {
-        List<DefaultMutableTreeNode> myItemsToConsider;
-        if (settings.isOnlySelectedItem()) {
-            myItemsToConsider = Arrays.asList(getTree().getSelectedNodes());
-        } else {
-            myItemsToConsider = getTree().getAllVisibleNodes();
-        }
-        System.out.println("TaskToConsider.size = " + myItemsToConsider.size());
-
-        for (int i = 0; i < myItemsToConsider.size(); i++) {
-            if (myItemsToConsider.get(i).isRoot()) {
-                myItemsToConsider.remove(i);
-                break;
-            }
-        }
-        return myItemsToConsider;
-    }
 
     protected Dimension calculateDimension(List<DefaultMutableTreeNode> taskNodes) {
         BufferedImage tmpImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
@@ -109,10 +91,10 @@ class TaskTreeImageGenerator {
         g2.fillRect(0, 0, getWidth(), d.height);
         printTasks(g2, taskNodes);
 
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
+        //GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
         g2.setColor(new Color(102, 153, 153));
-        g2.fillRect(0, 0, getWidth(), but.getHeight());
-        but.paintComponent(g2);
+        g2.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        //but.paintComponent(g2);
     }
 
     private int getWidth() {

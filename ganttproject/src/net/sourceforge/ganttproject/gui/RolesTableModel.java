@@ -36,8 +36,8 @@ public class RolesTableModel extends AbstractTableModel {
 
     private final RoleManager myRoleManager;
 
-    public RolesTableModel() {
-        myRoleManager = RoleManager.Access.getInstance();
+    public RolesTableModel(RoleManager roleManager) {
+        myRoleManager = roleManager;
 
         Role[] roles = getRoleManager().getProjectLevelRoles();
         int i;

@@ -3,8 +3,6 @@ package net.sourceforge.ganttproject.task;
 import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
- * Created by IntelliJ IDEA.
- * 
  * @author bard Date: 27.01.2004
  */
 public interface TaskMutator extends MutableTask {
@@ -21,6 +19,4 @@ public interface TaskMutator extends MutableTask {
     int getCompletionPercentage();
 
     void setThird(GanttCalendar third, int thirdDateConstraint);
-
-
 }

@@ -1,3 +1,4 @@
 syntax: glob
 bin
 dist-bin
+build-deb

@@ -30,7 +30,7 @@ public class PluginManager {
         return getExtensions(extensionPointID, extensionPointInterface);
     }
 
-    public Object[] getExtensions(String extensionPointID, Class extensionPointInterface) {
+    public static Object[] getExtensions(String extensionPointID, Class extensionPointInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(extensionPointID);
