@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -50,7 +50,7 @@ public interface GPCalendar {
 
     public DayType getDayTypeDate(Date curDayStart);
 
-    public void setPublicHolidays(URL calendar, GanttProject gp);
+    public void setPublicHolidays(URL calendar, IGanttProject gp);
 
     public Collection<Date> getPublicHolidays();
 

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.walker.ForwardTimeWalker;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 import net.sourceforge.ganttproject.task.TaskLength;
@@ -64,11 +64,11 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         while (curDayStart.before(endDate)) {
             // System.err.println("curDayStart="+curDayStart);
             Date changeStateDayStart = findClosest(
-            		curDayStart, myFramer, MoveDirection.FORWARD, 
-            		isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
+                    curDayStart, myFramer, MoveDirection.FORWARD,
+                    isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
             // System.err.println("changeStateDayStart="+changeStateDayStart);
             if (changeStateDayStart == null) {
-            	changeStateDayStart = endDate;
+                changeStateDayStart = endDate;
             }
             if (changeStateDayStart.before(endDate)) {
                 result.add(new CalendarActivityImpl(curDayStart,
@@ -127,7 +127,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
             boolean isWeekendState = isNonWorkingDay(prevUnitStart);
             if (isWeekendState) {
                 Date lastWorkingUnitStart = findClosest(
-                		prevUnitStart, timeUnit, MoveDirection.BACKWARD, DayType.WORKING); 
+                        prevUnitStart, timeUnit, MoveDirection.BACKWARD, DayType.WORKING);
                 Date firstWeekendUnitStart = timeUnit.adjustRight(lastWorkingUnitStart);
                 Date lastWeekendUnitEnd = unitStart;
                 result.add(0, new CalendarActivityImpl(firstWeekendUnitStart, lastWeekendUnitEnd, false));
@@ -210,7 +210,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
             return false;
     }
 
-    public void setPublicHolidays(URL calendar, GanttProject gp) {
+    public void setPublicHolidays(URL calendar, IGanttProject gp) {
         publicHolidaysArray.clear();
         if (calendar != null) {
             XMLCalendarOpen opener = new XMLCalendarOpen();
