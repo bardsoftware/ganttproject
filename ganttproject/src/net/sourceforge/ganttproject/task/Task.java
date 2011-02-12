@@ -69,6 +69,8 @@ public interface Task extends MutableTask {
 
     boolean isMilestone();
 
+    boolean hasFixedDates();
+
     Priority getPriority();
 
     TaskActivity[] getActivities();

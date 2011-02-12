@@ -20,7 +20,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * This algorithm recalculates the task schedule and fixes dependencies which are not met
  */
 public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
 
@@ -216,6 +216,10 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     }
 
     private void modifyTaskStart(Task task, GanttCalendar newStart) {
+        if(task.hasFixedDates()) {
+            // Is not not allowed for the algorithm to move this Task so skip
+            return;
+        }
         TaskMutator mutator = task.createMutatorFixingDuration();
         mutator.setStart(newStart);
         mutator.commit();
