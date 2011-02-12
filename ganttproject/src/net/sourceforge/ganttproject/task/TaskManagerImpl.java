@@ -77,7 +77,7 @@ public class TaskManagerImpl implements TaskManager {
     private final TaskManagerConfig myConfig;
 
     private final TaskNamePrefixOption myTaskNamePrefixOption = new TaskNamePrefixOption();
-    
+
     private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
     private boolean areEventsEnabled = true;
@@ -206,7 +206,7 @@ public class TaskManagerImpl implements TaskManager {
         };
         ProjectBoundsAlgorithm alg5 = new ProjectBoundsAlgorithm();
         CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
-        myAlgorithmCollection = new AlgorithmCollection(alg1, alg2, alg3, alg4, alg5, alg6);
+        myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6);
     }
 
     public GanttTask getTask(int taskId) {
@@ -891,7 +891,7 @@ public class TaskManagerImpl implements TaskManager {
     public CustomColumnsStorage getCustomColumnStorage() {
         return myCustomColumnStorage;
     }
-    
+
     public CustomPropertyManager getCustomPropertyManager() {
         return new CustomColumnsManager(getCustomColumnStorage());
     }
@@ -922,6 +922,6 @@ public class TaskManagerImpl implements TaskManager {
     public StringOption getTaskNamePrefixOption() {
         return myTaskNamePrefixOption;
     }
-    
-    
+
+
 }
