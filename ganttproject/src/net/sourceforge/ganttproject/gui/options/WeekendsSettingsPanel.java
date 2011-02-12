@@ -14,7 +14,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * Panel to edit the weekend settings
- * 
+ *
  * @author Maarten Bezemer
  */
 public class WeekendsSettingsPanel extends GeneralOptionPanel {
@@ -59,12 +59,12 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                     tasks[i].setEnd(null);
                 }
                 try {
-                	TaskManager taskManager = project.getTaskManager();
-					taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-					taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
-				} catch (TaskDependencyException e) {
-					GPLogger.log(e);
-				}
+                    TaskManager taskManager = project.getTaskManager();
+                    taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+                    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
+                } catch (TaskDependencyException e) {
+                    GPLogger.log(e);
+                }
             }
         }
         return bHasChange;
@@ -83,7 +83,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
             calendar.setWeekDayType(i, projectCalendar.getWeekDayType(i));
         }
         calendar.setOnlyShowWeekends(projectCalendar.getOnlyShowWeekends());
-        weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, false);
+        weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, true);
         vb.add(weekendConfigurationPanel.getComponent());
     }
 }
