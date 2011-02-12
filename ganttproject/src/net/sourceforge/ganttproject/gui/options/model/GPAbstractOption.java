@@ -5,6 +5,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
 public abstract class GPAbstractOption<T> implements GPOption, ChangeValueDispatcher {
     private final String myID;
 
@@ -92,5 +94,9 @@ public abstract class GPAbstractOption<T> implements GPOption, ChangeValueDispat
     public void setWritable(boolean isWritable) {
         this.isWritable = isWritable;
         myPropertyChangeSupport.firePropertyChange("isWritable", Boolean.valueOf(!isWritable), Boolean.valueOf(isWritable));
+    }
+
+    protected static String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
     }
 }
