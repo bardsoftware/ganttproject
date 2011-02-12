@@ -100,24 +100,18 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
 
     /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        if (getAutomatic() == appli.getOptions().getAutomatic()
+        if (getAutomatic() == appli.getGanttOptions().getAutomatic()
                 &&
                 // getDragTime() == appli.getOptions().getDragTime() &&
-                getLockDAVMinutes() == appli.getOptions().getLockDAVMinutes()
-                &&
-                // getUndoNumber() == appli.getOptions().getUndoNumber() &&
-                (getTaskNamePrefix() == null || getTaskNamePrefix().equals(
-                        appli.getOptions().getTrueTaskNamePrefix()))) {
+                getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
             bHasChange = false;
         } else {
             bHasChange = true;
             if (!askForApply || (askForApply && askForApplyChanges())) {
-                appli.getOptions().setAutomatic(getAutomatic());
-                // appli.getOptions().setDragTime(getDragTime());
-                appli.getOptions().setTaskNamePrefix(getTaskNamePrefix());
+                appli.getGanttOptions().setAutomatic(getAutomatic());
 
                 // WebDAV Locking
-                appli.getOptions().setLockDAVMinutes(getLockDAVMinutes());
+                appli.getGanttOptions().setLockDAVMinutes(getLockDAVMinutes());
                 // changeUndoNumber ();
                 HttpDocument.setLockDAVMinutes(getLockDAVMinutes());
             }
@@ -128,12 +122,8 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
 
     /** Initialize the component. */
     public void initialize() {
-        cbAutomatic.setSelected(appli.getOptions().getAutomatic());
-        // cbDrag.setSelected(appli.getOptions().getDragTime());
-        tfTaskPrefix.setText(appli.getOptions().getTaskNamePrefix());
-        spLockDAV.setValue(new Integer(appli.getOptions().getLockDAVMinutes()));
-        // spUndoNumber.setValue(new
-        // Integer(appli.getOptions().getUndoNumber()));
+        cbAutomatic.setSelected(appli.getGanttOptions().getAutomatic());
+        spLockDAV.setValue(new Integer(appli.getGanttOptions().getLockDAVMinutes()));
     }
 
     /** @return the automatic launch value. */

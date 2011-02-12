@@ -1,10 +1,22 @@
 /*
- * Created on 04.12.2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-package net.sourceforge.ganttproject.chart;
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2005-2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.chart.export;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +27,10 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 
-public abstract class RenderedChartImage extends SimpleRenderedImage {
+import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
+
+public class RenderedChartImage extends SimpleRenderedImage {
 
     private BufferedImage myTaskImage;
     ColorModel myColorModel = new DirectColorModel(32,
@@ -69,7 +84,9 @@ public abstract class RenderedChartImage extends SimpleRenderedImage {
 		return myCurrentRaster;
     }
 
-    protected abstract void paintChart(Graphics g);
+    protected void paintChart(Graphics g) {
+        myChartModel.paint(g);
+    }
     
     private BufferedImage getChart(int offsetx, int offsety,  int width, int height, int chartWidth, int chartHeight) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB );
@@ -82,7 +99,10 @@ public abstract class RenderedChartImage extends SimpleRenderedImage {
         paintChart(g2);
         //myChartModel.setTuningOptions(ChartModelImpl.TuningOptions.DEFAULT);
         return result;
-
+    }
+    
+    protected ChartModelBase getChartModel() {
+        return myChartModel;
     }
     
 }

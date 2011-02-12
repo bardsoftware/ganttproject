@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -106,7 +104,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
                           RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f,
-                  endDate);
+                  endDate,
+                  0);
             isCompressedWeekend = model.getTopUnit().isConstructedFrom(model.getBottomUnit());
         }
 
@@ -151,6 +150,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     private final List<GPOptionChangeListener> myOptionListeners = new ArrayList<GPOptionChangeListener>();
 
     private final UIConfiguration myProjectConfig;
+    private ChartUIConfiguration myChartUIConfiguration;
 
     private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
 
@@ -207,16 +207,23 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myDefaultUnitOffsets.clear();
 
         //System.err.println("offsets start date=" + startDate);
-        RegularFrameOffsetBuilder offsetBuilder = new RegularFrameOffsetBuilder(
-            myTaskManager.getCalendar(), myTopUnit, getBottomUnit(), getOffsetAnchorDate(),
-            getBottomUnitWidth(), (int)getBounds().getWidth(),
-            getTopUnit().isConstructedFrom(getBottomUnit()) ?
-                RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
-        offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : 1);
+        OffsetBuilder offsetBuilder = createOffsetBuilderFactory().build();
         offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-        //System.err.println("startDate=" + startDate);
     }
 
+    public OffsetBuilder.Factory createOffsetBuilderFactory() {
+        return new RegularFrameOffsetBuilder.FactoryImpl()
+            .withAtomicUnitWidth(getBottomUnitWidth())
+            .withBottomUnit(getBottomUnit())
+            .withCalendar(myTaskManager.getCalendar())
+            .withEndOffset((int)getBounds().getWidth())
+            .withRightMargin(myScrollingSession==null ? 0 : 1)
+            .withStartDate(getOffsetAnchorDate())
+            .withTopUnit(myTopUnit)
+            .withWeekendDecreaseFactor(getTopUnit().isConstructedFrom(getBottomUnit()) ?
+                RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+    }
+    
     public void paint(Graphics g) {
         if (myScrollingSession == null) {
             constructOffsets();
@@ -316,7 +323,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
                 this, Integer.MAX_VALUE, getTaskManager().getProjectEnd());
         List<Offset> topUnitOffsets = new ArrayList<Offset>();
-        List<Offset> bottomUnitOffsets = new ArrayList<Offset>();
+        OffsetList bottomUnitOffsets = new OffsetList();
         offsetBuilder.constructOffsets(topUnitOffsets, bottomUnitOffsets);
         int width = topUnitOffsets.get(topUnitOffsets.size()-1).getOffsetPixels();
         int height = calculateRowHeight()*getRowCount();
@@ -335,12 +342,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myTimeUnitStack;
     }
 
-    protected final ChartUIConfiguration myChartUIConfiguration;
-
     public ChartUIConfiguration getChartUIConfiguration() {
         return myChartUIConfiguration;
     }
 
+    private void setChartUIConfiguration(ChartUIConfiguration chartConfig) {
+        myChartUIConfiguration = chartConfig;
+    }
+    
     protected final TaskManager myTaskManager;
 
     private int myVerticalOffset;
@@ -372,39 +381,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         List<Offset> offsets = getBottomUnitOffsets();
         return offsets.get(offsets.size()-1);
-    }
-
-    public float calculateLength(int fromX, int toX, int y) {
-        // return toX - fromX;
-
-        int curX = fromX;
-        int totalPixels = toX - fromX;
-        int holidayPixels = 0;
-        while (curX < toX) {
-            GraphicPrimitiveContainer.GraphicPrimitive nextPrimitive = myChartHeader
-                    .getPrimitiveContainer().getPrimitive(curX,
-                            y - getChartUIConfiguration().getHeaderHeight());
-            if (nextPrimitive instanceof GraphicPrimitiveContainer.Rectangle
-                    && GPCalendar.DayType.WEEKEND == nextPrimitive
-                            .getModelObject()) {
-                GraphicPrimitiveContainer.Rectangle nextRect = (Rectangle) nextPrimitive;
-                holidayPixels += nextRect.getRightX() - curX;
-                if (nextRect.myLeftX < curX) {
-                    holidayPixels -= curX - nextRect.myLeftX;
-                }
-                if (nextRect.myLeftX < fromX) {
-                    holidayPixels -= fromX - nextRect.myLeftX;
-                }
-                if (nextRect.getRightX() > toX) {
-                    holidayPixels -= nextRect.getRightX() - toX;
-                }
-                curX = nextRect.getRightX() + 1;
-            } else {
-                curX += getBottomUnitWidth();
-            }
-        }
-        float workPixels = (float) totalPixels - (float) holidayPixels;
-        return workPixels / (float) getBottomUnitWidth();
     }
 
     /**
@@ -489,6 +465,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         copy.setBottomTimeUnit(getBottomUnit());
         copy.setBottomUnitWidth(getBottomUnitWidth());
         copy.setStartDate(getStartDate());
+        copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
+        GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
+        GPOptionGroup[] thisOptions = getChartOptionGroups();
+        assert copyOptions.length == thisOptions.length;
+        for (int i = 0; i < copyOptions.length; i++) {
+            copyOptions[i].copyFrom(thisOptions[i]);
+        }
+        copy.calculateRowHeight();
     }
 
     public OptionEventDispatcher getOptionEventDispatcher() {

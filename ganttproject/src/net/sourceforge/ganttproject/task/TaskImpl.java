@@ -34,8 +34,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
 
 /**
- * Created by IntelliJ IDEA.
- *
  * @author bard Date: 31.01.2004
  */
 public class TaskImpl implements Task {
@@ -68,10 +66,6 @@ public class TaskImpl implements Task {
     private TaskLength myLength;
 
     private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
-
-//    private boolean isStartFixed;
-
-//    private boolean isFinishFixed;
 
     private boolean bExpand;
 
@@ -213,7 +207,6 @@ public class TaskImpl implements Task {
         return myMutator;
     }
 
-
     private Exception myException;
 
     // main properties
@@ -322,7 +315,7 @@ public class TaskImpl implements Task {
                 && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) {
             result = myMutator.getEnd();
         }
-        if (result==null) {
+        if (result == null) {
             if (myEnd == null) {
                 myEnd = calculateEnd();
             }
@@ -512,10 +505,6 @@ public class TaskImpl implements Task {
 		}
     }
 
-    // TODO Class is same as FieldChange... refactor?
-    private static class DurationChange extends FieldChange {
-    }
-
     private class MutatorImpl implements TaskMutator {
         private EventSender myPropertiesEventSender = new PropertiesEventSender();
 
@@ -529,7 +518,7 @@ public class TaskImpl implements Task {
 
         private FieldChange myThirdChange;
 
-        private DurationChange myDurationChange;
+        private FieldChange myDurationChange;
 
         private List<TaskActivity>  myActivities;
 
@@ -688,7 +677,7 @@ public class TaskImpl implements Task {
             }
 
             if (myDurationChange == null) {
-                myDurationChange = new DurationChange();
+                myDurationChange = new FieldChange();
                 myDurationChange.myEventSender = myPropertiesEventSender;
                 myDurationChange.setValue(length);
             } else {
@@ -743,23 +732,6 @@ public class TaskImpl implements Task {
             }
             myCompletionPercentageChange.setValue(new Integer(percentage));
         }
-
-//        public void setStartFixed(final boolean isFixed) {
-//            myCommands.add(new Runnable() {
-//                public void run() {
-//                    TaskImpl.this.setStartFixed(isFixed);
-//                }
-//            });
-//        }
-//
-//        public void setFinishFixed(final boolean isFixed) {
-//            myCommands.add(new Runnable() {
-//                public void run() {
-//                    TaskImpl.this.setFinishFixed(isFixed);
-//                }
-//            });
-//
-//        }
 
         public void setCritical(final boolean critical) {
             myCommands.add(new Runnable() {
@@ -855,18 +827,17 @@ public class TaskImpl implements Task {
     }
 
     public void setName(String name) {
-
         myName = name;
     }
 
     public void setWebLink(String webLink) {
-
         myWebLink = webLink;
     }
 
     public void setMilestone(boolean milestone) {
-        if(milestone)
+        if(milestone) {
             setEnd(getStart().newAdd(Calendar.DATE, 1));
+        }
         isMilestone = milestone;
     }
 
@@ -1083,15 +1054,11 @@ public class TaskImpl implements Task {
      *
      * @return true, if this task has its own color defined.
      */
-
     public boolean colorDefined() {
-
         return (myColor != null);
-
     }
 
     public String toString() {
-        //return myID + ": " + myStart.getTime() + "-" + myLength;
     	return getName();
     }
 
@@ -1100,24 +1067,16 @@ public class TaskImpl implements Task {
     }
 
     /**
-     * Returns the CustomColumnValues.
-     *
      * @return The CustomColumnValues.
      */
     public CustomColumnsValues getCustomValues() {
         return customValues;
     }
 
-    /**
-     * @inheritDoc
-     */
     public void setCritical(boolean critical) {
         this.critical = critical;
     }
 
-    /**
-     * @inheritDoc
-     */
     public boolean isCritical() {
         return this.critical;
     }
@@ -1155,7 +1114,6 @@ public class TaskImpl implements Task {
 
     public void setTaskInfo(TaskInfo taskInfo) {
         myTaskInfo = taskInfo;
-
     }
 
     public boolean isProjectTask() {

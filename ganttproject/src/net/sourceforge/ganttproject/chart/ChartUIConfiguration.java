@@ -181,4 +181,12 @@ public class ChartUIConfiguration {
     public float getWeekendAlphaValue() {
         return myProjectConfig.getWeekendAlphaRenderingOption().getValueAsFloat();
     }    
+    
+    public ChartUIConfiguration createCopy() {
+        ChartUIConfiguration copy = new ChartUIConfiguration(myProjectConfig);
+        copy.setHeaderHeight(getHeaderHeight());
+        copy.setRowHeight(getRowHeight());
+        copy.setYOffSet(getYOffSet());
+        return copy;
+    }
 }

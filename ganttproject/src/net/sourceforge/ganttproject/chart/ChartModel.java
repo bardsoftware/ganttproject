@@ -48,8 +48,6 @@ public interface ChartModel {
 
     Rectangle getBoundingRectangle(Task task);
 
-    float calculateLength(int fromX, int toX, int y);
-
     void setVerticalOffset(int i);
 
     ChartUIConfiguration getChartUIConfiguration();

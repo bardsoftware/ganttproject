@@ -1,25 +1,14 @@
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
+import java.text.MessageFormat;
 
-import javax.swing.Action;
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import net.sourceforge.ganttproject.GanttOptions;
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
 
-public class CalculateCriticalPathAction extends GPAction implements
-        RolloverAction {
+public class CalculateCriticalPathAction extends GPAction {
     private final TaskManager taskManager;
-
-    private final GanttTree2 tree;
 
     private final static String ICON_PREFIX_ON = "criticalPathOn_";
 
@@ -27,38 +16,29 @@ public class CalculateCriticalPathAction extends GPAction implements
 
     private final UIConfiguration myUIConfiguration;
 
-    private final GanttOptions myOptions;
+    private final UIFacade myUiFacade;
 
-    private final GanttProject appli;
-
-    public CalculateCriticalPathAction(TaskManager taskManager, GanttTree2 tree,
-            GanttOptions options, UIConfiguration uiConfiguration, GanttProject appli) {
-        super(null, options.getIconSize());
+    public CalculateCriticalPathAction(
+            TaskManager taskManager, String iconSize, UIConfiguration uiConfiguration, UIFacade uiFacade) {
+        super(null, iconSize);
         this.taskManager = taskManager;
-        this.tree = tree;
         myUIConfiguration = uiConfiguration;
-        myOptions = options;
-        this.appli = appli;
+        myUiFacade = uiFacade;
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return isOn() ? ICON_PREFIX_ON : ICON_PREFIX_OFF;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        TaskNode root = (TaskNode) tree.getRoot();
         setOn(!isOn());
-        putValue(Action.SMALL_ICON, createIcon(myOptions.getIconSize()));
+        updateAction();
         if (isOn()) {
-			taskManager.processCriticalPath(root);
-			ArrayList<DefaultMutableTreeNode> projectTasks = ((GanttTree2)tree).getProjectTasks();
-	        if (projectTasks.size() != 0)
-				for (int i = 0 ; i < projectTasks.size() ; i++)
-					taskManager.processCriticalPath((TaskNode) projectTasks.get(i));       
+			taskManager.processCriticalPath(taskManager.getRootTask());
         }
-
-        Mediator.getGanttProjectSingleton().repaint();
-        appli.getUIFacade().setStatusText(GanttLanguage.getInstance().getText("criticalPath"));
+        myUiFacade.refresh();
     }
 
     private void setOn(boolean on) {
@@ -66,16 +46,16 @@ public class CalculateCriticalPathAction extends GPAction implements
     }
 
     private boolean isOn() {
-        return myUIConfiguration == null ? false : myUIConfiguration
-                .isCriticalPathOn();
+        return myUIConfiguration == null ? false : myUIConfiguration.isCriticalPathOn();
     }
 
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(isNull);
-    }
-
+    @Override
     protected String getLocalizedName() {
-        return GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "criticalPath"));
+        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n(getKey()));
+    }
+
+    @Override
+    protected String getKey() {
+        return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
     }
 }

@@ -24,11 +24,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.UIManager;
@@ -126,6 +131,33 @@ public class GanttLanguage {
         i18n = ResourceBundle.getBundle(resourceBase, currentLocale);
 
         fireLanguageChanged();
+    }
+
+    public List<Locale> getAvailableLocales() {
+        Set<Locale> removeLangOnly = new HashSet<Locale>();
+        Set<Locale> result = new HashSet<Locale>();
+        for (Locale l : Locale.getAvailableLocales()) {
+            if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + "_" + l.getCountry() + ".properties") != null) {
+                removeLangOnly.add(new Locale(l.getLanguage()));
+                result.add(new Locale(l.getLanguage(), l.getCountry()));
+                continue;
+            }
+            if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
+                result.add(new Locale(l.getLanguage()));
+            }
+        }
+        result.removeAll(removeLangOnly);
+        result.add(Locale.ENGLISH);
+        
+        List<Locale> result1 = new ArrayList<Locale>(result);
+        Collections.sort(result1, new Comparator<Locale>() {
+            @Override
+            public int compare(Locale o1, Locale o2) {
+                return (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
+                    o2.getDisplayLanguage(Locale.US)+o2.getDisplayCountry(Locale.US));
+            }
+        });
+        return result1;
     }
 
     /** @return The current Locale */
