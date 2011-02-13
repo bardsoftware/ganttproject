@@ -24,14 +24,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class ExporterToMsProjectFile implements Exporter {
 
     private static final String[] FILE_FORMAT_IDS = new String[] {
-            "impex.msproject.fileformat.mpx", 
+            "impex.msproject.fileformat.mpx",
             "impex.msproject.fileformat.mspdi" };
 
     private static final String[] FILE_EXTENSIONS = new String[] { "mpx","xml" };
 
     private String myFileFormat = FILE_FORMAT_IDS[0];
 
-    private EnumerationOption myFileFormatOption = new DefaultEnumerationOption("impex.msproject.fileformat", FILE_FORMAT_IDS) {
+    private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat", FILE_FORMAT_IDS) {
         public void commit() {
             super.commit();
             ExporterToMsProjectFile.this.myFileFormat = getValue();
@@ -39,12 +39,12 @@ public class ExporterToMsProjectFile implements Exporter {
     };
 
     private LocaleOption myLanguageOption = new LocaleOption();
-    
+
     private GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject",
             new GPOption[] { myFileFormatOption });
 
     private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
-    
+
     private IGanttProject myProject;
 
     private UIFacade myUIFacade;
@@ -71,8 +71,8 @@ public class ExporterToMsProjectFile implements Exporter {
 
     public GPOptionGroup[] getSecondaryOptions() {
         return FILE_FORMAT_IDS[0].equals(myFileFormat) ? new GPOptionGroup[] {myMPXOptions} : null;
-    }    
-    
+    }
+
     public Component getCustomOptionsUI() {
         return null;
     }
@@ -130,9 +130,9 @@ public class ExporterToMsProjectFile implements Exporter {
                 + Arrays.asList(FILE_FORMAT_IDS));
 
     }
-    
+
     public String[] getFileExtensions() {
-        
+
         return FILE_EXTENSIONS;
     }
 

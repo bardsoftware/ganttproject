@@ -463,7 +463,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
-    static class LafOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+    static class LafOption extends DefaultEnumerationOption<GanttLookAndFeelInfo> implements GP1XOptionConverter {
         private final UIFacade myUiFacade;
         LafOption(UIFacade uiFacade) {
             super("laf", GanttLookAndFeels.getGanttLookAndFeels().getInstalledLookAndFeels());
@@ -473,8 +473,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             return GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue());            
         }
         @Override
-        protected String objectToString(Object value) {
-            GanttLookAndFeelInfo laf = (GanttLookAndFeelInfo) value;
+        protected String objectToString(GanttLookAndFeelInfo laf) {
             return laf.getName();
         }
         @Override
@@ -497,13 +496,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
     
-    static class LanguageOption extends DefaultEnumerationOption implements GP1XOptionConverter {
+    static class LanguageOption extends DefaultEnumerationOption<Locale> implements GP1XOptionConverter {
         public LanguageOption() {
             super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));             
         }
         @Override
-        protected String objectToString(Object value) {
-            Locale locale = (Locale) value;
+        protected String objectToString(Locale locale) {
             String englishName = locale.getDisplayLanguage(Locale.US);
             String localName = locale.getDisplayLanguage(locale);
             if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage())) {

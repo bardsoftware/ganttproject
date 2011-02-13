@@ -4,25 +4,12 @@ import java.util.Date;
 
 public class DefaultDateOption extends GPAbstractOption<Date> implements DateOption {
 
-    private Date myLockedValue;
-    private Date myValue;
-
     public DefaultDateOption(String id) {
         super(id);
     }
 
-    public void setValue(Date value) {
-        fireChangeValueEvent(new ChangeValueEvent(getID(), myLockedValue, value));
-        myLockedValue = value;
-    }
-
-    public Date getValue() {
-        return myValue;
-    }
-
-    public void commit() {
-        super.commit();
-        myValue = myLockedValue;
+    public DefaultDateOption(String id, Date initialValue) {
+        super(id, initialValue);
     }
 
     public String getPersistentValue() {

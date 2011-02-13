@@ -1,11 +1,11 @@
 /*
  LICENSE:
- 
- This program is free software; you can redistribute it and/or modify  
- it under the terms of the GNU General Public License as published by  
- the Free Software Foundation; either version 2 of the License, or     
- (at your option) any later version.                                   
- 
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
  Copyright (C) 2004, GanttProject Development Team
  */
 package net.sourceforge.ganttproject.gui;
@@ -29,18 +29,18 @@ public class UIConfiguration {
 
     private Color myTaskColor;
     private Color myProjectLevelTaskColor;
-    
+
     private Color myResColor; // default resource color
 
     private Color myResOverColor; // overload resoure color
 
     private Color myResUnderColor; // underload resoure color
-	
-	private Color myEarlierPreviousTaskColor;
-	
-	private Color myLaterPreviousTaskColor;
-	
-	private Color myPreviousTaskColor;
+
+    private Color myEarlierPreviousTaskColor;
+
+    private Color myLaterPreviousTaskColor;
+
+    private Color myPreviousTaskColor;
 
     private Color myWeekEndColor; // week end color
 
@@ -64,9 +64,9 @@ public class UIConfiguration {
         myResColor = new Color(140, 182, 206);
         myResOverColor = new Color(229, 50, 50);
         myResUnderColor = new Color(50, 229, 50);
-		myEarlierPreviousTaskColor = new Color(50, 229, 50);
-		myLaterPreviousTaskColor = new Color(229, 50, 50);
-		myPreviousTaskColor = Color.LIGHT_GRAY;
+        myEarlierPreviousTaskColor = new Color(50, 229, 50);
+        myLaterPreviousTaskColor = new Color(229, 50, 50);
+        myPreviousTaskColor = Color.LIGHT_GRAY;
         myWeekEndColor = Color.GRAY;
         myDayOffColor = new Color(0.9f, 1f, 0.17f);
         myWeekendAlphaRenderingOption = new AlphaRenderingOption(this);
@@ -89,7 +89,7 @@ public class UIConfiguration {
     }
 
     public void setProjectLevelTaskColor(Color color) {
-    	myProjectLevelTaskColor = color;
+        myProjectLevelTaskColor = color;
     }
     public Color getResourceColor() {
         return myResColor;
@@ -138,7 +138,7 @@ public class UIConfiguration {
     public void setPreviousTaskColor(Color previousTaskColor) {
         this.myPreviousTaskColor = previousTaskColor;
     }
-	
+
     public Color getWeekEndColor() {
         return myWeekEndColor;
     }
@@ -170,10 +170,10 @@ public class UIConfiguration {
     public void setCriticalPathOn(boolean isOn) {
         this.isCriticalPathOn = isOn;
     }
-    
-    public static class AlphaRenderingOption extends DefaultEnumerationOption  {
+
+    public static class AlphaRenderingOption extends DefaultEnumerationOption<Object>  {
         static final String[] VALUES = new String[] {"chart.weekend_alpha_rendering.100", "chart.weekend_alpha_rendering.75", "chart.weekend_alpha_rendering.50", "chart.weekend_alpha_rendering.25", "chart.weekend_alpha_rendering.0"};
-        final float[] FLOATS = new float[] {1f, 0.75f, 0.5f, 0.25f, 0f}; 
+        final float[] FLOATS = new float[] {1f, 0.75f, 0.5f, 0.25f, 0f};
         private int myIndex=0;
         AlphaRenderingOption(UIConfiguration config) {
             super("chart.weekend_alpha_rendering", VALUES);
@@ -197,11 +197,11 @@ public class UIConfiguration {
         public float getValueAsFloat() {
             return FLOATS[myIndex];
         }
-                
+
     }
-    
+
     public AlphaRenderingOption getWeekendAlphaRenderingOption() {
-        return myWeekendAlphaRenderingOption; 
+        return myWeekendAlphaRenderingOption;
     }
 
     class RedlineOption extends DefaultBooleanOption implements GP1XOptionConverter {
@@ -230,10 +230,10 @@ public class UIConfiguration {
     };
 
     public BooleanOption getRedlineOption() {
-    	return myRedlineOption;
+        return myRedlineOption;
     }
-    
+
     public BooleanOption getProjectBoundariesOption() {
-    	return myProjectDatesOption;
+        return myProjectDatesOption;
     }
 }

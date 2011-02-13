@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -94,7 +94,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
 
     }
 
-    public void setPublicHolidays(URL calendar, GanttProject gp) {
+    public void setPublicHolidays(URL calendar, IGanttProject gp) {
         // TODO Auto-generated method stub
 
     }
