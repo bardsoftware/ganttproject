@@ -32,13 +32,11 @@ import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -50,6 +48,11 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 
+/**
+ * Provides project calendar settings page in the settings dialog.
+ *
+ * @author Dmitry Barashev
+ */
 public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     private WeekendsSettingsPanel myWeekendsPanel;
     private DefaultDateOption myProjectStartOption;
@@ -100,6 +103,9 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
             @Override
             public void commit() {
                 super.commit();
+                if (!isChanged()) {
+                    return;
+                }
                 try {
                     moveProject(getMoveDuration());
                 } catch (AlgorithmException e) {
