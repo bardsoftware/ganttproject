@@ -40,7 +40,6 @@ import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskBoundaryInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
