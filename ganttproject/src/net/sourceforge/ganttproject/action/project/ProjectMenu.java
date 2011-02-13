@@ -13,6 +13,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.export.ExportFileAction;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.importer.ImportFileAction;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ProjectMenu {
     private NewProjectAction myNewProjectAction;
@@ -31,9 +32,16 @@ public class ProjectMenu {
         myProjectSettingsAction = new GPAction("projectProperties") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SettingsDialog2 settingsDialog = new SettingsDialog2(
-                    mainFrame.getProject(), mainFrame.getUIFacade(), "settings.project.pageOrder");
-                settingsDialog.show();
+                mainFrame.getUIFacade().getUndoManager().undoableEdit(
+                    GanttLanguage.getInstance().getText("projectProperties"),
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            SettingsDialog2 settingsDialog = new SettingsDialog2(
+                                mainFrame.getProject(), mainFrame.getUIFacade(), "settings.project.pageOrder");
+                            settingsDialog.show();
+                        }
+                    });
             }
         };
         myNewProjectAction = new NewProjectAction(mainFrame);
