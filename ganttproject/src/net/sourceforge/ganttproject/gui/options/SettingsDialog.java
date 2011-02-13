@@ -104,9 +104,9 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
         }
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e.getPath()
                 .getLastPathComponent());
-        boolean bHasChange = settingPanel.applyChanges(true);
 
         // construct the sections
+//        boolean bHasChange = settingPanel.applyChanges(true);
 //        if ((settingPanel instanceof LanguageSettingsPanel) && bHasChange) {
 //            reinit = true;
 //            rootNode.removeAllChildren();
