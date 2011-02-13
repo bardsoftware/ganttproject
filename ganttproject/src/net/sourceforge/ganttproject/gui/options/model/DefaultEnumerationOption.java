@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultEnumerationOption extends GPAbstractOption<String>
+public class DefaultEnumerationOption<T> extends GPAbstractOption<String>
 implements EnumerationOption, ChangeValueDispatcher {
     private final String[] myValues;
-    private final Map<String, Object> myStringValue_ObjectValue = new HashMap<String, Object>();
-    
+    private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
+
     public DefaultEnumerationOption(String id, String[] values) {
         super(id);
         myValues = values;
@@ -23,29 +23,29 @@ implements EnumerationOption, ChangeValueDispatcher {
         myValues = values.toArray(new String[0]);
     }
 
-    public DefaultEnumerationOption(String id, Object[] values) {
+    public DefaultEnumerationOption(String id, T[] values) {
         super(id);
         List<String> buf = new ArrayList<String>();
-        for (Object nextValue : values) {
+        for (T nextValue : values) {
             buf.add(objectToString(nextValue));
         }
         myValues = buf.toArray(new String[0]);
         fillStringObjectValueMapping(values);
     }
 
-    private void fillStringObjectValueMapping(Object[] values) {
+    private void fillStringObjectValueMapping(T[] values) {
         assert myValues.length == values.length;
         for (int i = 0; i < values.length; i++) {
             myStringValue_ObjectValue.put(myValues[i], values[i]);
         }
     }
-    protected String objectToString(Object nextValue) {
-        assert nextValue!=null;
-        return nextValue.toString();
+    protected String objectToString(T obj) {
+        assert obj!=null;
+        return obj.toString();
     }
-    protected Object stringToObject(String value) {
+    protected T stringToObject(String value) {
         if (myStringValue_ObjectValue.isEmpty()) {
-            return value;
+            return null;
         }
         return myStringValue_ObjectValue.get(value);
     }

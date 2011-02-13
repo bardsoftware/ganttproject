@@ -56,7 +56,7 @@ abstract class ExporterBase {
     private GPOptionGroup myOptions;
     private Chart myResourceChart;
     private SAXTransformerFactory myFactory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
-	private UIFacade myUIFacade;
+    private UIFacade myUIFacade;
     private Preferences myRootPreferences;
 
     protected EnumerationOption createStylesheetOption(String optionID, final Stylesheet[] stylesheets) {
@@ -64,7 +64,7 @@ abstract class ExporterBase {
         for (int i = 0; i < stylesheets.length; i++) {
             names[i] = stylesheets[i].getLocalizedName();
         }
-        EnumerationOption stylesheetOption = new DefaultEnumerationOption(optionID, names) {
+        EnumerationOption stylesheetOption = new DefaultEnumerationOption<Stylesheet>(optionID, names) {
             public void commit() {
                 super.commit();
                 String value = getValue();
@@ -82,9 +82,9 @@ abstract class ExporterBase {
     protected abstract void setSelectedStylesheet(Stylesheet stylesheet);
     protected abstract Stylesheet[] getStylesheets();
     protected abstract String getStylesheetOptionID();
-	static Object EXPORT_JOB_FAMILY = new String("Export job family");
+    static Object EXPORT_JOB_FAMILY = new String("Export job family");
 
-	public ExporterBase() {
+    public ExporterBase() {
         final Stylesheet[] stylesheets = getStylesheets();
         EnumerationOption stylesheetOption= createStylesheetOption(getStylesheetOptionID(), stylesheets);
         stylesheetOption.lock();
@@ -92,11 +92,11 @@ abstract class ExporterBase {
         stylesheetOption.commit();
         myOptions = new GPOptionGroup("exporter.html", new GPOption[] {stylesheetOption});
         myOptions.setTitled(false);
-	}
+    }
 
-	public Component getCustomOptionsUI() {
-	    return null;
-	}
+    public Component getCustomOptionsUI() {
+        return null;
+    }
 
     public void run(final File outputFile,
             final ExportFinalizationJob finalizationJob) throws Exception {
@@ -121,13 +121,13 @@ abstract class ExporterBase {
                 return monitor.isCanceled();
             }
 
-			public void setCanceled(boolean value) {
-				monitor.setCanceled(value);
-				if (value) {
-					System.err.println("ExporterBase: canceling value="+EXPORT_JOB_FAMILY);
-					jobManager.cancel(EXPORT_JOB_FAMILY);
-				}
-			}
+            public void setCanceled(boolean value) {
+                monitor.setCanceled(value);
+                if (value) {
+                    System.err.println("ExporterBase: canceling value="+EXPORT_JOB_FAMILY);
+                    jobManager.cancel(EXPORT_JOB_FAMILY);
+                }
+            }
 
             public void setTaskName(String name) {
                 monitor.setTaskName(name);
@@ -142,36 +142,36 @@ abstract class ExporterBase {
             }
         };
         Job starting = new Job("starting") {
-			protected IStatus run(IProgressMonitor monitor) {
-		        monitor.beginTask("Running export", jobs.length);
-		        for (int i=0; i<jobs.length; i++) {
-		        	if (monitor.isCanceled()) {
-		        		return Status.CANCEL_STATUS;
-		        	}
-		            jobs[i].setProgressGroup(monitor, 1);
-		            jobs[i].schedule();
-		            try {
-						jobs[i].join();
-					} catch (InterruptedException e) {
-						myUIFacade.showErrorDialog(e);
-					}
-		        }
-		        Job finishing = new Job("finishing") {
-					protected IStatus run(IProgressMonitor monitor) {
-						monitor.done();
-				        finalizationJob.run((File[]) resultFiles.toArray(new File[0]));
-						return Status.OK_STATUS;
-					}
-		        };
-		        finishing.setProgressGroup(monitor, 0);
-		        finishing.schedule();
-		        try {
-					finishing.join();
-				} catch (InterruptedException e) {
-					myUIFacade.showErrorDialog(e);
-				}
-				return Status.OK_STATUS;
-			}
+            protected IStatus run(IProgressMonitor monitor) {
+                monitor.beginTask("Running export", jobs.length);
+                for (int i=0; i<jobs.length; i++) {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    jobs[i].setProgressGroup(monitor, 1);
+                    jobs[i].schedule();
+                    try {
+                        jobs[i].join();
+                    } catch (InterruptedException e) {
+                        myUIFacade.showErrorDialog(e);
+                    }
+                }
+                Job finishing = new Job("finishing") {
+                    protected IStatus run(IProgressMonitor monitor) {
+                        monitor.done();
+                        finalizationJob.run((File[]) resultFiles.toArray(new File[0]));
+                        return Status.OK_STATUS;
+                    }
+                };
+                finishing.setProgressGroup(monitor, 0);
+                finishing.schedule();
+                try {
+                    finishing.join();
+                } catch (InterruptedException e) {
+                    myUIFacade.showErrorDialog(e);
+                }
+                return Status.OK_STATUS;
+            }
         };
         starting.setProgressGroup(familyMonitor, 0);
         starting.schedule();
@@ -188,7 +188,7 @@ abstract class ExporterBase {
     }
 
     protected UIFacade getUIFacade() {
-    	return myUIFacade;
+        return myUIFacade;
     }
 
     protected IGanttProject getProject() {
@@ -260,9 +260,9 @@ abstract class ExporterBase {
             handler.startCDATA();
             handler.characters(text.toCharArray(), 0, text.length());
             handler.endCDATA();
-	        endElement(name, handler);
-	        attrs.clear();
-    	}
+            endElement(name, handler);
+            attrs.clear();
+        }
     }
 
     protected SAXTransformerFactory getTransformerFactory() {
@@ -285,9 +285,9 @@ abstract class ExporterBase {
         }
     }
 
-	protected void addAttribute(String name, int value, AttributesImpl attrs) {
-		addAttribute(name, String.valueOf(value), attrs);
-	}
+    protected void addAttribute(String name, int value, AttributesImpl attrs) {
+        addAttribute(name, String.valueOf(value), attrs);
+    }
 
 
     protected String i18n(String key) {
@@ -296,36 +296,36 @@ abstract class ExporterBase {
     }
 
     protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
-    	AttributesImpl attrs = new AttributesImpl();
-    	int totalWidth = 0;
-    	for (int i=0; i<visibleFields.getSize(); i++) {
-    		if (visibleFields.getField(i).isVisible()) {
-    			totalWidth += visibleFields.getField(i).getWidth();
-    		}
-    	}
-    	for (int i=0; i<visibleFields.getSize(); i++) {
-    		TableHeaderUIFacade.Column field = visibleFields.getField(i);
-    		if (field.isVisible()) {
-	    		addAttribute("id", field.getID(), attrs);
-	    		addAttribute("name", field.getName(), attrs);
-	    		addAttribute("width", field.getWidth()*100/totalWidth, attrs);
-	    		emptyElement("field", attrs, handler);
-    		}
-    	}
+        AttributesImpl attrs = new AttributesImpl();
+        int totalWidth = 0;
+        for (int i=0; i<visibleFields.getSize(); i++) {
+            if (visibleFields.getField(i).isVisible()) {
+                totalWidth += visibleFields.getField(i).getWidth();
+            }
+        }
+        for (int i=0; i<visibleFields.getSize(); i++) {
+            TableHeaderUIFacade.Column field = visibleFields.getField(i);
+            if (field.isVisible()) {
+                addAttribute("id", field.getID(), attrs);
+                addAttribute("name", field.getName(), attrs);
+                addAttribute("width", field.getWidth()*100/totalWidth, attrs);
+                emptyElement("field", attrs, handler);
+            }
+        }
     }
     protected void writeViews(UIFacade facade, TransformerHandler handler) throws SAXException {
-    	AttributesImpl attrs = new AttributesImpl();
-    	addAttribute("id", "task-table", attrs);
-    	startElement("view", attrs, handler);
-    	writeColumns(facade.getTaskTree().getVisibleFields(), handler);
-    	endElement("view", handler);
+        AttributesImpl attrs = new AttributesImpl();
+        addAttribute("id", "task-table", attrs);
+        startElement("view", attrs, handler);
+        writeColumns(facade.getTaskTree().getVisibleFields(), handler);
+        endElement("view", handler);
 
-    	addAttribute("id", "resource-table", attrs);
-    	startElement("view", attrs, handler);
-    	writeColumns(facade.getResourceTree().getVisibleFields(), handler);
+        addAttribute("id", "resource-table", attrs);
+        startElement("view", attrs, handler);
+        writeColumns(facade.getResourceTree().getVisibleFields(), handler);
 
-    	endElement("view", handler);
-	}
+        endElement("view", handler);
+    }
 
 
     protected void writeTasks(TaskManager taskManager,
@@ -346,11 +346,11 @@ abstract class ExporterBase {
         TaskVisitor visitor = new TaskVisitor() {
             AttributesImpl myAttrs = new AttributesImpl();
             protected String serializeTask(Task t, int depth) throws Exception {
-            	addAttribute("depth", depth, myAttrs);
+                addAttribute("depth", depth, myAttrs);
                 startPrefixedElement("task", myAttrs, handler);
                 {
-                	addAttribute("id", "tpd1", myAttrs);
-                	textElement("priority", myAttrs, i18n(t.getPriority().getI18nKey()), handler);
+                    addAttribute("id", "tpd1", myAttrs);
+                    textElement("priority", myAttrs, i18n(t.getPriority().getI18nKey()), handler);
                 }
 
                 addAttribute("id", "tpd3", myAttrs);
@@ -373,37 +373,37 @@ abstract class ExporterBase {
 
                 final List<Document> attachments = t.getAttachments();
                 for (int i = 0; i < attachments.size(); i++) {
-                	Document nextAttachment = attachments.get(i);
-                	URI nextUri = nextAttachment.getURI();
+                    Document nextAttachment = attachments.get(i);
+                    URI nextUri = nextAttachment.getURI();
                     if (nextUri != null) {
-                		String strUri = URLDecoder.decode(nextUri.toString(), "utf-8");
-                		if (strUri.startsWith("file:")) {
-                			if (strUri.endsWith("/")) {
-                				strUri = strUri.replaceAll("/+$", "");
-                			}
-                			int lastSlash = strUri.lastIndexOf('/');
-                			if (lastSlash >= 0) {
-                				addAttribute("display-name", strUri.substring(lastSlash+1), myAttrs);
-                			}
-                		}
-                		textElement("attachment", myAttrs, strUri, handler);
+                        String strUri = URLDecoder.decode(nextUri.toString(), "utf-8");
+                        if (strUri.startsWith("file:")) {
+                            if (strUri.endsWith("/")) {
+                                strUri = strUri.replaceAll("/+$", "");
+                            }
+                            int lastSlash = strUri.lastIndexOf('/');
+                            if (lastSlash >= 0) {
+                                addAttribute("display-name", strUri.substring(lastSlash+1), myAttrs);
+                            }
+                        }
+                        textElement("attachment", myAttrs, strUri, handler);
                     } else {
-                		textElement("attachment", myAttrs, nextAttachment.getPath(), handler);
-                	}
+                        textElement("attachment", myAttrs, nextAttachment.getPath(), handler);
+                    }
                 }
                 {
-                	HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
-                	if (coordinator!=null) {
-                		addAttribute("id", "tpd8", myAttrs);
-                		textElement("coordinator", myAttrs, coordinator.getName(), handler);
-                	}
+                    HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
+                    if (coordinator!=null) {
+                        addAttribute("id", "tpd8", myAttrs);
+                        textElement("coordinator", myAttrs, coordinator.getName(), handler);
+                    }
                 }
                 StringBuffer usersS = new StringBuffer();
                 ResourceAssignment[] assignments = t.getAssignments();
                 if (assignments.length > 0) {
                     for (int j = 0; j < assignments.length; j++) {
-                    	addAttribute("resource-id", assignments[j].getResource().getId(), myAttrs);
-                    	emptyElement("assigned-resource", myAttrs, handler);
+                        addAttribute("resource-id", assignments[j].getResource().getId(), myAttrs);
+                        emptyElement("assigned-resource", myAttrs, handler);
                         usersS.append(assignments[j].getResource().getName());
                         if (j<assignments.length-1) {
                           usersS.append(getAssignedResourcesDelimiter());
@@ -414,23 +414,23 @@ abstract class ExporterBase {
                 addAttribute("id", "tpdResources", myAttrs);
                 textElement("assigned-to", myAttrs, usersS.toString(), handler);
                 if (t.getNotes()!=null && t.getNotes().length()>0) {
-	                textElement("notes", myAttrs, t.getNotes(), handler);
+                    textElement("notes", myAttrs, t.getNotes(), handler);
                 }
                 if (t.getColor()!=null) {
                     textElement("color", myAttrs, getHexaColor(t.getColor()),
                             handler);
                 }
                 {
-                	AttributesImpl attrs = new AttributesImpl();
-	                CustomColumnsValues customValues = t.getCustomValues();
+                    AttributesImpl attrs = new AttributesImpl();
+                    CustomColumnsValues customValues = t.getCustomValues();
                     for (Iterator<CustomColumn> it = getCustomColumnStorage()
                             .getCustomColums().iterator(); it.hasNext();) {
-	                	CustomColumn nextColumn = it.next();
-	                	Object value = customValues.getValue(nextColumn.getName());
-	                	String valueAsString = value==null ? "" : value.toString();
-	                	addAttribute("id", nextColumn.getId(), attrs);
-	                	textElement("custom-field", attrs, valueAsString, handler);
-	                }
+                        CustomColumn nextColumn = it.next();
+                        Object value = customValues.getValue(nextColumn.getName());
+                        String valueAsString = value==null ? "" : value.toString();
+                        addAttribute("id", nextColumn.getId(), attrs);
+                        textElement("custom-field", attrs, valueAsString, handler);
+                    }
                 }
                 endPrefixedElement("task", handler);
                 return "";
@@ -477,10 +477,10 @@ abstract class ExporterBase {
 
                 List<CustomProperty> customFields = p.getCustomProperties();
                 for (int j=0; j<customFields.size(); j++) {
-                	CustomProperty nextProperty = customFields.get(j);
-                	addAttribute("id", nextProperty.getDefinition().getID(), attrs);
-                	String value = nextProperty.getValueAsString();
-                	textElement("custom-field", attrs, value, handler);
+                    CustomProperty nextProperty = customFields.get(j);
+                    addAttribute("id", nextProperty.getDefinition().getID(), attrs);
+                    String value = nextProperty.getValueAsString();
+                    textElement("custom-field", attrs, value, handler);
                 }
                 endPrefixedElement("resource", handler);
             }

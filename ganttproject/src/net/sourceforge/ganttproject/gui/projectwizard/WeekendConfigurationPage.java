@@ -6,85 +6,124 @@ package net.sourceforge.ganttproject.gui.projectwizard;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author bard
  */
-public class WeekendConfigurationPage implements WizardPage, ActionListener {
+public class WeekendConfigurationPage implements WizardPage {
     private final Box myBox = Box.createVerticalBox();
-
-    private final GPCalendar myCalendar;
 
     private final JPanel myPanel;
 
-    private final JComboBox myCalendarField;
-
     private final I18N myI18N;
 
-    private final URL[] calendars;
-    private final GanttProject myProject;
+    private final CalendarOption myCalendarOption;
 
-    public WeekendConfigurationPage(GPCalendar calendar, I18N i18n,
-            IGanttProject project, boolean showPublicHolidays) {
-        JLabel choosePublicHoliday;
-        JLabel chooseWeekend;
-        JCheckBox renderWeekend;
+    private final WeekendSchedulingOption myRenderWeekendOption;
 
-        myCalendar = calendar;
-        myCalendar.getPublicHolidays().clear();
-        myProject = (GanttProject) project;
+    static class CalendarOption extends DefaultEnumerationOption<URL> {
+
+        private final List<URL> myUrls;
+        private final List<String> myLabels;
+        private final GPCalendar myCalendar;
+        private final IGanttProject myProject;
+
+        private static List<String> append(List<String> list, String s) {
+            ArrayList<String> result = new ArrayList<String>(list);
+            result.add(s);
+            return result;
+        }
+
+        public CalendarOption(IGanttProject project, GPCalendar calendar, List<URL> urls, List<String> labels) {
+            super("project.calendar", append(labels, i18n("none")));
+            setValue(i18n("none"), true);
+            myUrls = urls;
+            myLabels = labels;
+            myCalendar = calendar;
+            myProject = project;
+            assert myUrls.size() == myLabels.size();
+        }
+
+        private URL getSelectedUrl() {
+            if (i18n("none").equals(getValue())) {
+                return null;
+            }
+            int idx = myLabels.indexOf(getValue());
+            assert idx >=0 && idx < myUrls.size();
+            return myUrls.get(idx);
+        }
+
+        @Override
+        public void commit() {
+            // TODO Auto-generated method stub
+            super.commit();
+            myCalendar.setPublicHolidays(getSelectedUrl(), myProject);
+        }
+    }
+
+    static enum SchedulingEnum {
+        SCHEDULE_NONE, SCHEDULE_ALL
+    }
+    static class WeekendSchedulingOption extends DefaultEnumerationOption<SchedulingEnum> {
+        WeekendSchedulingOption(SchedulingEnum initialValue) {
+            super("project.weekendScheduling", SchedulingEnum.values());
+            setValue(objectToString(initialValue), true);
+        }
+
+        @Override
+        protected String objectToString(SchedulingEnum obj) {
+            return getID() + "." + obj.name().toLowerCase();
+        }
+    }
+
+    public WeekendConfigurationPage(final GPCalendar calendar, I18N i18n, IGanttProject project, boolean showPublicHolidays) {
+        OptionsPageBuilder builder = new OptionsPageBuilder();
+
         myI18N = i18n;
         String[] dayNames = myI18N.getDayNames();
         myPanel = new JPanel(new BorderLayout());
         if (showPublicHolidays) {
-            choosePublicHoliday = new JLabel(GanttLanguage.getInstance().getText("choosePublicHoliday"));
-            myCalendarField = new JComboBox();
-            myCalendarField.addItem(GanttLanguage.getInstance().getText("none"));
             XMLCalendarOpen open = new XMLCalendarOpen();
-            URL[] loadedUrls = null;
+            URL[] calendarUrls = null;
+            String[] calendarLabels = null;
             try {
-				open.setCalendars();
-	            String[] labels = open.getLabels();
-	            loadedUrls = open.getCalendarResources();
-	            for (int i = 0; i < labels.length; i++) {
-	                myCalendarField.addItem(labels[i]);
-	            }
-			} catch (MyException e1) {
-				GPLogger.log(e1);
-			}
-			calendars = loadedUrls;
-            myCalendarField.addActionListener(this);
+                open.setCalendars();
+                calendarLabels = open.getLabels();
+                calendarUrls = open.getCalendarResources();
+            } catch (MyException e1) {
+                GPLogger.log(e1);
+            }
 
-            JPanel publicHolidayPanel = new JPanel(new BorderLayout());
-            publicHolidayPanel.add(choosePublicHoliday, BorderLayout.WEST);
-            publicHolidayPanel.add(myCalendarField);
-            myBox.add(publicHolidayPanel);
-            myBox.add(new JPanel());
+            myCalendarOption = new CalendarOption(
+                project, calendar, Arrays.asList(calendarUrls), Arrays.asList(calendarLabels));
+            myBox.add(builder.createLabeledComponent(myCalendarOption));
         } else {
-            myCalendarField = null;
-            calendars = null;
+            myCalendarOption = null;
         }
 
         Box cb = Box.createVerticalBox();
+        cb.add(Box.createVerticalStrut(15));
         /*
          * Table to keep all the JCheckBoxes with days of the week.
          * It is used to check if in project creation dialog all days are marked as weekend. If they are, day selected
@@ -92,16 +131,15 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
          *
          * If you know better solution, do not hesitate to replace this code.
          */
-        chooseWeekend = new JLabel(GanttLanguage.getInstance().getText("chooseWeekend"));
         JCheckBox[] allCheckBoxes = new JCheckBox[7];
-        cb.add(chooseWeekend);
+        cb.add(new JLabel(GanttLanguage.getInstance().getText("chooseWeekend")));
+        cb.add(Box.createVerticalStrut(5));
         int nextDay = Calendar.MONDAY;
         for (int i = 0; i < 7; i++) {
             JCheckBox nextCheckBox = new JCheckBox();
-            nextCheckBox
-                    .setSelected(calendar.getWeekDayType(nextDay) == GPCalendar.DayType.WEEKEND);
-            nextCheckBox.setAction(new CheckBoxAction(nextDay,
-                    dayNames[nextDay - 1], nextCheckBox.getModel(), allCheckBoxes));
+            nextCheckBox.setSelected(calendar.getWeekDayType(nextDay) == GPCalendar.DayType.WEEKEND);
+            nextCheckBox.setAction(new CheckBoxAction(
+                calendar, nextDay, dayNames[nextDay - 1], nextCheckBox.getModel(), allCheckBoxes));
             cb.add(nextCheckBox);
             allCheckBoxes[i] = nextCheckBox;
             if (++nextDay >= 8) {
@@ -110,20 +148,23 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
         }
 
         cb.add(Box.createVerticalStrut(15));
-
-        renderWeekend = new JCheckBox();
-        renderWeekend.setSelected(myCalendar.getOnlyShowWeekends());
-        renderWeekend.setAction(new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                myCalendar.setOnlyShowWeekends(((JCheckBox ) e.getSource()).isSelected());
-            }
-        });
-        renderWeekend.setText(GanttLanguage.getInstance().getText("onlyShowWeekends"));
-        cb.add(renderWeekend);
-
         JPanel weekendPanel = new JPanel(new BorderLayout());
         weekendPanel.add(cb, BorderLayout.WEST);
         myBox.add(weekendPanel);
+
+        myRenderWeekendOption = new WeekendSchedulingOption(
+                calendar.getOnlyShowWeekends() ? SchedulingEnum.SCHEDULE_ALL : SchedulingEnum.SCHEDULE_NONE) {
+            @Override
+            public void commit() {
+                super.commit();
+                if (stringToObject(getValue()) == SchedulingEnum.SCHEDULE_ALL) {
+                    calendar.setOnlyShowWeekends(true);
+                } else {
+                    calendar.setOnlyShowWeekends(false);
+                }
+            }
+        };
+        myBox.add(builder.createLabeledComponent(myRenderWeekendOption));
 
         JPanel projectPanel = new JPanel(new BorderLayout());
         projectPanel.add(myBox, BorderLayout.NORTH);
@@ -138,16 +179,26 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
         return myPanel;
     }
 
-    public void setActive(boolean b) {
+    public void setActive(boolean active) {
+        if (!active) {
+            myCalendarOption.commit();
+            myRenderWeekendOption.commit();
+        }
     }
 
-    private class CheckBoxAction extends AbstractAction {
-        private int myDay;
-        private ButtonModel myModelButton;
-        private JCheckBox[] myCheckBoxes;
+    public boolean isChanged() {
+        return myCalendarOption.isChanged() || myRenderWeekendOption.isChanged();
+    }
 
-        CheckBoxAction(int day, String dayName, ButtonModel model, JCheckBox[] allCheckBoxes) {
+    private static class CheckBoxAction extends AbstractAction {
+        private final int myDay;
+        private final ButtonModel myModelButton;
+        private final JCheckBox[] myCheckBoxes;
+        private final GPCalendar myCalendar;
+
+        CheckBoxAction(GPCalendar calendar, int day, String dayName, ButtonModel model, JCheckBox[] allCheckBoxes) {
             super(dayName);
+            myCalendar = calendar;
             myDay = day;
             myModelButton = model;
             myCheckBoxes = allCheckBoxes;
@@ -165,32 +216,10 @@ public class WeekendConfigurationPage implements WizardPage, ActionListener {
                 // If all days of the week are marked as weekend unmark selected the last.
                 myModelButton.setSelected(false);
             } else {
-                WeekendConfigurationPage.this.myCalendar.setWeekDayType(myDay, myModelButton.isSelected() ?
+                myCalendar.setWeekDayType(myDay, myModelButton.isSelected() ?
                         GPCalendar.DayType.WEEKEND : GPCalendar.DayType.WORKING);
             }
         }
 
     }
-
-    public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() instanceof JComboBox) {
-            if (evt.getSource() == myCalendarField) {
-                myCalendar.setPublicHolidays(getProjectCalendar(), myProject);
-            }
-        }
-    }
-
-    public URL getProjectCalendar() {
-        if (myCalendarField == null) {
-            return null;
-        }
-
-        int index = myCalendarField.getSelectedIndex();
-        if (index == 0) {
-            return null;
-        } else {
-            return (calendars[index - 1]);
-        }
-    }
-
 }
