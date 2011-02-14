@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import net.sourceforge.ganttproject.ChartTabContentPanel.ToolbarCaptionApi;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.task.LinkTasksAction;
 import net.sourceforge.ganttproject.action.task.UnlinkTasksAction;
@@ -31,7 +32,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     private final IGanttProject myProject;
     private final UIFacade myWorkbenchFacade;
     private final CalculateCriticalPathAction myCriticalPathAction;
-    
+
     GanttChartTabContentPanel(
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
             JComponent ganttChart, UIConfiguration uiConfiguration) {
@@ -47,7 +48,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     }
 
     private Component createSchedulePanel() {
-        return new ToolbarBuilder(myWorkbenchFacade.getGanttChart()).addButton(myCriticalPathAction).build();
+        return new ToolbarBuilder()
+            .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
+            .withCaption("Schedule")
+            .addButton(myCriticalPathAction).build();
     }
 
     Component getComponent() {

@@ -463,6 +463,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         System.err.println("4. creating views...");
         myGanttChartTabContent = new GanttChartTabContentPanel(
             getProject(), getUIFacade(), getTaskTree(), area, getUIConfiguration());
+        myGanttChartTabContent.setToolbarCaptionApi(getTabs().getToolbarCaptionsApi());
         GPView ganttView = getViewManager().createView(myGanttChartTabContent,
                 new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
