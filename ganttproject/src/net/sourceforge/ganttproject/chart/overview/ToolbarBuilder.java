@@ -18,10 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart.overview;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -32,28 +35,51 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 
+import net.sourceforge.ganttproject.ChartTabContentPanel.ToolbarCaptionApi;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 public class ToolbarBuilder {
-    private final JToolBar myToolbar;
-    private final TimelineChart myChart;
+    private final JPanel myToolbar;
+    private Color myBackground;
+    private String myCaption;
+    private ToolbarCaptionApi myCaptionApi;
 
-    public ToolbarBuilder(TimelineChart chart) {
-        myChart = chart;
-        myToolbar = new JToolBar();
-        myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
-        myToolbar.setFloatable(false);
-        myToolbar.setBorderPainted(false);
-        myToolbar.setRollover(true);
+    public ToolbarBuilder() {
+        myToolbar = new JPanel();
+        myBackground = myToolbar.getBackground();
+//        myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
+        //myToolbar.setFloatable(false);
+        //myToolbar.setBorderPainted(false);
+        //myToolbar.setRollover(true);
     }
-    
+
+    public ToolbarBuilder(ToolbarCaptionApi captionApi) {
+        this();
+        myCaptionApi = captionApi;
+    }
+
+    public ToolbarBuilder withBackground(Color background) {
+        myBackground = background;
+        return this;
+    }
+
+    public ToolbarBuilder withCaption(String caption) {
+        myCaption = caption;
+        return this;
+    }
+
     public ToolbarBuilder addButton(Action action) {
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
@@ -62,7 +88,7 @@ public class ToolbarBuilder {
         button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
         button.setHorizontalTextPosition(SwingConstants.CENTER);
         button.setVerticalTextPosition(SwingConstants.CENTER);
-        button.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
+        //button.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
         myToolbar.add(button);
         return this;
     }
@@ -130,7 +156,7 @@ public class ToolbarBuilder {
                         }
                     });
                 }
-                popupMenu.show(myToolbar, getButton().getLocation().x, getButton().getHeight());                
+                popupMenu.show(myToolbar, getButton().getLocation().x, getButton().getHeight());
             }
             private JButton getButton() {
                 return MyComboBox.this;
@@ -160,15 +186,35 @@ public class ToolbarBuilder {
         }
         }
         final MyComboBox button = new MyComboBox(actions);
-        
+
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
         }
         myToolbar.add(button);
         return this;
     }
-    
-    public JToolBar build() {
-        return myToolbar;
+
+    public JComponent build() {
+        JPanel result = new JPanel(new BorderLayout()) {
+
+            @Override
+            public void paint(Graphics g) {
+                super.paint(g);
+                if (myCaption != null && myCaptionApi != null) {
+                    Point parentLocation = myCaptionApi.getContainer().getLocationOnScreen();
+                    Point thisLocation = getLocationOnScreen();
+                    myCaptionApi.addCaption(new JLabel(myCaption),
+                        new Point(thisLocation.x - parentLocation.x + this.getWidth()/2, thisLocation.y - parentLocation.y + 3));
+
+                }
+            }
+
+        };
+        result.add(myToolbar, BorderLayout.CENTER);
+        if (myCaption != null) {
+            myToolbar.setToolTipText(myCaption);
+        }
+        UIUtil.setBackgroundTree(result, myBackground);
+        return result;
     }
 }

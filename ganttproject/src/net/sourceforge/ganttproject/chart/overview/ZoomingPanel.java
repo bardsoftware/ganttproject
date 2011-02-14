@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
 
+import net.sourceforge.ganttproject.ChartTabContentPanel.ToolbarCaptionApi;
 import net.sourceforge.ganttproject.action.ZoomInAction;
 import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -29,6 +30,7 @@ public class ZoomingPanel {
     private final ZoomInAction myZoomInAction;
     private final ZoomOutAction myZoomOutAction;
     private final TimelineChart myChart;
+    private ToolbarCaptionApi myCaptionApi;
 
     public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
         myZoomInAction = new ZoomInAction(uiFacade.getZoomManager(), "16");
@@ -36,7 +38,13 @@ public class ZoomingPanel {
         myChart = chart;
     }
 
+    public void setCaptionApi(ToolbarCaptionApi captionApi) {
+        myCaptionApi = captionApi;
+    }
     public Component getComponent() {
-        return new ToolbarBuilder(myChart).addButton(myZoomInAction).addButton(myZoomOutAction).build();
+        return new ToolbarBuilder(myCaptionApi)
+            .withCaption("Zooming")
+            .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
+            .addButton(myZoomInAction).addButton(myZoomOutAction).build();
     }
 }
