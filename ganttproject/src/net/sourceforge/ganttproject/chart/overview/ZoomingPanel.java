@@ -37,6 +37,8 @@ public class ZoomingPanel {
     }
 
     public Component getComponent() {
-        return new ToolbarBuilder(myChart).addButton(myZoomInAction).addButton(myZoomOutAction).build();
+        return new ToolbarBuilder()
+            .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
+            .addButton(myZoomInAction).addButton(myZoomOutAction).build();
     }
 }

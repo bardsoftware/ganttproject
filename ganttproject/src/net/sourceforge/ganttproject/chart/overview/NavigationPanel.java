@@ -127,16 +127,17 @@ public class NavigationPanel {
             protected String getLocalizedName() {
                 return MessageFormat.format("<html><b>{0}</b></html>", getI18n(getKey()));
             }
-            
+
         }
-        return new ToolbarBuilder(myChart)
+        return new ToolbarBuilder()
+            .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
             .addComboBox(scrollActions, scrollActions[1])
             .addButton(new ScrollTimeIntervalAction("backDate", -1, myUiFacade.getScrollingManager()))
             .addButton(new ScrollTimeIntervalAction("forwardDate", 1, myUiFacade.getScrollingManager()))
             .build();
     }
 
-	protected TaskLength createTimeInterval(int i) {
-		return myProject.getTaskManager().createLength(i);
-	}
+    protected TaskLength createTimeInterval(int i) {
+        return myProject.getTaskManager().createLength(i);
+    }
 }
