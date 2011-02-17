@@ -17,7 +17,7 @@ public class ZoomInAction extends GPAction implements ZoomListener {
     private final ZoomManager myZoomManager;
 
     public ZoomInAction(ZoomManager zoomManager, String iconSize) {
-        super("ZoomIn", iconSize);
+        super("zoomIn", iconSize);
         myZoomManager = zoomManager;
         myZoomManager.addZoomListener(this);
     }

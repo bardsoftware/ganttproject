@@ -1013,21 +1013,21 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Apply Buttons options. */
     public void applyButtonOptions() {
-        setButtonText();
-        if (options.getButtonShow() == GanttOptions.TEXT) {
-            for (int i = 0; i < myRolloverActions.size(); i++) {
-                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-                next.isIconVisible(false);
-                next.setIconSize(options.getIconSize());
-            }
-        } else {
-            for (int i = 0; i < myRolloverActions.size(); i++) {
-                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-                next.isIconVisible(true);
-                next.setIconSize(options.getIconSize());
-            }
-        }
-        toolBar.updateButtonsLook();
+//        setButtonText();
+//        if (options.getButtonShow() == GanttOptions.TEXT) {
+//            for (int i = 0; i < myRolloverActions.size(); i++) {
+//                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
+//                next.isIconVisible(false);
+//                //next.setIconSize(options.getIconSize());
+//            }
+//        } else {
+//            for (int i = 0; i < myRolloverActions.size(); i++) {
+//                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
+//                next.isIconVisible(true);
+//                //next.setIconSize(options.getIconSize());
+//            }
+//        }
+//        toolBar.updateButtonsLook();
     }
 
     /** Create the button on toolbar */
