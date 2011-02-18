@@ -21,6 +21,7 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.baseline.BaselineDialogAction;
 
 import org.eclipse.core.runtime.IAdaptable;
 
@@ -31,6 +32,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     private final IGanttProject myProject;
     private final UIFacade myWorkbenchFacade;
     private final CalculateCriticalPathAction myCriticalPathAction;
+    private final BaselineDialogAction myBaselineAction;
 
     GanttChartTabContentPanel(
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
@@ -43,6 +45,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         myGanttChart = ganttChart;
         myCriticalPathAction = new CalculateCriticalPathAction(
             project.getTaskManager(), "16", uiConfiguration, workbenchFacade);
+        myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
         addChartPanel(createSchedulePanel());
     }
 
@@ -50,6 +53,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         return new ToolbarBuilder()
             .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
             .addButton(myCriticalPathAction)
+            .addButton(myBaselineAction)
             .build();
     }
 

@@ -182,8 +182,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private TestGanttRolloverButton bUndo, bRedo;
 
-    private TestGanttRolloverButton bSaveCurrent, bComparePrev;
-
     /** The project filename */
     public Document projectDocument = null;
 
@@ -480,11 +478,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         getTabs().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                bComparePrev
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-                bSaveCurrent
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-
                 bNewTask
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
@@ -934,10 +927,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bRedo
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("redo"))));
-        bComparePrev
-                .setToolTipText(getToolTip(language.getText("comparePrev")));
-        bSaveCurrent
-                .setToolTipText(getToolTip(language.getText("saveCurrent")));
         getTabs().setTitleAt(1, correctLabel(language.getText("human")));
         setButtonText();
         toolBar.updateButtonsLook();
@@ -1006,8 +995,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             bAbout.setText(correctLabel(language.getText("about")));
             bUndo.setText(correctLabel(language.getText("undo")));
             bRedo.setText(correctLabel(language.getText("redo")));
-            bComparePrev.setText(correctLabel(language.getText("comparePrev")));
-            bSaveCurrent.setText(correctLabel(language.getText("saveCurrent")));
         }
     }
 
@@ -1053,29 +1040,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         // toolBar.addSeparator(new Dimension(20,0));
 
-        bComparePrev = new TestGanttRolloverButton(
-                new ImageIcon(getClass().getResource(
-                        "/icons/comparePrev_" + options.getIconSize() + ".gif")));
-        bComparePrev.setEnabled(false);
-        bComparePrev.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                compareToPreviousState();
-                if (myPreviousStates.size() == 0)
-                    bComparePrev.setEnabled(false);
-            }
-        });
-
-        bSaveCurrent = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource(
-                        "/icons/saveCurrentAsPrev_" + options.getIconSize()
-                                + ".gif")));
-        bSaveCurrent.setEnabled(false);
-        bSaveCurrent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveAsPreviousState();
-
-            }
-        });
 
         bCut = new TestGanttRolloverButton(getCutAction());
         bCopy = new TestGanttRolloverButton(getCopyAction());
@@ -1178,8 +1142,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 this);
         ps.setVisible(true);
         if (ps.isSaved()) {
-            bSaveCurrent.setEnabled(false);
-            bComparePrev.setEnabled(true);
             myPreviousStates.add(ps.getPreviousState());
         }
     }
@@ -1533,9 +1495,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             this.setTitle(language.getText("appliTitle") + " ["
                     + document.getDescription() + "]");
             setAskForSave(false);
-            if (myPreviousStates.size() != 0) {
-                bComparePrev.setEnabled(true);
-            }
         } else {
             String errorMessage = language.getText("msg2") + "\n"
                     + document.getDescription();
@@ -1676,12 +1635,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         fireProjectModified(afs);
         String title = getTitle();
         // String last = title.substring(title.length() - 11, title.length());
-        if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
-            if (afs)
-                bSaveCurrent.setEnabled(afs);
-            if (myPreviousStates.size() != 0)
-                bComparePrev.setEnabled(true);
-        }
         askForSave = afs;
         try {
             if (System.getProperty("mrj.version") != null) {
@@ -1998,10 +1951,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
-
-        // TODO [dbarashev] implement ProjectEventListener in bComparePrev
-        // action
-        bComparePrev.setEnabled(false);
     }
 
     protected ParserFactory getParserFactory() {
@@ -2152,10 +2101,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 //                    sIcons = sIcons + GanttOptions.CRITICAL;
                 } else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout) {
                     sIcons = sIcons + GanttOptions.ABOUT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSaveCurrent) {
-                    sIcons = sIcons + GanttOptions.SAVECURRENT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bComparePrev) {
-                    sIcons = sIcons + GanttOptions.COMPAREPREV;
                 }
             }
         }
@@ -2235,12 +2180,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 //            break;
         case (GanttOptions.ABOUT):
             list.addElement(bAbout);
-            break;
-        case (GanttOptions.SAVECURRENT):
-            list.addElement(bSaveCurrent);
-            break;
-        case (GanttOptions.COMPAREPREV):
-            list.addElement(bComparePrev);
             break;
         default:
             break;
