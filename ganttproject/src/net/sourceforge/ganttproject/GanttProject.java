@@ -175,10 +175,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
     /** Toolbar button */
-    private TestGanttRolloverButton bNew, bOpen, bSave, bExport, bImport,
-            bPrint, bPreviewPrint, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties,/* bUnlink, bLink, bUp, bDown, bPrev,
-            bScrollCenter, bNext,  bZoomFit, */bAbout;
+    private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
+            bProperties;
 
     private TestGanttRolloverButton bUndo, bRedo;
 
@@ -211,12 +209,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     // ! Toolbar of ui
     private GPToolBar toolBar;
-
-    private DefaultListModel iconList = new DefaultListModel();
-
-    private DefaultListModel deletedIconList = new DefaultListModel();
-
-    // list.setName("list");
 
     private TaskPropertiesAction myTaskPropertiesAction;
 
@@ -730,9 +722,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void restoreOptions() {
         options.initDefault();
-        iconList = initIconList();
-        deletedIconList = initDeletedIconList();
-        addButtons();
         myUIConfiguration = options.getUIConfiguration();
         GanttGraphicArea.taskDefaultColor = new Color(140, 182, 206);
         area.repaint();
@@ -795,13 +784,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         CustomColumnsStorage.changeLanguage(language);
 
         applyComponentOrientation(language.getComponentOrientation());
-
-        // change the value of the separators in iconList
-        for (int i = 0; i < iconList.size(); i++)
-            if (iconList.getElementAt(i).getClass() != TestGanttRolloverButton.class) {
-                iconList.removeElementAt(i);
-                iconList.add(i, GPToolBar.SEPARATOR_OBJECT);
-            }
     }
 
     /**
@@ -899,12 +881,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getText("chartOptions"));
         miRefresh = changeMenuLabel(miRefresh, language.getText("refresh"));
 
-        bPreviewPrint.setToolTipText(getToolTip(correctLabel(language
-                .getText("preview"))));
-        bExport.setToolTipText(getToolTip(correctLabel(language
-                .getText("export"))));
-        bImport.setToolTipText(getToolTip(correctLabel(language
-                .getText("import"))));
         bNewTask.setToolTipText(getToolTip(correctLabel(language
                 .getText("createTask"))));
         // bCut.setToolTipText(getToolTip(correctLabel(language.getText("cut"))));
@@ -918,9 +894,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getText("deleteTask"))));
         bProperties.setToolTipText(getToolTip(correctLabel(language
                 .getText("propertiesTask"))));
-        bAbout
-                .setToolTipText(getToolTip(correctLabel(language
-                        .getText("about"))));
         bUndo
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("undo"))));
@@ -928,8 +901,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("redo"))));
         getTabs().setTitleAt(1, correctLabel(language.getText("human")));
-        setButtonText();
-        toolBar.updateButtonsLook();
     }
 
     /** Invoked when a key has been pressed. */
@@ -974,72 +945,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
     }
 
-    /** Set the text on the buttons. */
-    public void setButtonText() {
-        if (options.getButtonShow() != GanttOptions.ICONS) {
-            bImport.setText(correctLabel(language.getText("import")));
-            bExport.setText(correctLabel(language.getText("export")));
-            bPreviewPrint.setText(correctLabel(language.getText("preview")));
-
-            bNewTask.setText(correctLabel(language.getText(getTabs()
-                    .getSelectedIndex() == UIFacade.GANTT_INDEX ? "createTask"
-                    : "newHuman")));
-            bDelete.setText(correctLabel(language.getText(getTabs()
-                    .getSelectedIndex() == UIFacade.GANTT_INDEX ? "deleteTask"
-                    : "deleteHuman")));
-            bProperties
-                    .setText(correctLabel(language
-                            .getText(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? "propertiesTask"
-                                    : "propertiesHuman")));
-
-            bAbout.setText(correctLabel(language.getText("about")));
-            bUndo.setText(correctLabel(language.getText("undo")));
-            bRedo.setText(correctLabel(language.getText("redo")));
-        }
-    }
-
-    /** Apply Buttons options. */
-    public void applyButtonOptions() {
-//        setButtonText();
-//        if (options.getButtonShow() == GanttOptions.TEXT) {
-//            for (int i = 0; i < myRolloverActions.size(); i++) {
-//                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-//                next.isIconVisible(false);
-//                //next.setIconSize(options.getIconSize());
-//            }
-//        } else {
-//            for (int i = 0; i < myRolloverActions.size(); i++) {
-//                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-//                next.isIconVisible(true);
-//                //next.setIconSize(options.getIconSize());
-//            }
-//        }
-//        toolBar.updateButtonsLook();
-    }
 
     /** Create the button on toolbar */
-    public void addButtons(JToolBar toolBar) {
-        // toolBar.addSeparator(new Dimension(20,0));
-
-        bNew = new TestGanttRolloverButton(myProjectMenu.getNewProjectAction());
-        bOpen = new TestGanttRolloverButton(myProjectMenu
-                .getOpenProjectAction());
+    private void addButtons(JToolBar toolBar) {
         bSave = new TestGanttRolloverButton(myProjectMenu
                 .getSaveProjectAction());
-        bImport = new TestGanttRolloverButton(myProjectMenu
-                .getImportFileAction());
-        bExport = new TestGanttRolloverButton(myProjectMenu
-                .getExportFileAction());
-
-        bPrint = new TestGanttRolloverButton(myProjectMenu.getPrintAction());
-        bPreviewPrint = new TestGanttRolloverButton(new ImageIcon(
-                getClass().getResource(
-                        "/icons/preview_" + options.getIconSize() + ".gif")));
-        bPreviewPrint.addActionListener(this);
-        // toolBar.add(bPrint);
-
-        // toolBar.addSeparator(new Dimension(20,0));
-
 
         bCut = new TestGanttRolloverButton(getCutAction());
         bCopy = new TestGanttRolloverButton(getCopyAction());
@@ -1061,8 +971,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bDelete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {// Gantt
-                    // Chart
-                    // deleteTask();
                     deleteTasks(true);
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resource
                     // chart
@@ -1089,7 +997,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
             }
         });
-        // if(!isOnlyViewer) toolBar.add(bDelete);
 
         bProperties = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource(
@@ -1111,14 +1018,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
                 .getViewState());
-        bAbout = new TestGanttRolloverButton(
-                new ImageIcon(getClass().getResource(
-                        "/icons/manual_" + options.getIconSize() + ".gif")));
-        bAbout.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                aboutDialog();
-            }
-        });
         Action undo = new UndoAction(getUndoManager(), options.getIconSize(),
                 this);
         myRolloverActions.add(undo);
@@ -1129,10 +1028,15 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myRolloverActions.add(redo);
         bRedo = new TestGanttRolloverButton(redo);
 
-        iconList = initIconList();
-        deletedIconList = initDeletedIconList();
-        addButtons();
-        applyButtonOptions();
+        toolBar.add(bSave);
+        toolBar.add(bUndo);
+        toolBar.add(bRedo);
+        toolBar.add(bCut);
+        toolBar.add(bCopy);
+        toolBar.add(bPaste);
+        toolBar.add(bNewTask);
+        toolBar.add(bDelete);
+        toolBar.add(bProperties);
     }
 
     protected void saveAsPreviousState() {
@@ -1219,13 +1123,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                             }
                         });
             }
-        } else {
-            // Test if it's buttons actions
-            if (evt.getSource() == bPreviewPrint) { // print
-                previewPrint();
-            }
         }
-        // repaint();
     }
 
     public HumanResource newHumanResource() {
@@ -2039,168 +1937,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         tree.getTreeTable().getTable().setRowHeight(value);
     }
 
-    public void changeOrder(DefaultListModel buttonList,
-            DefaultListModel deletedButtonList) {
-        iconList = new DefaultListModel();
-        for (int i = 0; i < buttonList.size(); i++)
-            iconList.addElement(buttonList.getElementAt(i));
-        deletedIconList = new DefaultListModel();
-        for (int i = 0; i < deletedButtonList.size(); i++)
-            deletedIconList.addElement(deletedButtonList.getElementAt(i));
-        addButtons();
-        options.setIconList(getIconPositions(iconList));
-        options.setDeletedIconList(getIconPositions(deletedIconList));
-        setHiddens();
-        refresh();
-    }
-
-    private String getIconPositions(DefaultListModel list) {
-        String sIcons = "";
-        if (list != null) {
-            int i = 0;
-            if (list.equals(deletedIconList)) {
-                i++;
-            }
-            for (; i < list.size(); i++) {
-                if (!sIcons.equals("")) {
-                    sIcons = sIcons + ",";
-                }
-                if (list.elementAt(i).equals(GPToolBar.SEPARATOR_OBJECT)) {
-                    sIcons = sIcons + GanttOptions.SEPARATOR;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNew) {
-                    sIcons = sIcons + GanttOptions.NEW;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bOpen) {
-                    sIcons = sIcons + GanttOptions.OPEN;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSave) {
-                    sIcons = sIcons + GanttOptions.SAVE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bImport) {
-                    sIcons = sIcons + GanttOptions.IMPORT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bExport) {
-                    sIcons = sIcons + GanttOptions.EXPORT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPrint) {
-                    sIcons = sIcons + GanttOptions.PRINT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPreviewPrint) {
-                    sIcons = sIcons + GanttOptions.PREVIEWPRINT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCut) {
-                    sIcons = sIcons + GanttOptions.CUT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCopy) {
-                    sIcons = sIcons + GanttOptions.COPY;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPaste) {
-                    sIcons = sIcons + GanttOptions.PASTE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNewTask) {
-                    sIcons = sIcons + GanttOptions.NEWTASK;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bDelete) {
-                    sIcons = sIcons + GanttOptions.DELETE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bProperties) {
-                    sIcons = sIcons + GanttOptions.PROPERTIES;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bUndo) {
-                    sIcons = sIcons + GanttOptions.UNDO;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo) {
-                    sIcons = sIcons + GanttOptions.REDO;
-//                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical) {
-//                    sIcons = sIcons + GanttOptions.CRITICAL;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout) {
-                    sIcons = sIcons + GanttOptions.ABOUT;
-                }
-            }
-        }
-        return sIcons;
-    }
-
-    public DefaultListModel initIconList() {
-        DefaultListModel list = new DefaultListModel();
-        int[] icons = options.getIconList();
-        for (int i = 0; i < icons.length; i++)
-            addButton(icons[i], list);
-        return list;
-    }
-
-    public DefaultListModel initDeletedIconList() {
-        DefaultListModel list = new DefaultListModel();
-        if (options.getDeletedIconList() != null) {
-            int[] icons = options.getDeletedIconList();
-            for (int i = 0; i < icons.length; i++)
-                addButton(icons[i], list);
-        }
-        return list;
-    }
-
-    public void addButton(int icon, DefaultListModel list) {
-        switch (icon) {
-        case (GanttOptions.SEPARATOR):
-            list.addElement(GPToolBar.SEPARATOR_OBJECT);
-            break;
-        case (GanttOptions.NEW):
-            list.addElement(bNew);
-            break;
-        case (GanttOptions.OPEN):
-            list.addElement(bOpen);
-            break;
-        case (GanttOptions.SAVE):
-            list.addElement(bSave);
-            break;
-        case (GanttOptions.IMPORT):
-            list.addElement(bImport);
-            break;
-        case (GanttOptions.EXPORT):
-            list.addElement(bExport);
-            break;
-        case (GanttOptions.PRINT):
-            list.addElement(bPrint);
-            break;
-        case (GanttOptions.PREVIEWPRINT):
-            list.addElement(bPreviewPrint);
-            break;
-        case (GanttOptions.CUT):
-            list.addElement(bCut);
-            break;
-        case (GanttOptions.COPY):
-            list.addElement(bCopy);
-            break;
-        case (GanttOptions.PASTE):
-            list.addElement(bPaste);
-            break;
-        case (GanttOptions.NEWTASK):
-            list.addElement(bNewTask);
-            break;
-        case (GanttOptions.DELETE):
-            list.addElement(bDelete);
-            break;
-        case (GanttOptions.PROPERTIES):
-            list.addElement(bProperties);
-            break;
-        case (GanttOptions.UNDO):
-            list.addElement(bUndo);
-            break;
-        case (GanttOptions.REDO):
-            list.addElement(bRedo);
-            break;
-//        case (GanttOptions.CRITICAL):
-//            list.addElement(bCritical);
-//            break;
-        case (GanttOptions.ABOUT):
-            list.addElement(bAbout);
-            break;
-        default:
-            break;
-        }
-    }
-
-    private void addButtons() {
-        List<Object> buttons = new ArrayList<Object>(iconList.getSize());
-        for (int i = 0; i < iconList.getSize(); i++) {
-            buttons.add(iconList.get(i));
-        }
-        toolBar.populate(buttons);
-    }
-
-    public DefaultListModel getButtonList() {
-        return iconList;
-    }
-
-    public DefaultListModel getDeletedButtonList() {
-        return deletedIconList;
-    }
 
     public void repaint2() {
         getResourcePanel().getResourceTreeTableModel().updateResources();

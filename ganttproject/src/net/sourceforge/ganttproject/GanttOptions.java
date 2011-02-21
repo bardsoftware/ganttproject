@@ -127,83 +127,7 @@ public class GanttOptions {
     /** CVS export options. */
     private CSVOptions csvOptions;
 
-    private int[] iconListAsIntArray;
-
-    private int[] deletedIconListAsIntArray;
-
-    private String iconListAsString;
-
-    private String deletedIconListAsString;
-
     private boolean isOnlyViewer;
-
-    public static final int SEPARATOR = 0;
-
-    public static final int EXIT = 1;
-
-    public static final int NEW = 2;
-
-    public static final int OPEN = 3;
-
-    public static final int SAVE = 4;
-
-    public static final int SAVEAS = 5;
-
-    public static final int IMPORT = 6;
-
-    public static final int EXPORT = 7;
-
-    public static final int PRINT = 8;
-
-    public static final int CUT = 9;
-
-    public static final int COPY = 10;
-
-    public static final int PASTE = 11;
-
-    public static final int NEWTASK = 12;
-
-    public static final int DELETE = 13;
-
-    public static final int PROPERTIES = 14;
-
-    public static final int UNLINK = 15;
-
-    public static final int LINK = 16;
-
-    public static final int IND = 17;
-
-    public static final int UNIND = 18;
-
-    public static final int UP = 19;
-
-    public static final int DOWN = 20;
-
-    public static final int PREV = 21;
-
-    public static final int CENTER = 22;
-
-    public static final int NEXT = 23;
-
-    public static final int ZOOMOUT = 24;
-
-    public static final int ZOOMIN = 25;
-
-    public static final int UNDO = 26;
-
-    public static final int REDO = 27;
-
-    public static final int CRITICAL = 28;
-
-    public static final int ABOUT = 29;
-
-    public static final int SAVECURRENT = 30;
-
-    public static final int COMPAREPREV = 31;
-
-    public static final int REFRESH = 32;
-
-    public static final int PREVIEWPRINT = 33;
 
     private Map<String,GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
     private Map<String,GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
@@ -252,14 +176,7 @@ public class GanttOptions {
         /** CVS export options. */
         csvOptions = new CSVOptions();
 
-        // Icon status bar
-        iconListAsString = getDefaultIconListAsString();
-        iconListAsIntArray = getDefaultIconListIntArray();
-        deletedIconListAsString = getDefaultDeletedIconListAsString();
-        deletedIconListAsIntArray = getDefaultDeletedIconListIntArray();
     }
-
-    // iconListAsIntArray = initIconList ();
 
     private void startElement(String name, Attributes attrs,
             TransformerHandler handler) throws SAXException {
@@ -453,7 +370,6 @@ public class GanttOptions {
                     .getChartMainFont()), attrs);
             emptyElement("font", attrs, handler);
 
-            saveIconPositions(handler);
             saveRoleSets(handler);
             for (Iterator<Entry<String, GPOption>> options = myGPOptions.entrySet().iterator(); options.hasNext();) {
                 Map.Entry<String, GPOption> nextEntry = options.next();
@@ -584,14 +500,6 @@ public class GanttOptions {
 
         loader.addTagHandler(new RoleTagHandler(getRoleManager()));
         loader.load(optionsFile);
-        if (iconHandler.getList() != null) {
-            iconListAsIntArray = iconHandler.getList();
-            iconListAsString = iconHandler.getPositions();
-        }
-        if (iconHandler.getDeletedList() != null) {
-            deletedIconListAsIntArray = iconHandler.getDeletedList();
-            deletedIconListAsString = iconHandler.getDeletedPositions();
-        }
     }
 
     private void saveRoleSets(TransformerHandler handler)
@@ -619,15 +527,6 @@ public class GanttOptions {
             emptyElement("role", attrs, handler);
         }
 
-    }
-
-    private void saveIconPositions(TransformerHandler handler)
-            throws TransformerConfigurationException,
-            TransformerFactoryConfigurationError, SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        addAttribute("icons-list", iconListAsString, attrs);
-        addAttribute("deletedIcons-list", deletedIconListAsString, attrs);
-        emptyElement("positions", attrs, handler);
     }
 
     public UIConfiguration getUIConfiguration() {
@@ -661,7 +560,7 @@ public class GanttOptions {
 
         private PluginOptionsHandler myPluginOptionsHandler;
 
-        public void startElement(String namespaceURI, 
+        public void startElement(String namespaceURI,
                 String sName, // simple name
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
@@ -1020,21 +919,6 @@ public class GanttOptions {
         bExport3DBorders = borders3d;
     }
 
-    public int[] getIconList() {
-        return iconListAsIntArray;
-    }
-
-    public int[] getDeletedIconList() {
-        return deletedIconListAsIntArray;
-    }
-
-    public void setIconList(String list) {
-        iconListAsString = list;
-    }
-
-    public void setDeletedIconList(String list) {
-        deletedIconListAsString = list;
-    }
 
     /**
      * @return the button show attribute must be GanttOptions.ICONS or
@@ -1197,62 +1081,6 @@ public class GanttOptions {
         FTPUser = pvString;
     }
 
-    /**
-     * @return the default string to configure the iconList
-     */
-    public String getDefaultIconListAsString() {
-        // String iconAsString = "1,3,4,5,6,7,8,0,21,22,23,24,25,0,28,0,29";
-        //
-        // if (!isOnlyViewer)
-        // iconAsString =
-        // "2,3,4,5,6,7,8,0,9,10,11,0,12,13,14,15,16,17,18,19,20,0,21,22,23,24,25,0,26,27,0,30,31,0,28";
-        //
-        // return iconAsString;
-        return getStringList(getDefaultIconListIntArray());
-    }
-
-    private static String getStringList(int[] tabInt) {
-        String res = "";
-        int i = 0;
-        for (i = 0; i < tabInt.length - 1; i++) {
-            res += tabInt[i] + ",";
-        }
-        res += tabInt[i];
-        return res;
-    }
-
-    /**
-     * @return the default integer array to configure the iconList
-     */
-    public int[] getDefaultIconListIntArray() {
-
-        if (!isOnlyViewer)
-            return new int[] { SAVE,
-                    SEPARATOR, CUT, COPY, PASTE, SEPARATOR, UNDO, REDO,
-                    SEPARATOR, NEWTASK, DELETE, PROPERTIES, UNLINK, LINK, IND,
-                    UNIND, UP, DOWN, SEPARATOR, PREV, CENTER, NEXT, ZOOMOUT,
-                    ZOOMIN, SEPARATOR, SAVECURRENT, COMPAREPREV, SEPARATOR,
-                    CRITICAL };
-
-        /* else */
-        return new int[] { EXIT, OPEN, SAVE, SAVEAS, IMPORT, EXPORT, PRINT,
-                PREVIEWPRINT, SEPARATOR, PREV, CENTER, NEXT, ZOOMOUT, ZOOMIN,
-                SEPARATOR, CRITICAL, SEPARATOR, ABOUT };
-    }
-
-    /**
-     * @return the default string to configure the iconList
-     */
-    public String getDefaultDeletedIconListAsString() {
-        return "";
-    }
-
-    /**
-     * @return the default integer array to configure the iconList
-     */
-    public int[] getDefaultDeletedIconListIntArray() {
-        return null;
-    }
 
     public void addOptionGroups(GPOptionGroup[] optionGroups) {
         for (int i=0; i<optionGroups.length; i++) {
