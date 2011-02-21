@@ -54,14 +54,12 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -80,7 +78,6 @@ import net.sourceforge.ganttproject.action.NewTaskAction;
 import net.sourceforge.ganttproject.action.RedoAction;
 import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
-import net.sourceforge.ganttproject.action.RolloverAction;
 import net.sourceforge.ganttproject.action.SettingsDialogAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.UndoAction;
@@ -116,6 +113,7 @@ import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -207,8 +205,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private JMenuBar bar;
 
-    // ! Toolbar of ui
-    private GPToolBar toolBar;
+    private JToolBar toolBar;
 
     private TaskPropertiesAction myTaskPropertiesAction;
 
@@ -218,19 +215,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private NewArtefactAction myNewArtefactAction;
 
-    // private CopyAction myCopyAction;
-    //
-    // private PasteAction myPasteAction;
-    //
-    // private CutAction myCutAction;
-    //
     private RefreshViewAction myRefreshAction;
 
     private Action myDeleteHumanAction;
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
-
-    private List<Action> myRolloverActions = new ArrayList<Action>();
 
     private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
@@ -358,7 +347,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         System.err.println("3. creating menu...");
         myRefreshAction = new RefreshViewAction(getUIFacade(), options);
 
-        myRolloverActions.add(myRefreshAction);
         getTree().setActions();
 
         // Create the menus
@@ -523,8 +511,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // Add tab pane on the content pane
         getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
-        toolBar = new GPToolBar("GanttProject", options.getToolBarPosition(),
-                getGanttOptions());
+        toolBar = new JToolBar();
         toolBar.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent arg0) {
@@ -964,7 +951,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     }
                 }, options.getIconSize());
         bNewTask = new TestGanttRolloverButton(myNewArtefactAction);
-        myRolloverActions.add(myNewArtefactAction);
         bDelete = new TestGanttRolloverButton(
                 new ImageIcon(getClass().getResource(
                         "/icons/delete_" + options.getIconSize() + ".gif")));
@@ -1020,12 +1006,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getViewState());
         Action undo = new UndoAction(getUndoManager(), options.getIconSize(),
                 this);
-        myRolloverActions.add(undo);
         bUndo = new TestGanttRolloverButton(undo);
 
         Action redo = new RedoAction(getUndoManager(), options.getIconSize(),
                 this);
-        myRolloverActions.add(redo);
         bRedo = new TestGanttRolloverButton(redo);
 
         toolBar.add(bSave);
@@ -1431,8 +1415,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private boolean tryImportDocument(Document document) {
         boolean success = false;
-        Importer[] importers = (Importer[]) Mediator.getPluginManager()
-                .getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
+        Importer[] importers = (Importer[]) PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
         for (int i = 0; i < importers.length; i++) {
             Importer nextImporter = importers[i];
             if (Pattern.matches(".*(" + nextImporter.getFileNamePattern()
