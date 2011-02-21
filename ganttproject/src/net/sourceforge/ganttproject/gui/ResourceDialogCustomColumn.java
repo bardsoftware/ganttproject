@@ -32,9 +32,9 @@ import net.sourceforge.ganttproject.resource.ResourceColumn;
 
 /**
  * Dialog opened to create a new Resource CustomColumn.
- * 
+ *
  * @author bbaranne Mar 2, 2005 (modified Nov 2005, nokiljevic)
- * 
+ *
  */
 public class ResourceDialogCustomColumn  {
     private static GanttLanguage language = GanttLanguage.getInstance();
@@ -55,7 +55,7 @@ public class ResourceDialogCustomColumn  {
      * Created CustomColumn.
      */
     private ResourceColumn resourceColumn = null;
-    
+
     private JPanel panelDefaultValue = null;
 
     private CardLayout cardLayoutDefaultValue = null;
@@ -88,7 +88,7 @@ public class ResourceDialogCustomColumn  {
             commit();
             lock();
         }
-        
+
     };
     private StringOption myName = new DefaultStringOption("taskProperties.customColumn.name") {
         public void setValue(String value) {
@@ -98,7 +98,7 @@ public class ResourceDialogCustomColumn  {
         }
     };
 
-    private EnumerationOption myType = new DefaultEnumerationOption("taskProperties.customColumn.type", availableTypes) {
+    private EnumerationOption myType = new DefaultEnumerationOption<Object>("taskProperties.customColumn.type", availableTypes) {
         public void setValue(String value) {
             super.setValue(value);
             commit();
@@ -126,7 +126,7 @@ public class ResourceDialogCustomColumn  {
             return getSelectedType(value);
         }
     };
-    
+
     private int getSelectedType(String typeName) {
         for (int i=0; i<availableTypes.length; i++) {
             if (availableTypes[i].equals(typeName)) {
@@ -134,16 +134,16 @@ public class ResourceDialogCustomColumn  {
             }
         }
         return -1;
-        
+
     }
     private final UIFacade myUIFacade;
     private final GPOption[] myOptions = new GPOption[] {myName, myType};
     private final GPOptionGroup myOptionGroup = new GPOptionGroup("taskProperties.customColumn", myOptions);
 
-	private boolean isOk = false;
-    
+    private boolean isOk = false;
+
     public ResourceDialogCustomColumn(UIFacade uiFacade, ResourceColumn col) {
-    	myUIFacade = uiFacade;
+        myUIFacade = uiFacade;
         resourceColumn = col;
         myOptionGroup.lock();
         myDate.lock();
@@ -158,7 +158,7 @@ public class ResourceDialogCustomColumn  {
                         myOptionGroup.commit();
                         myDate.commit();
                         ResourceDialogCustomColumn.this.ok();
-                    }}, 
+                    }},
                 new CancelAction() {
                     public void actionPerformed(ActionEvent e) {
                         myOptionGroup.rollback();
@@ -166,7 +166,7 @@ public class ResourceDialogCustomColumn  {
                     }
         }});
     }
-    
+
     private UIFacade getUIFacade() {
         return myUIFacade;
     }
@@ -236,7 +236,7 @@ public class ResourceDialogCustomColumn  {
             panelDefaultValue.add(cardDouble, panelDouble);
             panelDefaultValue.add(cardDate, panelDate);
         }
-        
+
         Component optionsComponent = builder.buildPlanePage(new GPOptionGroup[] {myOptionGroup});
         result.setLayout(new BorderLayout());
         result.add(optionsComponent, BorderLayout.CENTER);
@@ -275,9 +275,9 @@ public class ResourceDialogCustomColumn  {
             case 3:
                 colClass = GregorianCalendar.class;
                 if (myDate.getValue() == null)
-                	defValue = new  GanttCalendar();
+                    defValue = new  GanttCalendar();
                 else
-                	defValue = new GanttCalendar(myDate.getValue());
+                    defValue = new GanttCalendar(myDate.getValue());
                 break;
             case 4:
                 colClass = Boolean.class;
@@ -289,9 +289,9 @@ public class ResourceDialogCustomColumn  {
             }
 
             if (resourceColumn != null) {
-            	resourceColumn.setTitle(colName);
-            	resourceColumn.setType(colClass);
-            	resourceColumn.setDefaultVal(defValue);
+                resourceColumn.setTitle(colName);
+                resourceColumn.setType(colClass);
+                resourceColumn.setDefaultVal(defValue);
             }
             isOk = true;
         }/* else
@@ -301,13 +301,13 @@ public class ResourceDialogCustomColumn  {
         }
         */
     }
-    
+
     public ResourceColumn getColumn(){
-    	return this.resourceColumn;
+        return this.resourceColumn;
     }
 
-	public boolean isOk() {
-		return isOk;
-	}
-    
+    public boolean isOk() {
+        return isOk;
+    }
+
 }

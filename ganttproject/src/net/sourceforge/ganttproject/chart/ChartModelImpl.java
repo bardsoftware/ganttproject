@@ -137,7 +137,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
 
 
         myTaskDefaultColorOption = new NewTaskColorOption();
-        myDependencyHardnessOption = new DefaultEnumerationOption(
+        myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
             "dependencyDefaultHardness", new String[] {"Strong", "Rubber"}) {
             {
                 setValue("Strong", true);
