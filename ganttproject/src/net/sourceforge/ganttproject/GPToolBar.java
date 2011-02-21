@@ -29,7 +29,7 @@ public class GPToolBar extends JToolBar {
         super(title, toolBarPosition);
         setBorderPainted(true);
         setRollover(true);
-        setFloatable(true);        
+        setFloatable(true);
         this.options = options;
     }
 
@@ -60,14 +60,4 @@ public class GPToolBar extends JToolBar {
         }
         invalidate();
     }
-
-    void updateButtonsLook() {
-        for (int i=0; i<myButtons.size(); i++) {
-            TestGanttRolloverButton nextButton = (TestGanttRolloverButton) myButtons.get(i);
-            nextButton.setIconHidden(options.getButtonShow() == GanttOptions.TEXT);
-            nextButton.setTextHidden(options.getButtonShow() == GanttOptions.ICONS);
-        }
-        invalidate();
-    }
-
 }
