@@ -81,10 +81,10 @@ public class GanttDialogCustomColumn  {
         }
     };
 
-    private EnumerationOption myType = new DefaultEnumerationOption("taskProperties.customColumn.type", CustomPropertyClass.values()) {
+    private EnumerationOption myType = new DefaultEnumerationOption<CustomPropertyClass>(
+            "taskProperties.customColumn.type", CustomPropertyClass.values()) {
         public void setValue(String value) {
             super.setValue(value);
-            commit();
             int selectedIndex = getSelectedIndex(value);
             switch (selectedIndex) {
             case 0:
@@ -103,7 +103,6 @@ public class GanttDialogCustomColumn  {
                 cardLayoutDefaultValue.show(panelDefaultValue, CustomPropertyClass.BOOLEAN.getJavaClass().getName());
                 break;
             }
-            lock();
         }
         private int getSelectedIndex(String value) {
             return getSelectedType(value);
