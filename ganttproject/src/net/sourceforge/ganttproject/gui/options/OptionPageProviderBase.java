@@ -6,6 +6,7 @@ import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -61,15 +62,12 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
     }
 
     protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        panel.add(new TopPanel(title, description), BorderLayout.NORTH);
+        JPanel result = new JPanel(new BorderLayout());
+        result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        result.add(new TopPanel(title, description), BorderLayout.NORTH);
         contentComponent.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createEmptyBorder(5, 0, 0, 0), contentComponent.getBorder()));
-        panel.add(contentComponent, BorderLayout.CENTER);
-
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(panel, BorderLayout.NORTH);
+        result.add(new JScrollPane(contentComponent), BorderLayout.CENTER);
         return result;
     }
 

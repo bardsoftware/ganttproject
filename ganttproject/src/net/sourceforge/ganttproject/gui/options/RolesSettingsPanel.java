@@ -41,7 +41,9 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
 
         myRolesModel = new RolesTableModel(project.getRoleManager());
         rolesTable = new JTable(myRolesModel);
-        rolesTable.setPreferredScrollableViewportSize(new Dimension(400, 350));
+        // Set PreferredScrollableViewportSize to 0, so the (parent) dialog scrollbars are never visible/used.
+        // (this prevents having two scrollbars next to each other)
+        rolesTable.setPreferredScrollableViewportSize(new Dimension(0, 0));
         rolesTable.setRowHeight(23);
         rolesTable.getColumnModel().getColumn(0).setPreferredWidth(30);
         rolesTable.getColumnModel().getColumn(1).setPreferredWidth(370);
