@@ -1,10 +1,7 @@
 <project name="GanttProject builder" default="build">
 	<property file="build.public.properties"/>
     <property file="build.private.properties"/>
-	<!--
-	<property name="install.dir" value="${basedir}/dist-bin/"/>
-	<property name="webstart.dir" value="${basedir}/dist-webstart/"/>
-	-->
+
 	<target name="build_net.sourceforge.ganttproject">
 		<ant antfile="../ganttproject/build.xml" target="install" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
@@ -45,9 +42,11 @@
 	<target name="copy-launchers">
         <copy todir="${install.dir}">
             <fileset dir=".">
-                <include name="ganttproject.sh"/>
+                <include name="ganttproject"/>
+            	<include name="install-linux.sh"/>
                 <include name="ganttproject.command"/>
                 <include name="ganttproject.bat"/>
+            	<include name="ganttproject_32_2.ico"/>
                 <include name="GanttProject.app/**"/>
                 <include name="HouseBuildingSample.gan"/>
             </fileset>
@@ -88,14 +87,16 @@
 				<include name="build.public.properties"/>
 				<include name="build.private.properties"/>
 				<include name="ganttproject.bat"/>
-				<include name="ganttproject.sh"/>
+				<include name="ganttproject"/>
+				<include name="install-linux.sh"/>
+				<include name="ganttproject.desktop"/>
+				<include name="ganttproject_32_2.ico"/>
 				<include name="ganttproject.command"/>
 				<include name="ganttproject-eclipsito-config.xml"/>
 				<include name="ganttproject-webstart-config.xml"/>
 				<include name="ganttproject.jnlp"/>
 				<include name="HouseBuildingSample.gan"/>
 				<include name=".project"/>
-				
 			</fileset>
 		</copy>
 	</target>

@@ -34,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
@@ -77,6 +78,10 @@ public class OptionsPageBuilder {
         myi18n = i18n;
     }
 
+    public I18N getI18N() {
+        return myi18n;
+    }
+
     public void setOptionKeyPrefix(String optionKeyPrefix) {
         myi18n.myOptionKeyPrefix = optionKeyPrefix;
     }
@@ -88,7 +93,7 @@ public class OptionsPageBuilder {
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         result.add(topPanel, BorderLayout.NORTH);
         JComponent planePage = buildPlanePage(optionGroups);
-        result.add(planePage, BorderLayout.CENTER);
+        result.add(new JScrollPane(planePage), BorderLayout.CENTER);
         return result;
     }
 
@@ -98,7 +103,7 @@ public class OptionsPageBuilder {
             optionsPanel.add(createGroupComponent(optionGroups[i]));
         }
         SpringUtilities.makeCompactGrid(optionsPanel, optionGroups.length, 1,
-                0, 0, 5, 5);
+                0, 0, 5, 15);
         JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.add(optionsPanel, BorderLayout.NORTH);
         resultPanel.addFocusListener(new FocusAdapter() {
@@ -110,10 +115,16 @@ public class OptionsPageBuilder {
         return resultPanel;
     }
 
+    public JComponent createLabeledComponent(GPOption option) {
+        GPOptionGroup fake = new GPOptionGroup("", new GPOption[] {option});
+        fake.setTitled(false);
+        return createGroupComponent(fake);
+    }
+
     public JComponent createGroupComponent(GPOptionGroup group) {
         JPanel optionsPanel = new JPanel(new SpringLayout());
         if (group.isTitled()) {
-        	UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
+            UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
         }
         GPOption[] options = group.getOptions();
         for (int i = 0; i < options.length; i++) {
@@ -146,9 +157,9 @@ public class OptionsPageBuilder {
     }
 
     private boolean needsLabel(GPOptionGroup group, GPOption nextOption) {
-        if (nextOption instanceof BooleanOption) {
-            return !isCheckboxOption(group, nextOption);
-        }
+//        if (nextOption instanceof BooleanOption) {
+//            return !isCheckboxOption(group, nextOption);
+//        }
         return true;
     }
 
@@ -250,7 +261,7 @@ public class OptionsPageBuilder {
             return createRadioButtonBooleanComponent(group, option);
         }
         JCheckBox result = new JCheckBox(new BooleanOptionAction(option));
-        result.setText(myi18n.getOptionLabel(group, option));
+        //result.setText(myi18n.getOptionLabel(group, option));
         result.setHorizontalAlignment(JCheckBox.LEFT);
         result.setHorizontalTextPosition(SwingConstants.TRAILING);
         result.setSelected(option.isChecked());
@@ -342,7 +353,7 @@ public class OptionsPageBuilder {
         return colorButton;
     }
 
-    private Component createDateComponent(final DateOption option) {
+    public JComponent createDateComponent(final DateOption option) {
         final JXDatePicker result = new JXDatePicker();
         result.setDate(option.getValue());
         class OptionValueUpdater implements ActionListener, PropertyChangeListener {
@@ -390,8 +401,7 @@ public class OptionsPageBuilder {
         }
 
         public String getPageTitle(String pageID) {
-            return GanttLanguage.getInstance().getText(
-                    myOptionPageKeyPrefix + pageID + ".title");
+            return getValue(getCanonicalOptionPageTitleKey(pageID));
         }
 
         public String getPageDescription(String pageID) {
@@ -407,6 +417,16 @@ public class OptionsPageBuilder {
         public String getOptionLabel(GPOptionGroup group, GPOption option) {
             String canonicalKey = getCanonicalOptionLabelKey(option);
             return getValue(group, canonicalKey);
+        }
+
+        public final String getCanonicalOptionPageLabelKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".label";
+        }
+        public final String getCanonicalOptionPageTitleKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".title";
+        }
+        public String getCanonicalOptionPageDescriptionKey(String pageID) {
+            return myOptionPageKeyPrefix + pageID + ".description";
         }
 
         public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {

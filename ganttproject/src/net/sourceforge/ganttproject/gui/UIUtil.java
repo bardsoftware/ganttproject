@@ -30,6 +30,16 @@ public abstract class UIUtil {
         }
     }
     
+    public static void setBackgroundTree(JComponent root, Color background) {
+        root.setBackground(background);
+        Component[] components = root.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            if (components[i] instanceof JComponent) {
+                setBackgroundTree((JComponent) components[i], background);
+            }
+        }
+    }
+
     public static void createTitle(JComponent component, String title) {
         Border lineBorder = BorderFactory.createMatteBorder(1,0,0,0,Color.BLACK);
         component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));

@@ -43,14 +43,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class ExporterToMsProjectFile implements Exporter {
 
     private static final String[] FILE_FORMAT_IDS = new String[] {
-            "impex.msproject.fileformat.mpx", 
+            "impex.msproject.fileformat.mpx",
             "impex.msproject.fileformat.mspdi" };
 
     private static final String[] FILE_EXTENSIONS = new String[] { "mpx","xml" };
 
     private String myFileFormat = FILE_FORMAT_IDS[0];
 
-    private EnumerationOption myFileFormatOption = new DefaultEnumerationOption("impex.msproject.fileformat", FILE_FORMAT_IDS) {
+    private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat", FILE_FORMAT_IDS) {
         public void commit() {
             super.commit();
             ExporterToMsProjectFile.this.myFileFormat = getValue();
@@ -58,12 +58,12 @@ public class ExporterToMsProjectFile implements Exporter {
     };
 
     private LocaleOption myLanguageOption = new LocaleOption();
-    
+
     private GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject",
             new GPOption[] { myFileFormatOption });
 
     private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
-    
+
     private IGanttProject myProject;
 
     public ExporterToMsProjectFile() {
@@ -84,8 +84,8 @@ public class ExporterToMsProjectFile implements Exporter {
 
     public GPOptionGroup[] getSecondaryOptions() {
         return FILE_FORMAT_IDS[0].equals(myFileFormat) ? new GPOptionGroup[] {myMPXOptions} : null;
-    }    
-    
+    }
+
     public Component getCustomOptionsUI() {
         return null;
     }
@@ -101,7 +101,7 @@ public class ExporterToMsProjectFile implements Exporter {
         myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
         myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
     }
-    
+
     public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
         ProjectFile outProject = new ProjectFileExporter(myProject).run();
         ProjectWriter writer = createProjectWriter();
@@ -111,19 +111,19 @@ public class ExporterToMsProjectFile implements Exporter {
 
     private ProjectWriter createProjectWriter() {
         if (FILE_FORMAT_IDS[0].equals(myFileFormat)) {
-        	MPXWriter result = new MPXWriter();
+            MPXWriter result = new MPXWriter();
             if (myLanguageOption.getSelectedLocale() != null) {
-            	result.setLocale(myLanguageOption.getSelectedLocale());
+                result.setLocale(myLanguageOption.getSelectedLocale());
             }
             return result;
         }
         if (FILE_FORMAT_IDS[1].equals(myFileFormat)) {
-        	return new MSPDIWriter();
+            return new MSPDIWriter();
         }
         assert false : "Should not be here";
         return null;
     }
-    
+
     public String proposeFileExtension() {
         return getSelectedFormatExtension();
     }
@@ -138,7 +138,7 @@ public class ExporterToMsProjectFile implements Exporter {
                 + " has not been found in known formats:"
                 + Arrays.asList(FILE_FORMAT_IDS));
     }
-    
+
     public String[] getFileExtensions() {
         return FILE_EXTENSIONS;
     }

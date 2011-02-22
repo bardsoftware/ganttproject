@@ -54,27 +54,22 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.NewArtefactAction;
@@ -83,13 +78,9 @@ import net.sourceforge.ganttproject.action.NewTaskAction;
 import net.sourceforge.ganttproject.action.RedoAction;
 import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
-import net.sourceforge.ganttproject.action.RolloverAction;
-import net.sourceforge.ganttproject.action.ScrollGanttChartLeftAction;
-import net.sourceforge.ganttproject.action.ScrollGanttChartRightAction;
+import net.sourceforge.ganttproject.action.SettingsDialogAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.UndoAction;
-import net.sourceforge.ganttproject.action.ZoomInAction;
-import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -105,16 +96,12 @@ import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
 import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
@@ -126,6 +113,7 @@ import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -141,7 +129,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -175,7 +162,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // public JMenu mView;
 
     /** Menuitem */
-    public JMenuItem miPreview,/* miCut, miCopy, miPaste, */miOptions,
+    public JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
             miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
             miPrjCal, miWebPage, miAbout, miRefresh, miChartOptions;
 
@@ -186,22 +173,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
     /** Toolbar button */
-    private TestGanttRolloverButton bNew, bOpen, bSave, bExport, bImport,
-            bPrint, bPreviewPrint, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties,/* bUnlink, bLink, bUp, bDown, bPrev,
-            bScrollCenter, bNext,  bZoomFit, */bAbout;
-
-    private TestGanttRolloverButton bShowHiddens;
-
-    private JPopupMenu menu = new JPopupMenu();;
+    private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
+            bProperties;
 
     private TestGanttRolloverButton bUndo, bRedo;
-
-    private TestGanttRolloverButton bCritical;
-
-    private TestGanttRolloverButton bSaveCurrent, bComparePrev;
-
-    private TestGanttRolloverButton bRefresh;
 
     /** The project filename */
     public Document projectDocument = null;
@@ -211,9 +186,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Boolean to know if the file has been modify */
     public boolean askForSave = false;
-
-    /** The info for the look'n'feel */
-    public GanttLookAndFeelInfo lookAndFeel;
 
     /** Is the application only for viewer. */
     public boolean isOnlyViewer;
@@ -233,14 +205,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private JMenuBar bar;
 
-    // ! Toolbar of ui
-    private GPToolBar toolBar;
-
-    private DefaultListModel iconList = new DefaultListModel();
-
-    private DefaultListModel deletedIconList = new DefaultListModel();
-
-    // list.setName("list");
+    private JToolBar toolBar;
 
     private TaskPropertiesAction myTaskPropertiesAction;
 
@@ -250,35 +215,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private NewArtefactAction myNewArtefactAction;
 
-    // private CopyAction myCopyAction;
-    //
-    // private PasteAction myPasteAction;
-    //
-    // private CutAction myCutAction;
-    //
     private RefreshViewAction myRefreshAction;
 
     private Action myDeleteHumanAction;
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
 
-    private List<Action> myRolloverActions = new ArrayList<Action>();
-
     private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
     private MouseListener myStopEditingMouseListener = null;
 
     private DelayManager myDelayManager;
-
-    // private boolean bQuickSave;//to know if gantt has to quicksave the
-    // project
-    // private int currentQuickSave;
-    // private ArrayList aQuick;//List of all the quicksaves
-    // private int lastQuickSave;
-    // private int firstQuickSave;
-    // private int undoNumber;
-
-    // private JSplitPane mySplitPane;
 
     private ProjectMenu myProjectMenu;
 
@@ -304,12 +251,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // myApplicationConfig.register(options);
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         if (options.load()) {
-            language = options.getLanguage();
             GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
 
-            lookAndFeel = options.getLnfInfos();
             HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
         }
 
@@ -336,7 +280,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             setTitle("GanttViewer");
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
-        lookAndFeel = GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo();
         options = new GanttOptions(getRoleManager(), getDocumentManager(),
                 isOnlyViewer);
         myUIConfiguration = options.getUIConfiguration();
@@ -384,13 +327,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getProject().addProjectEventListener(myFacadeInvalidator);
         area = new GanttGraphicArea(this, getTree(), getTaskManager(),
                 getZoomManager(), getUndoManager());
-        options
-                .addOptionGroups(getUIFacade().getGanttChart()
-                        .getOptionGroups());
-        options.addOptionGroups(getUIFacade().getResourceChart()
-                .getOptionGroups());
-        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade()
-                .getOptionGroup() });
+        options.addOptionGroups(new GPOptionGroup[] {getUIFacade().getOptions()});
+        options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
+        options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
+        options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
         options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
         myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
         area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
@@ -403,37 +343,16 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         getZoomManager().addZoomListener(area.getZoomListener());
 
-        /*
-         * myCopyAction = new CopyAction((GanttTree2) getTree(), options
-         * .getIconSize());
-         */
-
-        // myCopyAction = new CopyAction(this, options.getIconSize());
-        //
-        // /*myPasteAction = new PasteAction((GanttTree2) getTree(), options
-        // .getIconSize());*/
-        //
-        // myPasteAction = new PasteAction(this, options.getIconSize());
-        //
-        // /*myCutAction = new CutAction((GanttTree2) getTree(), options
-        // .getIconSize());*/
-        //
-        // myCutAction = new CutAction(this, options.getIconSize());
 
         System.err.println("3. creating menu...");
         myRefreshAction = new RefreshViewAction(getUIFacade(), options);
 
-        // myRolloverActions.add(myCopyAction);
-        // myRolloverActions.add(myPasteAction);
-        // myRolloverActions.add(myCutAction);
-        myRolloverActions.add(myRefreshAction);
         getTree().setActions();
 
         // Create the menus
 
         bar = new JMenuBar();
-        if (!isOnlyViewer)
-            setJMenuBar(bar);
+        setJMenuBar(bar);
         // Allocation of the menus
         mProject = new JMenu();
         mMRU = new JMenu();
@@ -467,14 +386,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // miPaste = new JMenuItem(myPasteAction);
         mEdit.add(getViewManager().getPasteAction());
         mEdit.addSeparator();
-        miOptions = createNewItem("/icons/settings_16.gif");
-        mEdit.add(miOptions);
-        myNewTaskAction = new NewTaskAction((IGanttProject) this);
+        mEdit.add(new SettingsDialogAction(getProject(), getUIFacade()));
+        myNewTaskAction = new NewTaskAction(getProject());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
-        myTaskPropertiesAction = new TaskPropertiesAction(getProject(),
-                Mediator.getTaskSelectionManager(), getUIFacade());
+        myTaskPropertiesAction = new TaskPropertiesAction(getProject(), getTaskSelectionManager(), getUIFacade());
         mTask.add(myTaskPropertiesAction);
         getTree().setTaskPropertiesAction(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
@@ -522,8 +439,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // to create a default project
         // createDefaultTree(tree);
         System.err.println("4. creating views...");
-        myGanttChartTabContent = new GanttChartTabContentPanel(getProject(),
-                getUIFacade(), tree, area);
+        myGanttChartTabContent = new GanttChartTabContentPanel(
+            getProject(), getUIFacade(), getTaskTree(), area, getUIConfiguration());
         GPView ganttView = getViewManager().createView(myGanttChartTabContent,
                 new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
         ganttView.setVisible(true);
@@ -541,13 +458,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         getTabs().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                bCritical
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-                bComparePrev
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-                bSaveCurrent
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX);
-
                 bNewTask
                         .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
@@ -601,8 +511,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // Add tab pane on the content pane
         getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
-        toolBar = new GPToolBar("GanttProject", options.getToolBarPosition(),
-                getOptions());
+        toolBar = new JToolBar();
         toolBar.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent arg0) {
@@ -664,8 +573,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         // changeUndoNumber ();
         System.err.println("7. changing look'n'feel ...");
-        changeLookAndFeel(lookAndFeel);
-        changeLookAndFeel(lookAndFeel); // Twice call for update font on menu
+        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         if (options.isLoaded()) {
             setBounds(options.getX(), options.getY(), options.getWidth(),
                     options.getHeight());
@@ -730,6 +638,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mServer.setIcon(new ImageIcon(getClass().getResource(
                 "/icons/server_16.gif")));
         myProjectMenu = new ProjectMenu(this);
+        mProject.add(myProjectMenu.getProjectSettingsAction());
         mProject.add(myProjectMenu.getNewProjectAction());
         mProject.add(myProjectMenu.getOpenProjectAction());
         mProject.add(mMRU);
@@ -794,15 +703,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** @return the options of ganttproject. */
-    public GanttOptions getOptions() {
+    public GanttOptions getGanttOptions() {
         return options;
     }
 
     public void restoreOptions() {
         options.initDefault();
-        iconList = initIconList();
-        deletedIconList = initDeletedIconList();
-        addButtons();
         myUIConfiguration = options.getUIConfiguration();
         GanttGraphicArea.taskDefaultColor = new Color(140, 182, 206);
         area.repaint();
@@ -825,12 +731,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MENU_MASK));
         // --REDO----------------------------------
         miRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MENU_MASK));
-        if (!isOnlyViewer) {
-            miOptions.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
-                    MENU_MASK));
-            miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
-                    MENU_MASK));
-        }
+        miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
+                MENU_MASK));
     }
 
     /** Create an item with a label */
@@ -869,39 +771,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         CustomColumnsStorage.changeLanguage(language);
 
         applyComponentOrientation(language.getComponentOrientation());
-
-        // change the value of the separators in iconList
-        for (int i = 0; i < iconList.size(); i++)
-            if (iconList.getElementAt(i).getClass() != TestGanttRolloverButton.class) {
-                iconList.removeElementAt(i);
-                iconList.add(i, GPToolBar.SEPARATOR_OBJECT);
-            }
-    }
-
-    /** Change the style of the application */
-    public void changeLookAndFeel(GanttLookAndFeelInfo lookAndFeel) {
-        try {
-            UIManager.setLookAndFeel(lookAndFeel.getClassName());
-            SwingUtilities.updateComponentTreeUI(this);
-            this.lookAndFeel = lookAndFeel;
-        } catch (Exception e) {
-            GanttLookAndFeelInfo info = GanttLookAndFeels
-                    .getGanttLookAndFeels().getDefaultInfo();
-            System.out.println("Can't find the LookAndFeel\n"
-                    + lookAndFeel.getClassName() + "\n" + lookAndFeel.getName()
-                    + "\nSetting the default Look'n'Feel" + info.getName());
-            try {
-                UIManager.setLookAndFeel(info.getClassName());
-                SwingUtilities.updateComponentTreeUI(this);
-                this.lookAndFeel = info;
-            } catch (Exception ex) {
-            }
-        }
-        // MetalLookAndFeel.setCurrentTheme(new GanttMetalTheme());
-        // must force to do that instead of the task on tree are not in
-        // continuity of the calendar
-        if (tree.getTable().getRowHeight() <= 22)
-            tree.getTable().setRowHeight(20);
     }
 
     /**
@@ -977,7 +846,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         miUndo = changeMenuLabel(miUndo, language.getText("undo"));
         miRedo = changeMenuLabel(miRedo, language.getText("redo"));
-        miOptions = changeMenuLabel(miOptions, language.getText("settings"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language
@@ -1000,12 +868,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getText("chartOptions"));
         miRefresh = changeMenuLabel(miRefresh, language.getText("refresh"));
 
-        bPreviewPrint.setToolTipText(getToolTip(correctLabel(language
-                .getText("preview"))));
-        bExport.setToolTipText(getToolTip(correctLabel(language
-                .getText("export"))));
-        bImport.setToolTipText(getToolTip(correctLabel(language
-                .getText("import"))));
         bNewTask.setToolTipText(getToolTip(correctLabel(language
                 .getText("createTask"))));
         // bCut.setToolTipText(getToolTip(correctLabel(language.getText("cut"))));
@@ -1019,28 +881,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 .getText("deleteTask"))));
         bProperties.setToolTipText(getToolTip(correctLabel(language
                 .getText("propertiesTask"))));
-        bAbout
-                .setToolTipText(getToolTip(correctLabel(language
-                        .getText("about"))));
         bUndo
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("undo"))));
         bRedo
                 .setToolTipText(getToolTip(correctLabel(language
                         .getText("redo"))));
-        // bZoomFit.setToolTipText(getToolTip(language.zoomFit()));
-
-        bCritical.setToolTipText(getToolTip(language.getText("criticalPath")));
-        bComparePrev
-                .setToolTipText(getToolTip(language.getText("comparePrev")));
-        bSaveCurrent
-                .setToolTipText(getToolTip(language.getText("saveCurrent")));
-        bRefresh.setToolTipText(getToolTip(language.getText("refresh")));
-        bShowHiddens
-                .setToolTipText(getToolTip(language.getText("showHiddens")));
         getTabs().setTitleAt(1, correctLabel(language.getText("human")));
-        setButtonText();
-        toolBar.updateButtonsLook();
     }
 
     /** Invoked when a key has been pressed. */
@@ -1085,111 +932,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
     }
 
-    /** Set the text on the buttons. */
-    public void setButtonText() {
-        if (options.getButtonShow() != GanttOptions.ICONS) {
-            bImport.setText(correctLabel(language.getText("import")));
-            bExport.setText(correctLabel(language.getText("export")));
-            bPreviewPrint.setText(correctLabel(language.getText("preview")));
-
-            bNewTask.setText(correctLabel(language.getText(getTabs()
-                    .getSelectedIndex() == UIFacade.GANTT_INDEX ? "createTask"
-                    : "newHuman")));
-            bDelete.setText(correctLabel(language.getText(getTabs()
-                    .getSelectedIndex() == UIFacade.GANTT_INDEX ? "deleteTask"
-                    : "deleteHuman")));
-            bProperties
-                    .setText(correctLabel(language
-                            .getText(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? "propertiesTask"
-                                    : "propertiesHuman")));
-
-            bAbout.setText(correctLabel(language.getText("about")));
-            bUndo.setText(correctLabel(language.getText("undo")));
-            bRedo.setText(correctLabel(language.getText("redo")));
-            bCritical.setText(language.getText("criticalPath"));
-            bComparePrev.setText(correctLabel(language.getText("comparePrev")));
-            bSaveCurrent.setText(correctLabel(language.getText("saveCurrent")));
-            bRefresh.setText(correctLabel(language.getText("refresh")));
-            // bShowHiddens.setText
-            // (correctLabel(language.getText("showHiddens")));
-        }
-    }
-
-    /** Apply Buttons options. */
-    public void applyButtonOptions() {
-        setButtonText();
-        if (options.getButtonShow() == GanttOptions.TEXT) {
-            for (int i = 0; i < myRolloverActions.size(); i++) {
-                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-                next.isIconVisible(false);
-                next.setIconSize(options.getIconSize());
-            }
-        } else {
-            if (!myUIConfiguration.isCriticalPathOn()) {
-                bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
-                        "/icons/criticalPathOff_" + options.getIconSize()
-                                + ".gif")));
-            } else {
-                bCritical.setDefaultIcon(new ImageIcon(getClass().getResource(
-                        "/icons/criticalPathOn_" + options.getIconSize()
-                                + ".gif")));
-            }
-            for (int i = 0; i < myRolloverActions.size(); i++) {
-                RolloverAction next = (RolloverAction) myRolloverActions.get(i);
-                next.isIconVisible(true);
-                next.setIconSize(options.getIconSize());
-            }
-        }
-        toolBar.updateButtonsLook();
-    }
 
     /** Create the button on toolbar */
-    public void addButtons(JToolBar toolBar) {
-        // toolBar.addSeparator(new Dimension(20,0));
-
-        bNew = new TestGanttRolloverButton(myProjectMenu.getNewProjectAction());
-        bOpen = new TestGanttRolloverButton(myProjectMenu
-                .getOpenProjectAction());
-        bSave = new TestGanttRolloverButton(myProjectMenu
-                .getSaveProjectAction());
-        bImport = new TestGanttRolloverButton(myProjectMenu
-                .getImportFileAction());
-        bExport = new TestGanttRolloverButton(myProjectMenu
-                .getExportFileAction());
-
-        bPrint = new TestGanttRolloverButton(myProjectMenu.getPrintAction());
-        bPreviewPrint = new TestGanttRolloverButton(new ImageIcon(
-                getClass().getResource(
-                        "/icons/preview_" + options.getIconSize() + ".gif")));
-        bPreviewPrint.addActionListener(this);
-        // toolBar.add(bPrint);
-
-        // toolBar.addSeparator(new Dimension(20,0));
-
-        bComparePrev = new TestGanttRolloverButton(
-                new ImageIcon(getClass().getResource(
-                        "/icons/comparePrev_" + options.getIconSize() + ".gif")));
-        bComparePrev.setEnabled(false);
-        bComparePrev.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                compareToPreviousState();
-                if (myPreviousStates.size() == 0)
-                    bComparePrev.setEnabled(false);
-            }
-        });
-
-        bSaveCurrent = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource(
-                        "/icons/saveCurrentAsPrev_" + options.getIconSize()
-                                + ".gif")));
-        bSaveCurrent.setEnabled(false);
-        bSaveCurrent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveAsPreviousState();
-
-            }
-        });
-
+    private void addButtons(JToolBar toolBar) {
+        bSave = new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction());
         bCut = new TestGanttRolloverButton(getCutAction());
         bCopy = new TestGanttRolloverButton(getCopyAction());
         bPaste = new TestGanttRolloverButton(getPasteAction());
@@ -1203,15 +949,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     }
                 }, options.getIconSize());
         bNewTask = new TestGanttRolloverButton(myNewArtefactAction);
-        myRolloverActions.add(myNewArtefactAction);
         bDelete = new TestGanttRolloverButton(
                 new ImageIcon(getClass().getResource(
                         "/icons/delete_" + options.getIconSize() + ".gif")));
         bDelete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {// Gantt
-                    // Chart
-                    // deleteTask();
                     deleteTasks(true);
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resource
                     // chart
@@ -1238,7 +981,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 }
             }
         });
-        // if(!isOnlyViewer) toolBar.add(bDelete);
 
         bProperties = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource(
@@ -1260,46 +1002,25 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
                 .getViewState());
-        bAbout = new TestGanttRolloverButton(
-                new ImageIcon(getClass().getResource(
-                        "/icons/manual_" + options.getIconSize() + ".gif")));
-        bAbout.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                aboutDialog();
-            }
-        });
         Action undo = new UndoAction(getUndoManager(), options.getIconSize(),
                 this);
-        myRolloverActions.add(undo);
         bUndo = new TestGanttRolloverButton(undo);
 
         Action redo = new RedoAction(getUndoManager(), options.getIconSize(),
                 this);
-        myRolloverActions.add(redo);
         bRedo = new TestGanttRolloverButton(redo);
 
-        Action critic = new CalculateCriticalPathAction(getTaskManager(), tree,
-                options, getUIConfiguration(), this);
-        myRolloverActions.add(critic);
-        bCritical = new TestGanttRolloverButton(critic);
-        bRefresh = new TestGanttRolloverButton(new ImageIcon(
-                getClass().getResource(
-                        "/icons/refresh_" + options.getIconSize() + ".gif")));
-        bRefresh.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getUIFacade().setStatusText(
-                        GanttLanguage.getInstance().getText("refresh"));
-                getUIFacade().refresh();
-            }
-        });
-
-        bShowHiddens = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource("/icons/showHiddens.gif")));
-        bShowHiddens.addActionListener(this);
-        iconList = initIconList();
-        deletedIconList = initDeletedIconList();
-        addButtons();
-        applyButtonOptions();
+        toolBar.add(bSave);
+        toolBar.add(bUndo);
+        toolBar.add(bRedo);
+        toolBar.addSeparator();
+        toolBar.add(bCut);
+        toolBar.add(bCopy);
+        toolBar.add(bPaste);
+        toolBar.addSeparator();
+        toolBar.add(bNewTask);
+        toolBar.add(bDelete);
+        toolBar.add(bProperties);
     }
 
     protected void saveAsPreviousState() {
@@ -1309,8 +1030,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 this);
         ps.setVisible(true);
         if (ps.isSaved()) {
-            bSaveCurrent.setEnabled(false);
-            bComparePrev.setEnabled(true);
             myPreviousStates.add(ps.getPreviousState());
         }
     }
@@ -1377,8 +1096,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             } else if (arg.equals(correctLabel(language.getText("sendMail")))) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
-            } else if (arg.equals(correctLabel(language.getText("settings")))) {
-                launchOptionsDialog();
             }
         } else if (evt.getSource() instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {
@@ -1390,21 +1107,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                             }
                         });
             }
-        } else {
-            // Test if it's buttons actions
-            if (evt.getSource() == bPreviewPrint) { // print
-                previewPrint();
-            }
         }
-        // repaint();
-    }
-
-    /** Launch the options dialog */
-    public void launchOptionsDialog() {
-        getUIFacade().setStatusText(language.getText("settingsPreferences"));
-        SettingsDialog dialogOptions = new SettingsDialog(this);
-        dialogOptions.setVisible(true);
-        area.repaint();
     }
 
     public HumanResource newHumanResource() {
@@ -1445,28 +1148,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
-        String nameOfTask = options.getTaskNamePrefix(); // language.getText("newTask");
-        // if (current != null) {
-        // current.setMilestone(false);
-        // node = (TaskNode) tree.getSelectedNode();
-        // cal = current.getStart();
-        // if (!node.isRoot())
-        // nameOfTask = current.toString();
-        // }
+        String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
         GanttTask task = getTaskManager().createTask();
         task.setStart(cal);
-        task.setLength(1);
-        getTaskManager().registerTask(task);// create a new task in the tab
-        // paneneed to register it
+        task.setDuration(getTaskManager().createLength(1));
+        getTaskManager().registerTask(task);
         task.setName(nameOfTask + "_" + task.getTaskID());
         task.setColor(area.getTaskColor());
-        // if (current != null) {
-        // if (current.colorDefined()) {
-        // task.setColor(current.getColor());
-        // }
-        // if (current.shapeDefined())
-        // task.setShape(current.getShape());
-        // }
         tree.addObject(task, node, index);
 
         /*
@@ -1689,9 +1377,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             this.setTitle(language.getText("appliTitle") + " ["
                     + document.getDescription() + "]");
             setAskForSave(false);
-            if (myPreviousStates.size() != 0) {
-                bComparePrev.setEnabled(true);
-            }
         } else {
             String errorMessage = language.getText("msg2") + "\n"
                     + document.getDescription();
@@ -1730,15 +1415,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private boolean tryImportDocument(Document document) {
         boolean success = false;
-        Importer[] importers = (Importer[]) Mediator.getPluginManager()
-                .getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
+        Importer[] importers = (Importer[]) PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
         for (int i = 0; i < importers.length; i++) {
             Importer nextImporter = importers[i];
             if (Pattern.matches(".*(" + nextImporter.getFileNamePattern()
                     + ")$", document.getFilePath())) {
                 try {
                     nextImporter.setContext(getProject(), getUIFacade(),
-                            getOptions().getPluginPreferences());
+                            getGanttOptions().getPluginPreferences());
                     nextImporter.run(new File(document.getFilePath()));
                     success = true;
                     break;
@@ -1800,7 +1484,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.setWindowSize(getWidth(), getHeight());
         options.setUIConfiguration(myUIConfiguration);
         options.setDocumentsMRU(documentsMRU);
-        options.setLookAndFeel(lookAndFeel);
         options.setToolBarPosition(toolBar.getOrientation());
         options.save();
         if (getProjectUIFacade().ensureProjectSaved(getProject())) {
@@ -1833,12 +1516,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         fireProjectModified(afs);
         String title = getTitle();
         // String last = title.substring(title.length() - 11, title.length());
-        if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
-            if (afs)
-                bSaveCurrent.setEnabled(afs);
-            if (myPreviousStates.size() != 0)
-                bComparePrev.setEnabled(true);
-        }
         askForSave = afs;
         try {
             if (System.getProperty("mrj.version") != null) {
@@ -1919,8 +1596,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public GanttTree2 getTree() {
         if (this.tree == null) {
-            this.tree = new GanttTree2(this, getTaskManager(), Mediator
-                    .getTaskSelectionManager(), getUIFacade());
+            this.tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
         }
         return this.tree;
     }
@@ -2156,10 +1832,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
-
-        // TODO [dbarashev] implement ProjectEventListener in bComparePrev
-        // action
-        bComparePrev.setEnabled(false);
     }
 
     protected ParserFactory getParserFactory() {
@@ -2248,183 +1920,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         tree.getTreeTable().getTable().setRowHeight(value);
     }
 
-    public void changeOrder(DefaultListModel buttonList,
-            DefaultListModel deletedButtonList) {
-        iconList = new DefaultListModel();
-        for (int i = 0; i < buttonList.size(); i++)
-            iconList.addElement(buttonList.getElementAt(i));
-        deletedIconList = new DefaultListModel();
-        for (int i = 0; i < deletedButtonList.size(); i++)
-            deletedIconList.addElement(deletedButtonList.getElementAt(i));
-        addButtons();
-        options.setIconList(getIconPositions(iconList));
-        options.setDeletedIconList(getIconPositions(deletedIconList));
-        setHiddens();
-        refresh();
-    }
-
-    private String getIconPositions(DefaultListModel list) {
-        String sIcons = "";
-        if (list != null) {
-            int i = 0;
-            if (list.equals(deletedIconList)) {
-                i++;
-            }
-            for (; i < list.size(); i++) {
-                if (!sIcons.equals("")) {
-                    sIcons = sIcons + ",";
-                }
-                if (list.elementAt(i).equals(GPToolBar.SEPARATOR_OBJECT)) {
-                    sIcons = sIcons + GanttOptions.SEPARATOR;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNew) {
-                    sIcons = sIcons + GanttOptions.NEW;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bOpen) {
-                    sIcons = sIcons + GanttOptions.OPEN;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSave) {
-                    sIcons = sIcons + GanttOptions.SAVE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bImport) {
-                    sIcons = sIcons + GanttOptions.IMPORT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bExport) {
-                    sIcons = sIcons + GanttOptions.EXPORT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPrint) {
-                    sIcons = sIcons + GanttOptions.PRINT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPreviewPrint) {
-                    sIcons = sIcons + GanttOptions.PREVIEWPRINT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCut) {
-                    sIcons = sIcons + GanttOptions.CUT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCopy) {
-                    sIcons = sIcons + GanttOptions.COPY;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bPaste) {
-                    sIcons = sIcons + GanttOptions.PASTE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bNewTask) {
-                    sIcons = sIcons + GanttOptions.NEWTASK;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bDelete) {
-                    sIcons = sIcons + GanttOptions.DELETE;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bProperties) {
-                    sIcons = sIcons + GanttOptions.PROPERTIES;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bUndo) {
-                    sIcons = sIcons + GanttOptions.UNDO;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRedo) {
-                    sIcons = sIcons + GanttOptions.REDO;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bCritical) {
-                    sIcons = sIcons + GanttOptions.CRITICAL;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bAbout) {
-                    sIcons = sIcons + GanttOptions.ABOUT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bSaveCurrent) {
-                    sIcons = sIcons + GanttOptions.SAVECURRENT;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bComparePrev) {
-                    sIcons = sIcons + GanttOptions.COMPAREPREV;
-                } else if ((TestGanttRolloverButton) list.elementAt(i) == bRefresh) {
-                    sIcons = sIcons + GanttOptions.REFRESH;
-                }
-            }
-        }
-        return sIcons;
-    }
-
-    public DefaultListModel initIconList() {
-        DefaultListModel list = new DefaultListModel();
-        int[] icons = options.getIconList();
-        for (int i = 0; i < icons.length; i++)
-            addButton(icons[i], list);
-        return list;
-    }
-
-    public DefaultListModel initDeletedIconList() {
-        DefaultListModel list = new DefaultListModel();
-        if (options.getDeletedIconList() != null) {
-            int[] icons = options.getDeletedIconList();
-            for (int i = 0; i < icons.length; i++)
-                addButton(icons[i], list);
-        }
-        return list;
-    }
-
-    public void addButton(int icon, DefaultListModel list) {
-        switch (icon) {
-        case (GanttOptions.SEPARATOR):
-            list.addElement(GPToolBar.SEPARATOR_OBJECT);
-            break;
-        case (GanttOptions.NEW):
-            list.addElement(bNew);
-            break;
-        case (GanttOptions.OPEN):
-            list.addElement(bOpen);
-            break;
-        case (GanttOptions.SAVE):
-            list.addElement(bSave);
-            break;
-        case (GanttOptions.IMPORT):
-            list.addElement(bImport);
-            break;
-        case (GanttOptions.EXPORT):
-            list.addElement(bExport);
-            break;
-        case (GanttOptions.PRINT):
-            list.addElement(bPrint);
-            break;
-        case (GanttOptions.PREVIEWPRINT):
-            list.addElement(bPreviewPrint);
-            break;
-        case (GanttOptions.CUT):
-            list.addElement(bCut);
-            break;
-        case (GanttOptions.COPY):
-            list.addElement(bCopy);
-            break;
-        case (GanttOptions.PASTE):
-            list.addElement(bPaste);
-            break;
-        case (GanttOptions.NEWTASK):
-            list.addElement(bNewTask);
-            break;
-        case (GanttOptions.DELETE):
-            list.addElement(bDelete);
-            break;
-        case (GanttOptions.PROPERTIES):
-            list.addElement(bProperties);
-            break;
-        case (GanttOptions.UNDO):
-            list.addElement(bUndo);
-            break;
-        case (GanttOptions.REDO):
-            list.addElement(bRedo);
-            break;
-        case (GanttOptions.CRITICAL):
-            list.addElement(bCritical);
-            break;
-        case (GanttOptions.ABOUT):
-            list.addElement(bAbout);
-            break;
-        case (GanttOptions.SAVECURRENT):
-            list.addElement(bSaveCurrent);
-            break;
-        case (GanttOptions.COMPAREPREV):
-            list.addElement(bComparePrev);
-            break;
-        case (GanttOptions.REFRESH):
-            list.addElement(bRefresh);
-            break;
-        default:
-            break;
-        }
-    }
-
-    private void addButtons() {
-        List<Object> buttons = new ArrayList<Object>(iconList.getSize());
-        for (int i = 0; i < iconList.getSize(); i++) {
-            buttons.add(iconList.get(i));
-        }
-        toolBar.populate(buttons);
-    }
-
-    public DefaultListModel getButtonList() {
-        return iconList;
-    }
-
-    public DefaultListModel getDeletedButtonList() {
-        return deletedIconList;
-    }
 
     public void repaint2() {
         getResourcePanel().getResourceTreeTableModel().updateResources();
@@ -2467,15 +1962,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void refresh() {
-        getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-        ArrayList<DefaultMutableTreeNode> projectTasks = tree.getProjectTasks();
-        if (projectTasks.size() != 0) {
-            for (int i = 0; i < projectTasks.size(); i++) {
-                getTaskManager().processCriticalPath(
-                        (TaskNode) projectTasks.get(i));
-            }
-        }
-
+        getTaskManager().processCriticalPath(getTaskManager().getRootTask());
         getResourcePanel().getResourceTreeTableModel().updateResources();
         getResourcePanel().getResourceTreeTable().setRowHeight(20);
         if (myDelayManager != null)
@@ -2483,55 +1970,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         super.repaint();
     }
 
-    public void showHiddenButtonsPaneMenu() {
-        menu.applyComponentOrientation(language.getComponentOrientation());
-        menu.show(toolBar, bShowHiddens.getX(), bShowHiddens.getY());
-    }
-
     public void setHiddens() {
-        menu.removeAll();
-        addButtons();
-
-        int separatorSize = Integer.parseInt(options.getIconSize());
-
-        double toolBarlength = 0.;
-        int buttonSize = 0;
-        int lastDisplayedIndex = 0;
-        Component[] buttons = toolBar.getComponents();
-
-        if (toolBar.getOrientation() == JToolBar.HORIZONTAL) {
-            toolBarlength = toolBar.getSize().getWidth();
-        } else {
-            toolBarlength = toolBar.getSize().getHeight();
-        }
-        int position = 10;
-
-        // searching for hidden buttons
-        for (int i = 0; i < buttons.length; i++) {
-            if (buttons[i].getClass() == TestGanttRolloverButton.class) {
-                if (toolBar.getOrientation() == JToolBar.HORIZONTAL) {
-                    buttonSize = buttons[i].getWidth();
-                } else {
-                    buttonSize = buttons[i].getHeight();
-                }
-                position = position + buttonSize;
-                if (position + 2 * bShowHiddens.getWidth() / 3 < toolBarlength) {
-                    lastDisplayedIndex = i;
-                } else {
-                    menu.add(buttons[i]);
-                }
-            } else {
-                position = position + separatorSize;
-            }
-        }
-
-        // if there is hidden buttons
-        if (menu.getComponentCount() != 0) {
-            for (int i = lastDisplayedIndex + 1; i < buttons.length; i++) {
-                toolBar.remove(buttons[i]);
-            }
-            toolBar.add(bShowHiddens);
-        }
     }
 
     public CustomPropertyManager getResourceCustomPropertyManager() {

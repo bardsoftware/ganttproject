@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart.overview;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -37,36 +38,51 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
-import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
-class ToolbarBuilder {
+public class ToolbarBuilder {
     private final JToolBar myToolbar;
-    private final TimelineChart myChart;
+    private Color myBackground;
+    private String myCaption;
 
-    ToolbarBuilder(TimelineChart chart) {
-        myChart = chart;
+    public ToolbarBuilder() {
         myToolbar = new JToolBar();
-        myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
+        myBackground = myToolbar.getBackground();
+//        myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
         myToolbar.setFloatable(false);
         myToolbar.setBorderPainted(false);
         myToolbar.setRollover(true);
     }
-    
-    ToolbarBuilder addButton(Action action) {
+
+    public ToolbarBuilder withBackground(Color background) {
+        myBackground = background;
+        return this;
+    }
+
+    public ToolbarBuilder withCaption(String caption) {
+        myCaption = caption;
+        return this;
+    }
+
+    public ToolbarBuilder addButton(Action action) {
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
         }
-        final JButton button = new TestGanttRolloverButton(action);
-        button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-        button.setVerticalTextPosition(SwingConstants.CENTER);
-        button.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
+        final TestGanttRolloverButton button = new TestGanttRolloverButton(action);
+        //if (action.getValue(Action.SMALL_ICON) == null) {
+            button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
+            button.setHorizontalTextPosition(SwingConstants.CENTER);
+            button.setVerticalTextPosition(SwingConstants.CENTER);
+            button.setTextHidden(false);
+//        } else {
+//            button.setText("");
+//        }
         myToolbar.add(button);
         return this;
     }
-    ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
+    public ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
         class MyComboBox extends TestGanttRolloverButton {
             private Action mySelectedAction = null;
             private final Action[] myActions;
@@ -130,7 +146,7 @@ class ToolbarBuilder {
                         }
                     });
                 }
-                popupMenu.show(myToolbar, getButton().getLocation().x, getButton().getHeight());                
+                popupMenu.show(myToolbar, getButton().getLocation().x, getButton().getHeight());
             }
             private JButton getButton() {
                 return MyComboBox.this;
@@ -160,15 +176,16 @@ class ToolbarBuilder {
         }
         }
         final MyComboBox button = new MyComboBox(actions);
-        
+
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
         }
         myToolbar.add(button);
         return this;
     }
-    
-    JToolBar build() {
+
+    public JToolBar build() {
+        UIUtil.setBackgroundTree(myToolbar, myBackground);
         return myToolbar;
     }
 }

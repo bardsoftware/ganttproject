@@ -20,7 +20,7 @@ import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
  * Builds grid offsets for timelines where top cells are always constructed from the integer
  * number of bottom cells (e.g. week from days)
  */
-class RegularFrameOffsetBuilder {
+class RegularFrameOffsetBuilder implements OffsetBuilder {
     protected static class OffsetStep {
         public float parrots;
         public GPCalendar.DayType dayType;
@@ -43,12 +43,12 @@ class RegularFrameOffsetBuilder {
             GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
             int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor) {
         this(calendar,  topUnit,  bottomUnit,  startDate,
-                 defaultUnitWidth,  chartWidth,  weekendDecreaseFactor, null);
+                 defaultUnitWidth,  chartWidth,  weekendDecreaseFactor, null, 0);
     }
 
     RegularFrameOffsetBuilder(
             GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-            int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
+            int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate, int rightMarginTimeUnits) {
         myCalendar = calendar;
         myStartDate = startDate;
         myTopUnit = topUnit;
@@ -58,6 +58,7 @@ class RegularFrameOffsetBuilder {
         myWeekendDecreaseFactor = weekendDecreaseFactor;
         myEndDate = endDate;
         baseUnit = findCommonUnit(bottomUnit, topUnit);
+        myRightMarginBottomUnitCount = rightMarginTimeUnits;
     }
 
     private TimeUnit getBottomUnit() {
@@ -92,14 +93,17 @@ class RegularFrameOffsetBuilder {
     void setRightMarginBottomUnitCount(int value) {
         myRightMarginBottomUnitCount = value;
     }
-    void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets) {
+    @Override
+    public void constructOffsets(List<Offset> topUnitOffsets, OffsetList bottomUnitOffsets) {
         constructOffsets(topUnitOffsets, bottomUnitOffsets, 0);
     }
     void constructOffsets(List<Offset> topUnitOffsets, List<Offset> bottomUnitOffsets, int initialEnd) {
 
         //bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate, myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
         constructBottomOffsets(bottomUnitOffsets, initialEnd);
-        constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getDefaultUnitWidth());
+        if (topUnitOffsets != null) {
+            constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getDefaultUnitWidth());
+        }
     }
 
     void constructBottomOffsets(List<Offset> offsets, int initialEnd) {
@@ -194,5 +198,21 @@ class RegularFrameOffsetBuilder {
             current = current.getDirectAtomUnit();
         }
         return null;
+    }
+
+    static class FactoryImpl extends OffsetBuilder.Factory {
+        @Override
+        public OffsetBuilder build() {
+            return new RegularFrameOffsetBuilder(
+                myCalendar, 
+                myTopUnit, 
+                myBottomUnit, 
+                myStartDate, 
+                myAtomicUnitWidth, 
+                myEndOffset, 
+                myWeekendDecreaseFactor,
+                myEndDate,
+                myRightMarginTimeUnits);
+        }
     }
 }

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-GP_HOME=.
-COMMAND_PATH=`echo ${0} | sed -e "s/\(.*\)\/.*$/\1/g"`
-cd ${COMMAND_PATH}
+# Change GP_HOME if you manually installed GanttProject somewhere else
+GP_HOME=/usr/share/ganttproject/
+cd ${GP_HOME}
 
 LOCAL_CLASSPATH=$GP_HOME/eclipsito.jar
 

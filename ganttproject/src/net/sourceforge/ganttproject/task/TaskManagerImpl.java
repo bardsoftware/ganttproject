@@ -22,6 +22,10 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
+import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.gui.options.model.StringOption;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
@@ -71,6 +75,8 @@ public class TaskManagerImpl implements TaskManager {
     private Task myRoot;
 
     private final TaskManagerConfig myConfig;
+
+    private final TaskNamePrefixOption myTaskNamePrefixOption = new TaskNamePrefixOption();
 
     private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
@@ -200,7 +206,7 @@ public class TaskManagerImpl implements TaskManager {
         };
         ProjectBoundsAlgorithm alg5 = new ProjectBoundsAlgorithm();
         CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
-        myAlgorithmCollection = new AlgorithmCollection(alg1, alg2, alg3, alg4, alg5, alg6);
+        myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6);
     }
 
     public GanttTask getTask(int taskId) {
@@ -885,7 +891,7 @@ public class TaskManagerImpl implements TaskManager {
     public CustomColumnsStorage getCustomColumnStorage() {
         return myCustomColumnStorage;
     }
-    
+
     public CustomPropertyManager getCustomPropertyManager() {
         return new CustomColumnsManager(getCustomColumnStorage());
     }
@@ -893,4 +899,29 @@ public class TaskManagerImpl implements TaskManager {
     public URL getProjectDocument() {
         return myConfig.getProjectDocumentURL();
     }
+
+    private static class TaskNamePrefixOption extends DefaultStringOption implements GP1XOptionConverter {
+        public TaskNamePrefixOption() {
+            super("taskNamePrefix");
+            setValue(GanttLanguage.getInstance().getText("newTask"), true);
+        }
+        @Override
+        public String getTagName() {
+            return "task-name";
+        }
+        @Override
+        public String getAttributeName() {
+            return "prefix";
+        }
+        @Override
+        public void loadValue(String legacyValue) {
+            setValue(legacyValue, true);
+        }
+    }
+    @Override
+    public StringOption getTaskNamePrefixOption() {
+        return myTaskNamePrefixOption;
+    }
+
+
 }

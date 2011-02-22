@@ -6,10 +6,14 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public interface OptionPageProvider {
-    GPOptionGroup[] getOptionGroups(IGanttProject project, UIFacade uiFacade);
+    GPOptionGroup[] getOptionGroups();
 
     String getPageID();
     
     boolean hasCustomComponent();
-    Component buildPageComponent(IGanttProject project, UIFacade uiFacade);
+    Component buildPageComponent();
+
+    void init(IGanttProject project, UIFacade uiFacade);
+    
+    void commit();
 }

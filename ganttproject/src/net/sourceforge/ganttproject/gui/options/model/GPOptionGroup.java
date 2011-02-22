@@ -41,9 +41,6 @@ public class GPOptionGroup {
     }
 
     public void lock() {
-        for (int i = 0; i < myOptions.length; i++) {
-            myOptions[i].lock();
-        }
     }
 
     public void commit() {
@@ -53,9 +50,6 @@ public class GPOptionGroup {
     }
 
     public void rollback() {
-        for (int i = 0; i < myOptions.length; i++) {
-            myOptions[i].rollback();
-        }
     }
 
     public boolean isTitled() {

@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.RolesTableModel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
@@ -33,17 +34,16 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
 
     private final JTable rolesTable;
 
-    private final GanttProject appli;
-
-    public RolesSettingsPanel(GanttProject parent) {
+    public RolesSettingsPanel(IGanttProject project) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "resourceRole")), GanttLanguage.getInstance().getText(
                 "settingsRoles"));
 
-        appli = parent;
-        myRolesModel = new RolesTableModel();
+        myRolesModel = new RolesTableModel(project.getRoleManager());
         rolesTable = new JTable(myRolesModel);
-        rolesTable.setPreferredScrollableViewportSize(new Dimension(400, 350));
+        // Set PreferredScrollableViewportSize to 0, so the (parent) dialog scrollbars are never visible/used.
+        // (this prevents having two scrollbars next to each other)
+        rolesTable.setPreferredScrollableViewportSize(new Dimension(0, 0));
         rolesTable.setRowHeight(23);
         rolesTable.getColumnModel().getColumn(0).setPreferredWidth(30);
         rolesTable.getColumnModel().getColumn(1).setPreferredWidth(370);
@@ -58,7 +58,6 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         bHasChange = myRolesModel.hasChanges();
         if (bHasChange) {
             myRolesModel.applyChanges();
-            appli.setAskForSave(true);
         }
         return bHasChange;
     }

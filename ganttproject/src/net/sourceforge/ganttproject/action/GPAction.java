@@ -6,6 +6,7 @@ package net.sourceforge.ganttproject.action;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -22,8 +23,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 /**
  * @author bard
  */
-public abstract class GPAction extends AbstractAction implements
-        RolloverAction, GanttLanguage.Listener {
+public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
     public static final int MENU_MASK = Toolkit.getDefaultToolkit()
             .getMenuShortcutKeyMask();
 
@@ -39,7 +39,7 @@ public abstract class GPAction extends AbstractAction implements
     protected GPAction(String name, String iconSize) {
         super(name);
         myKey = name;
-        setIconSize(iconSize);
+        updateIcon(iconSize);
         updateName();
         updateTooltip();
         GanttLanguage.getInstance().addListener(this);
@@ -53,7 +53,7 @@ public abstract class GPAction extends AbstractAction implements
         return (Icon) getValue(Action.SMALL_ICON);
     }
 
-    public void setIconSize(String iconSize) {
+    private void updateIcon(String iconSize) {
         Icon icon = createIcon(iconSize);
         if (icon != null) {
             putValue(Action.SMALL_ICON, icon);
@@ -61,17 +61,21 @@ public abstract class GPAction extends AbstractAction implements
         }
     }
 
-    protected Icon createIcon(String iconSize) {
+    protected final Icon createIcon(String iconSize) {
         if (iconSize == null || false == iconVisible) {
             return null;
         }
-        URL resource = getClass().getResource(
-                getIconFileDirectory() + "/" + getIconFilePrefix() + iconSize
-                + ".gif");
+        String resourcePath = getIconResource();
+        if (resourcePath == null) {
+            resourcePath = getIconFileDirectory() + "/" + getIconFilePrefix() + iconSize + ".gif";
+        } else {
+            resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", getIconFileDirectory(), iconSize, resourcePath);
+        }
+        URL resource = getClass().getResource(resourcePath);
         return resource == null ? null : new ImageIcon(resource);
     }
 
-    protected String getIconFileDirectory() {
+    protected final String getIconFileDirectory() {
         return "/icons";
     }
 
@@ -95,7 +99,7 @@ public abstract class GPAction extends AbstractAction implements
         return null;
     }
 
-    public void setIconVisible(boolean isVisible) {
+    protected final void setIconVisible(boolean isVisible) {
         iconVisible = isVisible;
         putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
     }
@@ -117,6 +121,11 @@ public abstract class GPAction extends AbstractAction implements
         }
     }
 
+    protected void updateAction() {
+        updateName();
+        updateTooltip();
+    }
+
     private void updateTooltip() {
         putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getTooltipText() + "</body></html>");
     }
@@ -129,31 +138,47 @@ public abstract class GPAction extends AbstractAction implements
         updateTooltip();
     }
 
+    private String getIconResource() {
+        if (getKey() == null) {
+            return null;
+        }
+        if (ourIconProperties == null) {
+            ourIconProperties = loadProperties("/icons.properties");
+        }
+        return (String)ourIconProperties.get(getKey());
+    }
+
     public static KeyStroke getKeyStroke(String keystrokeID) {
         String keystrokeText = getKeyStrokeText(keystrokeID);
         return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
     }
 
     public static String getKeyStrokeText(String keystrokeID) {
-        if (ourProperties == null) {
-            ourProperties = new Properties();
-            URL url = GPAction.class.getResource("/keyboard.properties");
-            if (url == null) {
-                return null;
-            }
-            URL resolvedUrl;
-            try {
-                resolvedUrl = Platform.resolve(url);
-                ourProperties.load(resolvedUrl.openStream());
-            } catch (IOException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-                return null;
-            }
+        if (ourKeyboardProperties == null) {
+            ourKeyboardProperties = loadProperties("/keyboard.properties");
         }
-        return (String) ourProperties.get(keystrokeID);
+        return (String) ourKeyboardProperties.get(keystrokeID);
     }
 
-    private static Properties ourProperties;
+    private static Properties loadProperties(String resource) {
+        Properties result = new Properties();
+        URL url = GPAction.class.getResource(resource);
+        if (url == null) {
+            return null;
+        }
+        URL resolvedUrl;
+        try {
+            resolvedUrl = Platform.resolve(url);
+            result.load(resolvedUrl.openStream());
+            return result;
+        } catch (IOException e) {
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
+            return null;
+        }
+    }
+
+    private static Properties ourKeyboardProperties;
+    private static Properties ourIconProperties;
 }

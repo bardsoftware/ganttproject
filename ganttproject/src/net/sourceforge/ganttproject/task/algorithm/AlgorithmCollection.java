@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.task.algorithm;
 
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
+
 /**
  * Created by IntelliJ IDEA. User: bard
  */
@@ -19,6 +21,7 @@ public class AlgorithmCollection {
     private final CriticalPathAlgorithm myCriticalPathAlgorithm;
 
     public AlgorithmCollection(
+            TaskManagerImpl taskManager,
             FindPossibleDependeesAlgorithm myFindPossibleDependeesAlgorithm,
             RecalculateTaskScheduleAlgorithm recalculateTaskScheduleAlgorithm,
             AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
@@ -30,7 +33,7 @@ public class AlgorithmCollection {
         myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;
         myCompletionPercentageAlgorithm = completionPercentageAlgorithm;
         myProjectBoundsAlgorithm = projectBoundsAlgorithm;
-        myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm();
+        myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(taskManager, recalculateTaskScheduleAlgorithm);
         myCriticalPathAlgorithm = criticalPathAlgorithm;
     }
 
@@ -57,7 +60,7 @@ public class AlgorithmCollection {
     public ShiftTaskTreeAlgorithm getShiftTaskTreeAlgorithm() {
         return myShiftTaskTreeAlgorithm;
     }
-    
+
     public CriticalPathAlgorithm getCriticalPathAlgorithm() {
         return myCriticalPathAlgorithm;
     }

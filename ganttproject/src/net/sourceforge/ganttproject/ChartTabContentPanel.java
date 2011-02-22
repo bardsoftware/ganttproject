@@ -6,6 +6,8 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -16,6 +18,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
+import net.sourceforge.ganttproject.gui.GanttImagePanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -24,19 +27,22 @@ abstract class ChartTabContentPanel {
     private JSplitPane mySplitPane;
     protected final NavigationPanel myNavigationPanel;
     protected final ZoomingPanel myZoomingPanel;
-
+    private final List<Component> myPanels = new ArrayList<Component>();
+    
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         myNavigationPanel = new NavigationPanel(project, chart, workbenchFacade);
         myZoomingPanel = new ZoomingPanel(workbenchFacade, chart);
+        addChartPanel(myZoomingPanel.getComponent());
+        addChartPanel(myNavigationPanel.getComponent());
     }
+    
     protected JComponent createContentComponent() {
         JPanel tabContentPanel = new JPanel(new BorderLayout());
         JPanel left = new JPanel(new BorderLayout());
         Box treeHeader = Box.createVerticalBox();
         Component buttonPanel = createButtonPanel();
         treeHeader.add(buttonPanel);
-        GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
-        treeHeader.add(but);
+        treeHeader.add(new GanttImagePanel(AbstractChartImplementation.LOGO, 300, AbstractChartImplementation.LOGO.getIconHeight()));
         left.add(treeHeader, BorderLayout.NORTH);
 
         left.add(getTreeComponent(), BorderLayout.CENTER);
@@ -87,20 +93,17 @@ abstract class ChartTabContentPanel {
         JPanel result = new JPanel(new BorderLayout());
 
         Box panelsBox = Box.createHorizontalBox();
-        panelsBox.add(createZoomingPanel());
-        panelsBox.add(Box.createHorizontalStrut(10));
-        panelsBox.add(createNavigationPanel());
+        for (Component panel : myPanels) {
+            panelsBox.add(panel);
+            panelsBox.add(Box.createHorizontalStrut(10));
+        }
         result.add(panelsBox, BorderLayout.WEST);
         result.setBackground(new Color(0.93f, 0.93f, 0.93f));
         
         return result;
     }
 
-    private Component createZoomingPanel() {
-        return myZoomingPanel.getComponent();
-    }
-
-    private Component createNavigationPanel() {
-        return myNavigationPanel.getComponent();
-    }
+    protected void addChartPanel(Component panel) {
+        myPanels.add(panel);
+    }    
 }
