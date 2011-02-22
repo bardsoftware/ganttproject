@@ -38,6 +38,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -181,7 +182,7 @@ public class SettingsDialog2 {
         });
 
         final JPanel pagesPanel = new JPanel(new BorderLayout());
-        pagesPanel.add(pagesList, BorderLayout.CENTER);
+        pagesPanel.add(new JScrollPane(pagesList), BorderLayout.CENTER);
 
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(pagesPanel, BorderLayout.WEST);
