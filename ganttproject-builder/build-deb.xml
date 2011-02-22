@@ -68,7 +68,7 @@
 	<target name="release-dist" depends="dist" description="Release all distribution files">
 		<input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="0.0.1" />
 		<antcall target="createdeb-minimal" />
-        <antcall target="createdeb-plugins" />
+		<antcall target="createdeb-plugins" />
 	</target>
 
 
@@ -118,7 +118,7 @@
 				<include name="AUTHORS"/>
 			</tarfileset>
 			<tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
-			    <include name="plugins/net.sourceforge.ganttproject_*/**/"/>
+				<include name="plugins/net.sourceforge.ganttproject_*/**/"/>
 				<include name="*.jar"/>
 				<include name="*.gan"/>
 			</tarfileset>
@@ -130,13 +130,13 @@
 		</deb>
 	</target>
 
-    <!-- - - - - - - - - - - - - - - - - -
+	<!-- - - - - - - - - - - - - - - - - -
           private target: createdeb-plugins
          - - - - - - - - - - - - - - - - - -->
-    <target name="createdeb-plugins" depends="define_tasks">
-        <description>create a debian package of the ant deb task</description>
-        <property name="package.name" value="ganttproject"/>
-        <deb
+	<target name="createdeb-plugins" depends="define_tasks">
+		<description>create a debian package of the ant deb task</description>
+		<property name="package.name" value="ganttproject"/>
+		<deb
             todir="dist-bin"
             package="${package.name}-plugins"
             version="${dist.version.number}"
@@ -145,10 +145,10 @@
             priority="optional"
             depends="ganttproject-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre"
         >
-            <version upstream="${dist.version.number}"/>
-            <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
-            <description synopsis="Gantt chart based project scheduling and management tool.">
-            	Extra plugins for GanttProject
+			<version upstream="${dist.version.number}"/>
+			<maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
+			<description synopsis="Gantt chart based project scheduling and management tool.">
+              Extra plugins for GanttProject
 
                 GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
                 Our major features include:
@@ -163,27 +163,27 @@
 
                 Visit http://ganttproject.biz to learn more
             </description>
-            <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
-                <include name="plugins/**"/>
-                <exclude name="plugins/net.sourceforge.ganttproject_*/**/"/>
-            </tarfileset>
-        </deb>
-    </target>
+			<tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
+				<include name="plugins/**"/>
+				<exclude name="plugins/net.sourceforge.ganttproject_*/**/"/>
+			</tarfileset>
+		</deb>
+	</target>
 
 	<target name="desktop-file" depends="define_tasks" description="Fill in desktop file">
 		<desktopEntry
             toFile="build-deb/ganttproject.desktop"
             name="GanttProject"
-			icon="ganttproject.png"
+      icon="ganttproject.png"
             exec="/usr/bin/ganttproject %f"
-			mimetype="application/ganttproject+xml"
+      mimetype="application/ganttproject+xml"
             categories="Office"
             onlyshowin="GNOME;KDE"
         >
 			<!--
-			<name lang="ro" value="Un nume"/>
-			<name lang="hu" country="hu" value="Edgy nev"/>
-			-->
+      <name lang="ro" value="Un nume"/>
+      <name lang="hu" country="hu" value="Edgy nev"/>
+      -->
 			<genericname value="GanttProject"/>
 		</desktopEntry>
 	</target>
