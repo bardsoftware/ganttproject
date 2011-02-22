@@ -58,6 +58,7 @@ public class TestGanttRolloverButton extends JButton {
         Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
         if (smallIcon != null) {
             setIcon(smallIcon);
+            setTextHidden(true);
         }
     }
 
@@ -130,7 +131,7 @@ public class TestGanttRolloverButton extends JButton {
 
         Worker(MouseEvent e) {
             myEvent = new ActionEvent(
-                this, ActionEvent.ACTION_PERFORMED, getActionCommand(), EventQueue.getMostRecentEventTime(), 
+                this, ActionEvent.ACTION_PERFORMED, getActionCommand(), EventQueue.getMostRecentEventTime(),
                 e.getModifiers());
         }
 

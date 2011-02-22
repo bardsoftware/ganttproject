@@ -38,7 +38,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
-import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
@@ -71,11 +70,12 @@ public class ToolbarBuilder {
         if (myToolbar.getComponentCount() != 0) {
             myToolbar.add(new JLabel(" | "));
         }
-        final JButton button = new TestGanttRolloverButton(action);
+        final TestGanttRolloverButton button = new TestGanttRolloverButton(action);
         //if (action.getValue(Action.SMALL_ICON) == null) {
             button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
             button.setHorizontalTextPosition(SwingConstants.CENTER);
             button.setVerticalTextPosition(SwingConstants.CENTER);
+            button.setTextHidden(false);
 //        } else {
 //            button.setText("");
 //        }
