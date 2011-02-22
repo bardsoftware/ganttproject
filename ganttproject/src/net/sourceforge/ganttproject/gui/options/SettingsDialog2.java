@@ -112,8 +112,11 @@ public class SettingsDialog2 {
 
     private Component getComponent() {
         final JPanel contentPanel = new JPanel(new CardLayout());
+        // Add panels to CardLayout
         for (ListItem li : myItems) {
-            contentPanel.add(li.component, li.id);
+            if (li.component != null) {
+                contentPanel.add(li.component, li.id);
+            }
         }
         final JList pagesList = new JList(new AbstractListModel() {
             @Override
@@ -167,9 +170,14 @@ public class SettingsDialog2 {
         pagesList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
                 ListItem listItem = (ListItem) pagesList.getSelectedValue();
-                cardLayout.show(contentPanel, listItem.id);
+                if(listItem.isGroupHeader) {
+                    // Assumes that the list does not end with a GroupHeader!
+                    pagesList.setSelectedIndex(pagesList.getSelectedIndex() + 1);
+                } else {
+                    final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
+                    cardLayout.show(contentPanel, listItem.id);
+                }
             }
         });
         pagesList.setBorder(BorderFactory.createEtchedBorder());
@@ -198,18 +206,15 @@ public class SettingsDialog2 {
         }
         List<ListItem> items = new ArrayList<ListItem>();
         String[] listConfig = GanttLanguage.getInstance().getText(myPageOrderKey).split(",");
-        for (String s : listConfig) {
+        for (String pageName : listConfig) {
             ListItem li;
-            if (s.startsWith("pageGroup.")) {
-                String groupNameKey = s;
-                li = new ListItem(
-                    true,
-                    groupNameKey,
-                    GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)),
-                    new JPanel());
+            if (pageName.startsWith("pageGroup.")) {
+                li = new ListItem(true, pageName,
+                        GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(pageName)),
+                        null);
             } else {
-                OptionPageProvider p = pageId_provider.get(s);
-                assert p != null : "OptionPageProvider with pageID=" + s + " not found";
+                OptionPageProvider p = pageId_provider.get(pageName);
+                assert p != null : "OptionPageProvider with pageID=" + pageName + " not found";
                 li = new ListItem(false, p.getPageID(), p.toString(),
                     (Container)new OptionPageProviderPanel(p, myProject, myUIFacade).getComponent());
             }
