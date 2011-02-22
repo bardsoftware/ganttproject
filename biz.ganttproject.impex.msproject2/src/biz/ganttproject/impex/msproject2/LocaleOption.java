@@ -25,22 +25,22 @@ import net.sf.mpxj.mpx.MPXWriter;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-class LocaleOption extends DefaultEnumerationOption {
+class LocaleOption extends DefaultEnumerationOption<Object> {
     private static final Locale[] LOCALES;
     private static final String[] LOCALE_DISPLAY_NAMES;
 
-	static {
-		MPXWriter writer = new MPXWriter();
-		LOCALES = writer.getSupportedLocales();
-		LOCALE_DISPLAY_NAMES = new String[LOCALES.length];
-		for (int i = 0; i < LOCALES.length; i++) {
-			LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());
-		}
-		Arrays.sort(LOCALE_DISPLAY_NAMES);
-	}
-	
+    static {
+        MPXWriter writer = new MPXWriter();
+        LOCALES = writer.getSupportedLocales();
+        LOCALE_DISPLAY_NAMES = new String[LOCALES.length];
+        for (int i = 0; i < LOCALES.length; i++) {
+            LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());
+        }
+        Arrays.sort(LOCALE_DISPLAY_NAMES);
+    }
+
     LocaleOption() {
-    	super("impex.msproject.mpx.language", LOCALE_DISPLAY_NAMES);
+        super("impex.msproject.mpx.language", LOCALE_DISPLAY_NAMES);
     }
 
     Locale getSelectedLocale() {
@@ -52,7 +52,7 @@ class LocaleOption extends DefaultEnumerationOption {
         return null;
     }
 
-	void setSelectedLocale(Locale locale) {
-		setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
-	}
+    void setSelectedLocale(Locale locale) {
+        setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
+    }
 }
