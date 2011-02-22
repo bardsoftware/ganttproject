@@ -80,16 +80,16 @@ public class SettingsDialog2 {
     }
 
     public void show() {
-        OkAction okAction = new OkAction() {
+        final OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
                 for (OptionPageProvider p : myProviders) {
                     p.commit();
                 }
             }
         };
-        CancelAction cancelAction = new CancelAction() {
+        final CancelAction cancelAction = new CancelAction() {
             @Override
-            public void actionPerformed(ActionEvent arg0) {
+            public void actionPerformed(ActionEvent e) {
             }
         };
         myUIFacade.showDialog(
@@ -184,7 +184,7 @@ public class SettingsDialog2 {
         final JPanel pagesPanel = new JPanel(new BorderLayout());
         pagesPanel.add(new JScrollPane(pagesList), BorderLayout.CENTER);
 
-        JPanel rootPanel = new JPanel(new BorderLayout());
+        final JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(pagesPanel, BorderLayout.WEST);
         rootPanel.add(contentPanel, BorderLayout.CENTER);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));

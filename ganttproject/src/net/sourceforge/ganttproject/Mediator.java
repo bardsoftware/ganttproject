@@ -58,11 +58,7 @@ public class Mediator {
         changeValueDispatchers.add(dispatcher);
     }
 
-    /**
-     * Returns the unique GanttProject instance.
-     * 
-     * @return The unique GanttProject instance.
-     */
+    /** @return The unique GanttProject instance. */
     @Deprecated
     public static GanttProject getGanttProjectSingleton() {
         return ganttprojectSingleton;

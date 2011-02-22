@@ -1,19 +1,21 @@
-/***************************************************************************
- GanttOptions.java  -  description
- -------------------
- begin                : mar 2003
- copyright            : (C) 2003 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 
 package net.sourceforge.ganttproject;
 
@@ -104,30 +106,17 @@ public class GanttOptions {
 
     public static final int TEXT = 2;
 
-    private int buttonsshow;
+    private int myButtonsShow;
 
-    /** FTP options */
-    private String FTPUrl = "";
+    /** FTP option */
+    private String FTPUrl = "", FTPDirectory = "", FTPUser = "", FTPPwd = "";
 
-    private String FTPDirectory = "";
+    /** Export option */
+    private boolean bExportName, bExportComplete, bExportRelations,
+            bExport3DBorders;
 
-    private String FTPUser = "";
-
-    private String FTPPwd = "";
-
-    /** Export options. */
-    private boolean bExportName;
-
-    private boolean bExportComplete;
-
-    private boolean bExportRelations;
-
-    private boolean bExport3DBorders;
-
-    /** CVS export options. */
+    /** CVS export options */
     private CSVOptions csvOptions;
-
-    private boolean isOnlyViewer;
 
     private Map<String,GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
     private Map<String,GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
@@ -135,12 +124,11 @@ public class GanttOptions {
     private final DocumentManager myDocumentManager;
 
     private final PluginPreferencesImpl myPluginPreferencesRootNode;
-    /** Default constructor. */
-    public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
+
+    public GanttOptions(RoleManager roleManager, DocumentManager documentManager) {
         myDocumentManager = documentManager;
         myRoleManager = roleManager;
         myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
-        this.isOnlyViewer = isOnlyViewer;
         initDefault();
         try {
             this.workingDir = System.getProperty("user.home");
@@ -167,13 +155,15 @@ public class GanttOptions {
         bShowStatusBar = true;
         iconSize = "16"; // must be 16 small, 24 for big (32 for extra big
         // not directly include on UI)
-        buttonsshow = GanttOptions.ICONS;
-        /** Export options. */
+        myButtonsShow = GanttOptions.ICONS;
+
+        // Export options
         bExportName = true;
         bExportComplete = true;
         bExportRelations = true;
         bExport3DBorders = false;
-        /** CVS export options. */
+
+        // CVS export options
         csvOptions = new CSVOptions();
 
     }
@@ -204,9 +194,7 @@ public class GanttOptions {
         attrs.clear();
     }
 
-    /**
-     * Save the options file
-     */
+    /** Save the options file */
     public void save() {
         try {
 
@@ -289,7 +277,7 @@ public class GanttOptions {
             // ToolBar position
             addAttribute("position", "" + toolBarPosition, attrs);
             addAttribute("icon-size", "" + iconSize, attrs);
-            addAttribute("show", "" + buttonsshow, attrs);
+            addAttribute("show", "" + myButtonsShow, attrs);
             emptyElement("toolBar", attrs, handler);
             addAttribute("show", "" + bShowStatusBar, attrs);
             emptyElement("statusBar", attrs, handler);
@@ -589,9 +577,9 @@ public class GanttOptions {
                     String aName = attrs.getQName(i); // Attr name
                     String value = attrs.getValue(i);
 
-                    String tagDotAttribute = qName+"."+aName;
+                    String tagDotAttribute = qName + "." + aName;
                     GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);
-                    if (converter!=null) {
+                    if (converter != null) {
                         converter.loadValue(value);
                         continue;
                     }
@@ -645,117 +633,125 @@ public class GanttOptions {
                                 workingDir = value;
                         }
                     } else if (qName.equals("toolBar")) {
-                        if (aName.equals("position"))
+                        if (aName.equals("position")) {
                             toolBarPosition = (new Integer(value)).intValue();
-                        else if (aName.equals("icon-size"))
+                        } else if (aName.equals("icon-size")) {
                             iconSize = value;
-                        else if (aName.equals("show"))
-                            buttonsshow = (new Integer(value)).intValue();
+                        } else if (aName.equals("show")) {
+                            myButtonsShow = (new Integer(value)).intValue();
+                        }
                     } else if (qName.equals("statusBar")) {
-                        if (aName.equals("show"))
+                        if (aName.equals("show")) {
                             bShowStatusBar = (new Boolean(value))
                                     .booleanValue();
+                        }
                     } else if (qName.equals("export")) {
-                        if (aName.equals("name"))
+                        if (aName.equals("name")) {
                             bExportName = (new Boolean(value)).booleanValue();
-                        else if (aName.equals("complete"))
+                        } else if (aName.equals("complete")) {
                             bExportComplete = (new Boolean(value))
                                     .booleanValue();
-                        else if (aName.equals("relations"))
+                        } else if (aName.equals("relations")) {
                             bExportRelations = (new Boolean(value))
                                     .booleanValue();
-                        else if (aName.equals("border3d"))
+                        } else if (aName.equals("border3d")) {
                             bExport3DBorders = (new Boolean(value))
                                     .booleanValue();
+                        }
                     } else if (qName.equals("colors")) {
                         if (aName.equals("resources")) {
                             Color colorR = ColorConvertion
                                     .determineColor(value);
-                            if (colorR != null)
+                            if (colorR != null) {
                                 setResourceColor(colorR);
+                            }
                         } else if (aName.equals("resourcesOverload")) {
                             Color colorR = ColorConvertion
                                     .determineColor(value);
-                            if (colorR != null)
+                            if (colorR != null) {
                                 setResourceOverloadColor(colorR);
+                            }
                         } else if (aName.equals("resourcesUnderload")) {
                             Color colorR = ColorConvertion
                                     .determineColor(value);
-                            if (colorR != null)
+                            if (colorR != null) {
                                 setResourceUnderloadColor(colorR);
+                            }
                         } else if (aName.equals("weekEnd")) {
                             Color colorR = ColorConvertion
                                     .determineColor(value);
-                            if (colorR != null)
+                            if (colorR != null) {
                                 setWeekEndColor(colorR);
+                            }
                         } else if (aName.equals("daysOff")) {
                             Color colorD = ColorConvertion
                                     .determineColor(value);
-                            if (colorD != null)
+                            if (colorD != null) {
                                 setDaysOffColor(colorD);
+                            }
                         }
                     } else if (qName.equals("csv-general")) {
-                        if (aName.equals("fixed"))
+                        if (aName.equals("fixed")) {
                             csvOptions.bFixedSize = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("separatedChar"))
+                        } else if (aName.equals("separatedChar")) {
                             csvOptions.sSeparatedChar = value;
-                        if (aName.equals("separatedTextChar"))
+                        } else if (aName.equals("separatedTextChar")) {
                             csvOptions.sSeparatedTextChar = value;
+                        }
                     } else if (qName.equals("csv-tasks")) {
-                        if (aName.equals("id"))
+                        if (aName.equals("id")) {
                             csvOptions.bExportTaskID = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("name"))
+                        } else if (aName.equals("name")) {
                             csvOptions.bExportTaskName = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("start-date"))
+                        } else if (aName.equals("start-date")) {
                             csvOptions.bExportTaskStartDate = (new Boolean(
                                     value)).booleanValue();
-                        if (aName.equals("end-date"))
+                        } else if (aName.equals("end-date")) {
                             csvOptions.bExportTaskEndDate = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("percent"))
+                        } else if (aName.equals("percent")) {
                             csvOptions.bExportTaskPercent = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("duration"))
+                        } else if (aName.equals("duration")) {
                             csvOptions.bExportTaskDuration = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("webLink"))
+                        } else if (aName.equals("webLink")) {
                             csvOptions.bExportTaskWebLink = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("resources"))
+                        } else if (aName.equals("resources")) {
                             csvOptions.bExportTaskResources = (new Boolean(
                                     value)).booleanValue();
-                        if (aName.equals("notes"))
+                        } else if (aName.equals("notes")) {
                             csvOptions.bExportTaskNotes = (new Boolean(value))
                                     .booleanValue();
+                        }
                     } else if (qName.equals("csv-resources")) {
-                        if (aName.equals("id"))
+                        if (aName.equals("id")) {
                             csvOptions.bExportResourceID = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("name"))
+                        } else if (aName.equals("name")) {
                             csvOptions.bExportResourceName = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("mail"))
+                        } else if (aName.equals("mail")) {
                             csvOptions.bExportResourceMail = (new Boolean(value))
                                     .booleanValue();
-                        if (aName.equals("phone"))
+                        } else if (aName.equals("phone")) {
                             csvOptions.bExportResourcePhone = (new Boolean(
                                     value)).booleanValue();
-                        if (aName.equals("role"))
+                        } else if (aName.equals("role")) {
                             csvOptions.bExportResourceRole = (new Boolean(value))
                                     .booleanValue();
+                        }
                     }
                 }
             }
 
             // old version of the color version
             if (qName.equals("task-color")) {
-                // Color color = new Color(r, g, b);
-                // getUIConfiguration().setTaskColor(color);
                 setDefaultTaskColor(new Color(r, g, b));
-
             }
 
             if (qName.equals("font")) {
@@ -765,9 +761,7 @@ public class GanttOptions {
                 } else if ("chart-main".equals(category)) {
                     myChartMainFont = Font.decode(attrs.getValue("spec"));
                 }
-
             }
-
         }
 
         public void endElement(String uri, String localName, String name)
@@ -919,27 +913,26 @@ public class GanttOptions {
         bExport3DBorders = borders3d;
     }
 
-
     /**
      * @return the button show attribute must be GanttOptions.ICONS or
      *         GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
      */
     public int getButtonShow() {
-        return buttonsshow;
+        return myButtonsShow;
     }
 
     /**
      * set a new button show value must be GanttOptions.ICONS or
-     * GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
+     * GanttOptions.TEXT or GanttOptions.ICONS_TEXT
      */
     public void setButtonShow(int buttonShow) {
         if (buttonShow != GanttOptions.ICONS && buttonShow != GanttOptions.TEXT
                 && buttonShow != GanttOptions.ICONS_TEXT)
             buttonShow = GanttOptions.ICONS;
-        buttonsshow = buttonShow;
+        myButtonsShow = buttonShow;
     }
 
-    /** Set a new icon size. Must be 16, 24 (or 32 exceptionnally) */
+    /** Set a new icon size. Must be 16, 24 (or 32 exceptionally) */
     public void setIconSize(String sIconSize) {
         iconSize = sIconSize;
     }
@@ -1080,7 +1073,6 @@ public class GanttOptions {
     public void setFTPUser(String pvString) {
         FTPUser = pvString;
     }
-
 
     public void addOptionGroups(GPOptionGroup[] optionGroups) {
         for (int i=0; i<optionGroups.length; i++) {

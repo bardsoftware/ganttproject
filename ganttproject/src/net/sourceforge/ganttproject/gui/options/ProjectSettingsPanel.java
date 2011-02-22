@@ -1,19 +1,21 @@
-/***************************************************************************
- ProjectSettingsPanel.java 
- ------------------------------------------
- begin                : 27 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -41,7 +43,6 @@ import net.sourceforge.ganttproject.util.BrowserControl;
  */
 public class ProjectSettingsPanel extends GeneralOptionPanel {
 
-    // JTextField tfFile;
     private final JTextField tfName;
 
     private final JTextField tfOrganization;
@@ -52,7 +53,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     private final IGanttProject myProject;
 
-    /** Default constructor. */
     public ProjectSettingsPanel(IGanttProject project) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "project")), GanttLanguage.getInstance().getText(
@@ -60,13 +60,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
         myProject = project;
         Box vbproject = Box.createVerticalBox();
-
-        /*
-         * JPanel filePanel = new JPanel(new BorderLayout()); filePanel.add(new
-         * JLabel(language.getText("file")), BorderLayout.WEST);
-         * vbproject.add(filePanel); vbproject.add(tfFile = new JTextField());
-         * tfFile.setEditable(false); vbproject.add(new JPanel());
-         */
 
         JPanel namePanel = new JPanel(new BorderLayout());
         namePanel.add(new JLabel(language.getText("name")), BorderLayout.WEST);
@@ -146,34 +139,28 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     /** Initialize the component. */
     public void initialize() {
-        /*
-         * if(appli.projectDocument!=null) { String filename =
-         * appli.projectDocument.getFilePath(); if(appli.askForSave)
-         * filename+="*"; tfFile.setText(filename); }
-         */
-        // tfFile.setText("see ProjectSettingsPanel line 149 ??");
         tfName.setText(myProject.getProjectName());
         tfOrganization.setText(myProject.getOrganization());
         tfWebLink.setText(myProject.getWebLink());
         taDescr.setText(myProject.getDescription());
     }
 
-    /** Return the selected project name */
+    /** @return the selected project name */
     public String getProjectName() {
         return tfName.getText();
     }
 
-    /** Return the organization */
+    /** @return the organization */
     public String getProjectOrganization() {
         return tfOrganization.getText();
     }
 
-    /** Return the web link */
+    /** @return the web link */
     public String getWebLink() {
         return tfWebLink.getText();
     }
 
-    /** Return the project description */
+    /** @return the project description */
     public String getProjectDescription() {
         return taDescr.getText();
     }

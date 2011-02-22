@@ -1,19 +1,21 @@
-/***************************************************************************
- GeneralOptionPanel.java 
- ------------------------------------------
- begin                : 24 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -30,18 +32,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author athomas Abstract class for the Options panels
  */
 public abstract class GeneralOptionPanel extends JPanel {
-
-    protected GanttLanguage language = GanttLanguage.getInstance();
+    protected final GanttLanguage language = GanttLanguage.getInstance();
 
     /** General vertical box. */
-    protected Box vb = Box.createVerticalBox();
+    protected final Box vb = Box.createVerticalBox();
 
     /** Tell if the parameters of the panel have change. */
     protected boolean bHasChange = false;
 
-    private String myTitle;
+    private final String myTitle;
 
-    private String myComment;
+    private final String myComment;
 
     public GeneralOptionPanel(String title, String comment) {
         super();
@@ -67,16 +68,12 @@ public abstract class GeneralOptionPanel extends JPanel {
                 language.getText("question")));
     }
 
-    /**
-     * @return
-     */
+    /** @return the panel title */
     public String getTitle() {
         return myTitle;
     }
 
-    /**
-     * @return
-     */
+    /** @return the panel comment */
     public String getComment() {
         return myComment;
     }
