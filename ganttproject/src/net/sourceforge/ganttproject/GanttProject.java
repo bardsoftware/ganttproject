@@ -274,14 +274,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         Mediator.registerGanttProject(this);
 
         this.isOnlyViewer = isOnlyViewer;
-        if (!isOnlyViewer)
+        if (!isOnlyViewer) {
             setTitle(language.getText("appliTitle"));
-        else
+        } else {
             setTitle("GanttViewer");
+        }
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
-        options = new GanttOptions(getRoleManager(), getDocumentManager(),
-                isOnlyViewer);
+        options = new GanttOptions(getRoleManager(), getDocumentManager());
         myUIConfiguration = options.getUIConfiguration();
         class TaskManagerConfigImpl implements TaskManagerConfig {
             public Color getDefaultColor() {

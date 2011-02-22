@@ -1,6 +1,21 @@
 /*
- * Created on 02.04.2005
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -63,7 +78,8 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author bard
  */
 public class OptionsPageBuilder {
-    I18N myi18n = new I18N();
+    private static JColorChooser ourColorChooser = new JColorChooser();
+    private I18N myi18n = new I18N();
     private Component myParentComponent;
 
     public OptionsPageBuilder() {
@@ -85,14 +101,15 @@ public class OptionsPageBuilder {
     public void setOptionKeyPrefix(String optionKeyPrefix) {
         myi18n.myOptionKeyPrefix = optionKeyPrefix;
     }
+
     public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
-        JPanel result = new JPanel(new BorderLayout());
+        final JPanel result = new JPanel(new BorderLayout());
         result.setBorder(new EmptyBorder(0, 5, 0, 5));
-        TopPanel topPanel = new TopPanel(myi18n.getPageTitle(pageID), myi18n
+        final TopPanel topPanel = new TopPanel(myi18n.getPageTitle(pageID), myi18n
                 .getPageDescription(pageID));
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         result.add(topPanel, BorderLayout.NORTH);
-        JComponent planePage = buildPlanePage(optionGroups);
+        final JComponent planePage = buildPlanePage(optionGroups);
         result.add(new JScrollPane(planePage), BorderLayout.CENTER);
         return result;
     }
@@ -110,7 +127,6 @@ public class OptionsPageBuilder {
             public void focusGained(FocusEvent e) {
                 optionsPanel.getComponent(0).requestFocus();
             }
-
         });
         return resultPanel;
     }
@@ -122,7 +138,7 @@ public class OptionsPageBuilder {
     }
 
     public JComponent createGroupComponent(GPOptionGroup group) {
-        JPanel optionsPanel = new JPanel(new SpringLayout());
+        final JPanel optionsPanel = new JPanel(new SpringLayout());
         if (group.isTitled()) {
             UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
         }
@@ -134,12 +150,11 @@ public class OptionsPageBuilder {
                 Component nextLabel =createOptionLabel(group, options[i]);
                 optionsPanel.add(nextLabel);
                 optionsPanel.add(nextComponent);
-            }
-            else {
+            } else {
                 optionsPanel.add(nextComponent);
                 optionsPanel.add(new JPanel());
             }
-            if (i==0) {
+            if (i == 0) {
                 optionsPanel.addFocusListener(new FocusAdapter() {
                     public void focusGained(FocusEvent e) {
                         super.focusGained(e);
@@ -164,23 +179,22 @@ public class OptionsPageBuilder {
     }
 
     public Component createStandaloneOptionPanel(GPOption option) {
-        JPanel optionPanel = new JPanel(new BorderLayout());
-        Component  optionComponent = createOptionComponent(null, option);
+        final JPanel optionPanel = new JPanel(new BorderLayout());
+        final Component  optionComponent = createOptionComponent(null, option);
         if (needsLabel(null, option)) {
             optionPanel.add(createOptionLabel(null, option), BorderLayout.WEST);
             optionPanel.add(optionComponent, BorderLayout.CENTER);
-        }
-        else {
+        } else {
             optionPanel.add(optionComponent, BorderLayout.WEST);
         }
-        JPanel result = new JPanel(new BorderLayout());
+        final JPanel result = new JPanel(new BorderLayout());
         result.add(optionPanel, BorderLayout.NORTH);
         return result;
     }
 
     public Component createWaitIndicatorComponent(DefaultBooleanOption controller) {
         final JProgressBar progressBar = new JProgressBar();
-        JPanel placeholder = new JPanel();
+        final JPanel placeholder = new JPanel();
         final JPanel result = new JPanel(new CardLayout());
         result.add(placeholder, "placeholder");
         result.add(progressBar, "progressBar");
@@ -209,17 +223,13 @@ public class OptionsPageBuilder {
             result = createEnumerationComponent((EnumerationOption) option, group);
         } else if (option instanceof BooleanOption) {
             result = createBooleanComponent(group, (BooleanOption) option);
-        }
-        else if (option instanceof ColorOption) {
+        } else if (option instanceof ColorOption) {
             result = createColorComponent((ColorOption)option);
-        }
-        else if (option instanceof DateOption) {
+        } else if (option instanceof DateOption) {
             result = createDateComponent((DateOption)option);
-        }
-        else if (option instanceof GPOptionGroup) {
+        } else if (option instanceof GPOptionGroup) {
             result = createButtonComponent((GPOptionGroup)option);
-        }
-        else if (option instanceof StringOption) {
+        } else if (option instanceof StringOption) {
             result = createStringComponent((StringOption)option);
         }
         if (result == null) {
@@ -251,7 +261,6 @@ public class OptionsPageBuilder {
             public void actionPerformed(ActionEvent e) {
                 System.err.println("[OptionsPageBuilder] createButtonComponent: ");
             }
-
         };
         JButton result = new JButton(action);
         return result;
@@ -271,11 +280,11 @@ public class OptionsPageBuilder {
     }
 
     private boolean isCheckboxOption(GPOptionGroup group, GPOption option) {
-        String yesKey = myi18n.getCanonicalOptionLabelKey(option)+".yes";
+        final String yesKey = myi18n.getCanonicalOptionLabelKey(option)+".yes";
         if (group.getI18Nkey(yesKey)==null && myi18n.getValue(yesKey)==null) {
             return true;
         }
-        String noKey = myi18n.getCanonicalOptionLabelKey(option)+".no";
+        final String noKey = myi18n.getCanonicalOptionLabelKey(option)+".no";
         if (group.getI18Nkey(noKey)==null && myi18n.getValue(noKey)==null) {
             return true;
         }
@@ -283,7 +292,7 @@ public class OptionsPageBuilder {
     }
 
     private Component createRadioButtonBooleanComponent(GPOptionGroup group, final BooleanOption option) {
-        JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
+        final JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
             public void actionPerformed(ActionEvent e) {
                 if (!option.isChecked()) {
                     option.toggle();
@@ -295,7 +304,7 @@ public class OptionsPageBuilder {
         yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option)+".yes"));
         yesButton.setSelected(option.isChecked());
 
-        JRadioButton noButton = new JRadioButton(new AbstractAction("") {
+        final JRadioButton noButton = new JRadioButton(new AbstractAction("") {
             public void actionPerformed(ActionEvent e) {
                 if (option.isChecked()) {
                     option.toggle();
@@ -307,11 +316,11 @@ public class OptionsPageBuilder {
         noButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option)+".no"));
         noButton.setSelected(!option.isChecked());
 
-        ButtonGroup buttonGroup = new ButtonGroup();
+        final ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(yesButton);
         buttonGroup.add(noButton);
 
-        Box result = Box.createHorizontalBox();
+        final Box result = Box.createHorizontalBox();
         result.add(yesButton);
         result.add(Box.createHorizontalStrut(5));
         result.add(noButton);
@@ -320,8 +329,8 @@ public class OptionsPageBuilder {
     }
 
     private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
-        ComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
-        JComboBox result = new JComboBox(model);
+        final ComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
+        final JComboBox result = new JComboBox(model);
         return result;
     }
 
@@ -385,8 +394,8 @@ public class OptionsPageBuilder {
 
     public static class I18N {
         private String myOptionKeyPrefix = "option.";
-        private String myOptionGroupKeyPrefix = "optionGroup.";
-        private String myOptionPageKeyPrefix = "optionPage.";
+        private final String myOptionGroupKeyPrefix = "optionGroup.";
+        private final String myOptionPageKeyPrefix = "optionPage.";
 
         public I18N() {
         }
@@ -422,9 +431,11 @@ public class OptionsPageBuilder {
         public final String getCanonicalOptionPageLabelKey(String pageID) {
             return myOptionPageKeyPrefix + pageID + ".label";
         }
+
         public final String getCanonicalOptionPageTitleKey(String pageID) {
             return myOptionPageKeyPrefix + pageID + ".title";
         }
+
         public String getCanonicalOptionPageDescriptionKey(String pageID) {
             return myOptionPageKeyPrefix + pageID + ".description";
         }
@@ -432,9 +443,11 @@ public class OptionsPageBuilder {
         public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
             return myOptionGroupKeyPrefix + group.getID() + ".label";
         }
+
         public final String getCanonicalOptionLabelKey(GPOption option) {
             return myOptionKeyPrefix + option.getID() + ".label";
         }
+
         public static final String getCanonicalOptionValueLabelKey(String valueID) {
             return "optionValue." + valueID + ".label";
         }
@@ -450,8 +463,6 @@ public class OptionsPageBuilder {
             return GanttLanguage.getInstance().getText("selectColor");
         }
     }
-
-    private static JColorChooser ourColorChooser = new JColorChooser();
 
     static {
         ImageIcon calendarImage = new ImageIcon(OptionsPageBuilder.class

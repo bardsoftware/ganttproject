@@ -1,6 +1,21 @@
 /*
- * Created on 10.10.2005
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -95,6 +110,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
         myOptions.setTitled(false);
     }
+
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
     }
@@ -115,10 +131,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 result = true;
             }
         };
+
         final CancelAction cancelAction = new CancelAction() {
             public void actionPerformed(ActionEvent e) {
             }
         };
+
         MyDialog(int dialogType, String message) {
             this.contentComponent = createDialogContentComponent(dialogType, message);
         }
@@ -128,12 +146,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     public Choice showConfirmationDialog(String message, String title) {
-        /*
-        MyDialog dialog = new MyDialog(GanttDialogInfo.WARNING, message);
-        dialog.show();
-        return dialog.result;
-        */
-        //int result = JOptionPane.showConfirmDialog(myMainFrame, message);
         String yes = GanttLanguage.getInstance().getText("yes");
         String no = GanttLanguage.getInstance().getText("no");
         String cancel = GanttLanguage.getInstance().getText("cancel");
@@ -198,12 +210,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
         result.getContentPane().setLayout(new BorderLayout());
         result.getContentPane().add(content, BorderLayout.CENTER);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
         buttonPanel.add(buttonBox, BorderLayout.EAST);
         result.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-        //
+
         result.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         final Action localCancelAction = cancelAction;
         result.addWindowListener(new WindowAdapter() {
@@ -214,7 +226,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
         });
         result.pack();
-        // setSize(300, 300);
+
         DialogAligner.center(result, myMainFrame);
         result.setVisible(true);
     }
@@ -271,7 +283,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.add(label, BorderLayout.NORTH);
-        //
+
         JTextArea textArea = new JTextArea(message);
         textArea.setEditable(false);
         textArea.setBackground(new JLabel().getBackground());
@@ -386,11 +398,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 result.setVisible(false);
                 result.dispose();
             }
-
         };
     }
 
-    
     private static GanttLanguage getLanguage() {
         return GanttLanguage.getInstance();
     }
@@ -405,9 +415,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         result.append(stringWriter.getBuffer().toString());
         return result.toString();
     }
+
     public void setWorkbenchTitle(String title) {
         myMainFrame.setTitle(title);        
-        
     }
         
     public IProgressMonitor createMonitor(Job job) {
@@ -425,21 +435,27 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public IProgressMonitor getDefaultMonitor() {
         return null;
     }
+
 	public TaskTreeUIFacade getTaskTree() {
 		return myFallbackDelegate.getTaskTree();
 	}
+
 	public ResourceTreeUIFacade getResourceTree() {
 		return myFallbackDelegate.getResourceTree();
 	}
+
 	public TaskSelectionContext getTaskSelectionContext() {
 		return myTaskSelectionManager;
 	}
+
     public TaskSelectionManager getTaskSelectionManager() {
         return myTaskSelectionManager;
     }
+
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myLafOption.getLookAndFeel();
     }
+
     @Override
     public void setLookAndFeel(final GanttLookAndFeelInfo laf) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -558,11 +574,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
         
     }
-    
+
     @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
-
 }
 

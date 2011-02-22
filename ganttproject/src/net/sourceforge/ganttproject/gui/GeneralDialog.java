@@ -1,19 +1,21 @@
-/***************************************************************************
- GeneralDialog.java 
- ------------------------------------------
- begin                : 29 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
@@ -55,12 +57,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public abstract class GeneralDialog extends JDialog implements ActionListener,
         TreeSelectionListener {
 
-    /** Language of the application. */
+    /** Language of the application */
     protected final GanttLanguage language = GanttLanguage.getInstance();
 
     protected final GanttProject appli;
 
-    /** The tree to set the menus. */
+    /** The tree to set the menus */
     protected final JTree treeSections;
 
     /** The root node of the Tree */
@@ -166,8 +168,9 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
     public DefaultMutableTreeNode addObject(Object child,
             DefaultMutableTreeNode parent) {
         DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
-        if (parent == null)
+        if (parent == null) {
             parent = rootNode;
+        }
         treeModel.insertNodeInto(childNode, parent, parent.getChildCount());
         treeSections.scrollPathToVisible(new TreePath(childNode.getPath()));
         return childNode;

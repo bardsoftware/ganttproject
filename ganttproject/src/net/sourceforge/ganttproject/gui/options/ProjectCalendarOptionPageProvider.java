@@ -119,7 +119,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
 
         Box dateComponent = Box.createHorizontalBox();
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        dateComponent.add(new JLabel(i18n.getText(builder.myi18n.getCanonicalOptionLabelKey(myProjectStartOption))));
+        dateComponent.add(new JLabel(i18n.getText(builder.getI18N().getCanonicalOptionLabelKey(myProjectStartOption))));
         dateComponent.add(Box.createHorizontalStrut(3));
         dateComponent.add(builder.createDateComponent(myProjectStartOption));
         dateComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -133,14 +133,14 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
                     super.paint(g);
                     return;
                 }
-                BufferedImage buf = new BufferedImage(getWidth(),getHeight(), BufferedImage.TYPE_INT_RGB);
+                final BufferedImage buf = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
                 super.paint(buf.getGraphics());
-                float[] my_kernel = {
+                final float[] my_kernel = {
                     0.0625f, 0.125f, 0.0625f, 0.125f, 0.25f, 0.125f,
                     0.0625f, 0.125f, 0.0625f  };
-                ConvolveOp op = new ConvolveOp(new Kernel(3,3, my_kernel), ConvolveOp.EDGE_NO_OP, null);
-                Image img = op.filter(buf,null);
-                g.drawImage(img,0,0,null);
+                final ConvolveOp op = new ConvolveOp(new Kernel(3, 3, my_kernel), ConvolveOp.EDGE_NO_OP, null);
+                Image img = op.filter(buf, null);
+                g.drawImage(img, 0, 0, null);
             }
         };
         myMoveStrategyPanelWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
