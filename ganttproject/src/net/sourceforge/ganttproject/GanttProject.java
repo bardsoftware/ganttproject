@@ -935,9 +935,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Create the button on toolbar */
     private void addButtons(JToolBar toolBar) {
-        bSave = new TestGanttRolloverButton(myProjectMenu
-                .getSaveProjectAction());
-
+        bSave = new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction());
         bCut = new TestGanttRolloverButton(getCutAction());
         bCopy = new TestGanttRolloverButton(getCopyAction());
         bPaste = new TestGanttRolloverButton(getPasteAction());
@@ -1015,9 +1013,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         toolBar.add(bSave);
         toolBar.add(bUndo);
         toolBar.add(bRedo);
+        toolBar.addSeparator();
         toolBar.add(bCut);
         toolBar.add(bCopy);
         toolBar.add(bPaste);
+        toolBar.addSeparator();
         toolBar.add(bNewTask);
         toolBar.add(bDelete);
         toolBar.add(bProperties);
