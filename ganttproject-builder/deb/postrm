@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+if which update-mime >/dev/null 2>&1; then update-mime; fi
+
+if [ -x "`which update-menus 2>/dev/null`" ]; then update-menus ; fi
