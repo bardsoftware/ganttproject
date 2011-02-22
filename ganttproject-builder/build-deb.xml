@@ -69,6 +69,7 @@
 		<input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="0.0.1" />
 		<antcall target="createdeb-minimal" />
 		<antcall target="createdeb-plugins" />
+		<antcall target="createdeb-meta" />
 	</target>
 
 
@@ -78,12 +79,46 @@
 	<target name="dist" depends="clean, dist-bin, desktop-file" description="Generate and package all distributables">
 	</target>
 
+    <!-- - - - - - - - - - - - - - - - - -
+          private target: createdeb-meta
+         - - - - - - - - - - - - - - - - - -->
+    <target name="createdeb-meta" depends="define_tasks">
+        <description>Create a debian meta package for GanttProject depending on minimal and plugins</description>
+        <property name="package.name" value="ganttproject"/>
+        <deb
+            todir="dist-bin"
+            package="${package.name}"
+            version="${dist.version.number}"
+            homepage="http://ganttproject.biz/"
+            section="editors"
+            priority="optional"
+            depends="ganttproject-minimal (= ${dist.version.number}-1), ganttproject-plugins (= ${dist.version.number}-1)"
+        >
+            <version upstream="${dist.version.number}"/>
+            <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
+            <description synopsis="Gantt chart based project scheduling and management tool.">
+                GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
+                Our major features include:
+
+                * Task hierarchy and dependencies
+                * Gantt chart
+                * Resource load chart
+                * Generation of PERT chart
+                * PDF and HTML reports
+                * MS Project import/export
+                * WebDAV based groupwork
+
+                Visit http://ganttproject.biz to learn more
+            </description>
+        </deb>
+    </target>
+
 
 	<!-- - - - - - - - - - - - - - - - - - 
           private target: createdeb-minimal
          - - - - - - - - - - - - - - - - - -->
 	<target name="createdeb-minimal" depends="define_tasks">
-		<description>create a debian package of the ant deb task</description>
+		<description>Create a debian package of the GanttProject (without plaugins)</description>
 		<property name="package.name" value="ganttproject"/>
 		<deb
             todir="dist-bin"
@@ -99,6 +134,8 @@
 			<version upstream="${dist.version.number}"/>
 			<maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
 			<description synopsis="Gantt chart based project scheduling and management tool.">
+				Minimal installation of GanttProject without (exporter) plugins.
+
 				GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
 				Our major features include:
 
@@ -134,7 +171,7 @@
           private target: createdeb-plugins
          - - - - - - - - - - - - - - - - - -->
 	<target name="createdeb-plugins" depends="define_tasks">
-		<description>create a debian package of the ant deb task</description>
+		<description>Create a debian package of the GanttProject plugins (depending on minimal)</description>
 		<property name="package.name" value="ganttproject"/>
 		<deb
             todir="dist-bin"
