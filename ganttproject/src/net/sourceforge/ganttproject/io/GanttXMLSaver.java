@@ -72,16 +72,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
         try {
             AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(stream);
-            SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory
-                    .newInstance();
-            TransformerHandler handler = factory.newTransformerHandler();
-            Transformer serializer = handler.getTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-            serializer.setOutputProperty(
-                    "{http://xml.apache.org/xslt}indent-amount", "4");
-            handler.setResult(result);
+            TransformerHandler handler = createHandler(result);
             handler.startDocument();
             addAttribute("name", getProject().getProjectName(), attrs);
             addAttribute("company", getProject().getOrganization(), attrs);

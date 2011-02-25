@@ -12,31 +12,33 @@ import org.xml.sax.helpers.AttributesImpl;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 
-class HistorySaver extends SaverBase {
+public class HistorySaver extends SaverBase {
 
-    void save(List/*<GanttPreviousState*/<GanttPreviousState> history, TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-        AttributesImpl attrs = new AttributesImpl();
+    void save(List<GanttPreviousState> history, TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
         startElement("previous", handler);
-        for (int i=0; i<history.size(); i++) {
-            final GanttPreviousState nextState = history.get(i);
-            final List/*<GanttPreviousStateTask>*/<GanttPreviousStateTask> stateTasks = nextState.load();
-            addAttribute("name", nextState.getName(), attrs);
-            startElement("previous-tasks", attrs, handler);
-            // ArrayList list =
-            // ((GanttPreviousState)previous.get(i)).getTasks();
-            for (int j=0; j<stateTasks.size(); j++) {
-                GanttPreviousStateTask task = stateTasks.get(j);
-                addAttribute("id", task.getId(), attrs);
-                addAttribute("start", task.getStart().toXMLString(), attrs);
-                addAttribute("duration", task.getDuration(), attrs);
-                addAttribute("meeting", task.isMilestone(), attrs);
-                addAttribute("super", task.hasNested(), attrs);
-                emptyElement("previous-task", attrs, handler);
-
-            }
-            endElement("previous-tasks", handler);
+        for (GanttPreviousState baseline : history) {
+            saveBaseline(baseline, handler);
         }
         endElement("previous", handler);
     }
 
+    public void saveBaseline(GanttPreviousState nextState, TransformerHandler handler) throws SAXException {
+        saveBaseline(nextState.getName(), nextState.load(), handler);
+    }
+
+    public void saveBaseline(String name, List<GanttPreviousStateTask> tasks, TransformerHandler handler) throws SAXException {
+        AttributesImpl attrs = new AttributesImpl();
+        addAttribute("name", name, attrs);
+        startElement("previous-tasks", attrs, handler);
+        for (GanttPreviousStateTask task : tasks) {
+            addAttribute("id", task.getId(), attrs);
+            addAttribute("start", task.getStart().toXMLString(), attrs);
+            addAttribute("duration", task.getDuration(), attrs);
+            addAttribute("meeting", task.isMilestone(), attrs);
+            addAttribute("super", task.hasNested(), attrs);
+            emptyElement("previous-task", attrs, handler);
+        }
+        endElement("previous-tasks", handler);
+
+    }
 }

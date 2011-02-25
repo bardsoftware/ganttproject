@@ -22,13 +22,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -52,6 +46,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 public abstract class AbstractTableAndActionsComponent<T> {
     public static final int ENABLED_WITH_EMPTY_SELECTION = 1;
     public static final int DISABLED_WITH_MULTI_SELECTION = 2;
+    private int myActionOrientation = SwingConstants.HORIZONTAL;
 
     private static class InternalAction<T> {
         final Action action;
@@ -74,7 +69,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     private final List<InternalAction<T>> myAdditionalActions = new ArrayList<InternalAction<T>>();
     private final List<SelectionListener<T>> myListeners = new ArrayList<SelectionListener<T>>();
     private final JTable myTable;
-    private JPanel buttonBox;
+    private Box buttonBox;
 
     protected AbstractTableAndActionsComponent(JTable table) {
         myTable = table;
@@ -97,6 +92,15 @@ public abstract class AbstractTableAndActionsComponent<T> {
         if (action instanceof SelectionListener) {
             addSelectionListener((SelectionListener<T>) action);
         }
+    }
+
+    public void setActionOrientation(int orientation) {
+        assert orientation == SwingConstants.VERTICAL || orientation == SwingConstants.HORIZONTAL;
+        myActionOrientation = orientation;
+    }
+
+    public void setSelectionMode(int selectionMode) {
+        myTable.getSelectionModel().setSelectionMode(selectionMode);
     }
 
     private Action getAddResourceAction() {
@@ -131,7 +135,12 @@ public abstract class AbstractTableAndActionsComponent<T> {
         };
     }
 
-    protected void setSelection(List<T> selectedObjects) {
+    public void setSelection(List<T> selectedObjects) {
+        if (selectedObjects == null) {
+            myTable.getSelectionModel().clearSelection();
+        }
+    }
+    protected void fireSelectionChanged(List<T> selectedObjects) {
         for (SelectionListener<T> l : myListeners) {
             l.selectionChanged(selectedObjects);
         }
@@ -142,7 +151,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
 
     public JComponent getActionsComponent() {
         if (buttonBox == null) {
-            buttonBox = new JPanel(new FlowLayout(FlowLayout.LEADING));
+            buttonBox = myActionOrientation == SwingConstants.HORIZONTAL ? Box.createHorizontalBox() : Box.createVerticalBox();
             for (InternalAction<T> internalAction: myAdditionalActions) {
                 buttonBox.add(new JButton(internalAction.action));
             }

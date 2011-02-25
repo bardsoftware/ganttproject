@@ -42,7 +42,7 @@ public abstract class EditableList<T>  {
     private JXTable resourcesTable;
     private AbstractTableAndActionsComponent<T> myTableAndActions;
     private JScrollPane resourcesScrollPane;
-    protected int[] mySelectedRows;
+    private int[] mySelectedRows;
     private JComboBox myComboBox;
     private final List<T> myPossibleValues;
     private String myTitle;
@@ -283,9 +283,7 @@ public abstract class EditableList<T>  {
         protected void onSelectionChanged() {
             mySelectedRows = resourcesTable.getSelectedRows();
             List<T> selectedObjects = getSelectedObjects();
-            if (!selectedObjects.isEmpty()) {
-                setSelection(selectedObjects);
-            }
+            fireSelectionChanged(selectedObjects);
         }
 
     }

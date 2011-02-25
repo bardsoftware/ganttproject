@@ -302,7 +302,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
     }
 
 
-    public int setBaseline(ArrayList<GanttPreviousStateTask> tasks) {
+    public int setBaseline(List<GanttPreviousStateTask> tasks) {
         myBaseline = tasks;
         return (calculateRowHeight());
     }
