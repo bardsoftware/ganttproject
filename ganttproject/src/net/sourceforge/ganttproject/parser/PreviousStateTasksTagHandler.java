@@ -33,8 +33,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * @author nbohn
  */
-public class PreviousStateTasksTagHandler extends DefaultHandler implements
-        TagHandler {
+public class PreviousStateTasksTagHandler extends DefaultHandler implements TagHandler {
     private String myName = "";
 
     private GanttPreviousState previousState;
@@ -42,6 +41,11 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
     private final List<GanttPreviousState> myPreviousStates;
 
     private ArrayList<GanttPreviousStateTask> tasks = new ArrayList<GanttPreviousStateTask>();
+
+
+    public PreviousStateTasksTagHandler() {
+        this(null);
+    }
 
     public PreviousStateTasksTagHandler(List<GanttPreviousState> previousStates) {
         myPreviousStates = previousStates;
@@ -52,25 +56,23 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
         if (qName.equals("previous-tasks")) {
             setName(attrs.getValue("name"));
             tasks = new ArrayList<GanttPreviousStateTask>();
-            if (myPreviousStates != null) {
-                try {
-                    previousState = new GanttPreviousState(myName);
-                    myPreviousStates.add(previousState);
-                } catch (IOException e) {
-                	if (!GPLogger.log(e)) {
-                		e.printStackTrace(System.err);
-                	}
-                }
-            }
-        } else if ((qName.equals("previous-task"))
-                /*&& (myPreviousStates != null)*/) {
-            writePreviousTask(attrs);
+        } else if (qName.equals("previous-task")) {
+            loadPreviousTask(attrs);
         }
     }
 
     public void endElement(String namespaceURI, String sName, String qName) {
-        if ((qName.equals("previous-tasks")) && (myPreviousStates != null)) {
-            previousState.saveFilesFromLoaded(tasks);
+        if (qName.equals("previous-tasks") && myPreviousStates != null) {
+            try {
+                previousState = new GanttPreviousState(myName, tasks);
+                previousState.init();
+                previousState.saveFile();
+                myPreviousStates.add(previousState);
+            } catch (IOException e) {
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+            }
         }
     }
 
@@ -78,7 +80,7 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements
         myName = name;
     }
 
-    private void writePreviousTask(Attributes attrs) {
+    private void loadPreviousTask(Attributes attrs) {
 
         String id = attrs.getValue("id");
 

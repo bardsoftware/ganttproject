@@ -276,6 +276,15 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         super.repaint();
     }
 
+    @Override
+    public void setBaseline(GanttPreviousState baseline) {
+        if (baseline == null) {
+            setPreviousStateTasks(null);
+        } else {
+            setPreviousStateTasks(baseline.load());
+        }
+    }
+
     class MouseSupport {
         protected Task findTaskUnderMousePointer(int xpos, int ypos) {
             ChartItem chartItem = myChartModel.getChartItemWithCoordinates(
@@ -474,7 +483,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return myScrollCenterAction;
     }
 
-    public void setPreviousStateTasks(ArrayList<GanttPreviousStateTask> tasks) {
+    public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setBaseline(tasks);
         ((GanttTree2) appli.getTree()).getTable().setRowHeight(rowHeight);
     }

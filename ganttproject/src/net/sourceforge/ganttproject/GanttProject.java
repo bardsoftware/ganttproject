@@ -103,8 +103,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.previousState.GanttDialogCompareToPreviousState;
-import net.sourceforge.ganttproject.gui.previousState.GanttDialogSaveAsPreviousState;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -1023,27 +1021,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         toolBar.add(bProperties);
     }
 
-    protected void saveAsPreviousState() {
-        getUIFacade().setStatusText(
-                GanttLanguage.getInstance().getText("saveCurrent"));
-        GanttDialogSaveAsPreviousState ps = new GanttDialogSaveAsPreviousState(
-                this);
-        ps.setVisible(true);
-        if (ps.isSaved()) {
-            myPreviousStates.add(ps.getPreviousState());
-        }
-    }
-
     public List<GanttPreviousState> getBaselines() {
         return myPreviousStates;
-    }
-
-    protected void compareToPreviousState() {
-        getUIFacade().setStatusText(
-                GanttLanguage.getInstance().getText("comparePrev"));
-        GanttDialogCompareToPreviousState cp = new GanttDialogCompareToPreviousState(
-                this);
-        cp.setVisible(true);
     }
 
     private void aboutDialog() {
