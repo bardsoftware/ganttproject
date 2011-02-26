@@ -34,7 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
@@ -93,7 +92,7 @@ public class OptionsPageBuilder {
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         result.add(topPanel, BorderLayout.NORTH);
         JComponent planePage = buildPlanePage(optionGroups);
-        result.add(new JScrollPane(planePage), BorderLayout.CENTER);
+        result.add(planePage, BorderLayout.CENTER);
         return result;
     }
 
