@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject.gui.baseline;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,6 +19,7 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class BaselineDialogAction extends GPAction {
     private IGanttProject myProject;
@@ -70,7 +72,6 @@ public class BaselineDialogAction extends GPAction {
                     GanttPreviousState baseline = it.next();
                     if (baseline.getName().equals(value.getName())) {
                         myTrash.add(baseline);
-                        it.remove();
                         break;
                     }
                 }
@@ -81,8 +82,10 @@ public class BaselineDialogAction extends GPAction {
                 return baseline.getName();
             }
         };
+        list.setUndefinedValueLabel(GanttLanguage.getInstance().getText("baselineDialog.undefinedValueLabel"));
         list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.getTableAndActions().addSelectionListener(new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
+        list.getTableAndActions().addSelectionListener(
+                new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
             @Override
             public void selectionChanged(List<GanttPreviousState> selection) {
                 if (selection.isEmpty()) {
@@ -93,7 +96,7 @@ public class BaselineDialogAction extends GPAction {
                 myUiFacade.getGanttChart().reset();
             }
         });
-        list.getTableAndActions().addAction(new AbstractAction("Hide baselines") {
+        list.getTableAndActions().addAction(new GPAction("baselineDialog.hideBaselines") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 list.getTableAndActions().setSelection(null);
@@ -122,4 +125,10 @@ public class BaselineDialogAction extends GPAction {
             }
         });
     }
+
+    @Override
+    protected String getLocalizedName() {
+        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", super.getLocalizedName());
+    }
+
 }

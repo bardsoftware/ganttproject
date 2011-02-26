@@ -23,20 +23,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jdesktop.jdnc.JNTable;
 import org.jdesktop.swing.JXTable;
 
 public abstract class EditableList<T>  {
 
+    private final Object UNDEFINED_VALUE = new Object() {
+        @Override
+        public String toString() {
+            return myUndefinedValueLabel;
+        }
+    };
     private final List<T> myValues;
     private final TableModelImpl myTableModel;
     private JXTable resourcesTable;
@@ -46,6 +50,7 @@ public abstract class EditableList<T>  {
     private JComboBox myComboBox;
     private final List<T> myPossibleValues;
     private String myTitle;
+    private String myUndefinedValueLabel = GanttLanguage.getInstance().getText("editableList.undefinedValueLabel");
 
     public EditableList(List<T> assigned_values, List<T> possibleValues) {
         myValues = assigned_values;
@@ -53,6 +58,9 @@ public abstract class EditableList<T>  {
         myTableModel = new TableModelImpl();
     }
 
+    public void setUndefinedValueLabel(String label) {
+        myUndefinedValueLabel = label;
+    }
 
     public void setTitle(String title) {
         myTitle = title;
@@ -94,6 +102,10 @@ public abstract class EditableList<T>  {
                     return EditableList.this.getTableCellRendererComponent(
                             this, typedValue, isSelected, hasFocus, row);
                 }
+            });
+            JTextField editorField = new JTextField();
+            resourcesTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(editorField) {
+
             });
             if (!myPossibleValues.isEmpty()) {
                 setupEditor(myPossibleValues, resourcesTable);
@@ -145,7 +157,7 @@ public abstract class EditableList<T>  {
                 return new ComboItem(myValues.get(row));
             }
             if (row==myValues.size()) {
-                return "<Type name here>";
+                return UNDEFINED_VALUE;
             }
             throw new IllegalArgumentException("I can't return data in row="
                     + row);
@@ -166,7 +178,7 @@ public abstract class EditableList<T>  {
                 fireTableRowsDeleted(row, row);
                 return;
             }
-
+            System.out.println(value + ":" + value.getClass());
             T prototype = createPrototype(value);
             if (row >= myValues.size()) {
                 if (prototype!=null) {
