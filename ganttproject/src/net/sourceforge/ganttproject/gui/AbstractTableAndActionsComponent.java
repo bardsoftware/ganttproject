@@ -1,5 +1,6 @@
-/* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2010-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,9 +136,11 @@ public abstract class AbstractTableAndActionsComponent<T> {
         };
     }
 
-    public void setSelection(List<T> selectedObjects) {
-        if (selectedObjects == null) {
+    public void setSelection(int index) {
+        if (index == -1) {
             myTable.getSelectionModel().clearSelection();
+        } else {
+            myTable.getSelectionModel().setSelectionInterval(index, index);
         }
     }
     protected void fireSelectionChanged(List<T> selectedObjects) {
@@ -152,8 +155,13 @@ public abstract class AbstractTableAndActionsComponent<T> {
     public JComponent getActionsComponent() {
         if (buttonBox == null) {
             buttonBox = myActionOrientation == SwingConstants.HORIZONTAL ? Box.createHorizontalBox() : Box.createVerticalBox();
+            Component strut = null;
             for (InternalAction<T> internalAction: myAdditionalActions) {
+                if (strut != null) {
+                    buttonBox.add(strut);
+                }
                 buttonBox.add(new JButton(internalAction.action));
+                strut = myActionOrientation == SwingConstants.HORIZONTAL ? Box.createHorizontalStrut(5) : Box.createVerticalStrut(5);
             }
             Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
             buttonBox.setBorder(emptyBorder);

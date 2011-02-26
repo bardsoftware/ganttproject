@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.baseline;
 
 import java.awt.BorderLayout;
@@ -84,6 +102,10 @@ public class BaselineDialogAction extends GPAction {
         };
         list.setUndefinedValueLabel(GanttLanguage.getInstance().getText("baselineDialog.undefinedValueLabel"));
         list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        if (myUiFacade.getGanttChart().getBaseline() != null) {
+            int index = myBaselines.indexOf(myUiFacade.getGanttChart().getBaseline());
+            list.getTableAndActions().setSelection(index);
+        }
         list.getTableAndActions().addSelectionListener(
                 new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
             @Override
@@ -99,15 +121,17 @@ public class BaselineDialogAction extends GPAction {
         list.getTableAndActions().addAction(new GPAction("baselineDialog.hideBaselines") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                list.getTableAndActions().setSelection(null);
+                list.getTableAndActions().setSelection(-1);
             }
         });
         JPanel result = new JPanel(new BorderLayout());
         result.add(list.getTableComponent(), BorderLayout.CENTER);
-        result.add(list.getActionsComponent(), BorderLayout.NORTH);
+        JComponent actionsComponent = list.getActionsComponent();
+        actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+        result.add(actionsComponent, BorderLayout.NORTH);
         result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        myUiFacade.showDialog(result, new Action[] {
+        Action[] actions = new Action[] {
             new OkAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -123,7 +147,8 @@ public class BaselineDialogAction extends GPAction {
                 public void actionPerformed(ActionEvent actionEvent) {
                 }
             }
-        });
+        };
+        myUiFacade.showDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title"));
     }
 
     @Override
