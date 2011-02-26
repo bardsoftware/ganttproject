@@ -110,6 +110,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private ChartViewState myViewState;
 
+    private GanttPreviousState myBaseline;
+
     public GanttGraphicArea(GanttProject app, GanttTree2 ttree,
             TaskManager taskManager, ZoomManager zoomManager,
             GPUndoManager undoManager) {
@@ -197,7 +199,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private int getHeaderHeight() {
         return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getTable());
     }
-    
+
     /** @return an image with the gantt chart */
     // TODO: 1.11 take into account flags "render this and don't render that"
     public BufferedImage getChart(GanttExportSettings settings) {
@@ -283,7 +285,15 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         } else {
             setPreviousStateTasks(baseline.load());
         }
+        myBaseline = baseline;
     }
+
+    @Override
+    public GanttPreviousState getBaseline() {
+        return myBaseline;
+    }
+
+
 
     class MouseSupport {
         protected Task findTaskUnderMousePointer(int xpos, int ypos) {
@@ -340,9 +350,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
                 TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskEndInteraction(
-                initiatingEvent, taskBoundary, 
-                new TimelineFacadeImpl(getChartModel(), getTaskManager()), 
-                getUIFacade(), 
+                initiatingEvent, taskBoundary,
+                new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                getUIFacade(),
                 getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
             setCursor(E_RESIZE_CURSOR);
         }
@@ -350,17 +360,17 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         public void beginChangeTaskStartInteraction(MouseEvent e,
                 TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary,
-                new TimelineFacadeImpl(getChartModel(), getTaskManager()), 
-                getUIFacade(), 
+                new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                getUIFacade(),
                 getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
             setCursor(W_RESIZE_CURSOR);
         }
 
         public void beginChangeTaskProgressInteraction(MouseEvent e,
                 TaskProgressChartItem taskProgress) {
-            setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress, 
-                new TimelineFacadeImpl(getChartModel(), getTaskManager()), 
-                getUIFacade())); 
+            setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress,
+                new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                getUIFacade()));
             setCursor(CHANGE_PROGRESS_CURSOR);
         }
 
@@ -378,14 +388,14 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 },
                 getUIFacade(),
                 getTaskManager().getDependencyCollection()));
-                
+
         }
 
         public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks,
-                new TimelineFacadeImpl(getChartModel(), getTaskManager()), 
-                getUIFacade(), 
-                getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));                                
+                new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                getUIFacade(),
+                getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
         }
 
         public void paintComponent(Graphics g, List<Task> visibleTasks) {
@@ -687,7 +697,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     public void reset() {
-    	repaint();
+        repaint();
     }
 
     public Icon getIcon() {

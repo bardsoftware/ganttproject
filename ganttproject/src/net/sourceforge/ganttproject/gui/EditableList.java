@@ -1,5 +1,6 @@
-/* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2010-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,7 +27,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -105,6 +105,32 @@ public abstract class EditableList<T>  {
             });
             JTextField editorField = new JTextField();
             resourcesTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(editorField) {
+                private boolean isCanceled;
+
+                @Override
+                public Component getTableCellEditorComponent(
+                        JTable table, Object value, boolean isSelected, int row,int column) {
+                    isCanceled = false;
+                    JTextField result = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+                    if (UNDEFINED_VALUE == value) {
+                        result.setText("");
+                    }
+                    return result;
+                }
+                @Override
+                public void cancelCellEditing() {
+                    super.cancelCellEditing();
+                    isCanceled = true;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    if (isCanceled) {
+                        return UNDEFINED_VALUE;
+                    }
+                    return super.getCellEditorValue();
+                }
+
 
             });
             if (!myPossibleValues.isEmpty()) {
@@ -178,7 +204,6 @@ public abstract class EditableList<T>  {
                 fireTableRowsDeleted(row, row);
                 return;
             }
-            System.out.println(value + ":" + value.getClass());
             T prototype = createPrototype(value);
             if (row >= myValues.size()) {
                 if (prototype!=null) {
