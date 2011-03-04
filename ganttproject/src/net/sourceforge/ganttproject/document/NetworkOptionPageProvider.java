@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.document;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -9,10 +10,12 @@ import java.net.URLConnection;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -40,6 +43,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
     public Component buildPageComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
         final GPOptionGroup ftpGroup = getProject().getDocumentManager().getNetworkOptionGroups()[0];
+        ftpGroup.setTitled(false);
         I18N i18n = new OptionsPageBuilder.I18N();
 
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
@@ -97,9 +101,16 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
         servernameOption.addChangeValueListener(listener);
         usernameOption.addChangeValueListener(listener);
         passwordOption.addChangeValueListener(listener);
-        Box result = Box.createVerticalBox();
-        result.add(optionsPane);
-        result.add(new JButton(testConnectionAction));
+        JPanel result = new JPanel(new BorderLayout());
+        result.setBorder(new EmptyBorder(5, 5, 5, 5));
+        result.add(optionsPane, BorderLayout.NORTH);
+        JButton testConnectionButton = new JButton(testConnectionAction);
+        testConnectionButton.setAlignmentX(SwingConstants.RIGHT);
+
+        JPanel connectionWrapper = new JPanel(new BorderLayout());
+        connectionWrapper.add(testConnectionButton, BorderLayout.NORTH);
+
+        result.add(connectionWrapper, BorderLayout.CENTER);
         return result;
     }
 

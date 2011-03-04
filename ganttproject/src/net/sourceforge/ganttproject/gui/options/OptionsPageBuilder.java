@@ -38,11 +38,8 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import org.jdesktop.swing.JXDatePicker;
 
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -57,6 +54,8 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import org.jdesktop.swing.JXDatePicker;
 
 /**
  * @author bard
@@ -86,13 +85,16 @@ public class OptionsPageBuilder {
     }
     public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
         JPanel result = new JPanel(new BorderLayout());
-        result.setBorder(new EmptyBorder(0, 5, 0, 5));
-        TopPanel topPanel = new TopPanel(myi18n.getPageTitle(pageID), myi18n
-                .getPageDescription(pageID));
-        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
+        topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         result.add(topPanel, BorderLayout.NORTH);
+
+        JPanel planePageWrapper = new JPanel(new BorderLayout());
+        planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         JComponent planePage = buildPlanePage(optionGroups);
-        result.add(planePage, BorderLayout.CENTER);
+        planePage.setAlignmentX(Component.LEFT_ALIGNMENT);
+        planePageWrapper.add(planePage, BorderLayout.NORTH);
+        result.add(planePageWrapper, BorderLayout.CENTER);
         return result;
     }
 
@@ -199,7 +201,7 @@ public class OptionsPageBuilder {
     }
     private Component createOptionLabel(GPOptionGroup group, GPOption option) {
         JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
-        nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
+        //nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
         return nextLabel;
     }
     private Component createOptionComponent(GPOptionGroup group, GPOption option) {

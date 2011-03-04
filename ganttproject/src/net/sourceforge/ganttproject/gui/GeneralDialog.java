@@ -1,5 +1,5 @@
 /***************************************************************************
- GeneralDialog.java 
+ GeneralDialog.java
  ------------------------------------------
  begin                : 29 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -142,7 +142,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         settingPanel = firstPanel;
 
         Box vb = Box.createVerticalBox();
-        vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel
+        vb.add(TopPanel.create("  " + settingPanel.getTitle(), settingPanel
                 .getComment()));
         vb.add(settingPanel);
         settingPanel.initialize();

@@ -2,12 +2,14 @@ package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -94,12 +96,14 @@ public abstract class WizardImpl {
             WizardPage nextPage = myPages.get(i);
             //
             JPanel pagePanel = new JPanel(new BorderLayout());
-            TopPanel titlePanel = new TopPanel(nextPage.getTitle() + "   ("
+            JComponent titlePanel = TopPanel.create(nextPage.getTitle() + "   ("
                     + GanttLanguage.getInstance().getText("step") + " "
                     + (i + 1) + " " + GanttLanguage.getInstance().getText("of")
                     + " " + (myPages.size()) + ")", null);
             pagePanel.add(titlePanel, BorderLayout.NORTH);
-            pagePanel.add(nextPage.getComponent());
+            JComponent component = (JComponent) nextPage.getComponent();
+            component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+            pagePanel.add(component);
             //
             myPagesContainer.add(pagePanel, nextPage.getTitle());
         }
