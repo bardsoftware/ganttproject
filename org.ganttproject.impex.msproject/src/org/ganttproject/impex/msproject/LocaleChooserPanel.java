@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -28,7 +29,7 @@ class LocaleChooserPanel extends JPanel {
 
         JPanel result = new JPanel(new BorderLayout());
         result.setBorder(new EmptyBorder(0, 5, 0, 5));
-        TopPanel topPanel = new TopPanel(lang.getText("mpxLanguageSettings"),
+        JComponent topPanel = TopPanel.create(lang.getText("mpxLanguageSettings"),
                 lang.getText("mpxLanguageSettingsComment"));
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         result.add(topPanel, BorderLayout.NORTH);
@@ -66,9 +67,9 @@ class LocaleChooserPanel extends JPanel {
             try {
                 combo.setSelectedItem(getString(currentLocale));
             } catch (Exception e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         }
 

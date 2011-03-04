@@ -189,11 +189,8 @@ public class SettingsDialog2 {
             }
         });
 
-        final JPanel pagesPanel = new JPanel(new BorderLayout());
-        pagesPanel.add(new JScrollPane(pagesList), BorderLayout.CENTER);
-
         JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(pagesPanel, BorderLayout.WEST);
+        rootPanel.add(pagesList, BorderLayout.WEST);
         rootPanel.add(contentPanel, BorderLayout.CENTER);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         return rootPanel;

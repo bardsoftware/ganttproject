@@ -2,6 +2,10 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
 
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -19,11 +23,17 @@ public class OptionPageProviderPanel {
 
 
     public Component getComponent() {
+        JComponent providerComponent;
         if (myProvider.hasCustomComponent()) {
-            return myProvider.buildPageComponent();
+            providerComponent = (JComponent) myProvider.buildPageComponent();
+        } else {
+            OptionsPageBuilder builder = new OptionsPageBuilder();
+            providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
         }
-        OptionsPageBuilder builder = new OptionsPageBuilder();
-        return builder.buildPage(myGroups, myProvider.getPageID());
+        providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
+        JScrollPane result = new JScrollPane(providerComponent);
+        return result;
+        //return providerComponent;
     }
 
 

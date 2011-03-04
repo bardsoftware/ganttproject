@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -69,21 +70,18 @@ public class OptionsDialogAction extends GPAction {
 
     private Component createDialogComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
-
-        JPanel combinedPanel = new JPanel(new BorderLayout());
         JComponent comp = builder.buildPage(myGroups, "ganttChart");
-        combinedPanel.add(comp, BorderLayout.CENTER);
-        combinedPanel.setBorder(BorderFactory.createEmptyBorder(0,0,3,0));
-        return combinedPanel;
+        comp.setBorder(new EmptyBorder(5, 5, 5, 5));
+        return comp;
     }
 
-	protected String getIconFilePrefix() {
-		return null;
-	}
+    protected String getIconFilePrefix() {
+        return null;
+    }
 
-	protected String getLocalizedName() {
-		return getI18n("chartOptions");
-	}
-	
-	
+    protected String getLocalizedName() {
+        return getI18n("chartOptions");
+    }
+
+
 }

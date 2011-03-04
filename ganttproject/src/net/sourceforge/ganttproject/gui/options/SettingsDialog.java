@@ -156,8 +156,7 @@ public class SettingsDialog extends GeneralDialog implements ActionListener {
             } else {
                 settingPanel = new WelcomeSettingsPanel(appli);
             }
-            vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel
-                    .getComment()));
+            vb.add(TopPanel.create("  " + settingPanel.getTitle(), settingPanel.getComment()));
         }
         // - initialize the panel
         vb.add(Box.createVerticalStrut(20));
