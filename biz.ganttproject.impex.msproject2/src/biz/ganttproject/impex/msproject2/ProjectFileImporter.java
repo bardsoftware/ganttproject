@@ -54,6 +54,8 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.TaskLength;
@@ -72,8 +74,10 @@ class ProjectFileImporter {
     private final IGanttProject myNativeProject;
     private final ProjectReader myReader;
     private final File myForeignFile;
-	private Map<ResourceField, CustomPropertyDefinition> myResourceCustomPropertyMapping;
-	private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
+    private Map<ResourceField, CustomPropertyDefinition> myResourceCustomPropertyMapping;
+    private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
+    private Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<String, Object>();
+    private TableHeaderUIFacade myTaskFields;
 
     private static ProjectReader createReader(File file) {
         int lastDot = file.getName().lastIndexOf('.');
@@ -95,8 +99,9 @@ class ProjectFileImporter {
         void addHoliday(Date date);
     }
 
-    public ProjectFileImporter(IGanttProject nativeProject, File foreignProjectFile) {
+    public ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
         myNativeProject = nativeProject;
+        myTaskFields = taskTreeUIFacade.getVisibleFields();
         myReader = ProjectFileImporter.createReader(foreignProjectFile);
         myForeignFile = foreignProjectFile;
     }
@@ -112,6 +117,7 @@ class ProjectFileImporter {
         importCalendar(pf);
         importResources(pf, foreignId2nativeResource);
         importTasks(pf, foreignId2nativeTask);
+        hideCustomProperties();
         try {
             importDependencies(pf, foreignId2nativeTask);
         } catch (TaskDependencyException e) {
@@ -120,10 +126,26 @@ class ProjectFileImporter {
         importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
     }
 
+    private void hideCustomProperties() {
+        for (Map.Entry<String, Object> it : myCustomPropertyUniqueValueMapping.entrySet()) {
+            if (it.getValue() != null) {
+                hideCustomColumn(it.getKey());
+            }
+        }
+    }
+
+    private void hideCustomColumn(String key) {
+        for (int i = 0; i<myTaskFields.getSize(); i++) {
+            if (key.equals(myTaskFields.getField(i).getName())) {
+                myTaskFields.getField(i).setVisible(false);
+            }
+        }
+    }
+
     private void importCalendar(ProjectFile pf) {
         ProjectCalendar defaultCalendar = pf.getCalendar();
         if (defaultCalendar == null) {
-        	return;
+            return;
         }
         importWeekends(defaultCalendar);
         List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
@@ -208,9 +230,9 @@ class ProjectFileImporter {
             }
             nativeResource.setCustomField(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
         }
-	}
+    }
 
-	private void importDaysOff(Resource r, final HumanResource nativeResource) {
+    private void importDaysOff(Resource r, final HumanResource nativeResource) {
         ProjectCalendar c = r.getResourceCalendar();
         if (c == null) {
             return;
@@ -228,20 +250,20 @@ class ProjectFileImporter {
     private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask) {
         myTaskCustomPropertyMapping = new HashMap<TaskField, CustomPropertyDefinition>();
         for (Task t: foreignProject.getChildTasks()) {
-      		importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
+              importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
         }
     }
 
     private void importTask(ProjectFile foreignProject,
             Task t, net.sourceforge.ganttproject.task.Task supertask,
             Map<Integer, GanttTask> foreignId2nativeTask) {
-    	if (t.getUniqueID() == 0) { 
+        if (t.getUniqueID() == 0) {
             for (Task child: t.getChildTasks()) {
                 importTask(foreignProject, child, getTaskManager().getRootTask(), foreignId2nativeTask);
             }
             return;
-    	}
-    		
+        }
+
         GanttTask nativeTask = getTaskManager().createTask();
         myNativeProject.getTaskContainment().move(nativeTask, supertask);
         nativeTask.setName(t.getName());
@@ -266,14 +288,15 @@ class ProjectFileImporter {
     }
 
     private GanttCalendar convertStartTime(Date start) {
-		return new GanttCalendar(myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustLeft(start));
-	}
+        return new GanttCalendar(myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustLeft(start));
+    }
 
-	private void importCustomFields(Task t, GanttTask nativeTask) {
+    private void importCustomFields(Task t, GanttTask nativeTask) {
         for (TaskField tf : TaskField.values()) {
             if (!isCustomField(tf) || t.getCurrentValue(tf) == null) {
                 continue;
             }
+
             CustomPropertyDefinition def = myTaskCustomPropertyMapping.get(tf);
             if (def == null) {
                 String typeAsString = convertDataType(tf);
@@ -281,13 +304,20 @@ class ProjectFileImporter {
                 if (name == null) {
                     name = tf.getName();
                 }
-                def = myNativeProject.getTaskCustomColumnManager().createDefinition(
-                        typeAsString, name, null);
+
+                def = myNativeProject.getTaskCustomColumnManager().createDefinition(typeAsString, name, null);
                 myTaskCustomPropertyMapping.put(tf, def);
             }
             try {
-                nativeTask.getCustomValues().setValue(
-                        def.getName(), convertDataValue(tf, t.getCurrentValue(tf)));
+                Object value = convertDataValue(tf, t.getCurrentValue(tf));
+                if (!myCustomPropertyUniqueValueMapping.containsKey(def.getName())) {
+                    myCustomPropertyUniqueValueMapping.put(def.getName(), value);
+                } else {
+                    if (!value.equals(myCustomPropertyUniqueValueMapping.get(def.getName()))) {
+                        myCustomPropertyUniqueValueMapping.put(def.getName(), null);
+                    }
+                }
+                nativeTask.getCustomValues().setValue(def.getName(), value);
             } catch (CustomColumnsException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -297,7 +327,7 @@ class ProjectFileImporter {
 
     private static Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
     private boolean isCustomField(FieldType tf) {
-        return tf != null && tf.getName() != null 
+        return tf != null && tf.getName() != null
             && ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
     }
 
@@ -399,7 +429,7 @@ class ProjectFileImporter {
                         dependant, dependee);
                 dependency.setConstraint(convertConstraint(r));
                 if (r.getLag().getDuration() != 0.0) {
-                	// TODO(dbarashev): get rid of days
+                    // TODO(dbarashev): get rid of days
                     dependency.setDifference((int) r.getLag().convertUnits(
                             TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
                 }
