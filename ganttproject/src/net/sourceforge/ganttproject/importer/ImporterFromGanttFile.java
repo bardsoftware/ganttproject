@@ -132,6 +132,9 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         public String getName() {
             return null;
         }
+        @Override
+        public void setVisible(boolean visible) {
+        }
 
     }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {

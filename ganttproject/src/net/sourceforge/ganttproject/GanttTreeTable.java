@@ -1194,6 +1194,16 @@ private void createPopupMenu() {
         public boolean isDisplayed() {
             return this.displayed;
         }
+
+        @Override
+        public void setVisible(boolean visible) {
+            if (visible) {
+                displayColumn(getName());
+            } else {
+                hideColumn(getName());
+            }
+        }
+
         public boolean isVisible() {
             return isDisplayed();
         }
