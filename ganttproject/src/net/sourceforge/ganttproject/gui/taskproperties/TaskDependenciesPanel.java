@@ -17,14 +17,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
@@ -55,7 +53,7 @@ public class TaskDependenciesPanel {
     private JTable myTable;
 
     private JTable getTable() {
-    	return myTable;
+        return myTable;
     }
 
     public JPanel getComponent() {
@@ -66,11 +64,11 @@ public class TaskDependenciesPanel {
                 DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()),
                 getTable());
         CommonPanel.setupComboBoxEditor(
-        		DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()), 
-        		CONSTRAINTS);
+                DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()),
+                CONSTRAINTS);
         CommonPanel.setupComboBoxEditor(
-        		DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()), 
-        		HARDNESS);
+                DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()),
+                HARDNESS);
         AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
             new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
                 @Override
@@ -89,11 +87,7 @@ public class TaskDependenciesPanel {
                 }
         };
 
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(tableAndActions.getActionsComponent(), BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(myTable);
-        result.add(scrollPane, BorderLayout.CENTER);
-        return result;
+        return CommonPanel.createTableAndActions(myTable, tableAndActions);
     }
 
     public void init(Task task) {

@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     private final List<InternalAction<T>> myAdditionalActions = new ArrayList<InternalAction<T>>();
     private final List<SelectionListener<T>> myListeners = new ArrayList<SelectionListener<T>>();
     private final JTable myTable;
-    private Box buttonBox;
+    private JPanel buttonBox;
 
     protected AbstractTableAndActionsComponent(JTable table) {
         myTable = table;
@@ -154,14 +154,11 @@ public abstract class AbstractTableAndActionsComponent<T> {
 
     public JComponent getActionsComponent() {
         if (buttonBox == null) {
-            buttonBox = myActionOrientation == SwingConstants.HORIZONTAL ? Box.createHorizontalBox() : Box.createVerticalBox();
-            Component strut = null;
+            buttonBox = myActionOrientation == SwingConstants.HORIZONTAL
+                ? new JPanel(new GridLayout(1, myAdditionalActions.size(), 5, 0))
+                : new JPanel(new GridLayout(myAdditionalActions.size(), 1, 0, 5));
             for (InternalAction<T> internalAction: myAdditionalActions) {
-                if (strut != null) {
-                    buttonBox.add(strut);
-                }
                 buttonBox.add(new JButton(internalAction.action));
-                strut = myActionOrientation == SwingConstants.HORIZONTAL ? Box.createHorizontalStrut(5) : Box.createVerticalStrut(5);
             }
             Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
             buttonBox.setBorder(emptyBorder);
