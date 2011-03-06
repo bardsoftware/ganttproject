@@ -6,6 +6,7 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -170,7 +171,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         result.setTitle(title);
         final Commiter commiter = new Commiter();
         Action cancelAction = null;
-        Box buttonBox = Box.createHorizontalBox();
+        JPanel buttonBox = new JPanel(new GridLayout(1, buttonActions.length, 5, 0));
         for (int i = 0; i < buttonActions.length; i++) {
             Action nextAction = buttonActions[i];
             JButton nextButton = null;
@@ -192,9 +193,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 nextButton = new JButton(nextAction);
             }
             buttonBox.add(nextButton);
-            if (i < buttonActions.length - 1) {
-                buttonBox.add(Box.createHorizontalStrut(5));
-            }
         }
         result.getContentPane().setLayout(new BorderLayout());
         result.getContentPane().add(content, BorderLayout.CENTER);
