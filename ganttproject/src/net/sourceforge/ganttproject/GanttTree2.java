@@ -95,6 +95,8 @@ import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.NewTaskAction;
+import net.sourceforge.ganttproject.action.task.DeleteTasksAction;
+import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.delay.DelayObserver;
@@ -230,8 +232,24 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         }
     };
 
+    private final Action myNewTaskAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            if (getSelectedTask() != null) {
+                setEditingTask(getSelectedTask());
+            }
+            getUiFacade().getUndoManager().undoableEdit("New Task", new Runnable() {
+                        public void run() {
+                            Task t = getAppFrame().newTask();
+                            setEditingTask(t);
+                        }
+                    });
+        }
+    };
+
+    private final Action myDeleteAction;
+
     public GanttTree2(final GanttProject app, TaskManager taskManager,
-            TaskSelectionManager selectionManager, UIFacade uiFacade) {
+            TaskSelectionManager selectionManager, final UIFacade uiFacade) {
 
         super(new BorderLayout());
         app.getProject().addProjectEventListener(this);
@@ -246,7 +264,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         });
         mySelectionManager = selectionManager;
         this.appli = app;
-
+        myTaskPropertiesAction = new TaskPropertiesAction(app.getProject(), selectionManager, uiFacade);
+        myDeleteAction = new DeleteTasksAction(taskManager, selectionManager, uiFacade, this);
         // Create the root node
         initRootNode();
 
@@ -254,24 +273,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         treeModel.addTreeModelListener(new GanttTreeModelListener());
         // Create the JTree
         treetable = new GanttTreeTable(app.getProject(), uiFacade, treeModel);
-        treetable.getActionMap().put(myIndentAction.getValue(Action.NAME), myIndentAction);
-        treetable.getActionMap().put(myDedentAction.getValue(Action.NAME), myDedentAction);
-        treetable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), myIndentAction.getValue(Action.NAME));
-        treetable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK), myDedentAction.getValue(Action.NAME));
-        treetable.getActionMap().put("newTask", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                if (getSelectedTask() != null)
-                    setEditingTask(getSelectedTask());
-                Mediator.getGanttProjectSingleton().getUndoManager()
-                        .undoableEdit("New Task", new Runnable() {
-                            public void run() {
-                                Task t = Mediator.getGanttProjectSingleton().newTask();
-                                setEditingTask(t);
-                            }
-                        });
-            }
-        });
-        treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(GPAction.getKeyStroke("newArtifact.shortcut"), "newTask");
+
+        treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myDedentAction, myNewTaskAction,
+            getAppFrame().getCutAction(), getAppFrame().getCopyAction(), getAppFrame().getPasteAction(),
+            getTaskPropertiesAction(), myDeleteAction);
+
         treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
         treetable.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
@@ -283,12 +289,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         treetable.getTree().addTreeSelectionListener(
                 new TreeSelectionListener() {
                     public void valueChanged(TreeSelectionEvent e) {
-                        Mediator.getTaskSelectionManager().clear();
+                        getTaskSelectionManager().clear();
                         TaskNode tn[] = getSelectedTaskNodes();
                         if (tn != null) {
                             for (int i = 0; i < tn.length; i++) {
-                                Mediator.getTaskSelectionManager().addTask(
-                                        (Task) tn[i].getUserObject());
+                                getTaskSelectionManager().addTask((Task) tn[i].getUserObject());
                             }
                         }
                     }
@@ -383,12 +388,16 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         getTreeTable().getTreeTable().setToolTipText("rty");
     }
 
-    public void setActions() {
-        treetable.setAction(appli.getCopyAction());
-        treetable.setAction(appli.getPasteAction());
-        treetable.setAction(appli.getCutAction());
-        treetable.addAction(myIndentAction, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-        treetable.addAction(myDedentAction, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK));
+    private TaskSelectionManager getTaskSelectionManager() {
+        return mySelectionManager;
+    }
+
+    private UIFacade getUiFacade() {
+        return myUIFacade;
+    }
+
+    private GanttProject getAppFrame() {
+        return appli;
     }
 
     /**
@@ -426,10 +435,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     public Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new NewTaskAction(appli));
-        if (!Mediator.getTaskSelectionManager().getSelectedTasks().isEmpty()) {
+        if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
-            actions.add(createMenuAction(GanttProject.correctLabel(language
-                    .getText("deleteTask")), "/icons/delete_16.gif"));
+            actions.add(getDeleteTasksAction());
             actions.add(null);
             actions.add(myIndentAction);
             actions.add(myDedentAction);
@@ -442,26 +450,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             actions.add(appli.getCutAction());
             actions.add(appli.getCopyAction());
             actions.add(appli.getPasteAction());
-            /*
-            actions.add(null);
-            actions.add(createMenuAction(language.getText("hideTask"),
-            "/icons/hide_16.gif"));
-            actions.add(createMenuAction(language.getText("displayHiddenTasks"),
-                    "/icons/show_16.gif"));
-                    */
         }
         return actions.toArray(new Action[0]);
-    }
-
-    private Action createMenuAction(String label, String iconPath) {
-        AbstractAction result = new AbstractAction(label, new ImageIcon(
-                getClass().getResource(iconPath))) {
-            public void actionPerformed(ActionEvent e) {
-                appli.actionPerformed(e);
-            }
-        };
-        return result;
-
     }
 
     /** Create a popup menu when mouse click */
@@ -698,12 +688,11 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     /** Removes currentNode */
-    void removeCurrentNode(DefaultMutableTreeNode currentNode) {
+    public void removeCurrentNode(DefaultMutableTreeNode currentNode) {
         TreeNode parent = currentNode.getParent();
         getTaskManager().deleteTask((Task) currentNode.getUserObject());
         if (parent != null) {
             treeModel.removeNodeFromParent(currentNode);
-            forwardScheduling();
             nbTasks--;
             appli.refreshProjectInfos();
         }
@@ -768,13 +757,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         TreePath paths[] = treetable.getTree().getSelectionModel()
                 .getSelectionPaths();
-        Mediator.getTaskSelectionManager().clear();
+        getTaskSelectionManager().clear();
         if (paths != null) {
             for (int i = 0; i < paths.length; i++) {
                 TaskNode tn = (TaskNode) paths[i].getLastPathComponent();
                 if (!tn.isRoot()) {
-                    Mediator.getTaskSelectionManager().addTask(
-                            (Task) tn.getUserObject());
+                    getTaskSelectionManager().addTask((Task) tn.getUserObject());
                 }
             }
         }
@@ -1712,7 +1700,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     int where = -1;
 
-    private Action myTaskPropertiesAction;
+    private final Action myTaskPropertiesAction;
 
     /** Copy the current selected tree node */
     public void copySelectedNode() {
@@ -2130,15 +2118,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myUnlinkTasksAction;
     }
 
-    void setTaskPropertiesAction(Action action) {
-        myTaskPropertiesAction = action;
-        treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), action.getValue(Action.NAME));
-        treetable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), action.getValue(Action.NAME));
-        treetable.getActionMap().put(action.getValue(Action.NAME), action);
+    Action getTaskPropertiesAction() {
+        return myTaskPropertiesAction;
     }
 
-    private Action getTaskPropertiesAction() {
-        return myTaskPropertiesAction;
+    Action getDeleteTasksAction() {
+        return myDeleteAction;
     }
 
     public TableHeaderUIFacade getVisibleFields() {
