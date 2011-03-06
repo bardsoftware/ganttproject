@@ -128,19 +128,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         initTreeTable();
     }
 
-
-    void setAction(Action action) {
-
-        addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
-        // Add the action to the component
-    }
-
-    void addAction(Action action, KeyStroke keyStroke) {
-        InputMap inputMap = getInputMap();
-        inputMap.put(keyStroke, action.getValue(Action.NAME));
-        getActionMap().put(action.getValue(Action.NAME), action);
-    }
-
     private void updateDisplayedColumnsOrder() {
         Iterator<DisplayedColumn> it = this.listDisplayedColumns.iterator();
         while (it.hasNext()) {

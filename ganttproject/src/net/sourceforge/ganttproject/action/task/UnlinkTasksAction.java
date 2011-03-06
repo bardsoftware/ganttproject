@@ -28,15 +28,11 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 public class UnlinkTasksAction extends TaskActionBase {
 
     public UnlinkTasksAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-        super(taskManager, selectionManager, uiFacade);
+        super("unlink", taskManager, selectionManager, uiFacade);
     }
 
     protected String getIconFilePrefix() {
         return "unlink_";
-    }
-
-    protected String getLocalizedName() {
-        return getI18n("unlink");
     }
 
     protected boolean isEnabled(List<Task> selection) {

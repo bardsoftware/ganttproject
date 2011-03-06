@@ -28,17 +28,12 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class LinkTasksAction extends TaskActionBase {
     public LinkTasksAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-        super(taskManager, selectionManager, uiFacade);
+        super("link", taskManager, selectionManager, uiFacade);
     }
 
     protected String getIconFilePrefix() {
         return "link_";
     }
-
-    protected String getLocalizedName() {
-        return getI18n("link");
-    }
-
 
     protected void run(List<Task> selection) throws TaskDependencyException {
         for (int i=0; i<selection.size()-1; i++) {
@@ -50,7 +45,7 @@ public class LinkTasksAction extends TaskActionBase {
         }
         // Update (un)link buttons
         getSelectionManager().fireSelectionChanged();
-    }                
+    }
 
     protected boolean isEnabled(List<Task> selection) {
         if(selection.size() <= 1) {

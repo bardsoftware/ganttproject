@@ -205,7 +205,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private JToolBar toolBar;
 
-    private TaskPropertiesAction myTaskPropertiesAction;
+    private Action myTaskPropertiesAction;
 
     private NewTaskAction myNewTaskAction;
 
@@ -345,8 +345,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         System.err.println("3. creating menu...");
         myRefreshAction = new RefreshViewAction(getUIFacade(), options);
 
-        getTree().setActions();
-
         // Create the menus
 
         bar = new JMenuBar();
@@ -389,9 +387,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
-        myTaskPropertiesAction = new TaskPropertiesAction(getProject(), getTaskSelectionManager(), getUIFacade());
+        myTaskPropertiesAction = getTree().getTaskPropertiesAction();
         mTask.add(myTaskPropertiesAction);
-        getTree().setTaskPropertiesAction(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
 
         myNewHumanAction = new NewHumanAction(getHumanResourceManager(), this) {
@@ -450,7 +447,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
         getTabs().setSelectedIndex(0);
-        this.resp.setActions();
 
         // pert area
         // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -1172,67 +1168,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
      *            when true
      */
     public void deleteTasks(boolean confirmation) {
-        getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
-
-        final DefaultMutableTreeNode[] cdmtn = tree.getSelectedNodes();
-        if (cdmtn == null || cdmtn.length == 0) {
-            getUIFacade().setStatusText(language.getText("msg21"));
-            return;
-        }
-
-        Choice choice = getUIFacade().showConfirmationDialog(
-                language.getText("msg19"), language.getText("question"));
-
-        if (choice == Choice.YES) {
-            getUndoManager().undoableEdit("Task removed", new Runnable() {
-                public void run() {
-                    ArrayList<DefaultMutableTreeNode> fathers = new ArrayList<DefaultMutableTreeNode>();
-                    tree.stopEditing();
-                    for (int i = 0; i < cdmtn.length; i++) {
-                        if (cdmtn[i] != null && cdmtn[i] instanceof TaskNode) {
-                            Task ttask = (Task) (cdmtn[i].getUserObject());
-
-                            getTaskManager().deleteTask(ttask);
-                            ttask.delete();
-                            DefaultMutableTreeNode father = tree
-                                    .getFatherNode(ttask);
-                            tree.removeCurrentNode(cdmtn[i]);
-                            if (father != null) {
-                                GanttTask taskFather = (GanttTask) father
-                                        .getUserObject();
-                                AdjustTaskBoundsAlgorithm alg = getTaskManager()
-                                        .getAlgorithmCollection()
-                                        .getAdjustTaskBoundsAlgorithm();
-                                alg.run(taskFather);
-                                // taskFather.refreshDateAndAdvancement(tree);
-                                father.setUserObject(taskFather);
-                                fathers.add(father);
-                            }
-                        } else if (cdmtn[i] != null
-                                && cdmtn[i] instanceof BlankLineNode) {
-                            ((GanttTreeTableModel) tree.getTreeTable()
-                                    .getTreeTableModel())
-                                    .removeNodeFromParent(cdmtn[i]);
-                        }
-
-                    }
-                    for (int i = 0; i < fathers.size(); i++) {
-                        DefaultMutableTreeNode father = fathers.get(i);
-                        if (father.getChildCount() == 0)
-                            ((Task) father.getUserObject())
-                                    .setProjectTask(false);
-                    }
-
-                }
-            });
-            refreshProjectInfos();
-            area.repaint();
-            this.repaint2();
-            getResourcePanel().area.repaint();
-            setAskForSave(true);
-            // setQuickSave (true);
-            // quickSave("deleteTasks");
-        }
+        getTree().getDeleteTasksAction().actionPerformed(null);
     }
 
     /** Edit task parameters */
