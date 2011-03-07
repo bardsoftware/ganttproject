@@ -1,8 +1,24 @@
 #!/bin/bash
 
 # Change GP_HOME if you manually installed GanttProject somewhere else
-GP_HOME=/usr/share/ganttproject/
-cd ${GP_HOME}
+GP_HOME=.
+COMMAND_PATH="$0"
+
+COUNT=0
+while [ -L "${COMMAND_PATH}" ]
+do
+       COMMAND_PATH=$(readlink ${COMMAND_PATH})
+       COUNT=$(expr ${COUNT} + 1)
+       if [ ${COUNT} -gt 100 ]
+       then
+               echo "Too many symbolic links"
+               exit 1
+       fi
+done
+
+COMMAND_PATH="`echo ${COMMAND_PATH} | sed -e "s/\(.*\)\/.*$/\1/g"`"
+
+cd ${COMMAND_PATH}
 
 LOCAL_CLASSPATH=$GP_HOME/eclipsito.jar
 
@@ -29,6 +45,6 @@ if [ -e $LOG_FILE ] && [ ! -w $LOG_FILE ]; then
   exit
 fi
 
-$JAVA_COMMAND -Xmx512m -classpath $CLASSPATH:$LOCAL_CLASSPATH -ea $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@" 
+$JAVA_COMMAND -Xmx512m -classpath $CLASSPATH:$LOCAL_CLASSPATH -ea $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@"
 
 
