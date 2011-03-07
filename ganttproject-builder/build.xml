@@ -43,7 +43,7 @@
         <copy todir="${install.dir}">
             <fileset dir=".">
                 <include name="ganttproject"/>
-            	<include name="install-linux.sh"/>
+            	<include name="README-install.txt"/>
                 <include name="ganttproject.command"/>
                 <include name="ganttproject.bat"/>
             	<include name="ganttproject_32_2.ico"/>
