@@ -154,11 +154,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public ChartModel getModel() {
         return getChartModel();
     }
-    
+
     public ChartUIConfiguration getStyle() {
         return getChartModel().getChartUIConfiguration();
     }
-    
+
     protected abstract ChartModelBase getChartModel();
 
     protected abstract MouseListener getMouseListener();
@@ -193,6 +193,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
             getImplementation().finishInteraction();
+            ChartComponentBase.this.reset();
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
@@ -365,10 +366,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     public MouseInteraction newScrollViewInteraction(MouseEvent e) {
         return new ScrollViewInteraction(
-            e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(), 
+            e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(),
             getChartModel().getBottomUnit());
     }
-    
+
     protected RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
         Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
         Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
