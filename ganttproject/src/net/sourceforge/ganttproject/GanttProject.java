@@ -57,6 +57,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -88,6 +89,7 @@ import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.ToggleChartAction;
+import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
@@ -330,6 +332,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
         options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
         options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
+        options.addOptions(getRssFeedChecker().getOptions());
         myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
         area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
         System.err.println("2. loading options");
@@ -549,6 +552,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
             public void windowOpened(WindowEvent e) {
                 myRowHeightAligner.optionsChanged();
+                getRssFeedChecker().run();
             }
 
         });

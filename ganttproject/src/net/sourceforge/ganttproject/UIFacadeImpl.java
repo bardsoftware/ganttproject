@@ -4,6 +4,7 @@
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -11,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
@@ -18,6 +20,7 @@ import java.io.StringWriter;
 import java.util.Locale;
 import java.util.logging.Level;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -46,9 +49,11 @@ import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.SlideInNotification;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -129,12 +134,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     public Choice showConfirmationDialog(String message, String title) {
-        /*
-        MyDialog dialog = new MyDialog(GanttDialogInfo.WARNING, message);
-        dialog.show();
-        return dialog.result;
-        */
-        //int result = JOptionPane.showConfirmDialog(myMainFrame, message);
         String yes = GanttLanguage.getInstance().getText("yes");
         String no = GanttLanguage.getInstance().getText("no");
         String cancel = GanttLanguage.getInstance().getText("cancel");
@@ -237,6 +236,33 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         GPLogger.log(e);
     }
 
+    @Override
+    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
+        final SlideInNotification notification = new SlideInNotification();
+        JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
+        for (final Action a : actions) {
+            AbstractAction proxy = new AbstractAction(String.valueOf(a.getValue(Action.NAME))) {
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    notification.hide();
+                    a.actionPerformed(arg0);
+                }
+            };
+            buttonPanel.add(new JButton(proxy));
+        }
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(content, BorderLayout.CENTER);
+        result.add(buttonPanel, BorderLayout.SOUTH);
+        result.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.ORANGE), BorderFactory.createEmptyBorder(3, 3, 3, 3)));
+        UIUtil.setBackgroundTree(result, Color.YELLOW.brighter());
+
+        notification.setContents(result);
+        notification.showAt(myMainFrame.getLocationOnScreen().x,
+            myMainFrame.getLocationOnScreen().y + myMainFrame.getHeight());
+    }
+
     public void logErrorMessage(Throwable e) {
         myErrorNotifier.add(e);
         myStatusBar.setErrorNotifier(myErrorNotifier);
@@ -337,7 +363,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         private boolean isCommited;
     }
 
-    private class ProxyOkAction extends OkAction implements
+    private static class ProxyOkAction extends OkAction implements
             PropertyChangeListener {
         private Action myRealAction;
 

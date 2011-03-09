@@ -1089,7 +1089,7 @@ public class GanttOptions {
         }
     }
 
-    private void addOptions(GPOptionGroup optionGroup) {
+    public void addOptions(GPOptionGroup optionGroup) {
         GPOption[] options = optionGroup.getOptions();
         for (int i=0;i<options.length; i++) {
             GPOption nextOption = options[i];
