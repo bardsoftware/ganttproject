@@ -6,6 +6,7 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Component;
 import java.awt.Frame;
 import javax.swing.Action;
+import javax.swing.JComponent;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -25,7 +26,7 @@ public interface UIFacade {
         public static final Choice CANCEL = new Choice();
         public static final Choice OK = new Choice();
     }
-    
+
     public static final int GANTT_INDEX = 0;
 
     public static final int RESOURCES_INDEX = 1;
@@ -36,10 +37,10 @@ public interface UIFacade {
 
     ZoomManager getZoomManager();
     GPUndoManager getUndoManager();
-    
+
     void setLookAndFeel(GanttLookAndFeelInfo laf);
     GanttLookAndFeelInfo getLookAndFeel();
-    
+
     Choice showConfirmationDialog(String message, String title);
 
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
@@ -52,7 +53,10 @@ public interface UIFacade {
     void showErrorDialog(String errorMessage);
 
     void showErrorDialog(Throwable e);
-	void logErrorMessage(Throwable e);
+
+    void showNotificationPopup(JComponent content, Action[] actions, String title);
+
+    void logErrorMessage(Throwable e);
 
     GanttChart getGanttChart();
 
@@ -62,7 +66,7 @@ public interface UIFacade {
 
     /**
      * Returns the index of the displayed tab.
-     * 
+     *
      * @return the index of the displayed tab.
      */
     int getViewIndex();
@@ -78,18 +82,18 @@ public interface UIFacade {
     void setResourceDividerLocation(int location);
 
     void refresh();
-    
+
     Frame getMainFrame();
 
     void setWorkbenchTitle(String title);
 
     TaskTreeUIFacade getTaskTree();
-    
+
     ResourceTreeUIFacade getResourceTree();
     //void changeWorkingDirectory(File parentFile);
 
     TaskSelectionManager getTaskSelectionManager();
-	TaskSelectionContext getTaskSelectionContext();
+    TaskSelectionContext getTaskSelectionContext();
 
     GPOptionGroup getOptions();
 

@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
@@ -40,6 +41,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
+import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -95,6 +97,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
+    private final RssFeedChecker myRssChecker;
 
     protected GanttProjectBase() {
         super("Gantt Chart");
@@ -125,6 +128,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
+        myRssChecker = new RssFeedChecker(myUIFacade);
     }
 
 
@@ -227,6 +231,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void logErrorMessage(Throwable e) {
         myUIFacade.logErrorMessage(e);
     }
+
+    @Override
+    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
+        myUIFacade.showNotificationPopup(content, actions, title);
+    }
+
+
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
@@ -472,6 +483,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
+
+    protected RssFeedChecker getRssFeedChecker() {
+        return myRssChecker;
+    }
+
     public abstract String getProjectName();
 
     public abstract void setProjectName(String projectName);

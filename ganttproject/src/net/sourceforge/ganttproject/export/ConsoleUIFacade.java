@@ -5,6 +5,7 @@ import java.awt.Frame;
 import java.io.File;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -65,14 +66,14 @@ public class ConsoleUIFacade implements UIFacade {
 
     public void showErrorDialog(Throwable e) {
         System.err.println("[ConsoleUIFacade] ERROR: "+e.getMessage());
-       	e.printStackTrace();
+           e.printStackTrace();
     }
 
-	public void logErrorMessage(Throwable e) {
-		System.err.println("[ConsoleUIFacade] ERROR:"+e.getMessage());
+    public void logErrorMessage(Throwable e) {
+        System.err.println("[ConsoleUIFacade] ERROR:"+e.getMessage());
         e.printStackTrace();
-	}
-	public GanttChart getGanttChart() {
+    }
+    public GanttChart getGanttChart() {
         return myRealFacade.getGanttChart();
     }
 
@@ -138,16 +139,16 @@ public class ConsoleUIFacade implements UIFacade {
         // TODO Auto-generated method stub
         return null;
     }
-	public TaskTreeUIFacade getTaskTree() {
-		return myRealFacade.getTaskTree();
-	}
-	public ResourceTreeUIFacade getResourceTree() {
-		return myRealFacade.getResourceTree();
-	}
-	public TaskSelectionContext getTaskSelectionContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public TaskTreeUIFacade getTaskTree() {
+        return myRealFacade.getTaskTree();
+    }
+    public ResourceTreeUIFacade getResourceTree() {
+        return myRealFacade.getResourceTree();
+    }
+    public TaskSelectionContext getTaskSelectionContext() {
+        // TODO Auto-generated method stub
+        return null;
+    }
     @Override
     public TaskSelectionManager getTaskSelectionManager() {
         // TODO Auto-generated method stub
@@ -156,7 +157,7 @@ public class ConsoleUIFacade implements UIFacade {
     @Override
     public void setLookAndFeel(GanttLookAndFeelInfo laf) {
         // TODO Auto-generated method stub
-        
+
     }
     @Override
     public GPOptionGroup getOptions() {
@@ -167,6 +168,11 @@ public class ConsoleUIFacade implements UIFacade {
     public GanttLookAndFeelInfo getLookAndFeel() {
         // TODO Auto-generated method stub
         return null;
+    }
+    @Override
+    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
+        // TODO Auto-generated method stub
+
     }
 
 }
