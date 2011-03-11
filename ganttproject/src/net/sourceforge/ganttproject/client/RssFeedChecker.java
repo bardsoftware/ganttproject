@@ -21,9 +21,12 @@ package net.sourceforge.ganttproject.client;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
@@ -47,31 +50,37 @@ public class RssFeedChecker {
         return myOptionGroup;
     }
 
-    public void run() {
+    public void run(final AnimationView animationHost) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Action learnMore = new GPAction("updateRss.learnMore.label") {
+                final Action learnMore = new GPAction("updateRss.learnMore.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         onLearnMore();
                     }
                 };
-                Action ok = new GPAction("updateRss.yes.label") {
+                final Action ok = new GPAction("updateRss.yes.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         onYes();
                     }
                 };
-                Action no = new GPAction("updateRss.no.label") {
+                final Action no = new GPAction("updateRss.no.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         onNo();
                     }
                 };
-                myUiFacade.showNotificationPopup(new JLabel(
-                    GanttLanguage.getInstance().getText("updateRss.question")),
-                    new Action[] {learnMore, ok, no}, "");
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showNotificationPopup(new JLabel(
+                            GanttLanguage.getInstance().getText("updateRss.question")),
+                            new Action[] {learnMore, ok, no}, animationHost);
+                    }
+
+                });
             }
         }).start();
     }
@@ -86,5 +95,9 @@ public class RssFeedChecker {
 
     private void onNo() {
 
+    }
+
+    private void showNotificationPopup(JComponent content, Action[] actions, AnimationView view) {
+        myUiFacade.showNotificationPopup(content, actions, view);
     }
 }

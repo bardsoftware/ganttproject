@@ -49,7 +49,8 @@ import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.SlideInNotification;
+import net.sourceforge.ganttproject.gui.NotificationSlider;
+import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -237,8 +238,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
-        final SlideInNotification notification = new SlideInNotification();
+    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
+        final NotificationSlider notification = new NotificationSlider(animationView);
         JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
         for (final Action a : actions) {
             AbstractAction proxy = new AbstractAction(String.valueOf(a.getValue(Action.NAME))) {
@@ -259,8 +260,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         UIUtil.setBackgroundTree(result, Color.YELLOW.brighter());
 
         notification.setContents(result);
-        notification.showAt(myMainFrame.getLocationOnScreen().x,
-            myMainFrame.getLocationOnScreen().y + myMainFrame.getHeight());
+        notification.show();
     }
 
     public void logErrorMessage(Throwable e) {
