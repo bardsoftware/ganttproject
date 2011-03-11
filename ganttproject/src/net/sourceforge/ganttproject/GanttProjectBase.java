@@ -50,6 +50,7 @@ import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -233,8 +234,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
-        myUIFacade.showNotificationPopup(content, actions, title);
+    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
+        myUIFacade.showNotificationPopup(content, actions, null);
     }
 
 

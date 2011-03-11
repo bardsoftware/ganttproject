@@ -552,7 +552,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
             public void windowOpened(WindowEvent e) {
                 myRowHeightAligner.optionsChanged();
-                getRssFeedChecker().run();
+                getRssFeedChecker().run(getTabs().getAnimationHost());
             }
 
         });

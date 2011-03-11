@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -170,7 +171,7 @@ public class ConsoleUIFacade implements UIFacade {
         return null;
     }
     @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, String title) {
+    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
         // TODO Auto-generated method stub
 
     }
