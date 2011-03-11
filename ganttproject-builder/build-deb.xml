@@ -59,6 +59,8 @@
 		<description>Build the ganttproject application</description>
 		<mkdir dir="dist-bin"/>
 		<ant antfile="build.xml"/>
+		<replace file="dist-bin/ganttproject" token="GP_HOME=." value="GP_HOME=/usr/share/ganttproject/"/>
+		<replace file="dist-bin/ganttproject" token="COMMAND_PATH=&quot;$0&quot;" value="COMMAND_PATH=$GP_HOME"/>
 	</target>
 
 
