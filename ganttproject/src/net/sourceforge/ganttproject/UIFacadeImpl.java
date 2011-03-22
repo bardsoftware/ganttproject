@@ -43,18 +43,8 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.gui.DialogAligner;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
-import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.NotificationSlider;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -249,15 +239,16 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                     a.actionPerformed(arg0);
                 }
             };
-            buttonPanel.add(new JButton(proxy));
+            buttonPanel.add(new TestGanttRolloverButton(proxy));
         }
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         JPanel result = new JPanel(new BorderLayout());
         result.add(content, BorderLayout.CENTER);
-        result.add(buttonPanel, BorderLayout.SOUTH);
-        result.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.ORANGE), BorderFactory.createEmptyBorder(3, 3, 3, 3)));
-        UIUtil.setBackgroundTree(result, Color.YELLOW.brighter());
+        result.add(buttonPanel, BorderLayout.NORTH);
+        content.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.ORANGE), BorderFactory.createEmptyBorder(3, 3, 3, 3)));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        UIUtil.setBackgroundTree(content, Color.YELLOW.brighter());
 
         notification.setContents(result);
         notification.show();
@@ -559,6 +550,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         @Override
         public String getPersistentValue() {
             Locale l = (Locale) stringToObject(getValue());
+            if (l == null) {
+                l = GanttLanguage.getInstance().getLocale();
+            }
             assert l != null;
             String result = l.getLanguage();
             if (!l.getCountry().isEmpty()) {

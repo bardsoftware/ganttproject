@@ -577,9 +577,7 @@ public class GanttOptions {
             if ("option".equals(qName)) {
                 GPOption option = myGPOptions.get(attrs.getValue("id"));
                 if (option!=null) {
-                    option.lock();
                     option.loadPersistentValue(attrs.getValue("value"));
-                    option.commit();
                 }
                 return;
             }

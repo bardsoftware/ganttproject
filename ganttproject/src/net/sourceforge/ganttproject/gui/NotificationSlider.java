@@ -22,6 +22,8 @@ public class NotificationSlider {
         void update(int height);
 
         void setComponent(JComponent component);
+
+        void close();
     }
 
     protected static final int ANIMATION_TIME = 500;
@@ -41,6 +43,7 @@ public class NotificationSlider {
     public void setContents(JComponent contents) {
         this.contents = contents;
         JWindow tempWindow = new JWindow();
+        tempWindow.setVisible(false);
         tempWindow.getContentPane().add(contents);
         tempWindow.pack();
         tempWindow.getContentPane().removeAll();

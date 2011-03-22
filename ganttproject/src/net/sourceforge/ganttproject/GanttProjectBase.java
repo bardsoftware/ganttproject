@@ -129,7 +129,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
-        myRssChecker = new RssFeedChecker(myUIFacade);
+        myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     }
 
 
