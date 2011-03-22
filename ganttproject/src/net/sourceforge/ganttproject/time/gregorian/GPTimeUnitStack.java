@@ -8,6 +8,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.task.TaskLengthImpl;
 import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
@@ -158,5 +160,23 @@ public class GPTimeUnitStack implements TimeUnitStack {
             return "w";
         }
         throw new IllegalArgumentException();
+    }
+
+    @Override
+    public TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
+        TaskLength result;
+        int sign = 1;
+        if (endDate.before(startDate)) {
+            sign = -1;
+            Date temp = endDate;
+            endDate = startDate;
+            startDate = temp;
+        }
+        int unitCount = 0;
+        for (; startDate.before(endDate); unitCount++) {
+            startDate = timeUnit.adjustRight(startDate);
+        }
+        result = new TaskLengthImpl(timeUnit, unitCount*sign);
+        return result;
     }
 }
