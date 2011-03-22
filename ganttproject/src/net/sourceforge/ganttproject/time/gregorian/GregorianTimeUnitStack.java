@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -100,6 +101,11 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     public String encode(TimeUnit timeUnit) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
