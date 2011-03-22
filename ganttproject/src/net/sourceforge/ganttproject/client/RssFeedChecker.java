@@ -19,6 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.client;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -26,49 +30,99 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.NotificationSlider;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.DateOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.gui.options.model.*;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 
 public class RssFeedChecker {
 
     private final UIFacade myUiFacade;
+    private final BooleanOption myCheckRssOption = new DefaultBooleanOption("updateRss.check", true);
     private final DateOption myLastCheckOption = new DefaultDateOption("updateRss.lastCheck", null);
-    private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] {myLastCheckOption});
+    private final GPOptionGroup myOptionGroup =
+        new GPOptionGroup("", new GPOption[] {myCheckRssOption, myLastCheckOption});
+    private GPTimeUnitStack myTimeUnitStack;
+    private static final String RSS_URL = "http://ganttproject-frontpage.blogspot.com/feeds/posts/default/-/clientrss";
+    private final RssParser parser = new RssParser();
 
-    public RssFeedChecker(UIFacade uiFacade) {
+    public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
         myUiFacade = uiFacade;
+        myTimeUnitStack = timeUnitStack;
     }
 
     public GPOptionGroup getOptions() {
         return myOptionGroup;
     }
 
-    public void run(final AnimationView animationHost) {
-        new Thread(new Runnable() {
+    public void run(AnimationView animationHost) {
+        Runnable command = null;
+        if (!myCheckRssOption.isChecked()) {
+            return;
+        }
+        Date lastCheck = myLastCheckOption.getValue();
+        if (lastCheck == null) {
+            command = createRssProposalCommand(animationHost);
+        } else if (!wasToday(lastCheck)) {
+            command = createRssReadCommand(animationHost);
+        }
+        if (command == null) {
+            return;
+        }
+        new Thread(command).start();
+    }
+
+    private Runnable createRssReadCommand(final AnimationView animationHost) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(RSS_URL);
+                    RssFeed feed = parser.parse(url.openConnection().getInputStream(), myLastCheckOption.getValue());
+                    final RssFeedComponent component = new RssFeedComponent(feed);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            showNotificationPopup(component.getComponent(), component.getActions(), animationHost);
+                            myLastCheckOption.setValue(new Date());
+                        }
+                    });
+                } catch (MalformedURLException e) {
+
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        };
+    }
+
+
+    private Runnable createRssProposalCommand(final AnimationView animationHost) {
+        return new Runnable() {
             @Override
             public void run() {
                 final Action learnMore = new GPAction("updateRss.learnMore.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        animationHost.close();
                         onLearnMore();
                     }
                 };
                 final Action ok = new GPAction("updateRss.yes.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        onYes();
+                        animationHost.close();
+                        onYes(animationHost);
                     }
                 };
                 final Action no = new GPAction("updateRss.no.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        animationHost.close();
                         onNo();
                     }
                 };
@@ -82,19 +136,24 @@ public class RssFeedChecker {
 
                 });
             }
-        }).start();
+        };
+    }
+
+    private boolean wasToday(Date date) {
+        return myTimeUnitStack.createDuration(myTimeUnitStack.DAY, date, new Date()).getLength() == 0;
     }
 
     private void onLearnMore() {
         BrowserControl.displayURL(GanttLanguage.getInstance().getText("updateRss.learnMore.url"));
     }
 
-    private void onYes() {
-
+    private void onYes(AnimationView animationHost) {
+        myCheckRssOption.setValue(true);
+        new Thread(createRssReadCommand(animationHost)).start();
     }
 
     private void onNo() {
-
+        myCheckRssOption.setValue(false);
     }
 
     private void showNotificationPopup(JComponent content, Action[] actions, AnimationView view) {
