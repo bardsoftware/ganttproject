@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.Printable;
@@ -155,11 +156,11 @@ public class PrintPreview extends JDialog {
 //        myStartDate = start;
 //        myEndDate = end;
         myExportSettings = new GanttExportSettings();
-//        myExportSettings.setOnlySelectedItem(!Mediator
+        //        myExportSettings.setOnlySelectedItem(!Mediator
 //                .getTaskSelectionManager().getSelectedTasks().isEmpty());
 //        myExportSettings.setStartDate(myStartDate);
 //        myExportSettings.setEndDate(myEndDate);
-        myPrintable = new GanttPrintable(myChart.getChart(myExportSettings),
+        myPrintable = new GanttPrintable(myChart.getRenderedImage(myExportSettings),
                 GanttPrintable.REDUCE_FACTOR_DEFAULT);
 
         JButton bPrint = new TestGanttRolloverButton(new ImageIcon(getClass()
@@ -597,7 +598,7 @@ public class PrintPreview extends JDialog {
 
     private void updateSourceImage() {
     	try { 
-	    	BufferedImage image = myChart.getChart(myExportSettings);
+	    	RenderedImage image = myChart.getRenderedImage(myExportSettings);
 	        myPrintable = new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT);
 	        changePageOrientation(myOrientation);
     	}
