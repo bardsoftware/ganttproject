@@ -48,6 +48,7 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
@@ -234,10 +235,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
-        myUIFacade.showNotificationPopup(content, actions, null);
+    public NotificationManager getNotificationManager() {
+        return myUIFacade.getNotificationManager();
     }
-
 
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);

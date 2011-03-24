@@ -76,6 +76,18 @@ class RssFeedComponent {
     }
 
     private Component createItemComponent(RssFeed.Item item) {
+        return createHtmlPane(MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", item.title, item.body));
+    }
+
+    JComponent getComponent() {
+        return myComponent;
+    }
+
+    Action[] getActions() {
+        return myActions;
+    }
+
+    static JComponent createHtmlPane(String html) {
         JEditorPane htmlPane = new JEditorPane();
         htmlPane.setEditorKit(new HTMLEditorKit());
         htmlPane.setEditable(false);
@@ -89,18 +101,11 @@ class RssFeedComponent {
             }
         });
         htmlPane.setBackground(Color.YELLOW);
-        htmlPane.setText(MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", item.title, item.body));
+        htmlPane.setText(html);
         htmlPane.setBorder(BorderFactory.createEmptyBorder());
         JScrollPane scrollPane = new JScrollPane(htmlPane);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         return scrollPane;
-    }
 
-    JComponent getComponent() {
-        return myComponent;
-    }
-
-    Action[] getActions() {
-        return myActions;
     }
 }

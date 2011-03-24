@@ -10,6 +10,7 @@ import javax.swing.JComponent;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
@@ -171,9 +172,9 @@ public class ConsoleUIFacade implements UIFacade {
         return null;
     }
     @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
+    public NotificationManager getNotificationManager() {
         // TODO Auto-generated method stub
-
+        return null;
     }
 
 }

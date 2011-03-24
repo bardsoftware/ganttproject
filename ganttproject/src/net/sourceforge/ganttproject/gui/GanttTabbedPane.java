@@ -78,7 +78,8 @@ public class GanttTabbedPane extends JTabbedPane {
         @Override
         public void setComponent(JComponent component) {
             myAnimationHost = null;
-            GanttTabbedPane.this.repaint(new Rectangle(0, getHeight() - myImage.getHeight(), myImage.getWidth(), myImage.getHeight()));
+            GanttTabbedPane.this.repaint(new Rectangle(
+                0, getHeight() - myImage.getHeight(), myImage.getWidth(), myImage.getHeight()));
             popup = new JPopupMenu();
             popup.add(component);
             popup.show(GanttTabbedPane.this, 0, getHeight()-myImage.getHeight());
