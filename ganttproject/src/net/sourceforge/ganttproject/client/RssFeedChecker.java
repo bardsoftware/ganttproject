@@ -26,14 +26,18 @@ import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.NotificationSlider;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.*;
+import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.DateOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.util.BrowserControl;
@@ -129,8 +133,8 @@ public class RssFeedChecker {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        showNotificationPopup(new JLabel(
-                            GanttLanguage.getInstance().getText("updateRss.question")),
+                        showNotificationPopup(
+                            RssFeedComponent.createHtmlPane(GanttLanguage.getInstance().getText("updateRss.question")),
                             new Action[] {learnMore, ok, no}, animationHost);
                     }
 
@@ -157,6 +161,6 @@ public class RssFeedChecker {
     }
 
     private void showNotificationPopup(JComponent content, Action[] actions, AnimationView view) {
-        myUiFacade.showNotificationPopup(content, actions, view);
+        myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS, content, actions, view);
     }
 }

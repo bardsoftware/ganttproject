@@ -4,7 +4,6 @@
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -16,10 +15,8 @@ import java.io.StringWriter;
 import java.util.Locale;
 import java.util.logging.Level;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -68,6 +65,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final TaskSelectionManager myTaskSelectionManager;
     private final GPOptionGroup myOptions;
     private final LafOption myLafOption;
+    private final NotificationManagerImpl myNotificationManager;
 
     UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
@@ -78,6 +76,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
         myTaskSelectionManager = new TaskSelectionManager();
+        myNotificationManager = new NotificationManagerImpl();
 
         myLafOption = new LafOption(this);
         LanguageOption languageOption = new LanguageOption();
@@ -223,30 +222,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         GPLogger.log(e);
     }
 
-    @Override
-    public void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView) {
-        final NotificationSlider notification = new NotificationSlider(animationView);
-        JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
-        for (final Action a : actions) {
-            JButton button = new TestGanttRolloverButton(a);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    notification.hide();
-                }
-            });
-            buttonPanel.add(button);
-        }
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(content, BorderLayout.CENTER);
-        result.add(buttonPanel, BorderLayout.NORTH);
-        content.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.ORANGE), BorderFactory.createEmptyBorder(3, 3, 3, 3)));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        UIUtil.setBackgroundTree(content, Color.YELLOW.brighter());
-
-        notification.setContents(result);
-        notification.show();
+    public NotificationManager getNotificationManager() {
+        return myNotificationManager;
     }
 
     public void logErrorMessage(Throwable e) {

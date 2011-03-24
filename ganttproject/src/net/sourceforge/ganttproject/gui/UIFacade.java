@@ -55,7 +55,7 @@ public interface UIFacade {
 
     void showErrorDialog(Throwable e);
 
-    void showNotificationPopup(JComponent content, Action[] actions, AnimationView animationView);
+    NotificationManager getNotificationManager();
 
     void logErrorMessage(Throwable e);
 
