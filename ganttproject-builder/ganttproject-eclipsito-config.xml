@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration name="ganttproject"
+  platform-classname="org.bardsoftware.impl.eclipsito.BootImpl"
+  modules-directory="plugins"
+  descriptor-file-pattern="plugin.xml"
+  logging-level="ALL"
+  application="net.sourceforge.ganttproject.GanttProject"
+/>
