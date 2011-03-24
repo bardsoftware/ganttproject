@@ -8,11 +8,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
@@ -232,14 +228,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         final NotificationSlider notification = new NotificationSlider(animationView);
         JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
         for (final Action a : actions) {
-            AbstractAction proxy = new AbstractAction(String.valueOf(a.getValue(Action.NAME))) {
-                @Override
-                public void actionPerformed(ActionEvent arg0) {
+            JButton button = new TestGanttRolloverButton(a);
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
                     notification.hide();
-                    a.actionPerformed(arg0);
                 }
-            };
-            buttonPanel.add(new TestGanttRolloverButton(proxy));
+            });
+            buttonPanel.add(button);
         }
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         JPanel result = new JPanel(new BorderLayout());

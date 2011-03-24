@@ -32,7 +32,11 @@ class RssFeedComponent {
             actions.add(myBackwardAction);
             actions.add(myForwardAction);
             myActions = actions.toArray(new Action[0]);
-            updateEnabled();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateEnabled();
+                }
+            });
         } else {
             myActions = new Action[0];
         }
