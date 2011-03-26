@@ -18,10 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
-
 public interface NotificationManager {
-    void showNotification(NotificationChannel channel, JComponent content, Action[] actions,
-        NotificationSlider.AnimationView animationView);
+    void addNotification(NotificationChannel channel, String title, String body);
+
+    void showNotification(NotificationChannel rss);
 }

@@ -67,16 +67,17 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final LafOption myLafOption;
     private final NotificationManagerImpl myNotificationManager;
 
-    UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, IGanttProject project, UIFacade fallbackDelegate) {
+    UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager, IGanttProject project, UIFacade fallbackDelegate) {
         myMainFrame = mainFrame;
         myScrollingManager = new ScrollingManagerImpl();
         myZoomManager = new ZoomManager(project.getTimeUnitStack());
         myStatusBar = statusBar;
+        myStatusBar.setNotificationManager(notificationManager);
         myFallbackDelegate = fallbackDelegate;
         Job.getJobManager().setProgressProvider(this);
         myErrorNotifier = new ErrorNotifier(this);
         myTaskSelectionManager = new TaskSelectionManager();
-        myNotificationManager = new NotificationManagerImpl();
+        myNotificationManager = notificationManager;
 
         myLafOption = new LafOption(this);
         LanguageOption languageOption = new LanguageOption();

@@ -29,10 +29,18 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
+
 public class NotificationManagerImpl implements NotificationManager {
-    public void showNotification(NotificationChannel channel, JComponent content, Action[] actions,
-            NotificationSlider.AnimationView animationView) {
-        final NotificationSlider notification = new NotificationSlider(animationView);
+    private final AnimationView myAnimationView;
+
+    public NotificationManagerImpl(AnimationView animationView) {
+        myAnimationView = animationView;
+    }
+    public void showNotification(NotificationChannel channel) {
+        final NotificationSlider notification = new NotificationSlider(myAnimationView);
+        Action[] actions = channel.getComponent().getActions();
         JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
         for (final Action a : actions) {
             JButton button = new TestGanttRolloverButton(a);
@@ -45,6 +53,8 @@ public class NotificationManagerImpl implements NotificationManager {
         }
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         JPanel result = new JPanel(new BorderLayout());
+
+        JComponent content = channel.getComponent().getComponent();
         result.add(content, BorderLayout.CENTER);
         result.add(buttonPanel, BorderLayout.NORTH);
         content.setBorder(BorderFactory.createCompoundBorder(
@@ -55,5 +65,31 @@ public class NotificationManagerImpl implements NotificationManager {
 
         notification.setContents(result);
         notification.show();
+    }
+
+    JComponent getChannelButtons() {
+        JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
+        result.add(new TestGanttRolloverButton(new ShowChannelAction(NotificationChannel.RSS)));
+        result.add(new TestGanttRolloverButton(new ShowChannelAction(NotificationChannel.ERROR)));
+        return result;
+    }
+
+    private class ShowChannelAction extends GPAction {
+        private final NotificationChannel myChannel;
+
+        ShowChannelAction(NotificationChannel channel) {
+            super("notification.channel." + channel.toString().toLowerCase() + ".label");
+            myChannel = channel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showNotification(myChannel);
+        }
+    }
+
+    @Override
+    public void addNotification(NotificationChannel channel, String title, String body) {
+        channel.getComponent().addNotification(title, body);
     }
 }
