@@ -49,6 +49,7 @@ import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
@@ -108,7 +109,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myViewManager = new ViewManagerImpl(myTabPane);
         addProjectEventListener(myViewManager);
         myTimeUnitStack = new GPTimeUnitStack(getLanguage());
-        myUIFacade =new UIFacadeImpl(this, statusBar, getProject(), (UIFacade)this);
+        NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
+        myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), (UIFacade)this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
             protected ParserFactory getParserFactory() {

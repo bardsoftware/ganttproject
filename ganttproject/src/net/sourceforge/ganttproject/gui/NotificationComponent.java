@@ -1,4 +1,4 @@
-package net.sourceforge.ganttproject.client;
+package net.sourceforge.ganttproject.gui;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.util.BrowserControl;
@@ -13,20 +13,17 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-class RssFeedComponent {
+class NotificationComponent {
     private final JPanel myComponent;
     private final Action[] myActions;
     int myPosition;
     private Action myBackwardAction;
     private Action myForwardAction;
 
-    RssFeedComponent(RssFeed feed) {
+    NotificationComponent() {
         myComponent = new JPanel(new CardLayout());
-        for (RssFeed.Item item : feed.getItems()) {
-            myComponent.add(createItemComponent(item), String.valueOf(myComponent.getComponentCount()));
-        }
         List<Action> actions = new ArrayList<Action>();
-        if (feed.getItems().size() > 1) {
+//        if (feed.getItems().size() > 1) {
             myBackwardAction = createBackwardAction();
             myForwardAction = createForwardAction();
             actions.add(myBackwardAction);
@@ -37,10 +34,15 @@ class RssFeedComponent {
                     updateEnabled();
                 }
             });
-        } else {
-            myActions = new Action[0];
-        }
+//        } else {
+//            myActions = new Action[0];
+//        }
 
+    }
+
+    void addNotification(String title, String body) {
+        JComponent htmlPane = createHtmlPane(MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", title, body));
+        myComponent.add(htmlPane, String.valueOf(myComponent.getComponentCount()));
     }
 
     private Action createBackwardAction() {
@@ -73,10 +75,6 @@ class RssFeedComponent {
         System.out.println("position=" + myPosition);
         myBackwardAction.setEnabled(myPosition > 0);
         myForwardAction.setEnabled(myPosition < myComponent.getComponentCount() - 1);
-    }
-
-    private Component createItemComponent(RssFeed.Item item) {
-        return createHtmlPane(MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", item.title, item.body));
     }
 
     JComponent getComponent() {

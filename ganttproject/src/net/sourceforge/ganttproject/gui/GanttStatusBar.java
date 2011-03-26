@@ -1,5 +1,5 @@
 /***************************************************************************
- GanttStatusBar.java 
+ GanttStatusBar.java
  ------------------------------------------
  begin                : 5 juil. 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -67,11 +67,11 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     boolean bRunning = false;
 
-	private JFrame myMainFrame;
+    private JFrame myMainFrame;
 
-	private Runnable myErrorNotifier;
+    private Runnable myErrorNotifier;
 
-	private ErrorNotificationPanel myErrorNotificationPanel;
+    private JPanel myErrorNotificationPanel;
 
     /** Default constructor. */
     public GanttStatusBar(JFrame mainFrame) {
@@ -81,7 +81,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
         message0 = new MessagePanel(215, false);
         message1 = new MessagePanel(400, true);
         message2 = new MessagePanel(250, true);
-        myErrorNotificationPanel = new ErrorNotificationPanel();
+        myErrorNotificationPanel = new JPanel();
         //myMainFrame.setGlassPane(pbp);
 
         //pbp.setPreferredSize(new Dimension(160, 16));
@@ -101,7 +101,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     public IProgressMonitor createProgressMonitor() {
         return new ProgressMonitorImpl();
-        
+
     }
 
     public void setFirstText(String text) {
@@ -157,9 +157,9 @@ public class GanttStatusBar extends JPanel implements Runnable {
             mode = NO_MESSAGE;
             // }
         } catch (Exception e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
         bRunning = false;
     }
@@ -240,114 +240,114 @@ public class GanttStatusBar extends JPanel implements Runnable {
     }
 
     private static class ErrorNotificationPanel extends JPanel {
-    	private JLabel myLabel;
+        private JLabel myLabel;
 
-		ErrorNotificationPanel() {
-    		super(new BorderLayout());
-    	}
-    	
-    	void enableNotifier(final Runnable notifier) {
-    		myLabel = new JLabel("<html><body><b>Errors happened. Click here to see the details</b></body></html>");
-    		myLabel.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
-					notifier.run();
-				}
-    		});
-    		add(myLabel);
-    		revalidate();
-    	}
-    	
-    	void disableNotifier() {
-    		remove(myLabel);
-    		revalidate();
-    	}
+        ErrorNotificationPanel() {
+            super(new BorderLayout());
+        }
+
+        void enableNotifier(final Runnable notifier) {
+            myLabel = new JLabel("<html><body><b>Errors happened. Click here to see the details</b></body></html>");
+            myLabel.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    notifier.run();
+                }
+            });
+            add(myLabel);
+            revalidate();
+        }
+
+        void disableNotifier() {
+            remove(myLabel);
+            revalidate();
+        }
     }
     private class ProgressBarDialog extends JDialog {
-    	private JProgressBar myProgressBar;
-		private JLabel myLabel;
-		private String myTask;
-		private IProgressMonitor myProgressMonitor;
+        private JProgressBar myProgressBar;
+        private JLabel myLabel;
+        private String myTask;
+        private IProgressMonitor myProgressMonitor;
 
 
-		private ProgressBarDialog(IProgressMonitor progressMonitor) {
-    		super(myMainFrame, true);
-    		myProgressMonitor = progressMonitor;
-    	}
-    	
-		protected void dialogInit() {
-			super.dialogInit();
-    		myProgressBar = new JProgressBar();
-    		myProgressBar.setMinimumSize(new Dimension(400,50));
-    		myProgressBar.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-    		myLabel = new JLabel();
-    		myLabel.setFont(Fonts.GENERAL_DIALOG_FONT.deriveFont(14));
-    		myLabel.setBorder(BorderFactory.createEmptyBorder(0,5,5,5));
-			getContentPane().setLayout(new BorderLayout());
-			getContentPane().add(myProgressBar, BorderLayout.CENTER);
-			JPanel labelAndButton = new JPanel(new BorderLayout());
-			labelAndButton.add(myLabel, BorderLayout.CENTER);
-			JButton cancelButton = new JButton(new CancelAction() {
-				public void actionPerformed(ActionEvent e) {
-					myProgressMonitor.setCanceled(true);
-					//System.err.println("\n\n"+Platform.getJobManager().currentJob().getName()+"\n\n");
-					//Platform.getJobManager().currentJob().cancel();
-				}
-			});
-			labelAndButton.add(cancelButton, BorderLayout.EAST);
-			getContentPane().add(labelAndButton, BorderLayout.SOUTH);
-			setResizable(false);
-			this.setUndecorated(true);
-		}
+        private ProgressBarDialog(IProgressMonitor progressMonitor) {
+            super(myMainFrame, true);
+            myProgressMonitor = progressMonitor;
+        }
+
+        protected void dialogInit() {
+            super.dialogInit();
+            myProgressBar = new JProgressBar();
+            myProgressBar.setMinimumSize(new Dimension(400,50));
+            myProgressBar.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+            myLabel = new JLabel();
+            myLabel.setFont(Fonts.GENERAL_DIALOG_FONT.deriveFont(14));
+            myLabel.setBorder(BorderFactory.createEmptyBorder(0,5,5,5));
+            getContentPane().setLayout(new BorderLayout());
+            getContentPane().add(myProgressBar, BorderLayout.CENTER);
+            JPanel labelAndButton = new JPanel(new BorderLayout());
+            labelAndButton.add(myLabel, BorderLayout.CENTER);
+            JButton cancelButton = new JButton(new CancelAction() {
+                public void actionPerformed(ActionEvent e) {
+                    myProgressMonitor.setCanceled(true);
+                    //System.err.println("\n\n"+Platform.getJobManager().currentJob().getName()+"\n\n");
+                    //Platform.getJobManager().currentJob().cancel();
+                }
+            });
+            labelAndButton.add(cancelButton, BorderLayout.EAST);
+            getContentPane().add(labelAndButton, BorderLayout.SOUTH);
+            setResizable(false);
+            this.setUndecorated(true);
+        }
 
 
-		void start(String task, int totalWork) {
-			myProgressBar.setMaximum(totalWork);
-			myProgressBar.setMinimum(0);
-			myTask = task;
-			myLabel.setText(getLabelText());
-			pack();
-			setSize(400, 60);
-			DialogAligner.center(this, myMainFrame);
-    		setVisible(true);
-    	}
-		
-		void setProgress(int work) {
-			myProgressBar.setValue(work);
-			myLabel.setText(getLabelText());
-		}
+        void start(String task, int totalWork) {
+            myProgressBar.setMaximum(totalWork);
+            myProgressBar.setMinimum(0);
+            myTask = task;
+            myLabel.setText(getLabelText());
+            pack();
+            setSize(400, 60);
+            DialogAligner.center(this, myMainFrame);
+            setVisible(true);
+        }
 
-		void done() {
-			dispose();
-		}
-		
-		private String getLabelText() {
-			return "<html><body><b>"+myTask+" ... "+myProgressBar.getValue()*100/myProgressBar.getMaximum()+"%</b></body></html>";
-		}
-		
+        void setProgress(int work) {
+            myProgressBar.setValue(work);
+            myLabel.setText(getLabelText());
+        }
+
+        void done() {
+            dispose();
+        }
+
+        private String getLabelText() {
+            return "<html><body><b>"+myTask+" ... "+myProgressBar.getValue()*100/myProgressBar.getMaximum()+"%</b></body></html>";
+        }
+
     }
     private class ProgressMonitorImpl implements IProgressMonitor {
-    	private int myWorked;
-    	//private CancelableProgressPanel myProgressPanel;
-    	//ProgressBarPanel myProgressPanel;
-    	ProgressBarDialog myProgressDialog;
-		private boolean isCanceled;
+        private int myWorked;
+        //private CancelableProgressPanel myProgressPanel;
+        //ProgressBarPanel myProgressPanel;
+        ProgressBarDialog myProgressDialog;
+        private boolean isCanceled;
 
-    	ProgressMonitorImpl() {
-    		//myProgressPanel = new ProgressBarPanel();
-    		myProgressDialog = new ProgressBarDialog(this);
-    	}
+        ProgressMonitorImpl() {
+            //myProgressPanel = new ProgressBarPanel();
+            myProgressDialog = new ProgressBarDialog(this);
+        }
         public void beginTask(final String name, final int totalWork)  {
             try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-				        //pbp.reset(name, totalWork);
-				        //pbp.setVisible(true);
-						//myMainFrame.setGlassPane(myProgressPanel);
-						//myProgressPanel.setVisible(true);
-						//myMainFrame.getRootPane().revalidate();
-						//myProgressPanel.start();
-				    	myProgressDialog.start(name, totalWork);
-				        GPLogger.log("[ProgressMonitorImpl] beginTask: name="+name);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        //pbp.reset(name, totalWork);
+                        //pbp.setVisible(true);
+                        //myMainFrame.setGlassPane(myProgressPanel);
+                        //myProgressPanel.setVisible(true);
+                        //myMainFrame.getRootPane().revalidate();
+                        //myProgressPanel.start();
+                        myProgressDialog.start(name, totalWork);
+                        GPLogger.log("[ProgressMonitorImpl] beginTask: name="+name);
                     }
                 });
             } finally {
@@ -356,15 +356,15 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
 
         public void done() {
-        	SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-        	//myProgressPanel.stop();
-        	//myProgressPanel.setVisible(false);
-					myProgressDialog.done();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+            //myProgressPanel.stop();
+            //myProgressPanel.setVisible(false);
+                    myProgressDialog.done();
 //		            pbp.reset();
 //		            pbp.setVisible(false);
-				}
-        	});
+                }
+            });
         }
 
         public void internalWorked(double work) {
@@ -375,8 +375,8 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
 
         public void setCanceled(boolean value) {
-        	myProgressDialog.done();
-        	isCanceled = value;
+            myProgressDialog.done();
+            isCanceled = value;
         }
 
         public void setTaskName(String name) {
@@ -387,35 +387,39 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
 
         public void worked(final int work) {
-        	try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-				    	myWorked += work;
-				    	myProgressDialog.setProgress(myWorked);
-					}
-				});
-			} finally {
-				
-			}
+            try {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        myWorked += work;
+                        myProgressDialog.setProgress(myWorked);
+                    }
+                });
+            } finally {
+
+            }
         }
-        
+
     }
-	public void setErrorNotifier(Runnable notifier) {
-		if (notifier==null && myErrorNotifier!=null) {
-			clearErrorNotification();
-			return;
-		}
-		if (myErrorNotifier==null) {
-			createErrorNotification(notifier);
-		}
-		myErrorNotifier = notifier;
-	}
+    public void setErrorNotifier(Runnable notifier) {
+        if (notifier==null && myErrorNotifier!=null) {
+            clearErrorNotification();
+            return;
+        }
+        if (myErrorNotifier==null) {
+            createErrorNotification(notifier);
+        }
+        myErrorNotifier = notifier;
+    }
 
-	private void clearErrorNotification() {
-		myErrorNotificationPanel.disableNotifier();
-	}
+    private void clearErrorNotification() {
+//		myErrorNotificationPanel.disableNotifier();
+    }
 
-	private void createErrorNotification(Runnable notifier) {
-		myErrorNotificationPanel.enableNotifier(notifier);
-	}
+    private void createErrorNotification(Runnable notifier) {
+//		myErrorNotificationPanel.enableNotifier(notifier);
+    }
+
+    public void setNotificationManager(NotificationManagerImpl notificationManager) {
+        myErrorNotificationPanel.add(notificationManager.getChannelButtons());
+    }
 }

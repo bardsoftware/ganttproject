@@ -63,16 +63,16 @@ public class RssFeedChecker {
         return myOptionGroup;
     }
 
-    public void run(AnimationView animationHost) {
+    public void run() {
         Runnable command = null;
         if (!myCheckRssOption.isChecked()) {
             return;
         }
         Date lastCheck = myLastCheckOption.getValue();
         if (lastCheck == null) {
-            command = createRssProposalCommand(animationHost);
+            command = createRssProposalCommand();
         } else if (!wasToday(lastCheck)) {
-            command = createRssReadCommand(animationHost);
+            command = createRssReadCommand();
         }
         if (command == null) {
             return;
@@ -80,18 +80,22 @@ public class RssFeedChecker {
         new Thread(command).start();
     }
 
-    private Runnable createRssReadCommand(final AnimationView animationHost) {
+    private Runnable createRssReadCommand() {
         return new Runnable() {
             @Override
             public void run() {
                 try {
                     URL url = new URL(RSS_URL);
                     RssFeed feed = parser.parse(url.openConnection().getInputStream(), myLastCheckOption.getValue());
-                    final RssFeedComponent component = new RssFeedComponent(feed);
+                    for (RssFeed.Item item : feed.getItems()) {
+                        myUiFacade.getNotificationManager().addNotification(
+                            NotificationChannel.RSS, item.title, item.body);
+                    }
+
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            showNotificationPopup(component.getComponent(), component.getActions(), animationHost);
+                            myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS);
                             myLastCheckOption.setValue(new Date());
                         }
                     });
@@ -105,10 +109,11 @@ public class RssFeedChecker {
     }
 
 
-    private Runnable createRssProposalCommand(final AnimationView animationHost) {
+    private Runnable createRssProposalCommand() {
         return new Runnable() {
             @Override
             public void run() {
+                /*
                 final Action learnMore = new GPAction("updateRss.learnMore.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -130,14 +135,14 @@ public class RssFeedChecker {
                         onNo();
                     }
                 };
+                */
+                myUiFacade.getNotificationManager().addNotification(
+                    NotificationChannel.RSS, "", GanttLanguage.getInstance().getText("updateRss.question"));
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        showNotificationPopup(
-                            RssFeedComponent.createHtmlPane(GanttLanguage.getInstance().getText("updateRss.question")),
-                            new Action[] {learnMore, ok, no}, animationHost);
+                        myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS);
                     }
-
                 });
             }
         };
@@ -153,14 +158,10 @@ public class RssFeedChecker {
 
     private void onYes(AnimationView animationHost) {
         myCheckRssOption.setValue(true);
-        new Thread(createRssReadCommand(animationHost)).start();
+        new Thread(createRssReadCommand()).start();
     }
 
     private void onNo() {
         myCheckRssOption.setValue(false);
-    }
-
-    private void showNotificationPopup(JComponent content, Action[] actions, AnimationView view) {
-        myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS, content, actions, view);
     }
 }

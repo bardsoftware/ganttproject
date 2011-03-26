@@ -20,28 +20,23 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
 
-import javax.swing.JComponent;
-
 public enum NotificationChannel {
     RSS(Color.YELLOW.brighter()), ERROR(Color.RED.brighter().brighter());
 
     private final Color myColor;
-    private JComponent myComponent;
     private boolean isVisible;
+    private NotificationComponent myComponent;
 
     NotificationChannel(Color color) {
         myColor = color;
+        myComponent = new NotificationComponent();
     }
 
     Color getColor() {
         return myColor;
     }
 
-    void setComponent(JComponent component) {
-        myComponent = component;
-    }
-
-    JComponent getComponent() {
+    NotificationComponent getComponent() {
         return myComponent;
     }
 
