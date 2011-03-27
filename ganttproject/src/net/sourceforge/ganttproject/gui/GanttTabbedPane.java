@@ -16,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JWindow;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 
@@ -66,6 +68,10 @@ public class GanttTabbedPane extends JTabbedPane {
         private JPopupMenu popup;
 
         @Override
+        public boolean isReady() {
+            return GanttTabbedPane.this.isShowing();
+        }
+        @Override
         public void setImage(BufferedImage image) {
             myImage = image;
         }
@@ -76,12 +82,24 @@ public class GanttTabbedPane extends JTabbedPane {
         }
 
         @Override
-        public void setComponent(JComponent component) {
+        public void setComponent(JComponent component, final Runnable onHide) {
             myAnimationHost = null;
             GanttTabbedPane.this.repaint(new Rectangle(
                 0, getHeight() - myImage.getHeight(), myImage.getWidth(), myImage.getHeight()));
             popup = new JPopupMenu();
             popup.add(component);
+            popup.addPopupMenuListener(new PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+                }
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+                }
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent arg0) {
+                    onHide.run();
+                }
+            });
             popup.show(GanttTabbedPane.this, 0, getHeight()-myImage.getHeight());
         }
 

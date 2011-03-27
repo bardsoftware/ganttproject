@@ -20,8 +20,12 @@ class NotificationComponent {
     private Action myBackwardAction;
     private Action myForwardAction;
 
-    NotificationComponent() {
+    NotificationComponent(NotificationChannel channel) {
         myComponent = new JPanel(new CardLayout());
+        for (int i = 0; i < channel.getItems().size(); i++) {
+            NotificationItem item = channel.getItems().get(i);
+            addNotification(item.myTitle, item.myBody, item.myHyperlinkListener, channel);
+        }
         List<Action> actions = new ArrayList<Action>();
 //        if (feed.getItems().size() > 1) {
             myBackwardAction = createBackwardAction();
@@ -40,8 +44,14 @@ class NotificationComponent {
 
     }
 
-    void addNotification(String title, String body) {
-        JComponent htmlPane = createHtmlPane(MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", title, body));
+    void addNotification(String title, String body, HyperlinkListener hyperlinkListener, NotificationChannel channel) {
+        JComponent htmlPane = createHtmlPane(
+            MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", title, body), hyperlinkListener);
+        UIUtil.setBackgroundTree(htmlPane, channel.getColor());
+        htmlPane.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(channel.getColor().darker()),
+            BorderFactory.createEmptyBorder(3, 3, 3, 3)));
+
         myComponent.add(htmlPane, String.valueOf(myComponent.getComponentCount()));
     }
 
@@ -72,7 +82,6 @@ class NotificationComponent {
 
     private void updateEnabled() {
         assert myBackwardAction != null && myForwardAction != null;
-        System.out.println("position=" + myPosition);
         myBackwardAction.setEnabled(myPosition > 0);
         myForwardAction.setEnabled(myPosition < myComponent.getComponentCount() - 1);
     }
@@ -85,19 +94,12 @@ class NotificationComponent {
         return myActions;
     }
 
-    static JComponent createHtmlPane(String html) {
+    static JComponent createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
         JEditorPane htmlPane = new JEditorPane();
         htmlPane.setEditorKit(new HTMLEditorKit());
         htmlPane.setEditable(false);
         htmlPane.setPreferredSize(new Dimension(300, 150));
-        htmlPane.addHyperlinkListener(new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
-                if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    BrowserControl.displayURL(hyperlinkEvent.getURL().toString());
-                }
-            }
-        });
+        htmlPane.addHyperlinkListener(hyperlinkListener);
         htmlPane.setBackground(Color.YELLOW);
         htmlPane.setText(html);
         htmlPane.setBorder(BorderFactory.createEmptyBorder());

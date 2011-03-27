@@ -17,11 +17,13 @@ import javax.swing.Timer;
 public class NotificationSlider {
 
     public static interface AnimationView {
+        boolean isReady();
+
         void setImage(BufferedImage image);
 
         void update(int height);
 
-        void setComponent(JComponent component);
+        void setComponent(JComponent component, Runnable onHide);
 
         void close();
     }
@@ -35,12 +37,14 @@ public class NotificationSlider {
     long animationStart;
     private AnimationView myHost;
     private BufferedImage myOffscreenImage;
+    private Runnable myOnHide;
 
     public NotificationSlider(AnimationView host) {
         myHost = host;
     }
 
-    public void setContents(JComponent contents) {
+    public void setContents(JComponent contents, Runnable onHide) {
+        myOnHide = onHide;
         this.contents = contents;
         JWindow tempWindow = new JWindow();
         tempWindow.setVisible(false);
@@ -48,6 +52,7 @@ public class NotificationSlider {
         tempWindow.pack();
         tempWindow.getContentPane().removeAll();
         myOffscreenImage = createOffscreenImage(contents);
+        myHost.setImage(myOffscreenImage);
     }
 
     public void show() {
@@ -55,7 +60,7 @@ public class NotificationSlider {
             public void actionPerformed(ActionEvent e) {
                 long elapsed = System.currentTimeMillis() - animationStart;
                 if (elapsed > ANIMATION_TIME) {
-                    myHost.setComponent(contents);
+                    myHost.setComponent(contents, myOnHide);
                     animationTimer.stop();
                     animationTimer = null;
                 } else {
@@ -64,7 +69,6 @@ public class NotificationSlider {
                     // get height to show
                     int animatingHeight = (int) (progress * myOffscreenImage.getHeight());
                     animatingHeight = Math.max(animatingHeight, 1);
-                    myHost.setImage(myOffscreenImage);
                     myHost.update(animatingHeight);
                 }
             }
