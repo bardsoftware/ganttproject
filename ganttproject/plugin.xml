@@ -36,6 +36,9 @@
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/trident.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/xml-im-exporter1.1.jar">
          <export name="*"/>
       </library>
