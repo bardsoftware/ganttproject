@@ -228,8 +228,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     public void logErrorMessage(Throwable e) {
-        myErrorNotifier.add(e);
-        myStatusBar.setErrorNotifier(myErrorNotifier);
+        System.err.println("notification manager=" + getNotificationManager());
+        getNotificationManager().addNotification(NotificationChannel.ERROR, "Something went wrong", e.getMessage());
+        e.printStackTrace();
     }
 
     void resetErrorLog() {
@@ -430,6 +431,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
     @Override
     public void setLookAndFeel(final GanttLookAndFeelInfo laf) {
+        if (laf == null) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

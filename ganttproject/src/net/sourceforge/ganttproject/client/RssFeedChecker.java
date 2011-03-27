@@ -27,9 +27,12 @@ import java.util.Date;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -95,7 +98,6 @@ public class RssFeedChecker {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS);
                             myLastCheckOption.setValue(new Date());
                         }
                     });
@@ -113,37 +115,20 @@ public class RssFeedChecker {
         return new Runnable() {
             @Override
             public void run() {
-                /*
-                final Action learnMore = new GPAction("updateRss.learnMore.label") {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        animationHost.close();
-                        onLearnMore();
-                    }
-                };
-                final Action ok = new GPAction("updateRss.yes.label") {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        animationHost.close();
-                        onYes(animationHost);
-                    }
-                };
-                final Action no = new GPAction("updateRss.no.label") {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        animationHost.close();
-                        onNo();
-                    }
-                };
-                */
                 myUiFacade.getNotificationManager().addNotification(
-                    NotificationChannel.RSS, "", GanttLanguage.getInstance().getText("updateRss.question"));
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        myUiFacade.getNotificationManager().showNotification(NotificationChannel.RSS);
-                    }
-                });
+                    NotificationChannel.RSS, "", GanttLanguage.getInstance().getText("updateRss.question"),
+                    new HyperlinkListener() {
+                        @Override
+                        public void hyperlinkUpdate(HyperlinkEvent e) {
+                            if ("yes".equals(e.getURL().getHost())) {
+                                onYes();
+                            } else if ("no".equals(e.getURL().getHost())) {
+                                onNo();
+                            } else {
+                                NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+                            }
+                        }
+                    });
             }
         };
     }
@@ -152,11 +137,7 @@ public class RssFeedChecker {
         return myTimeUnitStack.createDuration(myTimeUnitStack.DAY, date, new Date()).getLength() == 0;
     }
 
-    private void onLearnMore() {
-        BrowserControl.displayURL(GanttLanguage.getInstance().getText("updateRss.learnMore.url"));
-    }
-
-    private void onYes(AnimationView animationHost) {
+    private void onYes() {
         myCheckRssOption.setValue(true);
         new Thread(createRssReadCommand()).start();
     }

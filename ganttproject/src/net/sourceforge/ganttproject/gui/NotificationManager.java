@@ -18,8 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
+import net.sourceforge.ganttproject.util.BrowserControl;
+
 public interface NotificationManager {
     void addNotification(NotificationChannel channel, String title, String body);
+    void addNotification(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener);
 
-    void showNotification(NotificationChannel rss);
+    void showNotification(NotificationChannel channel);
+
+    HyperlinkListener DEFAULT_HYPERLINK_LISTENER = new HyperlinkListener() {
+        @Override
+        public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
+            if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                BrowserControl.displayURL(hyperlinkEvent.getURL().toString());
+            }
+        }
+    };
 }

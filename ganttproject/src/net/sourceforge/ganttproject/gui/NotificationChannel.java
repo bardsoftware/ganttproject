@@ -19,25 +19,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
 
 public enum NotificationChannel {
-    RSS(Color.YELLOW.brighter()), ERROR(Color.RED.brighter().brighter());
+    RSS(Color.YELLOW.brighter()), ERROR(new Color(255, 191, 207));
 
     private final Color myColor;
     private boolean isVisible;
-    private NotificationComponent myComponent;
+    private final List<NotificationItem> myItems = new ArrayList<NotificationItem>();
+    private JButton myButton;
+    private boolean isPulsing;
+    private Color myNormalColor;
 
     NotificationChannel(Color color) {
         myColor = color;
-        myComponent = new NotificationComponent();
     }
 
     Color getColor() {
         return myColor;
-    }
-
-    NotificationComponent getComponent() {
-        return myComponent;
     }
 
     boolean isVisible() {
@@ -48,4 +50,37 @@ public enum NotificationChannel {
         isVisible = b;
     }
 
+    void addNotification(NotificationItem item) {
+        myItems.add(item);
+    }
+
+    List<NotificationItem> getItems() {
+        return myItems;
+    }
+
+    void setButton(JButton button) {
+        myButton = button;
+    }
+
+    JButton getButton() {
+        return myButton;
+    }
+
+    void setPulsing(boolean b) {
+        isPulsing = b;
+    }
+
+    boolean isPulsing() {
+        return isPulsing;
+    }
+
+    void saveNormalColor() {
+        if (myNormalColor == null) {
+            myNormalColor = myButton.getBackground();
+        }
+    }
+
+    Color getNormalColor() {
+        return myNormalColor;
+    }
 }
