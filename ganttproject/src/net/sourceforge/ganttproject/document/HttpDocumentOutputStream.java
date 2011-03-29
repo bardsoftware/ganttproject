@@ -7,35 +7,32 @@ package net.sourceforge.ganttproject.document;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.webdav.lib.WebdavResource;
 
 /**
  * This class implements an OutputStream for documents on
  * WebDAV-enabled-servers. It is a helper class for HttpDocument.
- * 
+ *
  * @see HttpDocument
  * @author Michael Haeusler (michael at akatose.de)
  */
 class HttpDocumentOutputStream extends ByteArrayOutputStream {
 
-    private WebdavResource webdavResource;
+    private final HttpDocument myDocument;
 
-    public HttpDocumentOutputStream(WebdavResource webdavResource) {
+    HttpDocumentOutputStream(HttpDocument document) {
         super();
-        this.webdavResource = webdavResource;
+        myDocument = document;
     }
 
     public void close() throws IOException {
+        super.close();
+        WebdavResource wr = myDocument.getWebdavResource();
+        wr.lockMethod(myDocument.getUsername(), 60);
         try {
-            super.close();
+            wr.putMethod(toByteArray());
         } finally {
-            try {
-                webdavResource.putMethod(toByteArray());
-            } catch (HttpException e) {
-                throw new IOException(e.getMessage() + "(" + e.getReasonCode()
-                        + ")");
-            }
+            wr.unlockMethod();
         }
     }
 
