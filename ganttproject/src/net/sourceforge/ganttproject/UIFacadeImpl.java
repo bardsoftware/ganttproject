@@ -507,8 +507,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
             return englishName + " (" + localName + ")";
         }
+
         @Override
         public void commit() {
+            super.commit();
+            applyLocale();
+        }
+
+        private void applyLocale() {
             Locale l = (Locale) stringToObject(getValue());
             GanttLanguage.getInstance().setLocale(l);
         }
@@ -549,6 +555,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             value = objectToString(l);
             if (value != null) {
                 setValue(value, true);
+                applyLocale();
             }
         }
 
