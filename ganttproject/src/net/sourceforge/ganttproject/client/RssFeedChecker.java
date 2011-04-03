@@ -18,22 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.client;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
@@ -43,16 +38,15 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
-import net.sourceforge.ganttproject.util.BrowserControl;
 
 
 public class RssFeedChecker {
 
     private final UIFacade myUiFacade;
-    private final BooleanOption myCheckRssOption = new DefaultBooleanOption("updateRss.check", true);
-    private final DateOption myLastCheckOption = new DefaultDateOption("updateRss.lastCheck", null);
+    private final BooleanOption myCheckRssOption = new DefaultBooleanOption("check", true);
+    private final DateOption myLastCheckOption = new DefaultDateOption("lastCheck", null);
     private final GPOptionGroup myOptionGroup =
-        new GPOptionGroup("", new GPOption[] {myCheckRssOption, myLastCheckOption});
+        new GPOptionGroup("updateRss", new GPOption[] {myCheckRssOption, myLastCheckOption});
     private GPTimeUnitStack myTimeUnitStack;
     private static final String RSS_URL = "http://ganttproject-frontpage.blogspot.com/feeds/posts/default/-/clientrss";
     private final RssParser parser = new RssParser();
@@ -134,7 +128,8 @@ public class RssFeedChecker {
     }
 
     private boolean wasToday(Date date) {
-        return myTimeUnitStack.createDuration(myTimeUnitStack.DAY, date, new Date()).getLength() == 0;
+        return myTimeUnitStack.createDuration(
+            myTimeUnitStack.DAY, date, myTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
     }
 
     private void onYes() {
