@@ -1,13 +1,30 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.client;
 
-import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.util.DateParser;
+import org.w3c.util.InvalidDateException;
 import org.xml.sax.InputSource;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.util.Date;
@@ -42,25 +59,34 @@ class RssParser {
     }
 
     public RssFeed parse(InputStream inputStream, Date lastCheckDate) {
-        StringBuilder buf = new StringBuilder();
         RssFeed result = new RssFeed();
         try {
-            String xpathExpression = lastCheckDate == null ? "//atom:entry" : "//atom:entry";
-            XPathExpression xpath = getXPath(xpathExpression);
-
+            XPathExpression xpath = getXPath("//atom:entry");
             NodeList items = (NodeList) xpath.evaluate(
                 new InputSource(new InputStreamReader(inputStream)), XPathConstants.NODESET);
             for (int i = 0; i < items.getLength(); i++) {
-                addItem(result, items.item(i));
+                addItem(result, items.item(i), lastCheckDate);
             }
 
         } catch (XPathExpressionException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
         return result;
     }
 
-    private void addItem(RssFeed result, Node item) throws XPathExpressionException {
+    private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
+        if (lastCheckDate != null) {
+            String updateString = getXPath("atom:updated/text()").evaluate(item);
+            try {
+                Date updateDate = DateParser.parse(updateString);
+                if (updateDate.before(lastCheckDate)) {
+                    return;
+                }
+            } catch (InvalidDateException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         String title = getXPath("atom:title/text()").evaluate(item);
         String body = getXPath("atom:content/text()").evaluate(item);
         result.addItem(title, body);
