@@ -46,6 +46,7 @@ public interface UIFacade {
 
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
+    void showOptionDialog(int messageType, String message, Action[] actions);
     void showDialog(Component content, Action[] buttonActions);
     void showDialog(Component content, Action[] buttonActions, String title);
 

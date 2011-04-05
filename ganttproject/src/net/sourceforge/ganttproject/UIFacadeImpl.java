@@ -209,15 +209,46 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     public void showErrorDialog(String errorMessage) {
         if (myMainFrame.isVisible()) {
+            showOptionDialog(JOptionPane.ERROR_MESSAGE, errorMessage, new Action[] {new OkAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            }});
+            /*
             GanttDialogInfo gdi = new GanttDialogInfo(myMainFrame,
                     GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, errorMessage,
                     getLanguage().getText("error"));
             gdi.setVisible(true);
+            */
         } else {
             System.err.println("[GanttProjectBase] showErrorDialog:\n "+errorMessage);
         }
     }
 
+    public void showOptionDialog(int messageType, String message, Action[] actions) {
+        JOptionPane optionPane = new JOptionPane(message, messageType);
+        Object[] options = new Object[actions.length];
+        Object defaultOption = null;
+        for (int i = 0; i < actions.length; i++) {
+            options[i] = actions[i].getValue(Action.NAME);
+            if (actions[i].getValue(Action.DEFAULT) != null) {
+                defaultOption = options[i];
+            }
+        }
+        optionPane.setOptions(options);
+        if (defaultOption != null) {
+            optionPane.setInitialValue(defaultOption);
+        }
+        JDialog dialog = optionPane.createDialog(myMainFrame, "");
+        dialog.setVisible(true);
+        Object choice = optionPane.getValue();
+        for (Action a : actions) {
+            if (a.getValue(Action.NAME).equals(choice)) {
+                a.actionPerformed(null);
+                break;
+            }
+        }
+    }
     public void showErrorDialog(Throwable e) {
         showErrorDialog(getExceptionReport(e));
         GPLogger.log(e);
