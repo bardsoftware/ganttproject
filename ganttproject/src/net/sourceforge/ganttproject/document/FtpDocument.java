@@ -6,6 +6,10 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 
@@ -31,26 +35,26 @@ public class FtpDocument extends AbstractURLDocument implements Document {
             else {
                 myURI = url;
             }
-            urlAsString = myURI.toString(); 
+            urlAsString = myURI.toString();
             myURI.toURL().openConnection().connect();
         } catch (URISyntaxException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
             throw new RuntimeException("Failed to create FTP document addressed by URL="+urlAsString, e);
         } catch (MalformedURLException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace();
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace();
+            }
             throw new RuntimeException("Failed to create FTP document addressed by URL="+urlAsString, e);
         } catch (IOException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace();
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace();
+            }
             throw new RuntimeException("Failed to create FTP document addressed by URL="+urlAsString, e);
         }
     }
-    
+
     public String getDescription() {
         return myURI.toString();
     }
@@ -59,8 +63,8 @@ public class FtpDocument extends AbstractURLDocument implements Document {
         return true;
     }
 
-    public boolean canWrite() {
-        return true;
+    public IStatus canWrite() {
+        return Status.OK_STATUS;
     }
 
     public boolean isValidForMRU() {
@@ -91,5 +95,5 @@ public class FtpDocument extends AbstractURLDocument implements Document {
         return false;
     }
 
-    
+
 }

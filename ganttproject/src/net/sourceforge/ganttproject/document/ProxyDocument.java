@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -75,7 +76,7 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.canRead();
     }
 
-    public boolean canWrite() {
+    public IStatus canWrite() {
         return myPhysicalDocument.canWrite();
     }
 

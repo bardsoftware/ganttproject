@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import org.eclipse.core.runtime.IStatus;
+
 /**
  * This interface abstracts the details of file access. Implementations of this
  * interface provide methods to open streams to a project file, independent of
@@ -17,6 +19,13 @@ import java.net.URI;
  * @author Michael Haeusler (michael at akatose.de)
  */
 public interface Document {
+    String PLUGIN_ID = "net.sourceforge.ganttproject";
+
+    public enum ErrorCode {
+        NOT_WRITABLE,  IS_DIRECTORY, LOST_UPDATE,
+        PARENT_IS_NOT_DIRECTORY, PARENT_IS_NOT_WRITABLE,
+        GENERIC_NETWORK_ERROR,
+    }
 
     /**
      * Gets the description of the document (can be displayed in the
@@ -38,7 +47,7 @@ public interface Document {
      *
      * @return writability
      */
-    public boolean canWrite();
+    public IStatus canWrite();
 
     /**
      * Checks, whether the document should appear in the MRU (list of <b>m</b>ost
