@@ -6,9 +6,15 @@ package net.sourceforge.ganttproject.gui;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+import org.eclipse.core.runtime.IStatus;
+
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -36,8 +42,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             return;
         }
         Document document = project.getDocument();
-        if (!document.canWrite()) {
-            myWorkbenchFacade.showErrorDialog(i18n.getText("msg10"));
+        IStatus canWrite = document.canWrite();
+        if (!canWrite.isOK()) {
+            GPLogger.getLogger(Document.class).log(Level.INFO, canWrite.getMessage(), canWrite.getException());
+            myWorkbenchFacade.showErrorDialog(formatWriteStatusMessage(document, canWrite));
             saveProjectAs(project);
             return;
         }
@@ -54,6 +62,12 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
     }
 
+    private String formatWriteStatusMessage(Document doc, IStatus canWrite) {
+        assert canWrite.getCode() >= 0 && canWrite.getCode() < Document.ErrorCode.values().length;
+        Document.ErrorCode errorCode = Document.ErrorCode.values()[canWrite.getCode()];
+        String key = "document.error.write." + errorCode.name().toLowerCase();
+        return MessageFormat.format(i18n.getText(key), doc.getPath(), canWrite.getMessage());
+    }
     private void afterSaveProject(IGanttProject project) {
         Document document = project.getDocument();
         myDocumentManager.addToRecentDocuments(document);

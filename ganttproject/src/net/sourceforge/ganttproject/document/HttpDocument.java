@@ -20,6 +20,8 @@ import org.apache.commons.httpclient.HttpsURL;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.webdav.lib.WebdavResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * This class implements the interface Document for file access on HTTP-servers
@@ -87,22 +89,30 @@ public class HttpDocument extends AbstractURLDocument {
         return (null == res) ? false : (res.exists() && !res.isCollection());
     }
 
-    public boolean canWrite() {
+    public IStatus canWrite() {
         WebdavResource res = getWebdavResource();
-        if (null == res)
-            return false;
+        if (null == res) {
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), lastError, null);
+        }
 
         try {
             res.setProperties(0);
         } catch (HttpException e) {
-            if (404 != e.getReasonCode())
-                return false;
+            if (404 != e.getReasonCode()) {
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
+            }
         } catch (IOException e) {
-            return false;
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
         }
 
         if (res.exists()) {
-            return (!res.isCollection());
+            return (res.isCollection())
+                ? new Status(
+                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(),  null)
+                : Status.OK_STATUS;
         } else {
             try {
                 HttpURL parentURL = httpURL.toString().startsWith("https:") ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
@@ -115,12 +125,15 @@ public class HttpDocument extends AbstractURLDocument {
                     currentHierPath = currentHierPath + "/";
                 parentURL.setPath(currentHierPath);
                 WebdavResource parentRes = new WebdavResource(parentURL);
-                if (!parentRes.isCollection())
-                    return false;
-                return true;
+                if (!parentRes.isCollection()) {
+                    return new Status(
+                        IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
+                        parentRes.getPath(),  null);
+                }
+                return Status.OK_STATUS;
             } catch (Exception e) {
-                GPLogger.log(e);
-                return false;
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
             }
         }
     }
