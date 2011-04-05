@@ -62,6 +62,10 @@ public class ConsoleUIFacade implements UIFacade {
 
     }
 
+    public void showOptionDialog(int messageType, String message, Action[] actions) {
+        System.err.println("[ConsoleUIFacade]: " + message);
+    }
+
     public void showErrorDialog(String errorMessage) {
         System.err.println("[ConsoleUIFacade] ERROR: "+errorMessage);
     }

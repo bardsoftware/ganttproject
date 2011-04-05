@@ -224,6 +224,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade.showConfirmationDialog(message, title);
     }
 
+    public void showOptionDialog(int messageType, String message, Action[] actions) {
+        myUIFacade.showOptionDialog(messageType, message, actions);
+    }
+
     public void showErrorDialog(String message) {
         myUIFacade.showErrorDialog(message);
     }
