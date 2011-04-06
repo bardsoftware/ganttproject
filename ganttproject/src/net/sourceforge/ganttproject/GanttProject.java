@@ -663,14 +663,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private JMenu createViewMenu() {
         JMenu result = changeMenuLabel(new JMenu(), language.getText("view"));
         result.add(miChartOptions);
-        Chart[] charts = Mediator.getPluginManager().getCharts();
+        List<Chart> charts = Mediator.getPluginManager().getCharts();
 
-        if (charts.length > 0)
+        if (!charts.isEmpty()) {
             result.addSeparator();
-
-        for (int i = 0; i < charts.length; i++) {
-            result.add(new JCheckBoxMenuItem(new ToggleChartAction(charts[i],
-                    getViewManager())));
+        }
+        for (Chart chart : charts) {
+            result.add(new JCheckBoxMenuItem(new ToggleChartAction(chart, getViewManager())));
         }
         return result;
     }
@@ -1300,10 +1299,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     + document.getDescription();
             throw new IOException(errorMessage);
         }
-        Chart[] charts = Mediator.getPluginManager().getCharts();
-        for (int i = 0; i < charts.length; i++) {
-            charts[i].setTaskManager(myTaskManager);
-            charts[i].reset();
+        for (Chart chart : Mediator.getPluginManager().getCharts()) {
+            chart.setTaskManager(myTaskManager);
+            chart.reset();
         }
 
         // myDelayManager.fireDelayObservation(); // it is done in repaint2
@@ -1333,15 +1331,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private boolean tryImportDocument(Document document) {
         boolean success = false;
-        Importer[] importers = (Importer[]) PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
-        for (int i = 0; i < importers.length; i++) {
-            Importer nextImporter = importers[i];
-            if (Pattern.matches(".*(" + nextImporter.getFileNamePattern()
+        List<Importer> importers = PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
+        for (Importer importer : importers) {
+            if (Pattern.matches(".*(" + importer.getFileNamePattern()
                     + ")$", document.getFilePath())) {
                 try {
-                    nextImporter.setContext(getProject(), getUIFacade(),
+                    importer.setContext(getProject(), getUIFacade(),
                             getGanttOptions().getPluginPreferences());
-                    nextImporter.run(new File(document.getFilePath()));
+                    importer.run(new File(document.getFilePath()));
                     success = true;
                     break;
                 } catch (Throwable e) {
