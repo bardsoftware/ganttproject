@@ -63,7 +63,7 @@ public class SettingsDialog2 {
         myPageOrderKey = pageOrderKey;
         myProject = project;
         myUIFacade = uifacade;
-        OptionPageProvider[] providers = (OptionPageProvider[]) PluginManager.getExtensions(
+        List<OptionPageProvider> providers = PluginManager.getExtensions(
             "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
         myItems = getListItems(providers);
         HashSet<String> pageIds = new HashSet<String>();
@@ -196,7 +196,7 @@ public class SettingsDialog2 {
         return rootPanel;
     }
 
-    private List<ListItem> getListItems(OptionPageProvider[] providers) {
+    private List<ListItem> getListItems(List<OptionPageProvider> providers) {
         Map<String, OptionPageProvider> pageId_provider = new HashMap<String, OptionPageProvider>();
         for (OptionPageProvider p : providers) {
             pageId_provider.put(p.getPageID(), p);

@@ -19,9 +19,7 @@ public class CommandLineExportApplication {
     private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
 
     public CommandLineExportApplication() {
-        Exporter[] exporters = Mediator.getPluginManager().getExporters();
-        for (int i=0; i<exporters.length; i++) {
-            Exporter next = exporters[i];
+        for (Exporter next : Mediator.getPluginManager().getExporters()) {
             List<String> nextExtensions = Arrays.asList(next.getFileExtensions());
             for (int j=0; j<nextExtensions.size(); j++) {
                 myFlag2exporter.put("-" + nextExtensions.get(j), next);
@@ -70,11 +68,11 @@ public class CommandLineExportApplication {
                 ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());
             }
             try {
-            	ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
-					public void run(File[] exportedFiles) {
-						System.exit(0);
-					}
-            	};
+                ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
+                    public void run(File[] exportedFiles) {
+                        System.exit(0);
+                    }
+                };
                 exporter.run(outputFile, finalizationJob);
             } catch (Exception e) {
                 consoleUI.showErrorDialog(e);

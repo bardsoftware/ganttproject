@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.GanttProject;
@@ -13,6 +14,7 @@ import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
  * @author bard
@@ -20,7 +22,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class ImportFileWizardImpl extends WizardImpl {
     private final State myState;
 
-    private static Importer[] ourImporters;
+    private static List<Importer> ourImporters;
 
     public ImportFileWizardImpl(UIFacade uiFacade, GanttProject project, GanttOptions options) {
         super(uiFacade, ImportFileWizardImpl.i18n("importWizard.dialog.title"));
@@ -28,8 +30,8 @@ public class ImportFileWizardImpl extends WizardImpl {
         if (ourImporters == null) {
             ourImporters = getImporters();
         }
-        for (int i=0; i<ourImporters.length; i++) {
-            ourImporters[i].setContext((IGanttProject)project, uiFacade, options.getPluginPreferences());
+        for (Importer importer : ourImporters) {
+            importer.setContext((IGanttProject)project, uiFacade, options.getPluginPreferences());
         }
         addPage(new ImporterChooserPage(ourImporters, myState));
         addPage(new FileChooserPage(
@@ -38,9 +40,8 @@ public class ImportFileWizardImpl extends WizardImpl {
                 myState));
     }
 
-    private Importer[] getImporters() {
-        Importer[] importers = (Importer[]) Mediator.getPluginManager().getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
-        return importers;
+    private static List<Importer> getImporters() {
+        return PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
     }
 
     protected void onOkPressed() {

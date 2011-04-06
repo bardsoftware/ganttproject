@@ -1,7 +1,8 @@
 package net.sourceforge.ganttproject.plugins;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.Exporter;
@@ -21,46 +22,37 @@ public class PluginManager {
 
     private static final String EXTENSION_POINT_ID_EXPORTER = "net.sourceforge.ganttproject.exporter";
 
-    private Chart[] myCharts;
+    private List<Chart> myCharts;
 
-    private Exporter[] myExporters;
+    private List<Exporter> myExporters;
 
-    public Object[] getExtensions(Class extensionPointInterface) {
-        String extensionPointID = extensionPointInterface.getName();
-        return getExtensions(extensionPointID, extensionPointInterface);
-    }
-
-    public static Object[] getExtensions(String extensionPointID, Class extensionPointInterface) {
+    public static <T> List<T> getExtensions(String extensionPointID, Class<T> extensionPointInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        IConfigurationElement[] configElements = extensionRegistry
-                .getConfigurationElementsFor(extensionPointID);
-
-        ArrayList<Object> extensions = new ArrayList<Object>();
-        for (int i = 0; i < configElements.length; i++) {
+        ArrayList<T> extensions = new ArrayList<T>();
+        for (IConfigurationElement configElement : extensionRegistry.getConfigurationElementsFor(extensionPointID)) {
             try {
-                Object nextExtension = configElements[i]
-                        .createExecutableExtension("class");
+                Object nextExtension = configElement.createExecutableExtension("class");
                 assert nextExtension!=null && extensionPointInterface.isAssignableFrom(nextExtension.getClass());
-                extensions.add(nextExtension);
+                extensions.add((T)nextExtension);
             } catch (CoreException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
             }
         }
-        return extensions.toArray((Object[])Array.newInstance(extensionPointInterface, 0));
+        return extensions;
     }
 
-    public Chart[] getCharts() {
+    public List<Chart> getCharts() {
         if (myCharts == null) {
-            myCharts = (Chart[]) getExtensions(EXTENSION_POINT_ID_CHART, Chart.class);
+            myCharts = getExtensions(EXTENSION_POINT_ID_CHART, Chart.class);
         }
         return myCharts;
     }
 
-    public Exporter[] getExporters() {
+    public List<Exporter> getExporters() {
         if (myExporters == null) {
-            myExporters = (Exporter[]) getExtensions(EXTENSION_POINT_ID_EXPORTER, Exporter.class);
+            myExporters = getExtensions(EXTENSION_POINT_ID_EXPORTER, Exporter.class);
         }
         return myExporters;
 
