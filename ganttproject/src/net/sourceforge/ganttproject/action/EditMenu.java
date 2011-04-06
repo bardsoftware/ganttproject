@@ -28,6 +28,7 @@ import javax.swing.KeyStroke;
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.search.SearchDialogAction;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu {
@@ -58,6 +59,7 @@ public class EditMenu {
         result.add(getRedoAction());
         result.addSeparator();
         result.add(new RefreshViewAction(getUIFacade()));
+        result.add(new SearchDialogAction(getProject(), getUIFacade()));
         result.addSeparator();
         result.add(getViewManager().getCutAction());
         result.add(getViewManager().getCopyAction());
