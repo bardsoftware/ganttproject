@@ -24,8 +24,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
-    public static final int MENU_MASK = Toolkit.getDefaultToolkit()
-            .getMenuShortcutKeyMask();
+    public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     protected boolean iconVisible = true;
     private Icon myIcon = null;

@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.event.UndoableEditEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -16,20 +16,19 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public class UndoAction extends GPAction implements GPUndoListener {
-    private GPUndoManager myUndoManager;
+    private final GPUndoManager myUndoManager;
+    private final UIFacade myUiFacade;
 
-    private final GanttProject appli;
-
-    public UndoAction(GPUndoManager undoManager, String iconSize, GanttProject appli) {
-        super(null, iconSize);
+    public UndoAction(GPUndoManager undoManager, UIFacade uiFacade) {
+        super("undo");
         myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
-        this.appli = appli;
-        setEnabled(myUndoManager.canUndo());        
+        myUiFacade = uiFacade;
+        setEnabled(myUndoManager.canUndo());
     }
 
     public void actionPerformed(ActionEvent e) {
-    	appli.getUIFacade().setStatusText(GanttLanguage.getInstance().getText("undo"));
+        myUiFacade.setStatusText(GanttLanguage.getInstance().getText("undo"));
         myUndoManager.undo();
     }
 
@@ -44,14 +43,4 @@ public class UndoAction extends GPAction implements GPUndoListener {
     protected String getIconFilePrefix() {
         return "undo_";
     }
-
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(isNull);
-    }
-
-    protected String getLocalizedName() {
-        return GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "undo"));
-    }
-
 }

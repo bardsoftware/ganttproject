@@ -6,34 +6,19 @@ import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 
-import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
-public class RefreshViewAction extends GPAction implements RolloverAction {
+class RefreshViewAction extends GPAction {
 
     private UIFacade myUIFacade;
 
-    public RefreshViewAction(UIFacade uiFacade, GanttOptions options) {
-        super(null, options.getIconSize());
+    public RefreshViewAction(UIFacade uiFacade) {
+        super("refresh");
         myUIFacade = uiFacade;
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-                KeyEvent.VK_R, GPAction.MENU_MASK));
-    }
-
-    public String getIconFilePrefix() {
-        return "refresh_";
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_R, GPAction.MENU_MASK));
     }
 
     public void actionPerformed(ActionEvent ae) {
         myUIFacade.refresh();
-    }
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(true);
-
-    }
-
-    public void setIconSize(String iconSize) {
-        putValue(Action.SMALL_ICON, createIcon("16"));
-        ;
     }
 }
