@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.event.UndoableEditEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -17,19 +17,18 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  */
 public class RedoAction extends GPAction implements GPUndoListener {
     private GPUndoManager myUndoManager;
+    private UIFacade myUiFacade;
 
-    private final GanttProject appli;
-    
-    public RedoAction(GPUndoManager undoManager, String iconSize, GanttProject appli) {
-        super(null, iconSize);
+    public RedoAction(GPUndoManager undoManager, UIFacade uiFacade) {
+        super("redo");
         myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
-        this.appli = appli;
+        myUiFacade = uiFacade;
         setEnabled(myUndoManager.canRedo());
     }
 
     public void actionPerformed(ActionEvent e) {
-    	appli.getUIFacade().setStatusText(GanttLanguage.getInstance().getText("redo"));    
+        myUiFacade.setStatusText(GanttLanguage.getInstance().getText("redo"));
         myUndoManager.redo();
     }
 
@@ -44,14 +43,4 @@ public class RedoAction extends GPAction implements GPUndoListener {
     protected String getIconFilePrefix() {
         return "redo_";
     }
-
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(isNull);
-    }
-
-    protected String getLocalizedName() {
-        return GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "redo"));
-    }
-
 }

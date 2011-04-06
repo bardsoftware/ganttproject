@@ -70,17 +70,14 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.action.EditMenu;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.NewArtefactAction;
 import net.sourceforge.ganttproject.action.NewHumanAction;
 import net.sourceforge.ganttproject.action.NewTaskAction;
-import net.sourceforge.ganttproject.action.RedoAction;
-import net.sourceforge.ganttproject.action.RefreshViewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
-import net.sourceforge.ganttproject.action.SettingsDialogAction;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
-import net.sourceforge.ganttproject.action.UndoAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
@@ -153,17 +150,15 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private GanttResourcePanel resp;
 
     /** Menu */
-    public JMenu mProject, mMRU, mEdit, mTask, mHuman, mHelp, mServer,
+    private JMenu mProject, mMRU, /*mEdit,*/ mTask, mHuman, mHelp, mServer,
             mCalendar;
 
     // public JMenu mView;
 
     /** Menuitem */
-    public JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
+    private JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
             miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
-            miPrjCal, miWebPage, miAbout, miRefresh, miChartOptions;
-
-    public JMenuItem miUndo, miRedo;
+            miPrjCal, miWebPage, miAbout, miChartOptions;
 
     private static final int maxSizeMRU = 5;
 
@@ -212,8 +207,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private NewArtefactAction myNewArtefactAction;
 
-    private RefreshViewAction myRefreshAction;
-
     private Action myDeleteHumanAction;
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
@@ -231,6 +224,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private ResourceChartTabContentPanel myResourceChartTabContent;
 
     private RowHeightAligner myRowHeightAligner;
+
+    private final EditMenu myEditMenu;
 
     public TaskContainmentHierarchyFacade getTaskContainment() {
         if (myFacadeInvalidator == null) {
@@ -343,9 +338,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
 
         System.err.println("3. creating menu...");
-        myRefreshAction = new RefreshViewAction(getUIFacade(), options);
-
-        // Create the menus
 
         bar = new JMenuBar();
         setJMenuBar(bar);
@@ -354,35 +346,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mMRU = new JMenu();
         mMRU.setIcon(new ImageIcon(getClass().getResource(
                 "/icons/recent_16.gif")));
-        mEdit = new JMenu();
         // mView = new JMenu ();
         mTask = new JMenu();
         mHuman = new JMenu();
         mHelp = new JMenu();
         mCalendar = new JMenu();
-        miUndo = new JMenuItem(new UndoAction(getUndoManager(), "16", this));
-        mEdit.add(miUndo);
-        // miUndo.setEnabled(false);
-        miRedo = new JMenuItem(new RedoAction(getUndoManager(), "16", this));
-        mEdit.add(miRedo);
-        // miRedo.setEnabled(false);
-        mEdit.addSeparator();
 
         createProjectMenu();
+        bar.add(mProject);
+        myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
+        bar.add(myEditMenu.create());
 
-        miRefresh = new JMenuItem(myRefreshAction);
-        // miRefresh.setAccelerator((KeyStroke)myRefreshAction.getValue(Action.ACCELERATOR_KEY));
-        mEdit.add(miRefresh);
-        mEdit.addSeparator();
-
-        // miCut = new JMenuItem(myCutAction);
-        mEdit.add(getViewManager().getCutAction());
-        // miCopy = new JMenuItem(myCopyAction);
-        mEdit.add(getViewManager().getCopyAction());
-        // miPaste = new JMenuItem(myPasteAction);
-        mEdit.add(getViewManager().getPasteAction());
-        mEdit.addSeparator();
-        mEdit.add(new SettingsDialogAction(getProject(), getUIFacade()));
         myNewTaskAction = new NewTaskAction(getProject());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
@@ -417,11 +391,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mHelp.add(miWebPage);
         miAbout = createNewItem("/icons/manual_16.gif");
         mHelp.add(miAbout);
-        if (!isApplet) {
-            // for an applet viewer, Project menu is not necessary
-            bar.add(mProject);
-        }
-        bar.add(mEdit);
         JMenu viewMenu = createViewMenu();
         if (viewMenu != null)
             bar.add(viewMenu);
@@ -723,12 +692,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void setMnemonic() {
         int MENU_MASK = GPAction.MENU_MASK;
 
-        // --UNDO----------------------------------
-        miUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MENU_MASK));
-        // --REDO----------------------------------
-        miRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, MENU_MASK));
-        miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
-                MENU_MASK));
+        miDeleteTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, MENU_MASK));
     }
 
     /** Create an item with a label */
@@ -830,8 +794,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Set the menus language after the user select a different language */
     private void changeLanguageOfMenu() {
         mProject = changeMenuLabel(mProject, language.getText("project"));
-        mEdit = changeMenuLabel(mEdit, language.getText("edit"));
-        // mView = changeMenuLabel(mView, language.getText("view"));
         mTask = changeMenuLabel(mTask, language.getText("task"));
         mHuman = changeMenuLabel(mHuman, language.getText("human"));
         mHelp = changeMenuLabel(mHelp, language.getText("help"));
@@ -840,8 +802,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         mServer = changeMenuLabel(mServer, language.getText("webServer"));
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
-        miUndo = changeMenuLabel(miUndo, language.getText("undo"));
-        miRedo = changeMenuLabel(miRedo, language.getText("redo"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language
@@ -862,7 +822,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miAbout = changeMenuLabel(miAbout, language.getText("about"));
         miChartOptions = changeMenuLabel(miChartOptions, language
                 .getText("chartOptions"));
-        miRefresh = changeMenuLabel(miRefresh, language.getText("refresh"));
 
         bNewTask.setToolTipText(getToolTip(correctLabel(language
                 .getText("createTask"))));
@@ -998,13 +957,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         scrollingManager.addScrollingListener(area.getViewState());
         scrollingManager.addScrollingListener(getResourcePanel().area
                 .getViewState());
-        Action undo = new UndoAction(getUndoManager(), options.getIconSize(),
-                this);
-        bUndo = new TestGanttRolloverButton(undo);
-
-        Action redo = new RedoAction(getUndoManager(), options.getIconSize(),
-                this);
-        bRedo = new TestGanttRolloverButton(redo);
+        bUndo = new TestGanttRolloverButton(myEditMenu.getUndoAction());
+        bRedo = new TestGanttRolloverButton(myEditMenu.getRedoAction());
 
         toolBar.add(bSave);
         toolBar.add(bUndo);
