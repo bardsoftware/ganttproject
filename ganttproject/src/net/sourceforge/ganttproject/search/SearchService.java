@@ -24,6 +24,8 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public interface SearchService {
+    String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.search";
+
     void init(IGanttProject project, UIFacade uiFacade);
     List<SearchResult> search(String query);
     void select(List<SearchResult> results);

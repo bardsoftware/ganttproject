@@ -22,11 +22,13 @@ public class SearchResult {
     private final String myOrigin;
     private final String mySnippet;
     private final String myLabel;
+    private final SearchService mySearchService;
 
-    public SearchResult(String label, String snippet, String origin) {
+    public SearchResult(String label, String snippet, String origin, SearchService service) {
         myLabel = label;
         mySnippet = snippet;
         myOrigin = origin;
+        mySearchService = service;
     }
 
     public String getLabel() {
@@ -40,4 +42,15 @@ public class SearchResult {
     public String getOrigin() {
         return myOrigin;
     }
+
+    @Override
+    public String toString() {
+        return myLabel;
+    }
+
+    public SearchService getSearchService() {
+        return mySearchService;
+    }
+
+
 }
