@@ -399,7 +399,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     private Action createCancelAction(final Action realAction,
             final JDialog result, final Commiter commiter) {
-        return new CancelAction() {
+        return new CancelAction(String.valueOf(realAction.getValue(Action.NAME))) {
             public void actionPerformed(ActionEvent e) {
                 realAction.actionPerformed(e);
                 commiter.commit();

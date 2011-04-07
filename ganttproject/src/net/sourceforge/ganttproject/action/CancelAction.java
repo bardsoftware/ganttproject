@@ -3,15 +3,14 @@
  */
 package net.sourceforge.ganttproject.action;
 
-import javax.swing.AbstractAction;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
 /**
  * @author bard
  */
-public abstract class CancelAction extends AbstractAction {
+public abstract class CancelAction extends GPAction {
     public CancelAction() {
-        super(GanttLanguage.getInstance().getText("cancel"));
+        this("cancel");
+    }
+    protected CancelAction(String key) {
+        super(key);
     }
 }
