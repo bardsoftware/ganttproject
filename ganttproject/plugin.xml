@@ -54,6 +54,8 @@
    <extension-point id="chart" name="Chart" schema="schema/net.sourceforge.ganttproject.chart.exsd"/>
    <extension-point id="OptionPageProvider" name="OptionPageProvider"/>
    <extension-point id="calendar" name="Calendar" schema="schema/net.sourceforge.ganttproject.calendar.exsd"/>
+   <extension-point id="search" name="SearchService"/>
+
    <extension point="org.eclipse.core.runtime.applications" id="GanttProject">
         <application>
           <run class="net.sourceforge.ganttproject.application.MainApplication"/>
@@ -78,6 +80,7 @@
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
    </extension>
+
    <extension
          point="net.sourceforge.ganttproject.calendar">
       <calendar resource-url="calendar/i18n_es_AR.calendar"/>
@@ -95,6 +98,10 @@
       <calendar resource-url="calendar/i18n_no.calendar"/>
       <calendar resource-url="calendar/i18n_pl.calendar"/>
       <calendar resource-url="calendar/i18n_sk.calendar"/>
+   </extension>
+   <extension
+         point="net.sourceforge.ganttproject.search">
+      <searchservice class="net.sourceforge.ganttproject.search.SimpleSearchService"/>
    </extension>
 
 <!--   <extension point="net.sourceforge.ganttproject.chart">
