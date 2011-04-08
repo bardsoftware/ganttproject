@@ -365,13 +365,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         getTable().setAutoCreateColumnsFromModel(false);
         getTable().setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
-
-        // the model must implement TableColumnModelListener
-
-        // Highlighters to ease the reading of the table.
-
-        // set the CellEditor for the dates.
-
         setShowHorizontalLines(true);
 
         setOpenIcon(null);
@@ -384,23 +377,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
 
 
         this.setHasColumnControl(false);
-        // this.getTable().moveColumn(0,2);
-        // List l = new ArrayList();
-        // DisplayedColumn dc1 = new DisplayedColumn("tpd3");
-        // DisplayedColumn dc2 = new DisplayedColumn("tpd8");
-        // dc1.setDisplayed(true);
-        // dc2.setDisplayed(true);
-        // l.add(dc1);
-        // l.add(dc2);
-        // this.setDisplayedColumns(l);
-        // // hideColumn("Name");
-
         this.getTreeTable().getParent().setBackground(Color.WHITE);
-//        EventListener listeners[] = this.getTreeTable().getParent()
-//                .getListeners(MouseListener.class);
-//        for (int i = 0; i < listeners.length; i++)
-//            this.getTreeTable().getParent().removeMouseListener(
-//                    (MouseListener) listeners[i]);
+        /*
         this.getTreeTable().getParent().addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 e.consume();
@@ -419,6 +397,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
                 }
             }
         });
+        */
         {
 
             InputMap inputMap = getInputMap();
