@@ -591,7 +591,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         Task taskUnderPointer = area.new MouseSupport()
                                 .findTaskUnderMousePointer(e.getX(), e.getY());
                         if (taskUnderPointer == null) {
-                            tree.selectTreeRow(-1);
+                            getTaskSelectionManager().clear();
                         }
                     }
                 }

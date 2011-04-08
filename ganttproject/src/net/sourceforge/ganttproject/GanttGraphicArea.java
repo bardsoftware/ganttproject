@@ -575,17 +575,19 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             MouseListener {
         private MouseSupport myMouseSupport = new MouseSupport();
 
+        private TaskSelectionManager getTaskSelectionManager() {
+            return getUIFacade().getTaskSelectionManager();
+        }
+
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                Task taskUnderPointer = myMouseSupport
-                        .findTaskUnderMousePointer(e.getX(), e.getY());
+                Task taskUnderPointer = myMouseSupport.findTaskUnderMousePointer(e.getX(), e.getY());
                 if (taskUnderPointer == null) {
-                    tree.selectTreeRow(-1);
+                    getTaskSelectionManager().clear();
                 }
             }
             if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                if (!appli.isOnlyViewer)
-                    appli.propertiesTask();
+                appli.propertiesTask();
             }
         }
 
@@ -636,28 +638,27 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         public void mousePressed(MouseEvent e) {
             tree.stopEditing();
-            if (appli.isOnlyViewer)
-                return;
-            Task taskUnderPointer = myMouseSupport.findTaskUnderMousePointer(e
-                    .getX(), e.getY());
-            if (taskUnderPointer!=null && !Mediator.getTaskSelectionManager().isTaskSelected(
-                    taskUnderPointer)) {
-                boolean ctrl = (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK;
-                tree.selectTask(taskUnderPointer, ctrl);
-            }
             super.mousePressed(e);
+            Task taskUnderPointer = myMouseSupport.findTaskUnderMousePointer(e.getX(), e.getY());
             if (taskUnderPointer == null) {
                 return;
             }
+            if (taskUnderPointer!=null && !getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
+                boolean ctrl = (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK;
+                if (!ctrl) {
+                    getTaskSelectionManager().clear();
+                }
+                getTaskSelectionManager().addTask(taskUnderPointer);
+            }
             if (e.getButton() == MouseEvent.BUTTON2) {
-                if (!Mediator.getTaskSelectionManager().isTaskSelected(
-                        taskUnderPointer))
-                    tree.selectTask(taskUnderPointer, false);
-                List<Task> l = Mediator.getTaskSelectionManager().getSelectedTasks();
+                if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
+                    getTaskSelectionManager().clear();
+                    getTaskSelectionManager().addTask(taskUnderPointer);
+                }
+                List<Task> l = getTaskSelectionManager().getSelectedTasks();
                 getChartImplementation().beginMoveTaskInteractions(e, l);
             }
         }
-
     }
 
     private class OldMouseMotionListenerImpl extends MouseMotionListenerBase {
