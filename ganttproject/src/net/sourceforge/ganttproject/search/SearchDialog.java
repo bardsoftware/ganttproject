@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.search;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +55,12 @@ class SearchDialog {
     private DefaultListModel myResultViewDataModel;
     private final IGanttProject myProject;
     private JList myResultView;
+    private GPAction myGotoAction = new CancelAction("search.gotoButton") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            gotoSelection();
+        }
+    };
 
     SearchDialog(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
@@ -62,12 +70,7 @@ class SearchDialog {
 
     void show() {
         myUiFacade.showDialog(getComponent(), new Action[] {
-            new CancelAction("search.gotoButton") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    gotoSelection();
-                }
-            },
+            myGotoAction,
             new CancelAction("close") {
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
@@ -85,16 +88,34 @@ class SearchDialog {
         JPanel result = new JPanel(new BorderLayout());
         JPanel inputPanel = new JPanel(new BorderLayout());
         final JTextField inputField = new JTextField(30);
-        JButton searchButton = new JButton(new GPAction("search.searchButton") {
+        final GPAction searchAction = new GPAction("search.searchButton") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 runSearch(inputField.getText());
             }
+        };
+        JButton searchButton = new JButton(searchAction);
+        inputField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    searchAction.actionPerformed(null);
+                }
+            }
         });
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(searchButton, BorderLayout.EAST);
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         result.add(inputPanel, BorderLayout.NORTH);
         myResultView = new JList(getResultViewDataModel());
+        myResultView.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    myGotoAction.actionPerformed(null);
+                }
+            }
+        });
         result.add(new JScrollPane(myResultView), BorderLayout.CENTER);
         result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         return result;

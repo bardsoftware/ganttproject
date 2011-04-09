@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.search;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.Action;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -30,6 +32,7 @@ public class SearchDialogAction extends GPAction {
 
     public SearchDialogAction(IGanttProject project, UIFacade uiFacade) {
         super("search.action");
+        putValue(Action.ACCELERATOR_KEY, GPAction.getKeyStroke("search.action.shortcut"));
         myProject = project;
         myUiFacade = uiFacade;
     }
