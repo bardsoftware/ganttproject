@@ -27,6 +27,12 @@ import javax.swing.JButton;
 public enum NotificationChannel {
     RSS(Color.YELLOW.brighter()), ERROR(new Color(255, 191, 207));
 
+    static interface Listener {
+        void notificationAdded();
+
+        void notificationRead(NotificationItem item);
+    }
+
     private final Color myColor;
     private boolean isVisible;
     private final List<NotificationItem> myItems = new ArrayList<NotificationItem>();
@@ -34,6 +40,7 @@ public enum NotificationChannel {
     private boolean isPulsing;
     private Color myNormalColor;
     private NotificationItem myDefaultNotification;
+    private final List<Listener> myListeners = new ArrayList<Listener>();
 
     NotificationChannel(Color color) {
         myColor = color;
@@ -53,6 +60,9 @@ public enum NotificationChannel {
 
     void addNotification(NotificationItem item) {
         myItems.add(item);
+        for (Listener l : myListeners) {
+            l.notificationAdded();
+        }
     }
 
     List<NotificationItem> getItems() {
@@ -91,5 +101,28 @@ public enum NotificationChannel {
 
     NotificationItem getDefaultNotification() {
         return myDefaultNotification;
+    }
+
+    void addListener(Listener listener) {
+        myListeners.add(listener);
+    }
+
+    public int getUnreadCount() {
+        int result = 0;
+        for (NotificationItem item : myItems) {
+            if (!item.isRead()) {
+                result++;
+            }
+        }
+        return result;
+    }
+
+    public void setRead(int position) {
+        assert position >= 0 && position < myItems.size() : "Attempt to mark read item#" + position + ". I have " + myItems.size() + " items";
+        NotificationItem item = myItems.get(position);
+        item.setRead(true);
+        for (Listener l : myListeners) {
+            l.notificationRead(item);
+        }
     }
 }
