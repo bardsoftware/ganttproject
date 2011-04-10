@@ -259,9 +259,15 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     public void logErrorMessage(Throwable e) {
-        System.err.println("notification manager=" + getNotificationManager());
-        getNotificationManager().addNotification(NotificationChannel.ERROR, "Something went wrong", e.getMessage());
+        getNotificationManager().addNotification(
+            NotificationChannel.ERROR,
+            new NotificationItem(
+                i18n("error.channel.itemTitle"), e.getMessage(), NotificationManager.DEFAULT_HYPERLINK_LISTENER));
         e.printStackTrace();
+    }
+
+    private static String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
     }
 
     void resetErrorLog() {

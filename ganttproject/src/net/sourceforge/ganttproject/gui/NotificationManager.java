@@ -24,9 +24,7 @@ import javax.swing.event.HyperlinkListener;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public interface NotificationManager {
-    void addNotification(NotificationChannel channel, String title, String body);
-    void addNotification(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener);
-
+    void addNotification(NotificationChannel channel, NotificationItem notificaton);
     void showNotification(NotificationChannel channel);
 
     HyperlinkListener DEFAULT_HYPERLINK_LISTENER = new HyperlinkListener() {
