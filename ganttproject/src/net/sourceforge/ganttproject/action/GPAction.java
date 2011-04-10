@@ -103,7 +103,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
     }
 
-    private void updateName() {
+    protected final void updateName() {
         String localizedName = getLocalizedName();
         if (localizedName == null) {
             localizedName = String.valueOf(getValue(Action.NAME));

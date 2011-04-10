@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -31,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.NotificationChannel.Listener;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 
 import org.pushingpixels.trident.Timeline;
@@ -106,12 +108,13 @@ public class NotificationManagerImpl implements NotificationManager {
         return result;
     }
 
-    private class ShowChannelAction extends GPAction {
+    private class ShowChannelAction extends GPAction implements NotificationChannel.Listener {
         private final NotificationChannel myChannel;
 
         ShowChannelAction(NotificationChannel channel) {
             super("notification.channel." + channel.toString().toLowerCase() + ".label");
             myChannel = channel;
+            myChannel.addListener(this);
         }
 
         @Override
@@ -121,6 +124,25 @@ public class NotificationManagerImpl implements NotificationManager {
                 myChannel.getButton().setBackground(myChannel.getNormalColor());
                 myChannel.setPulsing(false);
             }
+        }
+
+        @Override
+        protected String getLocalizedName() {
+            int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
+            String channelName = super.getLocalizedName();
+            return unreadCount == 0
+                ? channelName
+                : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
+        }
+
+        @Override
+        public void notificationAdded() {
+            updateName();
+        }
+
+        @Override
+        public void notificationRead(NotificationItem item) {
+            updateName();
         }
     }
 

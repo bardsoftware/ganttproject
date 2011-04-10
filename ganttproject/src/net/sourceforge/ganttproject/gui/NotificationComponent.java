@@ -1,6 +1,7 @@
 package net.sourceforge.ganttproject.gui;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.NotificationChannel.Listener;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 import javax.swing.*;
@@ -11,30 +12,39 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-class NotificationComponent {
+class NotificationComponent implements NotificationChannel.Listener {
     private final JPanel myComponent;
     private final Action[] myActions;
     int myPosition;
     private Action myBackwardAction;
     private Action myForwardAction;
+    private final Set<NotificationItem> myNotifications = new HashSet<NotificationItem>();
+    private final NotificationChannel myChannel;
 
     NotificationComponent(NotificationChannel channel) {
         myComponent = new JPanel(new CardLayout());
-        if (channel.getItems().isEmpty() && channel.getDefaultNotification() != null) {
-            addNotification(channel.getDefaultNotification(), channel);
-        }
-        for (NotificationItem notification : channel.getItems()) {
-            addNotification(notification, channel);
-
-        }
         List<Action> actions = new ArrayList<Action>();
         myBackwardAction = createBackwardAction();
         myForwardAction = createForwardAction();
         actions.add(myBackwardAction);
         actions.add(myForwardAction);
         myActions = actions.toArray(new Action[0]);
+        myChannel = channel;
+        myChannel.addListener(this);
+        processItems();
+    }
+
+    private void processItems() {
+        if (myChannel.getItems().isEmpty() && myChannel.getDefaultNotification() != null) {
+            addNotification(myChannel.getDefaultNotification(), myChannel);
+        }
+        for (NotificationItem notification : myChannel.getItems()) {
+            addNotification(notification, myChannel);
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 updateEnabled();
@@ -43,7 +53,10 @@ class NotificationComponent {
     }
 
     void addNotification(NotificationItem item, NotificationChannel channel) {
-        addNotification(item.myTitle, item.myBody, item.myHyperlinkListener, channel);
+        if (!myNotifications.contains(item)) {
+            addNotification(item.myTitle, item.myBody, item.myHyperlinkListener, channel);
+            myNotifications.add(item);
+        }
     }
 
     void addNotification(String title, String body, HyperlinkListener hyperlinkListener, NotificationChannel channel) {
@@ -86,6 +99,7 @@ class NotificationComponent {
         assert myBackwardAction != null && myForwardAction != null;
         myBackwardAction.setEnabled(myPosition > 0);
         myForwardAction.setEnabled(myPosition < myComponent.getComponentCount() - 1);
+        myChannel.setRead(myPosition);
     }
 
     JComponent getComponent() {
@@ -109,5 +123,15 @@ class NotificationComponent {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         return scrollPane;
 
+    }
+
+    @Override
+    public void notificationAdded() {
+        processItems();
+    }
+
+    @Override
+    public void notificationRead(NotificationItem item) {
+        // Do nothing
     }
 }
