@@ -1,20 +1,26 @@
 package net.sourceforge.ganttproject.gui;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.NotificationChannel.Listener;
-import net.sourceforge.ganttproject.util.BrowserControl;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLEditorKit;
-import java.awt.*;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
+
+import net.sourceforge.ganttproject.action.GPAction;
 
 class NotificationComponent implements NotificationChannel.Listener {
     private final JPanel myComponent;
@@ -24,14 +30,17 @@ class NotificationComponent implements NotificationChannel.Listener {
     private Action myForwardAction;
     private final Set<NotificationItem> myNotifications = new HashSet<NotificationItem>();
     private final NotificationChannel myChannel;
+    private Action myClearAction;
 
     NotificationComponent(NotificationChannel channel) {
         myComponent = new JPanel(new CardLayout());
         List<Action> actions = new ArrayList<Action>();
         myBackwardAction = createBackwardAction();
         myForwardAction = createForwardAction();
+        myClearAction = createClearAction();
         actions.add(myBackwardAction);
         actions.add(myForwardAction);
+        actions.add(myClearAction);
         myActions = actions.toArray(new Action[0]);
         myChannel = channel;
         myChannel.addListener(this);
@@ -45,11 +54,13 @@ class NotificationComponent implements NotificationChannel.Listener {
         for (NotificationItem notification : myChannel.getItems()) {
             addNotification(notification, myChannel);
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateEnabled();
-            }
-        });
+        if (!myNotifications.isEmpty()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateEnabled();
+                }
+            });
+        }
     }
 
     void addNotification(NotificationItem item, NotificationChannel channel) {
@@ -82,6 +93,16 @@ class NotificationComponent implements NotificationChannel.Listener {
         };
 
     }
+
+    private Action createClearAction() {
+        return new GPAction("updateRss.clear") {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                myChannel.clear();
+            }
+        };
+    }
+
 
     private Action createForwardAction() {
         return new GPAction("updateRss.forwardItem") {
@@ -133,5 +154,12 @@ class NotificationComponent implements NotificationChannel.Listener {
     @Override
     public void notificationRead(NotificationItem item) {
         // Do nothing
+    }
+
+    @Override
+    public void channelCleared() {
+        myNotifications.clear();
+        myComponent.removeAll();
+        processItems();
     }
 }

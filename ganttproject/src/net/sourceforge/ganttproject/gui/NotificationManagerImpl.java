@@ -50,6 +50,9 @@ public class NotificationManagerImpl implements NotificationManager {
 
     @Override
     public void showNotification(final NotificationChannel channel) {
+        if (channel.getItems().isEmpty() && channel.getDefaultNotification() == null) {
+            return;
+        }
         if (!myAnimationView.isReady()) {
             if (myFirstChannel == null) {
                 myFirstChannel = channel;
@@ -115,6 +118,7 @@ public class NotificationManagerImpl implements NotificationManager {
             super("notification.channel." + channel.toString().toLowerCase() + ".label");
             myChannel = channel;
             myChannel.addListener(this);
+            updateState();
         }
 
         @Override
@@ -135,14 +139,28 @@ public class NotificationManagerImpl implements NotificationManager {
                 : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
         }
 
-        @Override
-        public void notificationAdded() {
+        private void updateState() {
+            if (myChannel.getItems().isEmpty() && myChannel.getDefaultNotification() == null) {
+                setEnabled(false);
+            } else {
+                setEnabled(true);
+            }
             updateName();
         }
 
         @Override
+        public void notificationAdded() {
+            updateState();
+        }
+
+        @Override
         public void notificationRead(NotificationItem item) {
-            updateName();
+            updateState();
+        }
+
+        @Override
+        public void channelCleared() {
+            updateState();
         }
     }
 

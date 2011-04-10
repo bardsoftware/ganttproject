@@ -31,6 +31,8 @@ public enum NotificationChannel {
         void notificationAdded();
 
         void notificationRead(NotificationItem item);
+
+        void channelCleared();
     }
 
     private final Color myColor;
@@ -123,6 +125,13 @@ public enum NotificationChannel {
         item.setRead(true);
         for (Listener l : myListeners) {
             l.notificationRead(item);
+        }
+    }
+
+    public void clear() {
+        myItems.clear();
+        for (Listener l : myListeners) {
+            l.channelCleared();
         }
     }
 }
