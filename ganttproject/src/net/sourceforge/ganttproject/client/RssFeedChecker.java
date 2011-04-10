@@ -19,14 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 
+import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -39,6 +41,10 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
+
 
 public class RssFeedChecker {
 
@@ -48,7 +54,7 @@ public class RssFeedChecker {
     private final GPOptionGroup myOptionGroup =
         new GPOptionGroup("updateRss", new GPOption[] {myCheckRssOption, myLastCheckOption});
     private GPTimeUnitStack myTimeUnitStack;
-    private static final String RSS_URL = "http://ganttproject-frontpage.blogspot.com/feeds/posts/default/-/clientrss";
+    private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
     private final RssParser parser = new RssParser();
 
     public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
@@ -82,28 +88,47 @@ public class RssFeedChecker {
             @Override
             public void run() {
                 try {
-                    URL url = new URL(RSS_URL);
-                    RssFeed feed = parser.parse(url.openConnection().getInputStream(), myLastCheckOption.getValue());
-                    for (RssFeed.Item item : feed.getItems()) {
-                        myUiFacade.getNotificationManager().addNotification(
-                            NotificationChannel.RSS, item.title, item.body);
-                    }
+                    HttpClient httpClient = new HttpClient();
+                    String url = RSS_URL;
+                    while (true) {
+                        GetMethod getRssUrl = new GetMethod(url);
+                        getRssUrl.setFollowRedirects(true);
+                        getRssUrl.setRequestHeader("User-Agent", "GanttProject " + GPVersion.PRAHA);
+                        int result = httpClient.executeMethod(getRssUrl);
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            myLastCheckOption.setValue(new Date());
+                        if (result == HttpStatus.SC_MOVED_TEMPORARILY) {
+                            url = getRssUrl.getResponseHeader("Location").getValue();
+                            continue;
                         }
-                    });
+                        if (result == HttpStatus.SC_OK) {
+                            processResponse(getRssUrl.getResponseBodyAsStream());
+                        }
+                        return;
+                    }
                 } catch (MalformedURLException e) {
-
+                    e.printStackTrace();
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e.printStackTrace();
                 }
+            }
+
+            private void processResponse(InputStream responseStream) {
+                RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
+                for (RssFeed.Item item : feed.getItems()) {
+                    myUiFacade.getNotificationManager().addNotification(
+                        NotificationChannel.RSS, item.title, item.body);
+                }
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        myLastCheckOption.setValue(new Date());
+                    }
+                });
+
             }
         };
     }
-
 
     private Runnable createRssProposalCommand() {
         return new Runnable() {
@@ -114,6 +139,9 @@ public class RssFeedChecker {
                     new HyperlinkListener() {
                         @Override
                         public void hyperlinkUpdate(HyperlinkEvent e) {
+                            if (e.getEventType() != EventType.ACTIVATED) {
+                                return;
+                            }
                             if ("yes".equals(e.getURL().getHost())) {
                                 onYes();
                             } else if ("no".equals(e.getURL().getHost())) {
