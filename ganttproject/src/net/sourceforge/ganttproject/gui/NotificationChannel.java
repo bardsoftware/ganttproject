@@ -33,6 +33,7 @@ public enum NotificationChannel {
     private JButton myButton;
     private boolean isPulsing;
     private Color myNormalColor;
+    private NotificationItem myDefaultNotification;
 
     NotificationChannel(Color color) {
         myColor = color;
@@ -82,5 +83,13 @@ public enum NotificationChannel {
 
     Color getNormalColor() {
         return myNormalColor;
+    }
+
+    public void setDefaultNotification(NotificationItem defaultNotification) {
+        myDefaultNotification = defaultNotification;
+    }
+
+    NotificationItem getDefaultNotification() {
+        return myDefaultNotification;
     }
 }

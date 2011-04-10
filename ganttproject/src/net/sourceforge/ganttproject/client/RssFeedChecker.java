@@ -30,6 +30,7 @@ import javax.swing.event.HyperlinkListener;
 
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -56,7 +57,23 @@ public class RssFeedChecker {
     private GPTimeUnitStack myTimeUnitStack;
     private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
     private final RssParser parser = new RssParser();
-
+    private final NotificationItem myRssProposalNotification = new NotificationItem(
+        "", GanttLanguage.getInstance().getText("updateRss.question"),
+        new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() != EventType.ACTIVATED) {
+                    return;
+                }
+                if ("yes".equals(e.getURL().getHost())) {
+                    onYes();
+                } else if ("no".equals(e.getURL().getHost())) {
+                    onNo();
+                } else {
+                    NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+                }
+            }
+        });
     public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
         myUiFacade = uiFacade;
         myTimeUnitStack = timeUnitStack;
@@ -69,6 +86,7 @@ public class RssFeedChecker {
     public void run() {
         Runnable command = null;
         if (!myCheckRssOption.isChecked()) {
+            NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
             return;
         }
         Date lastCheck = myLastCheckOption.getValue();
@@ -116,7 +134,8 @@ public class RssFeedChecker {
                 RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
                 for (RssFeed.Item item : feed.getItems()) {
                     myUiFacade.getNotificationManager().addNotification(
-                        NotificationChannel.RSS, item.title, item.body);
+                        NotificationChannel.RSS,
+                        new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -134,23 +153,7 @@ public class RssFeedChecker {
         return new Runnable() {
             @Override
             public void run() {
-                myUiFacade.getNotificationManager().addNotification(
-                    NotificationChannel.RSS, "", GanttLanguage.getInstance().getText("updateRss.question"),
-                    new HyperlinkListener() {
-                        @Override
-                        public void hyperlinkUpdate(HyperlinkEvent e) {
-                            if (e.getEventType() != EventType.ACTIVATED) {
-                                return;
-                            }
-                            if ("yes".equals(e.getURL().getHost())) {
-                                onYes();
-                            } else if ("no".equals(e.getURL().getHost())) {
-                                onNo();
-                            } else {
-                                NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
-                            }
-                        }
-                    });
+                myUiFacade.getNotificationManager().addNotification(NotificationChannel.RSS, myRssProposalNotification);
             }
         };
     }

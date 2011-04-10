@@ -22,26 +22,28 @@ class NotificationComponent {
 
     NotificationComponent(NotificationChannel channel) {
         myComponent = new JPanel(new CardLayout());
-        for (int i = 0; i < channel.getItems().size(); i++) {
-            NotificationItem item = channel.getItems().get(i);
-            addNotification(item.myTitle, item.myBody, item.myHyperlinkListener, channel);
+        if (channel.getItems().isEmpty() && channel.getDefaultNotification() != null) {
+            addNotification(channel.getDefaultNotification(), channel);
+        }
+        for (NotificationItem notification : channel.getItems()) {
+            addNotification(notification, channel);
+
         }
         List<Action> actions = new ArrayList<Action>();
-//        if (feed.getItems().size() > 1) {
-            myBackwardAction = createBackwardAction();
-            myForwardAction = createForwardAction();
-            actions.add(myBackwardAction);
-            actions.add(myForwardAction);
-            myActions = actions.toArray(new Action[0]);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateEnabled();
-                }
-            });
-//        } else {
-//            myActions = new Action[0];
-//        }
+        myBackwardAction = createBackwardAction();
+        myForwardAction = createForwardAction();
+        actions.add(myBackwardAction);
+        actions.add(myForwardAction);
+        myActions = actions.toArray(new Action[0]);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateEnabled();
+            }
+        });
+    }
 
+    void addNotification(NotificationItem item, NotificationChannel channel) {
+        addNotification(item.myTitle, item.myBody, item.myHyperlinkListener, channel);
     }
 
     void addNotification(String title, String body, HyperlinkListener hyperlinkListener, NotificationChannel channel) {

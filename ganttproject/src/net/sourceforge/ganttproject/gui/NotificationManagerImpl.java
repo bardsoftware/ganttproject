@@ -29,7 +29,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.HyperlinkListener;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
@@ -126,18 +125,11 @@ public class NotificationManagerImpl implements NotificationManager {
     }
 
     @Override
-    public void addNotification(NotificationChannel channel, String title, String body) {
-        addNotification(channel, title, body, DEFAULT_HYPERLINK_LISTENER);
-    }
-    @Override
-    public void addNotification(
-            final NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener) {
-        channel.addNotification(new NotificationItem(title, body, hyperlinkListener));
-        System.err.println("added notification to channel=" + channel);
+    public void addNotification(final NotificationChannel channel, NotificationItem item) {
+        channel.addNotification(item);
         if (!channel.isVisible()) {
             for (NotificationChannel ch : NotificationChannel.values()) {
                 if (ch.isVisible()) {
-                    System.err.println("channel=" + ch + " is visible. running pulsing animation");
                     runPulsingAnimation(channel);
                     return;
                 }
@@ -145,7 +137,6 @@ public class NotificationManagerImpl implements NotificationManager {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    System.err.println("show notification channel=" + channel);
                     channel.saveNormalColor();
                     channel.getButton().setBackground(channel.getColor());
                     showNotification(channel);

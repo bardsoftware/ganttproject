@@ -7,7 +7,7 @@ public class NotificationItem {
     final String myBody;
     final HyperlinkListener myHyperlinkListener;
 
-    NotificationItem(String title, String body, HyperlinkListener hyperlinkListener) {
+    public NotificationItem(String title, String body, HyperlinkListener hyperlinkListener) {
         myTitle = title;
         myBody = body;
         myHyperlinkListener = hyperlinkListener;
