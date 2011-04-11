@@ -99,6 +99,9 @@ public enum NotificationChannel {
 
     public void setDefaultNotification(NotificationItem defaultNotification) {
         myDefaultNotification = defaultNotification;
+        for (Listener l : myListeners) {
+            l.notificationAdded();
+        }
     }
 
     NotificationItem getDefaultNotification() {

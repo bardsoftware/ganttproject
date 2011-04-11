@@ -120,7 +120,9 @@ class NotificationComponent implements NotificationChannel.Listener {
         assert myBackwardAction != null && myForwardAction != null;
         myBackwardAction.setEnabled(myPosition > 0);
         myForwardAction.setEnabled(myPosition < myComponent.getComponentCount() - 1);
-        myChannel.setRead(myPosition);
+        if (!myChannel.getItems().isEmpty()) {
+            myChannel.setRead(myPosition);
+        }
     }
 
     JComponent getComponent() {
