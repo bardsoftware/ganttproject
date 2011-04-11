@@ -48,6 +48,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 class SearchDialog {
@@ -76,7 +77,7 @@ class SearchDialog {
                 public void actionPerformed(ActionEvent arg0) {
                 }
             }
-        });
+        }, GanttLanguage.getInstance().getText("search.dialog.title"));
     }
 
     protected void gotoSelection() {
