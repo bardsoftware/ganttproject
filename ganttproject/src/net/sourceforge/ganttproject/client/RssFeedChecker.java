@@ -37,6 +37,8 @@ import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -48,9 +50,21 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 
 public class RssFeedChecker {
-
+    private static enum CheckOption {
+        YES, NO, UNDEFINED
+    }
     private final UIFacade myUiFacade;
-    private final BooleanOption myCheckRssOption = new DefaultBooleanOption("check", true);
+    private final DefaultEnumerationOption<CheckOption> myCheckRssOption = new DefaultEnumerationOption<CheckOption>(
+            "check", CheckOption.values()) {
+        @Override
+        protected String objectToString(CheckOption obj) {
+            return obj.toString();
+        }
+        @Override
+        protected CheckOption stringToObject(String value) {
+            return CheckOption.valueOf(value);
+        }
+    };
     private final DateOption myLastCheckOption = new DefaultDateOption("lastCheck", null);
     private final GPOptionGroup myOptionGroup =
         new GPOptionGroup("updateRss", new GPOption[] {myCheckRssOption, myLastCheckOption});
@@ -75,6 +89,7 @@ public class RssFeedChecker {
             }
         });
     public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
+        myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
         myUiFacade = uiFacade;
         myTimeUnitStack = timeUnitStack;
     }
@@ -85,15 +100,31 @@ public class RssFeedChecker {
 
     public void run() {
         Runnable command = null;
-        if (!myCheckRssOption.isChecked()) {
+        CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
+        if (CheckOption.NO == checkOption) {
             NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
             return;
         }
         Date lastCheck = myLastCheckOption.getValue();
         if (lastCheck == null) {
-            command = createRssProposalCommand();
-        } else if (!wasToday(lastCheck)) {
-            command = createRssReadCommand();
+            // It is the first time we run, just mark it. We want to suggest subscribing to updates only to
+            // those who runs GP at least twice.
+            markLastCheck();
+        } else if (wasToday(lastCheck)) {
+            // It is not the first run of GP but it was last run today and RSS proposal has not been shown yet.
+            // Add it to RSS button but don't promote it, wait until tomorrow.
+            if (CheckOption.UNDEFINED == checkOption) {
+                NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
+            }
+        } else {
+            // So it is not the first time and even not the first day we start GP.
+            // If no decision about subscribing, let's proactively suggest it, otherwise
+            // run check RSS.
+            if (CheckOption.UNDEFINED == checkOption) {
+                command = createRssProposalCommand();
+            } else {
+                command = createRssReadCommand();
+            }
         }
         if (command == null) {
             return;
@@ -137,14 +168,7 @@ public class RssFeedChecker {
                         NotificationChannel.RSS,
                         new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
                 }
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        myLastCheckOption.setValue(new Date());
-                    }
-                });
-
+                markLastCheck();
             }
         };
     }
@@ -164,11 +188,15 @@ public class RssFeedChecker {
     }
 
     private void onYes() {
-        myCheckRssOption.setValue(true);
+        myCheckRssOption.setValue(CheckOption.YES.toString());
         new Thread(createRssReadCommand()).start();
     }
 
     private void onNo() {
-        myCheckRssOption.setValue(false);
+        myCheckRssOption.setValue(CheckOption.NO.toString());
+    }
+
+    private void markLastCheck() {
+        myLastCheckOption.setValue(new Date());
     }
 }
