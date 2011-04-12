@@ -21,6 +21,11 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public interface UIFacade {
+    public interface Dialog {
+        void show();
+        void hide();
+    }
+
     public static class Choice {
         public static final Choice YES = new Choice();
         public static final Choice NO = new Choice();
@@ -47,8 +52,10 @@ public interface UIFacade {
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
     void showOptionDialog(int messageType, String message, Action[] actions);
-    void showDialog(Component content, Action[] buttonActions);
-    void showDialog(Component content, Action[] buttonActions, String title);
+
+    Dialog createDialog(Component content, Action[] buttonActions, String title);
+//    void showDialog(Component content, Action[] buttonActions);
+//    void showDialog(Component content, Action[] buttonActions, String title);
 
     void setStatusText(String text);
 

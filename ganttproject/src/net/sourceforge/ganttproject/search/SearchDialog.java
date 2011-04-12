@@ -70,14 +70,14 @@ class SearchDialog {
     }
 
     void show() {
-        myUiFacade.showDialog(getComponent(), new Action[] {
+        myUiFacade.createDialog(getComponent(), new Action[] {
             myGotoAction,
             new CancelAction("close") {
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
                 }
             }
-        }, GanttLanguage.getInstance().getText("search.dialog.title"));
+        }, GanttLanguage.getInstance().getText("search.dialog.title")).show();
     }
 
     protected void gotoSelection() {

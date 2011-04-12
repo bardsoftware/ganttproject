@@ -52,8 +52,7 @@ public class OptionsDialogAction extends GPAction {
                 rollback();
             }
         };
-        myUIFacade.showDialog(createDialogComponent(), new Action[] { okAction,
-                cancelAction });
+        myUIFacade.createDialog(createDialogComponent(), new Action[] { okAction, cancelAction }, "").show();
     }
 
     private void commit() {

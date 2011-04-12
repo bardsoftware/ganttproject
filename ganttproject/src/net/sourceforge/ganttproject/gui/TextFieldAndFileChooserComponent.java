@@ -169,7 +169,7 @@ public abstract class TextFieldAndFileChooserComponent {
         filePanelComponent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         */
         Action[] dialogActions = new Action [] {
-        		new OkAction() {
+                new OkAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         myFile = fc.getSelectedFile();
@@ -178,12 +178,12 @@ public abstract class TextFieldAndFileChooserComponent {
                     }
                 },
                 new CancelAction() {
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-					}
-				}
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                    }
+                }
         };
-        myUiFacade.showDialog(fc, dialogActions);
+        myUiFacade.createDialog(fc, dialogActions, "").show();
     }
 
     public void tryFile() {

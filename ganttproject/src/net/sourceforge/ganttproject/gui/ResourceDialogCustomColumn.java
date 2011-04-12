@@ -152,7 +152,7 @@ public class ResourceDialogCustomColumn  {
 
     public void setVisible(boolean visible) {
         Component rootComponent = getComponent();
-        getUIFacade().showDialog(rootComponent, new Action[] {
+        getUIFacade().createDialog(rootComponent, new Action[] {
                 new OkAction() {
                     public void actionPerformed(ActionEvent e) {
                         myOptionGroup.commit();
@@ -164,7 +164,7 @@ public class ResourceDialogCustomColumn  {
                         myOptionGroup.rollback();
                         myDate.rollback();
                     }
-        }});
+        }}, "").show();
     }
 
     private UIFacade getUIFacade() {
