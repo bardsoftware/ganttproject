@@ -17,18 +17,16 @@ import java.io.StringWriter;
 import java.util.Locale;
 import java.util.logging.Level;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -39,7 +37,6 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.DialogAligner;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
@@ -141,27 +138,37 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     @Override
     public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-        final JDialog result = new JDialog(myMainFrame, true);
-        result.setTitle(title);
+        final JDialog dlg = new JDialog(myMainFrame, true);
+        final Dialog result = new Dialog() {
+            @Override
+            public void hide() {
+                if (dlg.isVisible()) {
+                    dlg.setVisible(false);
+                    dlg.dispose();
+                }
+            }
+            @Override
+            public void show() {
+                DialogAligner.center(dlg, myMainFrame);
+                dlg.setVisible(true);
+            }
+        };
+        dlg.setTitle(title);
         final Commiter commiter = new Commiter();
         Action cancelAction = null;
         JPanel buttonBox = new JPanel(new GridLayout(1, buttonActions.length, 5, 0));
-        for (int i = 0; i < buttonActions.length; i++) {
-            Action nextAction = buttonActions[i];
+        for (final Action nextAction : buttonActions) {
             JButton nextButton = null;
             if (nextAction instanceof OkAction) {
                 nextButton = new JButton(nextAction);
                 nextButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (result.isVisible()) {
-                            result.setVisible(false);
-                            result.dispose();
-                        }
+                        result.hide();
                         commiter.commit();
                     }
                 });
-                result.getRootPane().setDefaultButton(nextButton);
+                dlg.getRootPane().setDefaultButton(nextButton);
             }
             if (nextAction instanceof CancelAction) {
                 cancelAction = nextAction;
@@ -169,54 +176,46 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 nextButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (result.isVisible()) {
-                            result.setVisible(false);
-                            result.dispose();
-                        }
+                        result.hide();
                         commiter.commit();
                     }
                 });
-                result.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                         nextAction.getValue(Action.NAME));
-                result.getRootPane().getActionMap().put(
-                        nextAction.getValue(Action.NAME), nextAction);
+                dlg.getRootPane().getActionMap().put(
+                        nextAction.getValue(Action.NAME), new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                nextAction.actionPerformed(e);
+                                result.hide();
+                            }
+                        });
             }
             if (nextButton == null) {
                 nextButton = new JButton(nextAction);
             }
             buttonBox.add(nextButton);
         }
-        result.getContentPane().setLayout(new BorderLayout());
-        result.getContentPane().add(content, BorderLayout.CENTER);
+        dlg.getContentPane().setLayout(new BorderLayout());
+        dlg.getContentPane().add(content, BorderLayout.CENTER);
         //
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
         buttonPanel.add(buttonBox, BorderLayout.EAST);
-        result.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+        dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
         //
-        result.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         final Action localCancelAction = cancelAction;
-        result.addWindowListener(new WindowAdapter() {
+        dlg.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
                 if (localCancelAction != null && !commiter.isCommited()) {
                     localCancelAction.actionPerformed(null);
                 }
             }
         });
-        result.pack();
-        return new Dialog() {
-            @Override
-            public void hide() {
-                result.setVisible(false);
-                result.dispose();
-            }
-            @Override
-            public void show() {
-                DialogAligner.center(result, myMainFrame);
-                result.setVisible(true);
-            }
-        };
+        dlg.pack();
+        return result;
     }
 
     public void setStatusText(String text) {
@@ -282,40 +281,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     void resetErrorLog() {
         myStatusBar.setErrorNotifier(null);
-    }
-
-    private Component createDialogContentComponent(int dialogType, String message) {
-        JLabel label;
-        switch (dialogType) {
-        case GanttDialogInfo.ERROR:
-            label = new JLabel(new ImageIcon(getClass().getResource(
-            "/icons/error.png")));
-            break;
-        case GanttDialogInfo.WARNING:
-            label = new JLabel(new ImageIcon(getClass().getResource(
-                    "/icons/warning.png")));
-            break;
-        case GanttDialogInfo.INFO:
-            label = new JLabel(new ImageIcon(getClass().getResource(
-                    "/icons/info.png")));
-            break;
-        case GanttDialogInfo.QUESTION:
-            label = new JLabel(new ImageIcon(getClass().getResource(
-                    "/icons/question.png")));
-            break;
-            default: throw new IllegalStateException("We should not be here");
-        }
-        JPanel imagePanel = new JPanel(new BorderLayout());
-        imagePanel.add(label, BorderLayout.NORTH);
-        //
-        JTextArea textArea = new JTextArea(message);
-        textArea.setEditable(false);
-        textArea.setBackground(new JLabel().getBackground());
-
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(imagePanel, BorderLayout.WEST);
-        result.add(textArea, BorderLayout.CENTER);
-        return result;
     }
 
     public GanttChart getGanttChart() {

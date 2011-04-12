@@ -56,28 +56,29 @@ class SearchDialog {
     private DefaultListModel myResultViewDataModel;
     private final IGanttProject myProject;
     private JList myResultView;
-    private GPAction myGotoAction = new CancelAction("search.gotoButton") {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            gotoSelection();
-        }
-    };
+    private UIFacade.Dialog myDialog;
 
     SearchDialog(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
         myUiFacade = uiFacade;
         myResultViewDataModel = new DefaultListModel();
-    }
-
-    void show() {
-        myUiFacade.createDialog(getComponent(), new Action[] {
-            myGotoAction,
+        myDialog = myUiFacade.createDialog(getComponent(), new Action[] {
+            new CancelAction("search.dialog.button.goto") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    gotoSelection();
+                }
+            },
             new CancelAction("close") {
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
                 }
             }
-        }, GanttLanguage.getInstance().getText("search.dialog.title")).show();
+        }, GanttLanguage.getInstance().getText("search.dialog.title"));
+    }
+
+    void show() {
+        myDialog.show();
     }
 
     protected void gotoSelection() {
@@ -89,7 +90,7 @@ class SearchDialog {
         JPanel result = new JPanel(new BorderLayout());
         JPanel inputPanel = new JPanel(new BorderLayout());
         final JTextField inputField = new JTextField(30);
-        final GPAction searchAction = new GPAction("search.searchButton") {
+        final GPAction searchAction = new GPAction("search.dialog.button.search") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 runSearch(inputField.getText());
@@ -113,7 +114,8 @@ class SearchDialog {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    myGotoAction.actionPerformed(null);
+                    gotoSelection();
+                    myDialog.hide();
                 }
             }
         });
