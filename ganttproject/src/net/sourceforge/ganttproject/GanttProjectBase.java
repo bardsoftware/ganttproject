@@ -57,6 +57,7 @@ import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
@@ -212,13 +213,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setStatusText(text);
     }
 
-    public void showDialog(Component content, Action[] actions) {
-        myUIFacade.showDialog(content,actions);
+    @Override
+    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+        return myUIFacade.createDialog(content, buttonActions, title);
     }
 
-    public void showDialog(Component content, Action[] actions, String title) {
-        myUIFacade.showDialog(content,actions,title);
-    }
 
     public UIFacade.Choice showConfirmationDialog(String message, String title) {
         return myUIFacade.showConfirmationDialog(message, title);

@@ -92,8 +92,8 @@ public class SettingsDialog2 {
             public void actionPerformed(ActionEvent arg0) {
             }
         };
-        myUIFacade.showDialog(
-            getComponent(), new Action[] {okAction, cancelAction}, GanttLanguage.getInstance().getText("settings"));
+        myUIFacade.createDialog(
+            getComponent(), new Action[] {okAction, cancelAction}, GanttLanguage.getInstance().getText("settings")).show();
     }
 
     static class ListItem {

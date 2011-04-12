@@ -7,9 +7,11 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
@@ -36,8 +38,19 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.gui.*;
-import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
+import net.sourceforge.ganttproject.gui.DialogAligner;
+import net.sourceforge.ganttproject.gui.GanttDialogInfo;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
+import net.sourceforge.ganttproject.gui.GanttStatusBar;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationItem;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -61,7 +74,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     private final ZoomManager myZoomManager;
     private final GanttStatusBar myStatusBar;
     private final UIFacade myFallbackDelegate;
-    private final ErrorNotifier myErrorNotifier;
     private final TaskSelectionManager myTaskSelectionManager;
     private final GPOptionGroup myOptions;
     private final LafOption myLafOption;
@@ -75,7 +87,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myStatusBar.setNotificationManager(notificationManager);
         myFallbackDelegate = fallbackDelegate;
         Job.getJobManager().setProgressProvider(this);
-        myErrorNotifier = new ErrorNotifier(this);
         myTaskSelectionManager = new TaskSelectionManager();
         myNotificationManager = notificationManager;
 
@@ -98,26 +109,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     public GPUndoManager getUndoManager() {
         return myFallbackDelegate.getUndoManager();
-    }
-
-    class MyDialog {
-        boolean result;
-        final Component contentComponent;
-        final OkAction okAction = new OkAction() {
-            public void actionPerformed(ActionEvent e) {
-                result = true;
-            }
-        };
-        final CancelAction cancelAction = new CancelAction() {
-            public void actionPerformed(ActionEvent e) {
-            }
-        };
-        MyDialog(int dialogType, String message) {
-            this.contentComponent = createDialogContentComponent(dialogType, message);
-        }
-        void show() {
-            showDialog(contentComponent, new Action[] {okAction, cancelAction});
-        }
     }
 
     public Choice showConfirmationDialog(String message, String title) {
@@ -148,12 +139,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         menu.show(invoker, x, y);
     }
 
-    public void showDialog(Component content, Action[] buttonActions) {
-        showDialog(content, buttonActions, "");
-    }
-
-    public void showDialog(Component content, Action[] buttonActions, String title) {
-        JDialog result = new JDialog(myMainFrame, true);
+    @Override
+    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+        final JDialog result = new JDialog(myMainFrame, true);
         result.setTitle(title);
         final Commiter commiter = new Commiter();
         Action cancelAction = null;
@@ -162,13 +150,32 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             Action nextAction = buttonActions[i];
             JButton nextButton = null;
             if (nextAction instanceof OkAction) {
-                nextAction = createOkAction(nextAction, result, commiter);
                 nextButton = new JButton(nextAction);
+                nextButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (result.isVisible()) {
+                            result.setVisible(false);
+                            result.dispose();
+                        }
+                        commiter.commit();
+                    }
+                });
                 result.getRootPane().setDefaultButton(nextButton);
             }
             if (nextAction instanceof CancelAction) {
-                nextAction = createCancelAction(nextAction, result, commiter);
                 cancelAction = nextAction;
+                nextButton = new JButton(nextAction);
+                nextButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (result.isVisible()) {
+                            result.setVisible(false);
+                            result.dispose();
+                        }
+                        commiter.commit();
+                    }
+                });
                 result.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                         nextAction.getValue(Action.NAME));
@@ -198,9 +205,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
         });
         result.pack();
-        // setSize(300, 300);
-        DialogAligner.center(result, myMainFrame);
-        result.setVisible(true);
+        return new Dialog() {
+            @Override
+            public void hide() {
+                result.setVisible(false);
+                result.dispose();
+            }
+            @Override
+            public void show() {
+                DialogAligner.center(result, myMainFrame);
+                result.setVisible(true);
+            }
+        };
     }
 
     public void setStatusText(String text) {
@@ -214,12 +230,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 public void actionPerformed(ActionEvent e) {
                 }
             }});
-            /*
-            GanttDialogInfo gdi = new GanttDialogInfo(myMainFrame,
-                    GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, errorMessage,
-                    getLanguage().getText("error"));
-            gdi.setVisible(true);
-            */
         } else {
             System.err.println("[GanttProjectBase] showErrorDialog:\n "+errorMessage);
         }
@@ -364,58 +374,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
         private boolean isCommited;
     }
-
-    private static class ProxyOkAction extends OkAction implements
-            PropertyChangeListener {
-        private Action myRealAction;
-
-        private JDialog myDialog;
-
-        private Commiter myCommiter;
-
-        private ProxyOkAction(final Action realAction, final JDialog dialog,
-                final Commiter commiter) {
-            realAction.addPropertyChangeListener(this);
-            myRealAction = realAction;
-            myDialog = dialog;
-            myCommiter = commiter;
-            setEnabled(realAction.isEnabled());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            myRealAction.removePropertyChangeListener(this);
-            myRealAction.actionPerformed(e);
-            myCommiter.commit();
-            if (myDialog.isVisible()) {
-                myDialog.setVisible(false);
-                myDialog.dispose();
-            }
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            setEnabled(myRealAction.isEnabled());
-        }
-
-    }
-
-    private Action createOkAction(final Action realAction,
-            final JDialog dialog, final Commiter commiter) {
-        return new ProxyOkAction(realAction, dialog, commiter);
-    }
-
-    private Action createCancelAction(final Action realAction,
-            final JDialog result, final Commiter commiter) {
-        return new CancelAction(String.valueOf(realAction.getValue(Action.NAME))) {
-            public void actionPerformed(ActionEvent e) {
-                realAction.actionPerformed(e);
-                commiter.commit();
-                result.setVisible(false);
-                result.dispose();
-            }
-
-        };
-    }
-
 
     private static GanttLanguage getLanguage() {
         return GanttLanguage.getInstance();

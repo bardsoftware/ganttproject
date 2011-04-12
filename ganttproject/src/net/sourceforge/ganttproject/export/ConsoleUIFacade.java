@@ -16,6 +16,7 @@ import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -48,18 +49,12 @@ public class ConsoleUIFacade implements UIFacade {
 
     }
 
-    public void showDialog(Component content, Action[] buttonActions) {
-        // TODO Auto-generated method stub
-
-    }
-    public void showDialog(Component content, Action[] buttonActions, String title) {
-        // TODO Auto-generated method stub
-
+    @Override
+    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+        return null;
     }
 
     public void setStatusText(String text) {
-        // TODO Auto-generated method stub
-
     }
 
     public void showOptionDialog(int messageType, String message, Action[] actions) {

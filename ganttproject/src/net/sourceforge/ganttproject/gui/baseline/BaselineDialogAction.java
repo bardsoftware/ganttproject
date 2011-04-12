@@ -148,7 +148,7 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
         };
-        myUiFacade.showDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title"));
+        myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
     }
 
     @Override

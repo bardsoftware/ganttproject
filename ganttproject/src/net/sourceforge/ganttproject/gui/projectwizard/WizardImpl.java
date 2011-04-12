@@ -120,8 +120,8 @@ public abstract class WizardImpl {
             }
         };
         adjustButtonState();
-        myUIFacade.showDialog(myPagesContainer, new Action[] { myBackAction,
-                myNextAction, myOkAction, myCancelAction }, myTitle);
+        myUIFacade.createDialog(myPagesContainer, new Action[] { myBackAction,
+                myNextAction, myOkAction, myCancelAction }, myTitle).show();
     }
 
     public void adjustButtonState() {
