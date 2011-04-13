@@ -811,7 +811,7 @@ public class TaskImpl implements Task {
     }
 
     public void setName(String name) {
-        myName = name;
+        myName = (name == null ? null : name.trim());
     }
 
     public void setWebLink(String webLink) {
