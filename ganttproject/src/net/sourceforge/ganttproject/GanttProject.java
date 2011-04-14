@@ -1005,11 +1005,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JMenuItem) {
             String arg = evt.getActionCommand();
-            if (arg.equals(language.getText("hideTask"))) {
-                tree.hideSelectedNodes();
-            } else if (arg.equals(language.getText("displayHiddenTasks"))) {
-                tree.displayHiddenTasks();
-            } else if (arg.equals(correctLabel(language.getText("preview")))) {
+            if (arg.equals(correctLabel(language.getText("preview")))) {
                 previewPrint();
             } else if (arg.equals(correctLabel(language.getText("deleteTask")))) {
                 deleteTasks(true);
@@ -1315,9 +1311,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Save the project as (with a dialog file chooser) */
     public boolean saveAsProject() throws IOException {
-        tree.displayHiddenTasks();
-        // TODO: for 2.0, implement saving project without the need to show
-        // hidden tasks
         getProjectUIFacade().saveProjectAs(getProject());
         return true;
     }
@@ -1330,11 +1323,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** Save the project on a file */
     public void saveProject() throws IOException {
-        tree.displayHiddenTasks();
-        // TODO: for 2.0, implement saving project without the need to show
-        // hidden tasks
         getProjectUIFacade().saveProject(getProject());
-        // saveProject(projectDocument);
     }
 
     public void changeWorkingDirectory(String newWorkDir) {
