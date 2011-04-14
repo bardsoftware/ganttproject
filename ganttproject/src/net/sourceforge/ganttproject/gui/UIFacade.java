@@ -6,11 +6,8 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Component;
 import java.awt.Frame;
 import javax.swing.Action;
-import javax.swing.JComponent;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;

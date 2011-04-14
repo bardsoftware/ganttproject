@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.gui.taskproperties;
 import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;

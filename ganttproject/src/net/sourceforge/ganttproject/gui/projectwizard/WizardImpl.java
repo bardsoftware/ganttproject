@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 

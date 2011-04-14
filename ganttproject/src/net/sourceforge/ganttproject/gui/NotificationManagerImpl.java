@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.NotificationChannel.Listener;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 
 import org.pushingpixels.trident.Timeline;
