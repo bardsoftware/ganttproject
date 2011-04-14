@@ -3,15 +3,12 @@
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import net.sourceforge.ganttproject.action.CancelAction;
