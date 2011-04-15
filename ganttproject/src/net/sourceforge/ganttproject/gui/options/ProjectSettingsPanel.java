@@ -52,7 +52,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     private final IGanttProject myProject;
 
-    /** Default constructor. */
     public ProjectSettingsPanel(IGanttProject project) {
         super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
                 "project")), GanttLanguage.getInstance().getText(
@@ -158,22 +157,22 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         taDescr.setText(myProject.getDescription());
     }
 
-    /** Return the selected project name */
+    /** @return the selected project name */
     public String getProjectName() {
         return tfName.getText();
     }
 
-    /** Return the organization */
+    /** @return the organization */
     public String getProjectOrganization() {
         return tfOrganization.getText();
     }
 
-    /** Return the web link */
+    /** @return the web link */
     public String getWebLink() {
         return tfWebLink.getText();
     }
 
-    /** Return the project description */
+    /** @return the project description */
     public String getProjectDescription() {
         return taDescr.getText();
     }
