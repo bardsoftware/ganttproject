@@ -27,7 +27,9 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Abstract class for the Options panels
+ * Abstract class for the Options panels
+ * 
+ * @author athomas
  */
 public abstract class GeneralOptionPanel extends JPanel {
 
@@ -55,28 +57,22 @@ public abstract class GeneralOptionPanel extends JPanel {
         return this;
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /** This method check if the value has changed, and ask for commit changes. */
     public abstract boolean applyChanges(boolean askForApply);
 
     /** Initialize the component. */
     public abstract void initialize();
 
-    /** This method ask for saving the changes. */
+    /** This method asks the user for saving the changes. */
     public boolean askForApplyChanges() {
         return (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(language.getText("msg20"),
                 language.getText("question")));
     }
 
-    /**
-     * @return
-     */
     public String getTitle() {
         return myTitle;
     }
 
-    /**
-     * @return
-     */
     public String getComment() {
         return myComment;
     }
