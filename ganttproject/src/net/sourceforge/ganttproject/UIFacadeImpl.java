@@ -476,6 +476,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
         private void applyLocale() {
             Locale l = (Locale) stringToObject(getValue());
+            if(l == null) {
+                // Selected Locale was not available, so use default Locale
+                l = Locale.getDefault();
+            }
             GanttLanguage.getInstance().setLocale(l);
         }
         @Override
