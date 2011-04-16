@@ -116,6 +116,10 @@ public class UndoManagerImpl implements GPUndoManager {
     public void die() {
         if (swingEditImpl != null)
             swingEditImpl.die();
+        discardAllEdits();
+    }
+
+    public void discardAllEdits() {
         if (mySwingUndoManager != null)
             mySwingUndoManager.discardAllEdits();
     }

@@ -29,4 +29,7 @@ public interface GPUndoManager {
     void removeUndoableEditListener(GPUndoListener listener);
 
     void die();
+    
+    /** Discards all undoable edits, ie cleaning the undo buffer */
+    void discardAllEdits();
 }
