@@ -31,7 +31,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
- * @author athomas The About panel.
+ * The About panel.
+ *
+ * @author athomas 
  */
 public class AboutPanel extends GeneralOptionPanel {
 
@@ -58,16 +60,13 @@ public class AboutPanel extends GeneralOptionPanel {
 
         vb.add(bHomePage);
         applyComponentOrientation(language.getComponentOrientation());
-
     }
 
-    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         // There are never changes for the about panel
         return false;
     }
 
-    /** Initialize the component. */
     public void initialize() {
     }
 }

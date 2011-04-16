@@ -30,7 +30,9 @@ import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Panel to edit the project properties.
+ * Panel to edit the project properties.
+ *
+ * @author athomas
  */
 public class ParametersSettingsPanel extends GeneralOptionPanel {
 
@@ -98,7 +100,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
@@ -117,11 +118,9 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
                 HttpDocument.setLockDAVMinutes(getLockDAVMinutes());
             }
         }
-
         return hasChange;
     }
 
-    /** Initialize the component. */
     public void initialize() {
         cbAutomatic.setSelected(appli.getGanttOptions().getAutomatic());
         spLockDAV.setValue(new Integer(appli.getGanttOptions().getLockDAVMinutes()));
@@ -131,7 +130,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     public boolean getAutomatic() {
         return cbAutomatic.isSelected();
     }
-
 
     /** @return the web dav locking value. */
     public int getLockDAVMinutes() {
@@ -146,11 +144,13 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     // appli.getOptions().setUndoNumber(getUndoNumber());
     // appli.changeUndoNumber ();
     // }
+
     /** @return the prefix task name. */
     public String getTaskNamePrefix() {
         String res = tfTaskPrefix.getText();
-        if (res.equals(language.getText("newTask")))
+        if (res.equals(language.getText("newTask"))) {
             return null;
+        }
         return res;
     }
 }
