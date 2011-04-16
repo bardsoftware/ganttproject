@@ -37,7 +37,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
- * @author athomas panel to edit the project properties
+ * Panel to edit the project properties
+ * 
+ * @author athomas
  */
 public class ProjectSettingsPanel extends GeneralOptionPanel {
 
@@ -122,7 +124,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (myProject.getProjectName().equals(tfName.getText())
@@ -143,7 +144,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
-    /** Initialize the component. */
     public void initialize() {
         /*
          * if(appli.projectDocument!=null) { String filename =

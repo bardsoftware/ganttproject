@@ -24,7 +24,9 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.RolesTableModel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
- * @author athomas Panel to edit the roles for resources of the project.
+ * Panel to edit the roles for resources of the project.
+ *
+ * @author athomas
  */
 public class RolesSettingsPanel extends GeneralOptionPanel {
 
@@ -48,7 +50,6 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange = myRolesModel.hasChanges();
         if (hasChange) {
@@ -57,7 +58,6 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
-    /** Initialize the component. */
     public void initialize() {
         // automatic initialize with the role model
     }
