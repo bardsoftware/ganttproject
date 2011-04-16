@@ -84,21 +84,23 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
      */
     public boolean applyChanges(boolean askForApply) {
+        boolean hasChange;
         if (getExportName() == appli.getGanttOptions().getExportName()
                 && getExportComplete() == appli.getGanttOptions()
                         .getExportComplete()
                 && getExportRelations() == appli.getGanttOptions()
                         .getExportRelations()) {
-            bHasChange = false;
+            hasChange = false;
         } else {
-            bHasChange = true;
+            hasChange = true;
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply o not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 appli.getGanttOptions().setExportName(getExportName());
                 appli.getGanttOptions().setExportComplete(getExportComplete());
                 appli.getGanttOptions().setExportRelations(getExportRelations());
             }
         }
-        return bHasChange;
+        return hasChange;
     }
 
     /*

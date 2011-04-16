@@ -160,6 +160,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     }
 
     public boolean applyChanges(boolean askForApply) {
+        boolean hasChange;
         CSVOptions csvOptions = getCsvOptions();
 
         if (getFixed() == csvOptions.bFixedSize
@@ -178,8 +179,9 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
                 && getResourcePhone() == csvOptions.bExportResourcePhone
                 && getResourceRole() == csvOptions.bExportResourceRole
                 && getTextSeparat().equals(csvOptions.sSeparatedTextChar)) {
-            bHasChange = false;
+            hasChange = false;
         } else {
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply o not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 csvOptions.sSeparatedTextChar = getTextSeparat();
                 csvOptions.sSeparatedChar = getSeparat();
@@ -199,9 +201,9 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
                 csvOptions.bExportResourcePhone = getResourcePhone();
                 csvOptions.bExportResourceRole = getResourceRole();
             }
-            bHasChange = true;
+            hasChange = true;
         }
-        return bHasChange;
+        return hasChange;
     }
 
     public void initialize() {

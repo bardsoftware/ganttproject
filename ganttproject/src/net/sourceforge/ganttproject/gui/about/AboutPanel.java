@@ -63,7 +63,8 @@ public class AboutPanel extends GeneralOptionPanel {
 
     /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        return bHasChange = false;
+        // There are never changes for the about panel
+        return false;
     }
 
     /** Initialize the component. */
