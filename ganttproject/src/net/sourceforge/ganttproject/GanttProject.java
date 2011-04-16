@@ -1382,13 +1382,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 // see http://developer.apple.com/qa/qa2001/qa1146.html
             } else {
                 if (askForSave) {
-                    /*
-                     * if (!last.equals(" (modified)")) { setTitle(getTitle() +
-                     * " (modified)"); }
-                     */
-
                     if (!title.endsWith(" *")) {
-                        setTitle(getTitle() + " *");
+                        setTitle(title + " *");
                     }
                 }
 
@@ -1668,6 +1663,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void setModified(boolean modified) {
         setAskForSave(modified);
+
+        String title = getTitle();
+        if(modified == false && title.endsWith(" *")) {
+            // Remove * from title
+            setTitle(title.substring(0, title.length() - 2));
+        }
     }
 
     public boolean isModified() {
@@ -1682,7 +1683,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             projectDocument.releaseLock();
         }
         projectDocument = null;
-        setModified(false);
         getTaskManager().projectClosed();
         getCustomColumnsStorage().reset();
 
@@ -1690,6 +1690,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
+        setModified(false);
     }
 
     protected ParserFactory getParserFactory() {
