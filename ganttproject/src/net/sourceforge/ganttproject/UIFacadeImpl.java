@@ -1,6 +1,21 @@
 /*
- * Created on 10.10.2005
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -96,6 +111,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
         myOptions.setTitled(false);
     }
+
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
     }
@@ -114,11 +130,16 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         String cancel = GanttLanguage.getInstance().getText("cancel");
         int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {yes, no, cancel}, yes);
         switch (result) {
-        case JOptionPane.YES_OPTION: return Choice.YES;
-        case JOptionPane.NO_OPTION: return Choice.NO;
-        case JOptionPane.CANCEL_OPTION: return Choice.CANCEL;
-        case JOptionPane.CLOSED_OPTION: return Choice.CANCEL;
-        default: return Choice.CANCEL;
+        case JOptionPane.YES_OPTION:
+            return Choice.YES;
+        case JOptionPane.NO_OPTION:
+            return Choice.NO;
+        case JOptionPane.CANCEL_OPTION:
+            return Choice.CANCEL;
+        case JOptionPane.CLOSED_OPTION:
+            return Choice.CANCEL;
+        default:
+            return Choice.CANCEL;
         }
     }
 
@@ -199,12 +220,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
         dlg.getContentPane().setLayout(new BorderLayout());
         dlg.getContentPane().add(content, BorderLayout.CENTER);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
         buttonPanel.add(buttonBox, BorderLayout.EAST);
         dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-        //
+
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         final Action localCancelAction = cancelAction;
         dlg.addWindowListener(new WindowAdapter() {
@@ -327,7 +348,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return myMainFrame;
     }
 
-
     private static class Commiter {
         void commit() {
             isCommited = true;
@@ -354,9 +374,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         result.append(stringWriter.getBuffer().toString());
         return result.toString();
     }
+
     public void setWorkbenchTitle(String title) {
         myMainFrame.setTitle(title);
-
     }
 
     public IProgressMonitor createMonitor(Job job) {
@@ -374,21 +394,27 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public IProgressMonitor getDefaultMonitor() {
         return null;
     }
+
     public TaskTreeUIFacade getTaskTree() {
         return myFallbackDelegate.getTaskTree();
     }
+
     public ResourceTreeUIFacade getResourceTree() {
         return myFallbackDelegate.getResourceTree();
     }
+
     public TaskSelectionContext getTaskSelectionContext() {
         return myTaskSelectionManager;
     }
+
     public TaskSelectionManager getTaskSelectionManager() {
         return myTaskSelectionManager;
     }
+
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myLafOption.getLookAndFeel();
     }
+
     @Override
     public void setLookAndFeel(final GanttLookAndFeelInfo laf) {
         if (laf == null) {
@@ -403,6 +429,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
         });
     }
+
     private boolean doSetLookAndFeel(GanttLookAndFeelInfo laf) {
         try {
             UIManager.setLookAndFeel(laf.getClassName());
@@ -522,13 +549,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 applyLocale();
             }
         }
-
     }
 
     @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
-
 }
 
