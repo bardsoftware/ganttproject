@@ -1026,13 +1026,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             }
         } else if (evt.getSource() instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-                final ActionEvent ae = evt;
-                getUndoManager().undoableEdit("StartupDocument",
-                        new Runnable() {
-                            public void run() {
-                                openStartupDocument((Document) ae.getSource());
-                            }
-                        });
+                openStartupDocument((Document) evt.getSource());
             }
         }
     }
@@ -1227,28 +1221,28 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     private void openDocument(Document document) throws IOException {
-        if (document.getDescription().toLowerCase().endsWith(".xml")
-                || document.getDescription().toLowerCase().endsWith(".gan")) {
-            boolean locked = document.acquireLock();
-            if (!locked) {
-                getUIFacade().logErrorMessage(
-                        new Exception(language.getText("msg13")));
-            }
-            document.read();
-            if (documentsMRU.add(document)) {
-                updateMenuMRU();
-            }
-            if (locked) {
-                projectDocument = document;
-            }
-            this.setTitle(language.getText("appliTitle") + " ["
-                    + document.getDescription() + "]");
-            setAskForSave(false);
-        } else {
+        if (document.getDescription().toLowerCase().endsWith(".xml") == false
+                && document.getDescription().toLowerCase().endsWith(".gan") == false) {
+            // Unknown file extension
             String errorMessage = language.getText("msg2") + "\n"
                     + document.getDescription();
             throw new IOException(errorMessage);
         }
+
+        boolean locked = document.acquireLock();
+        if (!locked) {
+            getUIFacade().logErrorMessage(
+                    new Exception(language.getText("msg13")));
+        }
+        document.read();
+        if (documentsMRU.add(document)) {
+            updateMenuMRU();
+        }
+        if (locked) {
+            projectDocument = document;
+        }
+        setTitle(language.getText("appliTitle") + " ["
+                + document.getDescription() + "]");
         for (Chart chart : Mediator.getPluginManager().getCharts()) {
             chart.setTaskManager(myTaskManager);
             chart.reset();
@@ -1257,7 +1251,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // myDelayManager.fireDelayObservation(); // it is done in repaint2
         addMouseListenerToAllContainer(this.getComponents());
         getTaskManager().projectOpened();
-        // repaint2();
+        
+        // As we just have opened a new file it is still unmodified, so mark it as such
+        setModified(false);
     }
 
     public void openStartupDocument(String path) {
