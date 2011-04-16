@@ -66,6 +66,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         int taskId = 0;
         int resourceId = 0;
         float load = 0;
+        boolean loadedLoad = false;
         boolean coordinator = false;
 
         String taskIdAsString = attrs.getValue("task-id");
@@ -85,6 +86,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
 
             if (loadAsString != null) {
                 load = Float.parseFloat(loadAsString);
+                loadedLoad = true;
             }
             if (coordinatorAsString != null) {
                 coordinator = Boolean.valueOf(coordinatorAsString)
@@ -97,10 +99,8 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
                     e);
         }
 
-        // if no load is specified I assume 100% load
-        // this should only be the case if old files
-        // were loaded.
-        if (load == 0) {
+        // If no load is specified, assume 100% load
+        if (loadedLoad == false) {
             load = 100;
         }
 
