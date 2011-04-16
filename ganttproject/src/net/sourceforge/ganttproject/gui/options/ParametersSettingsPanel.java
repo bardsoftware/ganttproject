@@ -100,13 +100,14 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
 
     /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
+        boolean hasChange;
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
                 &&
                 // getDragTime() == appli.getOptions().getDragTime() &&
                 getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
-            bHasChange = false;
+            hasChange = false;
         } else {
-            bHasChange = true;
+            hasChange = true;
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 appli.getGanttOptions().setAutomatic(getAutomatic());
 
@@ -117,7 +118,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
             }
         }
 
-        return bHasChange;
+        return hasChange;
     }
 
     /** Initialize the component. */

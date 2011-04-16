@@ -124,15 +124,15 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
+        boolean hasChange;
         if (myProject.getProjectName().equals(tfName.getText())
                 && myProject.getOrganization().equals(tfOrganization.getText())
                 && myProject.getWebLink().equals(tfWebLink.getText())
                 && myProject.getDescription().equals(taDescr.getText())) {
-            bHasChange = false;
-            // no changes
+            hasChange = false;
         } else {
-            bHasChange = true;
-            // apply changes
+            hasChange = true;
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply or not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 myProject.setProjectName(getProjectName());
                 myProject.setDescription(getProjectDescription());
@@ -140,7 +140,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
                 myProject.setWebLink(getWebLink());
             }
         }
-        return bHasChange;
+        return hasChange;
     }
 
     /** Initialize the component. */

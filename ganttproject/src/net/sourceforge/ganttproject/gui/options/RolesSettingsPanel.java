@@ -50,11 +50,11 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
 
     /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        bHasChange = myRolesModel.hasChanges();
-        if (bHasChange) {
+        boolean hasChange = myRolesModel.hasChanges();
+        if (hasChange) {
             myRolesModel.applyChanges();
         }
-        return bHasChange;
+        return hasChange;
     }
 
     /** Initialize the component. */

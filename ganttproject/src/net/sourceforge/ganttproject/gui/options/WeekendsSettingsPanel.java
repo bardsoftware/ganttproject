@@ -39,16 +39,16 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
     public boolean applyChanges(boolean askForApply) {
         weekendConfigurationPanel.setActive(false);
         GPCalendar projectCalendar = project.getActiveCalendar();
-        bHasChange = weekendConfigurationPanel.isChanged();
+        boolean hasChange = weekendConfigurationPanel.isChanged();
         for(int i = 1; i < 8; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
-                bHasChange = true;
+                hasChange = true;
             }
         }
         for(int i = 1; i < 8; i++) {
             projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
         }
-        if (bHasChange) {
+        if (hasChange) {
             // Update tasks for the new weekends
             // By setting their end dates to null it gets recalculated
             Task[] tasks = project.getTaskManager().getTasks();
@@ -64,7 +64,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
                 GPLogger.log(e);
             }
         }
-        return bHasChange;
+        return hasChange;
     }
 
     // TODO It would be nicer to just update the checkboxes,

@@ -38,9 +38,6 @@ public abstract class GeneralOptionPanel extends JPanel {
     /** General vertical box. */
     protected Box vb = Box.createVerticalBox();
 
-    /** Tell if the parameters of the panel have change. */
-    protected boolean bHasChange = false;
-
     private String myTitle;
 
     private String myComment;
@@ -57,7 +54,12 @@ public abstract class GeneralOptionPanel extends JPanel {
         return this;
     }
 
-    /** This method check if the value has changed, and ask for commit changes. */
+    /**
+     * This method checks if options panel has value that got changed changed.
+     * And ask the user to commit changes if askForApply is true.
+     * 
+     * @returns true when there were changes which needed to be committed
+     */
     public abstract boolean applyChanges(boolean askForApply);
 
     /** Initialize the component. */
