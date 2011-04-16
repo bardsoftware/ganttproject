@@ -1,6 +1,20 @@
 /*
- * Created on 05.07.2003
- *
+GanttProject is an opensource project management tool.
+Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
@@ -40,12 +54,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         myRoleManager = roleMgr;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(java.lang.String,
-     *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("allocation")) {
@@ -53,20 +61,13 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(java.lang.String,
-     *      java.lang.String, java.lang.String)
-     */
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 
     private void loadAllocation(Attributes attrs) throws FileFormatException {
         int taskId = 0;
         int resourceId = 0;
-        float load = 0;
-        boolean loadedLoad = false;
+        float load = 100;
         boolean coordinator = false;
 
         String taskIdAsString = attrs.getValue("task-id");
@@ -86,7 +87,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
 
             if (loadAsString != null) {
                 load = Float.parseFloat(loadAsString);
-                loadedLoad = true;
             }
             if (coordinatorAsString != null) {
                 coordinator = Boolean.valueOf(coordinatorAsString)
@@ -97,11 +97,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
             throw new FileFormatException(
                     "Failed to load <allocation> tag: one of attribute values is invalid",
                     e);
-        }
-
-        // If no load is specified, assume 100% load
-        if (loadedLoad == false) {
-            load = 100;
         }
 
 		HumanResource human = getResourceManager().getById(resourceId);
@@ -146,7 +141,6 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
     }
 
     private Role findRole(String persistentIDasString) {
-        //
         RolePersistentID persistentID = new RolePersistentID(
                 persistentIDasString);
         String rolesetName = persistentID.getRoleSetID();
