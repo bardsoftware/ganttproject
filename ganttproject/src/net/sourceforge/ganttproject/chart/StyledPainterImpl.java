@@ -1,3 +1,20 @@
+/* LICENSE: GPL2
+Copyright (C) 2010-2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.AlphaComposite;
@@ -10,11 +27,9 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
@@ -23,7 +38,9 @@ import net.sourceforge.ganttproject.time.TimeUnitText;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * Implements styled painters for the available primitives (see {@link GraphicPrimitiveContainer})
+ *
+ * @author bard
  */
 public class StyledPainterImpl implements Painter {
     private Graphics2D myGraphics;
@@ -35,21 +52,31 @@ public class StyledPainterImpl implements Painter {
     private ChartUIConfiguration myConfig;
 
     private final int margin;
+
+    /** List X coordinates used to draw polygons */
+    private int[] myXPoints = new int[4];
+
+    /** List Y coordinates used to draw polygons */
+    private int[] myYPoints = new int[4];
     
-    final private static BasicStroke defaultStroke = new BasicStroke();
-    final private static BasicStroke dependencyRubber = new BasicStroke(1f,
+    /** Default stroke used for the primitives */
+    private final static BasicStroke defaultStroke = new BasicStroke();
+
+    private final static BasicStroke dependencyRubber = new BasicStroke(1f,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f,
             new float[] { 2.5f }, 0f);
 
-    public StyledPainterImpl(ChartUIConfiguration configuration) {
-        // myGraphics = g;
+    public StyledPainterImpl(ChartUIConfiguration config) {
+        myConfig = config;
+        myTextLengthCalculator = new TextLengthCalculatorImpl(myGraphics);
+        margin = myConfig.getMargin();
+
         myStyle2painter.put("task", myTaskRectanglePainter);
         myStyle2painter.put("task.start", myTaskStartRectanglePainter);
         myStyle2painter.put("task.end", myTaskEndRectanglePainter);
         myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);        
-        myConfig = configuration;
         myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
-        myStyle2painter.put("task.milestone", myMilestonePanter);
+        myStyle2painter.put("task.milestone", myMilestonePainter);
         myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
         myStyle2painter.put("task.supertask", myTaskSupertaskRectanglePainter);
         myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
@@ -81,104 +108,88 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("load.underload.last", myResourceLoadPainter);
         myStyle2painter.put("load.underload.first.last", myResourceLoadPainter);
         myStyle2painter.put("previousStateTask", myPreviousStateTaskRectanglePainter);
-        myTextLengthCalculator = new TextLengthCalculatorImpl(myGraphics);
-        margin = myConfig.getMargin();
     }
 
     public void setGraphics(Graphics g) {
         myGraphics = (Graphics2D) g;
         myTextLengthCalculator.setGraphics(g);
+    }
+
+    public void prePaint() {
         myGraphics.setStroke(defaultStroke);
+        myGraphics.setFont(myConfig.getChartFont());
     }
 
     public void paint(GraphicPrimitiveContainer.Rectangle next) {
-        if (myGraphics == null) {
-            throw new RuntimeException("Graphics is null");
-        }
-        Graphics g = myGraphics;
+        assert myGraphics == null;
         RectanglePainter painter = myStyle2painter.get(next.getStyle());
         if (painter != null) {
+            // Use found painter
             painter.paint(next);
         } else {
+            // Use default painter, since no painter was provided
             if (next.getBackgroundColor() == null) {
                 Color foreColor = next.getForegroundColor();
                 if (foreColor == null) {
                     foreColor = Color.BLACK;
                 }
-                g.setColor(foreColor);
-                g.drawRect(next.myLeftX, next.myTopY, next.myWidth,
+                myGraphics.setColor(foreColor);
+                myGraphics.drawRect(next.myLeftX, next.myTopY, next.myWidth,
                         next.myHeight);
             } else {
-                g.setColor(next.getBackgroundColor());
-                g.fillRect(next.myLeftX, next.myTopY, next.myWidth,
+                myGraphics.setColor(next.getBackgroundColor());
+                myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth,
                         next.myHeight);
             }
         }
     }
 
-    private RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
+    /** Interface providing a method to paint a rectangle (currently, used to draw many more other things...) */
+    private interface RectanglePainter {
+        public void paint(GraphicPrimitiveContainer.Rectangle next);
+    }
+
+    private final RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
-            Graphics2D g = (Graphics2D) myGraphics;
-            g.setColor(c);
-            g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+            myGraphics.setColor(c);
+            myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
         }
     };
-//    private RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
-//        Composite myAlphaComposite = AlphaComposite.getInstance(
-//                AlphaComposite.SRC_OVER, 0.6f);
-//
-//        public void paint(Rectangle next) {
-//            Color c = next.getBackgroundColor();
-//            Graphics2D g = (Graphics2D) myGraphics;
-//            g.setColor(c);
-//            Composite was = g.getComposite();
-//            g.setComposite(myAlphaComposite);
-//            g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
-//            g.setComposite(was);
-//        }
-//    };
 
-    class TaskRectanglePainter implements RectanglePainter {
+    private class TaskRectanglePainter implements RectanglePainter {
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Object modelObject = next.getModelObject();
-            if (modelObject instanceof TaskActivity==false) {
+            if (modelObject instanceof TaskActivity == false) {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
-            Task task = ((TaskActivity)modelObject).getTask();
+            Task task = ((TaskActivity) modelObject).getTask();
             Color c = task.getColor();
-            if (c==null) {
-                c = getDefaultColor();
-            }
-            Graphics2D g = (Graphics2D) myGraphics;
-            g.setColor(c);
+            myGraphics.setColor(task.getColor());
             ShapePaint shapePaint = task.getShape();
             if (myConfig.isCriticalPathOn() && task.isCritical()) {
                 shapePaint = new ShapePaint(ShapeConstants.THICK_BACKSLASH,
                         Color.BLACK, c);
             }
 
-            if (shapePaint!=null) {
-                g.setPaint(shapePaint);
+            if (shapePaint != null) {
+                myGraphics.setPaint(shapePaint);
             }
-            g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
-            g.setColor(Color.black);
-            drawBorder(g, next);
+            myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+            myGraphics.setColor(Color.BLACK);
+            drawBorder(myGraphics, next);
         }
         protected void drawBorder(Graphics g, Rectangle next) {
             g.drawLine(next.myLeftX-getCorrectionShift(), next.myTopY, next.getRightX()-getCorrectionShift(), next.myTopY);
             g.drawLine(next.myLeftX-getCorrectionShift(), next.getBottomY(), next.getRightX()-getCorrectionShift(), next.getBottomY());
-        }
-        private Color getDefaultColor() {
-            return Color.BLUE;
-        }        
+        }     
         protected int getCorrectionShift() {
             return 0;
         }
     }
 
-    private RectanglePainter myTaskRectanglePainter = new TaskRectanglePainter();
-    private RectanglePainter myTaskStartRectanglePainter = new TaskRectanglePainter() {
+    private final RectanglePainter myTaskRectanglePainter = new TaskRectanglePainter();
+    private final RectanglePainter myTaskStartRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
@@ -187,7 +198,8 @@ public class StyledPainterImpl implements Painter {
             return -1;
         }
     };
-    private RectanglePainter myTaskEndRectanglePainter = new TaskRectanglePainter() {
+
+    private final RectanglePainter myTaskEndRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.getRightX()-1, next.myTopY, next.getRightX()-1, next.getBottomY());
@@ -196,7 +208,8 @@ public class StyledPainterImpl implements Painter {
             return 1;
         }
     };
-    private RectanglePainter myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
+
+    private final RectanglePainter myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
@@ -204,12 +217,12 @@ public class StyledPainterImpl implements Painter {
         }
     };
 
-    private RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
+    private final RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
         float myAlphaValue = 0;
         Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
 
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
-            if (myAlphaValue!=myConfig.getWeekendAlphaValue()) {
+            if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
                 myAlphaValue = myConfig.getWeekendAlphaValue();
                 myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
             }
@@ -217,31 +230,21 @@ public class StyledPainterImpl implements Painter {
             if (modelObject instanceof TaskActivity==false) {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
-            Task task = ((TaskActivity)modelObject).getTask();
-            Color c = task.getColor();
-            if (c==null) {
-                c = getDefaultColor();
-            }
-            Graphics2D g = (Graphics2D) myGraphics;
-            g.setColor(c);            
-            Composite was = g.getComposite();
-            g.setComposite(myAlphaComposite);
-            g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
-            g.setColor(Color.black);
-            g.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
-            g.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
+            Task task = ((TaskActivity) modelObject).getTask();
+            myGraphics.setColor(task.getColor());            
+            Composite oldComposite = myGraphics.getComposite();
+            myGraphics.setComposite(myAlphaComposite);
+            myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+            myGraphics.setColor(Color.black);
+            myGraphics.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
+            myGraphics.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
             //g.drawRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
 
-            g.setComposite(was);
+            myGraphics.setComposite(oldComposite);
         }
-        private Color getDefaultColor() {
-            return Color.BLUE;
-        }
-
-
     };
 
-    private RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
+    private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
             if (c == null) {
@@ -249,106 +252,96 @@ public class StyledPainterImpl implements Painter {
             }
             if (myConfig.isCriticalPathOn()
                     && ((TaskActivity) next.getModelObject()).getTask()
-                            .isCritical())
+                            .isCritical()){
                 c = Color.RED;
-
-            Graphics g = myGraphics;
-            g.setColor(c);
-            g.fillRect(next.myLeftX, next.myTopY + next.myHeight - 6,
+            }
+            myGraphics.setColor(c);
+            myGraphics.fillRect(next.myLeftX, next.getBottomY() - 6,
                     next.myWidth, 3);
         }
-
         private Color getDefaultColor() {
             return Color.BLACK;
         }
 
     };
 
-    private RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
+    private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            Color c = Color.BLACK;
-            // if(((TaskActivity)next.getModelObject()).getTask().isCritical())
-            // c = Color.RED;
-
-            g.setColor(c);
-            int topy = next.myTopY + next.myHeight - 3;
-            g.fillPolygon(new int[] { next.myLeftX, next.myLeftX + 3,
-                    next.myLeftX }, new int[] { topy, topy, topy + 3 }, 3);
+            int bottomy = next.getBottomY() - 3;
+            myXPoints[0] = next.myLeftX;
+            myYPoints[0] = bottomy;
+            myXPoints[1] = next.myLeftX + 3;
+            myYPoints[1] = bottomy;
+            myXPoints[2] = next.myLeftX;
+            myYPoints[2] = bottomy + 3;            
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
+    private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            Color c = Color.BLACK;
-            // if(((TaskActivity)next.getModelObject()).getTask().isCritical())
-            // c = Color.RED;
-
-            g.setColor(c);
-
-            int topy = next.myTopY + next.myHeight - 3;
-            int rightx = next.myLeftX + next.myWidth;
-            g.fillPolygon(new int[] { rightx - 3, rightx, rightx }, new int[] {
-                    topy, topy, topy + 3 }, 3);
+            int bottomy = next.getBottomY() - 3;
+            int rightx = next.getRightX();
+            myXPoints[0] = rightx - 3;
+            myYPoints[0] = bottomy;
+            myXPoints[1] = rightx;
+            myYPoints[1] = bottomy;
+            myXPoints[2] = rightx;
+            myYPoints[2] = bottomy + 3;
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
+    private final RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
         public void paint(Rectangle next) {
             Color c = getDefaultColor();
             if (myConfig.isCriticalPathOn()
                     && ((TaskActivity) next.getModelObject()).getTask()
-                            .isCritical())
+                            .isCritical()) {
                 c = Color.RED;
-
-            Graphics g = myGraphics;
-            g.setColor(c);
-            g.fillRect(next.myLeftX, next.myTopY + next.myHeight - 9,
+            }
+            myGraphics.setColor(c);
+            myGraphics.fillRect(next.myLeftX, next.myTopY + next.myHeight - 9,
                     next.myWidth, 6);
         }
 
         private Color getDefaultColor() {
             return Color.BLACK;
         }
-
     };
 
-    private RectanglePainter myProjectTaskStartPainter = new RectanglePainter() {
+    private final RectanglePainter myProjectTaskStartPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            Color c = Color.BLACK;
-            // if(((TaskActivity)next.getModelObject()).getTask().isCritical())
-            // c = Color.RED;
-
-            g.setColor(c);
-            int topy = next.myTopY + next.myHeight - 3;
-            g.fillPolygon(new int[] { next.myLeftX, next.myLeftX + 3,
-                    next.myLeftX }, new int[] { topy, topy, topy + 3 }, 3);
+            int bottomy = next.getBottomY() - 3;
+            myXPoints[0] = next.myLeftX;
+            myYPoints[0] = bottomy;
+            myXPoints[1] = next.myLeftX + 3;
+            myYPoints[1] = bottomy;
+            myXPoints[2] = next.myLeftX;
+            myYPoints[2] = bottomy + 3;
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);            
         }
     };
 
-    private RectanglePainter myProjectTaskEndPainter = new RectanglePainter() {
+    private final RectanglePainter myProjectTaskEndPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            Color c = Color.BLACK;
-            // if(((TaskActivity)next.getModelObject()).getTask().isCritical())
-            // c = Color.RED;
-
-            g.setColor(c);
-
-            int topy = next.myTopY + next.myHeight - 3;
-            int rightx = next.myLeftX + next.myWidth;
-            g.fillPolygon(new int[] { rightx - 3, rightx, rightx }, new int[] {
-                    topy, topy, topy + 3 }, 3);
+            int bottomy = next.getBottomY() - 3;
+            int rightx = next.getRightX();
+            myXPoints[0] = rightx - 3;
+            myYPoints[0] = bottomy;
+            myXPoints[1] = rightx;
+            myYPoints[1] = bottomy;
+            myXPoints[2] = rightx;
+            myYPoints[2] = bottomy + 3;
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter myMilestonePanter = new RectanglePainter() {
-        private int[] myXPoints = new int[4];
-
-        private int[] myYPoints = new int[4];
-
+    private final RectanglePainter myMilestonePainter = new RectanglePainter() {
         public void paint(Rectangle next) {
             Object modelObject = next.getModelObject();
             if (modelObject instanceof TaskActivity == false) {
@@ -357,70 +350,54 @@ public class StyledPainterImpl implements Painter {
             }
             Task task = ((TaskActivity) modelObject).getTask();
             Color c = task.getColor();
-            Graphics g = myGraphics;
             if (myConfig.isCriticalPathOn()
                     && ((TaskActivity) next.getModelObject()).getTask()
-                            .isCritical())
+                            .isCritical()) {
                 c = Color.RED;
+            }
 
-            g.setColor(c);
-            int middleX = next.getRightX() - next.myWidth / 2;
-            int middleY = next.getBottomY() - next.myHeight / 2;
+            int middleX = next.getMiddleX();
+            int middleY = next.getMiddleY();
             myXPoints[0] = middleX - next.myHeight / 2;
-            myXPoints[1] = middleX;
-            myXPoints[2] = middleX + next.myHeight / 2;
-            myXPoints[3] = middleX;
             myYPoints[0] = middleY;
+            myXPoints[1] = middleX;
             myYPoints[1] = next.myTopY;
+            myXPoints[2] = middleX + next.myHeight / 2;
             myYPoints[2] = middleY;
+            myXPoints[3] = middleX;
             myYPoints[3] = next.getBottomY();
-
-            g.fillPolygon(myXPoints, myYPoints, 4);
+            myGraphics.setColor(c);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 4);
         }
-
     };
 
-    private RectanglePainter myArrowDownPainter = new RectanglePainter() {
-        private int[] myXPoints = new int[3];
-
-        private int[] myYPoints = new int[3];
-
+    private final RectanglePainter myArrowDownPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            g.setColor(Color.BLACK);
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
             myXPoints[2] = next.getMiddleX();
             myYPoints[0] = next.myTopY;
             myYPoints[1] = next.myTopY;
             myYPoints[2] = next.getBottomY();
-            g.fillPolygon(myXPoints, myYPoints, 3);
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter myArrowUpPainter = new RectanglePainter() {
-        private int[] myXPoints = new int[3];
-
-        private int[] myYPoints = new int[3];
-
+    private final RectanglePainter myArrowUpPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            g.setColor(Color.BLACK);
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
             myXPoints[2] = next.getMiddleX();
             myYPoints[0] = next.getBottomY();
             myYPoints[1] = next.getBottomY();
             myYPoints[2] = next.myTopY;
-            g.fillPolygon(myXPoints, myYPoints, 3);
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter myArrowLeftPainter = new RectanglePainter() {
-        private int[] myXPoints = new int[3];
-
-        private int[] myYPoints = new int[3];
-
+    private final RectanglePainter myArrowLeftPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
             Graphics g = myGraphics;
             g.setColor(Color.BLACK);
@@ -434,98 +411,89 @@ public class StyledPainterImpl implements Painter {
         }
     };
 
-    private RectanglePainter myArrowRightPainter = new RectanglePainter() {
-        private int[] myXPoints = new int[3];
-
-        private int[] myYPoints = new int[3];
-
+    private final RectanglePainter myArrowRightPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            g.setColor(Color.BLACK);
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
             myXPoints[2] = next.myLeftX;
             myYPoints[0] = next.myTopY;
             myYPoints[1] = next.getMiddleY();
             myYPoints[2] = next.getBottomY();
-            g.fillPolygon(myXPoints, myYPoints, 3);
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
-    private RectanglePainter myDayOffPainter = new RectanglePainter() {
+    private final RectanglePainter myDayOffPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-
             int margin = StyledPainterImpl.this.margin - 3;
             Color c = myConfig.getDayOffColor();
-            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 100));
-            g.fillRect(next.myLeftX, next.myTopY + margin, next.myWidth,
-                    next.myHeight - 2 * margin);
-            g.setColor(Color.BLACK);
-            g.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX, next
-                    .getBottomY()
-                    - margin);
-            g.drawLine(next.myLeftX, next.myTopY + margin, next.getRightX(),
-                    next.myTopY + margin);
-            g.drawLine(next.myLeftX, next.getBottomY() - margin, next
+            myGraphics.setColor(new Color(c.getRed(), c.getGreen(),
+                    c.getBlue(), 100));
+            myGraphics.fillRect(next.myLeftX, next.myTopY + margin,
+                    next.myWidth, next.myHeight - 2 * margin);
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.drawLine(next.myLeftX, next.myTopY + margin,
+                    next.myLeftX, next.getBottomY() - margin);
+            myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next
+                    .getRightX(), next.myTopY + margin);
+            myGraphics.drawLine(next.myLeftX, next.getBottomY() - margin, next
                     .getRightX(), next.getBottomY() - margin);
-            g.drawLine(next.getRightX(), next.myTopY + margin,
-                    next.getRightX(), next.getBottomY() - margin);
+            myGraphics.drawLine(next.getRightX(), next.myTopY + margin, next
+                    .getRightX(), next.getBottomY() - margin);
         }
     };
 
-    private RectanglePainter myResourceLoadPainter = new RectanglePainter() {
+    private final RectanglePainter myResourceLoadPainter = new RectanglePainter() {
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
             String style = next.getStyle();
-            g.setFont(myConfig.getChartFont());
+            Color c;
+            if (style.indexOf("overload") > 0) {
+                c = myConfig.getResourceOverloadColor();
+            } else if (style.indexOf("underload") > 0) {
+                c = myConfig.getResourceUnderLoadColor();
+            } else {
+                c = myConfig.getResourceNormalLoadColor();
+            }
+            myGraphics.setColor(c);
 
-            Color color;
-            if (style.indexOf("overload") > 0)
-                color = myConfig.getResourceOverloadColor();
-            else if (style.indexOf("underload") > 0)
-                color = myConfig.getResourceUnderLoadColor();
-            else
-                color = myConfig.getResourceNormalLoadColor();
-
-            g.setColor(color);
-            g.fillRect(next.myLeftX, next.myTopY + margin, next.myWidth,
+            myGraphics.fillRect(next.myLeftX, next.myTopY + margin, next.myWidth,
                     next.myHeight - 2 * margin);
             if (style.indexOf(".first") > 0) {
-                g.setColor(Color.BLACK);
-                g.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX,
+                myGraphics.setColor(Color.BLACK);
+                myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX,
                         next.getBottomY() - margin);
             }
             if (style.indexOf(".last") > 0) {
-                g.setColor(Color.BLACK);
-                g.drawLine(next.getRightX(), next.myTopY + margin, next
+                myGraphics.setColor(Color.BLACK);
+                myGraphics.drawLine(next.getRightX(), next.myTopY + margin, next
                         .getRightX(), next.getBottomY() - margin);
             }
-            g.setColor(Color.BLACK);
+            myGraphics.setColor(Color.BLACK);
+
             ResourceLoadRenderer.ResourceLoad load = (ResourceLoadRenderer.ResourceLoad) next
                     .getModelObject();
-            int l = Math.round(load.getLoad());
-            String disp = l + "%";
-            int emsLength = myTextLengthCalculator.getTextLength(disp);
-            boolean display = emsLength <= next.myWidth;
-            if (load.getLoad() != 100f && display) {
-                g.drawString(disp, next.getMiddleX()
-                        - myTextLengthCalculator.getTextLength(disp) / 2,
+            int loadInt = Math.round(load.getLoad());
+            String loadStr = loadInt + "%";
+            int emsLength = myTextLengthCalculator.getTextLength(loadStr);
+            boolean displayLoad = (loadInt != 100 && emsLength <= next.myWidth);
+            if (displayLoad) {
+                myGraphics.drawString(loadStr, next.getMiddleX()
+                        - myTextLengthCalculator.getTextLength(loadStr) / 2,
                         next.myTopY + margin + next.myHeight / 2);
-                g.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX,
+                myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX,
                         next.getBottomY() - margin);
             }
-            g.setColor(Color.BLACK);
-            g.drawLine(next.myLeftX, next.myTopY + margin, next.getRightX(),
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.getRightX(),
                     next.myTopY + margin);
-            g.drawLine(next.myLeftX, next.getBottomY() - margin, next
+            myGraphics.drawLine(next.myLeftX, next.getBottomY() - margin, next
                     .getRightX(), next.getBottomY() - margin);
         }
     };
 
-    private RectanglePainter myPreviousStateTaskRectanglePainter = new RectanglePainter() {
+    private final RectanglePainter myPreviousStateTaskRectanglePainter = new RectanglePainter() {
         private int[] myXPoints = new int[4];
-
         private int[] myYPoints = new int[4];
 
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
@@ -539,24 +507,21 @@ public class StyledPainterImpl implements Painter {
                 c = myConfig.getPreviousTaskColor();
             }
             g.setColor(c);
-            
+
             if (next.hasStyle("milestone")) {
                 int middleX = (next.myWidth <= next.myHeight) ? 
                     next.getRightX() - next.myWidth / 2 : next.myLeftX + next.myHeight / 2;
-                int middleY = next.getBottomY() - next.myHeight / 2;
+                int middleY = next.getMiddleY();
 
                 myXPoints[0] = next.myLeftX + 2;
-                
+                myYPoints[0] = middleY;                
                 myXPoints[1] = middleX + 3;
+                myYPoints[1] = next.myTopY - 1;
                 myXPoints[2] = (next.myWidth <= next.myHeight) ? next
                         .getRightX() + 4 : next.myLeftX + next.myHeight + 4;
-                myXPoints[3] = middleX + 3;
-                myYPoints[0] = middleY;
-                myYPoints[1] = next.myTopY - 1;
-                
                 myYPoints[2] = middleY;
-                myYPoints[3] = next.getBottomY() + 1;
-                
+                myXPoints[3] = middleX + 3;                
+                myYPoints[3] = next.getBottomY() + 1;              
 
                 g.fillPolygon(myXPoints, myYPoints, 4);
             } else if (next.hasStyle("super")) {
@@ -579,12 +544,7 @@ public class StyledPainterImpl implements Painter {
                 }                
             }
         }
-
     };
-
-    private interface RectanglePainter {
-        public void paint(GraphicPrimitiveContainer.Rectangle next);
-    }
 
     private class ColouredRectanglePainter implements RectanglePainter {
         private Color myColor;
@@ -594,11 +554,9 @@ public class StyledPainterImpl implements Painter {
         }
 
         public void paint(Rectangle next) {
-            Graphics g = myGraphics;
-            g.setColor(myColor);
-            g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+            myGraphics.setColor(myColor);
+            myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
         }
-
     }
 
     public void paint(Line line) {
@@ -620,56 +578,64 @@ public class StyledPainterImpl implements Painter {
     }
 
     public void paint(Text next) {
-        Font graphicFont = myGraphics.getFont();
-        int requestedMaxLength = next.getMaxLength();
+        Font graphicFont = null;
         Color foreColor = next.getForegroundColor();
         if (foreColor == null) {
             foreColor = Color.BLACK;
         }
         myGraphics.setColor(foreColor);
 
-        if (next.getFont() != null) {
+        if (next.getFont() != null && (next.getStyle() == null || next.getStyle().equals("text.ganttinfo") == false)) {
+            graphicFont = myGraphics.getFont();
             myGraphics.setFont(next.getFont());
-        } else {
-            myGraphics.setFont(myConfig.getChartFont());
         }
 
-        if (next.getStyle() != null && next.getStyle().equals("text.ganttinfo"))
-//            myGraphics.setFont(myConfig.getChartFont().deriveFont(10f));
-            myGraphics.setFont(myConfig.getChartFont());
-        int actualLength;
         String nextTextString = next.getText();
+
+        int requestedMaxLength = next.getMaxLength();
         if (next.getModelObject() != null) {
+            // TODO Maybe add this functionality to GraphicsPrimitiveContainer.Text?? (And make it more safe, as modelObject could be something else than TimeUnitText...)
+            // Get TimeUnit text
             TimeUnitText nextText = (TimeUnitText) next.getModelObject();
             nextTextString = nextText.getText(requestedMaxLength,
                     myTextLengthCalculator);
-            actualLength = requestedMaxLength;
-        } else {
-            actualLength = TextLengthCalculatorImpl.getTextLength(myGraphics,
-                    next.getText());
-            if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
-                return;
-            }
-            if (next.getLeftX() + actualLength < 0) {
-                return;
-            }
         }
-        int fontHeight = myGraphics.getFont().getSize();
-        int xleft = next.getLeftX();
-        int ybottom = next.getBottomY();
-        if (HAlignment.CENTER == next.getHAlignment()) {
-            xleft -= actualLength / 2;
+
+        int actualLength = myTextLengthCalculator.getTextLength(nextTextString);
+        if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
+            return; // Text is too large
         }
-        if (HAlignment.RIGHT == next.getHAlignment()) {
-            xleft -= actualLength;
+        //FIXME This check if not 100% working (when scrolling to the right the text seems to disappear too soon...)
+        if (next.getLeftX() + actualLength < 0) {
+            return; // Text is not visible: too far to the left for current view
         }
-        if (VAlignment.CENTER == next.getVAlignment()) {
-            ybottom += fontHeight / 2;
+
+        int xleft, ybottom;
+        switch (next.getHAlignment()) {
+        case CENTER:
+            xleft = next.getLeftX() - actualLength / 2;
+            break;
+        case RIGHT:
+            xleft = next.getLeftX() - actualLength;
+            break;
+        default:
+            xleft = next.getLeftX();
         }
-        if (VAlignment.TOP == next.getVAlignment()) {
-            ybottom += fontHeight;
+        switch (next.getVAlignment()) {
+        case CENTER:
+            ybottom = next.getBottomY() + myGraphics.getFont().getSize() / 2;
+            break;
+        case TOP:
+            ybottom = next.getBottomY() + myGraphics.getFont().getSize();
+            break;
+        default:
+            ybottom = next.getBottomY();
         }
+
         myGraphics.drawString(nextTextString, xleft, ybottom);
-        myGraphics.setFont(graphicFont);
+        if (graphicFont != null) {
+            // Set Font back to original font
+            myGraphics.setFont(graphicFont);
+        }
     }
 }
