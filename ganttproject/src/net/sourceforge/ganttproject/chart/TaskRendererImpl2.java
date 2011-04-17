@@ -1,5 +1,5 @@
 /* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

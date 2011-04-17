@@ -245,14 +245,14 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
         myPainter.setGraphics(g);
         for (ChartRendererBase renderer: getRenderers()) {
-            renderer.getPrimitiveContainer().paint(myPainter, g);
+            renderer.getPrimitiveContainer().paint(myPainter);
         }
         for (int layer = 0; ; layer++) {
             boolean layerPainted = false;
             for (ChartRendererBase renderer: getRenderers()) {
                 List<GraphicPrimitiveContainer> layers = renderer.getPrimitiveContainer().getLayers();
                 if (layer < layers.size()) {
-                    layers.get(layer).paint(myPainter, g);
+                    layers.get(layer).paint(myPainter);
                     layerPainted = true;
                 }
             }

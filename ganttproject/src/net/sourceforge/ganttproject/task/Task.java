@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
- * Project task denifition
+ * Project task definition
  *
  * @author bard
  */
@@ -103,6 +103,10 @@ public interface Task extends MutableTask {
 
     ShapePaint getShape();
 
+    /**
+     * @return a color representing this Task (could be a custom color, milestone
+     *         color, super task color or default color)
+     */
     Color getColor();
 
     String getNotes();
