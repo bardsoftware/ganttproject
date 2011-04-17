@@ -160,6 +160,22 @@ public class GraphicPrimitiveContainer {
             myFinishX = finishx;
             myFinishY = finishy;
         }
+
+        public int getStartX() {
+            return myStartX;
+        }
+
+        public int getStartY() {
+            return myStartY;
+        }
+
+        public int getFinishX() {
+            return myFinishX;
+        }
+
+        public int getFinishY() {
+            return myFinishY;
+        }
     }
 
     public static class Text extends GraphicPrimitive {
@@ -285,17 +301,15 @@ public class GraphicPrimitiveContainer {
         }
         for (int i = 0; i < myLines.size(); i++) {
             Line next = myLines.get(i);
-            Color foreColor = next.getForegroundColor();
-            if (foreColor == null) {
-                foreColor = Color.BLACK;
+            if (next.isVisible()) {
+                painter.paint(next);
             }
-            g.setColor(foreColor);
-            g.drawLine(next.myStartX, next.myStartY, next.myFinishX,
-                    next.myFinishY);
         }
         for (int i = 0; i < myTexts.size(); i++) {
             Text next = myTexts.get(i);
-            painter.paint(next);
+            if(next.isVisible()) {
+                painter.paint(next);
+            }
         }
     }
 
