@@ -121,7 +121,7 @@ public class StyledPainterImpl implements Painter {
     }
 
     public void paint(GraphicPrimitiveContainer.Rectangle next) {
-        assert myGraphics == null;
+        assert myGraphics != null;
         RectanglePainter painter = myStyle2painter.get(next.getStyle());
         if (painter != null) {
             // Use found painter
