@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.chart;
 
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 
 /**
@@ -8,5 +9,7 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 public interface Painter {
     void paint(GraphicPrimitiveContainer.Rectangle rectangle);
 
+    void paint(Line line);
+    
     void paint(Text next);
 }

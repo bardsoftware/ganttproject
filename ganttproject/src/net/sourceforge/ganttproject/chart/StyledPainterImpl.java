@@ -1,6 +1,7 @@
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
@@ -24,7 +26,7 @@ import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
  * Created by IntelliJ IDEA. User: bard
  */
 public class StyledPainterImpl implements Painter {
-    private Graphics myGraphics;
+    private Graphics2D myGraphics;
 
     private final Map<String,RectanglePainter> myStyle2painter = new HashMap<String, RectanglePainter>();
 
@@ -33,6 +35,11 @@ public class StyledPainterImpl implements Painter {
     private ChartUIConfiguration myConfig;
 
     private final int margin;
+    
+    final private static BasicStroke defaultStroke = new BasicStroke();
+    final private static BasicStroke dependencyRubber = new BasicStroke(1f,
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f,
+            new float[] { 2.5f }, 0f);
 
     public StyledPainterImpl(ChartUIConfiguration configuration) {
         // myGraphics = g;
@@ -79,8 +86,9 @@ public class StyledPainterImpl implements Painter {
     }
 
     public void setGraphics(Graphics g) {
-        myGraphics = g;
+        myGraphics = (Graphics2D) g;
         myTextLengthCalculator.setGraphics(g);
+        myGraphics.setStroke(defaultStroke);
     }
 
     public void paint(GraphicPrimitiveContainer.Rectangle next) {
@@ -591,6 +599,24 @@ public class StyledPainterImpl implements Painter {
             g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
         }
 
+    }
+
+    public void paint(Line line) {
+        Color foreColor = line.getForegroundColor();
+        if (foreColor == null) {
+            foreColor = Color.BLACK;
+        }
+        myGraphics.setColor(foreColor);
+        if ("dependency.line.rubber".equals(line.getStyle())) {
+            myGraphics.setStroke(dependencyRubber);
+        }
+        myGraphics.drawLine(line.getStartX(), line.getStartY(),
+                line.getFinishX(), line.getFinishY());
+
+        if ("dependency.line.rubber".equals(line.getStyle())) {
+            // Revert to default stroke
+            myGraphics.setStroke(defaultStroke);
+        }
     }
 
     public void paint(Text next) {
