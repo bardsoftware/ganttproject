@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
 
   @Override
   protected void paintTask(Graphics g, PaintState state, Task t) {
-    final TextLengthCalculatorImpl lengthCalculator = new TextLengthCalculatorImpl(g);
+    final TextLengthCalculatorImpl lengthCalculator = new TextLengthCalculatorImpl((Graphics2D) g);
     // The list of column object which are currently being used or referenced
     // to by the code
     final DisplayedColumnsList dispCols = getTree().getTreeTable().getDisplayColumns();

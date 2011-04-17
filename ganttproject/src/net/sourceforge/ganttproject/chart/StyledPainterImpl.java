@@ -68,7 +68,7 @@ public class StyledPainterImpl implements Painter {
 
     public StyledPainterImpl(ChartUIConfiguration config) {
         myConfig = config;
-        myTextLengthCalculator = new TextLengthCalculatorImpl(myGraphics);
+        myTextLengthCalculator = new TextLengthCalculatorImpl(null);
         margin = myConfig.getMargin();
 
         myStyle2painter.put("task", myTaskRectanglePainter);
@@ -112,7 +112,7 @@ public class StyledPainterImpl implements Painter {
 
     public void setGraphics(Graphics g) {
         myGraphics = (Graphics2D) g;
-        myTextLengthCalculator.setGraphics(g);
+        myTextLengthCalculator.setGraphics(myGraphics);
     }
 
     public void prePaint() {
