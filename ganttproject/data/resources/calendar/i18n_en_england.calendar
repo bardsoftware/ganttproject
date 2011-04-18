@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="England" type="country">
+	<date year="" month="12" date="26"/>
+	<date year="2005" month="03" date="25"/>
+	<date year="2005" month="03" date="28"/>
+	<date year="2005" month="05" date="02"/>
+	<date year="2005" month="05" date="30"/>
+	<date year="2005" month="08" date="29"/>
+	<date year="2005" month="12" date="27"/>
+	<date year="2006" month="04" date="14"/>
+	<date year="2006" month="04" date="17"/>
+	<date year="2006" month="05" date="1"/>
+	<date year="2006" month="05" date="29"/>
+	<date year="2006" month="08" date="28"/>
+	<date year="2006" month="12" date="25"/>
+	<date year="2007" month="04" date="06"/>
+	<date year="2007" month="04" date="09"/>
+	<date year="2007" month="05" date="07"/>
+	<date year="2007" month="05" date="28"/>
+	<date year="2007" month="08" date="27"/>
+	<date year="2007" month="12" date="25"/>
+	<date year="2008" month="03" date="21"/>
+	<date year="2008" month="03" date="24"/>
+	<date year="2008" month="05" date="5"/>
+	<date year="2008" month="05" date="26"/>
+	<date year="2008" month="08" date="25"/>
+	<date year="2008" month="12" date="25"/>
+</calendar >
+ 
