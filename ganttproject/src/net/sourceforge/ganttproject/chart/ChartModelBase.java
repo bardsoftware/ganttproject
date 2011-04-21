@@ -47,7 +47,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             myTopOffsets = getTopUnitOffsets();
             myBottomOffsets = getBottomUnitOffsets();
             myDefaultOffsets = getDefaultUnitOffsets();
-            shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
+            //shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
             //System.err.println(myBottomOffsets.subList(0, 3));
         }
 
@@ -82,20 +82,21 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             ChartModelBase.this.myScrollingSession = null;
         }
         private void shiftOffsets(int shiftPixels) {
-            shiftOffsets(myBottomOffsets, shiftPixels);
-            shiftOffsets(myTopOffsets, shiftPixels);
+            ChartModelBase.shiftOffsets(myBottomOffsets, shiftPixels);
+            ChartModelBase.shiftOffsets(myTopOffsets, shiftPixels);
             if (myDefaultOffsets != myBottomOffsets) {
                 if (myDefaultOffsets.isEmpty()) {
                     myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
                 }
-                shiftOffsets(myDefaultOffsets, shiftPixels);
+                ChartModelBase.shiftOffsets(myDefaultOffsets, shiftPixels);
             }
             myBottomOffsets.setStartPx(myBottomOffsets.getStartPx() + shiftPixels);
         }
-        private void shiftOffsets(List<Offset> offsets, int shiftPixels) {
-            for (Offset o : offsets) {
-                o.shift(shiftPixels);
-            }
+    }
+
+    private static void shiftOffsets(List<Offset> offsets, int shiftPixels) {
+        for (Offset o : offsets) {
+            o.shift(shiftPixels);
         }
     }
 
@@ -204,8 +205,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     Date getOffsetAnchorDate() {
-        return myScrollingSession == null ?
-            myStartDate : getBottomUnit().jumpLeft(myStartDate);
+        return /*myScrollingSession == null ?
+            myStartDate :*/ getBottomUnit().jumpLeft(myStartDate);
     }
 
     private void constructOffsets() {

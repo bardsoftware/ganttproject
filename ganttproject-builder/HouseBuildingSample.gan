@@ -13,6 +13,7 @@
             <day-type id="1"/>
             <calendar id="1" name="default">
                 <default-week sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+                <only-show-weekends value="false"/>
                 <overriden-day-types/>
                 <days/>
             </calendar>
@@ -32,58 +33,60 @@
             <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
             <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
         </taskproperties>
-        <task id="0" name="Architectural design" color="#99ccff" meeting="false" start="2009-01-02" duration="26" complete="81" priority="1" expand="true">
-            <task id="9" name="Create draft of architecture" color="#99ccff" meeting="false" start="2009-01-02" duration="10" complete="100" priority="1" expand="true">
+        <task id="0" name="Architectural design" color="#99ccff" meeting="false" start="2009-01-02" duration="26" complete="81" expand="true">
+            <task id="9" name="Create draft of architecture" color="#99ccff" meeting="false" start="2009-01-02" duration="10" complete="100" expand="true">
                 <depend id="10" type="2" difference="0" hardness="Strong"/>
                 <depend id="12" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="10" name="Prepare construction documents" color="#99ccff" meeting="false" start="2009-01-16" duration="15" complete="75" priority="1" expand="true">
+            <task id="10" name="Prepare construction documents" color="#99ccff" meeting="false" start="2009-01-16" duration="15" complete="75" expand="true">
                 <depend id="17" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="17" name="Agreement on architectural plan " color="#000000" meeting="true" start="2009-02-06" duration="1" complete="0" priority="1" expand="true">
+            <task id="17" name="Agreement on architectural plan " color="#000000" meeting="true" start="2009-02-06" duration="1" complete="0" expand="true">
                 <depend id="1" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="11" name="Interior design" color="#99ccff" meeting="false" start="2009-01-16" duration="10" complete="33" priority="1" expand="true">
+        <task id="11" name="Interior design" color="#99ccff" meeting="false" start="2009-01-16" duration="10" complete="33" expand="true">
             <depend id="6" type="2" difference="0" hardness="Strong"/>
-            <task id="12" name="Pre-design" color="#99ccff" meeting="false" start="2009-01-16" duration="5" complete="100" priority="1" expand="true">
+            <task id="12" name="Pre-design" color="#99ccff" meeting="false" start="2009-01-16" duration="5" complete="100" expand="true">
                 <depend id="13" type="2" difference="0" hardness="Strong"/>
                 <depend id="14" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2009-01-23" duration="5" complete="0" priority="1" expand="true"/>
-            <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2009-01-23" duration="5" complete="0" priority="1" expand="true">
+            <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2009-01-23" duration="5" complete="0" expand="true"/>
+            <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2009-01-23" duration="5" complete="0" expand="true">
                 <notes><![CDATA[Embedded devices, kitchen, washing machine, dryer etc]]></notes>
             </task>
         </task>
-        <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2009-02-09" duration="76" complete="0" priority="1" expand="true">
+        <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2009-02-09" duration="76" complete="0" expand="true">
             <depend id="20" type="2" difference="0" hardness="Strong"/>
-            <task id="1" name="Foundation building" color="#99ccff" meeting="false" start="2009-02-09" duration="15" complete="0" priority="1" expand="false">
+            <task id="1" name="Foundation building" color="#99ccff" meeting="false" start="2009-02-09" duration="15" complete="0" expand="false">
                 <depend id="2" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="2" name="Ground Floor building" color="#99ccff" meeting="false" start="2009-03-02" duration="20" complete="0" priority="1" expand="false">
+            <task id="2" name="Ground Floor building" color="#99ccff" meeting="false" start="2009-03-02" duration="20" complete="0" expand="false">
                 <depend id="4" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="4" name="First Floor building" color="#99ccff" meeting="false" start="2009-03-30" duration="20" complete="0" priority="1" expand="false">
+            <task id="4" name="First Floor building" color="#99ccff" meeting="false" start="2009-03-30" duration="20" complete="0" expand="false">
                 <depend id="5" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="5" name="Roof" color="#99ccff" meeting="false" start="2009-04-27" duration="10" complete="0" priority="1" expand="false">
+            <task id="5" name="Roof" color="#99ccff" meeting="false" start="2009-04-27" duration="10" complete="0" expand="false">
                 <depend id="18" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="16" name="Connect to communications" color="#99ccff" meeting="false" start="2009-05-12" duration="10" complete="0" priority="1" expand="true"/>
-            <task id="18" name="Construction completed " color="#000000" meeting="true" start="2009-05-11" duration="1" complete="0" priority="1" expand="true">
+            <task id="16" name="Connect to communications" color="#99ccff" meeting="false" start="2009-05-12" duration="10" complete="0" expand="true"/>
+            <task id="18" name="Construction completed " color="#000000" meeting="true" start="2009-05-11" duration="1" complete="0" expand="true">
                 <depend id="6" type="2" difference="0" hardness="Strong"/>
                 <depend id="16" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="8" name="Decoration phase" color="#99ccff" meeting="false" start="2009-05-12" duration="11" complete="0" priority="1" expand="true">
-            <task id="6" name="Walls" color="#99ccff" meeting="false" start="2009-05-12" duration="5" complete="0" priority="1" expand="false">
+        <task id="8" name="Decoration phase" color="#99ccff" meeting="false" start="2009-05-12" duration="11" complete="0" expand="true">
+            <task id="6" name="Walls" color="#99ccff" meeting="false" start="2009-05-12" duration="5" complete="0" expand="false">
                 <depend id="15" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="15" name="Furniture" color="#99ccff" meeting="false" start="2009-05-19" duration="3" complete="0" priority="1" expand="true">
+            <task id="15" name="Furniture" color="#99ccff" meeting="false" start="2009-05-19" duration="3" complete="0" expand="true">
                 <depend id="20" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="20" name="Bring your family here" color="#000000" meeting="true" start="2009-05-26" duration="1" complete="0" priority="1" expand="true"/>
+            <task id="20" name="Bring your family here" color="#000000" meeting="true" start="2009-05-26" duration="1" complete="0" expand="true"/>
         </task>
+        <task id="21" name="null_21" color="#99ccff" meeting="false" start="2009-01-12" duration="1" complete="0" expand="true"/>
+        <task id="22" name="null_22" color="#99ccff" meeting="false" start="2009-01-12" duration="1" complete="0" expand="true"/>
     </tasks>
     <resources>
         <resource id="1" name="Jack House" function="Default:1" contacts="jack.house@myselfllc.net" phone="0044 077345456"/>
@@ -96,35 +99,35 @@
     </resources>
     <allocations>
         <allocation task-id="9" resource-id="1" function="Default:1" responsible="false" load="50.0"/>
-        <allocation task-id="9" resource-id="2" function="0" responsible="true" load="100.0"/>
-        <allocation task-id="10" resource-id="2" function="0" responsible="true" load="100.0"/>
         <allocation task-id="12" resource-id="1" function="Default:1" responsible="true" load="100.0"/>
-        <allocation task-id="12" resource-id="2" function="0" responsible="false" load="50.0"/>
         <allocation task-id="13" resource-id="1" function="Default:1" responsible="true" load="100.0"/>
         <allocation task-id="14" resource-id="1" function="Default:1" responsible="true" load="50.0"/>
-        <allocation task-id="14" resource-id="2" function="0" responsible="false" load="50.0"/>
-        <allocation task-id="1" resource-id="6" function="2" responsible="true" load="100.0"/>
-        <allocation task-id="1" resource-id="0" function="4" responsible="false" load="100.0"/>
-        <allocation task-id="1" resource-id="5" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="1" resource-id="3" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="2" resource-id="6" function="2" responsible="true" load="100.0"/>
-        <allocation task-id="2" resource-id="5" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="2" resource-id="3" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="2" resource-id="4" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="4" resource-id="6" function="2" responsible="true" load="100.0"/>
-        <allocation task-id="4" resource-id="5" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="4" resource-id="3" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="4" resource-id="4" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="5" resource-id="6" function="2" responsible="true" load="100.0"/>
-        <allocation task-id="5" resource-id="3" function="5" responsible="false" load="100.0"/>
-        <allocation task-id="16" resource-id="0" function="4" responsible="true" load="100.0"/>
-        <allocation task-id="16" resource-id="4" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="6" resource-id="6" function="2" responsible="true" load="100.0"/>
-        <allocation task-id="6" resource-id="5" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="6" resource-id="3" function="1" responsible="false" load="100.0"/>
-        <allocation task-id="6" resource-id="4" function="1" responsible="false" load="100.0"/>
         <allocation task-id="15" resource-id="1" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="1" resource-id="0" function="4" responsible="false" load="100.0"/>
+        <allocation task-id="16" resource-id="0" function="4" responsible="true" load="100.0"/>
+        <allocation task-id="9" resource-id="2" function="0" responsible="true" load="100.0"/>
+        <allocation task-id="10" resource-id="2" function="0" responsible="true" load="100.0"/>
+        <allocation task-id="12" resource-id="2" function="0" responsible="false" load="50.0"/>
+        <allocation task-id="14" resource-id="2" function="0" responsible="false" load="50.0"/>
+        <allocation task-id="1" resource-id="3" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="2" resource-id="3" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="4" resource-id="3" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="5" resource-id="3" function="5" responsible="false" load="100.0"/>
+        <allocation task-id="6" resource-id="3" function="1" responsible="false" load="100.0"/>
         <allocation task-id="15" resource-id="3" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="2" resource-id="4" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="4" resource-id="4" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="16" resource-id="4" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="6" resource-id="4" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="1" resource-id="5" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="2" resource-id="5" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="4" resource-id="5" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="6" resource-id="5" function="1" responsible="false" load="100.0"/>
+        <allocation task-id="1" resource-id="6" function="2" responsible="true" load="100.0"/>
+        <allocation task-id="2" resource-id="6" function="2" responsible="true" load="100.0"/>
+        <allocation task-id="4" resource-id="6" function="2" responsible="true" load="100.0"/>
+        <allocation task-id="5" resource-id="6" function="2" responsible="true" load="100.0"/>
+        <allocation task-id="6" resource-id="6" function="2" responsible="true" load="100.0"/>
     </allocations>
     <vacations>
         <vacation start="2009-02-02" end="2009-02-09" resourceid="1"/>
