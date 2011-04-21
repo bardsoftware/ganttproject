@@ -37,7 +37,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     private final float myWeekendDecreaseFactor;
     private final Date myEndDate;
     private final TimeUnit baseUnit;
-    private int myRightMarginBottomUnitCount; 
+    private int myRightMarginBottomUnitCount;
 
     RegularFrameOffsetBuilder(
             GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
@@ -109,17 +109,21 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     void constructBottomOffsets(List<Offset> offsets, int initialEnd) {
         int marginUnitCount = myRightMarginBottomUnitCount;
         Date currentDate = myStartDate;
-        int offsetEnd = 0;
+        int offsetEnd = -1;
+        int shift = 0;
         OffsetStep step = new OffsetStep();
         do {
             TimeUnit concreteTimeUnit = getConcreteUnit(getBottomUnit(), currentDate);
             calculateNextStep(step, concreteTimeUnit, currentDate);
             Date endDate = concreteTimeUnit.adjustRight(currentDate);
-            offsetEnd = (int) (step.parrots * getDefaultUnitWidth());
+            if (offsetEnd == -1) {
+                shift = (int) (step.parrots * getDefaultUnitWidth());
+            }
+            offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
             offsets.add(new Offset(
                 concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType));
             currentDate = endDate;
-            
+
             boolean hasNext = true;
             if (offsetEnd > getChartWidth()) {
                 hasNext &= marginUnitCount-- > 0;
@@ -152,13 +156,13 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
                         bottomOffsets.get(-bottomOffsetLowerBound - 2) : null;
                     Date ubEndDate = ubOffset == null ? myStartDate : ubOffset.getOffsetEnd();
                     int ubEndPixel = ubOffset == null ? 0 : ubOffset.getOffsetPixels();
-                    WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendar.PLAIN, baseUnit);               
+                    WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendar.PLAIN, baseUnit);
                     offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
                 }
             }
             topOffsets.add(new Offset(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
             currentDate = endDate;
-            
+
         } while (offsetEnd <= lastBottomOffset && (myEndDate==null || currentDate.before(myEndDate)));
     }
 
@@ -184,7 +188,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
         do {
             units1.add(current);
         } while((current = current.getDirectAtomUnit()) != null);
-        
+
         // Now compare lists to find a common unit
         current = unit2;
         while(current != null) {
@@ -204,12 +208,12 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
         @Override
         public OffsetBuilder build() {
             return new RegularFrameOffsetBuilder(
-                myCalendar, 
-                myTopUnit, 
-                myBottomUnit, 
-                myStartDate, 
-                myAtomicUnitWidth, 
-                myEndOffset, 
+                myCalendar,
+                myTopUnit,
+                myBottomUnit,
+                myStartDate,
+                myAtomicUnitWidth,
+                myEndOffset,
                 myWeekendDecreaseFactor,
                 myEndDate,
                 myRightMarginTimeUnits);
