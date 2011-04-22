@@ -366,7 +366,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
 
         });
         getTable().setAutoCreateColumnsFromModel(false);
-        getTable().setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         setShowHorizontalLines(true);
 
         setOpenIcon(null);
