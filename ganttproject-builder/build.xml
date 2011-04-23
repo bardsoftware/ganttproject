@@ -42,6 +42,7 @@
 	<target name="copy-launchers">
         <copy todir="${install.dir}">
             <fileset dir=".">
+            	<include name="ganttproject"/>
             	<include name="README-install.txt"/>
                 <include name="ganttproject.bat"/>
             	<include name="ganttproject_32_2.ico"/>
