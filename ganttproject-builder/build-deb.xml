@@ -118,7 +118,7 @@
           private target: createdeb-minimal
          - - - - - - - - - - - - - - - - - -->
 	<target name="createdeb-minimal" depends="define_tasks">
-		<description>Create a debian package of the GanttProject (without plaugins)</description>
+		<description>Create a debian package of the GanttProject (without plugins)</description>
 		<property name="package.name" value="ganttproject"/>
 		<deb
             todir="dist-bin"
