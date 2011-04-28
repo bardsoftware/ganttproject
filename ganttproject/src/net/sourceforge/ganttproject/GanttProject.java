@@ -1571,12 +1571,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         });
                     }
                 });
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        throw new RuntimeException("OHAI!");
-                    }
-                });
             }
         }
     }
