@@ -6,6 +6,7 @@ package net.sourceforge.ganttproject.application;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 
 import org.eclipse.core.runtime.IPlatformRunnable;
@@ -27,6 +28,7 @@ public class MainApplication implements IPlatformRunnable {
         String[] cmdLine = (String[]) args;
         WindowAdapter closingListener = new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
+                GPLogger.log("Main window closed");
                 myLock.notify();
             }
         };
@@ -35,6 +37,7 @@ public class MainApplication implements IPlatformRunnable {
         synchronized (myLock) {
             myLock.wait();
         }
+        GPLogger.log("Program terminated");
         return null;
     }
 
