@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
@@ -63,6 +64,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1251,7 +1253,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // myDelayManager.fireDelayObservation(); // it is done in repaint2
         addMouseListenerToAllContainer(this.getComponents());
         getTaskManager().projectOpened();
-        
+
         // As we just have opened a new file it is still unmodified, so mark it as such
         setModified(false);
     }
@@ -1558,6 +1560,23 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             } finally {
                 splash.close();
                 System.err.println("Splash closed");
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread t, Throwable e) {
+                                GPLogger.log(e);
+                            }
+                        });
+                    }
+                });
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        throw new RuntimeException("OHAI!");
+                    }
+                });
             }
         }
     }
