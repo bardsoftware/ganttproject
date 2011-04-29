@@ -126,8 +126,6 @@ public class ChartModelResource extends ChartModelBase {
 
     public GPOptionGroup[] getChartOptionGroups() {
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
-        // FIXME Need to add superGroups to result?? (or what else is the point of fetching them)
-        GPOptionGroup[] superGroups = super.getChartOptionGroups();
         result.add(myColorOptions);
         return result.toArray(new GPOptionGroup[result.size()]);
     }
