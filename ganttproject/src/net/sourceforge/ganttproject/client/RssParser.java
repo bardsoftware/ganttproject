@@ -51,7 +51,7 @@ class RssParser {
             }
 
             @Override
-            public Iterator getPrefixes(String s) {
+            public Iterator<?> getPrefixes(String s) {
                 throw new UnsupportedOperationException();
             }
         });

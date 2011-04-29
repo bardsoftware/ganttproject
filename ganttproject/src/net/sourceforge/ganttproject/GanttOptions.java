@@ -127,20 +127,17 @@ public class GanttOptions {
     /** CVS export options. */
     private CSVOptions csvOptions;
 
-    private boolean isOnlyViewer;
-
     private Map<String,GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
     private Map<String,GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
 
     private final DocumentManager myDocumentManager;
 
     private final PluginPreferencesImpl myPluginPreferencesRootNode;
-    /** Default constructor. */
+
     public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
         myDocumentManager = documentManager;
         myRoleManager = roleManager;
         myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
-        this.isOnlyViewer = isOnlyViewer;
         initDefault();
         try {
             this.workingDir = System.getProperty("user.home");

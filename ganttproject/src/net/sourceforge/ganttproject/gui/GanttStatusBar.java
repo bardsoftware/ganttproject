@@ -141,22 +141,20 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     public void run() {
         try {
-            // while(true){
             switch (mode) {
             case MESSAGE_1:
                 Thread.sleep(message1.getTimer());
                 message1.hideText();
-                message1.setText("");
+                message1.clear();
                 break;
             case MESSAGE_2:
                 Thread.sleep(message2.getTimer());
                 message2.hideText();
-                message2.setText("");
+                message2.clear();
                 break;
             }
             mode = NO_MESSAGE;
-            // }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             if (!GPLogger.log(e)) {
                 e.printStackTrace(System.err);
             }
