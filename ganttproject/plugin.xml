@@ -34,11 +34,11 @@
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
    </requires>
-   <extension-point id="exporter" name="Exporter" schema="schema/net.sourceforge.ganttproject.export.exsd"/>
-   <extension-point id="importer" name="Importer" schema="schema/net.sourceforge.gantproject.import.exsd"/>
-   <extension-point id="chart" name="Chart" schema="schema/net.sourceforge.ganttproject.chart.exsd"/>
+   <extension-point id="exporter" name="Exporter"/>
+   <extension-point id="importer" name="Importer"/>
+   <extension-point id="chart" name="Chart"/>
    <extension-point id="OptionPageProvider" name="OptionPageProvider"/>
-   <extension-point id="calendar" name="Calendar" schema="schema/net.sourceforge.ganttproject.calendar.exsd"/>
+   <extension-point id="calendar" name="Calendar"/>
    <extension-point id="search" name="SearchService"/>
 
    <extension point="org.eclipse.core.runtime.applications" id="GanttProject">
