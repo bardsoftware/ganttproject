@@ -6,7 +6,7 @@ public interface CustomPropertyDefinition {
     CustomPropertyClass getPropertyClass();
     IStatus canSetPropertyClass(CustomPropertyClass propertyClass);
     IStatus setPropertyClass(CustomPropertyClass propertyClass);
-    Class getType();
+    Class<?> getType();
     String getTypeAsString();
     String getID();
     Object getDefaultValue();

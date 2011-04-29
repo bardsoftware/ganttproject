@@ -1,8 +1,25 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -77,7 +94,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     private int nbCol = 11;
 
     /**
-     * Number of columns (at all, even hiden)
+     * Number of columns (at all, even hidden)
      */
     private int nbColTot = nbCol;
 
@@ -150,8 +167,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     public void removeNodeFromParent(MutableTreeNode node) {
         MutableTreeNode parent = (MutableTreeNode) node.getParent();
 
-        if (parent == null)
+        if (parent == null) {
             throw new IllegalArgumentException("node does not have a parent.");
+        }
 
         int[] childIndex = new int[1];
         Object[] removedArray = new Object[1];
@@ -187,24 +205,11 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         customColumns.set(customColumns.indexOf(oldName), newName);
     }
 
-    // /**
-    // * Returns the number of custom columns.
-    // * @return
-    // */
-    // public int getCustomColumnCount()
-    // {
-    // return customColumns.size();
-    // }
-
-    public int getColumnCount() {
-        return nbCol;
-    }
-
     public int getColumnCountTotal() {
         return nbColTot;
     }
 
-    public Class getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         switch (column) {
         case 0:
         case 1:
@@ -224,23 +229,22 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             return String.class;
         case 10:
             return Integer.class;
-        default: {
+        default:
             CustomColumn customColumn = (CustomColumn) myCustomColumnsManager.getCustomPropertyDefinition(getColumnName(column));
             return customColumn == null ? String.class : customColumn.getType();
-        }
         }
     }
 
     public String getColumnName(int column) {
-        if (column < titles.size())
+        if (column < titles.size()) {
             return titles.get(column);
+        }
 
         try {
             return customColumns.get(column - titles.size());
         } catch (IndexOutOfBoundsException e) {
             return customColumns.get(column - titles.size() - 1);
         }
-
     }
 
     public boolean isCellEditable(Object node, int column) {
@@ -261,16 +265,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         }
         return false;
     }
-
-    // public Object getChild(Object parent, int index)
-    // {
-    //
-    // }
-    //
-    // public int getChildCount(Object parent)
-    // {
-    //
-    // }
 
     public Object getValueAt(Object node, int column) {
         Object res = null;
@@ -369,7 +363,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     public void setValueAt(final Object value, final Object node,
             final int column) {
-        if (value==null) {
+        if (value == null) {
             return;
         }
         if (isCellEditable(node, column)) {
@@ -436,7 +430,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
                 }
             }
         }
-
     }
 
     public void columnAdded(TableColumnModelEvent arg0) {
@@ -459,36 +452,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         // TODO Auto-generated method stub
     }
 
-    public Task[] getNestedTasks(Task container) {
-        TaskNode r = (TaskNode) root;
-        Enumeration<TaskNode> e = r.children();
-        return Collections.list(e).toArray(new Task[0]);
-    }
-
-    public Task[] getDeepNestedTasks(Task container) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /**
      * @return true if this Tasks has any nested subtasks.
      */
     public boolean hasNestedTasks(Task container) {
         TaskNode r = (TaskNode) root;
-        if (r.getChildCount() > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Task getRootTask() {
-        return (Task) ((TaskNode) this.getRoot()).getUserObject();
+        return (r.getChildCount() > 0);
     }
 
     /**
-     * @return the corresponding task node according to the given task.
-     *
      * @param task
      *            The task whose TaskNode we want to get.
      * @return The corresponding TaskNode according to the given task.
@@ -509,34 +481,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return null;
     }
 
-    public Task getContainer(Task nestedTask) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void move(Task whatMove, Task whereMove) {
-        // TODO Auto-generated method stub
-    }
-
-    public boolean areUnrelated(Task dependant, Task dependee) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public int getDepth(Task task) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
     public void languageChanged(Event event) {
         changeLanguage(event.getLanguage());
-    }
-
-    public int compareDocumentOrder(Task next, Task dependeeTask) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean contains(Task task) {
-        throw new UnsupportedOperationException();
     }
 }

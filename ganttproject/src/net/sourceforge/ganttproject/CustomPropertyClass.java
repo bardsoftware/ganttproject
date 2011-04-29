@@ -12,9 +12,9 @@ public enum CustomPropertyClass {
     BOOLEAN("boolean", Boolean.class);
 
     private final String myI18Ntifier;
-    private final Class myJavaClass;
+    private final Class<?> myJavaClass;
 
-    private CustomPropertyClass(String i18ntifier, Class javaClass) {
+    private CustomPropertyClass(String i18ntifier, Class<?> javaClass) {
         myI18Ntifier = i18ntifier;
         myJavaClass  = javaClass;
     }
@@ -22,7 +22,7 @@ public enum CustomPropertyClass {
         return GanttLanguage.getInstance().getText(myI18Ntifier);
     }
 
-    public Class getJavaClass() {
+    public Class<?> getJavaClass() {
         return myJavaClass;
     }
 
@@ -33,7 +33,8 @@ public enum CustomPropertyClass {
     public String getID() {
         return myI18Ntifier;
     }
-    public static CustomPropertyClass fromJavaClass(Class javaClass) {
+
+    public static CustomPropertyClass fromJavaClass(Class<?> javaClass) {
         for (CustomPropertyClass klass : CustomPropertyClass.values()) {
             if (klass.getJavaClass().equals(javaClass)) {
                 return klass;

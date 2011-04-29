@@ -306,12 +306,12 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return columns.get(new Integer(index));
     }
 
-    public Class getColumnClass(int colIndex) {
+    public Class<?> getColumnClass(int colIndex) {
         if (colIndex == 0) {
             return hierarchicalColumnClass;
         }
         ResourceColumn column = columns.get(new Integer(colIndex));
-        return column==null ? String.class : column.getType();
+        return column == null ? String.class : column.getType();
     }
 
     public String getColumnName(int column) {
