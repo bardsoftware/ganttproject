@@ -15,19 +15,7 @@
       <library name="lib/core/commons-httpclient.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/commons-logging.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/core/commons-transaction-1.0.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/core/jakarta-slide-webdavlib-2.1.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/core/jdnc-modifBen.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/core/jdom-1.0.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-common-1.1.1.jar">
@@ -37,9 +25,6 @@
          <export name="*"/>
       </library>
       <library name="lib/core/trident.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/core/xml-im-exporter1.1.jar">
          <export name="*"/>
       </library>
       <library name="data/resources/">

@@ -7,19 +7,12 @@
         <pathelement location="bin"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/AppleJavaExtensions.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient-contrib.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-logging.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-transaction-1.0.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-poi-2.5.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jdnc-modifBen.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jdom-1.0.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-common-1.1.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-looks-2.4.0.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/trident.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/xml-im-exporter1.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/development/junit-3.8.1.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
