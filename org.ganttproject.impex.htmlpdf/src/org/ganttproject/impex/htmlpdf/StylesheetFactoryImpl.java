@@ -12,7 +12,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 
 abstract class StylesheetFactoryImpl {
-    Stylesheet[] createStylesheets(Class stylesheetInterface) {
+    Stylesheet[] createStylesheets(Class<? extends Stylesheet> stylesheetInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(stylesheetInterface.getName());

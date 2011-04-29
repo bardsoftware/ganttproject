@@ -98,14 +98,14 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
     }
 
     class AboutFieldTableModel extends AbstractTableModel {
-        private GanttLanguage language = GanttLanguage.getInstance();
+        private final GanttLanguage language = GanttLanguage.getInstance();
 
-        final String[] columnNames = { language.getText("name"),
+        private final String[] columnNames = { language.getText("name"),
                 language.getText("value") };
 
-        final Class[] columnClasses = { String.class, String.class };
+        private final Class<?>[] columnClasses = { String.class, String.class };
 
-        Vector<SystemInfo> data = new Vector<SystemInfo>();
+        private final Vector<SystemInfo> data = new Vector<SystemInfo>();
 
         public void addField(SystemInfo w) {
             data.addElement(w);
@@ -124,18 +124,19 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
             return columnNames[col];
         }
 
-        public Class getColumnClass(int c) {
+        public Class<?> getColumnClass(int c) {
             return columnClasses[c];
         }
 
         public Object getValueAt(int row, int col) {
             SystemInfo info = data.elementAt(row);
-            if (col == 0)
+            if (col == 0) {
                 return info.getName();
-            else if (col == 1)
+            } else if (col == 1) {
                 return info.getValue();
-            else
+            } else {
                 return null;
+            }
         }
 
         public boolean isCellEditable(int row, int col) {

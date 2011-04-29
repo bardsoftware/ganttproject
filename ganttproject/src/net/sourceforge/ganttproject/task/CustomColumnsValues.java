@@ -51,17 +51,17 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
      */
     public void setValue(String customColName, Object value)
             throws CustomColumnsException {
-        if (!myColumnStorage.exists(customColName))
+        if (!myColumnStorage.exists(customColName)) {
             throw new CustomColumnsException(
                     CustomColumnsException.DO_NOT_EXIST, customColName);
+        }
 
         if (value == null) {
         	mapCustomColumnValue.remove(customColName);
         	return;
         }
-        Class c1 = myColumnStorage.getCustomColumn(customColName).getType();
-        Class c2 = value.getClass();
-        // System.out.println(c1 +" - " + c2);
+        Class<?> c1 = myColumnStorage.getCustomColumn(customColName).getType();
+        Class<?> c2 = value.getClass();
         if (!c1.isAssignableFrom(c2)) {
             throw new CustomColumnsException(
                     CustomColumnsException.CLASS_MISMATCH,
@@ -72,8 +72,6 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     }
 
     /**
-     * Returns the value for the given customColName.
-     *
      * @param customColName
      *            The name of the custom column we want to get the value.
      * @return The value for the given customColName.
@@ -131,6 +129,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         }
         return null;
     }
+
     @Override
     public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) {
         // TODO Auto-generated method stub
@@ -172,5 +171,4 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         }
         return result;
     }
-
 }

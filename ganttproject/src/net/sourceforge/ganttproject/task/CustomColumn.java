@@ -18,7 +18,6 @@ public class CustomColumn implements CustomPropertyDefinition {
 
     private CustomPropertyClass myPropertyClass;
 
-
     CustomColumn(
             CustomColumnsManager manager, String colName,
             CustomPropertyClass propertyClass, Object colDefaultValue) {
@@ -65,7 +64,7 @@ public class CustomColumn implements CustomPropertyDefinition {
         return myPropertyClass;
     }
 
-    public Class getType() {
+    public Class<?> getType() {
         return myPropertyClass.getJavaClass();
     }
 
