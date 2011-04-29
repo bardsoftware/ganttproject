@@ -1,21 +1,19 @@
-/*
-GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+/***************************************************************************
+ ProjectSettingsPanel.java 
+ ------------------------------------------
+ begin                : 27 juin 2004
+ copyright            : (C) 2004 by Thomas Alexandre
+ email                : alexthomas(at)ganttproject.org
+ ***************************************************************************/
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -25,9 +23,9 @@ import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -40,18 +38,19 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
  * Panel to edit the project properties
- *
- * @author athomas 
+ * 
+ * @author athomas
  */
 public class ProjectSettingsPanel extends GeneralOptionPanel {
 
-    private final JTextField nameField;
+    // JTextField tfFile;
+    private final JTextField tfName;
 
-    private final JTextField organizationField;
+    private final JTextField tfOrganization;
 
-    private final JTextField webLinkField;
+    private final JTextField tfWebLink;
 
-    private final JTextArea descriptionField;
+    private final JTextArea taDescr;
 
     private final IGanttProject myProject;
 
@@ -61,25 +60,37 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
                 "settingsProject"));
 
         myProject = project;
+        Box vbproject = Box.createVerticalBox();
 
-        final Box vbProject = Box.createVerticalBox();
+        /*
+         * JPanel filePanel = new JPanel(new BorderLayout()); filePanel.add(new
+         * JLabel(language.getText("file")), BorderLayout.WEST);
+         * vbproject.add(filePanel); vbproject.add(tfFile = new JTextField());
+         * tfFile.setEditable(false); vbproject.add(new JPanel());
+         */
 
-        nameField = new JTextField();
-        addLabelAndComponent(vbProject, "name", nameField);
+        JPanel namePanel = new JPanel(new BorderLayout());
+        namePanel.add(new JLabel(language.getText("name")), BorderLayout.WEST);
+        vbproject.add(namePanel);
+        vbproject.add(tfName = new JTextField());
+        vbproject.add(new JPanel());
 
-        organizationField = new JTextField();
-        addLabelAndComponent(vbProject, "organization", organizationField);
+        JPanel orgaPanel = new JPanel(new BorderLayout());
+        orgaPanel.add(new JLabel(language.getText("organization")),
+                BorderLayout.WEST);
+        vbproject.add(orgaPanel);
+        vbproject.add(tfOrganization = new JTextField());
+        vbproject.add(new JPanel());
 
-        webLinkField = new JTextField();
-        final JPanel webPanel = addLabelAndComponent(vbProject, "webLink", webLinkField);
-        final JButton webButton = new TestGanttRolloverButton(new ImageIcon(
-                getClass().getResource("/icons/web_16.gif")));
-        webButton.setToolTipText(GanttProject.getToolTip(language
+        tfWebLink = new JTextField();
+        JButton bWeb = new TestGanttRolloverButton(new ImageIcon(getClass()
+                .getResource("/icons/web_16.gif")));
+        bWeb.setToolTipText(GanttProject.getToolTip(language
                 .getText("openWebLink")));
-        webButton.addActionListener(new ActionListener() {
+        bWeb.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // link to open the web link
-                if (!BrowserControl.displayURL(webLinkField.getText())) {
+                if (!BrowserControl.displayURL(tfWebLink.getText())) {
                     GanttDialogInfo gdi = new GanttDialogInfo(null,
                             GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION,
                             language.getText("msg4"), language.getText("error"));
@@ -87,81 +98,82 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
                 }
             }
         });
-        webPanel.add(webButton, BorderLayout.EAST);
 
-        descriptionField = new JTextArea(12, 25);
-        descriptionField.setLineWrap(true);
-        descriptionField.setWrapStyleWord(true);
-        addLabelAndComponent(vbProject, "shortDescription", descriptionField);
+        JPanel webPanel = new JPanel(new BorderLayout());
+        webPanel
+                .add(new JLabel(language.getText("webLink")), BorderLayout.WEST);
+        webPanel.add(bWeb, BorderLayout.EAST);
+        vbproject.add(webPanel);
+        vbproject.add(tfWebLink);
+        vbproject.add(new JPanel());
 
-        final JPanel projectPanel = new JPanel(new BorderLayout());
-        projectPanel.add(vbProject, BorderLayout.NORTH);
+        JPanel descrPanel = new JPanel(new BorderLayout());
+        descrPanel.add(new JLabel(language.getText("shortDescription")),
+                BorderLayout.WEST);
+        vbproject.add(descrPanel);
+        taDescr = new JTextArea(12, 25);
+        taDescr.setLineWrap(true);
+        taDescr.setWrapStyleWord(true);
+        JScrollPane scpArea = new JScrollPane(taDescr);
+        vbproject.add(scpArea);
+
+        JPanel projectPanel = new JPanel(new BorderLayout());
+        projectPanel.add(vbproject, BorderLayout.NORTH);
         vb.add(projectPanel);
 
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /**
-     * Adds a label and a component to box
-     * @param box          is the box where the label and component are added to
-     * @param labelTextID  is the text, which is looked up for the current language, used for the label
-     * @param comp         is the component which is added
-     * @return             the panel on which the label is placed
-     */
-    private JPanel addLabelAndComponent(Box box, String labelTextID, JComponent comp) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel(language.getText(labelTextID)), BorderLayout.WEST);
-        box.add(panel);
-        box.add(comp);
-        return panel;
-    }
-
-    /** This method checks if the value has changed, and asks for commit changes. */
     public boolean applyChanges(boolean askForApply) {
-        if (myProject.getProjectName().equals(nameField.getText())
-                && myProject.getOrganization().equals(organizationField.getText())
-                && myProject.getWebLink().equals(webLinkField.getText())
-                && myProject.getDescription().equals(descriptionField.getText())) {
-            bHasChange = false;
-            // no changes
+        boolean hasChange;
+        if (myProject.getProjectName().equals(tfName.getText())
+                && myProject.getOrganization().equals(tfOrganization.getText())
+                && myProject.getWebLink().equals(tfWebLink.getText())
+                && myProject.getDescription().equals(taDescr.getText())) {
+            hasChange = false;
         } else {
-            bHasChange = true;
-            // apply changes
+            hasChange = true;
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply or not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 myProject.setProjectName(getProjectName());
                 myProject.setDescription(getProjectDescription());
                 myProject.setOrganization(getProjectOrganization());
-                myProject.setWebLink(getProjectWebLink());
+                myProject.setWebLink(getWebLink());
             }
         }
-        return bHasChange;
+        return hasChange;
     }
 
-    /** Initialize the component. */
     public void initialize() {
-        nameField.setText(myProject.getProjectName());
-        organizationField.setText(myProject.getOrganization());
-        webLinkField.setText(myProject.getWebLink());
-        descriptionField.setText(myProject.getDescription());
+        /*
+         * if(appli.projectDocument!=null) { String filename =
+         * appli.projectDocument.getFilePath(); if(appli.askForSave)
+         * filename+="*"; tfFile.setText(filename); }
+         */
+        // tfFile.setText("see ProjectSettingsPanel line 149 ??");
+        tfName.setText(myProject.getProjectName());
+        tfOrganization.setText(myProject.getOrganization());
+        tfWebLink.setText(myProject.getWebLink());
+        taDescr.setText(myProject.getDescription());
     }
 
     /** @return the selected project name */
     public String getProjectName() {
-        return nameField.getText();
+        return tfName.getText();
     }
 
     /** @return the organization */
     public String getProjectOrganization() {
-        return organizationField.getText();
+        return tfOrganization.getText();
     }
 
     /** @return the web link */
-    public String getProjectWebLink() {
-        return webLinkField.getText();
+    public String getWebLink() {
+        return tfWebLink.getText();
     }
 
     /** @return the project description */
     public String getProjectDescription() {
-        return descriptionField.getText();
+        return taDescr.getText();
     }
 }

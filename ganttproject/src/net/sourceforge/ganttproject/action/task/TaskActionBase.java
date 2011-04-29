@@ -35,7 +35,8 @@ abstract class TaskActionBase extends GPAction implements Listener {
     private final UIFacade myUIFacade;
     private TaskSelectionManager mySelectionManager;
 
-    protected TaskActionBase(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+        super(name);
         myTaskManager = taskManager;
         mySelectionManager = selectionManager;
         selectionManager.addSelectionListener(this);
@@ -61,13 +62,13 @@ abstract class TaskActionBase extends GPAction implements Listener {
         mySelection = currentSelection;
     }
 
-	public void userInputConsumerChanged(Object newConsumer) {
-	}
+    public void userInputConsumerChanged(Object newConsumer) {
+    }
 
     protected TaskManager getTaskManager() {
         return myTaskManager;
     }
-    
+
     protected TaskSelectionManager getSelectionManager() {
         return mySelectionManager;
     }

@@ -83,17 +83,17 @@ class TaskTreeImageGenerator {
 
     protected void paint(Image image, Dimension d,
             List<DefaultMutableTreeNode> taskNodes) {
-        Graphics g2 = image.getGraphics();
-        ((Graphics2D) g2).setRenderingHint(
+        Graphics2D g = (Graphics2D) image.getGraphics();
+        g.setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, getWidth(), d.height);
-        printTasks(g2, taskNodes);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, getWidth(), d.height);
+        printTasks(g, taskNodes);
 
         //GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
-        g2.setColor(new Color(102, 153, 153));
-        g2.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        g.setColor(new Color(102, 153, 153));
+        g.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
         //but.paintComponent(g2);
     }
 
@@ -109,7 +109,7 @@ class TaskTreeImageGenerator {
         int indent;
     }
 
-    private int printTasks(Graphics g, List<DefaultMutableTreeNode> taskNodes) {
+    private int printTasks(Graphics2D g, List<DefaultMutableTreeNode> taskNodes) {
         g.setColor(Color.black);
         g.setFont(Fonts.PRINT_CHART_FONT);
 
@@ -117,7 +117,7 @@ class TaskTreeImageGenerator {
         state.y = getTree().getTable().getTableHeader().getHeight() + HEADER_OFFSET;
         state.rowHeight = getTree().getTreeTable().getRowHeight();
         //int x = 5;
-        state.indent = new TextLengthCalculatorImpl(g).getTextLength("mmmm");
+        state.indent = TextLengthCalculatorImpl.getTextLength(g, "mmmm");
         for (Iterator<DefaultMutableTreeNode> tasks = taskNodes.iterator(); tasks.hasNext();) {
             DefaultMutableTreeNode nextTreeNode = tasks.next();
 

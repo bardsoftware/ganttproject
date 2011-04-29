@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2004-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,14 +20,18 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
 
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 
 public class OptionPageProviderPanel {
-    private final OptionPageProvider myProvider;
-    private final GPOptionGroup[] myGroups;
+    private OptionPageProvider myProvider;
+    private GPOptionGroup[] myGroups;
 
     public OptionPageProviderPanel(OptionPageProvider provider, IGanttProject project, UIFacade uiFacade) {
         myProvider = provider;
@@ -36,11 +40,16 @@ public class OptionPageProviderPanel {
     }
 
     public Component getComponent() {
+        JComponent providerComponent;
         if (myProvider.hasCustomComponent()) {
-            return myProvider.buildPageComponent();
+            providerComponent = (JComponent) myProvider.buildPageComponent();
+        } else {
+            OptionsPageBuilder builder = new OptionsPageBuilder();
+            providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
         }
-        final OptionsPageBuilder builder = new OptionsPageBuilder();
-        return builder.buildPage(myGroups, myProvider.getPageID());
+        providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
+        JScrollPane result = new JScrollPane(providerComponent);
+        return result;
     }
 
 //    public boolean applyChanges(boolean askForApply) {

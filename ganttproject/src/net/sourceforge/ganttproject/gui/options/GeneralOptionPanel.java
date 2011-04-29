@@ -1,21 +1,19 @@
-/*
-GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+/***************************************************************************
+ GeneralOptionPanel.java 
+ ------------------------------------------
+ begin                : 24 juin 2004
+ copyright            : (C) 2004 by Thomas Alexandre
+ email                : alexthomas(at)ganttproject.org
+ ***************************************************************************/
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -29,20 +27,20 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Abstract class for the Options panels
+ * Abstract class for the Options panels
+ * 
+ * @author athomas
  */
 public abstract class GeneralOptionPanel extends JPanel {
-    protected final GanttLanguage language = GanttLanguage.getInstance();
+
+    protected GanttLanguage language = GanttLanguage.getInstance();
 
     /** General vertical box. */
-    protected final Box vb = Box.createVerticalBox();
+    protected Box vb = Box.createVerticalBox();
 
-    /** Tell if the parameters of the panel have change. */
-    protected boolean bHasChange = false;
+    private String myTitle;
 
-    private final String myTitle;
-
-    private final String myComment;
+    private String myComment;
 
     public GeneralOptionPanel(String title, String comment) {
         super();
@@ -56,24 +54,27 @@ public abstract class GeneralOptionPanel extends JPanel {
         return this;
     }
 
-    /** This method check if the value has changed, and assk for commit changes. */
+    /**
+     * This method checks if options panel has value that got changed changed.
+     * And ask the user to commit changes if askForApply is true.
+     * 
+     * @returns true when there were changes which needed to be committed
+     */
     public abstract boolean applyChanges(boolean askForApply);
 
     /** Initialize the component. */
     public abstract void initialize();
 
-    /** This method ask for saving the changes. */
+    /** This method asks the user for saving the changes. */
     public boolean askForApplyChanges() {
         return (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(language.getText("msg20"),
                 language.getText("question")));
     }
 
-    /** @return the panel title */
     public String getTitle() {
         return myTitle;
     }
 
-    /** @return the panel comment */
     public String getComment() {
         return myComment;
     }

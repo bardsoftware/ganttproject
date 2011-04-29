@@ -5,10 +5,10 @@ import java.awt.Frame;
 import java.io.File;
 
 import javax.swing.Action;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -45,18 +45,16 @@ public class ConsoleUIFacade implements UIFacade {
 
     }
 
-    public void showDialog(Component content, Action[] buttonActions) {
-        // TODO Auto-generated method stub
-
-    }
-    public void showDialog(Component content, Action[] buttonActions, String title) {
-        // TODO Auto-generated method stub
-
+    @Override
+    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+        return null;
     }
 
     public void setStatusText(String text) {
-        // TODO Auto-generated method stub
+    }
 
+    public void showOptionDialog(int messageType, String message, Action[] actions) {
+        System.err.println("[ConsoleUIFacade]: " + message);
     }
 
     public void showErrorDialog(String errorMessage) {
@@ -65,14 +63,14 @@ public class ConsoleUIFacade implements UIFacade {
 
     public void showErrorDialog(Throwable e) {
         System.err.println("[ConsoleUIFacade] ERROR: "+e.getMessage());
-       	e.printStackTrace();
+           e.printStackTrace();
     }
 
-	public void logErrorMessage(Throwable e) {
-		System.err.println("[ConsoleUIFacade] ERROR:"+e.getMessage());
+    public void logErrorMessage(Throwable e) {
+        System.err.println("[ConsoleUIFacade] ERROR:"+e.getMessage());
         e.printStackTrace();
-	}
-	public GanttChart getGanttChart() {
+    }
+    public GanttChart getGanttChart() {
         return myRealFacade.getGanttChart();
     }
 
@@ -138,16 +136,16 @@ public class ConsoleUIFacade implements UIFacade {
         // TODO Auto-generated method stub
         return null;
     }
-	public TaskTreeUIFacade getTaskTree() {
-		return myRealFacade.getTaskTree();
-	}
-	public ResourceTreeUIFacade getResourceTree() {
-		return myRealFacade.getResourceTree();
-	}
-	public TaskSelectionContext getTaskSelectionContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public TaskTreeUIFacade getTaskTree() {
+        return myRealFacade.getTaskTree();
+    }
+    public ResourceTreeUIFacade getResourceTree() {
+        return myRealFacade.getResourceTree();
+    }
+    public TaskSelectionContext getTaskSelectionContext() {
+        // TODO Auto-generated method stub
+        return null;
+    }
     @Override
     public TaskSelectionManager getTaskSelectionManager() {
         // TODO Auto-generated method stub
@@ -156,7 +154,7 @@ public class ConsoleUIFacade implements UIFacade {
     @Override
     public void setLookAndFeel(GanttLookAndFeelInfo laf) {
         // TODO Auto-generated method stub
-        
+
     }
     @Override
     public GPOptionGroup getOptions() {
@@ -165,6 +163,11 @@ public class ConsoleUIFacade implements UIFacade {
     }
     @Override
     public GanttLookAndFeelInfo getLookAndFeel() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    @Override
+    public NotificationManager getNotificationManager() {
         // TODO Auto-generated method stub
         return null;
     }

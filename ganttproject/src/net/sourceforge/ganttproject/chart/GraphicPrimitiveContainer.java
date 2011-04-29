@@ -1,7 +1,20 @@
-/*
- * Created on 17.06.2004
- *
- */
+/* LICENSE: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
@@ -15,6 +28,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
+ * Stores the available primitives and their information (used for painting) and
+ * provides methods to retrieve them
+ * 
  * @author bard
  */
 public class GraphicPrimitiveContainer {
@@ -31,6 +47,13 @@ public class GraphicPrimitiveContainer {
     private int myDeltaX;
 
     private int myDeltaY;
+
+    /** Horizontal alignments for texts */
+    public enum HAlignment { CENTER, LEFT, RIGHT };
+
+    /** Vertical alignments for texts */
+    public enum VAlignment { CENTER, TOP, BOTTOM };
+
 
     static class GraphicPrimitive {
         private Color myBackgroundColor;
@@ -84,16 +107,10 @@ public class GraphicPrimitiveContainer {
             this.myForegroundColor = myForegroundColor;
         }
 
-        /**
-         * @return
-         */
         public Object getModelObject() {
             return myModelObject;
         }
 
-        /**
-         * @param modelObject
-         */
         void setModelObject(Object modelObject) {
             myModelObject = modelObject;
         }
@@ -159,6 +176,22 @@ public class GraphicPrimitiveContainer {
             myStartY = starty;
             myFinishX = finishx;
             myFinishY = finishy;
+        }
+
+        public int getStartX() {
+            return myStartX;
+        }
+
+        public int getStartY() {
+            return myStartY;
+        }
+
+        public int getFinishX() {
+            return myFinishX;
+        }
+
+        public int getFinishY() {
+            return myFinishY;
         }
     }
 
@@ -226,18 +259,6 @@ public class GraphicPrimitiveContainer {
         }
     }
 
-    static final class HAlignment {
-        public static final HAlignment CENTER = new HAlignment();
-        public static final HAlignment LEFT = new HAlignment();
-        public static final HAlignment RIGHT = new HAlignment();
-    }
-
-    static final class VAlignment {
-        public static final VAlignment CENTER = new VAlignment();
-        public static final VAlignment TOP = new VAlignment();
-        public static final VAlignment BOTTOM = new VAlignment();
-
-    }
     public GraphicPrimitiveContainer() {
         this(0,0);
     }
@@ -276,7 +297,8 @@ public class GraphicPrimitiveContainer {
         return result;
     }
 
-    void paint(Painter painter, Graphics g) {
+    void paint(Painter painter) {
+        painter.prePaint();
         for (int i = 0; i < myRectangles.size(); i++) {
             Rectangle next = myRectangles.get(i);
             if (next.isVisible()) {
@@ -285,17 +307,15 @@ public class GraphicPrimitiveContainer {
         }
         for (int i = 0; i < myLines.size(); i++) {
             Line next = myLines.get(i);
-            Color foreColor = next.getForegroundColor();
-            if (foreColor == null) {
-                foreColor = Color.BLACK;
+            if (next.isVisible()) {
+                painter.paint(next);
             }
-            g.setColor(foreColor);
-            g.drawLine(next.myStartX, next.myStartY, next.myFinishX,
-                    next.myFinishY);
         }
         for (int i = 0; i < myTexts.size(); i++) {
             Text next = myTexts.get(i);
-            painter.paint(next);
+            if(next.isVisible()) {
+                painter.paint(next);
+            }
         }
     }
 
@@ -339,7 +359,6 @@ public class GraphicPrimitiveContainer {
             }
         }
         return null;
-
     }
 
     public List<GraphicPrimitiveContainer> getLayers() {
@@ -353,18 +372,8 @@ public class GraphicPrimitiveContainer {
     }
 
     public GraphicPrimitiveContainer newLayer() {
-        GraphicPrimitiveContainer result = new GraphicPrimitiveContainer() {
-
-            @Override
-            public void setOffset(int deltax, int deltay) {
-                // TODO Auto-generated method stub
-                super.setOffset(deltax, deltay);
-            }
-
-        };
+        GraphicPrimitiveContainer result = new GraphicPrimitiveContainer();
         myLayers.add(result);
         return result;
-
     }
-
 }

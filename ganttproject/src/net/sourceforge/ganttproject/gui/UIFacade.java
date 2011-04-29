@@ -6,7 +6,6 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Component;
 import java.awt.Frame;
 import javax.swing.Action;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -19,13 +18,18 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public interface UIFacade {
+    public interface Dialog {
+        void show();
+        void hide();
+    }
+
     public static class Choice {
         public static final Choice YES = new Choice();
         public static final Choice NO = new Choice();
         public static final Choice CANCEL = new Choice();
         public static final Choice OK = new Choice();
     }
-    
+
     public static final int GANTT_INDEX = 0;
 
     public static final int RESOURCES_INDEX = 1;
@@ -36,23 +40,29 @@ public interface UIFacade {
 
     ZoomManager getZoomManager();
     GPUndoManager getUndoManager();
-    
+
     void setLookAndFeel(GanttLookAndFeelInfo laf);
     GanttLookAndFeelInfo getLookAndFeel();
-    
+
     Choice showConfirmationDialog(String message, String title);
 
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
-    void showDialog(Component content, Action[] buttonActions);
-    void showDialog(Component content, Action[] buttonActions, String title);
+    void showOptionDialog(int messageType, String message, Action[] actions);
+
+    Dialog createDialog(Component content, Action[] buttonActions, String title);
+//    void showDialog(Component content, Action[] buttonActions);
+//    void showDialog(Component content, Action[] buttonActions, String title);
 
     void setStatusText(String text);
 
     void showErrorDialog(String errorMessage);
 
     void showErrorDialog(Throwable e);
-	void logErrorMessage(Throwable e);
+
+    NotificationManager getNotificationManager();
+
+    void logErrorMessage(Throwable e);
 
     GanttChart getGanttChart();
 
@@ -62,7 +72,7 @@ public interface UIFacade {
 
     /**
      * Returns the index of the displayed tab.
-     * 
+     *
      * @return the index of the displayed tab.
      */
     int getViewIndex();
@@ -78,18 +88,18 @@ public interface UIFacade {
     void setResourceDividerLocation(int location);
 
     void refresh();
-    
+
     Frame getMainFrame();
 
     void setWorkbenchTitle(String title);
 
     TaskTreeUIFacade getTaskTree();
-    
+
     ResourceTreeUIFacade getResourceTree();
     //void changeWorkingDirectory(File parentFile);
 
     TaskSelectionManager getTaskSelectionManager();
-	TaskSelectionContext getTaskSelectionContext();
+    TaskSelectionContext getTaskSelectionContext();
 
     GPOptionGroup getOptions();
 

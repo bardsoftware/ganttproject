@@ -1,4 +1,4 @@
-/* 
+/*
 GanttProject is an opensource project management tool. License: GPL2
 Copyright (C) 2010 Dmitry Barashev
 
@@ -18,14 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -46,7 +44,7 @@ public class TaskAllocationsPanel {
     private final RoleManager myRoleManager;
     private final Task myTask;
 
-	private JTable myTable;
+    private JTable myTable;
 
     public TaskAllocationsPanel(Task task, HumanResourceManager hrManager,  RoleManager roleMgr) {
         myHRManager = hrManager;
@@ -55,7 +53,7 @@ public class TaskAllocationsPanel {
     }
 
     private JTable getTable() {
-    	return myTable;
+        return myTable;
     }
     public JPanel getComponent() {
         myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
@@ -63,11 +61,11 @@ public class TaskAllocationsPanel {
         CommonPanel.setupTableUI(getTable());
         setUpCoordinatorBooleanColumn(getTable());
         CommonPanel.setupComboBoxEditor(
-        		getTable().getColumnModel().getColumn(1), 
-        		myHRManager.getResources().toArray());
+                getTable().getColumnModel().getColumn(1),
+                myHRManager.getResources().toArray());
         CommonPanel.setupComboBoxEditor(
-        		getTable().getColumnModel().getColumn(4), 
-        		myRoleManager.getEnabledRoles());
+                getTable().getColumnModel().getColumn(4),
+                myRoleManager.getEnabledRoles());
 
         AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
             new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
@@ -85,11 +83,7 @@ public class TaskAllocationsPanel {
                 protected void onSelectionChanged() {
                 }
         };
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(tableAndActions.getActionsComponent(), BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(myTable);
-        result.add(scrollPane, BorderLayout.CENTER);
-        return result;
+        return CommonPanel.createTableAndActions(myTable, tableAndActions);
     }
 
 
@@ -99,8 +93,8 @@ public class TaskAllocationsPanel {
     }
 
     static class BooleanRenderer extends JCheckBox implements TableCellRenderer {
-    	private static JPanel EMPTY_LABEL = new JPanel();
-    	
+        private static JPanel EMPTY_LABEL = new JPanel();
+
         public BooleanRenderer() {
             super();
             setHorizontalAlignment(JLabel.CENTER);
@@ -109,17 +103,17 @@ public class TaskAllocationsPanel {
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean hasFocus, int row,
                 int column) {
-        	final JComponent result;
-        	if (value == null || "".equals(value)) {
-        		result = EMPTY_LABEL;
-        	} else {
-        		setSelected(((Boolean) value).booleanValue());
-        		result = this;
-        	}
-        	setupRendererColors(isSelected, table, result);
+            final JComponent result;
+            if (value == null || "".equals(value)) {
+                result = EMPTY_LABEL;
+            } else {
+                setSelected(((Boolean) value).booleanValue());
+                result = this;
+            }
+            setupRendererColors(isSelected, table, result);
             return result;
         }
-        
+
         private static void setupRendererColors(boolean isSelected, JTable table, JComponent component) {
             if (isSelected) {
                 component.setForeground(table.getSelectionForeground());
@@ -131,7 +125,7 @@ public class TaskAllocationsPanel {
         }
     }
 
-	public void commit() {
-		myModel.commit();
-	}
+    public void commit() {
+        myModel.commit();
+    }
 }

@@ -40,12 +40,15 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
+import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
@@ -95,6 +98,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
+    private final RssFeedChecker myRssChecker;
 
     protected GanttProjectBase() {
         super("Gantt Chart");
@@ -103,7 +107,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myViewManager = new ViewManagerImpl(myTabPane);
         addProjectEventListener(myViewManager);
         myTimeUnitStack = new GPTimeUnitStack(getLanguage());
-        myUIFacade =new UIFacadeImpl(this, statusBar, getProject(), (UIFacade)this);
+        NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
+        myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), (UIFacade)this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
             protected ParserFactory getParserFactory() {
@@ -125,6 +130,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
+        myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     }
 
 
@@ -204,16 +210,18 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setStatusText(text);
     }
 
-    public void showDialog(Component content, Action[] actions) {
-        myUIFacade.showDialog(content,actions);
+    @Override
+    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+        return myUIFacade.createDialog(content, buttonActions, title);
     }
 
-    public void showDialog(Component content, Action[] actions, String title) {
-        myUIFacade.showDialog(content,actions,title);
-    }
 
     public UIFacade.Choice showConfirmationDialog(String message, String title) {
         return myUIFacade.showConfirmationDialog(message, title);
+    }
+
+    public void showOptionDialog(int messageType, String message, Action[] actions) {
+        myUIFacade.showOptionDialog(messageType, message, actions);
     }
 
     public void showErrorDialog(String message) {
@@ -227,6 +235,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void logErrorMessage(Throwable e) {
         myUIFacade.logErrorMessage(e);
     }
+
+    @Override
+    public NotificationManager getNotificationManager() {
+        return myUIFacade.getNotificationManager();
+    }
+
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
@@ -472,6 +486,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
+
+    protected RssFeedChecker getRssFeedChecker() {
+        return myRssChecker;
+    }
+
     public abstract String getProjectName();
 
     public abstract void setProjectName(String projectName);

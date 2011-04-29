@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -157,7 +158,7 @@ public class ToolbarBuilder {
                     return myPreferredSize;
                 }
                 Dimension d = super.getPreferredSize();
-                Graphics g = getGraphics();
+                Graphics2D g = (Graphics2D) getGraphics();
                 if (g == null) {
                     return d;
                 }

@@ -3,6 +3,8 @@
  */
 package net.sourceforge.ganttproject.time;
 
+import net.sourceforge.ganttproject.task.TaskLength;
+
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -23,4 +25,5 @@ public interface TimeUnitStack {
     DateFormat getTimeFormat();
     TimeUnit findTimeUnit(String code);
     String encode(TimeUnit timeUnit);
+    TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
 }

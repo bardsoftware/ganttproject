@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.export;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -31,7 +32,7 @@ public class ExportFileWizardImpl extends WizardImpl {
     private final State myState;
 
     private static Exporter ourLastSelectedExporter;
-    private static Exporter[] ourExporters;
+    private static List<Exporter> ourExporters;
 
     public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project,
             GanttOptions options) {
@@ -49,15 +50,15 @@ public class ExportFileWizardImpl extends WizardImpl {
         if (ExportFileWizardImpl.ourExporters==null) {
             ExportFileWizardImpl.ourExporters = Mediator.getPluginManager().getExporters();
         }
-        Exporter[] exporters = ExportFileWizardImpl.ourExporters;
-        myState.setExporter(ExportFileWizardImpl.ourLastSelectedExporter==null ? exporters[0] : ExportFileWizardImpl.ourLastSelectedExporter);
-        for (int i = 0; i < exporters.length; i++) {
-            exporters[i].setContext(project, uiFacade, myOptions.getPluginPreferences());
-            if (exporters[i] instanceof LegacyOptionsClient) {
-                ((LegacyOptionsClient)exporters[i]).setOptions(myOptions);
+        myState.setExporter(ExportFileWizardImpl.ourLastSelectedExporter==null
+            ? ourExporters.get(0) : ExportFileWizardImpl.ourLastSelectedExporter);
+        for (Exporter e : ourExporters) {
+            e.setContext(project, uiFacade, myOptions.getPluginPreferences());
+            if (e instanceof LegacyOptionsClient) {
+                ((LegacyOptionsClient)e).setOptions(myOptions);
             }
         }
-        addPage(new ExporterChooserPage(exporters, myState));
+        addPage(new ExporterChooserPage(ourExporters, myState));
         addPage(new FileChooserPage(
                 myState,
                 myProject,

@@ -24,44 +24,41 @@ import java.awt.Font;
 import java.awt.Insets;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
 /**
- * A panel to show the top.gif image and write a title and a comment.
- *
- * @author athomas
+ * @author Dmitry Barashev
  */
-public class TopPanel extends JPanel {
+public class TopPanel {
 
-    public TopPanel(String title, String comment) {
-        setLayout(new BorderLayout());
+    public static JComponent create(String title, String comment) {
 
-        final JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.ORANGE);
         topPanel.setForeground(Color.BLACK);
         topPanel.setBorder(BorderFactory.createLineBorder(Color.ORANGE.darker()));
 
-        final JLabel labelTitle = new JLabel(title);
+        JLabel labelTitle = new JLabel(title);
         labelTitle.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         labelTitle.setFont(labelTitle.getFont().deriveFont(Font.BOLD));
-        topPanel.add(labelTitle, BorderLayout.WEST);
+        topPanel.add(labelTitle, BorderLayout.NORTH);
 
         if (comment != null && !comment.isEmpty()) {
             JTextArea textArea = new JTextArea(comment);
             textArea.setEditable(false);
             textArea.setFont(textArea.getFont().deriveFont(Font.PLAIN, textArea.getFont().getSize()-2));
-            textArea.setDragEnabled(false);
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
             textArea.setMargin(new Insets(0, 5, 2, 5));
             textArea.setBackground(Color.ORANGE);
-            topPanel.add(textArea, BorderLayout.SOUTH);
+
+            JPanel commentWrapper = new JPanel(new BorderLayout());
+            commentWrapper.add(textArea, BorderLayout.NORTH);
+            topPanel.add(commentWrapper, BorderLayout.CENTER);
         }
-        add(topPanel, BorderLayout.CENTER);
-        applyComponentOrientation(GanttLanguage.getInstance().getComponentOrientation());
+        return topPanel;
     }
 }

@@ -6,6 +6,8 @@
 package net.sourceforge.ganttproject.util;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -24,18 +26,29 @@ import java.net.URL;
  */
 public class BrowserControl {
 
-    /**
-     * Display an URL in the system browser. If you want to display a file, you
-     * must include the absolute path name.
-     * 
-     * @param url
-     *            the document's url (the url must start with either "http://"
-     *            or "file://").
-     * @return true when the method succeeded in displaying the URL in the
-     *         system browser
-     */
-    public static boolean displayURL(String url) {
+    private static boolean displayUrlWithDesktopApi(String url) {
+        if (!java.awt.Desktop.isDesktopSupported()) {
+            return false;
+        }
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        if (!desktop.isSupported(java.awt.Desktop.Action.BROWSE)) {
+            return false;
+        }
+        try {
+            desktop.browse(new URI(url));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 
+    private static boolean displayUrlWithJnlpApi(String url) {
         // Opening a browser, even when running sandbox-restricted
         // in JavaWebStart.
         try {
@@ -52,10 +65,28 @@ public class BrowserControl {
 
             return true;
         } catch (Exception e) {
+            return false;
             // Not running in JavaWebStart or service is not supported.
             // We continue with the methods below ...
         }
-
+    }
+    /**
+     * Display an URL in the system browser. If you want to display a file, you
+     * must include the absolute path name.
+     *
+     * @param url
+     *            the document's url (the url must start with either "http://"
+     *            or "file://").
+     * @return true when the method succeeded in displaying the URL in the
+     *         system browser
+     */
+    public static boolean displayURL(String url) {
+        if (displayUrlWithDesktopApi(url)) {
+            return true;
+        }
+        if (displayUrlWithJnlpApi(url)) {
+            return true;
+        }
         switch (getPlatform()) {
         case (WIN_ID):
             return runCmdLine(replaceToken(WIN_CMDLINE, URLTOKEN, url));
@@ -75,7 +106,7 @@ public class BrowserControl {
     /**
      * Try to determine whether this application is running under Windows or
      * some other platform by examining the "os.name" property.
-     * 
+     *
      * @return the ID of the platform
      */
     private static int getPlatform() {

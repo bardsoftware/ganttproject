@@ -1,11 +1,31 @@
 package net.sourceforge.ganttproject.io;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-class SaverBase {
+public class SaverBase {
+
+    protected TransformerHandler createHandler(Result result) throws TransformerConfigurationException {
+        SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory
+                .newInstance();
+        TransformerHandler handler = factory.newTransformerHandler();
+        Transformer serializer = handler.getTransformer();
+        serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+        serializer.setOutputProperty(OutputKeys.METHOD, "xml");
+        serializer.setOutputProperty(
+                "{http://xml.apache.org/xslt}indent-amount", "4");
+        handler.setResult(result);
+        return handler;
+    }
+
     protected void startElement(String name, TransformerHandler handler)
             throws SAXException {
         startElement(name, ourEmptyAttributes, handler);
@@ -56,4 +76,5 @@ class SaverBase {
     }
 
     private static AttributesImpl ourEmptyAttributes = new AttributesImpl();
+
 }

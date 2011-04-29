@@ -14,6 +14,11 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
         return getValue();
     }
 
+    @Override
+    public Boolean getValue() {
+        return super.getValue() == null ? Boolean.FALSE : super.getValue();
+    }
+
     public void toggle() {
         setValue(!getValue());
     }

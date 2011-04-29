@@ -1,5 +1,5 @@
 /* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
@@ -278,6 +279,16 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         int arrowLength = 7;
         for (int i = 0; i < dependencyDrawData.size(); i++) {
             DependencyDrawData next = dependencyDrawData.get(i);
+            
+            // Determine the line style (depending on type of dependency)
+            Line line;
+            String lineStyle;
+            if(next.myDependency.getHardness() == TaskDependency.Hardness.RUBBER) {
+                lineStyle = "dependency.line.rubber";
+            } else {
+                lineStyle = "dependency.line.hard";
+            }
+
             if (next.myDependeeVector
                     .reaches(next.myDependantVector.getPoint())) {
                 // when dependee.end <= dependant.start && dependency.type is
@@ -293,45 +304,51 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                 Point third = new Point(next.myDependantVector.getPoint(-3).x,
                         next.myDependantVector.getPoint().y);
                 java.awt.Rectangle arrowBoundary;
-                String style;
+                String arrowStyle;
                 if (next.myDependantVector.reaches(third)) {
                     second.x += arrowLength;
                     third.x += arrowLength;
                     Point forth = next.myDependantVector.getPoint();
-                    primitiveContainer.createLine(third.x, third.y, forth.x,
+                    line = primitiveContainer.createLine(third.x, third.y, forth.x,
                             forth.y);
+                    line.setStyle(lineStyle);
                     arrowBoundary = new java.awt.Rectangle(forth.x,
                             forth.y - 3, arrowLength, 6);
-                    style = "dependency.arrow.left";
+                    arrowStyle = "dependency.arrow.left";
                 } else {
                     third.y -= ysign * next.myDependantRectangle.myHeight / 2;
                     arrowBoundary = new java.awt.Rectangle(third.x - 3, third.y
                             - (ysign > 0 ? ysign * arrowLength : 0), 6,
                             arrowLength);
-                    style = ysign > 0 ? "dependency.arrow.down"
+                    arrowStyle = ysign > 0 ? "dependency.arrow.down"
                             : "dependency.arrow.up";
                 }
-                primitiveContainer.createLine(first.x, first.y, second.x,
+                line = primitiveContainer.createLine(first.x, first.y, second.x,
                         second.y);
-                primitiveContainer.createLine(second.x, second.y, third.x,
+                line.setStyle(lineStyle);
+                line = primitiveContainer.createLine(second.x, second.y, third.x,
                         third.y);
+                line.setStyle(lineStyle);
                 Rectangle arrow = primitiveContainer.createRectangle(
                         arrowBoundary.x, arrowBoundary.y, arrowBoundary.width,
                         arrowBoundary.height);
-                arrow.setStyle(style);
+                arrow.setStyle(arrowStyle);
             } else {
                 Point first = next.myDependeeVector.getPoint(3);
                 if (next.myDependantVector.reaches(first)) {
                     Point second = new Point(first.x, next.myDependantVector
                             .getPoint().y);
-                    primitiveContainer.createLine(next.myDependeeVector
+                    line = primitiveContainer.createLine(next.myDependeeVector
                             .getPoint().x, next.myDependeeVector.getPoint().y,
                             first.x, first.y);
-                    primitiveContainer.createLine(first.x, first.y, second.x,
+                    line.setStyle(lineStyle);
+                    line = primitiveContainer.createLine(first.x, first.y, second.x,
                             second.y);
-                    primitiveContainer.createLine(second.x, second.y,
+                    line.setStyle(lineStyle);
+                    line = primitiveContainer.createLine(second.x, second.y,
                             next.myDependantVector.getPoint().x,
                             next.myDependantVector.getPoint().y);
+                    line.setStyle(lineStyle);
                     int xsign = signum(next.myDependantVector.getPoint().x
                             - second.x);
                     java.awt.Rectangle arrowBoundary = new java.awt.Rectangle(
@@ -347,18 +364,22 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                     Point forth = next.myDependantVector.getPoint(3);
                     Point second = new Point(first.x, (first.y + forth.y) / 2);
                     Point third = new Point(forth.x, (first.y + forth.y) / 2);
-                    primitiveContainer.createLine(next.myDependeeVector
+                    line = primitiveContainer.createLine(next.myDependeeVector
                             .getPoint().x, next.myDependeeVector.getPoint().y,
                             first.x, first.y);
-                    primitiveContainer.createLine(first.x, first.y, second.x,
+                    line = primitiveContainer.createLine(first.x, first.y, second.x,
                             second.y);
-                    primitiveContainer.createLine(second.x, second.y, third.x,
+                    line.setStyle(lineStyle);
+                    line = primitiveContainer.createLine(second.x, second.y, third.x,
                             third.y);
-                    primitiveContainer.createLine(third.x, third.y, forth.x,
+                    line.setStyle(lineStyle);
+                    line = primitiveContainer.createLine(third.x, third.y, forth.x,
                             forth.y);
-                    primitiveContainer.createLine(forth.x, forth.y,
+                    line.setStyle(lineStyle);
+                    line = primitiveContainer.createLine(forth.x, forth.y,
                             next.myDependantVector.getPoint().x,
                             next.myDependantVector.getPoint().y);
+                    line.setStyle(lineStyle);
                 }
             }
         }

@@ -38,7 +38,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -63,7 +62,7 @@ public class SettingsDialog2 {
         myPageOrderKey = pageOrderKey;
         myProject = project;
         myUIFacade = uifacade;
-        OptionPageProvider[] providers = (OptionPageProvider[]) PluginManager.getExtensions(
+        List<OptionPageProvider> providers = PluginManager.getExtensions(
             "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
         myItems = getListItems(providers);
         HashSet<String> pageIds = new HashSet<String>();
@@ -80,20 +79,20 @@ public class SettingsDialog2 {
     }
 
     public void show() {
-        final OkAction okAction = new OkAction() {
+        OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
                 for (OptionPageProvider p : myProviders) {
                     p.commit();
                 }
             }
         };
-        final CancelAction cancelAction = new CancelAction() {
+        CancelAction cancelAction = new CancelAction() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent arg0) {
             }
         };
-        myUIFacade.showDialog(
-            getComponent(), new Action[] {okAction, cancelAction}, GanttLanguage.getInstance().getText("settings"));
+        myUIFacade.createDialog(
+            getComponent(), new Action[] {okAction, cancelAction}, GanttLanguage.getInstance().getText("settings")).show();
     }
 
     static class ListItem {
@@ -112,8 +111,11 @@ public class SettingsDialog2 {
 
     private Component getComponent() {
         final JPanel contentPanel = new JPanel(new CardLayout());
+        // Add panels to CardLayout
         for (ListItem li : myItems) {
-            contentPanel.add(li.component, li.id);
+            if (li.component != null) {
+                contentPanel.add(li.component, li.id);
+            }
         }
         final JList pagesList = new JList(new AbstractListModel() {
             @Override
@@ -167,9 +169,14 @@ public class SettingsDialog2 {
         pagesList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
                 ListItem listItem = (ListItem) pagesList.getSelectedValue();
-                cardLayout.show(contentPanel, listItem.id);
+                if(listItem.isGroupHeader) {
+                    // Assumes that the list does not end with a GroupHeader!
+                    pagesList.setSelectedIndex(pagesList.getSelectedIndex() + 1);
+                } else {
+                    final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
+                    cardLayout.show(contentPanel, listItem.id);
+                }
             }
         });
         pagesList.setBorder(BorderFactory.createEtchedBorder());
@@ -181,35 +188,29 @@ public class SettingsDialog2 {
             }
         });
 
-        final JPanel pagesPanel = new JPanel(new BorderLayout());
-        pagesPanel.add(new JScrollPane(pagesList), BorderLayout.CENTER);
-
-        final JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(pagesPanel, BorderLayout.WEST);
+        JPanel rootPanel = new JPanel(new BorderLayout());
+        rootPanel.add(pagesList, BorderLayout.WEST);
         rootPanel.add(contentPanel, BorderLayout.CENTER);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         return rootPanel;
     }
 
-    private List<ListItem> getListItems(OptionPageProvider[] providers) {
+    private List<ListItem> getListItems(List<OptionPageProvider> providers) {
         Map<String, OptionPageProvider> pageId_provider = new HashMap<String, OptionPageProvider>();
         for (OptionPageProvider p : providers) {
             pageId_provider.put(p.getPageID(), p);
         }
         List<ListItem> items = new ArrayList<ListItem>();
         String[] listConfig = GanttLanguage.getInstance().getText(myPageOrderKey).split(",");
-        for (String s : listConfig) {
+        for (String pageName : listConfig) {
             ListItem li;
-            if (s.startsWith("pageGroup.")) {
-                String groupNameKey = s;
-                li = new ListItem(
-                    true,
-                    groupNameKey,
-                    GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(groupNameKey)),
-                    new JPanel());
+            if (pageName.startsWith("pageGroup.")) {
+                li = new ListItem(true, pageName,
+                        GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(pageName)),
+                        null);
             } else {
-                OptionPageProvider p = pageId_provider.get(s);
-                assert p != null : "OptionPageProvider with pageID=" + s + " not found";
+                OptionPageProvider p = pageId_provider.get(pageName);
+                assert p != null : "OptionPageProvider with pageID=" + pageName + " not found";
                 li = new ListItem(false, p.getPageID(), p.toString(),
                     (Container)new OptionPageProviderPanel(p, myProject, myUIFacade).getComponent());
             }

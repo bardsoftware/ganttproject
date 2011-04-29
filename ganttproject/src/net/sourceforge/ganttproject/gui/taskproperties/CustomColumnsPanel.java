@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.gui.taskproperties;
 import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -52,7 +51,7 @@ public class CustomColumnsPanel extends JPanel {
     private JNTable table;
 
     public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade) {
-    	assert manager != null;
+        assert manager != null;
         myCustomPropertyManager = manager;
         myUIfacade = uifacade;
         this.initComponents();
@@ -89,9 +88,7 @@ public class CustomColumnsPanel extends JPanel {
                 protected void onSelectionChanged() {
                 }
         };
-        this.add(tableAndActions.getActionsComponent(), BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(table);
-        this.add(scrollPane, BorderLayout.CENTER);
+        this.add(CommonPanel.createTableAndActions(table, tableAndActions), BorderLayout.CENTER);
     }
 
     private void onAddEvent() {

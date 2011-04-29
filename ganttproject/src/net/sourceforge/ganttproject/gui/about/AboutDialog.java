@@ -1,5 +1,5 @@
 /***************************************************************************
- AboutDialog.java 
+ AboutDialog.java
  ------------------------------------------
  begin                : 29 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -65,7 +65,7 @@ public class AboutDialog extends GeneralDialog {
         }
 
         Box vb = Box.createVerticalBox();
-        vb.add(new TopPanel("  " + settingPanel.getTitle(), settingPanel
+        vb.add(TopPanel.create("  " + settingPanel.getTitle(), settingPanel
                 .getComment()));
         vb.add(settingPanel);
         settingPanel.initialize();
