@@ -26,7 +26,9 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Export parameters panel (for png export, html, print ...)
+ * Export parameters panel (for png export, html, print ...)
+ *
+ * @author athomas
  */
 public class ExportSettingsPanel extends GeneralOptionPanel {
 
@@ -78,34 +80,26 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
-     */
     public boolean applyChanges(boolean askForApply) {
+        boolean hasChange;
         if (getExportName() == appli.getGanttOptions().getExportName()
                 && getExportComplete() == appli.getGanttOptions()
                         .getExportComplete()
                 && getExportRelations() == appli.getGanttOptions()
                         .getExportRelations()) {
-            bHasChange = false;
+            hasChange = false;
         } else {
-            bHasChange = true;
+            hasChange = true;
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply o not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 appli.getGanttOptions().setExportName(getExportName());
                 appli.getGanttOptions().setExportComplete(getExportComplete());
                 appli.getGanttOptions().setExportRelations(getExportRelations());
             }
         }
-        return bHasChange;
+        return hasChange;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
-     */
     public void initialize() {
         cbName.setSelected(appli.getGanttOptions().getExportName());
         cbComplete.setSelected(appli.getGanttOptions().getExportComplete());

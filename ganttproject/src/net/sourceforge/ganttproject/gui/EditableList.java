@@ -1,5 +1,6 @@
-/* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2010-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,29 +24,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jdesktop.jdnc.JNTable;
 import org.jdesktop.swing.JXTable;
 
 public abstract class EditableList<T>  {
 
+    private final Object UNDEFINED_VALUE = new Object() {
+        @Override
+        public String toString() {
+            return myUndefinedValueLabel;
+        }
+    };
     private final List<T> myValues;
     private final TableModelImpl myTableModel;
     private JXTable resourcesTable;
     private AbstractTableAndActionsComponent<T> myTableAndActions;
     private JScrollPane resourcesScrollPane;
-    protected int[] mySelectedRows;
+    private int[] mySelectedRows;
     private JComboBox myComboBox;
     private final List<T> myPossibleValues;
     private String myTitle;
+    private String myUndefinedValueLabel = GanttLanguage.getInstance().getText("editableList.undefinedValueLabel");
 
     public EditableList(List<T> assigned_values, List<T> possibleValues) {
         myValues = assigned_values;
@@ -53,6 +58,9 @@ public abstract class EditableList<T>  {
         myTableModel = new TableModelImpl();
     }
 
+    public void setUndefinedValueLabel(String label) {
+        myUndefinedValueLabel = label;
+    }
 
     public void setTitle(String title) {
         myTitle = title;
@@ -94,6 +102,36 @@ public abstract class EditableList<T>  {
                     return EditableList.this.getTableCellRendererComponent(
                             this, typedValue, isSelected, hasFocus, row);
                 }
+            });
+            JTextField editorField = new JTextField();
+            resourcesTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(editorField) {
+                private boolean isCanceled;
+
+                @Override
+                public Component getTableCellEditorComponent(
+                        JTable table, Object value, boolean isSelected, int row,int column) {
+                    isCanceled = false;
+                    JTextField result = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+                    if (UNDEFINED_VALUE == value) {
+                        result.setText("");
+                    }
+                    return result;
+                }
+                @Override
+                public void cancelCellEditing() {
+                    super.cancelCellEditing();
+                    isCanceled = true;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    if (isCanceled) {
+                        return UNDEFINED_VALUE;
+                    }
+                    return super.getCellEditorValue();
+                }
+
+
             });
             if (!myPossibleValues.isEmpty()) {
                 setupEditor(myPossibleValues, resourcesTable);
@@ -145,7 +183,7 @@ public abstract class EditableList<T>  {
                 return new ComboItem(myValues.get(row));
             }
             if (row==myValues.size()) {
-                return "<Type name here>";
+                return UNDEFINED_VALUE;
             }
             throw new IllegalArgumentException("I can't return data in row="
                     + row);
@@ -166,7 +204,6 @@ public abstract class EditableList<T>  {
                 fireTableRowsDeleted(row, row);
                 return;
             }
-
             T prototype = createPrototype(value);
             if (row >= myValues.size()) {
                 if (prototype!=null) {
@@ -283,9 +320,7 @@ public abstract class EditableList<T>  {
         protected void onSelectionChanged() {
             mySelectedRows = resourcesTable.getSelectedRows();
             List<T> selectedObjects = getSelectedObjects();
-            if (!selectedObjects.isEmpty()) {
-                setSelection(selectedObjects);
-            }
+            fireSelectionChanged(selectedObjects);
         }
 
     }

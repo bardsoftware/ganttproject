@@ -89,7 +89,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     private final TableHeaderUIFacade myVisibleFields = new TableHeaderImpl();
 
-	private final UIFacade myUiFacade;
+    private final UIFacade myUiFacade;
 
     /**
      * Creates an instance of GanttTreeTable with the given TreeTableModel.
@@ -159,7 +159,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         }
 
         getTable().setAutoCreateColumnsFromModel(false);
-        getTable().setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
 
         TableColumnExt tce1 = newTableColumnExt(0);
         tce1.setTitle(ResourceTreeTableModel.strResourceName);
@@ -300,12 +300,12 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             }
         });
         scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
-			@Override
-			protected TimelineChart getChart() {
-				return (TimelineChart)myUiFacade.getResourceChart();
-			}
-			
-		});
+            @Override
+            protected TimelineChart getChart() {
+                return (TimelineChart)myUiFacade.getResourceChart();
+            }
+
+        });
     }
 
     protected void updateColumnOrders(int fromIndex, int toIndex) {
@@ -586,12 +586,12 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     }
 
     public boolean isExpanded(HumanResource hr) {
-		ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel())
-				.exists(hr);
-		if (node != null) {
-			return getTreeTable().isExpanded(new TreePath(node.getPath()));
-		}
-		return false;
+        ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel())
+                .exists(hr);
+        if (node != null) {
+            return getTreeTable().isExpanded(new TreePath(node.getPath()));
+        }
+        return false;
     }
 
     public void addKeyListener(KeyListener listener) {
@@ -806,13 +806,13 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     @Override
     public CustomPropertyDefinition createDefinition(
-    		String typeAsString, String colName, String defValue) {
+            String typeAsString, String colName, String defValue) {
         return createDefinition(String.valueOf(getDefinitions().size()), typeAsString, colName, defValue);
     }
 
     @Override
     public void deleteDefinition(CustomPropertyDefinition def) {
-    	deleteCustomColumn(def.getName());
+        deleteCustomColumn(def.getName());
     }
 
     @Override

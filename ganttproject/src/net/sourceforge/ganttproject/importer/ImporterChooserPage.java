@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.importer;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -19,11 +20,11 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author bard
  */
 class ImporterChooserPage implements WizardPage {
-    private final Importer[] myImporters;
+    private final List<Importer> myImporters;
 
     private final State myState;
 
-    ImporterChooserPage(Importer[] importers, State state) {
+    ImporterChooserPage(List<Importer> importers, State state) {
         myImporters = importers;
         myState = state;
     }
@@ -33,10 +34,10 @@ class ImporterChooserPage implements WizardPage {
     }
 
     public Component getComponent() {
-        Action[] choiceChangeActions = new Action[myImporters.length];
-        GPOptionGroup[] choiceOptions = new GPOptionGroup[myImporters.length];
-        for (int i = 0; i < myImporters.length; i++) {
-            final Importer nextImporter = myImporters[i];
+        Action[] choiceChangeActions = new Action[myImporters.size()];
+        GPOptionGroup[] choiceOptions = new GPOptionGroup[myImporters.size()];
+        for (int i = 0; i < myImporters.size(); i++) {
+            final Importer nextImporter = myImporters.get(i);
             Action nextAction = new AbstractAction(nextImporter
                     .getFileTypeDescription()) {
                 public void actionPerformed(ActionEvent e) {

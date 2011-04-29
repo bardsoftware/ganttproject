@@ -442,22 +442,8 @@ public class TaskManagerImpl implements TaskManager {
                 .getDefaultTimeUnit(), count);
     }
 
-    public TaskLength createLength(TimeUnit timeUnit, Date startDate,
-            Date endDate) {
-        TaskLength result;
-        int sign = 1;
-        if (endDate.before(startDate)) {
-            sign = -1;
-            Date temp = endDate;
-            endDate = startDate;
-            startDate = temp;
-        }
-        int unitCount = 0;
-        for (; startDate.before(endDate); unitCount++) {
-            startDate = timeUnit.adjustRight(startDate);
-        }
-        result = new TaskLengthImpl(timeUnit, unitCount*sign);
-        return result;
+    public TaskLength createLength(TimeUnit timeUnit, Date startDate, Date endDate) {
+        return getConfig().getTimeUnitStack().createDuration(timeUnit, startDate, endDate);
     }
 
     public Date shift(Date original, TaskLength duration) {

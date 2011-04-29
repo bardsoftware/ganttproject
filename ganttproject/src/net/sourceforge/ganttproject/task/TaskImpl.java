@@ -17,6 +17,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
@@ -219,67 +222,67 @@ public class TaskImpl implements Task {
     }
 
     public List<Document> getAttachments() {
-    	if (getWebLink()!= null && !"".equals(getWebLink())) {
-	    	return Collections.singletonList((Document)new AbstractURLDocument() {
-				public boolean canRead() {
-					return true;
-				}
-				public boolean canWrite() {
-					return false;
-				}
-				public String getDescription() {
-					return null;
-				}
-				public InputStream getInputStream() throws IOException {
-					return null;
-				}
-				public OutputStream getOutputStream() throws IOException {
-					return null;
-				}
-				public String getPath() {
-					return null;
-				}
-				public URI getURI() {
-					try {
-						return new URI(new URL(getWebLink()).toString());
-					}
-					catch (URISyntaxException e) {
-					}
-					catch (MalformedURLException e) {
-						File f = new File(getWebLink());
-						if (f.exists()) {
-							return f.toURI();
-						}
-					}
-					try {
-						URL context = myManager.getProjectDocument();
-						if (context==null) {
-							return null;
-						}
-						URL relative = new URL(context, getWebLink());
-						return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
-					}
-					catch (URISyntaxException e) {
-					}
-					catch (MalformedURLException e) {
-					}
-					catch (UnsupportedEncodingException e) {
-					}
-					return null;
-				}
-				public boolean isLocal() {
-					return false;
-				}
-				public boolean isValidForMRU() {
-					return false;
-				}
-				public void write() throws IOException {
-				}
-	    	});
-    	}
-    	else {
-    		return Collections.emptyList();
-    	}
+        if (getWebLink()!= null && !"".equals(getWebLink())) {
+            return Collections.singletonList((Document)new AbstractURLDocument() {
+                public boolean canRead() {
+                    return true;
+                }
+                public IStatus canWrite() {
+                    return Status.CANCEL_STATUS;
+                }
+                public String getDescription() {
+                    return null;
+                }
+                public InputStream getInputStream() throws IOException {
+                    return null;
+                }
+                public OutputStream getOutputStream() throws IOException {
+                    return null;
+                }
+                public String getPath() {
+                    return null;
+                }
+                public URI getURI() {
+                    try {
+                        return new URI(new URL(getWebLink()).toString());
+                    }
+                    catch (URISyntaxException e) {
+                    }
+                    catch (MalformedURLException e) {
+                        File f = new File(getWebLink());
+                        if (f.exists()) {
+                            return f.toURI();
+                        }
+                    }
+                    try {
+                        URL context = myManager.getProjectDocument();
+                        if (context==null) {
+                            return null;
+                        }
+                        URL relative = new URL(context, getWebLink());
+                        return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
+                    }
+                    catch (URISyntaxException e) {
+                    }
+                    catch (MalformedURLException e) {
+                    }
+                    catch (UnsupportedEncodingException e) {
+                    }
+                    return null;
+                }
+                public boolean isLocal() {
+                    return false;
+                }
+                public boolean isValidForMRU() {
+                    return false;
+                }
+                public void write() throws IOException {
+                }
+            });
+        }
+        else {
+            return Collections.emptyList();
+        }
     }
     public boolean isMilestone() {
         return isMilestone;
@@ -480,7 +483,7 @@ public class TaskImpl implements Task {
 
     private static class FieldChange {
         Object myFieldValue;
-		Object myOldValue;
+        Object myOldValue;
 
         EventSender myEventSender;
 
@@ -489,9 +492,9 @@ public class TaskImpl implements Task {
             myEventSender.enable();
         }
 
-		public void setOldValue(Object oldValue) {
-			myOldValue = oldValue;
-		}
+        public void setOldValue(Object oldValue) {
+            myOldValue = oldValue;
+        }
     }
 
     private class MutatorImpl implements TaskMutator {
@@ -533,7 +536,7 @@ public class TaskImpl implements Task {
                 if (myEndChange != null) {
                     GanttCalendar end = getEnd();
                     if (end.getTime().compareTo(TaskImpl.this.getStart().getTime())>0) {
-                    	TaskImpl.this.setEnd(end);
+                        TaskImpl.this.setEnd(end);
                     }
                 }
                 if (myThirdChange != null) {
@@ -554,8 +557,8 @@ public class TaskImpl implements Task {
                 TaskImpl.this.adjustNestedTasks();
             }
             if ((myStartChange!=null || myEndChange!=null || myDurationChange!=null) && areEventsEnabled()) {
-            	GanttCalendar oldStart = (GanttCalendar) (myStartChange==null ? TaskImpl.this.getStart() : myStartChange.myOldValue);
-            	GanttCalendar oldEnd = (GanttCalendar) (myEndChange==null ? TaskImpl.this.getEnd() : myEndChange.myOldValue);
+                GanttCalendar oldStart = (GanttCalendar) (myStartChange==null ? TaskImpl.this.getStart() : myStartChange.myOldValue);
+                GanttCalendar oldEnd = (GanttCalendar) (myEndChange==null ? TaskImpl.this.getEnd() : myEndChange.myOldValue);
                 myManager.fireTaskScheduleChanged(TaskImpl.this, oldStart, oldEnd);
             }
 
@@ -572,7 +575,7 @@ public class TaskImpl implements Task {
                 myActivities = new ArrayList<TaskActivity>();
                 TaskImpl.recalculateActivities(
                     myManager.getConfig().getCalendar(), TaskImpl.this,
-                    myActivities, getStart().getTime(), 
+                    myActivities, getStart().getTime(),
                     TaskImpl.this.getEnd().getTime());
             }
             return myActivities;
@@ -611,11 +614,11 @@ public class TaskImpl implements Task {
         }
 
         public void setStart(final GanttCalendar start) {
-        	assert start!=null;
-        	GanttCalendar currentStart = getStart();
-        	if (currentStart!=null && start.equals(currentStart)) {
-        		return;
-        	}
+            assert start!=null;
+            GanttCalendar currentStart = getStart();
+            if (currentStart!=null && start.equals(currentStart)) {
+                return;
+            }
             if (myStartChange == null) {
                 myStartChange = new FieldChange();
                 myStartChange.myEventSender = myPropertiesEventSender;
@@ -808,7 +811,7 @@ public class TaskImpl implements Task {
     }
 
     public void setName(String name) {
-        myName = name;
+        myName = (name == null ? null : name.trim());
     }
 
     public void setWebLink(String webLink) {
@@ -845,9 +848,9 @@ public class TaskImpl implements Task {
                 algorithmCollection.getAdjustTaskBoundsAlgorithm().adjustNestedTasks(this);
             }
         } catch (TaskDependencyException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 
@@ -1035,7 +1038,7 @@ public class TaskImpl implements Task {
     }
 
     public String toString() {
-    	return getName();
+        return getName();
     }
 
     public boolean isUnplugged() {

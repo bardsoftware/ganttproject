@@ -36,88 +36,88 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 
-/** Provides a human resource editing dialog*/
 public class GanttDialogPerson {
-    /** True when the dialogs values are changed (and the user pressed OK) */
-    private boolean valueChanged = false;
+    private boolean change;
 
-    private final HumanResource person;
+    private HumanResource person;
 
-    /** The current language in use */
-    private final GanttLanguage language = GanttLanguage.getInstance();
-    
-    private DefaultDateIntervalModel myDaysOffModel;
+    /** The language use */
+    private GanttLanguage language = GanttLanguage.getInstance();
+
+    private JTabbedPane tabbedPane;
 
     private final StringOption myNameField = new DefaultStringOption("name");
     private final StringOption myPhoneField = new DefaultStringOption("colPhone");
     private final StringOption myMailField = new DefaultStringOption("colMail");
     private final EnumerationOption myRoleField;
-	private final GPOptionGroup myGroup;
-	private final UIFacade myUIFacade;
-
+    private final GPOptionGroup myGroup;
+    private final UIFacade myUIFacade;
+    /** Creates new form GanttDialogPerson */
     public GanttDialogPerson(UIFacade uiFacade, GanttLanguage language,
             HumanResource person) {
-    	myUIFacade = uiFacade;
+//        super(parent, GanttProject.correctLabel(language.getText("human")),
+//                true);
+//
+        myUIFacade = uiFacade;
         this.person = person;
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
         String[] roleFieldValues = new String[enabledRoles.length];
-        for (int i = 0; i < enabledRoles.length; i++) {
-        	roleFieldValues[i]= enabledRoles[i].getName();
+        for (int i=0; i<enabledRoles.length; i++) {
+            roleFieldValues[i]= enabledRoles[i].getName();
         }
         myRoleField = new DefaultEnumerationOption("colRole", roleFieldValues);
-    	myGroup = new GPOptionGroup("", new GPOption[] {myNameField, myPhoneField, myMailField,myRoleField});
-    	myGroup.setTitled(false);
+        myGroup = new GPOptionGroup("", new GPOption[] {myNameField, myPhoneField, myMailField,myRoleField});
+        myGroup.setTitled(false);
     }
 
     public boolean result() {
-        return valueChanged;
+        return change;
     }
 
     public void setVisible(boolean isVisible) {
-    	if (isVisible) {
-	    	loadFields();
-	    	Component contentPane = getComponent();
-	    	OkAction okAction = new OkAction() {
-				public void actionPerformed(ActionEvent e) {
-					myGroup.commit();
-					okButtonActionPerformed(e);
-				}
-	    	};
-	    	CancelAction cancelAction = new CancelAction(){
-				public void actionPerformed(ActionEvent e) {
-					myGroup.rollback();
-					valueChanged = false;
-				}
-	    	};
-	    	myUIFacade.showDialog(contentPane, new Action[] {okAction, cancelAction}, language.getText("human"));
-    	}
+        if (isVisible) {
+            loadFields();
+            Component contentPane = getComponent();
+            OkAction okAction = new OkAction() {
+                public void actionPerformed(ActionEvent e) {
+                    myGroup.commit();
+                    okButtonActionPerformed(e);
+                }
+            };
+            CancelAction cancelAction = new CancelAction(){
+                public void actionPerformed(ActionEvent e) {
+                    myGroup.rollback();
+                    change = false;
+                }
+            };
+            myUIFacade.createDialog(contentPane, new Action[] {okAction, cancelAction}, language.getText("human")).show();
+        }
     }
 
     private void loadFields() {
-    	myGroup.lock();
-    	myNameField.setValue(person.getName());
-    	myPhoneField.setValue(person.getPhone());
-    	myMailField.setValue(person.getMail());
-    	Role role = person.getRole();
-    	if (role!=null) {
-    		myRoleField.setValue(role.getName());
-    	}
-    	myGroup.commit();
-    	myGroup.lock();
-	}
+        myGroup.lock();
+        myNameField.setValue(person.getName());
+        myPhoneField.setValue(person.getPhone());
+        myMailField.setValue(person.getMail());
+        Role role = person.getRole();
+        if (role!=null) {
+            myRoleField.setValue(role.getName());
+        }
+        myGroup.commit();
+        myGroup.lock();
+    }
 
-	private Component getComponent() {
-    	OptionsPageBuilder builder = new OptionsPageBuilder();
-    	OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
+    private Component getComponent() {
+        OptionsPageBuilder builder = new OptionsPageBuilder();
+        OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
             public String getOptionLabel(GPOptionGroup group, GPOption option) {
                 return getValue(option.getID());
             }
-    	};
-    	builder.setI18N(i18n);
-    	final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] {myGroup});
-    	mainPage.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        };
+        builder.setI18N(i18n);
+        final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] {myGroup});
+        mainPage.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        tabbedPane = new JTabbedPane();
         tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass()
                 .getResource("/icons/properties_16.gif")), mainPage);
         tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass()
@@ -157,7 +157,7 @@ public class GanttDialogPerson {
                 }
                 super.focusGained(e);
             }
-            
+
         });
         return tabbedPane;
     }
@@ -172,10 +172,11 @@ public class GanttDialogPerson {
                             applyChanges();
                         }
                     });
-        } else {
-        	applyChanges();
         }
-        valueChanged = true;
+        else {
+            applyChanges();
+        }
+        change = true;
     }
 
     private void applyChanges() {
@@ -183,46 +184,48 @@ public class GanttDialogPerson {
         person.setMail(myMailField.getValue());
         person.setPhone(myPhoneField.getValue());
         Role role = findRole(myRoleField.getValue());
-        if (role != null) {
-        	person.setRole(role);
+        if (role!=null) {
+            person.setRole(role);
         }
         DateInterval[] intervals = myDaysOffModel.getIntervals();
-    	person.getDaysOff().clear();
-        for (int i = 0; i < intervals.length; i++) {
-        	person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].end));
+        person.getDaysOff().clear();
+        for (int i=0; i<intervals.length; i++) {
+            person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].end));
         }
     }
-    
+
     private Role findRole(String roleName) {
-    	Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
-        for (int i = 0; i < enabledRoles.length; i++) {
-    		if (enabledRoles[i].getName().equals(roleName)) {
-    			return enabledRoles[i];
-    		}
-    	}
-    	return null;
+        Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
+        for (int i=0; i<enabledRoles.length; i++) {
+            if (enabledRoles[i].getName().equals(roleName)) {
+                return enabledRoles[i];
+            }
+        }
+        return null;
     }
-    
+
+    private DefaultDateIntervalModel myDaysOffModel;
+
     public JPanel constructDaysOffPanel() {
-    	myDaysOffModel = new DateIntervalListEditor.DefaultDateIntervalModel() {
-			public int getMaxIntervalLength() {
-				return 2;
-			}
+        myDaysOffModel = new DateIntervalListEditor.DefaultDateIntervalModel() {
+            public int getMaxIntervalLength() {
+                return 2;
+            }
 
-			public void add(DateInterval interval) {
-				super.add(interval);
-			}
+            public void add(DateInterval interval) {
+                super.add(interval);
+            }
 
-			public void remove(DateInterval interval) {
-				super.remove(interval);
-			}
-    	};
-    	DefaultListModel daysOff = person.getDaysOff();
-        for (int i = 0; i < daysOff.getSize(); i++) {
-    		GanttDaysOff next = (GanttDaysOff) daysOff.get(i);
-    		myDaysOffModel.add(new DateIntervalListEditor.DateInterval(next.getStart().getTime(), next.getFinish().getTime()));
-    	}
-    	DateIntervalListEditor editor = new DateIntervalListEditor(myDaysOffModel);
-    	return editor;
+            public void remove(DateInterval interval) {
+                super.remove(interval);
+            }
+        };
+        DefaultListModel daysOff = person.getDaysOff();
+        for (int i=0; i<daysOff.getSize(); i++) {
+            GanttDaysOff next = (GanttDaysOff) daysOff.get(i);
+            myDaysOffModel.add(new DateIntervalListEditor.DateInterval(next.getStart().getTime(), next.getFinish().getTime()));
+        }
+        DateIntervalListEditor editor = new DateIntervalListEditor(myDaysOffModel);
+        return editor;
     }
 }

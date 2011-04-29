@@ -19,7 +19,8 @@ package net.sourceforge.ganttproject.print;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.awt.geom.AffineTransform;
+import java.awt.image.RenderedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 
@@ -33,9 +34,9 @@ public class GanttPrintable implements Printable {
     private double reduceFactor;
 
     /** The image to print */
-    private BufferedImage image;
+    private RenderedImage image;
 
-    public GanttPrintable(BufferedImage image, double reduceFactor) {
+    public GanttPrintable(RenderedImage image, double reduceFactor) {
         super();
         this.image = image;
         this.reduceFactor = reduceFactor < 1.0d ? REDUCE_FACTOR_DEFAULT
@@ -44,11 +45,12 @@ public class GanttPrintable implements Printable {
 
     /** Print the page */
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
-        System.out.println(this.reduceFactor);
-
+        System.err.println("[GanttPrintable] print(): reduceFactor="
+                + reduceFactor);
         System.err.println("[GanttPrintable] print(): image: w="
                 + image.getWidth() + " h=" + image.getHeight());
         System.err.println("[GanttPrintable] print(): page=" + pageIndex);
+
         int pagesPerRow = (int) (image.getWidth() / reduceFactor
                 / pageFormat.getImageableWidth() + 1);
         int numRows = (int) (image.getHeight() / reduceFactor
@@ -57,7 +59,7 @@ public class GanttPrintable implements Printable {
         System.err.println("[GanttPrintable] print(): numrows=" + numRows
                 + " pagesPerRow=" + pagesPerRow);
         int totalPages = pagesPerRow * numRows;
-        if (pageIndex+1 >= totalPages) {
+        if (pageIndex >= totalPages) {
             return Printable.NO_SUCH_PAGE;
         }
 
@@ -66,32 +68,23 @@ public class GanttPrintable implements Printable {
         System.err.println("[GanttPrintable] print(): curentpage="
                 + currentColumn + " current row=" + currentRow);
 
-        int leftx = (int) (currentColumn * pageFormat.getImageableWidth() * reduceFactor);
+        int leftx = (int) (currentColumn * (pageFormat.getImageableWidth()
+                * reduceFactor - 2 / 3 * pageFormat.getImageableX()));
         int topy = (int) (currentRow * pageFormat.getImageableHeight() * reduceFactor);
         System.err.println("[GanttPrintable] print(): leftx=" + leftx
                 + " topy=" + topy);
 
-        int height = (int) (currentRow + 1 < numRows ? pageFormat
-                .getImageableHeight()
-                * reduceFactor
-                : image.getHeight()
-                        - (pageFormat.getImageableHeight() * reduceFactor * (numRows - 1)));
-        int width = (int) (currentColumn + 1 < pagesPerRow ? pageFormat
-                .getImageableWidth()
-                * reduceFactor
-                : image.getWidth()
-                        - (pageFormat.getImageableWidth() * reduceFactor * (pagesPerRow - 1)));
-
-        System.err.println("[GanttPrintable] print(): height=" + height
-                + " width=" + width);
         Graphics2D g2d = (Graphics2D) graphics;
-        g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+        g2d.setClip((int) pageFormat.getImageableX(), (int) pageFormat
+                .getImageableY(), (int) pageFormat.getImageableWidth(),
+                (int) pageFormat.getImageableHeight());
 
-        BufferedImage subimage = image.getSubimage(leftx, topy, width, height);
-        int h = (int) (subimage.getHeight() / reduceFactor);
-        int w = (int) (subimage.getWidth() / reduceFactor);
-
-        g2d.drawImage(subimage, 0, 0, w, h, null);
+        AffineTransform transform = AffineTransform.getScaleInstance(
+                1 / reduceFactor, 1 / reduceFactor);
+        transform.translate(pageFormat.getImageableX() - leftx, pageFormat
+                .getImageableY()
+                - topy);
+        g2d.drawRenderedImage(image, transform);
 
         return Printable.PAGE_EXISTS;
     }

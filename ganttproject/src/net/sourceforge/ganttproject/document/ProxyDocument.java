@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -75,7 +76,7 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.canRead();
     }
 
-    public boolean canWrite() {
+    public IStatus canWrite() {
         return myPhysicalDocument.canWrite();
     }
 
@@ -125,10 +126,6 @@ class ProxyDocument implements Document {
 
     public String getPassword() {
         return myPhysicalDocument.getPassword();
-    }
-
-    public void setUserInfo(String user, String pass) {
-        myPhysicalDocument.setUserInfo(user, pass);
     }
 
     public String getLastError() {
@@ -350,7 +347,7 @@ class ProxyDocument implements Document {
      * Added on Feb 26, 2006
      */
     public boolean equals(Object doc) {
-		if (false == doc instanceof ProxyDocument) {
+        if (false == doc instanceof ProxyDocument) {
             return false;
         }
         return getPath().equals(((Document)doc).getPath());
@@ -361,7 +358,7 @@ class ProxyDocument implements Document {
     }
 
     private PortfolioImpl getPortfolioImpl() {
-		if (myPortfolio == null) {
+        if (myPortfolio == null) {
             myPortfolio = new PortfolioImpl();
         }
         return myPortfolio;

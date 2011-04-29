@@ -14,10 +14,7 @@ fi
 
 rm -rf ${INSTALL_PATH} ${GP_EXECUTABLE}
 mkdir $INSTALL_PATH
-cp -r *.jar *.gan ganttproject_32_2.ico plugins ${INSTALL_PATH}
+cp -r * ${INSTALL_PATH}
 
-# Modify ganttproject.sh to run from $INSTALL_PATH
-sed -e "s#GP_HOME=.*#GP_HOME=${INSTALL_PATH}#" < ganttproject.sh > ${INSTALL_PATH}ganttproject.sh
-chmod +x ${INSTALL_PATH}ganttproject.sh
-
-ln -s ${INSTALL_PATH}ganttproject.sh ${GP_EXECUTABLE}
+chmod +x ${INSTALL_PATH}ganttproject
+ln -s ${INSTALL_PATH}ganttproject ${GP_EXECUTABLE}

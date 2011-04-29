@@ -16,43 +16,43 @@ public class GanttDialogProperties {
     private final GanttTask[] myTasks;
 
     public GanttDialogProperties(GanttTask[] tasks) {
-    	myTasks = tasks;
+        myTasks = tasks;
     }
 
     public void show(final IGanttProject project, final UIFacade uiFacade) {
         final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
         final Action[] actions = new Action[] {
-        	new OkAction() {
-				public void actionPerformed(ActionEvent arg0) {
-					uiFacade.getUndoManager().undoableEdit("Properties changed",
-	                        new Runnable() {
-	                            public void run() {
-	                                taskPropertiesBean.getReturnTask();
-	                                try {
-										project.getTaskManager().getAlgorithmCollection()
-										.getRecalculateTaskScheduleAlgorithm().run();
-									} catch (TaskDependencyException e) {
-										if (!GPLogger.log(e)) {
-											e.printStackTrace();
-										}
-									}
-	                            }
-	                        });
-				}
-        	},
-        	new CancelAction() {
-				public void actionPerformed(ActionEvent arg0) {
-				}
-        	}
+            new OkAction() {
+                public void actionPerformed(ActionEvent arg0) {
+                    uiFacade.getUndoManager().undoableEdit("Properties changed",
+                            new Runnable() {
+                                public void run() {
+                                    taskPropertiesBean.getReturnTask();
+                                    try {
+                                        project.getTaskManager().getAlgorithmCollection()
+                                        .getRecalculateTaskScheduleAlgorithm().run();
+                                    } catch (TaskDependencyException e) {
+                                        if (!GPLogger.log(e)) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                }
+            },
+            new CancelAction() {
+                public void actionPerformed(ActionEvent arg0) {
+                }
+            }
         };
         StringBuffer taskNames = new StringBuffer();
         for (int i=0; i<myTasks.length; i++) {
-        	if (i>0) {
-        		taskNames.append(',');
-        	}
-        	taskNames.append(myTasks[i].getName());
+            if (i>0) {
+                taskNames.append(',');
+            }
+            taskNames.append(myTasks[i].getName());
         }
-        final String title = GanttLanguage.getInstance().getText("propertiesFor")+" '"+taskNames+"'";
-        uiFacade.showDialog(taskPropertiesBean, actions, title);
+        String title = GanttLanguage.getInstance().getText("propertiesFor")+" '"+taskNames+"'";
+        uiFacade.createDialog(taskPropertiesBean, actions, title).show();
     }
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package net.sourceforge.ganttproject.chart;
 
@@ -43,12 +43,9 @@ public class PublicHolidayDialogAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-
-        // myUIFacade.showDialog(createDialogComponent(), new Action[]{okAction,
-        // cancelAction});
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
-        myUIFacade.showDialog(dialogContent, new Action[] {
+        myUIFacade.createDialog(dialogContent, new Action[] {
                 new OkAction() {
                     public void actionPerformed(ActionEvent e) {
                         updateHolidays(dialog.getHolidays());
@@ -61,12 +58,12 @@ public class PublicHolidayDialogAction extends AbstractAction {
                         }
                         myUIFacade.getActiveChart().reset();
                     }
-                }, 
+                },
                 new CancelAction() {
                     public void actionPerformed(ActionEvent e) {
                     }
                 }
-        });
+        }, "").show();
     }
 
     private void updateHolidays(List<GanttCalendar> holidays) {

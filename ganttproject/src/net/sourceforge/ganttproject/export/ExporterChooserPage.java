@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -19,15 +20,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author bard
  */
 class ExporterChooserPage implements WizardPage {
-    private final Exporter[] myExporters;
+    private final List<Exporter> myExporters;
 
     private final State myState;
     private final GanttLanguage language = GanttLanguage.getInstance();
 
-    /**
-     *
-     */
-    ExporterChooserPage(Exporter[] exporters, ExportFileWizardImpl.State state) {
+    ExporterChooserPage(List<Exporter> exporters, ExportFileWizardImpl.State state) {
         myExporters = exporters;
         myState = state;
 
@@ -39,10 +37,10 @@ class ExporterChooserPage implements WizardPage {
 
     public Component getComponent() {
         int selectedGroupIndex = 0;
-        Action[] choiceChangeActions = new Action[myExporters.length];
-        GPOptionGroup[] choiceOptions = new GPOptionGroup[myExporters.length];
-        for (int i = 0; i < myExporters.length; i++) {
-            final Exporter nextExporter = myExporters[i];
+        Action[] choiceChangeActions = new Action[myExporters.size()];
+        GPOptionGroup[] choiceOptions = new GPOptionGroup[myExporters.size()];
+        for (int i = 0; i < myExporters.size(); i++) {
+            final Exporter nextExporter = myExporters.get(i);
             if (nextExporter==myState.getExporter()) {
                 selectedGroupIndex = i;
             }
@@ -65,16 +63,16 @@ class ExporterChooserPage implements WizardPage {
 
     public void setActive(boolean b) {
         if (false==b) {
-            for (int i=0; i<myExporters.length; i++) {
-                if (myExporters[i].getOptions()!=null) {
-                    myExporters[i].getOptions().commit();
+            for (Exporter e : myExporters) {
+                if (e.getOptions()!=null) {
+                    e.getOptions().commit();
                 }
             }
         }
         else {
-            for (int i=0; i<myExporters.length; i++) {
-                if (myExporters[i].getOptions()!=null) {
-                    myExporters[i].getOptions().lock();
+            for (Exporter e : myExporters) {
+                if (e.getOptions()!=null) {
+                    e.getOptions().lock();
                 }
             }
 

@@ -48,7 +48,7 @@ class ResourceTreeImageGenerator {
         int width = 0;
         int assignmentsCount = 0;
         final BufferedImage testImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        final Graphics g = testImage.getGraphics();
+        final Graphics2D g = (Graphics2D) testImage.getGraphics();
         final int tabSize = 5;
         final List<HumanResource> users = myResourceManager.getResources();
         for (Iterator<HumanResource> user = users.iterator(); user.hasNext();) {

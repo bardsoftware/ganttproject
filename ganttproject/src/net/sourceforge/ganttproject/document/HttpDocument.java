@@ -13,10 +13,15 @@ import java.security.AccessControlException;
 
 import net.sourceforge.ganttproject.GPLogger;
 
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.HttpsURL;
 import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.webdav.lib.WebdavResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * This class implements the interface Document for file access on HTTP-servers
@@ -38,29 +43,33 @@ public class HttpDocument extends AbstractURLDocument {
 
     private boolean malformedURL = false;
 
+    private String myUsername;
+
+    private String myPassword;
+
     private static int lockDAVMinutes = 240;
 
     public HttpDocument(String url, String user, String pass) {
         this.url = url;
+        myUsername = user;
+        myPassword = pass;
         try {
-            httpURL = new HttpURL(url);
-            if (user == null || user.length() == 0)
-                user = httpURL.getUser();
-            if (pass == null || pass.length() == 0)
-                pass = httpURL.getPassword();
-            if (user != null)
-                httpURL.setUserinfo(user, pass);
+            if (url.startsWith("https")) {
+                httpURL = new HttpsURL(url);
+            } else {
+                httpURL = new HttpURL(url);
+            }
         } catch (URIException e) {
             lastError = e.getMessage();
             malformedURL = true;
         }
     }
 
-    private WebdavResource getWebdavResource() {
+    WebdavResource getWebdavResource() {
         if (null == webdavResource)
             try {
-                webdavResource = new WebdavResource(httpURL,
-                        WebdavResource.NOACTION, 0);
+                Credentials credentials = new UsernamePasswordCredentials(myUsername, myPassword);
+                webdavResource = new WebdavResource(httpURL, credentials, WebdavResource.NOACTION, 0);
                 webdavResource.setFollowRedirects(true);
             } catch (HttpException e) {
                 lastError = e.getMessage() + "(" + e.getReasonCode() + ")";
@@ -80,25 +89,33 @@ public class HttpDocument extends AbstractURLDocument {
         return (null == res) ? false : (res.exists() && !res.isCollection());
     }
 
-    public boolean canWrite() {
+    public IStatus canWrite() {
         WebdavResource res = getWebdavResource();
-        if (null == res)
-            return false;
+        if (null == res) {
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), lastError, null);
+        }
 
         try {
             res.setProperties(0);
         } catch (HttpException e) {
-            if (404 != e.getReasonCode())
-                return false;
+            if (404 != e.getReasonCode()) {
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
+            }
         } catch (IOException e) {
-            return false;
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
         }
 
         if (res.exists()) {
-            return (!res.isCollection());
+            return (res.isCollection())
+                ? new Status(
+                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(),  null)
+                : Status.OK_STATUS;
         } else {
             try {
-                HttpURL parentURL = new HttpURL(httpURL.toString());
+                HttpURL parentURL = httpURL.toString().startsWith("https:") ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
                 String user = httpURL.getUser();
                 String pass = httpURL.getPassword();
                 if (user != null)
@@ -108,11 +125,15 @@ public class HttpDocument extends AbstractURLDocument {
                     currentHierPath = currentHierPath + "/";
                 parentURL.setPath(currentHierPath);
                 WebdavResource parentRes = new WebdavResource(parentURL);
-                if (!parentRes.isCollection())
-                    return false;
-                return true;
+                if (!parentRes.isCollection()) {
+                    return new Status(
+                        IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
+                        parentRes.getPath(),  null);
+                }
+                return Status.OK_STATUS;
             } catch (Exception e) {
-                return false;
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
             }
         }
     }
@@ -198,9 +219,10 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     public OutputStream getOutputStream() throws IOException {
-        if (null == getWebdavResource())
+        if (null == getWebdavResource()) {
             throw new IOException(lastError);
-        return new HttpDocumentOutputStream(getWebdavResource());
+        }
+        return new HttpDocumentOutputStream(this);
     }
 
     public String getPath() {
@@ -212,29 +234,11 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     public String getUsername() {
-        try {
-            return httpURL.getUser();
-        } catch (URIException e) {
-            return null;
-        }
+        return myUsername;
     }
 
     public String getPassword() {
-        try {
-            return httpURL.getPassword();
-        } catch (URIException e) {
-            return null;
-        }
-    }
-
-    public void setUserInfo(String user, String pass) {
-        try {
-            httpURL.setUserinfo(user, pass);
-            webdavResource = null;
-        } catch (URIException e) {
-            lastError = e.getMessage();
-            malformedURL = true;
-        }
+        return myPassword;
     }
 
     public String getLastError() {

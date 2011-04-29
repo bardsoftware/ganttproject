@@ -35,7 +35,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
     public void run(File selectedFile) {
         try {
-            new ProjectFileImporter(getProject(), selectedFile).run();
+            new ProjectFileImporter(getProject(), getUiFacade().getTaskTree(), selectedFile).run();
         } catch (MPXJException e) {
             getUiFacade().showErrorDialog(e);
         }

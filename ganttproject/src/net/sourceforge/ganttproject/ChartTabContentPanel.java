@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -14,7 +32,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
@@ -28,14 +45,14 @@ abstract class ChartTabContentPanel {
     protected final NavigationPanel myNavigationPanel;
     protected final ZoomingPanel myZoomingPanel;
     private final List<Component> myPanels = new ArrayList<Component>();
-    
+
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         myNavigationPanel = new NavigationPanel(project, chart, workbenchFacade);
         myZoomingPanel = new ZoomingPanel(workbenchFacade, chart);
         addChartPanel(myZoomingPanel.getComponent());
         addChartPanel(myNavigationPanel.getComponent());
     }
-    
+
     protected JComponent createContentComponent() {
         JPanel tabContentPanel = new JPanel(new BorderLayout());
         JPanel left = new JPanel(new BorderLayout());
@@ -46,13 +63,15 @@ abstract class ChartTabContentPanel {
         left.add(treeHeader, BorderLayout.NORTH);
 
         left.add(getTreeComponent(), BorderLayout.CENTER);
+        Dimension minSize = new Dimension(0, 0);
+        left.setMinimumSize(minSize);
 
         JPanel right = new JPanel(new BorderLayout());
         right.add(createChartPanels(), BorderLayout.NORTH);
         right.setBackground(new Color(0.93f, 0.93f, 0.93f));
         right.add(getChartComponent(), BorderLayout.CENTER);
+        right.setMinimumSize(minSize);
 
-        // A splitpane is used
         mySplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         if (GanttLanguage.getInstance().getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
             mySplitPane.setLeftComponent(left);
@@ -62,16 +81,13 @@ abstract class ChartTabContentPanel {
         } else {
             mySplitPane.setRightComponent(left);
             mySplitPane.setLeftComponent(right);
-            mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left
-                    .getPreferredSize().getWidth()));
+            mySplitPane.setDividerLocation(
+                (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
             mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         }
         mySplitPane.setOneTouchExpandable(true);
-        mySplitPane.setPreferredSize(new Dimension(800, 500));
+        mySplitPane.resetToPreferredSizes();
         tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
-
-        tabContentPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(GPAction.getKeyStroke("overview.shortcut"), "overview");
-
         return tabContentPanel;
     }
 
@@ -99,11 +115,11 @@ abstract class ChartTabContentPanel {
         }
         result.add(panelsBox, BorderLayout.WEST);
         result.setBackground(new Color(0.93f, 0.93f, 0.93f));
-        
+
         return result;
     }
 
     protected void addChartPanel(Component panel) {
         myPanels.add(panel);
-    }    
+    }
 }

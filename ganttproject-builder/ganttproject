@@ -1,34 +1,75 @@
 #!/bin/bash
 
-# Change GP_HOME if you manually installed GanttProject somewhere else
-GP_HOME=/usr/share/ganttproject/
-cd ${GP_HOME}
+COMMAND_PATH=$(readlink -e "$0" | sed -e "s/\(.*\)\/.*$/\1/g")
+if [ ! -d $COMMAND_PATH ]; then
+  echo "Path '$COMMAND_PATH' does not exist"
+  exit 1
+fi
+GP_HOME=$(readlink -e "$COMMAND_PATH")
 
-LOCAL_CLASSPATH=$GP_HOME/eclipsito.jar
+# Expand all filenames in arguments
+argstring=""
+if [ $# -gt 0 ]; then
+  for arg in "$@"; do
+    if [ -z "$(echo "$arg" | sed -n '/^-/p')" ]; then
+      fullargpath=$(readlink -f "$arg")
+      if [ -n "$fullargpath" ]; then
+        argstring="$argstring '$fullargpath'"
+      else
+        echo "Warning file: '$1' not found; Forgot to escape or quote spaces?"
+      fi
+    else
+      argstring="$argstring $arg";
+    fi
+  done
+  # Update arguments with $argstring if set
+  if [ -n "$argstring" ]; then
+    eval "set -- $argstring"
+  fi
+fi
 
-CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
-BOOT_CLASS=org.bardsoftware.eclipsito.Boot
-LOG_FILE=$HOME/.ganttproject.log
+# Check if ~/.GanttProject/ is present (or create it)
+if [ ! -d ${HOME}/.GanttProject ]; then
+  if [ -e  ${HOME}/.GanttProject ]; then 
+    echo "file ${HOME}/.GanttProject is not a directory" >&2
+    exit 1
+  fi
+  if ! mkdir ${HOME}/.GanttProject ; then
+    echo "Could not create ${HOME}/.GanttProject directory" >&2
+    exit 1 
+  fi
+fi
 
-if [ -z $JAVA_HOME ]; then
-  JAVA_COMMAND=`which java`
-  if [ "$?" = "1" ]; then
-    echo "No executable java found. Please set JAVA_HOME variable";
-    exit;
+# Create unique name for log file
+LOG_FILE="${HOME}/.GanttProject/.ganttproject-"$(date +%Y%m%d%H%M%S)".log"
+if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
+  echo "Log file $LOG_FILE is not writable" >2
+  exit 1
+fi
+
+# Find usable java executable
+if [ -z "$JAVA_HOME" ]; then
+  JAVA_COMMAND=$(which java)
+  if [ "1" = "$?" ]; then
+    echo "No executable java found. Please set JAVA_HOME variable" >&2
+    exit 1
   fi
 else
   JAVA_COMMAND=$JAVA_HOME/bin/java
 fi
-if [ ! -x $JAVA_COMMAND ]; then
-  echo "$JAVA_COMMAND is not executable. Please check the permissions."
-  exit
+if [ ! -x "$JAVA_COMMAND" ]; then
+  echo "$JAVA_COMMAND is not executable. Please check the permissions." >&2
+  exit 1
 fi
 
-if [ -e $LOG_FILE ] && [ ! -w $LOG_FILE ]; then
-  echo "Log file $LOG_FILE is not writable"
-  exit
+LOCAL_CLASSPATH=${GP_HOME}/eclipsito.jar:${GP_HOME}:${COMMAND_PATH}:${GP_HOME}/plugins:${COMMAND_PATH}/plugins
+CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
+BOOT_CLASS=org.bardsoftware.eclipsito.Boot
+
+cd $COMMAND_PATH
+if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then 
+  $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@"
+else
+  exec $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@" &
 fi
-
-$JAVA_COMMAND -Xmx512m -classpath $CLASSPATH:$LOCAL_CLASSPATH -ea $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@" 
-
 

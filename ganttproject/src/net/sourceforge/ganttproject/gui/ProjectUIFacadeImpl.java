@@ -3,13 +3,26 @@
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
+import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
+import org.eclipse.core.runtime.IStatus;
+
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.HttpDocument;
@@ -30,30 +43,76 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         myDocumentManager =documentManager;
         myUndoManager = undoManager;
     }
+
     public void saveProject(IGanttProject project) {
         if (project.getDocument() == null) {
             saveProjectAs(project);
             return;
         }
         Document document = project.getDocument();
-        if (!document.canWrite()) {
-            myWorkbenchFacade.showErrorDialog(i18n.getText("msg10"));
-            saveProjectAs(project);
+        if (!saveProjectTryWrite(project, document)) {
             return;
-        }
-        if (!document.acquireLock()) {
-            myWorkbenchFacade.showErrorDialog(i18n.getText("msg14"));
-            saveProjectAs(project);
-            return;
-        }
-        try {
-            saveProject(project.getDocument());
-            afterSaveProject(project);
-        } catch (Throwable e) {
-            myWorkbenchFacade.showErrorDialog(e);
         }
     }
 
+    private boolean saveProjectTryWrite(final IGanttProject project, final Document document) {
+        IStatus canWrite = document.canWrite();
+        if (!canWrite.isOK()) {
+            GPLogger.getLogger(Document.class).log(Level.INFO, canWrite.getMessage(), canWrite.getException());
+            String message = formatWriteStatusMessage(document, canWrite);
+            List<Action> actions = new ArrayList<Action>();
+            actions.add(new GPAction("saveAsProject") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    saveProjectAs(project);
+                }
+            });
+            if (canWrite.getCode() == Document.ErrorCode.LOST_UPDATE.ordinal()) {
+                actions.add(new GPAction("document.overwrite") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        saveProjectTryLock(project, document);
+                    }
+                });
+            }
+            actions.add(new CancelAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            });
+            myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toArray(new Action[0]));
+
+            return false;
+        }
+        return saveProjectTryLock(project, document);
+    }
+
+    private boolean saveProjectTryLock(IGanttProject project, Document document) {
+        if (!document.acquireLock()) {
+            myWorkbenchFacade.showErrorDialog(i18n.getText("msg14"));
+            saveProjectAs(project);
+            return false;
+        }
+        return saveProjectTrySave(project, document);
+    }
+
+    private boolean saveProjectTrySave(IGanttProject project, Document document) {
+        try {
+            saveProject(document);
+            afterSaveProject(project);
+            return true;
+        } catch (Throwable e) {
+            myWorkbenchFacade.showErrorDialog(e);
+            return false;
+        }
+    }
+
+    private String formatWriteStatusMessage(Document doc, IStatus canWrite) {
+        assert canWrite.getCode() >= 0 && canWrite.getCode() < Document.ErrorCode.values().length;
+        Document.ErrorCode errorCode = Document.ErrorCode.values()[canWrite.getCode()];
+        String key = "document.error.write." + errorCode.name().toLowerCase();
+        return MessageFormat.format(i18n.getText(key), doc.getPath(), canWrite.getMessage());
+    }
     private void afterSaveProject(IGanttProject project) {
         Document document = project.getDocument();
         myDocumentManager.addToRecentDocuments(document);

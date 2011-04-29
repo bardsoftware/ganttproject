@@ -15,7 +15,9 @@
         <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jdnc-modifBen.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jdom-1.0.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-looks-1.2.2.jar"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-common-1.1.1.jar"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-looks-2.4.0.jar"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/trident.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/xml-im-exporter1.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/development/junit-3.8.1.jar"/>
     </path>
@@ -56,12 +58,12 @@
 <target name="copy-libs">
    <copy todir="${plugin.install.dir}">
       <fileset dir=".">
-      	<include name="plugin.xml"/>
-      	<include name="lib/**"/>
-      	<exclude name="lib/development/"/>
-      	<exclude name="lib/optional/"/>
-      	<exclude name="lib/core/eclipsito.jar"/>
-      	<include name="data/resources/**"/>
+        <include name="plugin.xml"/>
+        <include name="lib/**"/>
+        <exclude name="lib/development/"/>
+        <exclude name="lib/optional/"/>
+        <exclude name="lib/core/eclipsito.jar"/>
+        <include name="data/resources/**"/>
       </fileset>
    </copy>
    <copy todir="${install.dir}" file="lib/core/eclipsito.jar"/>
@@ -71,43 +73,43 @@
 </target>
 
 <target name="copy-src">
-	<mkdir dir="${install.dir}/ganttproject"/>
-  	<copy todir="${install.dir}/ganttproject">
-  		<fileset dir=".">
-  			<include name="src/**"/>
-  			<include name="test/**"/>
-   			<include name="lib/**"/>
-  			<include name="data/resources/**"/>
-  			<include name="AUTHORS"/>
-  			<include name="COPYING"/>
-  			<include name="README"/>
-  			<include name="build.xml"/>
-  			<include name="build-user.xml"/>
-  			<include name="build-user.properties"/>
-  			<include name="plugin.xml"/>
-  			<include name="webstart-plugin.xml"/>
-  			<include name=".project"/>
-  			<include name=".classpath"/>
-  			<include name="build.properties"/>
-  		</fileset>
-	</copy>
+  <mkdir dir="${install.dir}/ganttproject"/>
+    <copy todir="${install.dir}/ganttproject">
+      <fileset dir=".">
+        <include name="src/**"/>
+        <include name="test/**"/>
+         <include name="lib/**"/>
+        <include name="data/resources/**"/>
+        <include name="AUTHORS"/>
+        <include name="COPYING"/>
+        <include name="README"/>
+        <include name="build.xml"/>
+        <include name="build-user.xml"/>
+        <include name="build-user.properties"/>
+        <include name="plugin.xml"/>
+        <include name="webstart-plugin.xml"/>
+        <include name=".project"/>
+        <include name=".classpath"/>
+        <include name="build.properties"/>
+      </fileset>
+  </copy>
 </target>
 
 <target name="webstart">
-	<mkdir dir="${webstart.dir}/configuration/${plugin.name.versioned}"/>
-	<copy todir="${webstart.dir}/configuration/${plugin.name.versioned}/" file="webstart-plugin.xml"/>
-	<copy todir="${webstart.dir}" file="lib/core/eclipsito.jar"/>
-	<copy tofile="${webstart.dir}/ganttproject.gif" file="data/resources/logos/icon32.gif"/>
-	<jar destfile="${plugin.install.dir}/resources.jar">
-	  <fileset dir="${plugin.install.dir}/data/resources/" includes="**/*"/>
-	</jar>
-	<jar destfile="${webstart.dir}/${plugin.name.versioned}.jar">
-	  <fileset dir="${plugin.install.dir}">
-	    <include name="*.jar"/>
-	    <include name="lib/**"/>
-	  </fileset>
-	  <fileset dir="bin" includes="org/ganttproject/WebStartIDClass.class"/>
-	</jar>
-	<signjar jar="${webstart.dir}/eclipsito.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
-	<signjar jar="${webstart.dir}/${plugin.name.versioned}.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
+  <mkdir dir="${webstart.dir}/configuration/${plugin.name.versioned}"/>
+  <copy todir="${webstart.dir}/configuration/${plugin.name.versioned}/" file="webstart-plugin.xml"/>
+  <copy todir="${webstart.dir}" file="lib/core/eclipsito.jar"/>
+  <copy tofile="${webstart.dir}/ganttproject.gif" file="data/resources/logos/icon32.gif"/>
+  <jar destfile="${plugin.install.dir}/resources.jar">
+    <fileset dir="${plugin.install.dir}/data/resources/" includes="**/*"/>
+  </jar>
+  <jar destfile="${webstart.dir}/${plugin.name.versioned}.jar">
+    <fileset dir="${plugin.install.dir}">
+      <include name="*.jar"/>
+      <include name="lib/**"/>
+    </fileset>
+    <fileset dir="bin" includes="org/ganttproject/WebStartIDClass.class"/>
+  </jar>
+  <signjar jar="${webstart.dir}/eclipsito.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
+  <signjar jar="${webstart.dir}/${plugin.name.versioned}.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
 </target>

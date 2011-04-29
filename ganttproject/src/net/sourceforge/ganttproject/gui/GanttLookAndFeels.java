@@ -10,6 +10,8 @@ import java.util.Map;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import com.jgoodies.looks.LookUtils;
+
 /**
  * @author Michael Haeusler (michael at akatose.de) This singleton class stores
  *         info about the installed LookAndFeels.
@@ -23,12 +25,8 @@ public class GanttLookAndFeels {
     protected static GanttLookAndFeels singleton;
 
     static {
-        // static initializer:
-        // installing the bundled LookAndFeels to the javax.UIManager
-
-        // Plastic must be installed manually
-        UIManager.installLookAndFeel("Plastic",
-                "com.jgoodies.plaf.plastic.PlasticLookAndFeel");
+        UIManager.put("ClassLoader", LookUtils.class.getClassLoader());
+        UIManager.installLookAndFeel("Plastic", "com.jgoodies.looks.plastic.PlasticLookAndFeel");
     }
 
     protected GanttLookAndFeels() {

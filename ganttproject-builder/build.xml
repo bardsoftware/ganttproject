@@ -1,6 +1,6 @@
 <project name="GanttProject builder" default="build">
 	<property file="build.public.properties"/>
-    <property file="build.private.properties"/>
+	<property file="build.private.properties"/>
 
 	<target name="build_net.sourceforge.ganttproject">
 		<ant antfile="../ganttproject/build.xml" target="install" inheritall="false">
@@ -26,7 +26,28 @@
 			<property name="debug" value="${debug}"></property>
 		</ant>
 	</target>
-	
+
+	<target name="clean_net.sourceforge.ganttproject">
+		<ant antfile="../ganttproject/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_org.ganttproject.impex.htmlpdf">
+		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_biz.ganttproject.impex.msproject2">
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_org.ganttproject.chart.pert">
+		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+
 	<target name="welcome-message">
 		<echo>
 =======================================================
@@ -40,20 +61,19 @@
 	</target>
 	
 	<target name="copy-launchers">
-        <copy todir="${install.dir}">
-            <fileset dir=".">
-                <include name="ganttproject"/>
-            	<include name="install-linux.sh"/>
-                <include name="ganttproject.command"/>
-                <include name="ganttproject.bat"/>
-            	<include name="ganttproject_32_2.ico"/>
-                <include name="GanttProject.app/**"/>
-                <include name="HouseBuildingSample.gan"/>
-            </fileset>
-        </copy>
-        <jar destfile="${install.dir}/eclipsito.jar" update="true">
-            <fileset dir="." includes="ganttproject-eclipsito-config.xml"/>
-        </jar>
+		<copy todir="${install.dir}">
+			<fileset dir=".">
+				<include name="ganttproject"/>
+				<include name="README-install.txt"/>
+				<include name="ganttproject.bat"/>
+				<include name="ganttproject_32_2.ico"/>
+				<include name="GanttProject.app/**"/>
+				<include name="HouseBuildingSample.gan"/>
+			</fileset>
+		</copy>
+		<jar destfile="${install.dir}/eclipsito.jar" update="true">
+			<fileset dir="." includes="ganttproject-eclipsito-config.xml"/>
+		</jar>
 	</target>
 	<target name="build" depends="welcome-message,
 		build_net.sourceforge.ganttproject,
@@ -87,7 +107,6 @@
 				<include name="build.public.properties"/>
 				<include name="build.private.properties"/>
 				<include name="ganttproject.bat"/>
-				<include name="ganttproject"/>
 				<include name="install-linux.sh"/>
 				<include name="ganttproject.desktop"/>
 				<include name="ganttproject_32_2.ico"/>
@@ -205,5 +224,14 @@
 		</jar>
 		<signjar jar="${webstart.dir}/configuration.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
 		<delete dir="${webstart.dir}/configuration"/>
+	</target>
+	
+	<target name="clean" description="Removes all intermediate building files" depends="clean_net.sourceforge.ganttproject,
+		clean_org.ganttproject.impex.htmlpdf,
+		clean_biz.ganttproject.impex.msproject2,
+		clean_org.ganttproject.chart.pert">
+		<delete dir="bin"/>
+		<delete dir="dist-bin"/>
+		<delete dir="build-deb"/>
 	</target>
 </project>

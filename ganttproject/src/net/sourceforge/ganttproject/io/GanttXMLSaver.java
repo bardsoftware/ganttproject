@@ -22,9 +22,6 @@ import java.io.OutputStream;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
@@ -72,16 +69,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
         try {
             AttributesImpl attrs = new AttributesImpl();
             StreamResult result = new StreamResult(stream);
-            SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory
-                    .newInstance();
-            TransformerHandler handler = factory.newTransformerHandler();
-            Transformer serializer = handler.getTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-            serializer.setOutputProperty(
-                    "{http://xml.apache.org/xslt}indent-amount", "4");
-            handler.setResult(result);
+            TransformerHandler handler = createHandler(result);
             handler.startDocument();
             addAttribute("name", getProject().getProjectName(), attrs);
             addAttribute("company", getProject().getOrganization(), attrs);

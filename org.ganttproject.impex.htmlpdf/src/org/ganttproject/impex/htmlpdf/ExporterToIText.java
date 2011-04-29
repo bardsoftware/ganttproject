@@ -174,7 +174,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         Thread fontReadingThread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

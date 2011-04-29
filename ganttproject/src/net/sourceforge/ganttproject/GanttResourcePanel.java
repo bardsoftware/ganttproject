@@ -18,7 +18,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -26,10 +25,8 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -56,6 +53,7 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public class GanttResourcePanel extends JPanel implements ResourceView,
@@ -108,12 +106,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         public void actionPerformed(ActionEvent e) {
             DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
             if (selectedNodes.length!=1) {
-                Mediator.getGanttProjectSingleton().getUndoManager()
-                .undoableEdit("New Human Resource by click", new Runnable() {
-                    public void run() {
-                        Mediator.getGanttProjectSingleton().newHumanResource();
-                    }
-                });
                 return;
             }
             if (selectedNodes[0] instanceof ResourceNode) {
@@ -121,8 +113,8 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
             else if (selectedNodes[0] instanceof AssignmentNode) {
                 AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
-                Mediator.getTaskSelectionManager().clear();
-                Mediator.getTaskSelectionManager().addTask(assignmentNode.getTask());
+                getTaskSelectionManager().clear();
+                getTaskSelectionManager().addTask(assignmentNode.getTask());
                 getTaskPropertiesAction().actionPerformed(null);
             }
         }
@@ -130,6 +122,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             return "";
         }
     };
+
+    private Action myNewArtifactAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            appli.newHumanResource();
+        }
+    };
+
     private final ListSelectionListener myContextListener;
 
     private final ResourcePropertiesAction myResourcePropertiesAction;
@@ -142,6 +141,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     public GanttResourcePanel(final GanttProject prj, GanttTree2 tree, UIFacade uiFacade) {
         super(new BorderLayout());
+        myResourcePropertiesAction = new ResourcePropertiesAction(prj.getProject(), uiFacade);
         myUIFacade = uiFacade;
         myDeleteAssignmentAction = new DeleteAssignmentAction(this, prj);
 
@@ -149,6 +149,8 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager());
         table = new ResourceTreeTable(appli.getProject(), model, uiFacade);
+        table.setupActionMaps(myMoveUpAction, myMoveDownAction, null, null, myNewArtifactAction,
+            appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myPropertiesAction, myDeleteAssignmentAction);
         table.setRowHeight(20);
         table.setBackground(new Color(1.0f, 1.0f, 1.0f));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -193,22 +195,10 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                 }
             }
         };
-        table.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), "properties");
-        table.getActionMap().put("properties", myPropertiesAction);
-        table.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
-        table.getActionMap().put("delete", myDeleteAssignmentAction);
-        table.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(GPAction.getKeyStroke("newArtifact.shortcut")
-                , "newHuman");
-        table.getActionMap().put("newHuman", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                prj.newHumanResource();
-            }
-        });
         if (!prj.isOnlyViewer) {
             table.addMouseListener(ml);
             table.getTreeTable().getParent().addMouseListener(ml);
         }
-        myResourcePropertiesAction = new ResourcePropertiesAction(prj.getProject(), prj.getUIFacade());
         myContextListener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 myResourcePropertiesAction.setContext(getContext());
@@ -223,20 +213,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         table.getTable().getSelectionModel().addListSelectionListener(myContextListener);
     }
 
-    public void setActions()
-    {
-        table.setAction(appli.getCopyAction());
-        table.setAction(appli.getPasteAction());
-        table.setAction(appli.getCutAction());
-    }
-
     private void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton()==MouseEvent.BUTTON3) {
             DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
             if (selectedNodes.length==1 && selectedNodes[0] instanceof AssignmentNode) {
                 AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
-                Mediator.getTaskSelectionManager().clear();
-                Mediator.getTaskSelectionManager().addTask(assignmentNode.getTask());
+                getTaskSelectionManager().clear();
+                getTaskSelectionManager().addTask(assignmentNode.getTask());
                 Point popupPoint = getPopupMenuPoint(e);
                 getUIFacade().showPopupMenu(this, new Action[] {getTaskPropertiesAction(), myDeleteAssignmentAction}, popupPoint.x, popupPoint.y);
             }
@@ -327,13 +310,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
         }
 
-    	HumanResource[] res = new HumanResource[nbHumanResource];
-		for (int i = 0; i < nbHumanResource; i++) {
-			if (tNodes[i] instanceof ResourceNode) {
-				res[i] = (HumanResource) ((ResourceNode) tNodes[i])
-						.getUserObject();
-			}
-		}
+        HumanResource[] res = new HumanResource[nbHumanResource];
+        for (int i = 0; i < nbHumanResource; i++) {
+            if (tNodes[i] instanceof ResourceNode) {
+                res[i] = (HumanResource) ((ResourceNode) tNodes[i])
+                        .getUserObject();
+            }
+        }
         return res;
     }
 
@@ -505,18 +488,18 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
         this.clipboard = new HumanResource[count];
 
-		int index = 0;
-		for (int i = 0; i < selectedNodes.length; i++) {
-			if (selectedNodes[i] instanceof ResourceNode) {
-				ResourceNode rn = (ResourceNode) selectedNodes[i];
+        int index = 0;
+        for (int i = 0; i < selectedNodes.length; i++) {
+            if (selectedNodes[i] instanceof ResourceNode) {
+                ResourceNode rn = (ResourceNode) selectedNodes[i];
 
-				this.clipboard[index] = (HumanResource) rn.getUserObject();
-				if (cut) {
-					this.appli.getHumanResourceManager().remove(
-							this.clipboard[index], this.appli.getUndoManager());
-				}
-				index++;
-			}
+                this.clipboard[index] = (HumanResource) rn.getUserObject();
+                if (cut) {
+                    this.appli.getHumanResourceManager().remove(
+                            this.clipboard[index], this.appli.getUndoManager());
+                }
+                index++;
+            }
         }
     }
 
@@ -546,6 +529,10 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private UIFacade getUIFacade() {
         return myUIFacade;
+    }
+
+    private TaskSelectionManager getTaskSelectionManager() {
+        return getUIFacade().getTaskSelectionManager();
     }
 
     public TableHeaderUIFacade getVisibleFields() {
