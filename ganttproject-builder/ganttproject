@@ -1,11 +1,11 @@
 #!/bin/bash
 
-COMMAND_PATH=$(readlink -e $0 | sed -e "s/\(.*\)\/.*$/\1/g")
+COMMAND_PATH=$(readlink -e "$0" | sed -e "s/\(.*\)\/.*$/\1/g")
 if [ ! -d $COMMAND_PATH ]; then
   echo "Path '$COMMAND_PATH' does not exist"
   exit 1
 fi
-GP_HOME=$(readlink -e $COMMAND_PATH)
+GP_HOME=$(readlink -e "$COMMAND_PATH")
 
 # Expand all filenames in arguments
 argstring=""
@@ -13,13 +13,19 @@ if [ $# -gt 0 ]; then
   for arg in "$@"; do
     if [ -z "$(echo "$arg" | sed -n '/^-/p')" ]; then
       fullargpath=$(readlink -f "$arg")
-      argstring="$argstring '$fullargpath'"
+      if [ -n "$fullargpath" ]; then
+        argstring="$argstring '$fullargpath'"
+      else
+        echo "Warning file: '$1' not found; Forgot to escape or quote spaces?"
+      fi
     else
       argstring="$argstring $arg";
     fi
   done
-  # Update arguments with $argstring
-  eval "set -- $argstring"
+  # Update arguments with $argstring if set
+  if [ -n "$argstring" ]; then
+    eval "set -- $argstring"
+  fi
 fi
 
 # Check if ~/.GanttProject/ is present (or create it)
