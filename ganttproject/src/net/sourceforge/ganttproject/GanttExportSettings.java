@@ -12,10 +12,14 @@ public class GanttExportSettings {
     private Date endDate = null;
 
     public boolean name, percent, depend, border3d, ok;
-    
+
     private boolean onlySelectedItems;
 
     private List<Task> myVisibleTasks;
+
+    private int myRowCount;
+
+    private int myWidth = -1;
 
     public GanttExportSettings() {
         name = percent = depend = ok = true;
@@ -31,11 +35,11 @@ public class GanttExportSettings {
         ok = true;
         onlySelectedItems = false;
     }
-    
+
     public void setOnlySelectedItem(boolean selected){
         onlySelectedItems = selected;
     }
-    
+
     public boolean isOnlySelectedItem(){
         return onlySelectedItems;
     }
@@ -58,9 +62,28 @@ public class GanttExportSettings {
 
     public void setVisibleTasks(List<Task> visibleTasks) {
         myVisibleTasks = visibleTasks;
+        if (visibleTasks != null) {
+            myRowCount = visibleTasks.size();
+        }
     }
-    
+
     public List<Task> getVisibleTasks() {
         return myVisibleTasks;
+    }
+
+    public int getRowCount() {
+        return myRowCount;
+    }
+
+    public void setRowCount(int rowCount) {
+        myRowCount = rowCount;
+    }
+
+    public int getWidth() {
+        return myWidth;
+    }
+
+    public void setWidth(int width) {
+        myWidth = width;
     }
 }

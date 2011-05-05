@@ -374,9 +374,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
         Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
 
-        if (dateStart.after(dateEnd)) {
-            Date tmp = (Date) dateStart.clone();
-            dateStart = (Date) dateEnd.clone();
+        if (dateEnd != null && dateStart.after(dateEnd)) {
+            Date tmp = dateStart;
+            dateStart = dateEnd;
             dateEnd = tmp;
         }
         settings.setStartDate(dateStart);
