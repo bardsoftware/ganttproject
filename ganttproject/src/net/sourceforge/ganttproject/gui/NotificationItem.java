@@ -9,8 +9,8 @@ public class NotificationItem {
     boolean isRead;
 
     public NotificationItem(String title, String body, HyperlinkListener hyperlinkListener) {
-        myTitle = title;
-        myBody = body;
+        myTitle = title == null ? "" : title;
+        myBody = body == null ? "" : body;
         myHyperlinkListener = hyperlinkListener;
     }
 
