@@ -381,6 +381,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         }
         settings.setStartDate(dateStart);
         settings.setEndDate(dateEnd);
+        getChartModel().setBounds(getSize());
+        if (getChartModel().getEndDate() == null) {
+            // We have never painted the chart yet
+            settings.setWidth(getSize().width);
+        }
         return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, treeTable);
     }
 }

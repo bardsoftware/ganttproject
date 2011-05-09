@@ -1473,7 +1473,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** The main */
-    public static void main(String[] arg) {
+    public static boolean main(String[] arg) {
         URL logConfig = GanttProject.class.getResource("/logging.properties");
         if (logConfig != null) {
             try {
@@ -1531,7 +1531,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
-        if (false == cmdlineApplication.export(parsedArgs)) {
+        if (cmdlineApplication.export(parsedArgs)) {
+            return false;
+        } else {
             GanttSplash splash = new GanttSplash();
             try {
                 splash.setVisible(true);
@@ -1554,9 +1556,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     OSXAdapter.registerMacOSXApplication(ganttFrame);
                 }
                 ganttFrame.getActiveChart().reset();
+                return true;
             } catch (Throwable e) {
                 e.printStackTrace();
-                return;
+                return false;
             } finally {
                 splash.close();
                 System.err.println("Splash closed");
