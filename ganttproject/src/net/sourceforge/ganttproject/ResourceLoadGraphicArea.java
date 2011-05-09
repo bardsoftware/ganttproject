@@ -101,11 +101,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         settings.setRowCount(getResourceManager().getResources().size());
-        getChartModel().setBounds(getSize());
-        if (getChartModel().getEndDate() == null) {
-            // We have never painted the chart yet
-            settings.setWidth(getSize().width);
-        }
         return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
     }
 
