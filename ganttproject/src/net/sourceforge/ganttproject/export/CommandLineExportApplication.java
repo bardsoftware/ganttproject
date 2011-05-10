@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.Mediator;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 
 import org.eclipse.core.runtime.jobs.Job;
 
@@ -19,8 +19,8 @@ public class CommandLineExportApplication {
     private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
 
     public CommandLineExportApplication() {
-        for (Exporter next : Mediator.getPluginManager().getExporters()) {
-            List<String> nextExtensions = Arrays.asList(next.getFileExtensions());
+        for (Exporter next : PluginManager.getExporters()) {
+            List<String> nextExtensions = Arrays.asList(next.getCommandLineKeys());
             for (int j=0; j<nextExtensions.size(); j++) {
                 myFlag2exporter.put("-" + nextExtensions.get(j), next);
             }

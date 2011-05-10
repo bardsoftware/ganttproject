@@ -133,6 +133,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return result;
     }
 
+    public String[] getCommandLineKeys() {
+        return new String[] {"itext"};
+    }
+
     private Component createFontPanel() {
         return new FontSubstitutionPanel(mySubstitutionModel).getComponent();
     }

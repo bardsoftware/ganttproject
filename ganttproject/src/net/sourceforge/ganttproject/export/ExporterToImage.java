@@ -134,4 +134,7 @@ public class ExporterToImage implements Exporter {
         return FileTypeOption.FILE_EXTENSION;
     }
 
+    public String[] getCommandLineKeys() {
+        return getFileExtensions();
+    }
 }

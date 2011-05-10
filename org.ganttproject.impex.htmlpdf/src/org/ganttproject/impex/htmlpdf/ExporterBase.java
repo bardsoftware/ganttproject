@@ -79,6 +79,7 @@ abstract class ExporterBase {
         return stylesheetOption;
     }
 
+    public abstract String[] getFileExtensions();
     protected abstract void setSelectedStylesheet(Stylesheet stylesheet);
     protected abstract Stylesheet[] getStylesheets();
     protected abstract String getStylesheetOptionID();
@@ -96,6 +97,10 @@ abstract class ExporterBase {
 
     public Component getCustomOptionsUI() {
         return null;
+    }
+
+    public String[] getCommandLineKeys() {
+        return getFileExtensions();
     }
 
     public void run(final File outputFile,
