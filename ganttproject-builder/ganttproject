@@ -1,10 +1,12 @@
 #!/bin/bash
 
-RESOLVED_PATH=`readlink "$0"`
-if [ -z $RESOLVED_PATH ]; then
-  RESOLVED_PATH=$0
-fi
-GP_HOME=`dirname "$RESOLVED_PATH"`
+SCRIPT_PATH=$0
+RESOLVED_PATH=`readlink "$SCRIPT_PATH"`
+while [ ! -z $RESOLVED_PATH ]; do
+  SCRIPT_PATH=$RESOLVED_PATH
+  RESOLVED_PATH=`readlink "$SCRIPT_PATH"`
+done
+GP_HOME=`dirname "$SCRIPT_PATH"`
 
 
 GP_LOG_DIR="$HOME/.ganttproject.d"
