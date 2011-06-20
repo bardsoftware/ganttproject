@@ -11,22 +11,17 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.osgi.service.prefs.Preferences;
-
 /**
  * @author bard
  */
-public class ExporterToImage implements Exporter {
+public class ExporterToImage extends AbstractExporter {
 
     static class FileTypeOption extends GPAbstractOption<String> implements
             EnumerationOption {
@@ -77,8 +72,6 @@ public class ExporterToImage implements Exporter {
         }
     }
 
-    private UIFacade myUIFacade;
-
     private final FileTypeOption myFileTypeOption = new FileTypeOption();
 
     private final GPOptionGroup myOptions = new GPOptionGroup("impex.image",
@@ -111,16 +104,12 @@ public class ExporterToImage implements Exporter {
         return proposeFileExtension();
     }
 
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-        myUIFacade = uiFacade;
-    }
-
     public void run(File outputFile,ExportFinalizationJob finalizationJob) throws Exception {
-        Chart chart = myUIFacade.getActiveChart();
+        Chart chart = getUIFacade().getActiveChart();
         if (chart==null) {
-            chart = myUIFacade.getGanttChart();
+            chart = getGanttChart();
         }
-        RenderedImage renderedImage = chart.getRenderedImage(new GanttExportSettings());
+        RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
         ImageIO.write(renderedImage, myFileTypeOption.proposeFileExtension(),
                 outputFile);
         finalizationJob.run(new File[] { outputFile });

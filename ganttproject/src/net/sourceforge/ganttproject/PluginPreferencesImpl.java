@@ -82,7 +82,7 @@ public class PluginPreferencesImpl implements Preferences {
 
     public String get(String key, String def) {
         String value = myProps.get(key);
-        return value==null ? def : value; 
+        return value==null ? def : value;
     }
 
     public boolean getBoolean(String key, boolean def) {
@@ -105,8 +105,15 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public int getInt(String key, int def) {
-        // TODO Auto-generated method stub
-        return 0;
+        String value = get(key, null);
+        if (value == null) {
+            return def;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return def;
+        }
     }
 
     public long getLong(String key, long def) {
@@ -151,7 +158,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public void putInt(String key, int value) {
-        // TODO Auto-generated method stub
+        put(key, String.valueOf(value));
     }
 
     public void putLong(String key, long value) {

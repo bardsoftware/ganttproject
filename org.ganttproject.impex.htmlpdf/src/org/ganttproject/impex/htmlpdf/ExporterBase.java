@@ -19,9 +19,11 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.ExportFinalizationJob;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -31,6 +33,7 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -50,14 +53,9 @@ import org.osgi.service.prefs.Preferences;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-abstract class ExporterBase {
-    private IGanttProject myProject;
-    private Chart myGanttChart;
+abstract class ExporterBase extends AbstractExporter {
     private GPOptionGroup myOptions;
-    private Chart myResourceChart;
     private SAXTransformerFactory myFactory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
-    private UIFacade myUIFacade;
-    private Preferences myRootPreferences;
 
     protected EnumerationOption createStylesheetOption(String optionID, final Stylesheet[] stylesheets) {
         String[] names = new String[stylesheets.length];
@@ -158,7 +156,7 @@ abstract class ExporterBase {
                     try {
                         jobs[i].join();
                     } catch (InterruptedException e) {
-                        myUIFacade.showErrorDialog(e);
+                        getUIFacade().showErrorDialog(e);
                     }
                 }
                 Job finishing = new Job("finishing") {
@@ -173,7 +171,7 @@ abstract class ExporterBase {
                 try {
                     finishing.join();
                 } catch (InterruptedException e) {
-                    myUIFacade.showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -184,40 +182,12 @@ abstract class ExporterBase {
 
     protected abstract Job[] createJobs(File outputFile, List<File> resultFiles);
 
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-        myGanttChart= uiFacade.getGanttChart();
-        myResourceChart = uiFacade.getResourceChart();
-        myProject = project;
-        myUIFacade = uiFacade;
-        myRootPreferences = prefs;
-    }
-
-    protected UIFacade getUIFacade() {
-        return myUIFacade;
-    }
-
-    protected IGanttProject getProject() {
-        return myProject;
-    }
-
-    protected Preferences getPreferences() {
-        return myRootPreferences;
-    }
-
     protected CustomColumnsStorage getCustomColumnStorage() {
         return getProject().getCustomColumnsStorage();
     }
 
-    protected Chart getGanttChart() {
-        return myGanttChart;
-    }
-
     public GPOptionGroup getOptions() {
         return myOptions;
-    }
-
-    protected Chart getResourceChart() {
-        return myResourceChart;
     }
 
     protected void startElement(String name, AttributesImpl attrs,
@@ -285,7 +255,7 @@ abstract class ExporterBase {
             return result;
 
         } catch (TransformerConfigurationException e) {
-            myUIFacade.showErrorDialog(e);
+            getUIFacade().showErrorDialog(e);
             throw new RuntimeException(e);
         }
     }

@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 import net.sourceforge.ganttproject.task.Task;
 
 /** Class to store 3 boolean values */
@@ -20,6 +21,8 @@ public class GanttExportSettings {
     private int myRowCount;
 
     private int myWidth = -1;
+
+    private ZoomState myZoomLevel;
 
     public GanttExportSettings() {
         name = percent = depend = ok = true;
@@ -85,5 +88,13 @@ public class GanttExportSettings {
 
     public void setWidth(int width) {
         myWidth = width;
+    }
+
+    public void setZoomLevel(ZoomState zoomLevel) {
+        myZoomLevel = zoomLevel;
+    }
+
+    public ZoomState getZoomLevel() {
+        return myZoomLevel;
     }
 }
