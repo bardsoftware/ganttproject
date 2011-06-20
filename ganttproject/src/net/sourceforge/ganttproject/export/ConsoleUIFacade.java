@@ -31,8 +31,7 @@ public class ConsoleUIFacade implements UIFacade {
     }
 
     public ZoomManager getZoomManager() {
-        // TODO Auto-generated method stub
-        return null;
+        return myRealFacade.getZoomManager();
     }
 
     public Choice showConfirmationDialog(String message, String title) {

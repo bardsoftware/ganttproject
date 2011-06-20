@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.PluginPreferencesImpl;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.service.prefs.Preferences;
+import org.w3c.util.DateParser;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
@@ -75,7 +78,12 @@ public class CommandLineExportApplication {
             ?  FileChooserPage.proposeOutputFile(project, exporter) : myArgs.outputFile;
 
         System.err.println("[CommandLineExportApplication] export(): exporting with "+exporter);
-        exporter.setContext(project, consoleUI, null);
+        Preferences prefs = new PluginPreferencesImpl(null, "");
+        prefs.putInt("zoom", myArgs.zooming);
+        prefs.put("exportRange",
+            DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
+            + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
+        exporter.setContext(project, consoleUI, prefs);
         if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
             ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());
         }

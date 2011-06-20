@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.OffsetBuilder;
+import net.sourceforge.ganttproject.chart.OffsetBuilder.Factory;
 import net.sourceforge.ganttproject.chart.OffsetList;
 
 public class ChartImageBuilder {
@@ -56,17 +57,23 @@ public class ChartImageBuilder {
             treeTable.printAll(g);
         }
 
-        OffsetBuilder offsetBuilder = myChartModel.createOffsetBuilderFactory()
+        ChartModelBase modelCopy = myChartModel.createCopy();
+        if (settings.getZoomLevel() != null) {
+            modelCopy.setBottomTimeUnit(settings.getZoomLevel().getTimeUnitPair().getBottomTimeUnit());
+            modelCopy.setTopTimeUnit(settings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
+            modelCopy.setBottomUnitWidth(settings.getZoomLevel().getBottomUnitWidth());
+        }
+        OffsetBuilder.Factory factory = modelCopy.createOffsetBuilderFactory()
             .withStartDate(settings.getStartDate())
             .withEndDate(settings.getEndDate())
-            .withEndOffset(settings.getWidth() < 0 ? Integer.MAX_VALUE : settings.getWidth())
-            .build();
+            .withEndOffset(settings.getWidth() < 0 ? Integer.MAX_VALUE : settings.getWidth());
+
+        OffsetBuilder offsetBuilder = factory.build();
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
         int chartWidth = bottomOffsets.getEndPx();
         int chartHeight = wholeImageHeight;
 
-        ChartModelBase modelCopy = myChartModel.createCopy();
         modelCopy.setHeaderHeight(headerHeight + treeTable.getTable().getTableHeader().getHeight());
         modelCopy.setVisibleTasks(settings.getVisibleTasks());
 

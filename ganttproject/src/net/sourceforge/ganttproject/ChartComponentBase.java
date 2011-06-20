@@ -371,21 +371,17 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     protected RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        Date dateStart = settings.getStartDate() == null ? getStartDate() : settings.getStartDate();
-        Date dateEnd = settings.getEndDate() == null ? getEndDate() : settings.getEndDate();
-
-        if (dateEnd != null && dateStart.after(dateEnd)) {
-            Date tmp = dateStart;
-            dateStart = dateEnd;
-            dateEnd = tmp;
+        if (settings.getStartDate() == null) {
+            settings.setStartDate(getStartDate());
         }
-        settings.setStartDate(dateStart);
-        settings.setEndDate(dateEnd);
+        if (settings.getEndDate() == null) {
+            settings.setEndDate(getEndDate());
+            if (getChartModel().getEndDate() == null) {
+                // We have never painted the chart yet
+                settings.setWidth(getSize().width);
+            }
+        }
         getChartModel().setBounds(getSize());
-        if (getChartModel().getEndDate() == null) {
-            // We have never painted the chart yet
-            settings.setWidth(getSize().width);
-        }
         return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, treeTable);
     }
 }

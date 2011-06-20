@@ -474,6 +474,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         copy.setBottomUnitWidth(getBottomUnitWidth());
         copy.setStartDate(getStartDate());
         copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
+        copy.setBounds(getBounds());
         GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
         GPOptionGroup[] thisOptions = getChartOptionGroups();
         assert copyOptions.length == thisOptions.length;
