@@ -31,8 +31,10 @@ class NotificationComponent implements NotificationChannel.Listener {
     private final Set<NotificationItem> myNotifications = new HashSet<NotificationItem>();
     private final NotificationChannel myChannel;
     private Action myClearAction;
+    private final NotificationSlider mySlider;
 
-    NotificationComponent(NotificationChannel channel) {
+    NotificationComponent(NotificationChannel channel, NotificationSlider slider) {
+        mySlider = slider;
         myComponent = new JPanel(new CardLayout());
         List<Action> actions = new ArrayList<Action>();
         myBackwardAction = createBackwardAction();
@@ -99,6 +101,7 @@ class NotificationComponent implements NotificationChannel.Listener {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 myChannel.clear();
+                mySlider.hide();
             }
         };
     }
