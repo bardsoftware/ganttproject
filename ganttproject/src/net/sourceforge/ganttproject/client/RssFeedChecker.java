@@ -77,17 +77,25 @@ public class RssFeedChecker {
                 }
                 if ("yes".equals(e.getURL().getHost())) {
                     onYes();
+                    getNotificationManager().hideNotification();
                 } else if ("no".equals(e.getURL().getHost())) {
                     onNo();
+                    getNotificationManager().hideNotification();
                 } else {
                     NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+                    getNotificationManager().hideNotification();
                 }
             }
         });
+
     public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
         myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
         myUiFacade = uiFacade;
         myTimeUnitStack = timeUnitStack;
+    }
+
+    private NotificationManager getNotificationManager() {
+        return myUiFacade.getNotificationManager();
     }
 
     public GPOptionGroup getOptions() {
@@ -160,7 +168,7 @@ public class RssFeedChecker {
             private void processResponse(InputStream responseStream) {
                 RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
                 for (RssFeed.Item item : feed.getItems()) {
-                    myUiFacade.getNotificationManager().addNotification(
+                    getNotificationManager().addNotification(
                         NotificationChannel.RSS,
                         new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
                 }
@@ -173,7 +181,7 @@ public class RssFeedChecker {
         return new Runnable() {
             @Override
             public void run() {
-                myUiFacade.getNotificationManager().addNotification(NotificationChannel.RSS, myRssProposalNotification);
+                getNotificationManager().addNotification(NotificationChannel.RSS, myRssProposalNotification);
             }
         };
     }
