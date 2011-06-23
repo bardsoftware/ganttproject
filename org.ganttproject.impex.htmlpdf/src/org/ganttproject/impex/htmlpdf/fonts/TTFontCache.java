@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+
+import org.ganttproject.impex.htmlpdf.ExporterToIText;
 
 import net.sourceforge.ganttproject.GPLogger;
 
@@ -34,7 +37,7 @@ import com.lowagie.text.FontFactory;
 
 /**
  * This class collects True Type fonts from .ttf files in the registered directories
- * and provides mappings of font family names to plain AWT fonts and iText fonts. 
+ * and provides mappings of font family names to plain AWT fonts and iText fonts.
  * @author dbarashev
  */
 public class TTFontCache {
@@ -46,7 +49,7 @@ public class TTFontCache {
         if (dir.exists() && dir.isDirectory()) {
             registerFonts(dir);
         } else {
-            GPLogger.log("directory "+path+" is not readable");            
+            GPLogger.log("directory "+path+" is not readable");
         }
     }
 
@@ -57,30 +60,31 @@ public class TTFontCache {
     public Font getAwtFont(String family) {
         return (Font) myMap_Family_RegularFont.get(family);
     }
-    
+
     private void registerFonts(File dir) {
         boolean runningUnderJava6;
         try {
             Font.class.getMethod("createFont", new Class[] {Integer.TYPE, File.class});
             runningUnderJava6 = true;
         } catch (SecurityException e) {
-            runningUnderJava6 = false;            
+            runningUnderJava6 = false;
         } catch (NoSuchMethodException e) {
             runningUnderJava6 = false;
         }
         final File[] files = dir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
-                registerFonts(files[i]);
+        for (File f : files) {
+            if (f.isDirectory()) {
+                registerFonts(f);
                 continue;
             }
-            if (!files[i].getName().toLowerCase().trim().endsWith(".ttf")) {
+            if (!f.getName().toLowerCase().trim().endsWith(".ttf")) {
                 continue;
             }
             try {
-                registerFontFile(files[i], runningUnderJava6);
+                registerFontFile(f, runningUnderJava6);
             } catch (Throwable e) {
-                GPLogger.log(e);
+                GPLogger.getLogger(ExporterToIText.class).log(
+                    Level.INFO, "Failed to register font from " + f.getAbsolutePath(), e);
             }
        }
     }
@@ -90,18 +94,18 @@ public class TTFontCache {
         Font awtFont = runningUnderJava6 ?
             Font.createFont(Font.TRUETYPE_FONT, fontFile) :
             Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fontFile));
-                
+
         final String family = awtFont.getFamily().toLowerCase();
         if (myMap_Family_RegularFont.containsKey(family)) {
             return;
         }
-                
+
         // We will put a font to the mapping only if it is a plain font.
-        final com.lowagie.text.Font itextFont = FontFactory.getFont(family, 12f, com.lowagie.text.Font.NORMAL);                
+        final com.lowagie.text.Font itextFont = FontFactory.getFont(family, 12f, com.lowagie.text.Font.NORMAL);
         if (itextFont == null || itextFont.getBaseFont() == null) {
             return;
         }
-                
+
         GPLogger.log("registering font: " + family);
         myMap_Family_RegularFont.put(family, awtFont);
     }
