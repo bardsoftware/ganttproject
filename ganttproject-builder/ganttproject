@@ -49,8 +49,8 @@ CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
-  $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@"
+  $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE "$@"
 else
-  exec $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log $LOG_FILE "$@" &
+  exec $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE "$@" &
 fi
 
