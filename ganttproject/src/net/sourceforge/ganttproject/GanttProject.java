@@ -1436,8 +1436,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public static class Args {
-        @Parameter(names = "-log", description = "Log file name")
-        public String logFile = null;
+        @Parameter(names = "-log", description = "Enable logging")
+        public boolean log = true;
+
+        @Parameter(names = "-log_file", description = "Log file name")
+        public String logFile = "";
 
         @Parameter(names = {"-h", "-help"}, description = "Print usage")
         public boolean help = false;
@@ -1470,7 +1473,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             e.printStackTrace();
             return false;
         }
-        if (mainArgs.logFile != null) {
+        if (mainArgs.log) {
             try {
                 String logFileName = mainArgs.logFile.isEmpty()
                     ? System.getProperty("user.home") + "/.ganttproject.log" : mainArgs.logFile;
