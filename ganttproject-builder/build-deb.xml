@@ -1,5 +1,6 @@
 <project name="JavaDeb Task" basedir="." default="release-dist">
 
+    <property name="package.name" value="ganttproject-praha-beta1"/>
 
 	<path id="class.path">
 		<pathelement location="build-deb/classes"/>
@@ -66,7 +67,7 @@
           public target: release-dist
          ================================= -->
 	<target name="release-dist" depends="dist" description="Release all distribution files">
-		<input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="0.0.1" />
+		<input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="522" />
 		<antcall target="createdeb-minimal" />
 		<antcall target="createdeb-plugins" />
 		<antcall target="createdeb-meta" />
@@ -84,7 +85,6 @@
          - - - - - - - - - - - - - - - - - -->
     <target name="createdeb-meta" depends="define_tasks">
         <description>Create a debian meta package for GanttProject depending on minimal and plugins</description>
-        <property name="package.name" value="ganttproject"/>
         <deb
             todir="dist-bin"
             package="${package.name}"
@@ -92,7 +92,7 @@
             homepage="http://ganttproject.biz/"
             section="editors"
             priority="optional"
-            depends="ganttproject-minimal (= ${dist.version.number}-1), ganttproject-plugins (= ${dist.version.number}-1)"
+            depends="${package.name}-minimal (= ${dist.version.number}-1), ${package.name}-plugins (= ${dist.version.number}-1)"
         >
             <version upstream="${dist.version.number}"/>
             <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
@@ -119,7 +119,6 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="createdeb-minimal" depends="define_tasks">
 		<description>Create a debian package of the GanttProject (without plugins)</description>
-		<property name="package.name" value="ganttproject"/>
 		<deb
             todir="dist-bin"
             package="${package.name}-minimal"
@@ -172,7 +171,6 @@
          - - - - - - - - - - - - - - - - - -->
 	<target name="createdeb-plugins" depends="define_tasks">
 		<description>Create a debian package of the GanttProject plugins (depending on minimal)</description>
-		<property name="package.name" value="ganttproject"/>
 		<deb
             todir="dist-bin"
             package="${package.name}-plugins"
@@ -180,7 +178,7 @@
             homepage="http://ganttproject.biz/"
             section="editors"
             priority="optional"
-            depends="ganttproject-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre"
+            depends="${package.name}-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre"
         >
 			<version upstream="${dist.version.number}"/>
 			<maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>

@@ -65,7 +65,10 @@
 			<fileset dir=".">
 				<include name="ganttproject"/>
 				<include name="README-install.txt"/>
+				<include name="LICENSE"/>
 				<include name="ganttproject.bat"/>
+				<include name="ganttproject.exe"/>
+				<include name="ganttproject_16.ico"/>
 				<include name="ganttproject_32_2.ico"/>
 				<include name="GanttProject.app/**"/>
 				<include name="HouseBuildingSample.gan"/>
