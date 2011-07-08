@@ -30,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.action.GPAction;
@@ -110,6 +111,14 @@ public class GPTreeTableBase extends JNTreeTable{
 
         });
         myProject = project;
+    }
+
+    protected void clearColumns() {
+        List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
+        for (int i = 0; i < columns.size(); i++) {
+            getTable().removeColumn(columns.get(i));
+        }
+        myColumns.clear();
     }
 
     protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {

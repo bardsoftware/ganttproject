@@ -196,10 +196,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     }
 
     void reloadColumns() {
-        List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
-        for (int i = 0; i < columns.size(); i++) {
-            getTable().removeColumn(columns.get(i));
-        }
+        clearColumns();
         createDefaultColumns(DefaultColumn.getColumnStubs());
     }
 
