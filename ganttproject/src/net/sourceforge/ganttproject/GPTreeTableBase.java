@@ -9,8 +9,13 @@ import java.awt.event.KeyEvent;
 import java.text.AttributedCharacterIterator;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -30,6 +35,8 @@ import javax.swing.text.JTextComponent;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomColumn;
 
@@ -40,6 +47,52 @@ import org.jdesktop.swing.treetable.TreeTableModel;
 
 public class GPTreeTableBase extends JNTreeTable{
     private final IGanttProject myProject;
+    private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+
+    protected static class ColumnImpl implements TableHeaderUIFacade.Column {
+        private final JXTreeTable myTable;
+        private final TableColumnExt myTableColumn;
+        private final Column myStub;
+
+        protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, TableHeaderUIFacade.Column stub) {
+            myTable = table;
+            myTableColumn = tableColumn;
+            myStub = stub;
+        }
+
+        private TreeTableModel getTableModel() {
+            return myTable.getTreeTableModel();
+        }
+
+        @Override
+        public String getID() {
+            return myStub.getID();
+        }
+        @Override
+        public String getName() {
+            return getTableModel().getColumnName(myTableColumn.getModelIndex());
+        }
+        @Override
+        public int getOrder() {
+            return myTable.convertColumnIndexToView(myTableColumn.getModelIndex());
+        }
+        @Override
+        public int getWidth() {
+            return myTableColumn.getWidth();
+        }
+        @Override
+        public boolean isVisible() {
+            return getOrder() >= 0;
+        }
+        @Override
+        public void setVisible(boolean visible) {
+        }
+
+        Column getStub() {
+            return myStub;
+        }
+    }
+
     protected IGanttProject getProject() {
         return myProject;
     }
@@ -59,6 +112,27 @@ public class GPTreeTableBase extends JNTreeTable{
         myProject = project;
     }
 
+    protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
+        for (int i = 0; i < stubs.size(); i++) {
+            TableColumnExt tableColumn = newTableColumnExt(i);
+            myColumns.add(new ColumnImpl(getTreeTable(), tableColumn, stubs.get(i)));
+        }
+        Collections.sort(myColumns, new Comparator<ColumnImpl>() {
+            @Override
+            public int compare(ColumnImpl left, ColumnImpl right) {
+                if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
+                    return left.getName().compareTo(right.getName());
+                }
+                return left.getStub().getOrder() - right.getStub().getOrder();
+            }
+        });
+        for (ColumnImpl column : myColumns) {
+            if (column.getStub().isVisible()) {
+                getTable().addColumn(column.myTableColumn);
+            }
+        }
+
+    }
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
@@ -70,9 +144,11 @@ public class GPTreeTableBase extends JNTreeTable{
 
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
-        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(getTreeTableModel().getColumnClass(modelIndex));
-        if (defaultEditor!=null) {
-            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
+        Class columnClass = getTreeTableModel().getColumnClass(modelIndex);
+        TableCellEditor editor = columnClass.equals(GregorianCalendar.class)
+            ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+        if (editor!=null) {
+            result.setCellEditor(new TreeTableCellEditorImpl(editor));
         }
         return result;
     }

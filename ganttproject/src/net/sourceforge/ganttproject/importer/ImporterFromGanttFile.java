@@ -105,38 +105,12 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
     }
 
 
-    private static class TaskFieldImpl implements TableHeaderUIFacade.Column {
-        private final String myID;
-        private final int myOrder;
-        private final int myWidth;
-
+    private static class TaskFieldImpl extends TableHeaderUIFacade.ColumnStub {
         TaskFieldImpl(String id, int order, int width) {
-            myID = id;
-            myOrder = order;
-            myWidth = width;
+            super(id, null, true, order, width);
         }
-        public String getID() {
-            return myID;
-        }
-
-        public int getOrder() {
-            return myOrder;
-        }
-
-        public int getWidth() {
-            return myWidth;
-        }
-        public boolean isVisible() {
-            return true;
-        }
-        public String getName() {
-            return null;
-        }
-        @Override
-        public void setVisible(boolean visible) {
-        }
-
     }
+
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
         private final List<Column> myFields = new ArrayList<Column>();
         public void add(String name, int order, int width) {

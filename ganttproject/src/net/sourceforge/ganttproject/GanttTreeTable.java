@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -50,6 +51,7 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.GanttDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -132,18 +134,18 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     }
 
     private void updateDisplayedColumnsOrder() {
-        Iterator<DisplayedColumn> it = this.listDisplayedColumns.iterator();
-        while (it.hasNext()) {
-            DisplayedColumn dc = it.next();
-            if (dc.isDisplayed()) {
-                String id = dc.getID();
-                String name = getNameForId(id);
-                int viewIndex = getTable().convertColumnIndexToView(
-                        getColumn(name).getModelIndex());
-                dc.setOrder(viewIndex);
-                dc.setWidth(getColumn(name).getPreferredWidth());
-            }
-        }
+//        Iterator<DisplayedColumn> it = this.listDisplayedColumns.iterator();
+//        while (it.hasNext()) {
+//            DisplayedColumn dc = it.next();
+//            if (dc.isDisplayed()) {
+//                String id = dc.getID();
+//                String name = getNameForId(id);
+//                int viewIndex = getTable().convertColumnIndexToView(
+//                        getColumn(name).getModelIndex());
+//                dc.setOrder(viewIndex);
+//                dc.setWidth(getColumn(name).getPreferredWidth());
+//            }
+//        }
     }
 
     public DisplayedColumnsList getDisplayColumns() {
@@ -172,7 +174,36 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
+    private static enum DefaultColumn {
+        TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)),
+        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, true, 1, 100)),
+        INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)),
+        NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 100)),
+        ;
+
+        private final Column myDelegate;
+        private DefaultColumn(TableHeaderUIFacade.Column delegate) {
+            myDelegate = delegate;
+        }
+
+        static List<Column> getColumnStubs() {
+            List<Column> result = new ArrayList<Column>();
+            for (DefaultColumn dc : values()) {
+                result.add(dc.myDelegate);
+            }
+            return result;
+        }
+    }
+
     void reloadColumns() {
+        List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
+        for (int i = 0; i < columns.size(); i++) {
+            getTable().removeColumn(columns.get(i));
+        }
+        createDefaultColumns(DefaultColumn.getColumnStubs());
+    }
+
+    void _reloadColumns() {
         List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
         for (int i = 0; i < columns.size(); i++) {
             getTable().removeColumn(columns.get(i));
