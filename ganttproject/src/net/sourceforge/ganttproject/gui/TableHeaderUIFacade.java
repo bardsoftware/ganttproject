@@ -1,0 +1,59 @@
+/**
+ *
+ */
+package net.sourceforge.ganttproject.gui;
+
+
+public interface TableHeaderUIFacade {
+    int getSize();
+    Column getField(int index);
+    void clear();
+    void add(String name, int order, int width);
+    void importData(TableHeaderUIFacade source);
+
+    public interface Column {
+        String getID();
+        String getName();
+        int getOrder();
+        int getWidth();
+        boolean isVisible();
+        void setVisible(boolean visible);
+    }
+
+    class ColumnStub implements TableHeaderUIFacade.Column {
+        private final String myID;
+        private final int myOrder;
+        private final int myWidth;
+        private final String myName;
+        private final boolean isVisible;
+
+        public ColumnStub(String id, String name, boolean visible, int order, int width) {
+            myName = name;
+            myID = id;
+            myOrder = order;
+            myWidth = width;
+            isVisible = visible;
+        }
+        public String getID() {
+            return myID;
+        }
+        public int getOrder() {
+            return myOrder;
+        }
+        public int getWidth() {
+            return myWidth;
+        }
+        public boolean isVisible() {
+            return isVisible;
+        }
+        public String getName() {
+            return myName;
+        }
+        @Override
+        public void setVisible(boolean visible) {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+}
