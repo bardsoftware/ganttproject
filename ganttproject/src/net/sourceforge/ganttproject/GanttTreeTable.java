@@ -176,7 +176,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
 
     private static enum DefaultColumn {
         TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)),
-        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, true, 1, 100)),
+        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, true, 1, 50)),
         INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)),
         NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 100)),
         ;

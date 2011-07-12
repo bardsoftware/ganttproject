@@ -124,6 +124,7 @@ public class GPTreeTableBase extends JNTreeTable{
     protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
         for (int i = 0; i < stubs.size(); i++) {
             TableColumnExt tableColumn = newTableColumnExt(i);
+            tableColumn.setPreferredWidth(stubs.get(i).getWidth());
             myColumns.add(new ColumnImpl(getTreeTable(), tableColumn, stubs.get(i)));
         }
         Collections.sort(myColumns, new Comparator<ColumnImpl>() {
