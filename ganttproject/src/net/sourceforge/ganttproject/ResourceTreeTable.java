@@ -98,7 +98,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
      *            TreeTableModel.
      */
     public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
-        super(project, model);
+        super(project, uiFacade, model);
         myUiFacade = uiFacade;
         myProject = project;
         myProject.addProjectEventListener(new ProjectEventListener(){

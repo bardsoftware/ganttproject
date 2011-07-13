@@ -123,7 +123,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      *            TreeTableModel.
      */
     GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
-        super(project, model);
+        super(project, uifacade, model);
         this.ttModel = model;
         myUIfacade = uifacade;
         initTreeTable();
@@ -176,9 +176,16 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
 
     private static enum DefaultColumn {
         TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)),
-        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, true, 1, 50)),
+        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, false, -1, 50)),
         INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)),
-        NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 100)),
+        NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)),
+        BEGIN_DATE(new TableHeaderUIFacade.ColumnStub("tpd4", null, true, 1, 75)),
+        END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 0, 75)),
+        DURATION(new TableHeaderUIFacade.ColumnStub("tpd6", null, false, -1, 50)),
+        COMPLETION(new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50)),
+        COORDINATOR(new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200)),
+        PREDECESSORS(new TableHeaderUIFacade.ColumnStub("tpd9", null, false, -1, 200)),
+        ID(new TableHeaderUIFacade.ColumnStub("tpd10", null, false, -1, 20)),
         ;
 
         private final Column myDelegate;
@@ -196,8 +203,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     }
 
     void reloadColumns() {
-        clearColumns();
-        createDefaultColumns(DefaultColumn.getColumnStubs());
+        getTableHeaderUiFacade().clearColumns();
+        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
     }
 
     void _reloadColumns() {
@@ -422,7 +429,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
             getTable().getColumnModel().addColumnModelListener(
                     (TableColumnModelListener) this.getTreeTableModel());
             getTable().getModel().addTableModelListener(new ModelListener());
-            getTable().getTableHeader().addMouseListener(new HeaderMouseListener());
             // The following is used to store the new index of a moved column in
             // order
             // to restore it properly.
@@ -1353,43 +1359,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      * @author bbaranne Mar 1, 2005
      * @version 1.0 Show the popupMenu when popup is triggered.
      */
-    private class HeaderMouseListener extends MouseAdapter {
-        /**
-         * Creates a new HeaderMouseListener
-         */
-        public HeaderMouseListener() {
-            super();
-        }
-
-        /**
-         * @inheritDoc Shows the popupMenu to hide/show columns and to add
-         *             custom columns.
-         */
-        public void mousePressed(MouseEvent e) {
-            handlePopupTrigger(e);
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            handlePopupTrigger(e);
-        }
-
-        private void handlePopupTrigger(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                createPopupMenu();
-                Component c = (Component) e.getSource();
-                //reorderPopuMenu();
-                popupMenu.show(c, e.getX(), e.getY());
-                clickPoint = e.getPoint();//popupMenu.getLocationOnScreen();
-                CustomColumn cc = getProject().getCustomColumnsStorage().getCustomColumn(
-                        getTable().getColumnName(
-                                getTable().columnAtPoint(e.getPoint())));
-                if (cc != null)
-                    jmiDeleteColumn.setEnabled(true);
-                else
-                    jmiDeleteColumn.setEnabled(false);
-            }
-        }
-    }
 
     /**
      * The class replaces the cell editor used in the hierarchical column of
