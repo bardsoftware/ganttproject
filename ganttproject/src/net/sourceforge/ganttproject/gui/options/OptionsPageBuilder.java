@@ -123,11 +123,18 @@ public class OptionsPageBuilder {
     }
 
     public JComponent createGroupComponent(GPOptionGroup group) {
-        JPanel optionsPanel = new JPanel(new SpringLayout());
+        GPOption[] options = group.getOptions();
+        JComponent optionsPanel = createGroupComponent(group, options);
         if (group.isTitled()) {
             UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
         }
-        GPOption[] options = group.getOptions();
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(optionsPanel, BorderLayout.NORTH);
+        return result;
+    }
+
+    public JComponent createGroupComponent(GPOptionGroup group, GPOption... options) {
+        JPanel optionsPanel = new JPanel(new SpringLayout());
         for (int i = 0; i < options.length; i++) {
             GPOption nextOption = options[i];
             final Component nextComponent = createOptionComponent(group, nextOption);
