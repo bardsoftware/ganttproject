@@ -3,9 +3,12 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.AttributedCharacterIterator;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -38,6 +41,7 @@ import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomColumn;
 
@@ -48,8 +52,60 @@ import org.jdesktop.swing.treetable.TreeTableModel;
 
 public class GPTreeTableBase extends JNTreeTable{
     private final IGanttProject myProject;
-    private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+    private UIFacade myUiFacade;
+    private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
 
+    protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
+        private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+        @Override
+        public int getSize() {
+            return myColumns.size();
+        }
+        @Override
+        public Column getField(int index) {
+            return myColumns.get(index);
+        }
+        @Override
+        public void clear() {
+        }
+        @Override
+        public void add(String name, int order, int width) {
+        }
+        @Override
+        public void importData(TableHeaderUIFacade source) {
+        }
+
+        protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
+            for (int i = 0; i < stubs.size(); i++) {
+                TableColumnExt tableColumn = newTableColumnExt(i);
+                tableColumn.setPreferredWidth(stubs.get(i).getWidth());
+                myColumns.add(new ColumnImpl(getTreeTable(), tableColumn, stubs.get(i)));
+            }
+            Collections.sort(myColumns, new Comparator<ColumnImpl>() {
+                @Override
+                public int compare(ColumnImpl left, ColumnImpl right) {
+                    if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
+                        return left.getName().compareTo(right.getName());
+                    }
+                    return left.getStub().getOrder() - right.getStub().getOrder();
+                }
+            });
+            for (ColumnImpl column : myColumns) {
+                if (column.getStub().isVisible()) {
+                    getTable().addColumn(column.myTableColumn);
+                }
+            }
+
+        }
+
+        protected void clearColumns() {
+            List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
+            for (int i = 0; i < columns.size(); i++) {
+                getTable().removeColumn(columns.get(i));
+            }
+            myColumns.clear();
+        }
+    }
     protected static class ColumnImpl implements TableHeaderUIFacade.Column {
         private final JXTreeTable myTable;
         private final TableColumnExt myTableColumn;
@@ -98,7 +154,7 @@ public class GPTreeTableBase extends JNTreeTable{
         return myProject;
     }
 
-    protected GPTreeTableBase(IGanttProject project, TreeTableModel model) {
+    protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, TreeTableModel model) {
         super(new JXTreeTable(model) {
             protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
                 if (e.isAltDown() || e.isControlDown()) {
@@ -110,39 +166,15 @@ public class GPTreeTableBase extends JNTreeTable{
             }
 
         });
+        myUiFacade = uiFacade;
         myProject = project;
+        getTable().getTableHeader().addMouseListener(new HeaderMouseListener(project.getTaskCustomColumnManager()));
     }
 
-    protected void clearColumns() {
-        List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
-        for (int i = 0; i < columns.size(); i++) {
-            getTable().removeColumn(columns.get(i));
-        }
-        myColumns.clear();
+    protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
+        return myTableHeaderFacade;
     }
 
-    protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
-        for (int i = 0; i < stubs.size(); i++) {
-            TableColumnExt tableColumn = newTableColumnExt(i);
-            tableColumn.setPreferredWidth(stubs.get(i).getWidth());
-            myColumns.add(new ColumnImpl(getTreeTable(), tableColumn, stubs.get(i)));
-        }
-        Collections.sort(myColumns, new Comparator<ColumnImpl>() {
-            @Override
-            public int compare(ColumnImpl left, ColumnImpl right) {
-                if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
-                    return left.getName().compareTo(right.getName());
-                }
-                return left.getStub().getOrder() - right.getStub().getOrder();
-            }
-        });
-        for (ColumnImpl column : myColumns) {
-            if (column.getStub().isVisible()) {
-                getTable().addColumn(column.myTableColumn);
-            }
-        }
-
-    }
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
@@ -333,4 +365,45 @@ public class GPTreeTableBase extends JNTreeTable{
         addActionWithKeyStroke(copy);
         addActionWithKeyStroke(paste);
     }
+
+    private class HeaderMouseListener extends MouseAdapter {
+        private final CustomPropertyManager myCustomPropertyManager;
+
+        public HeaderMouseListener(CustomPropertyManager customPropertyManager) {
+            super();
+            myCustomPropertyManager = customPropertyManager;
+        }
+
+        /**
+         * @inheritDoc Shows the popupMenu to hide/show columns and to add
+         *             custom columns.
+         */
+        public void mousePressed(MouseEvent e) {
+            handlePopupTrigger(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            handlePopupTrigger(e);
+        }
+
+        private void handlePopupTrigger(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                GPAction[] popupActions = createPopupActions();
+                myUiFacade.showPopupMenu(e.getComponent(), popupActions, e.getX(), e.getY());
+            }
+        }
+
+        private GPAction[] createPopupActions() {
+            return new GPAction[] {
+              new GPAction("manageColumns") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
+                    dialog.show();
+                }
+              }
+            };
+        }
+    }
+
 }
