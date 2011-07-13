@@ -8,7 +8,11 @@ public class DefaultStringOption extends GPAbstractOption<String> implements Str
     private String myValue;
 
     public DefaultStringOption(String id) {
-        super(id);
+        this(id, null);
+    }
+
+    public DefaultStringOption(String id, String initialValue) {
+        super(id, initialValue);
     }
 
     public void setValue(String value) {
