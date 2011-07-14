@@ -64,22 +64,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     public static String strColID = null;
 
     /** The columns titles */
-    public List<String> titles = null;
-
-    /**
-     * Custom columns list.
-     */
-    private Vector<String> customColumns = null;
-
-    /**
-     * Number of columns (presently in the model)
-     */
-    private int nbCol = 11;
-
-    /**
-     * Number of columns (at all, even hiden)
-     */
-    private int nbColTot = nbCol;
+    private final List<String> titles = new ArrayList<String>();
 
     private final CustomPropertyManager myCustomColumnsManager;
 
@@ -92,10 +77,14 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      */
     public GanttTreeTableModel(TreeNode root, CustomPropertyManager customColumnsManager) {
         super(root);
-        titles = new ArrayList<String>();
-        customColumns = new Vector<String>();
         changeLanguage(language);
         myCustomColumnsManager = customColumnsManager;
+    }
+
+
+    @Override
+    public int getColumnCount() {
+        return titles.size() + myCustomColumnsManager.getDefinitions().size();
     }
 
     /**
@@ -162,48 +151,16 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         nodesWereRemoved(parent, childIndex, removedArray);
     }
 
-    /**
-     * Add a custom column to the model.
-     *
-     * @param title
-     */
-    public void addCustomColumn(String title) {
-        customColumns.add(title);
-        nbColTot++;
+    @Override
+    public String getColumnName(int column) {
+        if (column < titles.size()) {
+            return titles.get(column);
+        }
+        CustomPropertyDefinition customColumn = getCustomProperty(column);
+        return customColumn.getName();
     }
 
-    /**
-     * Delete a custom column.
-     *
-     * @param title
-     */
-    public void deleteCustomColumn(String title) {
-        customColumns.remove(title);
-        this.columnRemoved(null);
-        nbColTot--;
-    }
-
-    public void renameCustomColumn(String oldName, String newName) {
-        customColumns.set(customColumns.indexOf(oldName), newName);
-    }
-
-    // /**
-    // * Returns the number of custom columns.
-    // * @return
-    // */
-    // public int getCustomColumnCount()
-    // {
-    // return customColumns.size();
-    // }
-
-    public int getColumnCount() {
-        return nbCol;
-    }
-
-    public int getColumnCountTotal() {
-        return nbColTot;
-    }
-
+    @Override
     public Class getColumnClass(int column) {
         switch (column) {
         case 0:
@@ -225,22 +182,14 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         case 10:
             return Integer.class;
         default: {
-            CustomColumn customColumn = (CustomColumn) myCustomColumnsManager.getCustomPropertyDefinition(getColumnName(column));
+            CustomPropertyDefinition customColumn = getCustomProperty(column);
             return customColumn == null ? String.class : customColumn.getType();
         }
         }
     }
 
-    public String getColumnName(int column) {
-        if (column < titles.size())
-            return titles.get(column);
-
-        try {
-            return customColumns.get(column - titles.size());
-        } catch (IndexOutOfBoundsException e) {
-            return customColumns.get(column - titles.size() - 1);
-        }
-
+    private CustomPropertyDefinition getCustomProperty(int columnIndex) {
+        return myCustomColumnsManager.getDefinitions().get(columnIndex - 11);
     }
 
     public boolean isCellEditable(Object node, int column) {
@@ -262,15 +211,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return false;
     }
 
-    // public Object getChild(Object parent, int index)
-    // {
-    //
-    // }
-    //
-    // public int getChildCount(Object parent)
-    // {
-    //
-    // }
 
     public Object getValueAt(Object node, int column) {
         Object res = null;
@@ -355,10 +295,11 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             res = new Integer(t.getTaskID());
             break;
         default:
-            String colName = this.getColumnName(column);
+            CustomPropertyDefinition customColumn = getCustomProperty(column);
+            //String colName = this.getColumnName(column);
             // System.out.println(" -> "+colName);
             // System.out.println(t+" : "+t.getCustomValues());
-            res = t.getCustomValues().getValue(colName);
+            res = t.getCustomValues().getValue(customColumn.getName());
             break;
         }
         // }
@@ -392,7 +333,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     /**
      * Set value in left pane cell
-     * 
+     *
      * @param value
      * @param node
      * @param column
@@ -428,8 +369,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             break;
         default: // custom colums
             try {
-                ((Task) ((TaskNode) node).getUserObject()).getCustomValues()
-                        .setValue(this.getColumnName(column), value);
+                ((Task) ((TaskNode) node).getUserObject()).getCustomValues().setValue(
+                    getCustomProperty(column).getName(), value);
             } catch (CustomColumnsException e) {
                 if (!GPLogger.log(e)) {
                     e.printStackTrace(System.err);
@@ -440,11 +381,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     public void columnAdded(TableColumnModelEvent arg0) {
-        nbCol++;
     }
 
     public void columnRemoved(TableColumnModelEvent arg0) {
-        nbCol--;
     }
 
     public void columnMoved(TableColumnModelEvent arg0) {
