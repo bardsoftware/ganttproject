@@ -201,7 +201,6 @@ public class ColumnManagerPanel {
     }
 
     private JComponent getFieldsComponent() {
-        final GanttLanguage language = GanttLanguage.getInstance();
         OptionsPageBuilder builder = new OptionsPageBuilder();
         {
             cardLayoutDefaultValue = new CardLayout();
@@ -210,7 +209,7 @@ public class ColumnManagerPanel {
             myType.setUIControls(cardLayoutDefaultValue, panelDefaultValue);
         }
 
-        Component optionsComponent = builder.createGroupComponent(new GPOptionGroup("", new GPOption[] {
+        Component optionsComponent = builder.createGroupComponent(new GPOptionGroup("customPropertyDialog", new GPOption[] {
             myIsVisibleOption, myNameOption, myType}));
 
         Box result = Box.createVerticalBox();
@@ -218,7 +217,10 @@ public class ColumnManagerPanel {
         //result.setLayout(new BorderLayout());
         result.add(optionsComponent);
         result.add(Box.createVerticalStrut(10));
-        result.add(builder.createGroupComponent(new GPOptionGroup("", new GPOption[] {myDefaultValueOption})));
+        GPOptionGroup defaultValueGroup = new GPOptionGroup(
+            "customPropertyDialog.defaultValue", new GPOption[] {myDefaultValueOption});
+        defaultValueGroup.setTitled(false);
+        result.add(builder.createGroupComponent(defaultValueGroup));
         result.add(panelDefaultValue);
         setDefaultValuePanelEnabled(false);
         return result;

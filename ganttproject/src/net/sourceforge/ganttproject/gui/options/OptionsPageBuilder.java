@@ -400,7 +400,8 @@ public class OptionsPageBuilder {
         }
 
         protected String getValue(String key) {
-            return GanttLanguage.getInstance().getText(key);
+            String result = GanttLanguage.getInstance().getText(key);
+            return result == null ? key : result;
         }
 
         public String getValue(GPOptionGroup group, String canonicalKey) {
