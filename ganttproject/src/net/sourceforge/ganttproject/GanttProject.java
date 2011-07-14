@@ -1437,7 +1437,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public static class Args {
         @Parameter(names = "-log", description = "Enable logging")
-        public boolean log = true;
+        public boolean log = false;
 
         @Parameter(names = "-log_file", description = "Log file name")
         public String logFile = "";
@@ -1473,12 +1473,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             e.printStackTrace();
             return false;
         }
-        if (mainArgs.log) {
+        if (mainArgs.log && !mainArgs.logFile.isEmpty()) {
             try {
-                String logFileName = mainArgs.logFile.isEmpty()
-                    ? System.getProperty("user.home") + "/.ganttproject.log" : mainArgs.logFile;
-                GPLogger.setLogFile(logFileName);
-                File logFile = new File(logFileName);
+                GPLogger.setLogFile(mainArgs.logFile);
+                File logFile = new File(mainArgs.logFile);
                 System.setErr(new PrintStream(new FileOutputStream(logFile)));
                 System.out.println("Writing log to " + logFile.getAbsolutePath());
             } catch (IOException e) {
