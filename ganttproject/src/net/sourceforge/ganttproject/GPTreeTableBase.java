@@ -31,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
@@ -77,9 +78,7 @@ public class GPTreeTableBase extends JNTreeTable{
 
         protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
             for (int i = 0; i < stubs.size(); i++) {
-                TableColumnExt tableColumn = newTableColumnExt(i);
-                tableColumn.setPreferredWidth(stubs.get(i).getWidth());
-                myColumns.add(new ColumnImpl(getTreeTable(), tableColumn, stubs.get(i)));
+                createColumn(i, stubs.get(i));
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
                 @Override
@@ -92,10 +91,24 @@ public class GPTreeTableBase extends JNTreeTable{
             });
             for (ColumnImpl column : myColumns) {
                 if (column.getStub().isVisible()) {
-                    getTable().addColumn(column.myTableColumn);
+                    insertColumnIntoUi(column);
                 }
             }
+        }
 
+        protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
+            TableColumnExt tableColumn = newTableColumnExt(modelIndex);
+            tableColumn.setPreferredWidth(stub.getWidth());
+            ColumnImpl result = new ColumnImpl(getTreeTable(), tableColumn, stub);
+            myColumns.add(result);
+            return result;
+        }
+
+        protected void insertColumnIntoUi(ColumnImpl column) {
+            getTable().addColumn(column.myTableColumn);
+            int align = getTable().getModel().getColumnClass(column.myTableColumn.getModelIndex()).equals(GregorianCalendar.class)
+                ? SwingConstants.RIGHT : SwingConstants.CENTER;
+            setColumnHorizontalAlignment(column.getName(), align);
         }
 
         protected void clearColumns() {
@@ -143,6 +156,11 @@ public class GPTreeTableBase extends JNTreeTable{
         }
         @Override
         public void setVisible(boolean visible) {
+            if (visible && !isVisible()) {
+                myTable.addColumn(myTableColumn);
+            } else if (!visible && isVisible()) {
+                myTable.getColumnModel().removeColumn(myTableColumn);
+            }
         }
 
         Column getStub() {
@@ -173,6 +191,27 @@ public class GPTreeTableBase extends JNTreeTable{
 
     protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
         return myTableHeaderFacade;
+    }
+
+    protected Column findColumnByID(String id) {
+        for (int i = 0; i < getTableHeaderUiFacade().getSize(); i++) {
+            Column c = getTableHeaderUiFacade().getField(i);
+            if (c.getID().equals(id)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    protected Column findColumnByViewIndex(int index) {
+        for (int i = 0; i < getTableHeaderUiFacade().getSize(); i++) {
+            Column c = getTableHeaderUiFacade().getField(i);
+            if (c.getOrder() == index) {
+                return c;
+            }
+        }
+        return null;
+
     }
 
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
@@ -388,20 +427,33 @@ public class GPTreeTableBase extends JNTreeTable{
 
         private void handlePopupTrigger(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                GPAction[] popupActions = createPopupActions();
+                GPAction[] popupActions = createPopupActions(e);
                 myUiFacade.showPopupMenu(e.getComponent(), popupActions, e.getX(), e.getY());
             }
         }
 
-        private GPAction[] createPopupActions() {
+        private GPAction[] createPopupActions(final MouseEvent mouseEvent) {
+            final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
+            GPAction hideAction = new GPAction("columns.hide.label") {
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    Column column = findColumnByViewIndex(columnAtPoint);
+                    assert column.isVisible() : "how come it is at mouse click point?";
+                    column.setVisible(false);
+                }
+              };
+            if (columnAtPoint == -1) {
+                hideAction.setEnabled(false);
+            }
             return new GPAction[] {
-              new GPAction("manageColumns") {
+              new GPAction("columns.manage.label") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
                     dialog.show();
                 }
-              }
+              },
+              hideAction
             };
         }
     }

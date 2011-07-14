@@ -44,6 +44,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
@@ -191,6 +192,10 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         private final Column myDelegate;
         private DefaultColumn(TableHeaderUIFacade.Column delegate) {
             myDelegate = delegate;
+        }
+
+        Column getStub() {
+            return myDelegate;
         }
 
         static List<Column> getColumnStubs() {
@@ -362,8 +367,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
                 .setCellEditor(newDateCellEditor());
         getTable().getColumnExt(GanttTreeTableModel.strColEndDate)
                 .setCellEditor(newDateCellEditor());
-        getTable().getColumnExt(GanttTreeTableModel.strColName).setCellEditor(
-                new NameCellEditor());
+//        getTable().getColumnExt(GanttTreeTableModel.strColName).setCellEditor(
+//                new NameCellEditor());
         //createPopupMenu();
         if (listDisplayedColumns != null) {
             this.setDisplayedColumns(listDisplayedColumns);
@@ -735,62 +740,14 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      * date, integer, double, boolean). A default value is also set.
      */
     private void addNewCustomColumn(CustomColumn customColumn) {
-        if (customColumn.getName() != null) // if something has been entered
-        {
-            GanttTreeTableModel treeTableModel = (GanttTreeTableModel) getTreeTableModel();
-            int nbCol = treeTableModel.getColumnCountTotal(); // +
-            // treeTableModel.getCustomColumnCount();
-            String newName = customColumn.getName();
+        TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
+        setCustomColumnValueToAllNestedTask(
+            tchf, tchf.getRootTask(), customColumn.getName(), customColumn.getDefaultValue());
 
-            ((GanttTreeTableModel) ttModel).addCustomColumn(newName);
-
-            TaskContainmentHierarchyFacade tchf = getProject().getTaskManager()
-                    .getTaskHierarchy();
-            setCustomColumnValueToAllNestedTask(tchf, tchf.getRootTask(),
-                    customColumn.getName(), customColumn.getDefaultValue());
-
-            TableColumnExt t = newTableColumnExt(nbCol, customColumn);
-            t.setMaxWidth(500);
-            t.setHeaderValue(newName);
-            getTable().getColumnModel().addColumn(t);
-            try {
-                if (clickPoint != null) {
-                    getTable().getColumnModel().moveColumn(
-                            getTable().getColumnCount() - 1,
-                            getTable().columnAtPoint(clickPoint));
-                }
-            } catch (IllegalArgumentException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
-            int align = SwingConstants.CENTER;
-            if (customColumn.getType().equals(GregorianCalendar.class))
-                align = SwingConstants.RIGHT;
-            setColumnHorizontalAlignment(newName, align);
-
-            DisplayedColumn dc = new DisplayedColumn(
-                    getProject().getCustomColumnsStorage().getIdFromName(newName));
-            dc.setDisplayed(true);
-            dc.setOrder(getTable().convertColumnIndexToView(
-                    getColumn(newName).getModelIndex()));
-            dc.setWidth(getColumn(newName).getPreferredWidth());
-            this.listDisplayedColumns.add(dc);
-
-            if (GregorianCalendar.class
-                    .isAssignableFrom(customColumn.getType())) {
-                getTable().getColumnExt(newName).setCellEditor(newDateCellEditor());
-            }
-
-            JCheckBoxMenuItem jcbmi = new JCheckBoxMenuItem(newName);
-            jcbmi.setSelected(true);
-            ColumnKeeper ck = new ColumnKeeper(t);
-            jcbmi.addActionListener(ck);
-            mapTableColumnColumnKeeper.put(t, ck);
-            //popupMenu.insert(jcbmi, popupMenu.getSubElements().length - 3);
-
-            getProject().setModified();
-        }
+        TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(
+            customColumn.getId(), customColumn.getName(), true, getTable().getColumnCount(), 100);
+        ColumnImpl columnImpl = getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
+        getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
 
         Runnable t = new Runnable() {
             public void run() {
@@ -846,7 +803,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
          * deleting a custom column if it isn't the last created.
          */
         // TreeTableModel
-        ttModel.deleteCustomColumn(name);
+        //ttModel.deleteCustomColumn(name);
 
         // newBB
         Iterator<TableColumn> it2 = mapTableColumnColumnKeeper.keySet().iterator();
@@ -870,7 +827,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         tchf.getRootTask().getCustomValues().renameCustomColumn(name, newName);
         renameCustomColumnForAllNestedTask(tchf, tchf.getRootTask(), name,
                 newName);
-        ttModel.renameCustomColumn(name, newName);
+        //ttModel.renameCustomColumn(name, newName);
 
         // newBB
         Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
@@ -895,9 +852,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      * @param value
      *            Value for this new custom column.
      */
-    private void setCustomColumnValueToAllNestedTask(
-            TaskContainmentHierarchyFacade facade, Task root, String colName,
-            Object value) {
+    private static void setCustomColumnValueToAllNestedTask(
+            TaskContainmentHierarchyFacade facade, Task root, String colName, Object value) {
         try {
             root.getCustomValues().setValue(colName, value);
         } catch (CustomColumnsException e) {
@@ -1354,44 +1310,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     }
 
     /**
-     * This class handles the mouse actions on the treetable header.
-     *
-     * @author bbaranne Mar 1, 2005
-     * @version 1.0 Show the popupMenu when popup is triggered.
-     */
-
-    /**
-     * The class replaces the cell editor used in the hierarchical column of
-     * the tree table.
-     *
-     * @author bbaranne (Benoit Baranne)
-     */
-    private static class NameCellEditor extends DefaultCellEditor {
-        private final JTextField field;
-
-        public NameCellEditor() {
-            super(new JTextField());
-            field = (JTextField) this.editorComponent;
-        }
-
-
-        public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-            final JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-            result.selectAll();
-            return result;
-        }
-
-        public void requestFocus() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    field.requestFocus();
-                    field.selectAll();
-                }
-            });
-        }
-    }
-
-    /**
      * This class repaints the GraphicArea and the table every time the table
      * model has been modified.
      * TODO Add the refresh functionality when available.
@@ -1406,13 +1324,10 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
 
     void editNewTask(Task t) {
         TreePath selectedPath = getTree().getSelectionPath();
-        int c = getTable().convertColumnIndexToView(
-                getTable().getColumn(GanttTreeTableModel.strColName)
-                        .getModelIndex());
-
-        NameCellEditor nameCellEditor = (NameCellEditor) getTable().getCellEditor(-1, c);
-        getTreeTable().editCellAt(getTree().getRowForPath(selectedPath), c);
-        nameCellEditor.requestFocus();
+        Column column = findColumnByID(DefaultColumn.NAME.getStub().getID());
+        TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
+        getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
+        cellEditor.requestFocus();
     }
 
 
