@@ -817,30 +817,30 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
-    private void renameCustomcolumn(String name, String newName) {
-        this.displayColumn(name);
-        TableColumnExt tc = (TableColumnExt) getTable().getColumn(name);
-        tc.setTitle(newName);
-        tc.setIdentifier(newName);
-
-        TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
-        tchf.getRootTask().getCustomValues().renameCustomColumn(name, newName);
-        renameCustomColumnForAllNestedTask(tchf, tchf.getRootTask(), name,
-                newName);
-        //ttModel.renameCustomColumn(name, newName);
-
-        // newBB
-        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
-        while (it.hasNext()) {
-            TableColumn c = it.next();
-            String n = (String) c.getHeaderValue();
-            if (n.equals(name)) {
-                ((TableColumnExt) c).setTitle(newName);
-                break;
-            }
-        }
-        assert getColumn(newName)!=null;
-    }
+//    private void renameCustomcolumn(String name, String newName) {
+//        this.displayColumn(name);
+//        TableColumnExt tc = (TableColumnExt) getTable().getColumn(name);
+//        tc.setTitle(newName);
+//        tc.setIdentifier(newName);
+//
+//        TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
+//        tchf.getRootTask().getCustomValues().renameCustomColumn(name, newName);
+//        renameCustomColumnForAllNestedTask(tchf, tchf.getRootTask(), name,
+//                newName);
+//        //ttModel.renameCustomColumn(name, newName);
+//
+//        // newBB
+//        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
+//        while (it.hasNext()) {
+//            TableColumn c = it.next();
+//            String n = (String) c.getHeaderValue();
+//            if (n.equals(name)) {
+//                ((TableColumnExt) c).setTitle(newName);
+//                break;
+//            }
+//        }
+//        assert getColumn(newName)!=null;
+//    }
 
     /**
      * @param facade
@@ -1323,8 +1323,9 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     }
 
     void editNewTask(Task t) {
+
         TreePath selectedPath = getTree().getSelectionPath();
-        Column column = findColumnByID(DefaultColumn.NAME.getStub().getID());
+        Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
         TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
         getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
         cellEditor.requestFocus();
@@ -1340,11 +1341,11 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
             deleteCustomColumn((CustomColumn) event.getDefinition());
             break;
         case CustomPropertyEvent.EVENT_PROPERTY_CHANGE:
-            renameCustomcolumn(event.getOldName(), event.getColName());
+            getTableHeaderUiFacade().renameColumn(event.getDefinition());
+            getTable().getTableHeader().repaint();
             break;
         }
     }
-
 
     public TableHeaderUIFacade getVisibleFields() {
         return myVisibleFields;
