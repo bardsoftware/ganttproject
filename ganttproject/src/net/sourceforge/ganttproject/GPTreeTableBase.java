@@ -118,6 +118,33 @@ public class GPTreeTableBase extends JNTreeTable{
             }
             myColumns.clear();
         }
+
+        protected void renameColumn(CustomPropertyDefinition definition) {
+            ColumnImpl c = findColumnByID(definition.getID());
+            if (c == null) {
+                return;
+            }
+            c.setName(definition.getName());
+        }
+
+        protected ColumnImpl findColumnByID(String id) {
+            for (ColumnImpl c : myColumns) {
+                if (c.getID().equals(id)) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        protected ColumnImpl findColumnByViewIndex(int index) {
+            for (ColumnImpl c : myColumns) {
+                if (c.getOrder() == index) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
     }
     protected static class ColumnImpl implements TableHeaderUIFacade.Column {
         private final JXTreeTable myTable;
@@ -142,6 +169,11 @@ public class GPTreeTableBase extends JNTreeTable{
         public String getName() {
             return getTableModel().getColumnName(myTableColumn.getModelIndex());
         }
+
+        private void setName(String name) {
+            myTableColumn.setTitle(name);
+        }
+
         @Override
         public int getOrder() {
             return myTable.convertColumnIndexToView(myTableColumn.getModelIndex());
@@ -191,27 +223,6 @@ public class GPTreeTableBase extends JNTreeTable{
 
     protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
         return myTableHeaderFacade;
-    }
-
-    protected Column findColumnByID(String id) {
-        for (int i = 0; i < getTableHeaderUiFacade().getSize(); i++) {
-            Column c = getTableHeaderUiFacade().getField(i);
-            if (c.getID().equals(id)) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    protected Column findColumnByViewIndex(int index) {
-        for (int i = 0; i < getTableHeaderUiFacade().getSize(); i++) {
-            Column c = getTableHeaderUiFacade().getField(i);
-            if (c.getOrder() == index) {
-                return c;
-            }
-        }
-        return null;
-
     }
 
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
@@ -437,7 +448,7 @@ public class GPTreeTableBase extends JNTreeTable{
             GPAction hideAction = new GPAction("columns.hide.label") {
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
-                    Column column = findColumnByViewIndex(columnAtPoint);
+                    Column column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
                     assert column.isVisible() : "how come it is at mouse click point?";
                     column.setVisible(false);
                 }
