@@ -14,10 +14,12 @@ public interface GPOption {
     void commit();
 
     void rollback();
-    
+
     String getPersistentValue();
-    
+
     void loadPersistentValue(String value);
-    
+
     boolean isChanged();
+
+    void addChangeValueListener(ChangeValueListener listener);
 }

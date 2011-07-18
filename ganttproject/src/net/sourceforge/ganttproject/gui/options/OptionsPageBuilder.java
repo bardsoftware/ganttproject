@@ -37,6 +37,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -236,9 +237,22 @@ public class OptionsPageBuilder {
         return result;
     }
 
+    private static void updateTextField(
+            final JTextField textField, final DocumentListener listener, final ChangeValueEvent event) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                textField.getDocument().removeDocumentListener(listener);
+                if (!textField.getText().equals(event.getNewValue())) {
+                    textField.setText(String.valueOf(event.getNewValue()));
+                }
+                textField.getDocument().addDocumentListener(listener);
+            }
+        });
+    }
+
     private Component createStringComponent(final StringOption option) {
         final JTextField result = new JTextField(option.getValue());
-        result.getDocument().addDocumentListener(new DocumentListener() {
+        final DocumentListener documentListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 option.setValue(result.getText());
             }
@@ -249,6 +263,12 @@ public class OptionsPageBuilder {
 
             public void changedUpdate(DocumentEvent e) {
                 option.setValue(result.getText());
+            }
+        };
+        result.getDocument().addDocumentListener(documentListener);
+        option.addChangeValueListener(new ChangeValueListener() {
+            public void changeValue(final ChangeValueEvent event) {
+                updateTextField(result, documentListener, event);
             }
         });
         return result;
@@ -291,7 +311,7 @@ public class OptionsPageBuilder {
     }
 
     private Component createRadioButtonBooleanComponent(GPOptionGroup group, final BooleanOption option) {
-        JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
+        final JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
             public void actionPerformed(ActionEvent e) {
                 if (!option.isChecked()) {
                     option.toggle();
@@ -303,7 +323,7 @@ public class OptionsPageBuilder {
         yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option)+".yes"));
         yesButton.setSelected(option.isChecked());
 
-        JRadioButton noButton = new JRadioButton(new AbstractAction("") {
+        final JRadioButton noButton = new JRadioButton(new AbstractAction("") {
             public void actionPerformed(ActionEvent e) {
                 if (option.isChecked()) {
                     option.toggle();
@@ -324,12 +344,28 @@ public class OptionsPageBuilder {
         result.add(Box.createHorizontalStrut(5));
         result.add(noButton);
         result.add(Box.createHorizontalGlue());
+        option.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+                if (Boolean.TRUE.equals(event.getNewValue())) {
+                    yesButton.setSelected(true);
+                } else {
+                    noButton.setSelected(true);
+                }
+            }
+        });
         return result;
     }
 
     private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
-        ComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
-        JComboBox result = new JComboBox(model);
+        final EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
+        final JComboBox result = new JComboBox(model);
+        option.addChangeValueListener(new ChangeValueListener() {
+            public void changeValue(ChangeValueEvent event) {
+                model.onValueChange();
+                result.setSelectedItem(model.getSelectedItem());
+            }
+        });
         return result;
     }
 
