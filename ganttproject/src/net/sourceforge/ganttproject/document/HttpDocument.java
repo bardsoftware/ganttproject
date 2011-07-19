@@ -1,6 +1,20 @@
 /*
- * Created on 18.08.2003
- *
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
@@ -113,34 +127,34 @@ public class HttpDocument extends AbstractURLDocument {
                 ? new Status(
                     IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(),  null)
                 : Status.OK_STATUS;
-        } else {
-            try {
-                HttpURL parentURL = httpURL.toString().startsWith("https:") ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
-                String user = (myUsername != null ? myUsername : httpURL.getUser());
-                String pass = (myPassword != null ? myPassword : httpURL.getPassword());
-                if (user != null)
-                    parentURL.setUserinfo(user, pass);
-                String currentHierPath = httpURL.getCurrentHierPath();
-                if (!currentHierPath.endsWith("/"))
-                    currentHierPath = currentHierPath + "/";
-                parentURL.setPath(currentHierPath);
-                WebdavResource parentRes = new WebdavResource(parentURL);
-                if (!parentRes.isCollection()) {
-                    return new Status(
-                        IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
-                        parentRes.getPath(),  null);
-                }
-                return Status.OK_STATUS;
-            } catch (HttpException e) {
-                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-						Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-						(e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
-								: e.getReason()), e);
-            } catch (Exception e) {
-                return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-                        Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
-            }
         }
+
+		try {
+		    HttpURL parentURL = httpURL.toString().startsWith("https:") ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
+		    String user = (myUsername != null ? myUsername : httpURL.getUser());
+		    String pass = (myPassword != null ? myPassword : httpURL.getPassword());
+		    if (user != null)
+		        parentURL.setUserinfo(user, pass);
+		    String currentHierPath = httpURL.getCurrentHierPath();
+		    if (!currentHierPath.endsWith("/"))
+		        currentHierPath = currentHierPath + "/";
+		    parentURL.setPath(currentHierPath);
+		    WebdavResource parentRes = new WebdavResource(parentURL);
+		    if (!parentRes.isCollection()) {
+		        return new Status(
+		            IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
+		            parentRes.getPath(),  null);
+		    }
+		    return Status.OK_STATUS;
+		} catch (HttpException e) {
+		    return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+					Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
+					(e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
+							: e.getReason()), e);
+		} catch (Exception e) {
+		    return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+		            Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
+		}
     }
 
     public boolean isValidForMRU() {
