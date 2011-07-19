@@ -132,7 +132,7 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.getLastError();
     }
 
-    public void read() throws IOException {
+    public void read() throws IOException, DocumentException {
         FailureState failure = new FailureState();
         SuccessState success = new SuccessState();
         ParsingState parsing = new ParsingState(success, failure);
@@ -207,7 +207,7 @@ class ProxyDocument implements Document {
             myConfirmationState = confirmation;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             boolean locked = acquireLock();
             if (!locked) {
                 myConfirmationState.enter();
@@ -229,7 +229,7 @@ class ProxyDocument implements Document {
             myExitState = failure;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             String message = GanttLanguage.getInstance().getText("msg13");
             String title = GanttLanguage.getInstance().getText("warning");
             if (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(message, title)) {
@@ -250,7 +250,7 @@ class ProxyDocument implements Document {
             myFailureState = failure;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             GPParser opener = myParserFactory.newParser();
             HumanResourceManager hrManager = getHumanResourceManager();
             RoleManager roleManager = getRoleManager();
@@ -314,7 +314,15 @@ class ProxyDocument implements Document {
 
             PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();
             opener.addTagHandler(portfolioHandler);
-            if (opener.load(getInputStream())) {
+            InputStream is;
+			try {
+				is = getInputStream();
+			} catch (IOException e) {
+				myFailureState.enter();
+				throw new DocumentException(GanttLanguage.getInstance().getText("msg8")
+						+ ": " + e.getLocalizedMessage(), e);
+			}
+            if (opener.load(is)) {
                 mySuccessState.enter();
             } else {
                 myFailureState.enter();

@@ -134,7 +134,7 @@ public class HttpDocument extends AbstractURLDocument {
             } catch (HttpException e) {
                 return new Status(IStatus.ERROR, Document.PLUGIN_ID,
 						Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-						(e.getReason() == null ? "Code: " + e.getReasonCode() + ": " + getHTTPError(e.getReasonCode())
+						(e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
 								: e.getReason()), e);
             } catch (Exception e) {
                 return new Status(IStatus.ERROR, Document.PLUGIN_ID,
@@ -219,7 +219,8 @@ public class HttpDocument extends AbstractURLDocument {
             throw new IOException(e.getMessage() + "(" + e.getReasonCode()
                     + ")");
         } catch (IOException e) {
-            throw new IOException("Status code=" + getWebdavResource().getStatusCode(), e);
+			throw new IOException(HttpDocument.getHTTPError(getWebdavResource().getStatusCode())
+					+ "\n" + e.getMessage(), e);
         }
     }
 
@@ -275,9 +276,9 @@ public class HttpDocument extends AbstractURLDocument {
 		// TODO Use language dependent texts
 		switch (code) {
 		case 401:
-			return "Unauthorized";
+			return "Unauthorized (401)";
 		default:
-			return "<unknown>";
+			return "<unspecified> (" + code + ")";
 		}
     }
 

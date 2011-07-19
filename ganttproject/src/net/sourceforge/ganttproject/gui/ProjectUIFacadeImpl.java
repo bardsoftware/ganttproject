@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.HttpDocument;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
@@ -220,7 +221,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         return true;
     }
 
-    public void openProject(final IGanttProject project) throws IOException {
+    public void openProject(final IGanttProject project) throws IOException, DocumentException {
         if (false == ensureProjectSaved(project)) {
             return;
         }
@@ -244,14 +245,14 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
     }
 
-    public void openRemoteProject(final IGanttProject project) throws IOException {
+    public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {
         final Document document = showURLDialog(project, true);
         if (document != null) {
             openProject(document, project);
         }
     }
 
-    public void openProject(final Document document, final IGanttProject project) throws IOException {
+    public void openProject(final Document document, final IGanttProject project) throws IOException, DocumentException {
         beforeClose();
         project.close();
         project.open(document);
