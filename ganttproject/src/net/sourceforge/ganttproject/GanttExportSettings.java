@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 import net.sourceforge.ganttproject.task.Task;
 
 /** Class to store 3 boolean values */
@@ -12,10 +13,16 @@ public class GanttExportSettings {
     private Date endDate = null;
 
     public boolean name, percent, depend, border3d, ok;
-    
+
     private boolean onlySelectedItems;
 
     private List<Task> myVisibleTasks;
+
+    private int myRowCount;
+
+    private int myWidth = -1;
+
+    private ZoomState myZoomLevel;
 
     public GanttExportSettings() {
         name = percent = depend = ok = true;
@@ -31,11 +38,11 @@ public class GanttExportSettings {
         ok = true;
         onlySelectedItems = false;
     }
-    
+
     public void setOnlySelectedItem(boolean selected){
         onlySelectedItems = selected;
     }
-    
+
     public boolean isOnlySelectedItem(){
         return onlySelectedItems;
     }
@@ -58,9 +65,36 @@ public class GanttExportSettings {
 
     public void setVisibleTasks(List<Task> visibleTasks) {
         myVisibleTasks = visibleTasks;
+        if (visibleTasks != null) {
+            myRowCount = visibleTasks.size();
+        }
     }
-    
+
     public List<Task> getVisibleTasks() {
         return myVisibleTasks;
+    }
+
+    public int getRowCount() {
+        return myRowCount;
+    }
+
+    public void setRowCount(int rowCount) {
+        myRowCount = rowCount;
+    }
+
+    public int getWidth() {
+        return myWidth;
+    }
+
+    public void setWidth(int width) {
+        myWidth = width;
+    }
+
+    public void setZoomLevel(ZoomState zoomLevel) {
+        myZoomLevel = zoomLevel;
+    }
+
+    public ZoomState getZoomLevel() {
+        return myZoomLevel;
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -76,7 +77,7 @@ public interface IGanttProject {
 
     boolean isModified();
 
-    void open(Document document) throws IOException;
+    void open(Document document) throws IOException, DocumentException;
 
     CustomPropertyManager getResourceCustomPropertyManager();
 

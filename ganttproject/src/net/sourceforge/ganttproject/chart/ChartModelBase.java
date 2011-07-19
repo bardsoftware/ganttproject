@@ -300,7 +300,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     public Date getEndDate() {
         List<Offset> offsets = getBottomUnitOffsets();
-        return offsets.get(offsets.size()-1).getOffsetEnd();
+        return offsets.isEmpty() ? null : offsets.get(offsets.size()-1).getOffsetEnd();
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
@@ -474,6 +474,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         copy.setBottomUnitWidth(getBottomUnitWidth());
         copy.setStartDate(getStartDate());
         copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
+        copy.setBounds(getBounds());
         GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
         GPOptionGroup[] thisOptions = getChartOptionGroups();
         assert copyOptions.length == thisOptions.length;

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -133,6 +134,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return result;
     }
 
+    public String[] getCommandLineKeys() {
+        return new String[] {"itext"};
+    }
+
     private Component createFontPanel() {
         return new FontSubstitutionPanel(mySubstitutionModel).getComponent();
     }
@@ -219,14 +224,15 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
                 if (dirUrl==null) {
-                    GPLogger.getLogger(getClass()).warning("Failed to find directory " + dirName + " in plugin " + namespace);
+                    GPLogger.getLogger(ExporterToIText.class)
+                        .warning("Failed to find directory " + dirName + " in plugin " + namespace);
                     continue;
                 }
                 try {
                     URL resolvedDir = Platform.resolve(dirUrl);
                     myFontCache.registerDirectory(resolvedDir.getPath(), true);
                 } catch (IOException e) {
-                   GPLogger.log(e);
+                   GPLogger.getLogger(ExporterToIText.class).log(Level.WARNING, e.getMessage(), e);
                    continue;
                 }
             }

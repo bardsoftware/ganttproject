@@ -134,7 +134,7 @@ public interface Document {
      */
     public String getLastError();
 
-    public void read() throws IOException;
+    public void read() throws IOException, DocumentException;
 
     public void write() throws IOException;
 
@@ -143,4 +143,13 @@ public interface Document {
     Portfolio getPortfolio();
 
     boolean isLocal();
+
+    /**
+     * Used to generate useful exceptions for document saving and loading
+     * (preventing bothersome errors for the end users when possible) 
+     */
+    public class DocumentException extends Exception {
+        public DocumentException(String msg) { super(msg); }  
+        public DocumentException(String msg, Throwable cause) { super(msg, cause); }  
+    }
 }

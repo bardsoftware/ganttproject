@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/jaxb-api.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/jaxb-impl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/jaxb-libs.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/jax-qname.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/namespace.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/relaxngDatatype.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj/xsdlib.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/mpxj/mpxj.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

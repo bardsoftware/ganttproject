@@ -33,9 +33,10 @@ public class MainApplication implements IPlatformRunnable {
             }
         };
         GanttProject.setWindowListener(closingListener);
-        GanttProject.main(cmdLine);
-        synchronized (myLock) {
-            myLock.wait();
+        if (GanttProject.main(cmdLine)) {
+            synchronized (myLock) {
+                myLock.wait();
+            }
         }
         GPLogger.log("Program terminated");
         return null;

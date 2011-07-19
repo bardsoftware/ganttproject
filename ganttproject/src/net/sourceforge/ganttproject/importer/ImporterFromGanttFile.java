@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.FileDocument;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
@@ -237,6 +238,8 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                 origTaskManager.setEventsEnabled(true);
             }
             uiFacade.refresh();
+        } catch (DocumentException e) {
+            uiFacade.showErrorDialog(e);
         } catch (IOException e) {
             uiFacade.showErrorDialog(e);
         }

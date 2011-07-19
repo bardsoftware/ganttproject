@@ -44,9 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -72,6 +70,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+
 import net.sourceforge.ganttproject.action.EditMenu;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
@@ -91,6 +92,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.OpenDocumentAction;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
@@ -635,7 +637,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private JMenu createViewMenu() {
         JMenu result = changeMenuLabel(new JMenu(), language.getText("view"));
         result.add(miChartOptions);
-        List<Chart> charts = Mediator.getPluginManager().getCharts();
+        List<Chart> charts = PluginManager.getCharts();
 
         if (!charts.isEmpty()) {
             result.addSeparator();
@@ -1150,9 +1152,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         try {
             PrintManager.printChart(chart, options.getExportSettings());
         } catch (OutOfMemoryError e) {
-            getUIFacade().showErrorDialog(
-                    GanttLanguage.getInstance().getText(
-                            "printing.out_of_memory"));
+            getUIFacade().showErrorDialog(GanttLanguage.getInstance().getText("printing.out_of_memory"));
         }
     }
 
@@ -1201,7 +1201,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Open a local project file with dialog box (JFileChooser) */
-    public void openFile() throws IOException {
+    public void openFile() throws IOException, DocumentException {
         getProjectUIFacade().openProject(this);
     }
 
@@ -1209,12 +1209,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void openURL() {
         try {
             getProjectUIFacade().openRemoteProject(getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }
     }
 
-    public void open(Document document) throws IOException {
+    public void open(Document document) throws IOException, DocumentException {
         openDocument(document);
         if (document.getPortfolio() != null) {
             Document defaultDocument = document.getPortfolio()
@@ -1223,7 +1225,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    private void openDocument(Document document) throws IOException {
+    private void openDocument(Document document) throws IOException, DocumentException {
         if (document.getDescription().toLowerCase().endsWith(".xml") == false
                 && document.getDescription().toLowerCase().endsWith(".gan") == false) {
             // Unknown file extension
@@ -1246,7 +1248,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
         setTitle(language.getText("appliTitle") + " ["
                 + document.getDescription() + "]");
-        for (Chart chart : Mediator.getPluginManager().getCharts()) {
+        for (Chart chart : PluginManager.getCharts()) {
             chart.setTaskManager(myTaskManager);
             chart.reset();
         }
@@ -1268,6 +1270,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     try {
                         getProjectUIFacade()
                                 .openProject(document, getProject());
+                    } catch (DocumentException e) {
+                        if (!tryImportDocument(document)) {
+                        	// TODO use the/a nicer error dialog
+                            getUIFacade().showErrorDialog(e);
+                        }
                     } catch (IOException e) {
                         if (!tryImportDocument(document)) {
                             getUIFacade().showErrorDialog(e);
@@ -1303,6 +1310,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private void openStartupDocument(Document document) {
         try {
             getProjectUIFacade().openProject(document, getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }
@@ -1393,42 +1402,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    /** Print the help for ganttproject on the system.out */
-    private static void usage() {
-        System.out.println();
-        System.out
-                .println("GanttProject usage : java -jar ganttproject-(VERSION).jar <OPTIONS>");
-        System.out.println();
-        System.out.println("  Here are the possible options:");
-        System.out.println("    -h, --help : Print this message");
-        System.out
-                .println("    [project_file_name] a XML file based on ganttproject format to directly open (project.xml or project.gan)");
-        System.out
-                .println("    -html [project_file_name] [export_directory_name], export directly a ganttproject file to web pages");
-        System.out
-                .println("         -xsl-dir [xsl_directory]                        localisation of the xsl directory for html export");
-        System.out
-                .println("    -pdf  [project_file_name] [pdf_file_name],         export directly a ganttproject file to a PDF file");
-        System.out
-                .println("         -xsl-fo [xsl_fo_file]                           localisation of the xsl-fo file for pdf export");
-        System.out
-                .println("    -csv  [project_file_name] [csv_image_filename],    export directly a ganttproject file to csv document compatible with spreadsheets");
-        System.out
-                .println("    -png  [project_file_name] [png_image_filename],    export directly a ganttproject file to png image");
-        System.out
-                .println("    -jpg  [project_file_name] [jpg_image_filename],    export directly a ganttproject file to jpg image");
-        System.out
-                .println("    -fig/-xfig  [project_file_name] [fig_image_filename],    export directly a ganttproject file to xfig image");
-        System.out.println();
-        System.out
-                .println("    In all these cases the project_file_name can either be a file on local disk or an URL.");
-        System.out
-                .println("    If the URL is password-protected, you can give credentials this way:");
-        System.out
-                .println("      http://username:password@example.com/filename");
-        System.out.println(" ");
-    }
-
     public GanttResourcePanel getResourcePanel() {
         if (this.resp == null) {
             this.resp = new GanttResourcePanel(this, getTree(), getUIFacade());
@@ -1473,91 +1446,77 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return myResourceActions;
     }
 
+    public static class Args {
+        @Parameter(names = "-log", description = "Enable logging")
+        public boolean log = true;
+
+        @Parameter(names = "-log_file", description = "Log file name")
+        public String logFile = "";
+
+        @Parameter(names = {"-h", "-help"}, description = "Print usage")
+        public boolean help = false;
+
+        @Parameter(description = "Input file name")
+        public List<String> file = null;
+    }
+
     /** The main */
-    public static void main(String[] arg) {
+    public static boolean main(String[] arg) {
         URL logConfig = GanttProject.class.getResource("/logging.properties");
         if (logConfig != null) {
             try {
                 GPLogger.readConfiguration(logConfig);
             } catch (IOException e) {
-                System.err
-                        .println("Failed to setup logging: " + e.getMessage());
+                System.err.println("Failed to setup logging: " + e.getMessage());
                 e.printStackTrace();
             }
         }
+
         CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
-        HashMap<String, List<String>> parsedArgs = new HashMap<String, List<String>>();
-        final List<String> emptyList = Collections.<String>emptyList();
-        String argName = "";
-        for (int i = 0; i < arg.length; i++) {
-            String nextWord = arg[i];
-            if (nextWord.charAt(0) == '-') {
-                if (argName.length() != 0) {
-                    parsedArgs.put(argName, emptyList);
-                }
-                argName = nextWord.toLowerCase();
-            } else {
-                List<String> values = parsedArgs.get(argName);
-                if (values == null || values == emptyList) {
-                    values = new ArrayList<String>();
-                    parsedArgs.put(argName, values);
-                }
-                values.add(nextWord);
-                if (!cmdlineApplication.getCommandLineFlags().contains(argName)) {
-                    argName = "";
-                }
+        Args mainArgs = new Args();
+        try {
+            JCommander cmdLineParser = new JCommander(new Object[] {mainArgs, cmdlineApplication.getArguments()}, arg);
+            if (mainArgs.help) {
+                cmdLineParser.usage();
+                System.exit(0);
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return false;
         }
-        if (argName.length() > 0 && !parsedArgs.containsKey(argName)) {
-            parsedArgs.put(argName, emptyList);
-        }
-        if (parsedArgs.containsKey("-h") || parsedArgs.containsKey("--help")) {
-            usage();
-            System.exit(0);
-        }
-        if (parsedArgs.containsKey("-log")) {
+        if (mainArgs.log) {
             try {
-                List<String> values = parsedArgs.get("-log");
-                String logFileName = values.isEmpty() ? System
-                        .getProperty("user.home")
-                        + "/.ganttproject.log" : values.get(0);
+                String logFileName = mainArgs.logFile.isEmpty()
+                    ? System.getProperty("user.home") + "/.ganttproject.log" : mainArgs.logFile;
                 GPLogger.setLogFile(logFileName);
                 File logFile = new File(logFileName);
                 System.setErr(new PrintStream(new FileOutputStream(logFile)));
-                System.out.println("Writing log to "
-                        + logFile.getAbsolutePath());
+                System.out.println("Writing log to " + logFile.getAbsolutePath());
             } catch (IOException e) {
-                System.err.println("Failed to write log to file: "
-                        + e.getMessage());
+                System.err.println("Failed to write log to file: " + e.getMessage());
                 e.printStackTrace();
             }
         }
-        if (false == cmdlineApplication.export(parsedArgs)) {
+        if (cmdlineApplication.export(mainArgs)) {
+            return false;
+        } else {
             GanttSplash splash = new GanttSplash();
             try {
                 splash.setVisible(true);
                 GanttProject ganttFrame = new GanttProject(false);
                 System.err.println("Main frame created");
-                String startupDocument = null;
-                if (parsedArgs.containsKey("")) {
-                    List<String> values = parsedArgs.get("");
-                    startupDocument = values.get(0);
-                } else if (parsedArgs.containsKey("-open")) {
-                    List<String> values = parsedArgs.get("-open");
-                    startupDocument = values.isEmpty() ? null : values.get(0);
-                }
-                if (startupDocument != null) {
-                    ganttFrame.openStartupDocument(startupDocument);
+                if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
+                    ganttFrame.openStartupDocument(mainArgs.file.get(0));
                 }
                 ganttFrame.setVisible(true);
-                if (System.getProperty("os.name").toLowerCase().startsWith(
-                        "mac os x")) {
+                if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
                     OSXAdapter.registerMacOSXApplication(ganttFrame);
                 }
                 ganttFrame.getActiveChart().reset();
+                return true;
             } catch (Throwable e) {
                 e.printStackTrace();
-                return;
+                return false;
             } finally {
                 splash.close();
                 System.err.println("Splash closed");

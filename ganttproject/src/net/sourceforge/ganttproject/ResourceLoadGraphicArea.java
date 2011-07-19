@@ -100,21 +100,22 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
+        settings.setRowCount(getResourceManager().getResources().size());
         return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
     }
-    
+
     public String getName() {
         return GanttLanguage.getInstance().getText("resourcesChart");
     }
-
-    public Date getStartDate() {
-        // return this.beg.getTime();
-        return getTaskManager().getProjectStart();
-    }
-
-    public Date getEndDate() {
-        return getTaskManager().getProjectEnd();
-    }
+//
+//    public Date getStartDate() {
+//        // return this.beg.getTime();
+//        return getTaskManager().getProjectStart();
+//    }
+//
+//    public Date getEndDate() {
+//        return getTaskManager().getProjectEnd();
+//    }
 
     protected ChartModelBase getChartModel() {
         return myChartModel;
@@ -158,7 +159,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     public void reset() {
-    	repaint();
+        repaint();
     }
 
     public Icon getIcon() {
@@ -221,5 +222,9 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     public ChartViewState getViewState() {
         return myViewState;
+    }
+
+    private HumanResourceManager getResourceManager() {
+        return appli.getHumanResourceManager();
     }
 }

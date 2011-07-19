@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 public interface NotificationManager {
     void addNotification(NotificationChannel channel, NotificationItem notificaton);
     void showNotification(NotificationChannel channel);
+    void hideNotification();
 
     HyperlinkListener DEFAULT_HYPERLINK_LISTENER = new HyperlinkListener() {
         @Override

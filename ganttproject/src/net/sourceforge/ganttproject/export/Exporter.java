@@ -31,6 +31,8 @@ public interface Exporter {
 
     String[] getFileExtensions();
 
+    String[] getCommandLineKeys();
+
     void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs);
 
     Component getCustomOptionsUI();
