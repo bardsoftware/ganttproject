@@ -43,6 +43,10 @@ public class ZoomManager {
         public int getBottomUnitWidth() {
             return myBottomUnitWidth;
         }
+
+        public int getValue() {
+            return myStateNumber;
+        }
     }
 
     /** Number representing the selected ZoomState */
@@ -130,7 +134,7 @@ public class ZoomManager {
         return getZoomState(myZooming);
     }
 
-    private ZoomState getZoomState(int zoom) {
+    public ZoomState getZoomState(int zoom) {
         while (zoom >= myZoomStates.size()) {
             // Zoom out even further by calculating the required ZoomState
             // The list of ZoomState is filled step by step until the desired

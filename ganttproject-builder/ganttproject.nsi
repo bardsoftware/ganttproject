@@ -6,7 +6,7 @@ Name "GanttProject"
 XPStyle on
 Icon "ganttproject_16.ico"
 
-!define VERSION "2.0.9"
+!define VERSION "praha-beta1"
 !define VM_ARGS "-Xmx512m -Xms16m"
 
 !ifdef VERSION
@@ -17,13 +17,13 @@ OutFile installer-ganttproject.exe
 
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject
+InstallDir $PROGRAMFILES\GanttProjectPraha
 
 
 !define MUI_ABORTWARNING
 	
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "doc\COPYING"
+!insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -69,8 +69,8 @@ Section "GanttProject"
   File ganttproject.bat
   File ganttproject.exe
   File HouseBuildingSample.gan
-  File /r doc
-
+  File LICENSE
+  
   StrCpy $OUTDIR "$INSTDIR\plugins"
   File /r plugins\net.sourceforge.ganttproject_2.0.0
   SetOutPath $INSTDIR
@@ -91,14 +91,14 @@ Section "GanttProject"
 	WriteRegStr HKCR ".gan\shell" "" "open"
 	WriteRegStr HKCR ".gan\DefaultIcon" "" "$INSTDIR\ganttproject_32_2.ico,0"
 	WriteRegStr HKCR ".gan\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
-	System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
+	System::Call 'Shell32::SHChange	Notify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 SectionEnd
 
 Section "MS-Project Import/Export"
 
   SetOutPath $INSTDIR
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\org.ganttproject.impex.msproject_2.0.0
+  File /r plugins\biz.ganttproject.impex.msproject2_2.0.0
   SetOutPath $INSTDIR
 SectionEnd
 

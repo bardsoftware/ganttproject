@@ -79,8 +79,7 @@ public class NotificationSlider {
     }
 
     public void hide() {
-        // TODO Auto-generated method stub
-
+        myHost.close();
     }
 
     public static BufferedImage createOffscreenImage(JComponent source) {

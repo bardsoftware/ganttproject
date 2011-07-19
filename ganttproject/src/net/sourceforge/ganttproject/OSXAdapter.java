@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject;
 import java.io.IOException;
 
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
 
 import com.apple.eawt.ApplicationAdapter;
@@ -32,6 +33,8 @@ public class OSXAdapter extends ApplicationAdapter {
 			try {
 				myProj.getProjectUIFacade().openProject(myDocument,
 						myProj.getProject());
+			} catch (DocumentException e) {
+				myProj.getUIFacade().showErrorDialog(e);
 			} catch (IOException e) {
 				myProj.getUIFacade().showErrorDialog(e);
 			}

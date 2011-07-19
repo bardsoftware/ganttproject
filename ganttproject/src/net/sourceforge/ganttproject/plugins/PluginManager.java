@@ -22,9 +22,9 @@ public class PluginManager {
 
     private static final String EXTENSION_POINT_ID_EXPORTER = "net.sourceforge.ganttproject.exporter";
 
-    private List<Chart> myCharts;
+    private static List<Chart> myCharts;
 
-    private List<Exporter> myExporters;
+    private static List<Exporter> myExporters;
 
     public static <T> List<T> getExtensions(String extensionPointID, Class<T> extensionPointInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
@@ -43,14 +43,14 @@ public class PluginManager {
         return extensions;
     }
 
-    public List<Chart> getCharts() {
+    public static List<Chart> getCharts() {
         if (myCharts == null) {
             myCharts = getExtensions(EXTENSION_POINT_ID_CHART, Chart.class);
         }
         return myCharts;
     }
 
-    public List<Exporter> getExporters() {
+    public static List<Exporter> getExporters() {
         if (myExporters == null) {
             myExporters = getExtensions(EXTENSION_POINT_ID_EXPORTER, Exporter.class);
         }

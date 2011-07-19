@@ -42,9 +42,11 @@ import org.pushingpixels.trident.callback.TimelineCallback;
 public class NotificationManagerImpl implements NotificationManager {
     private final AnimationView myAnimationView;
     private NotificationChannel myFirstChannel;
+    private final NotificationSlider myNotificationSlider;
 
     public NotificationManagerImpl(AnimationView animationView) {
         myAnimationView = animationView;
+        myNotificationSlider = new NotificationSlider(myAnimationView);
     }
 
     @Override
@@ -58,15 +60,14 @@ public class NotificationManagerImpl implements NotificationManager {
             }
             return;
         }
-        NotificationComponent nc = new NotificationComponent(channel);
-        final NotificationSlider notification = new NotificationSlider(myAnimationView);
+        NotificationComponent nc = new NotificationComponent(channel, myNotificationSlider);
         Action[] actions = nc.getActions();
         JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
         for (final Action a : actions) {
             JButton button = new TestGanttRolloverButton(a);
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent) {
-                    notification.hide();
+                    myNotificationSlider.hide();
                     channel.setVisible(false);
                 }
             });
@@ -81,14 +82,13 @@ public class NotificationManagerImpl implements NotificationManager {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
         channel.setVisible(true);
-        notification.setContents(result, new Runnable() {
+        myNotificationSlider.setContents(result, new Runnable() {
             @Override
             public void run() {
-                System.err.println("on hide!");
                 channel.getButton().setBackground(channel.getNormalColor());
             }
         });
-        notification.show();
+        myNotificationSlider.show();
     }
 
     public void showPending() {
@@ -96,6 +96,7 @@ public class NotificationManagerImpl implements NotificationManager {
             showNotification(myFirstChannel);
         }
     }
+
     JComponent getChannelButtons() {
         JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
         TestGanttRolloverButton rssButton = new TestGanttRolloverButton(new ShowChannelAction(NotificationChannel.RSS));
@@ -183,6 +184,11 @@ public class NotificationManagerImpl implements NotificationManager {
             });
         }
 
+    }
+
+    @Override
+    public void hideNotification() {
+        myNotificationSlider.hide();
     }
 
     private static void runPulsingAnimation(final NotificationChannel channel) {

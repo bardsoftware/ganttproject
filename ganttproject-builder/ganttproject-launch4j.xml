@@ -2,9 +2,9 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>eclipsito.jar</jar>
-  <outfile>C:\Documents and Settings\bard\work\gp-2.0.9-release\ganttproject-builder\dist-bin\ganttproject.exe</outfile>
+  <outfile>C:\Documents and Settings\bard\Мои документы\ganttproject\ganttproject-builder\ganttproject.exe</outfile>
   <errTitle></errTitle>
-  <cmdLine>ganttproject-eclipsito-config.xml -log -open</cmdLine>
+  <cmdLine>ganttproject-eclipsito-config.xml -log</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
@@ -12,13 +12,18 @@
   <customProcName>false</customProcName>
   <stayAlive>true</stayAlive>
   <manifest></manifest>
-  <icon>C:\Documents and Settings\bard\work\ganttproject-head\ganttproject-builder\ganttproject_32_2.ico</icon>
+  <icon>C:\Documents and Settings\bard\Мои документы\ganttproject\ganttproject-builder\ganttproject_32_2.ico</icon>
+  <classPath>
+    <mainClass>org.bardsoftware.eclipsito.Boot</mainClass>
+    <cp>.</cp>
+  </classPath>
   <jre>
     <path></path>
-    <minVersion>1.4.0</minVersion>
+    <minVersion>1.6.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <initialHeapSize>32</initialHeapSize>
     <maxHeapSize>512</maxHeapSize>
+    <opt>-ea</opt>
   </jre>
 </launch4jConfig>

@@ -35,57 +35,57 @@ public interface OffsetBuilder {
         protected float myWeekendDecreaseFactor;
         protected GPCalendar myCalendar;
         protected int myRightMarginTimeUnits;
-    
+
         protected Factory() {
         }
-        
-        Factory withTopUnit(TimeUnit topUnit) {
+
+        public Factory withTopUnit(TimeUnit topUnit) {
             myTopUnit = topUnit;
             return this;
         }
-        
-        Factory withBottomUnit(TimeUnit bottomUnit) {
+
+        public Factory withBottomUnit(TimeUnit bottomUnit) {
             myBottomUnit = bottomUnit;
             return this;
         }
-        
+
         public Factory withStartDate(Date startDate) {
             myStartDate = startDate;
             return this;
         }
-        
+
         public Factory withEndDate(Date endDate) {
             myEndDate = endDate;
             return this;
         }
-        
+
         public Factory withEndOffset(int endOffset) {
             myEndOffset = endOffset;
             return this;
         }
-        
-        Factory withAtomicUnitWidth(int atomicUnitWidth) {
+
+        public Factory withAtomicUnitWidth(int atomicUnitWidth) {
             myAtomicUnitWidth = atomicUnitWidth;
             return this;
         }
-        
+
         Factory withWeekendDecreaseFactor(float weekendDecreaseFactor) {
             myWeekendDecreaseFactor = weekendDecreaseFactor;
             return this;
         }
-        
+
         Factory withCalendar(GPCalendar calendar) {
             myCalendar = calendar;
             return this;
         }
-        
+
         Factory withRightMargin(int rightMarginTimeUnits) {
             myRightMarginTimeUnits = rightMarginTimeUnits;
             return this;
         }
-        
+
         public abstract OffsetBuilder build();
     }
     void constructOffsets(List<Offset> topUnitOffsets, OffsetList bottomUnitOffsets);
-    
+
 }

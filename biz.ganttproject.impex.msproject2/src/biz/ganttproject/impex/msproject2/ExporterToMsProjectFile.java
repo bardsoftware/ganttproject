@@ -142,4 +142,8 @@ public class ExporterToMsProjectFile implements Exporter {
     public String[] getFileExtensions() {
         return FILE_EXTENSIONS;
     }
+
+    public String[] getCommandLineKeys() {
+        return getFileExtensions();
+    }
 }
