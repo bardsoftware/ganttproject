@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -117,7 +117,6 @@ import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -136,7 +135,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
  * Main frame of the project
  */
 public class GanttProject extends GanttProjectBase implements ActionListener,
-        IGanttProject, ResourceView, KeyListener, UIFacade {
+        ResourceView, KeyListener {
 
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
@@ -1037,8 +1036,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public HumanResource newHumanResource() {
-        final HumanResource people = ((HumanResourceManager) getHumanResourceManager())
-                .newHumanResource();
+        final HumanResource people = getHumanResourceManager().newHumanResource();
         people.setRole(getRoleManager().getDefaultRole());
         GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(),
                 getLanguage(), people);
@@ -1318,19 +1316,19 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Save the project as (with a dialog file chooser) */
-    public boolean saveAsProject() throws IOException {
+    public boolean saveAsProject() {
         getProjectUIFacade().saveProjectAs(getProject());
         return true;
     }
 
     /** Save the project on a server (with a GanttURLChooser) */
-    public boolean saveAsURLProject() throws IOException {
+    public boolean saveAsURLProject() {
         getProjectUIFacade().saveProjectRemotely(getProject());
         return true;
     }
 
     /** Save the project on a file */
-    public void saveProject() throws IOException {
+    public void saveProject() {
         getProjectUIFacade().saveProject(getProject());
     }
 
@@ -1363,7 +1361,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Open the web page */
-    public void openWebPage() throws IOException {
+    public void openWebPage() {
         if (!BrowserControl.displayURL("http://ganttproject.biz/")) {
             GanttDialogInfo gdi = new GanttDialogInfo(this,
                     GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
@@ -1440,8 +1438,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private ResourceActionSet getResourceActions() {
         if (myResourceActions == null) {
-            myResourceActions = new ResourceActionSet((IGanttProject) this,
-                    (ResourceContext) getResourcePanel(), this, getUIFacade());
+            myResourceActions = new ResourceActionSet(this,
+                    getResourcePanel(), this, getUIFacade());
         }
         return myResourceActions;
     }
@@ -1497,42 +1495,45 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
+        
+        // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
+        	// Export succeeded so exit applciation
             return false;
-        } else {
-            GanttSplash splash = new GanttSplash();
-            try {
-                splash.setVisible(true);
-                GanttProject ganttFrame = new GanttProject(false);
-                System.err.println("Main frame created");
-                if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
-                    ganttFrame.openStartupDocument(mainArgs.file.get(0));
-                }
-                ganttFrame.setVisible(true);
-                if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
-                    OSXAdapter.registerMacOSXApplication(ganttFrame);
-                }
-                ganttFrame.getActiveChart().reset();
-                return true;
-            } catch (Throwable e) {
-                e.printStackTrace();
-                return false;
-            } finally {
-                splash.close();
-                System.err.println("Splash closed");
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                            @Override
-                            public void uncaughtException(Thread t, Throwable e) {
-                                GPLogger.log(e);
-                            }
-                        });
-                    }
-                });
-            }
         }
+
+		GanttSplash splash = new GanttSplash();
+		try {
+		    splash.setVisible(true);
+		    GanttProject ganttFrame = new GanttProject(false);
+		    System.err.println("Main frame created");
+		    if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
+		        ganttFrame.openStartupDocument(mainArgs.file.get(0));
+		    }
+		    ganttFrame.setVisible(true);
+		    if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
+		        OSXAdapter.registerMacOSXApplication(ganttFrame);
+		    }
+		    ganttFrame.getActiveChart().reset();
+		    return true;
+		} catch (Throwable e) {
+		    e.printStackTrace();
+		    return false;
+		} finally {
+		    splash.close();
+		    System.err.println("Splash closed");
+		    SwingUtilities.invokeLater(new Runnable() {
+		        @Override
+		        public void run() {
+		            Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+		                @Override
+		                public void uncaughtException(Thread t, Throwable e) {
+		                    GPLogger.log(e);
+		                }
+		            });
+		        }
+		    });
+		}
     }
 
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
@@ -1699,11 +1700,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // UIFacade
 
     public GanttChart getGanttChart() {
-        return (GanttChart) getArea();
+        return getArea();
     }
 
     public Chart getResourceChart() {
-        return (Chart) getResourcePanel().area;
+        return getResourcePanel().area;
     }
 
     public int getGanttDividerLocation() {
@@ -1739,7 +1740,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
 
         public GPSaver newSaver() {
-            return new GanttXMLSaver(GanttProject.this, (GanttTree2) getTree(),
+            return new GanttXMLSaver(GanttProject.this, getTree(),
                     getResourcePanel(), getArea(), getUIFacade());
         }
     }

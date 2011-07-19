@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -506,7 +506,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
 
         private void applyLocale() {
-            Locale l = (Locale) stringToObject(getValue());
+            Locale l = stringToObject(getValue());
             if(l == null) {
                 // Selected Locale was not available, so use default Locale
                 l = Locale.getDefault();
@@ -527,7 +527,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
         @Override
         public String getPersistentValue() {
-            Locale l = (Locale) stringToObject(getValue());
+            Locale l = stringToObject(getValue());
             if (l == null) {
                 l = GanttLanguage.getInstance().getLocale();
             }

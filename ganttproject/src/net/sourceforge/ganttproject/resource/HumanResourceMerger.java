@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ import java.util.Map;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 
 public interface HumanResourceMerger {
-    void merge(Map/*<HumanResource,HumanResource>*/<HumanResource, HumanResource> existing2imported);
+    void merge(Map<HumanResource, HumanResource> existing2imported);
     public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
         public static final String NO = "mergeresources_no";
         public static final String BY_ID = "mergeresources_by_id";
@@ -36,5 +36,4 @@ public interface HumanResourceMerger {
             });
         }
     }
-
 }

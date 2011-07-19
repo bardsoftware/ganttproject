@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultEnumerationOption<T> extends GPAbstractOption<String>
-implements EnumerationOption, ChangeValueDispatcher {
+implements EnumerationOption {
     private final String[] myValues;
     private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
 
@@ -56,7 +56,7 @@ implements EnumerationOption, ChangeValueDispatcher {
     }
 
     protected String objectToString(T obj) {
-        assert obj!=null;
+		assert obj != null;
         return obj.toString();
     }
 

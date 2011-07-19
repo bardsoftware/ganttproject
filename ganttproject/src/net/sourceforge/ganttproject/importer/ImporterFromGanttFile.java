@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -56,7 +56,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 public class ImporterFromGanttFile extends ImporterBase implements Importer {
-    private final DefaultEnumerationOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+    private final DefaultEnumerationOption<Object> myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
 
     private final GPOption[] myOptions = new GPOption[] {myMergeResourcesOption};
 
@@ -104,7 +104,6 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         openDocument(targetProject, bufferProject, getUiFacade(), selectedFile);
         getUiFacade().getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
     }
-
 
     private static class TaskFieldImpl implements TableHeaderUIFacade.Column {
         private final String myID;
@@ -159,6 +158,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             }
         }
     }
+
     class BufferProject extends GanttProjectImpl implements ParserFactory {
         PrjInfos myProjectInfo = new PrjInfos();
         final DocumentManager myDocumentManager;
@@ -197,10 +197,11 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             return super.getTaskCustomColumnManager();
         }
     }
+
     private BufferProject createBufferProject(
             final IGanttProject targetProject, final UIFacade uiFacade) {
         return new BufferProject(targetProject, uiFacade);
-    };
+    }
 
     protected Document getDocument(File selectedFile) {
         return new FileDocument(selectedFile);
