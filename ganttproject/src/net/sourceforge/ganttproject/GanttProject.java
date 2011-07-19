@@ -92,6 +92,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.OpenDocumentAction;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
@@ -1199,7 +1200,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Open a local project file with dialog box (JFileChooser) */
-    public void openFile() throws IOException {
+    public void openFile() throws IOException, DocumentException {
         getProjectUIFacade().openProject(this);
     }
 
@@ -1207,12 +1208,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void openURL() {
         try {
             getProjectUIFacade().openRemoteProject(getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }
     }
 
-    public void open(Document document) throws IOException {
+    public void open(Document document) throws IOException, DocumentException {
         openDocument(document);
         if (document.getPortfolio() != null) {
             Document defaultDocument = document.getPortfolio()
@@ -1221,7 +1224,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    private void openDocument(Document document) throws IOException {
+    private void openDocument(Document document) throws IOException, DocumentException {
         if (document.getDescription().toLowerCase().endsWith(".xml") == false
                 && document.getDescription().toLowerCase().endsWith(".gan") == false) {
             // Unknown file extension
@@ -1266,6 +1269,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     try {
                         getProjectUIFacade()
                                 .openProject(document, getProject());
+                    } catch (DocumentException e) {
+                        if (!tryImportDocument(document)) {
+                        	// TODO use the/a nicer error dialog
+                            getUIFacade().showErrorDialog(e);
+                        }
                     } catch (IOException e) {
                         if (!tryImportDocument(document)) {
                             getUIFacade().showErrorDialog(e);
@@ -1301,6 +1309,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private void openStartupDocument(Document document) {
         try {
             getProjectUIFacade().openProject(document, getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }

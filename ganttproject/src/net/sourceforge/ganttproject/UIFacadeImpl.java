@@ -51,6 +51,7 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.DialogAligner;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
@@ -366,12 +367,15 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     static String getExceptionReport(Throwable e) {
         StringBuffer result = new StringBuffer();
-        result.append(e.getMessage() + "\n\n");
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter);
-        e.printStackTrace(writer);
-        writer.close();
-        result.append(stringWriter.getBuffer().toString());
+        result.append(e.getMessage());
+        if(e instanceof DocumentException == false) {
+        	result.append("\n\n");
+        	StringWriter stringWriter = new StringWriter();
+        	PrintWriter writer = new PrintWriter(stringWriter);
+        	e.printStackTrace(writer);
+        	writer.close();
+        	result.append(stringWriter.getBuffer().toString());
+        }
         return result.toString();
     }
 

@@ -12,6 +12,7 @@ import javax.swing.undo.CannotUndoException;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 
 /**
  * @author bard
@@ -57,6 +58,11 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     public void redo() throws CannotRedoException {
         try {
             restoreDocument(myDocumentAfter);
+        } catch (DocumentException e) {
+        	if (!GPLogger.log(e)) {
+        		e.printStackTrace(System.err);
+        	}
+            throw new CannotRedoException();
         } catch (IOException e) {
         	if (!GPLogger.log(e)) {
         		e.printStackTrace(System.err);
@@ -68,6 +74,11 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     public void undo() throws CannotUndoException {
         try {
             restoreDocument(myDocumentBefore);
+        } catch (DocumentException e) {
+        	if (!GPLogger.log(e)) {
+        		e.printStackTrace(System.err);
+        	}
+            throw new CannotRedoException();
         } catch (IOException e) {
         	if (!GPLogger.log(e)) {
         		e.printStackTrace(System.err);
@@ -76,7 +87,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         }
     }
 
-    private void restoreDocument(Document document) throws IOException {
+    private void restoreDocument(Document document) throws IOException, DocumentException {
         Document projectDocument = myManager.getProject().getDocument(); 
 		myManager.getProject().close();
         document.read();
