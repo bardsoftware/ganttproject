@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject;
 
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -49,25 +50,37 @@ public interface CustomPropertyManager {
                 defaultValue = valueAsString==null ? null : Boolean.valueOf(valueAsString);
             } else if (typeAsString.equals("int") || "integer".equals(typeAsString)) {
                 propertyClass = CustomPropertyClass.INTEGER;
-                defaultValue = valueAsString==null ? null : Integer.valueOf(valueAsString);
+                Integer intValue;
+                try {
+                    intValue = valueAsString==null ? null : Integer.valueOf(valueAsString);
+                }
+                catch (NumberFormatException e) {
+                    intValue = null;
+                }
+                defaultValue = intValue;
             } else if (typeAsString.equals("double")) {
                 propertyClass = CustomPropertyClass.DOUBLE;
-                defaultValue = valueAsString==null ? null : Double.valueOf(valueAsString);
+                Double doubleValue;
+                try {
+                    doubleValue = valueAsString==null ? null : Double.valueOf(valueAsString);
+                }
+                catch (NumberFormatException e) {
+                    doubleValue = null;
+                }
+                defaultValue = doubleValue;
             } else if (typeAsString.equals("date")) {
                 propertyClass = CustomPropertyClass.DATE;
                 if (valueAsString==null) {
                     defaultValue = null;
                 }
                 else {
-                    GanttCalendar c = null;
+                    Date defaultDate;
                     try {
-                        c = new GanttCalendar(DateParser.parse(valueAsString));
+                        defaultDate = DateParser.parse(valueAsString);
                     } catch (InvalidDateException e) {
-                        if (!GPLogger.log(e)) {
-                            e.printStackTrace(System.err);
-                        }
+                        defaultDate = null;
                     }
-                    defaultValue = c;
+                    defaultValue = defaultDate;
                 }
             } else {
                 propertyClass = CustomPropertyClass.TEXT;
