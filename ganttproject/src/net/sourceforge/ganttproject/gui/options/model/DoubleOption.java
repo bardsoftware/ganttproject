@@ -1,4 +1,4 @@
 package net.sourceforge.ganttproject.gui.options.model;
 
-public interface StringOption extends GPOption<String> {
+public interface DoubleOption extends GPOption<Double> {
 }
