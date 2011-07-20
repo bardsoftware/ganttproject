@@ -5,17 +5,19 @@ import java.util.GregorianCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public enum CustomPropertyClass {
-    TEXT("text", String.class),
-    INTEGER("integer", Integer.class),
-    DOUBLE("double", Double.class),
-    DATE("date", GregorianCalendar.class),
-    BOOLEAN("boolean", Boolean.class);
+    TEXT("text", "", String.class),
+    INTEGER("integer", "0", Integer.class),
+    DOUBLE("double", "0.0", Double.class),
+    DATE("date", null, GregorianCalendar.class),
+    BOOLEAN("boolean", "false", Boolean.class);
 
     private final String myI18Ntifier;
     private final Class myJavaClass;
+    private final String myDefaultValue;
 
-    private CustomPropertyClass(String i18ntifier, Class javaClass) {
+    private CustomPropertyClass(String i18ntifier, String defaultValue, Class javaClass) {
         myI18Ntifier = i18ntifier;
+        myDefaultValue = defaultValue;
         myJavaClass  = javaClass;
     }
     public String getDisplayName() {
@@ -33,6 +35,11 @@ public enum CustomPropertyClass {
     public String getID() {
         return myI18Ntifier;
     }
+
+    public String getDefaultValueAsString() {
+        return myDefaultValue;
+    }
+
     public static CustomPropertyClass fromJavaClass(Class javaClass) {
         for (CustomPropertyClass klass : CustomPropertyClass.values()) {
             if (klass.getJavaClass().equals(javaClass)) {
