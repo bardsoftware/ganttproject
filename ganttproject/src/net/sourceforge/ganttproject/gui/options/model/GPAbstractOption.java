@@ -25,7 +25,7 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public abstract class GPAbstractOption<T> implements GPOption, ChangeValueDispatcher {
+public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
     private final String myID;
 
     private List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();

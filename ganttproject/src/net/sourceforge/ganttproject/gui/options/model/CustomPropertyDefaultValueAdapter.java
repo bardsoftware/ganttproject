@@ -10,7 +10,7 @@ public abstract class CustomPropertyDefaultValueAdapter {
         case TEXT:
             class TextDefaultValue extends DefaultStringOption {
                 TextDefaultValue() {
-                    super("", def.getDefaultValueAsString());
+                    super("customPropertyDialog.defaultValue.text", def.getDefaultValueAsString());
                 }
                 @Override
                 public void setValue(String value) {
@@ -24,7 +24,7 @@ public abstract class CustomPropertyDefaultValueAdapter {
         case BOOLEAN:
             class BooleanDefaultValue extends DefaultBooleanOption {
                 BooleanDefaultValue() {
-                    super("", (Boolean)def.getDefaultValue());
+                    super("customPropertyDialog.defaultValue.boolean", (Boolean)def.getDefaultValue());
                 }
                 @Override
                 public void setValue(Boolean value) {
@@ -38,7 +38,7 @@ public abstract class CustomPropertyDefaultValueAdapter {
         case INTEGER:
             class IntegerDefaultValue extends DefaultIntegerOption {
                 IntegerDefaultValue() {
-                    super("", (Integer)def.getDefaultValue());
+                    super("customPropertyDialog.defaultValue.integer", (Integer)def.getDefaultValue());
                 }
                 @Override
                 public void setValue(int value) {
@@ -50,23 +50,23 @@ public abstract class CustomPropertyDefaultValueAdapter {
             }
             return new IntegerDefaultValue();
         case DOUBLE:
-            class IntegerDefaultValue extends DefaultIntegerOption {
-                IntegerDefaultValue() {
-                    super("", (Integer)def.getDefaultValue());
+            class DoubleDefaultValue extends DefaultDoubleOption {
+                DoubleDefaultValue() {
+                    super("customPropertyDialog.defaultValue.double", (Double)def.getDefaultValue());
                 }
                 @Override
-                public void setValue(int value) {
+                public void setValue(Double value) {
                     super.setValue(value);
                     if (isChanged()) {
                         def.setDefaultValueAsString(String.valueOf(value));
                     }
                 }
             }
-            return new IntegerDefaultValue();
+            return new DoubleDefaultValue();
         case DATE:
             class DateDefaultValue extends DefaultDateOption {
                 DateDefaultValue() {
-                    super("", (Date)def.getDefaultValue());
+                    super("customPropertyDialog.defaultValue.date", (Date)def.getDefaultValue());
                 }
                 @Override
                 public void setValue(Date value) {
