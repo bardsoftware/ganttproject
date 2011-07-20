@@ -21,7 +21,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -50,10 +49,13 @@ import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.ColorOption;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.DoubleOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
+import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.jdesktop.swing.JXDatePicker;
@@ -62,6 +64,7 @@ import org.jdesktop.swing.JXDatePicker;
  * @author bard
  */
 public class OptionsPageBuilder {
+    private static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
     I18N myi18n = new I18N();
     private Component myParentComponent;
 
@@ -212,7 +215,7 @@ public class OptionsPageBuilder {
         //nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
         return nextLabel;
     }
-    private Component createOptionComponent(GPOptionGroup group, GPOption option) {
+    public Component createOptionComponent(GPOptionGroup group, GPOption option) {
         Component result = null;
         if (option instanceof EnumerationOption) {
             result = createEnumerationComponent((EnumerationOption) option, group);
@@ -231,10 +234,28 @@ public class OptionsPageBuilder {
         else if (option instanceof StringOption) {
             result = createStringComponent((StringOption)option);
         }
+        else if (option instanceof IntegerOption) {
+            result = createNumericComponent((IntegerOption)option, new NumericParser<Integer>() {
+                public Integer parse(String text) {
+                    return Integer.valueOf(text);
+                }
+            });
+        }
+        else if (option instanceof DoubleOption) {
+            result = createNumericComponent((DoubleOption)option, new NumericParser<Double>() {
+                public Double parse(String text) {
+                    return Double.valueOf(text);
+                }
+            });
+        }
         if (result == null) {
             result = new JLabel("Unknown option class=" + option.getClass());
         }
         return result;
+    }
+
+    private Color getValidFieldColor() {
+        return UIManager.getColor("TextField.background");
     }
 
     private static void updateTextField(
@@ -300,11 +321,11 @@ public class OptionsPageBuilder {
 
     private boolean isCheckboxOption(GPOptionGroup group, GPOption option) {
         String yesKey = myi18n.getCanonicalOptionLabelKey(option)+".yes";
-        if (group.getI18Nkey(yesKey)==null && myi18n.getValue(yesKey)==null) {
+        if ((group==null || group.getI18Nkey(yesKey)==null) && myi18n.getValue(yesKey)==null) {
             return true;
         }
         String noKey = myi18n.getCanonicalOptionLabelKey(option)+".no";
-        if (group.getI18Nkey(noKey)==null && myi18n.getValue(noKey)==null) {
+        if ((group==null || group.getI18Nkey(noKey)==null) && myi18n.getValue(noKey)==null) {
             return true;
         }
         return false;
@@ -424,6 +445,54 @@ public class OptionsPageBuilder {
             });
         }
 
+        return result;
+    }
+
+    private interface NumericParser<T extends Number> {
+        T parse(String text) throws NumberFormatException;
+    }
+
+    /**
+     * Create JTextField component in options that allows user to input only integer values.
+     * @param option
+     * @return
+     */
+    private <T extends Number> Component createNumericComponent(
+            final GPOption<T> option, final NumericParser<T> parser) {
+        final JTextField result = new JTextField(String.valueOf(option.getValue()));
+        final DocumentListener listener = new DocumentListener() {
+            private void saveValue() {
+                try {
+                    T value = parser.parse(result.getText());
+                    option.setValue(value);
+                    result.setBackground(getValidFieldColor());
+                }
+                /* If value in text filed is not integer change field color */
+                catch (NumberFormatException ex) {
+                    result.setBackground(INVALID_FIELD_COLOR);
+                }
+                catch(ValidationException ex) {
+                    result.setBackground(INVALID_FIELD_COLOR);
+                }
+            }
+            public void insertUpdate(DocumentEvent e) {
+                saveValue();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                saveValue();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                saveValue();
+            }
+        };
+        result.getDocument().addDocumentListener(listener);
+        option.addChangeValueListener(new ChangeValueListener() {
+            public void changeValue(final ChangeValueEvent event) {
+                updateTextField(result, listener, event);
+            }
+        });
         return result;
     }
 
