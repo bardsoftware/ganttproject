@@ -17,6 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.tableView;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -331,9 +332,11 @@ public class ColumnManagerPanel {
             if (defaultValueEditor == null) {
                 GPOption defaultValueOption = CustomPropertyDefaultValueAdapter.createDefaultValueOption(myDefinition);
                 OptionsPageBuilder builder = new OptionsPageBuilder();
-                defaultValueEditor = builder.createStandaloneOptionPanel(defaultValueOption);
-                myDefaultValueEditors.put(newPropertyClass, defaultValueEditor);
-                myCardPanel.add(defaultValueEditor, newPropertyClass.getDisplayName());
+                defaultValueEditor = builder.createOptionComponent(null, defaultValueOption);
+                JPanel defaultValuePanel = new JPanel(new BorderLayout());
+                defaultValuePanel.add(defaultValueEditor, BorderLayout.NORTH);
+                myDefaultValueEditors.put(newPropertyClass, defaultValuePanel);
+                myCardPanel.add(defaultValuePanel, newPropertyClass.getDisplayName());
             }
 
             myCardLayout.show(myCardPanel, value);
