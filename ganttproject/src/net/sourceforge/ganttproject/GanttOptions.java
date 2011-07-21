@@ -1,20 +1,21 @@
-/***************************************************************************
- GanttOptions.java  -  description
- -------------------
- begin                : mar 2003
- copyright            : (C) 2003 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 Alexandre Thomas, GanttProject team 
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
@@ -32,7 +33,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -162,17 +162,18 @@ public class GanttOptions {
                 .toString();
         toolBarPosition = JToolBar.HORIZONTAL;
         bShowStatusBar = true;
-        iconSize = "16"; // must be 16 small, 24 for big (32 for extra big
-        // not directly include on UI)
+        // must be 16 small, 24 for big (32 for extra big not directly include on UI)
+        iconSize = "16";
         buttonsshow = GanttOptions.ICONS;
-        /** Export options. */
+
+        // Export options
         bExportName = true;
         bExportComplete = true;
         bExportRelations = true;
         bExport3DBorders = false;
-        /** CVS export options. */
-        csvOptions = new CSVOptions();
 
+        // CVS export options
+        csvOptions = new CSVOptions();
     }
 
     private void startElement(String name, Attributes attrs,
@@ -206,13 +207,11 @@ public class GanttOptions {
      */
     public void save() {
         try {
-
             String sFileName = ".ganttproject";
-            /*
-             * if(System.getProperty("os.name").startsWith("Windows") ||
-             * System.getProperty("os.name").startsWith("Mac")) sFileName =
-             * "ganttproject.ini";
-             */
+            
+//			if (System.getProperty("os.name").startsWith("Windows")
+//					|| System.getProperty("os.name").startsWith("Mac"))
+//				sFileName = "ganttproject.ini";             
 
             File file = new File(System.getProperty("user.home")
                     + System.getProperty("file.separator") + sFileName);
@@ -227,52 +226,55 @@ public class GanttOptions {
                     "{http://xml.apache.org/xslt}indent-amount", "4");
             handler.setResult(new StreamResult(file));
             handler.startDocument();
-            // handler.startDTD("ganttproject.sourceforge.net",
-            // "-//GanttProject.org//DTD GanttProject-1.x//EN",
-            // "http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
-            // handler.endDTD();
-            //
+//			handler.startDTD("ganttproject.sourceforge.net",
+//					"-//GanttProject.org//DTD GanttProject-1.x//EN",
+//					"http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
+//			handler.endDTD();
+
             final AttributesImpl attrs = new AttributesImpl();
             handler.startElement("", "ganttproject-options",
                     "ganttproject-options", attrs);
-            //
+
             attrs.clear();
             // write the task Color
-            /*
-             * Color color = getUIConfiguration().getTaskColor();
-             * attrs.addAttribute("", "red", "red", "CDATA", ""+color.getRed());
-             * attrs.addAttribute("", "green", "green", "CDATA",
-             * ""+color.getGreen()); attrs.addAttribute("", "blue", "blue",
-             * "CDATA", ""+color.getBlue()); handler.startElement("",
-             * "task-color", "task-color", attrs); handler.endElement("",
-             * "task-color", "task-color"); attrs.clear();
-             */
+
+//			Color color = getUIConfiguration().getTaskColor();
+//			attrs.addAttribute("", "red", "red", "CDATA", "" + color.getRed());
+//			attrs.addAttribute("", "green", "green", "CDATA", ""
+//					+ color.getGreen());
+//			attrs.addAttribute("", "blue", "blue", "CDATA", ""
+//					+ color.getBlue());
+//			handler.startElement("", "task-color", "task-color", attrs);
+//			handler.endElement("", "task-color", "task-color"); attrs.clear();
 
             Color resourceColor = myUIConfig.getResourceColor();
-            if (resourceColor != null)
-                attrs.addAttribute("", "resources", "resources", "CDATA", ""
-                        + ColorConvertion.getColor(resourceColor));
+			if (resourceColor != null) {
+				attrs.addAttribute("", "resources", "resources", "CDATA",
+						ColorConvertion.getColor(resourceColor));
+			}
             Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();
-            if (resourceOverloadColor != null)
-                attrs.addAttribute("", "resourcesOverload",
-                        "resourcesOverload", "CDATA", ""
-                                + ColorConvertion
-                                        .getColor(resourceOverloadColor));
+			if (resourceOverloadColor != null) {
+				attrs.addAttribute("", "resourcesOverload",
+						"resourcesOverload", "CDATA", ColorConvertion
+								.getColor(resourceOverloadColor));
+			}
             Color resourceUnderloadColor = myUIConfig
                     .getResourceUnderloadColor();
-            if (resourceUnderloadColor != null)
-                attrs.addAttribute("", "resourcesUnderload",
-                        "resourcesUnderload", "CDATA", ""
-                                + ColorConvertion
-                                        .getColor(resourceUnderloadColor));
+			if (resourceUnderloadColor != null) {
+				attrs.addAttribute("", "resourcesUnderload",
+						"resourcesUnderload", "CDATA", ColorConvertion
+								.getColor(resourceUnderloadColor));
+			}
             Color weekEndColor = myUIConfig.getWeekEndColor();
-            if (weekEndColor != null)
-                attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA", ""
-                        + ColorConvertion.getColor(weekEndColor));
+			if (weekEndColor != null) {
+				attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA",
+						ColorConvertion.getColor(weekEndColor));
+			}
             Color daysOffColor = myUIConfig.getDayOffColor();
-            if (daysOffColor != null)
-                attrs.addAttribute("", "daysOff", "daysOff", "CDATA", ""
-                        + ColorConvertion.getColor(daysOffColor));
+			if (daysOffColor != null) {
+				attrs.addAttribute("", "daysOff", "daysOff", "CDATA",
+						ColorConvertion.getColor(daysOffColor));
+			}
             handler.startElement("", "colors", "colors", attrs);
             handler.endElement("", "colors", "colors");
             attrs.clear();
@@ -283,6 +285,7 @@ public class GanttOptions {
             addAttribute("width", "" + width, attrs);
             addAttribute("height", "" + height, attrs);
             emptyElement("geometry", attrs, handler);
+
             // ToolBar position
             addAttribute("position", "" + toolBarPosition, attrs);
             addAttribute("icon-size", "" + iconSize, attrs);
@@ -361,7 +364,7 @@ public class GanttOptions {
             addAttribute("spec",
                     getFontSpec(getUIConfiguration().getMenuFont()), attrs);
             emptyElement("font", attrs, handler);
-            //
+
             addAttribute("category", "chart-main", attrs);
             addAttribute("spec", getFontSpec(getUIConfiguration()
                     .getChartMainFont()), attrs);
@@ -395,13 +398,13 @@ public class GanttOptions {
         AttributesImpl attrs = new AttributesImpl();
         startElement(node.name(), attrs, handler);
         String[] keys = node.keys();
-        for (int i=0; i<keys.length; i++) {
+		for (int i = 0; i < keys.length; i++) {
             addAttribute("name", keys[i], attrs);
             addAttribute("value", node.get(keys[i], ""), attrs);
             emptyElement("option", attrs, handler);
         }
         String[] children = node.childrenNames();
-        for (int i=0; i<children.length; i++) {
+		for (int i = 0; i < children.length; i++) {
             savePreferences(node.node(children[i]), handler);
         }
         endElement(node.name(), handler);
@@ -500,8 +503,7 @@ public class GanttOptions {
     }
 
     private void saveRoleSets(TransformerHandler handler)
-            throws TransformerConfigurationException,
-            TransformerFactoryConfigurationError, SAXException {
+            throws TransformerFactoryConfigurationError, SAXException {
         RoleSet[] roleSets = getRoleManager().getRoleSets();
         for (int i = 0; i < roleSets.length; i++) {
             AttributesImpl attrs = new AttributesImpl();
@@ -528,9 +530,8 @@ public class GanttOptions {
 
     public UIConfiguration getUIConfiguration() {
         if (myUIConfig == null) {
-            myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
-                    206), redline) {
-
+			myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
+					206), redline) {
                 public Font getMenuFont() {
                     return myMenuFont == null ? super.getMenuFont()
                             : myMenuFont;
@@ -541,7 +542,6 @@ public class GanttOptions {
                             : myChartMainFont;
                 }
             };
-            // Color.black
         }
         return myUIConfig;
     }
@@ -581,12 +581,14 @@ public class GanttOptions {
 
             if (attrs != null) {
                 for (int i = 0; i < attrs.getLength(); i++) {
-                    String aName = attrs.getQName(i); // Attr name
+                	/** Attribute name */
+                    String aName = attrs.getQName(i);
+                    /** Value of attribute */
                     String value = attrs.getValue(i);
 
                     String tagDotAttribute = qName+"."+aName;
                     GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);
-                    if (converter!=null) {
+					if (converter != null) {
                         converter.loadValue(value);
                         continue;
                     }
@@ -601,14 +603,11 @@ public class GanttOptions {
                     } else if (qName.equals("geometry")) {
                         if (aName.equals("x")) {
                             x = new Integer(value).hashCode();
-                        }
-                        if (aName.equals("y")) {
+                        } else if (aName.equals("y")) {
                             y = new Integer(value).hashCode();
-                        }
-                        if (aName.equals("width")) {
+                        } else if (aName.equals("width")) {
                             width = new Integer(value).hashCode();
-                        }
-                        if (aName.equals("height")) {
+                        } else if (aName.equals("height")) {
                             height = new Integer(value).hashCode();
                         }
                     } else if (qName.equals("file")) {
@@ -651,17 +650,18 @@ public class GanttOptions {
                             bShowStatusBar = (new Boolean(value))
                                     .booleanValue();
                     } else if (qName.equals("export")) {
-                        if (aName.equals("name"))
+                        if (aName.equals("name")) {
                             bExportName = (new Boolean(value)).booleanValue();
-                        else if (aName.equals("complete"))
+                        } else if (aName.equals("complete")) {
                             bExportComplete = (new Boolean(value))
                                     .booleanValue();
-                        else if (aName.equals("relations"))
+                        } else if (aName.equals("relations")) {
                             bExportRelations = (new Boolean(value))
                                     .booleanValue();
-                        else if (aName.equals("border3d"))
+                        } else if (aName.equals("border3d")) {
                             bExport3DBorders = (new Boolean(value))
                                     .booleanValue();
+                        }
                     } else if (qName.equals("colors")) {
                         if (aName.equals("resources")) {
                             Color colorR = ColorConvertion
@@ -697,50 +697,52 @@ public class GanttOptions {
                             csvOptions.sSeparatedChar = value;
                         if (aName.equals("separatedTextChar"))
                             csvOptions.sSeparatedTextChar = value;
-                    } else if (qName.equals("csv-tasks")) {
-                        if (aName.equals("id"))
-                            csvOptions.bExportTaskID = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("name"))
-                            csvOptions.bExportTaskName = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("start-date"))
-                            csvOptions.bExportTaskStartDate = (new Boolean(
-                                    value)).booleanValue();
-                        if (aName.equals("end-date"))
-                            csvOptions.bExportTaskEndDate = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("percent"))
-                            csvOptions.bExportTaskPercent = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("duration"))
-                            csvOptions.bExportTaskDuration = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("webLink"))
-                            csvOptions.bExportTaskWebLink = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("resources"))
-                            csvOptions.bExportTaskResources = (new Boolean(
-                                    value)).booleanValue();
-                        if (aName.equals("notes"))
-                            csvOptions.bExportTaskNotes = (new Boolean(value))
-                                    .booleanValue();
+					} else if (qName.equals("csv-tasks")) {
+						if (aName.equals("id")) {
+							csvOptions.bExportTaskID = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("name")) {
+							csvOptions.bExportTaskName = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("start-date")) {
+							csvOptions.bExportTaskStartDate = (new Boolean(
+									value)).booleanValue();
+						} else if (aName.equals("end-date")) {
+							csvOptions.bExportTaskEndDate = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("percent")) {
+							csvOptions.bExportTaskPercent = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("duration")) {
+							csvOptions.bExportTaskDuration = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("webLink")) {
+							csvOptions.bExportTaskWebLink = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("resources")) {
+							csvOptions.bExportTaskResources = (new Boolean(
+									value)).booleanValue();
+						} else if (aName.equals("notes")) {
+							csvOptions.bExportTaskNotes = (new Boolean(value))
+									.booleanValue();
+						}
                     } else if (qName.equals("csv-resources")) {
-                        if (aName.equals("id"))
-                            csvOptions.bExportResourceID = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("name"))
-                            csvOptions.bExportResourceName = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("mail"))
-                            csvOptions.bExportResourceMail = (new Boolean(value))
-                                    .booleanValue();
-                        if (aName.equals("phone"))
-                            csvOptions.bExportResourcePhone = (new Boolean(
-                                    value)).booleanValue();
-                        if (aName.equals("role"))
-                            csvOptions.bExportResourceRole = (new Boolean(value))
-                                    .booleanValue();
+						if (aName.equals("id")) {
+							csvOptions.bExportResourceID = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("name")) {
+							csvOptions.bExportResourceName = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("mail")) {
+							csvOptions.bExportResourceMail = (new Boolean(value))
+									.booleanValue();
+						} else if (aName.equals("phone")) {
+							csvOptions.bExportResourcePhone = (new Boolean(
+									value)).booleanValue();
+						} else if (aName.equals("role")) {
+							csvOptions.bExportResourceRole = (new Boolean(value))
+									.booleanValue();
+						}
                     }
                 }
             }
@@ -750,7 +752,6 @@ public class GanttOptions {
                 // Color color = new Color(r, g, b);
                 // getUIConfiguration().setTaskColor(color);
                 setDefaultTaskColor(new Color(r, g, b));
-
             }
 
             if (qName.equals("font")) {
@@ -760,9 +761,7 @@ public class GanttOptions {
                 } else if ("chart-main".equals(category)) {
                     myChartMainFont = Font.decode(attrs.getValue("spec"));
                 }
-
             }
-
         }
 
         public void endElement(String uri, String localName, String name)
@@ -913,7 +912,6 @@ public class GanttOptions {
     public void setExport3dBorders(boolean borders3d) {
         bExport3DBorders = borders3d;
     }
-
 
     /**
      * @return the button show attribute must be GanttOptions.ICONS or

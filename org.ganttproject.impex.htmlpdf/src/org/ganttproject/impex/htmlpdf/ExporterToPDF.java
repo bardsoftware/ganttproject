@@ -1,5 +1,20 @@
 /*
- * Created on 18.09.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
@@ -26,7 +41,6 @@ import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.apache.fop.apps.Driver;
@@ -43,7 +57,7 @@ import org.ganttproject.impex.htmlpdf.fonts.JDKFontLocator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-public class ExporterToPDF extends ExporterBase implements Exporter {
+public class ExporterToPDF extends ExporterBase {
     private static final String JPG_FORMAT_NAME = "jpg";
     private PDFStylesheet myStylesheet;
 
@@ -104,11 +118,8 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                 }
                 return Status.OK_STATUS;
             }
-
-
         };
         return result;
-
     }
 
     private Job createGenerateResourcechartJob(final ExportState state) {
@@ -121,8 +132,8 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-                    File outputFile = File.createTempFile("resourcechart",
-                            ".jpg");
+					File outputFile = File.createTempFile("resourcechart",
+							".jpg");
                     state.resourceChartImageFile = outputFile;
                     ImageIO.write(resourceChartImage, JPG_FORMAT_NAME,
                             outputFile);
@@ -157,7 +168,6 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                     FopImageFactory.resetCache();
                     state.driver = driver;
                     monitor.worked(1);
-                	//throw new RuntimeException("Moooo!!!!!");
                 } catch (Exception e) {
                 	cancel();
                 	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
@@ -183,21 +193,19 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                     state.driver.setOutputStream(out);
                     TransformerHandler stylesheetHandler = createHandler(myStylesheet
                             .getUrl().toString());
-//                     SAXTransformerFactory factory = getTransformerFactory();
-//                     TransformerHandler stylesheetHandler =
-//                     factory.newTransformerHandler();
-//                     Transformer transformer =
-//                     stylesheetHandler.getTransformer();
-//                     transformer.setOutputProperty(OutputKeys.ENCODING,
-//                     "UTF-8");
-//                     transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//                     transformer.setOutputProperty(
-//                     "{http://xml.apache.org/xslt}indent-amount", "4");
+//					SAXTransformerFactory factory = getTransformerFactory();
+//					TransformerHandler stylesheetHandler = factory
+//							.newTransformerHandler();
+//					Transformer transformer = stylesheetHandler
+//							.getTransformer();
+//					transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+//					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//					transformer.setOutputProperty(
+//							"{http://xml.apache.org/xslt}indent-amount", "4");
 
                     stylesheetHandler.setResult(new SAXResult(state.driver
                             .getContentHandler()));
-//                     stylesheetHandler.setResult(new
-//                     StreamResult(System.out));
+//                     stylesheetHandler.setResult(new StreamResult(System.out));
                     exportProject(state, stylesheetHandler);
                     resultFiles.add(state.outputFile);
                 } catch (Exception e) {
@@ -232,8 +240,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         addAttribute("xmlns:ganttproject", "http://ganttproject.sf.net/", attrs);
         addAttribute("version", "1.0", attrs);
         startElement("xsl:stylesheet", attrs, handler);
-        // handler.startPrefixMapping("ganttproject",
-        // "http://ganttproject.sf.net");
+        // handler.startPrefixMapping("ganttproject", "http://ganttproject.sf.net");
 
         writeViews(getUIFacade(), handler);
 
@@ -299,8 +306,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                     .newTransformerHandler();
             handler.setResult(output);
             // just for nifty debugging :)
-            // handler.getTransformer().setOutputProperty(OutputKeys.INDENT,
-            // "yes");
+            // handler.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
             createConfiguration(handler, fontRecords);
         } catch (TransformerConfigurationException e) {
             throw new ExportException("Failed to create FOP options", e);
@@ -370,6 +376,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
         File ganttChartImageFile;
         File resourceChartImageFile;
     }
+
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         myStylesheet = (PDFStylesheet) stylesheet;
     }
@@ -385,7 +392,7 @@ public class ExporterToPDF extends ExporterBase implements Exporter {
                 return new PDFStylesheetImpl(resolvedUrl, localizedName);
             }
         };
-        return (Stylesheet[]) factory.createStylesheets(PDFStylesheet.class);
+        return factory.createStylesheets(PDFStylesheet.class);
     }
 
     private class PDFStylesheetImpl extends StylesheetImpl implements PDFStylesheet {
