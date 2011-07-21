@@ -437,36 +437,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
             // The following is used to store the new index of a moved column in
             // order
             // to restore it properly.
-            getTable().getColumnModel().addColumnModelListener(
-                    new TableColumnModelListener() {
-                        public void columnAdded(TableColumnModelEvent e) {
-                            // nothing to do
-                        }
-
-                        public void columnRemoved(TableColumnModelEvent e) {
-                            // nothing to do
-                        }
-
-                        public void columnMoved(TableColumnModelEvent e) {
-                            DefaultTableColumnModel o = (DefaultTableColumnModel) e
-                                    .getSource();
-                            TableColumn tc = o.getColumn(e.getFromIndex());
-                            ColumnKeeper ck = mapTableColumnColumnKeeper
-                                    .get(tc);
-                            if (ck != null)
-                                ck.setInitIndex(e.getToIndex());
-                            getProject().setModified();
-                            updateDisplayedColumnsOrder();
-                        }
-
-                        public void columnMarginChanged(ChangeEvent e) {
-                            // nothing to do
-                        }
-
-                        public void columnSelectionChanged(ListSelectionEvent e) {
-                            // nothing to do
-                        }
-                    });
 
         }
         setHighlighters(new HighlighterPipeline(new Highlighter[] {

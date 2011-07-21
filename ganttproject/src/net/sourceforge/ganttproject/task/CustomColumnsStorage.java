@@ -75,8 +75,8 @@ public class CustomColumnsStorage {
      *             exists.
      */
     public void addCustomColumn(CustomColumn col) {
-        assert !getCustomColumnsNames().contains(col.getName()) : 
-        	"column name=" + col.getName() + " already exists:\n" + getCustomColumnsNames();
+        assert !getCustomColumnsNames().contains(col.getName()) :
+            "column name=" + col.getName() + " already exists:\n" + getCustomColumnsNames();
         String id = col.getId();
         while (id == null) {
             id = ID_PREFIX + nextId++;
@@ -270,13 +270,10 @@ public class CustomColumnsStorage {
      *            The task to process.
      */
     public void processNewTask(Task task) {
-        Iterator<CustomColumn> it = mapIdCustomColum.values().iterator();
-        while (it.hasNext()) {
-            CustomColumn cc = it.next();
+        for (CustomColumn cc : mapIdCustomColum.values()) {
             try {
                 if (cc.getDefaultValue()!=null) {
-                    task.getCustomValues().setValue(
-                            cc.getName(), cc.getDefaultValue());
+                    task.getCustomValues().setValue(cc.getName(), cc.getDefaultValue());
                 }
             } catch (CustomColumnsException e) {
                 if (!GPLogger.log(e)) {

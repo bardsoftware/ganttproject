@@ -18,9 +18,4 @@ public class DefaultIntegerOption extends GPAbstractOption<Integer> implements I
         int intValue = Integer.parseInt(value);
         setValue(intValue, true);
     }
-
-    public void setValue(int value) {
-        super.setValue(value);
-    }
-
 }

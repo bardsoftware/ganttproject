@@ -33,6 +33,10 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
@@ -219,6 +223,26 @@ public class GPTreeTableBase extends JNTreeTable{
         myUiFacade = uiFacade;
         myProject = project;
         getTable().getTableHeader().addMouseListener(new HeaderMouseListener(project.getTaskCustomColumnManager()));
+        getTable().getColumnModel().addColumnModelListener(
+            new TableColumnModelListener() {
+                public void columnMoved(TableColumnModelEvent e) {
+                    if (e.getFromIndex() != e.getToIndex()) {
+                        myProject.setModified();
+                    }
+                }
+                public void columnAdded(TableColumnModelEvent e) {
+                    myProject.setModified();
+                }
+                public void columnRemoved(TableColumnModelEvent e) {
+                    myProject.setModified();
+                }
+                public void columnMarginChanged(ChangeEvent e) {
+                    myProject.setModified();
+                }
+                public void columnSelectionChanged(ListSelectionEvent e) {
+                }
+            });
+
     }
 
     protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
