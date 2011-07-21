@@ -2,23 +2,27 @@ package net.sourceforge.ganttproject.gui.options.model;
 
 import java.util.Date;
 
+import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 
 public abstract class CustomPropertyDefaultValueAdapter {
-    public static GPOption createDefaultValueOption(final CustomPropertyDefinition def) {
-        switch (def.getPropertyClass()) {
+    public static GPOption createDefaultValueOption(final CustomPropertyClass propertyClass, final CustomPropertyDefinition def) {
+        switch (propertyClass) {
         case TEXT:
             class TextDefaultValue extends DefaultStringOption {
                 TextDefaultValue() {
                     super("customPropertyDialog.defaultValue.text", def.getDefaultValueAsString());
                 }
+
                 @Override
-                public void setValue(String value) {
-                    super.setValue(value);
+                public void commit() {
                     if (isChanged()) {
-                        def.setDefaultValueAsString(value);
+                        assert propertyClass == def.getPropertyClass();
+                        super.commit();
+                        def.setDefaultValueAsString(getValue());
                     }
                 }
+
             }
             return new TextDefaultValue();
         case BOOLEAN:
@@ -27,10 +31,11 @@ public abstract class CustomPropertyDefaultValueAdapter {
                     super("customPropertyDialog.defaultValue.boolean", (Boolean)def.getDefaultValue());
                 }
                 @Override
-                public void setValue(Boolean value) {
-                    super.setValue(value);
+                public void commit() {
                     if (isChanged()) {
-                        def.setDefaultValueAsString(String.valueOf(value));
+                        assert propertyClass == def.getPropertyClass();
+                        super.commit();
+                        def.setDefaultValueAsString(String.valueOf(getValue()));
                     }
                 }
             }
@@ -41,10 +46,11 @@ public abstract class CustomPropertyDefaultValueAdapter {
                     super("customPropertyDialog.defaultValue.integer", (Integer)def.getDefaultValue());
                 }
                 @Override
-                public void setValue(int value) {
-                    super.setValue(value);
+                public void commit() {
                     if (isChanged()) {
-                        def.setDefaultValueAsString(String.valueOf(value));
+                        assert propertyClass == def.getPropertyClass();
+                        super.commit();
+                        def.setDefaultValueAsString(String.valueOf(getValue()));
                     }
                 }
             }
@@ -55,10 +61,11 @@ public abstract class CustomPropertyDefaultValueAdapter {
                     super("customPropertyDialog.defaultValue.double", (Double)def.getDefaultValue());
                 }
                 @Override
-                public void setValue(Double value) {
-                    super.setValue(value);
+                public void commit() {
                     if (isChanged()) {
-                        def.setDefaultValueAsString(String.valueOf(value));
+                        assert propertyClass == def.getPropertyClass();
+                        super.commit();
+                        def.setDefaultValueAsString(String.valueOf(getValue()));
                     }
                 }
             }
@@ -69,10 +76,11 @@ public abstract class CustomPropertyDefaultValueAdapter {
                     super("customPropertyDialog.defaultValue.date", (Date)def.getDefaultValue());
                 }
                 @Override
-                public void setValue(Date value) {
-                    super.setValue(value);
+                public void commit() {
                     if (isChanged()) {
-                        def.setDefaultValueAsString(String.valueOf(value));
+                        assert propertyClass == def.getPropertyClass();
+                        super.commit();
+                        def.setDefaultValueAsString(String.valueOf(getValue()));
                     }
                 }
             }

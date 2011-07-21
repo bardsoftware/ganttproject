@@ -15,17 +15,6 @@ public class DefaultStringOption extends GPAbstractOption<String> implements Str
         super(id, initialValue);
     }
 
-    public void setValue(String value) {
-        ChangeValueEvent event = new ChangeValueEvent(getID(), myLockedValue,
-                value);
-        myLockedValue = value;
-        fireChangeValueEvent(event);
-    }
-
-    public String getValue() {
-        return myValue;
-    }
-
     public String getUncommitedValue() {
         return myLockedValue;
     }
@@ -40,6 +29,6 @@ public class DefaultStringOption extends GPAbstractOption<String> implements Str
     }
 
     public void loadPersistentValue(String value) {
-        setValue(value);
+        setValue(value, true);
     }
 }

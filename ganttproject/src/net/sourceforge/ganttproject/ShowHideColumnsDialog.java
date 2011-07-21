@@ -17,6 +17,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
+import java.awt.event.ActionEvent;
+
 import javax.swing.Action;
 import javax.swing.JComponent;
 
@@ -39,8 +41,13 @@ public class ShowHideColumnsDialog {
     }
 
     public void show() {
-        ColumnManagerPanel panel = new ColumnManagerPanel(myManager, myVisibleFields);
+        final ColumnManagerPanel panel = new ColumnManagerPanel(myManager, myVisibleFields);
         JComponent component = (JComponent) panel.createComponent();
-        myUIfacade.createDialog(component, new Action[] {OkAction.EMPTY}, "Custom Fields Manager").show();
+        myUIfacade.createDialog(component, new Action[] {new OkAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panel.commitCustomPropertyEdit();
+            }
+        }}, "Custom Fields Manager").show();
     }
 }

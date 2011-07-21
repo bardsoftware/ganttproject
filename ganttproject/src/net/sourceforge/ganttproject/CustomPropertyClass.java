@@ -37,7 +37,7 @@ public enum CustomPropertyClass {
     }
 
     public String getDefaultValueAsString() {
-        return myDefaultValue;
+        return null;
     }
 
     public static CustomPropertyClass fromJavaClass(Class javaClass) {

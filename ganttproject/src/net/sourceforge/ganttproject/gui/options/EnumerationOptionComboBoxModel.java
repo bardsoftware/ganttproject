@@ -68,7 +68,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
             String key = OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey(ids[i]);
             String value = GanttLanguage.getInstance().getText(key);
 
-            if (value == null) {
+            if (value == null && group != null) {
                 key = group.getI18Nkey(key);
                 if (key != null) {
                     value = GanttLanguage.getInstance().getText(key);
