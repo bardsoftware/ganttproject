@@ -167,6 +167,14 @@ abstract class ExporterBase extends AbstractExporter {
                         jobs[i].join();
                     } catch (InterruptedException e) {
                         getUIFacade().showErrorDialog(e);
+                        monitor.setCanceled(true);
+                    }
+                    
+                    // Check if job got finished improperly
+                    IStatus state = jobs[i].getResult();
+                    if(state.isOK() == false) {
+                    	getUIFacade().showErrorDialog(state.getException());
+                    	monitor.setCanceled(true);
                     }
                 }
                 Job finishing = new Job("finishing") {
