@@ -161,11 +161,6 @@ public class HttpDocument extends AbstractURLDocument {
         return (!malformedURL);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.document.Document#acquireLock(java.lang.String)
-     */
     public boolean acquireLock() {
         if (locked)
             return true;
@@ -198,11 +193,6 @@ public class HttpDocument extends AbstractURLDocument {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.document.Document#releaseLock()
-     */
     public void releaseLock() {
         if (null == getWebdavResource()) {
             return;
@@ -266,12 +256,12 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     public static void setLockDAVMinutes(int i) {
+    	// FIXME should not be static, as each derived object should have its own setting
         lockDAVMinutes = i;
     }
 
     public void write() throws IOException {
         // TODO Auto-generated method stub
-
     }
 
     public URI getURI() {

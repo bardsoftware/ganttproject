@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team 
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -82,7 +82,6 @@ abstract class ExporterBase extends AbstractExporter {
                     }
                 }
             }
-
         };
         return stylesheetOption;
     }
@@ -180,7 +179,7 @@ abstract class ExporterBase extends AbstractExporter {
                 Job finishing = new Job("finishing") {
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.done();
-                        finalizationJob.run((File[]) resultFiles.toArray(new File[0]));
+                        finalizationJob.run(resultFiles.toArray(new File[0]));
                         return Status.OK_STATUS;
                     }
                 };
@@ -291,12 +290,12 @@ abstract class ExporterBase extends AbstractExporter {
     protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         int totalWidth = 0;
-        for (int i=0; i<visibleFields.getSize(); i++) {
+		for (int i = 0; i < visibleFields.getSize(); i++) {
             if (visibleFields.getField(i).isVisible()) {
                 totalWidth += visibleFields.getField(i).getWidth();
             }
         }
-        for (int i=0; i<visibleFields.getSize(); i++) {
+		for (int i = 0; i < visibleFields.getSize(); i++) {
             TableHeaderUIFacade.Column field = visibleFields.getField(i);
             if (field.isVisible()) {
                 addAttribute("id", field.getID(), attrs);
@@ -453,8 +452,7 @@ abstract class ExporterBase extends AbstractExporter {
         {
             List<HumanResource> resources = resourceManager.getResources();
 
-            // String
-            // []function=RoleManager.Access.getInstance().getRoleNames();
+//			String[] function = RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
                 HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);
