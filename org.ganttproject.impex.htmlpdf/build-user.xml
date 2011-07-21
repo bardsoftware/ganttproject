@@ -13,6 +13,8 @@
     <path id="mainproject.classpath">
         <pathelement location="bin"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/fop.jar"/>
+        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-avalon.jar"/>
+        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-batik.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/itext.jar"/>
     </path>
     <path id="ganttproject-2.0.classpath">
