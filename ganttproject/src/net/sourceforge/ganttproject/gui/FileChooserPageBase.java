@@ -29,6 +29,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
@@ -72,6 +73,15 @@ public abstract class FileChooserPageBase implements WizardPage {
     }
 
     protected abstract String getFileChooserTitle();
+    
+	/** @return a default export filename */
+	protected String getDefaultFileName() {
+		Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
+		if(document == null) {
+			return "document.gan";			
+		}
+		return document.getDescription();
+	}
 
     protected int getFileChooserSelectionMode() {
         return JFileChooser.FILES_AND_DIRECTORIES;
@@ -156,8 +166,13 @@ public abstract class FileChooserPageBase implements WizardPage {
     }
 
     protected void loadPreferences() {
-        if (myPreferences.get(FileChooserPageBase.PREF_SELECTED_FILE, null) != null) {
-            myChooser.setFile(new File(myPreferences.get(FileChooserPageBase.PREF_SELECTED_FILE, null)));
+        String oldFile = myPreferences.get(FileChooserPageBase.PREF_SELECTED_FILE, null);
+		if (oldFile != null) {
+        	// Use the previously used path with the current filename for the default name
+        	// The implementing classes can modify the file extension when desired
+        	String oldPath = new File(oldFile).getParent();
+        	File f = new File(oldPath, getDefaultFileName());
+            myChooser.setFile(f);
         }
         if (myUrlField != null && myPreferences.get(FileChooserPageBase.PREF_SELECTED_URL, null) != null) {
             myUrlField.setText(myPreferences.get(FileChooserPageBase.PREF_SELECTED_URL, null));

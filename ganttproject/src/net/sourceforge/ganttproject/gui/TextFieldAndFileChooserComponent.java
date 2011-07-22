@@ -126,9 +126,26 @@ public abstract class TextFieldAndFileChooserComponent {
         return myFile;
     }
 
+	/**
+	 * Updates the file path
+	 * 
+	 * @param file if this is point to a directory, the previously used file name
+	 *            is added
+	 */
     public void setFile(File file) {
-        myFile = file;
-        myTextField.setText(file == null ? "" : file.getAbsolutePath());
+    	if(file == null) {
+    		// Empty the files
+    		myFile = null;
+    		myTextField.setText("");
+    	}
+
+    	if(file.isDirectory()) {
+    		// Add previously used file name because we need/like to select files
+    		myFile = new File(file, myFile.getName());
+    	} else {
+    		myFile = file;
+    	}
+        myTextField.setText(file.getAbsolutePath());
     }
 
     public void setFileFilter(FileFilter filter) {
@@ -172,8 +189,7 @@ public abstract class TextFieldAndFileChooserComponent {
                 new OkAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        myFile = fc.getSelectedFile();
-                        myTextField.setText(myFile.getAbsolutePath());
+                        setFile(fc.getSelectedFile());
                         onFileChosen(myFile);
                     }
                 },
