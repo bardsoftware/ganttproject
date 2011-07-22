@@ -109,12 +109,9 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
             }
         });
 
-        Box box = Box.createHorizontalBox();
-        box.add(myTextField);
-        box.add(Box.createHorizontalStrut(3));
-        box.add(myChooserButton);
-
-        add(box);
+        add(myTextField);
+        add(Box.createHorizontalStrut(3));
+        add(myChooserButton);
     }
 
     public File getFile() {
