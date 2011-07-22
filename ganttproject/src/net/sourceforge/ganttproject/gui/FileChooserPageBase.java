@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
@@ -59,6 +77,7 @@ public abstract class FileChooserPageBase implements WizardPage {
     private final JLabel myFileLabel = new JLabel("  ");
     private final JLabel myUrlLabel = new JLabel("  ");
     private final Preferences myPreferences;
+
     protected FileChooserPageBase(WizardImpl wizard, Preferences prefs) {
         this(wizard, prefs, true);
     }
@@ -104,7 +123,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         myChooser.setFileSelectionMode(getFileChooserSelectionMode());
         JComponent contentPanel = new JPanel(new BorderLayout());
         if (!isUrlChooserEnabled) {
-            contentPanel.add(myChooser.getComponent(), BorderLayout.NORTH);
+            contentPanel.add(myChooser, BorderLayout.NORTH);
         } else {
             final UrlFetcher urlFetcher = new UrlFetcher() {
                 protected void onFetchComplete(File file) {
@@ -132,7 +151,7 @@ public abstract class FileChooserPageBase implements WizardPage {
             });
 
             Box fileBox = Box.createVerticalBox();
-            fileBox.add(myChooser.getComponent());
+            fileBox.add(myChooser);
             fileBox.add(myFileLabel);
 
             Action fileSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("file")) {
@@ -182,7 +201,7 @@ public abstract class FileChooserPageBase implements WizardPage {
     public void setActive(boolean b) {
         GPOptionGroup[] optionGroups = getOptionGroups();
         if (b == false) {
-            for (int i=0; i<optionGroups.length; i++) {
+            for (int i = 0; i < optionGroups.length; i++) {
                 optionGroups[i].commit();
             }
             if (myChooser.getFile() != null) {
@@ -192,17 +211,16 @@ public abstract class FileChooserPageBase implements WizardPage {
                 myPreferences.put(FileChooserPageBase.PREF_SELECTED_URL, myUrlField.getText());
             }
         } else {
-            for (int i=0; i<optionGroups.length; i++) {
+            for (int i = 0; i < optionGroups.length; i++) {
                 optionGroups[i].lock();
             }
-            if (mySecondaryOptionsComponent!=null){
+            if (mySecondaryOptionsComponent != null){
                 mySecondaryOptionsComponent.removeAll();
             }
             mySecondaryOptionsComponent.add(createSecondaryOptionsPanel(), BorderLayout.NORTH);
             myChooser.setFileFilter(createFileFilter());
             loadPreferences();
             onSelectedUrlChange(getSelectedUrl());
-            UIUtil.repackWindow(myComponent);
         }
     }
 
@@ -223,13 +241,11 @@ public abstract class FileChooserPageBase implements WizardPage {
             switch (ourSelectedSource) {
             case FILE_SOURCE:
                 return myChooser.getSelectedURL();
-            case URL_SOURCE: {
+            case URL_SOURCE:
                 return new URL(myUrlField.getText());
-            }
-            default: {
+            default:
                 assert false : "Should not be here";
                 return null;
-            }
             }
         } catch (MalformedURLException e) {
             reportMalformedUrl(e);
@@ -249,7 +265,6 @@ public abstract class FileChooserPageBase implements WizardPage {
     private void setEnabledTree(JComponent root, boolean isEnabled) {
         UIUtil.setEnabledTree(root, isEnabled);
     }
-
 
     protected abstract FileFilter createFileFilter();
 
@@ -340,18 +355,18 @@ public abstract class FileChooserPageBase implements WizardPage {
                         byte[] buf = new byte[1024];
                         long total = 0;
                         while (true) {
-                          int r = from.read(buf);
-                          if (r == -1) {
-                            break;
-                          }
-                          to.write(buf, 0, r);
-                          total += r;
+                            int r = from.read(buf);
+                            if (r == -1) {
+                                break;
+                            }
+                            to.write(buf, 0, r);
+                            total += r;
                         }
                         myFetchedFile = tempFile;
-                        setStatus(new Status(
-                                IStatus.OK, "foo", IStatus.OK,
-                                MessageFormat.format("Successfully fetched from {0}", new Object[] {myUrl}),
-                                null));
+                        setStatus(new Status(IStatus.OK, "foo", IStatus.OK,
+                                MessageFormat.format(
+                                        "Successfully fetched from {0}",
+                                        new Object[] { myUrl }), null));
                     }
                     finally {
                         to.flush();
@@ -363,12 +378,9 @@ public abstract class FileChooserPageBase implements WizardPage {
                 }
             }
             catch (IOException e) {
-                setStatus(new Status(
-                        IStatus.ERROR, "foo", IStatus.ERROR,
-                        MessageFormat.format("Failed to fetch from {0}\n{1}", new Object[] {
-                                myUrl, e.getMessage()
-                        }),
-                        e));
+				setStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+						MessageFormat.format("Failed to fetch from {0}\n{1}",
+								new Object[] { myUrl, e.getMessage() }), e));
             }
             finally {
                 isFetching = false;
@@ -410,8 +422,6 @@ public abstract class FileChooserPageBase implements WizardPage {
                     }
                 }
             }, 3000);
-
         }
-
     }
 }

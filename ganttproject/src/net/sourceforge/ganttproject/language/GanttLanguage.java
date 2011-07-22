@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -249,6 +249,7 @@ public class GanttLanguage {
         return new SimpleDateFormat(string, currentLocale);
     }
 
+    /** @return label with the $ removed from it (if it was included) */
     public String correctLabel(String label) {
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {

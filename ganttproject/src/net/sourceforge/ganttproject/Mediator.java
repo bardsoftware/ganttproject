@@ -45,7 +45,7 @@ public class Mediator {
 
     private static DelayManager delayManager = null;
 
-    private static PluginManager pluginManager = new PluginManager();
+    private static final PluginManager pluginManager = new PluginManager();
 
     private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
 
