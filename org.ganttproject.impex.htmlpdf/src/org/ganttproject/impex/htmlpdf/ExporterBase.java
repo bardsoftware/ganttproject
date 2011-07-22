@@ -270,7 +270,6 @@ abstract class ExporterBase extends AbstractExporter {
             transformer.setOutputProperty(
                     "{http://xml.apache.org/xslt}indent-amount", "4");
             return result;
-
         } catch (TransformerConfigurationException e) {
             getUIFacade().showErrorDialog(e);
             throw new RuntimeException(e);
@@ -280,7 +279,6 @@ abstract class ExporterBase extends AbstractExporter {
     protected void addAttribute(String name, int value, AttributesImpl attrs) {
         addAttribute(name, String.valueOf(value), attrs);
     }
-
 
     protected String i18n(String key) {
         String text = GanttLanguage.getInstance().getText(key);

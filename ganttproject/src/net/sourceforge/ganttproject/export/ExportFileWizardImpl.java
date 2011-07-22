@@ -11,7 +11,6 @@ import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -19,6 +18,7 @@ import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
  * @author bard
@@ -31,8 +31,8 @@ public class ExportFileWizardImpl extends WizardImpl {
 
     private final State myState;
 
-    private static Exporter ourLastSelectedExporter;
-    private static List<Exporter> ourExporters;
+    private static Exporter myLastSelectedExporter;
+    private static List<Exporter> myExporters;
 
     public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project,
             GanttOptions options) {
@@ -47,18 +47,18 @@ public class ExportFileWizardImpl extends WizardImpl {
         myProject = project;
         myOptions = options;
         myState = new State(project.getDocument());
-        if (ExportFileWizardImpl.ourExporters==null) {
-            ExportFileWizardImpl.ourExporters = Mediator.getPluginManager().getExporters();
+        if (myExporters == null) {
+            myExporters = PluginManager.getExporters();
         }
-        myState.setExporter(ExportFileWizardImpl.ourLastSelectedExporter==null
-            ? ourExporters.get(0) : ExportFileWizardImpl.ourLastSelectedExporter);
-        for (Exporter e : ourExporters) {
+        myState.setExporter(myLastSelectedExporter == null ?
+                myExporters.get(0) : myLastSelectedExporter);
+        for (Exporter e : myExporters) {
             e.setContext(project, uiFacade, myOptions.getPluginPreferences());
             if (e instanceof LegacyOptionsClient) {
                 ((LegacyOptionsClient)e).setOptions(myOptions);
             }
         }
-        addPage(new ExporterChooserPage(ourExporters, myState));
+        addPage(new ExporterChooserPage(myExporters, myState));
         addPage(new FileChooserPage(
                 myState,
                 myProject,
@@ -97,6 +97,7 @@ public class ExportFileWizardImpl extends WizardImpl {
             }
         }
     }
+
     static class State {
         //final Document myProjectDocument;
 
@@ -112,7 +113,7 @@ public class ExportFileWizardImpl extends WizardImpl {
 
         void setExporter(Exporter exporter) {
             myExporter = exporter;
-            ExportFileWizardImpl.ourLastSelectedExporter = exporter;
+            ExportFileWizardImpl.myLastSelectedExporter = exporter;
         }
 
         Exporter getExporter() {
