@@ -719,13 +719,13 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         ColumnImpl columnImpl = getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
         getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
 
-        Runnable t = new Runnable() {
-            public void run() {
-                calculateWidth();
-                revalidate();
-            }
-        };
-        SwingUtilities.invokeLater(t);
+//        Runnable t = new Runnable() {
+//            public void run() {
+//                calculateWidth();
+//                revalidate();
+//            }
+//        };
+//        SwingUtilities.invokeLater(t);
     }
 
     /**
@@ -735,82 +735,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      *            Name of the column to delete.
      */
     private void deleteCustomColumn(CustomColumn column) {
-
-        final String name = column.getName();
-        // the column has to be displayed to be removed.
-        this.displayColumn(name);
-
-        deleteColumnFromUI(name);
-        // Every tasks
-        TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
-        tchf.getRootTask().getCustomValues().removeCustomColumn(name);
-        removeCustomColumnToAllNestedTask(tchf, tchf.getRootTask(), name);
-
-        getProject().setModified();
+        getTableHeaderUiFacade().deleteColumn(column);
     }
-
-    private void deleteColumnFromUI(String name) {
-        //DisplayedColumn toDel = null;
-        Iterator<DisplayedColumn> it = listDisplayedColumns.iterator();
-
-        while (it.hasNext()) {
-            DisplayedColumn dc = it.next();
-            if (getNameForId(dc.getID()).equals(name)) {
-                it.remove();
-                break;
-            }
-        }
-
-        int index = getTable().getColumnModel().getColumnIndex(name);
-        int modelIndex = getTable().convertColumnIndexToModel(index);
-        TableColumnModelEvent tcme = new TableColumnModelEvent(getTable()
-                .getColumnModel(), modelIndex, modelIndex);
-        getTable().removeColumn(getTable().getColumnExt(name));
-        getTable().columnRemoved(tcme);
-        /*
-         * TODO There is a problem here : I don't remove the custom column from
-         * the TreeTableModel. If I remove it there will be a problem when
-         * deleting a custom column if it isn't the last created.
-         */
-        // TreeTableModel
-        //ttModel.deleteCustomColumn(name);
-
-        // newBB
-        Iterator<TableColumn> it2 = mapTableColumnColumnKeeper.keySet().iterator();
-        while (it2.hasNext()) {
-            TableColumn c = it2.next();
-            String n = (String) c.getHeaderValue();
-            if (n.equals(name)) {
-                mapTableColumnColumnKeeper.remove(c);
-                break;
-            }
-        }
-    }
-
-//    private void renameCustomcolumn(String name, String newName) {
-//        this.displayColumn(name);
-//        TableColumnExt tc = (TableColumnExt) getTable().getColumn(name);
-//        tc.setTitle(newName);
-//        tc.setIdentifier(newName);
-//
-//        TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
-//        tchf.getRootTask().getCustomValues().renameCustomColumn(name, newName);
-//        renameCustomColumnForAllNestedTask(tchf, tchf.getRootTask(), name,
-//                newName);
-//        //ttModel.renameCustomColumn(name, newName);
-//
-//        // newBB
-//        Iterator<TableColumn> it = mapTableColumnColumnKeeper.keySet().iterator();
-//        while (it.hasNext()) {
-//            TableColumn c = it.next();
-//            String n = (String) c.getHeaderValue();
-//            if (n.equals(name)) {
-//                ((TableColumnExt) c).setTitle(newName);
-//                break;
-//            }
-//        }
-//        assert getColumn(newName)!=null;
-//    }
 
     /**
      * @param facade

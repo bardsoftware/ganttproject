@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -142,11 +143,14 @@ public class TaskManagerImpl implements TaskManager {
 
     private final CustomColumnsStorage myCustomColumnStorage;
 
+    private final CustomPropertyListenerImpl myCustomPropertyListener;
+
     TaskManagerImpl(
             TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
             TaskManagerConfig config, CustomColumnsStorage columnStorage) {
-        myCustomColumnStorage = columnStorage==null ?
-                new CustomColumnsStorage() : columnStorage;
+        myCustomPropertyListener = new CustomPropertyListenerImpl(this);
+        myCustomColumnStorage = columnStorage==null ? new CustomColumnsStorage() : columnStorage;
+        myCustomColumnStorage.addCustomColumnsListener(getCustomPropertyListener());
         myConfig = config;
         myHierarchyManager = new TaskHierarchyManagerImpl();
         EventDispatcher dispatcher = new EventDispatcher() {
@@ -207,6 +211,10 @@ public class TaskManagerImpl implements TaskManager {
         ProjectBoundsAlgorithm alg5 = new ProjectBoundsAlgorithm();
         CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
         myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6);
+    }
+
+    private CustomPropertyListener getCustomPropertyListener() {
+        return myCustomPropertyListener;
     }
 
     public GanttTask getTask(int taskId) {
