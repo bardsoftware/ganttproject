@@ -59,6 +59,7 @@ public class HttpDocument extends AbstractURLDocument {
             } else {
                 httpURL = new HttpURL(url);
             }
+            httpURL.setUserinfo(user, pass);
         } catch (URIException e) {
             lastError = e.getMessage();
             malformedURL = true;
@@ -133,9 +134,9 @@ public class HttpDocument extends AbstractURLDocument {
                 return Status.OK_STATUS;
             } catch (HttpException e) {
                 return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-						Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-						(e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
-								: e.getReason()), e);
+                        Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
+                        (e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
+                                : e.getReason()), e);
             } catch (Exception e) {
                 return new Status(IStatus.ERROR, Document.PLUGIN_ID,
                         Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
@@ -153,24 +154,14 @@ public class HttpDocument extends AbstractURLDocument {
      * @see net.sourceforge.ganttproject.document.Document#acquireLock(java.lang.String)
      */
     public boolean acquireLock() {
-        if (locked)
+        if (locked || lockDAVMinutes < 0) {
             return true;
-        if (null == getWebdavResource())
+        }
+        if (null == getWebdavResource()) {
             return false;
+        }
         try {
-            String userName = " (GanttProject)";
-            try {
-                userName = " (" + System.getProperty("user.name")
-                        + "@GanttProject)";
-            } catch (AccessControlException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
-            if (lockDAVMinutes < 0) {
-                return true;
-            }
-            locked = getWebdavResource().lockMethod(httpURL.getUser() + userName, lockDAVMinutes * 60);
+            locked = getWebdavResource().lockMethod(getUsername(), lockDAVMinutes * 60);
             return locked;
         } catch (HttpException e) {
             if (!GPLogger.log(e)) {
@@ -219,8 +210,8 @@ public class HttpDocument extends AbstractURLDocument {
             throw new IOException(e.getMessage() + "(" + e.getReasonCode()
                     + ")");
         } catch (IOException e) {
-			throw new IOException(HttpDocument.getHTTPError(getWebdavResource().getStatusCode())
-					+ "\n" + e.getMessage(), e);
+            throw new IOException(HttpDocument.getHTTPError(getWebdavResource().getStatusCode())
+                    + "\n" + e.getMessage(), e);
         }
     }
 
@@ -272,14 +263,14 @@ public class HttpDocument extends AbstractURLDocument {
         return false;
     }
 
-	public static String getHTTPError(int code) {
-		// TODO Use language dependent texts
-		switch (code) {
-		case 401:
-			return "Unauthorized (401)";
-		default:
-			return "<unspecified> (" + code + ")";
-		}
+    public static String getHTTPError(int code) {
+        // TODO Use language dependent texts
+        switch (code) {
+        case 401:
+            return "Unauthorized (401)";
+        default:
+            return "<unspecified> (" + code + ")";
+        }
     }
 
 }
