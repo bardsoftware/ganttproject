@@ -31,7 +31,7 @@ public class FileDocument extends AbstractDocument {
         this.file = file;
     }
 
-    public String getDescription() {
+    public String getFileName() {
         return file.getName();
     }
 

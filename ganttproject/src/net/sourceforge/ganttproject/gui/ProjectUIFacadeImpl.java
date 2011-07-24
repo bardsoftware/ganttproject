@@ -118,7 +118,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         Document document = project.getDocument();
         myDocumentManager.addToRecentDocuments(document);
         String title = i18n.getText("appliTitle") + " ["
-                + document.getDescription() + "]";
+                + document.getFileName() + "]";
         myWorkbenchFacade.setWorkbenchTitle(title);
         if (document.isLocal()) {
             URI url = document.getURI();

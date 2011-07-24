@@ -80,9 +80,10 @@ public class HttpDocument extends AbstractURLDocument {
         return webdavResource;
     }
 
-    public String getDescription() {
-        String description = httpURL.toString();
-        return (description != null) ? description : url;
+    public String getFileName() {
+        // TODO return filename instead of URL?
+        String filenName = httpURL.toString();
+        return (filenName != null) ? filenName : url;
     }
 
     public boolean canRead() {
@@ -223,7 +224,7 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     public String getPath() {
-        return getDescription();
+        return getFileName();
     }
 
     public String getURLPath() {
