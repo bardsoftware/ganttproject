@@ -78,10 +78,10 @@ public abstract class FileChooserPageBase implements WizardPage {
 	protected String getDefaultFileName() {
 		Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
 		if(document == null) {
-			return "document.gan";			
-		}
-		return document.getFileName();
-	}
+            return "document.gan";
+        }
+        return document.getFileName();
+    }
 
     protected int getFileChooserSelectionMode() {
         return JFileChooser.FILES_AND_DIRECTORIES;
@@ -167,11 +167,11 @@ public abstract class FileChooserPageBase implements WizardPage {
 
     protected void loadPreferences() {
         String oldFile = myPreferences.get(FileChooserPageBase.PREF_SELECTED_FILE, null);
-		if (oldFile != null) {
-        	// Use the previously used path with the current filename for the default name
-        	// The implementing classes can modify the file extension when desired
-        	String oldPath = new File(oldFile).getParent();
-        	File f = new File(oldPath, getDefaultFileName());
+        if (oldFile != null) {
+            // Use the previously used path with the current filename for the default name
+            // The implementing classes can modify the file extension when desired
+            String oldPath = new File(oldFile).getParent();
+            File f = new File(oldPath, getDefaultFileName());
             myChooser.setFile(f);
         }
         if (myUrlField != null && myPreferences.get(FileChooserPageBase.PREF_SELECTED_URL, null) != null) {
