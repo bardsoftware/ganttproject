@@ -80,7 +80,7 @@ public abstract class FileChooserPageBase implements WizardPage {
 		if(document == null) {
 			return "document.gan";			
 		}
-		return document.getDescription();
+		return document.getFileName();
 	}
 
     protected int getFileChooserSelectionMode() {

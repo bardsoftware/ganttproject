@@ -28,12 +28,10 @@ public interface Document {
     }
 
     /**
-     * Gets the description of the document (can be displayed in the
-     * application's titlebar).
-     *
-     * @return the description of the document
+     * @return the filename of the document (can be used forthe
+     *         application's titlebar or the export dialog).
      */
-    public String getDescription();
+    public String getFileName();
 
     /**
      * Checks, whether the document is readable.
