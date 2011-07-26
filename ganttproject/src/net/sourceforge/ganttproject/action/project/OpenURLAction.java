@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class OpenURLAction extends GPAction {
     private final GanttProject myMainFrame;
@@ -25,7 +26,7 @@ public class OpenURLAction extends GPAction {
     }
 
     protected String getLocalizedName() {
-        return getI18n("openFromServer");
+        return GanttLanguage.getInstance().correctLabel(getI18n("openFromServer"));
     }
 
     protected String getTooltipText() {

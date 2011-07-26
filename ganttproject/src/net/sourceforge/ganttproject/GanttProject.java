@@ -738,7 +738,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * @deprecated. Use GanttLanguage.correctLabel
+     * @deprecated Use GanttLanguage.correctLabel
      */
     public static String correctLabel(String label) {
         return GanttLanguage.getInstance().correctLabel(label);
