@@ -1,10 +1,10 @@
 #!/bin/bash
 
 SCRIPT_PATH=$0
-RESOLVED_PATH=`readlink "$SCRIPT_PATH"`
+RESOLVED_PATH=`readlink -f "$SCRIPT_PATH"`
 while [ ! -z $RESOLVED_PATH ]; do
   SCRIPT_PATH=$RESOLVED_PATH
-  RESOLVED_PATH=`readlink "$SCRIPT_PATH"`
+  RESOLVED_PATH=`readlink -f "$SCRIPT_PATH"`
 done
 GP_HOME=`dirname "$SCRIPT_PATH"`
 
