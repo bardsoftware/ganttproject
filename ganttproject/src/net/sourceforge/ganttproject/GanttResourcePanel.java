@@ -148,7 +148,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         prj.addProjectEventListener(this);
         appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager());
-        table = new ResourceTreeTable(appli.getProject(), model, uiFacade);
+        table = new ResourceTreeTable((GanttProject) appli.getProject(), model, uiFacade);
         table.setupActionMaps(myMoveUpAction, myMoveDownAction, null, null, myNewArtifactAction,
             appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myPropertiesAction, myDeleteAssignmentAction);
         table.setRowHeight(20);
@@ -250,8 +250,9 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             for (int i = 1; i < resourceActions.length; i++) {
                 menu.add(resourceActions[i]);
             }
-            menu.add(appli.createNewItem(GanttProject.correctLabel(lang
-                    .getText("sendMail")), "/icons/send_mail_16.gif"));
+            menu.add(appli.createNewItem(GanttLanguage.getInstance()
+                    .correctLabel(lang.getText("sendMail")),
+                    "/icons/send_mail_16.gif"));
             menu.addSeparator();
             menu.add(myMoveUpAction);
             menu.add(myMoveDownAction);
@@ -291,7 +292,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         repaint();
     }
 
-    // //////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     // ResourceContext interface
     public HumanResource[] getResources() {
         // ProjectResource[] res;
@@ -300,7 +301,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         // model.getAllResouces().toArray(res);
         // return res;
         DefaultMutableTreeNode[] tNodes = table.getSelectedNodes();
-        if (tNodes==null) {
+        if (tNodes == null) {
             return new HumanResource[0];
         }
         int nbHumanResource = 0;
@@ -433,67 +434,58 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         reset();
     }
 
-    public void copySelection()
-    {
-        this.saveSelectionToClipboard(false);
-        this.isCut = false;
+    public void copySelection() {
+        saveSelectionToClipboard(false);
+        isCut = false;
     }
 
-    public void cutSelection()
-    {
-        this.saveSelectionToClipboard(true);
-        this.isCut = true;
+    public void cutSelection() {
+        saveSelectionToClipboard(true);
+        isCut = true;
     }
 
-    public void pasteSelection()
-    {
-        if(this.clipboard == null)
+    public void pasteSelection() {
+        if(clipboard == null) {
             return;
+        }
 
-        for(int i=0; i<this.clipboard.length; i++)
-        {
-            if(this.isCut)
-            {
-                this.appli.getHumanResourceManager().add(this.clipboard[i]);
-            }
-            else
-            {
-                this.appli.getHumanResourceManager().add(clipboard[i].unpluggedClone());
+        for (HumanResource resource : clipboard) {
+            if (isCut) {
+                appli.getHumanResourceManager().add(resource);
+            } else {
+                appli.getHumanResourceManager().add(resource.unpluggedClone());
             }
         }
 
-        /*if the selection was cut, we clear the clipboard after pasting*/
-        if(this.isCut)
-        {
-            this.isCut = false;
+        // if the selection was cut, we clear the clipboard after pasting
+        if (isCut) {
+            isCut = false;
         }
     }
 
-    public void saveSelectionToClipboard(boolean cut)
-    {
-        DefaultMutableTreeNode selectedNodes[] = this.table.getSelectedNodes();
+    public void saveSelectionToClipboard(boolean cut) {
+        DefaultMutableTreeNode selectedNodes[] = table.getSelectedNodes();
 
-        if(selectedNodes == null)
+        if(selectedNodes == null) {
             return;
+        }
 
-        /*count instances of ResourceNode*/
-        int count=0;
-        for(int i=0; i<selectedNodes.length; i++)
-        {
-            if(selectedNodes[i] instanceof ResourceNode)
-            {
+        // count instances of ResourceNode
+        int count = 0;
+        for (DefaultMutableTreeNode node : selectedNodes) {
+            if (node instanceof ResourceNode) {
                 count++;
             }
         }
 
-        this.clipboard = new HumanResource[count];
+        clipboard = new HumanResource[count];
 
         int index = 0;
-        for (int i = 0; i < selectedNodes.length; i++) {
-            if (selectedNodes[i] instanceof ResourceNode) {
-                ResourceNode rn = (ResourceNode) selectedNodes[i];
+        for (DefaultMutableTreeNode node : selectedNodes) {
+            if (node instanceof ResourceNode) {
+                ResourceNode rn = (ResourceNode) node;
 
-                this.clipboard[index] = (HumanResource) rn.getUserObject();
+                clipboard[index] = (HumanResource) rn.getUserObject();
                 if (cut) {
                     this.appli.getHumanResourceManager().remove(
                             this.clipboard[index], this.appli.getUndoManager());
