@@ -77,8 +77,8 @@ public class DocumentCreator implements DocumentManager {
             return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
         }
         else if (!lowerPath.startsWith("file://") && path.contains("://")) {
-        	// Generate error for unknown protocol
-        	throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
+            // Generate error for unknown protocol
+            throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
         }
         return new FileDocument(new File(path));
     }
@@ -201,11 +201,8 @@ public class DocumentCreator implements DocumentManager {
         }
 
         public void loadValue(String legacyValue) {
-            lock();
             loadPersistentValue(legacyValue);
-            commit();
         }
-
     }
 
     private static class LockTimeoutOption extends DefaultIntegerOption implements GP1XOptionConverter {

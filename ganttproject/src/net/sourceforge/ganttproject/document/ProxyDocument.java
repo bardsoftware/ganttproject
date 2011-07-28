@@ -68,8 +68,8 @@ class ProxyDocument implements Document {
         myVisibleFields = visibleFields;
     }
 
-    public String getDescription() {
-        return myPhysicalDocument.getDescription();
+    public String getFileName() {
+        return myPhysicalDocument.getFileName();
     }
 
     public boolean canRead() {

@@ -150,7 +150,8 @@ class GanttURLChooser {
             }
         };
         myUiFacade.createDialog(panel, new Action[] {okAction, cancelAction},
-            isOpenUrl ? language.getText("openFromServer") : language.getText("saveToServer")).show();
+                GanttLanguage.getInstance().correctLabel(
+                        language.getText(isOpenUrl ? "openFromServer" : "saveToServer"))).show();
     }
 
     UIFacade.Choice getChoice() {

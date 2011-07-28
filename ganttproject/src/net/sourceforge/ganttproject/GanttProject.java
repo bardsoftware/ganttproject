@@ -738,7 +738,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * @deprecated. Use GanttLanguage.correctLabel
+     * @deprecated Use GanttLanguage.correctLabel
      */
     public static String correctLabel(String label) {
         return GanttLanguage.getInstance().correctLabel(label);
@@ -1224,11 +1224,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     private void openDocument(Document document) throws IOException, DocumentException {
-        if (document.getDescription().toLowerCase().endsWith(".xml") == false
-                && document.getDescription().toLowerCase().endsWith(".gan") == false) {
+        if (document.getFileName().toLowerCase().endsWith(".xml") == false
+                && document.getFileName().toLowerCase().endsWith(".gan") == false) {
             // Unknown file extension
             String errorMessage = language.getText("msg2") + "\n"
-                    + document.getDescription();
+                    + document.getFileName();
             throw new IOException(errorMessage);
         }
 
@@ -1245,7 +1245,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             projectDocument = document;
         }
         setTitle(language.getText("appliTitle") + " ["
-                + document.getDescription() + "]");
+                + document.getFileName() + "]");
         for (Chart chart : PluginManager.getCharts()) {
             chart.setTaskManager(myTaskManager);
             chart.reset();

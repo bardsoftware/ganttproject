@@ -230,7 +230,7 @@ public class TaskImpl implements Task {
                 public IStatus canWrite() {
                     return Status.CANCEL_STATUS;
                 }
-                public String getDescription() {
+                public String getFileName() {
                     return null;
                 }
                 public InputStream getInputStream() throws IOException {

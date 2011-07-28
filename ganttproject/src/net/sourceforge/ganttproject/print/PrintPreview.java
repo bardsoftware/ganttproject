@@ -579,7 +579,7 @@ public class PrintPreview extends JDialog {
                    OrientationRequested.PORTRAIT);
         Document doc = myProject.getDocument();
         if (doc != null)
-            attr.add(new JobName(doc.getDescription(), language.getLocale()));
+            attr.add(new JobName(doc.getFileName(), language.getLocale()));
 
         if (prnJob.printDialog(attr)) {
             try {

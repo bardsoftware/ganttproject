@@ -39,7 +39,7 @@ public class OpenDocumentAction extends AbstractAction {
      */
     public OpenDocumentAction(int index, Document document,
             ActionListener listener) {
-        super(index + ". " + document.getDescription());
+        super(index + ". " + document.getFileName());
         this.document = document;
         this.listener = listener;
 

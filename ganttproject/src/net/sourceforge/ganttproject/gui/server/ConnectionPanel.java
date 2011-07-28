@@ -24,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -33,7 +32,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ConnectionPanel extends GeneralOptionPanel {
     public ConnectionPanel() {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
+        super(GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(
                 "openFromServer")), GanttLanguage.getInstance().getText(
                 "settingsConnection"));
 

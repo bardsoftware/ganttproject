@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ServerDialog extends GeneralDialog {
     public ServerDialog(GanttProject parent) {
-        super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
+        super(parent, GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance()
                 .getText("webServer")), true, new ConnectionPanel());
     }
 
@@ -38,8 +38,7 @@ public class ServerDialog extends GeneralDialog {
      * @see net.sourceforge.ganttproject.gui.GeneralDialog#constructSections()
      */
     public void constructSections() {
-        addObject(
-                GanttProject.correctLabel(language.getText("openFromServer")),
+        addObject(language.correctLabel(language.getText("openFromServer")),
                 null);
     }
 
@@ -60,8 +59,8 @@ public class ServerDialog extends GeneralDialog {
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttProject.correctLabel(language
-                .getText("openFromServer")))) {
+        if (sNode.equals(GanttLanguage.getInstance().correctLabel(
+                language.getText("openFromServer")))) {
             settingPanel = new ConnectionPanel();
         }
 
