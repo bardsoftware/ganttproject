@@ -1,19 +1,21 @@
-/***************************************************************************
- ImportResources.java  -  description
- -------------------
- begin                : may 2003
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 GanttProject team
 
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -37,7 +39,7 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
- * Action connected to the menu item for importe some resources
+ * Action connected to the menu item for importing some resources
  */
 public class ImportResources extends AbstractAction {
     private final TaskManager myTaskManager;
@@ -57,21 +59,18 @@ public class ImportResources extends AbstractAction {
         myRoleManager = roleManager;
         GanttLanguage language = GanttLanguage.getInstance();
 
-        this.putValue(AbstractAction.NAME, language.getText("importResources"));
+        putValue(AbstractAction.NAME, language.getText("importResources"));
         myResourceManager = resourceManager;
 
         URL iconUrl = this.getClass().getClassLoader().getResource(
                 "icons/impres_16.gif");
         if (iconUrl != null) {
-            this.putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
+            putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
         }
 
         myproject = project;
     }
 
-    /**
-     * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
-     */
     public void actionPerformed(ActionEvent event) {
         final File file = getResourcesFile();
         if (file != null) {

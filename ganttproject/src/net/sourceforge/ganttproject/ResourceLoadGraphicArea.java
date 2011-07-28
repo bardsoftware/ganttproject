@@ -1,20 +1,21 @@
-/***************************************************************************
- * GanttGraphicArea.java  -  description
- * -------------------
- * begin                : dec 2002
- * copyright            : (C) 2002 by Thomas Alexandre
- * email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2002-2011 Thomas Alexandre, GanttProject team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
@@ -24,7 +25,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -57,11 +57,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     private boolean drawVersion = false;
 
     /** The main application */
-    private GanttProject appli;
+    private final GanttProject appli;
 
-    private ChartModelResource myChartModel;
+    private final ChartModelResource myChartModel;
 
-    private ChartViewState myViewState;
+    private final ChartViewState myViewState;
 
     public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
@@ -76,7 +76,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         //myTableHeader = app.getResourcePanel().table.getTableHeader();
     }
 
-    /** The size of the panel. */
+    /** @return the preferred size of the panel. */
     public Dimension getPreferredSize() {
         return new Dimension(465, 600);
     }

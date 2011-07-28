@@ -146,29 +146,26 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     protected void fireProjectModified(boolean isModified){
-        for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
+        for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
             try {
                 if (isModified) {
-                    next.projectModified();
+                    modifiedStateChangeListener.projectModified();
+                } else {
+                    modifiedStateChangeListener.projectSaved();
                 }
-                else {
-                    next.projectSaved();
-                }
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 showErrorDialog(e);
             }
         }
     }
 
     protected void fireProjectClosed() {
-        for (int i=0; i<myModifiedStateChangeListeners.size(); i++) {
-            ProjectEventListener next = myModifiedStateChangeListeners.get(i);
-            next.projectClosed();
+        for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
+            modifiedStateChangeListener.projectClosed();
         }
     }
-    // ////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////
     // UIFacade
     public ProjectUIFacade getProjectUIFacade() {
         return myProjectUIFacade;
@@ -255,10 +252,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade.getTaskSelectionManager();
     }
 
-//    public void changeWorkingDirectory(File directory) {
-//        myUIFacade.changeWorkingDirectory(directory);
-//    }
-
     public void setWorkbenchTitle(String title) {
         myUIFacade.setWorkbenchTitle(title);
     }
@@ -305,6 +298,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             myViews.add(view);
             return view;
         }
+
         public Action getCopyAction() {
             return myCopyAction;
         }
@@ -316,7 +310,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         public Action getPasteAction() {
             return myPasteAction;
         }
-
 
         ////////////////////////////////////////////
         //ProjectEventListener
@@ -444,7 +437,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         public void selectionChanged() {
             myManager.updateActions();
         }
-
     }
 
     protected static class RowHeightAligner implements GPOptionChangeListener {
@@ -465,7 +457,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             model.fireTableStructureChanged();
             myTreeView.updateUI();
         }
-
     }
 
     public GanttTabbedPane getTabs() {
@@ -475,6 +466,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public IGanttProject getProject() {
         return this;
     }
+
     public TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
@@ -538,6 +530,4 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     protected abstract ParserFactory getParserFactory();
-
-
 }
