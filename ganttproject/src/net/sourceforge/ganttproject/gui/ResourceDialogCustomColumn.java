@@ -251,7 +251,7 @@ public class ResourceDialogCustomColumn  {
         Object defValue = null;
 
         if (colName.length() != 0) {
-            Class colClass;
+            Class<?> colClass;
             int colType = getSelectedType(myType.getValue());
             switch (colType) {
             case 0:

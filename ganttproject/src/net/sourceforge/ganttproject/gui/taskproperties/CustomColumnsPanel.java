@@ -126,7 +126,7 @@ public class CustomColumnsPanel extends JPanel {
             return COLUMN_NAMES[column];
         }
 
-        public Class getColumnClass(int column) {
+        public Class<?> getColumnClass(int column) {
             return String.class;
         }
 

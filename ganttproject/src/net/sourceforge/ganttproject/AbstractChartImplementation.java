@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Dimension;
@@ -47,11 +65,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     private final ChartComponentBase myChartComponent;
 
     public AbstractChartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
-        assert chartModel!=null;
+		assert chartModel != null;
         myChartModel = chartModel;
         myProject = project;
         myChartComponent = chartComponent;
     }
+
     public IGanttProject getProject() {
         return myProject;
     }
@@ -94,6 +113,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     private ChartModelBase getChartModel() {
         return myChartModel;
     }
+
     /////////////////////////////////////////////////////////////
     // interface Chart
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
@@ -108,6 +128,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public Date getStartDate() {
         return getChartModel().getStartDate();
     }
+
     public void setStartDate(Date startDate) {
         getChartModel().setStartDate(startDate);
         myFirstTimeFrame = scrollTimeFrame(startDate);
@@ -135,15 +156,19 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         }
         return result;
     }
+
     private TimeUnit getTopTimeUnit() {
         return getChartModel().getTopUnit();
     }
+
     private TimeUnit getBottomTimeUnit() {
         return getChartModel().getBottomUnit();
     }
+
     private TimeUnitStack getTimeUnitStack() {
         return myProject.getTimeUnitStack();
     }
+
     public Date getEndDate() {
         return getChartModel().getEndDate();
     }
@@ -156,6 +181,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public void setBottomUnit(TimeUnit bottomUnit) {
         getChartModel().setBottomTimeUnit(bottomUnit);
     }
+    
     public void setTopUnit(TimeUnit topUnit) {
         getChartModel().setTopTimeUnit(topUnit);
     }
@@ -191,40 +217,51 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public Object getAdapter(Class arg0) {
         return null;
     }
+
     public ChartSelection getSelection() {
         throw new UnsupportedOperationException();
     }
+
     public IStatus canPaste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
+
     public void paste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
+
     public void addSelectionListener(ChartSelectionListener listener) {
         mySelectionListeners.add(listener);
     }
+
     public void removeSelectionListener(ChartSelectionListener listener) {
         mySelectionListeners.remove(listener);
     }
+
     protected void fireSelectionChanged() {
         for (Iterator<ChartSelectionListener> listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
             ChartSelectionListener nextListener = listeners.next();
             nextListener.selectionChanged();
         }
     }
+
     public void addRenderer(ChartRendererBase renderer) {
         myChartModel.addRenderer(renderer);
     }
+
     public void resetRenderers() {
         myChartModel.resetRenderers();
     }
+
     public ChartModel getModel() {
         return myChartModel;
     }
+
     @Override
     public ChartUIConfiguration getStyle() {
         return myChartModel.getChartUIConfiguration();
     }
+
     public int getHeaderHeight(JComponent tableContainer, JTable table) {
         JTableHeader tableHeader = table.getTableHeader();
         Point headerLocation = tableHeader.getLocationOnScreen();
@@ -232,5 +269,4 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
 
     }
-    
 }

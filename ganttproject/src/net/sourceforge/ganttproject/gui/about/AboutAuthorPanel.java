@@ -182,7 +182,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         final String[] columnNames = { language.getText("name"),
                 language.getText("colMail") };
 
-        final Class[] columnClasses = { String.class, String.class };
+        final Class<?>[] columnClasses = { String.class, String.class };
 
         Vector<AuthorsInfo> data = new Vector<AuthorsInfo>();
 
@@ -203,7 +203,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
             return columnNames[col];
         }
 
-        public Class getColumnClass(int c) {
+        public Class<?> getColumnClass(int c) {
             return columnClasses[c];
         }
 

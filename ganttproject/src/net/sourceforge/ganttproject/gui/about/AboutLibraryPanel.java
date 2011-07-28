@@ -85,20 +85,10 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
-     */
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
-     */
     public void initialize() {
     }
 
@@ -135,7 +125,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         final String[] columnNames = { language.getText("name"),
                 language.getText("web"), language.getText("notes") };
 
-        final Class[] columnClasses = { String.class, String.class,
+        final Class<?>[] columnClasses = { String.class, String.class,
                 String.class };
 
         Vector<LibraryInfo> data = new Vector<LibraryInfo>();
@@ -157,7 +147,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
             return columnNames[col];
         }
 
-        public Class getColumnClass(int c) {
+        public Class<?> getColumnClass(int c) {
             return columnClasses[c];
         }
 

@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 Dmitry Barashev
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.io.IOException;
@@ -19,14 +37,13 @@ public class GPLogger {
 	private static Logger ourLogger = Logger.getLogger("org.ganttproject");
 	private static Handler ourHandler;
 	private static UIFacade ourUIFacade;
-    private static Map<Class, Logger> ourClass_Logger = new HashMap<Class, Logger>();
+    private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
 
 	static {
         ourHandler = new ConsoleHandler();
 		ourLogger.addHandler(ourHandler);
 		ourLogger.setLevel(Level.ALL);
 		ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
-
 	}
 
 	public static boolean log(Throwable e) {
@@ -49,7 +66,7 @@ public class GPLogger {
 	    return getLogger(o.getClass());
 	}
 
-	public static Logger getLogger(Class clazz) {
+	public static Logger getLogger(Class<?> clazz) {
         Logger logger = ourClass_Logger.get(clazz);
         if (logger == null) {
             logger = Logger.getLogger(clazz.getName());

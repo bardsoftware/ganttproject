@@ -1,5 +1,20 @@
 /*
- * Created on 13.10.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
@@ -51,9 +66,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             return;
         }
         Document document = project.getDocument();
-        if (!saveProjectTryWrite(project, document)) {
-            return;
-        }
+        saveProjectTryWrite(project, document);
     }
 
     private boolean saveProjectTryWrite(final IGanttProject project, final Document document) {
@@ -114,6 +127,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         String key = "document.error.write." + errorCode.name().toLowerCase();
         return MessageFormat.format(i18n.getText(key), doc.getPath(), canWrite.getMessage());
     }
+
     private void afterSaveProject(IGanttProject project) {
         Document document = project.getDocument();
         myDocumentManager.addToRecentDocuments(document);
@@ -130,7 +144,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         project.setModified(false);
     }
     private void saveProject(Document document) throws IOException {
-        //assert document!=null;
         myWorkbenchFacade.setStatusText(GanttLanguage.getInstance()
                     .getText("saving")
                     + " " + document.getPath());
@@ -185,7 +198,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
     }
 
-
     public void saveProjectRemotely(IGanttProject project) {
         Document document = showURLDialog(project, false);
         if (document != null) {
@@ -203,14 +215,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     public boolean ensureProjectSaved(IGanttProject project) {
         if (project.isModified()) {
             UIFacade.Choice saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"), i18n.getText("warning"));
-            if (UIFacade.Choice.CANCEL==saveChoice) {
+			if (UIFacade.Choice.CANCEL == saveChoice) {
                 return false;
             }
-            if (UIFacade.Choice.YES==saveChoice) {
+			if (UIFacade.Choice.YES == saveChoice) {
                 try {
                     saveProject(project);
                 } catch (Exception e) {
-                    System.err.println(e);
                     myWorkbenchFacade.showErrorDialog(e);
                     return false;
                 }
@@ -237,12 +248,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
         int returnVal = fc.showOpenDialog(myWorkbenchFacade.getMainFrame());
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            final JFileChooser jfc = fc;
             Document document = getDocumentManager().getDocument(
-                    jfc.getSelectedFile().getAbsolutePath());
+                    fc.getSelectedFile().getAbsolutePath());
             openProject(document, project);
         }
-
     }
 
     public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {

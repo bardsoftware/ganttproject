@@ -1,5 +1,20 @@
 /*
- * Created on 26.09.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team 
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
@@ -19,9 +34,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -33,7 +45,6 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -49,7 +60,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.osgi.service.prefs.Preferences;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -72,7 +82,6 @@ abstract class ExporterBase extends AbstractExporter {
                     }
                 }
             }
-
         };
         return stylesheetOption;
     }
@@ -157,12 +166,20 @@ abstract class ExporterBase extends AbstractExporter {
                         jobs[i].join();
                     } catch (InterruptedException e) {
                         getUIFacade().showErrorDialog(e);
+                        monitor.setCanceled(true);
+                    }
+                    
+                    // Check if job got finished improperly
+                    IStatus state = jobs[i].getResult();
+                    if(state.isOK() == false) {
+                    	getUIFacade().showErrorDialog(state.getException());
+                    	monitor.setCanceled(true);
                     }
                 }
                 Job finishing = new Job("finishing") {
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.done();
-                        finalizationJob.run((File[]) resultFiles.toArray(new File[0]));
+                        finalizationJob.run(resultFiles.toArray(new File[0]));
                         return Status.OK_STATUS;
                     }
                 };
@@ -253,7 +270,6 @@ abstract class ExporterBase extends AbstractExporter {
             transformer.setOutputProperty(
                     "{http://xml.apache.org/xslt}indent-amount", "4");
             return result;
-
         } catch (TransformerConfigurationException e) {
             getUIFacade().showErrorDialog(e);
             throw new RuntimeException(e);
@@ -264,7 +280,6 @@ abstract class ExporterBase extends AbstractExporter {
         addAttribute(name, String.valueOf(value), attrs);
     }
 
-
     protected String i18n(String key) {
         String text = GanttLanguage.getInstance().getText(key);
         return GanttLanguage.getInstance().correctLabel(text);
@@ -273,12 +288,12 @@ abstract class ExporterBase extends AbstractExporter {
     protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         int totalWidth = 0;
-        for (int i=0; i<visibleFields.getSize(); i++) {
+		for (int i = 0; i < visibleFields.getSize(); i++) {
             if (visibleFields.getField(i).isVisible()) {
                 totalWidth += visibleFields.getField(i).getWidth();
             }
         }
-        for (int i=0; i<visibleFields.getSize(); i++) {
+		for (int i = 0; i < visibleFields.getSize(); i++) {
             TableHeaderUIFacade.Column field = visibleFields.getField(i);
             if (field.isVisible()) {
                 addAttribute("id", field.getID(), attrs);
@@ -435,8 +450,7 @@ abstract class ExporterBase extends AbstractExporter {
         {
             List<HumanResource> resources = resourceManager.getResources();
 
-            // String
-            // []function=RoleManager.Access.getInstance().getRoleNames();
+//			String[] function = RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
                 HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);

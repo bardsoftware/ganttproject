@@ -181,7 +181,7 @@ class ProxyDocument implements Document {
     }
 
     private HumanResourceManager getHumanResourceManager() {
-        return (HumanResourceManager) myProject.getHumanResourceManager();
+        return myProject.getHumanResourceManager();
     }
 
     private GPCalendar getActiveCalendar() {
@@ -197,10 +197,6 @@ class ProxyDocument implements Document {
 
         ParsingState myParsingState;
 
-        /**
-         * @param parsing
-         * @param confirmation
-         */
         public AcquireLockState(ParsingState parsing,
                 OpenCopyConfirmationState confirmation) {
             myParsingState = parsing;
@@ -217,11 +213,10 @@ class ProxyDocument implements Document {
         }
     }
 
-
     class OpenCopyConfirmationState {
-        ParsingState myParsingState;
+        private final ParsingState myParsingState;
 
-        FailureState myExitState;
+        private final FailureState myExitState;
 
         public OpenCopyConfirmationState(ParsingState parsing,
                 FailureState failure) {
@@ -241,9 +236,9 @@ class ProxyDocument implements Document {
     }
 
     class ParsingState {
-        FailureState myFailureState;
+        private final FailureState myFailureState;
 
-        SuccessState mySuccessState;
+        private final SuccessState mySuccessState;
 
         public ParsingState(SuccessState success, FailureState failure) {
             mySuccessState = success;
@@ -349,11 +344,6 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.isLocal();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     * @author arun_ram
-     * Added on Feb 26, 2006
-     */
     public boolean equals(Object doc) {
         if (false == doc instanceof ProxyDocument) {
             return false;
@@ -386,6 +376,7 @@ class ProxyDocument implements Document {
             myDefaultDocument = document;
         }
     }
+
     private class PortfolioTagHandler implements TagHandler {
         private static final String PORTFOLIO_TAG = "portfolio";
         private static final String PROJECT_TAG = "project";

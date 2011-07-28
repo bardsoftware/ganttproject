@@ -46,7 +46,6 @@ import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 public class ToolbarBuilder {
     private final JToolBar myToolbar;
     private Color myBackground;
-    private String myCaption;
 
     public ToolbarBuilder() {
         myToolbar = new JToolBar();
@@ -59,11 +58,6 @@ public class ToolbarBuilder {
 
     public ToolbarBuilder withBackground(Color background) {
         myBackground = background;
-        return this;
-    }
-
-    public ToolbarBuilder withCaption(String caption) {
-        myCaption = caption;
         return this;
     }
 

@@ -16,7 +16,7 @@ import org.jdesktop.swing.table.TableColumnExt;
         /** Swing column component representing the column */
         TableColumnExt column;
         /** Datatype of the column */
-        Class type;
+        Class<?> type;
         /** Default value for the column */
         Object defaultVal;
         /** Visible on the screen */
@@ -30,7 +30,7 @@ import org.jdesktop.swing.table.TableColumnExt;
             this(col, index, String.class);
         }
 
-        public ResourceColumn(TableColumnExt col, int index, Class type){
+        public ResourceColumn(TableColumnExt col, int index, Class<?> type){
             column = col;
             this.type = type;
             defaultIndex = index;
@@ -74,11 +74,11 @@ import org.jdesktop.swing.table.TableColumnExt;
             this.defaultVal = defaultVal;
         }
 
-        public Class getType() {
+        public Class<?> getType() {
             return type;
         }
 
-        public void setType(Class type) {
+        public void setType(Class<?> type) {
             this.type = type;
         }
 
