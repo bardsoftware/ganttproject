@@ -1,20 +1,26 @@
 /*
- LICENSE:
- 
- This program is free software; you can redistribute it and/or modify  
- it under the terms of the GNU General Public License as published by  
- the Free Software Foundation; either version 2 of the License, or     
- (at your option) any later version.                                   
- 
- Copyright (C) 2004, GanttProject Development Team
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.time;
 
 import java.util.Date;
 
 /**
- * Created by IntelliJ IDEA.
- * 
  * @author bard
  */
 public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
@@ -24,11 +30,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
     public TimeUnitFunctionOfDateImpl(String name, TimeUnitGraph graph,
             TimeUnit directAtomUnit, DateFrameable framer) {
         super(name, graph, directAtomUnit, framer);
-        if (!(directAtomUnit instanceof DateFrameable)) {
-            throw new IllegalArgumentException(
-                    "Only date frameable time units may be used as atoms for functions of date");
-        }
-        myDirectFrameable = (DateFrameable) directAtomUnit;
+        myDirectFrameable = directAtomUnit;
     }
 
     public TimeUnit createTimeUnit(Date date) {

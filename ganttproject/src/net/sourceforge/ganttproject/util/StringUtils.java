@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,9 +31,8 @@ public class StringUtils {
         if(padding > 0) {
             padding += string.length();
             return String.format("%1$" + padding + "s", string);
-        } else {
-            return string;
         }
+        return string;
     }
 
     /** @return string with the given amount of spaces padded to the right.
@@ -42,8 +41,7 @@ public class StringUtils {
         if(padding > 0) {
             padding += string.length();
             return String.format("%1$-" + padding + "s", string);
-        } else {
-            return string;
         }
+        return string;
     }
 }

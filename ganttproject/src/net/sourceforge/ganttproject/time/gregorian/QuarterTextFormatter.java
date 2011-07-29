@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@ public class QuarterTextFormatter extends CachingTextFormatter implements
     protected TimeUnitText createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         int month = myCalendar.get(Calendar.MONTH);
-        int quarter = (int) (month / 4) + 1;
+        int quarter = month / 4 + 1;
         String shortText = "Q" + quarter;
         return new TimeUnitText(shortText);
     }

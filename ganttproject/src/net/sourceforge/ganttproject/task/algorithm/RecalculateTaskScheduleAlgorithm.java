@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.ArrayList;
@@ -20,7 +38,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * @author bard
  */
 public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
 
@@ -75,7 +93,6 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         myEntranceCounter--;
 
         isRunning = false;
-
 	}
 
     public void run() throws TaskDependencyException {
@@ -107,31 +124,23 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         if (asDependant.length == 0) {
             independentTasks.add(root);
         }
-        Task[] nestedTasks = facade.getNestedTasks(root);
-        for (int i = 0; i < nestedTasks.length; i++) {
-            traverse(facade, nestedTasks[i], independentTasks);
+        for (Task nestedTask : facade.getNestedTasks(root)) {
+            traverse(facade, nestedTask, independentTasks);
         }
     }
 
     private void fulfilDependencies() throws TaskDependencyException {
-        // System.err.println("[RecalculateTaskSchedule] >>>fulfilDependencies()");
-        for (Iterator<Map.Entry<Integer, List<TaskDependency>>> distances = myDistance2dependencyList.entrySet()
-                .iterator(); distances.hasNext();) {
-            Map.Entry<Integer, List<TaskDependency>> nextEntry = distances.next();
-            List<TaskDependency> nextDependenciesList = nextEntry.getValue();
-            for (int i = 0; i < nextDependenciesList.size(); i++) {
-                TaskDependency nextDependency = nextDependenciesList.get(i);
-                TaskDependencyConstraint nextConstraint = nextDependency
-                        .getConstraint();
-                TaskDependencyConstraint.Collision collision = nextConstraint
-                        .getCollision();
+        for (Map.Entry<Integer, List<TaskDependency>> distance : myDistance2dependencyList.entrySet()) {
+            List<TaskDependency> dependenciesList = distance.getValue();
+            for (TaskDependency dependency : dependenciesList) {
+                TaskDependencyConstraint constraint = dependency.getConstraint();
+                TaskDependencyConstraint.Collision collision = constraint.getCollision();
                 if (collision.isActive()) {
-                    fulfilConstraints(nextDependency);
-                    nextDependency.getDependant().applyThirdDateConstraint();
+                    fulfilConstraints(dependency);
+                    dependency.getDependant().applyThirdDateConstraint();
                 }
             }
         }
-        // System.err.println("[RecalculateTaskSchedule] <<<fulfilDependencies()");
     }
 
     private void fulfilConstraints(TaskDependency dependency)
@@ -144,45 +153,36 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
             ArrayList<GanttCalendar> startEarlierVariations = new ArrayList<GanttCalendar>();
             ArrayList<GanttCalendar> noVariations = new ArrayList<GanttCalendar>();
 
-            for (int i = 0; i < depsAsDependant.length; i++) {
-                TaskDependency next = depsAsDependant[i];
-                TaskDependencyConstraint.Collision nextCollision = next
+            for (TaskDependency depAsDependant : depsAsDependant) {
+                TaskDependencyConstraint.Collision nextCollision = depAsDependant
                         .getConstraint().getCollision();
-                GanttCalendar acceptableStart = nextCollision
-                        .getAcceptableStart();
+                GanttCalendar acceptableStart = nextCollision.getAcceptableStart();
                 switch (nextCollision.getVariation()) {
-                case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION: {
+                case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
                     startEarlierVariations.add(acceptableStart);
                     break;
-                }
-                case TaskDependencyConstraint.Collision.START_LATER_VARIATION: {
+                case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
                     startLaterVariations.add(acceptableStart);
                     break;
-                }
-                case TaskDependencyConstraint.Collision.NO_VARIATION: {
+                case TaskDependencyConstraint.Collision.NO_VARIATION:
                     noVariations.add(acceptableStart);
                     break;
                 }
-                }
             }
             if (noVariations.size() > 1) {
-                throw new TaskDependencyException(
-                        "Failed to fulfill constraints of task="
-                                + dependant
-                                + ". There are "
-                                + noVariations.size()
-                                + " constraints which don't allow for task start variation");
+                throw new TaskDependencyException("Failed to fulfill constraints of task="
+                        + dependant + ". There are " + noVariations.size()
+                        + " constraints which don't allow for task start variation");
             }
 
             Collections.sort(startEarlierVariations, GanttCalendar.COMPARATOR);
             Collections.sort(startLaterVariations, GanttCalendar.COMPARATOR);
 
             GanttCalendar solution;
-            GanttCalendar earliestStart = (GanttCalendar) (startEarlierVariations
-                    .size() == 0 ? null : startEarlierVariations.get(0));
-            GanttCalendar latestStart = (GanttCalendar) (startLaterVariations
-                    .size() >= 0 ? startLaterVariations
-                    .get(startLaterVariations.size() - 1) : null);
+            GanttCalendar earliestStart = startEarlierVariations.size() == 0
+                    ? null : startEarlierVariations.get(0);
+            GanttCalendar latestStart = startLaterVariations.size() >= 0
+                    ? startLaterVariations.get(startLaterVariations.size() - 1) : null;
             if (earliestStart == null && latestStart == null) {
                 solution = dependant.getStart();
             } else {
@@ -198,8 +198,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
                 }
             }
             if (noVariations.size() > 0) {
-                GanttCalendar notVariableStart = noVariations
-                        .get(0);
+                GanttCalendar notVariableStart = noVariations.get(0);
                 if (notVariableStart.compareTo(earliestStart) < 0
                         || notVariableStart.compareTo(latestStart) > 0) {
                     throw new TaskDependencyException(
@@ -239,8 +238,8 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
             myDistance2dependencyList.put(key, depsList);
         }
         depsList.addAll(Arrays.asList(deps));
-        for (int i = 0; i < deps.length; i++) {
-            Task dependant = deps[i].getDependant();
+        for (TaskDependency dep : deps) {
+            Task dependant = dep.getDependant();
             TaskDependency[] nextStepDeps = dependant
                     .getDependenciesAsDependee().toArray();
             buildDistanceGraph(nextStepDeps, ++distance);
@@ -248,5 +247,4 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     }
 
     protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
-
 }
