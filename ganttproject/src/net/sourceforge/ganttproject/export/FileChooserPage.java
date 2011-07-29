@@ -63,7 +63,6 @@ class FileChooserPage extends FileChooserPageBase {
                 String extension = fileName.substring(lastDot + 1);
                 if (!extension.equals(proposedExtension)) {
                     getChooser().setFile(new File(selectedFile.getParent(), fileName.substring(0, lastDot+1) + proposedExtension));
-                    return;
                 }
             }
         }
