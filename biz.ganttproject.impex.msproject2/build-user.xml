@@ -10,7 +10,6 @@
     </path>
     <path id="mainproject.classpath">
         <pathelement location="bin"/>
-        <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/poi-3.6-20091214.jar"/>
         <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/mpxj.jar"/>
     </path>
     <path id="ganttproject-2.0.classpath">
