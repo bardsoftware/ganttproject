@@ -15,11 +15,6 @@
                name="*">
          </export>
       </library>
-      <library name="lib/poi-3.6-20091214.jar">
-         <export
-               name="*">
-         </export>
-      </library>
    </runtime>
    <requires>
       <import plugin="net.sourceforge.ganttproject"/>
