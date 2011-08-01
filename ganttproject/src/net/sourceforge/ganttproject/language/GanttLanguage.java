@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.language;
 import java.awt.ComponentOrientation;
 import java.text.DateFormat;
 import java.text.FieldPosition;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -90,15 +91,15 @@ public class GanttLanguage {
     }
 
     public DateFormat getMediumDateFormat() {
-    	return currentDateFormat;
+        return currentDateFormat;
     }
 
     public DateFormat getShortDateFormat() {
-    	return shortCurrentDateFormat;
+        return shortCurrentDateFormat;
     }
 
     public DateFormat getLongDateFormat() {
-    	return myLongFormat;
+        return myLongFormat;
     }
 
     public void setLocale(Locale locale) {
@@ -116,14 +117,14 @@ public class GanttLanguage {
                 currentLocale);
         currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM,
                 currentLocale);
-    	myLongFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
+        myLongFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
         UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
         UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
         UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
         UIManager.put("JXDatePicker.numColumns", new Integer(10));
         String[] dayShortNames = new String[7];
         for (int i = 0; i < 7; i++) {
-        	dayShortNames[i] = getDay(i).substring(0, 1);
+            dayShortNames[i] = getDay(i).substring(0, 1);
         }
         UIManager.put("JXMonthView.daysOfTheWeek", dayShortNames);
         String resourceBase = System.getProperty(
@@ -148,7 +149,7 @@ public class GanttLanguage {
         }
         result.removeAll(removeLangOnly);
         result.add(Locale.ENGLISH);
-        
+
         List<Locale> result1 = new ArrayList<Locale>(result);
         Collections.sort(result1, new Comparator<Locale>() {
             @Override
@@ -259,6 +260,11 @@ public class GanttLanguage {
     }
 
     public Calendar newCalendar() {
-    	return (Calendar) Calendar.getInstance(currentLocale).clone();
+        return (Calendar) Calendar.getInstance(currentLocale).clone();
+    }
+
+    public String formatText(String key, Object... values) {
+        String message = getText(key);
+        return message == null ? null : MessageFormat.format(message, values);
     }
 }
