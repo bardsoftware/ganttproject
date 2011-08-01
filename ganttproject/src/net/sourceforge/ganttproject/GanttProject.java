@@ -1084,7 +1084,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         /*
          * this will add new custom columns to the newly created task.
          */
-        getCustomColumnsStorage().processNewTask(task);
 
         AdjustTaskBoundsAlgorithm alg = getTaskManager()
                 .getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();

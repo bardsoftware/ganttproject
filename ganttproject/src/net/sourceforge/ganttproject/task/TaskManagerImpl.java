@@ -797,7 +797,6 @@ public class TaskManagerImpl implements TaskManager {
                         .getThirdDateConstraint());
             }
 
-            myCustomColumnStorage.processNewTask(nextImported);
             CustomColumnsValues customValues = nested[i].getCustomValues();
             Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
             for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
@@ -813,11 +812,8 @@ public class TaskManagerImpl implements TaskManager {
                     }
                 }
             }
-            // System.out.println ("Import : " + nextImported.getTaskID() + "
-            // -->> " + nextImported.getName());
 
             original2imported.put(nested[i], nextImported);
-            // nextImported.move(root);
             getTaskHierarchy().move(nextImported, root);
             importData(nested[i], nextImported, original2imported);
         }

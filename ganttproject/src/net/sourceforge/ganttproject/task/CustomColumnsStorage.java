@@ -262,28 +262,6 @@ public class CustomColumnsStorage {
         return column==null ? null : column.getName();
     }
 
-    /**
-     * Add all stored custom column to the given task. All custom column will
-     * have the default value.
-     *
-     * @param task
-     *            The task to process.
-     */
-    public void processNewTask(Task task) {
-        for (CustomColumn cc : mapIdCustomColum.values()) {
-            try {
-                if (cc.getDefaultValue()!=null) {
-                    task.getCustomValues().setValue(cc.getName(), cc.getDefaultValue());
-                }
-            } catch (CustomColumnsException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        }
-
-    }
-
     public String toString() {
         return mapIdCustomColum.toString();
     }
