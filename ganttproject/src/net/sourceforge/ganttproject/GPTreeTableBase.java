@@ -71,6 +71,7 @@ import net.sourceforge.ganttproject.task.CustomColumn;
 import org.jdesktop.jdnc.JNTreeTable;
 import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.table.TableColumnExt;
+import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 import org.jdesktop.swing.treetable.TreeTableModel;
 
 public class GPTreeTableBase extends JNTreeTable{
@@ -156,6 +157,11 @@ public class GPTreeTableBase extends JNTreeTable{
             }
             getTable().removeColumn(c.myTableColumn);
             myColumns.remove(c);
+            for (ColumnImpl column : myColumns) {
+                if (column.myTableColumn.getModelIndex() > c.myTableColumn.getModelIndex()) {
+                    column.myTableColumn.setModelIndex(column.myTableColumn.getModelIndex() - 1);
+                }
+            }
         }
 
         protected ColumnImpl findColumnByID(String id) {
@@ -235,7 +241,7 @@ public class GPTreeTableBase extends JNTreeTable{
         return myProject;
     }
 
-    protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, TreeTableModel model) {
+    protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, DefaultTreeTableModel model) {
         super(new JXTreeTable(model) {
             protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
                 if (e.isAltDown() || e.isControlDown()) {
