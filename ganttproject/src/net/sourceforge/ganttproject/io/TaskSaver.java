@@ -27,7 +27,7 @@ class TaskSaver extends SaverBase {
     void save(IGanttProject project, TransformerHandler handler, Color defaultColor) throws SAXException, IOException {
         AttributesImpl attrs = new AttributesImpl();
         if (defaultColor!=null) {
-        	addAttribute("color", ColorConvertion.getColor(defaultColor), attrs);
+            addAttribute("color", ColorConvertion.getColor(defaultColor), attrs);
         }
         startElement("tasks", attrs, handler);
 
@@ -104,13 +104,15 @@ class TaskSaver extends SaverBase {
             CustomColumn nextColumn = it.next();
             final String name = nextColumn.getName();
             final String idc = nextColumn.getId();
-            Object value = ccv.getValue(name);
-            if (GregorianCalendar.class.isAssignableFrom(nextColumn.getType()) && value!=null) {
-                value = DateParser.getIsoDate(((GanttCalendar)value).getTime());
+            if (ccv.hasOwnValue(name)) {
+                Object value = ccv.getValue(name);
+                if (GregorianCalendar.class.isAssignableFrom(nextColumn.getType()) && value!=null) {
+                    value = DateParser.getIsoDate(((GanttCalendar)value).getTime());
+                }
+                addAttribute("taskproperty-id", idc, attrs);
+                addAttribute("value", value==null ? null : String.valueOf(value), attrs);
+                emptyElement("customproperty", attrs, handler);
             }
-            addAttribute("taskproperty-id", idc, attrs);
-            addAttribute("value", value==null ? null : String.valueOf(value), attrs);
-            emptyElement("customproperty", attrs, handler);
         }
 
         // Write the child of the task
@@ -159,11 +161,11 @@ class TaskSaver extends SaverBase {
             final Class cla = cc.getType();
             final String valueType = encodeFieldType(cla);
             if (valueType==null) {
-            	continue;
+                continue;
             }
             if ("date".equals(valueType) && defVal!=null){
-            	assert defVal instanceof GanttCalendar;
-            	defVal = DateParser.getIsoDate(((GanttCalendar)defVal).getTime());
+                assert defVal instanceof GanttCalendar;
+                defVal = DateParser.getIsoDate(((GanttCalendar)defVal).getTime());
             }
             String idcStr = cc.getId();
             writeTaskProperty(handler, idcStr, cc.getName(), "custom", valueType, defVal==null ? null : String.valueOf(defVal));
@@ -171,7 +173,7 @@ class TaskSaver extends SaverBase {
     }
 
     static String encodeFieldType(Class fieldType) {
-    	return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);
+        return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);
     }
 
 }

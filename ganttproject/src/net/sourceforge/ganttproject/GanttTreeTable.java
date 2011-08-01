@@ -711,21 +711,11 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      */
     private void addNewCustomColumn(CustomColumn customColumn) {
         TaskContainmentHierarchyFacade tchf = getProject().getTaskManager().getTaskHierarchy();
-        setCustomColumnValueToAllNestedTask(
-            tchf, tchf.getRootTask(), customColumn.getName(), customColumn.getDefaultValue());
 
         TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(
             customColumn.getId(), customColumn.getName(), true, getTable().getColumnCount(), 100);
         ColumnImpl columnImpl = getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
         getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
-
-//        Runnable t = new Runnable() {
-//            public void run() {
-//                calculateWidth();
-//                revalidate();
-//            }
-//        };
-//        SwingUtilities.invokeLater(t);
     }
 
     /**
@@ -738,59 +728,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         getTableHeaderUiFacade().deleteColumn(column);
     }
 
-    /**
-     * @param facade
-     *            TaskContainmentHierarchyFacade ot retrive nested tasks.
-     * @param root
-     *            Root task to start with.
-     * @param colName
-     *            Name of the new custom column to add to the tasks.
-     * @param value
-     *            Value for this new custom column.
-     */
-    private static void setCustomColumnValueToAllNestedTask(
-            TaskContainmentHierarchyFacade facade, Task root, String colName, Object value) {
-        try {
-            root.getCustomValues().setValue(colName, value);
-        } catch (CustomColumnsException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-        }
-        Task[] tt = facade.getNestedTasks(root);
-        for (int i = 0; i < tt.length; i++) {
-            try {
-                tt[i].getCustomValues().setValue(colName, value);
-            } catch (CustomColumnsException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
-            setCustomColumnValueToAllNestedTask(facade, tt[i], colName, value);
-        }
-    }
-
-    /**
-     * Remove permanently the custom column for the task <code>root</code> and
-     * all its children.
-     *
-     * @param facade
-     *            TaskContainmentHierarchyFacade of retrieved nested tasks.
-     * @param root
-     *            Root task to start with.
-     * @param colName
-     *            Name of the custom column to remove.
-     */
-    private void removeCustomColumnToAllNestedTask(
-            TaskContainmentHierarchyFacade facade, Task root, String colName) {
-        // root.getCustomValues().removeCustomColumn(colName);
-
-        Task[] tt = facade.getNestedTasks(root);
-        for (int i = 0; i < tt.length; i++) {
-            tt[i].getCustomValues().removeCustomColumn(colName);
-            removeCustomColumnToAllNestedTask(facade, tt[i], colName);
-        }
-    }
 
     private void renameCustomColumnForAllNestedTask(
             TaskContainmentHierarchyFacade facade, Task root, String oldName,

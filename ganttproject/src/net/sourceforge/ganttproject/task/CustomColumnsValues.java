@@ -26,7 +26,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
      * CustomColumnName(String) -> Value (Object)
      */
     private final Map<String, Object> mapCustomColumnValue = new HashMap<String, Object>();
-	private final CustomColumnsStorage myColumnStorage;
+    private final CustomColumnsStorage myColumnStorage;
     private final CustomColumnsManager myManager;
 
     /**
@@ -56,8 +56,8 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
                     CustomColumnsException.DO_NOT_EXIST, customColName);
 
         if (value == null) {
-        	mapCustomColumnValue.remove(customColName);
-        	return;
+            mapCustomColumnValue.remove(customColName);
+            return;
         }
         Class c1 = myColumnStorage.getCustomColumn(customColName).getType();
         Class c2 = value.getClass();
@@ -79,7 +79,17 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
      * @return The value for the given customColName.
      */
     public Object getValue(String customColName) {
-        return mapCustomColumnValue.get(customColName);
+        Object result = mapCustomColumnValue.get(customColName);
+        return (result == null) ? tryGetDefaultValue(customColName) : result;
+    }
+
+    public boolean hasOwnValue(String propertyName) {
+        return mapCustomColumnValue.containsKey(propertyName);
+    }
+
+    private Object tryGetDefaultValue(String customColName) {
+        CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, customColName);
+        return def == null ? null : def.getDefaultValue();
     }
 
     /**
