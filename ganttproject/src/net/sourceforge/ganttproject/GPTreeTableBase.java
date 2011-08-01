@@ -502,16 +502,18 @@ public class GPTreeTableBase extends JNTreeTable{
 
         private GPAction[] createPopupActions(final MouseEvent mouseEvent) {
             final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
+            final Column column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
             GPAction hideAction = new GPAction("columns.hide.label") {
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
-                    Column column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
                     assert column.isVisible() : "how come it is at mouse click point?";
                     column.setVisible(false);
                 }
               };
             if (columnAtPoint == -1) {
                 hideAction.setEnabled(false);
+            } else {
+                hideAction.putValue(Action.NAME, GanttLanguage.getInstance().formatText("columns.hide.label", column.getName()));
             }
             return new GPAction[] {
               new GPAction("columns.manage.label") {
