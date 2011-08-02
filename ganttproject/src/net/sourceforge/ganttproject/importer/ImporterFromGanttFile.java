@@ -167,6 +167,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
 
         BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
+            super(targetProject.getUndoManager());
             myDocumentManager = new DocumentCreator(this, uiFacade, this) {
                 protected TableHeaderUIFacade getVisibleFields() {
                     return myVisibleFields;

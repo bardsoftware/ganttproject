@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.delay;
 
 import java.util.ArrayList;
@@ -10,7 +28,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.Mediator;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -42,13 +60,13 @@ public class DelayManager implements GPUndoListener {
 
 	private GanttTree2 myTree;
 
-    public DelayManager(TaskManager taskManager, GanttTree2 tree) {
+    public DelayManager(TaskManager taskManager, IGanttProject project, GanttTree2 tree) {
         myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
         myRoot = (TaskNode) tree.getRoot();
 		myTree = tree;
 		myTaskManager.addTaskListener(new TaskListenerImpl());
-        Mediator.getUndoManager().addUndoableEditListener(this);
+        project.getUndoManager().addUndoableEditListener(this);
     }
 
     public void addObserver(DelayObserver observer) {

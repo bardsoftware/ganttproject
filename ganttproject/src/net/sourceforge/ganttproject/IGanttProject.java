@@ -34,6 +34,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * This interface represents a project as a logical business entity, without any
@@ -74,6 +75,8 @@ public interface IGanttProject {
     RoleManager getRoleManager();
 
     TaskManager getTaskManager();
+    
+    GPUndoManager getUndoManager();
 
     TaskContainmentHierarchyFacade getTaskContainment();
 

@@ -556,7 +556,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             addWindowListener(ourWindowListener);
         }
         addMouseListenerToAllContainer(this.getComponents());
-        myDelayManager = new DelayManager(myTaskManager, tree);
+        myDelayManager = new DelayManager(myTaskManager, this, tree);
         Mediator.registerDelayManager(myDelayManager);
         myDelayManager.addObserver(tree);
 
