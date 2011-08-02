@@ -388,9 +388,13 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
      * Edits the <code>t</code> task name in the treetable.
      */
     public void setEditingTask(Task t) {
-        getTaskSelectionManager().addTask(t);
         treetable.getTreeTable().editingStopped(new ChangeEvent(treetable.getTreeTable()));
-        treetable.editNewTask(t);
+
+        TaskSelectionManager taskSelectionManager = getTaskSelectionManager();
+        taskSelectionManager.clear();
+        taskSelectionManager.addTask(t);
+        
+        treetable.editSelectedTask();
         treetable.centerViewOnSelectedCell();
     }
 
