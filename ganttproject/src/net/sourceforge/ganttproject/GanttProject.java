@@ -568,6 +568,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 repaint();
             }
         });
+        this.setModified(false);
     }
 
     private void addMouseListenerToAllContainer(Component[] cont) {
