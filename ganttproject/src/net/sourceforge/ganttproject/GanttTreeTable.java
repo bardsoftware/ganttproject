@@ -1407,7 +1407,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
-    void editNewTask(Task t) {
+    void editSelectedTask() {
         TreePath selectedPath = getTree().getSelectionPath();
         int c = getTable().convertColumnIndexToView(
                 getTable().getColumn(GanttTreeTableModel.strColName)
