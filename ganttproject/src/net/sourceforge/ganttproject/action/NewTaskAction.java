@@ -29,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class NewTaskAction extends AbstractAction implements
@@ -45,18 +44,17 @@ public class NewTaskAction extends AbstractAction implements
         URL iconUrl = this.getClass().getClassLoader().getResource(
                 "icons/insert_16.gif");
         if (iconUrl != null) {
-            this.putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
+            putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
         }
         project.getI18n().addListener(this);
     }
 
     public void actionPerformed(ActionEvent e) {
-        Mediator.getUndoManager().undoableEdit("New Task", new Runnable() {
+        myProject.getUndoManager().undoableEdit("New Task", new Runnable() {
             public void run() {
                 myProject.newTask();
             }
         });
-
     }
 
     public void languageChanged(GanttLanguage.Event event) {
@@ -64,8 +62,7 @@ public class NewTaskAction extends AbstractAction implements
     }
 
     private void setText(GanttLanguage language) {
-        this.putValue(AbstractAction.NAME, GanttLanguage.getInstance()
+        putValue(AbstractAction.NAME, GanttLanguage.getInstance()
                 .correctLabel(language.getText("newTask")));
     }
-
 }

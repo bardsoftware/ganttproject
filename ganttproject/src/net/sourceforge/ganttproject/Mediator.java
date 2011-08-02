@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2004-2011 Dmitry Barashev
+Copyright (C) 2004-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,8 +41,6 @@ public class Mediator {
 
     private static TaskSelectionManager taskSelectionManager = null;
 
-    private static GPUndoManager undoManager = null;
-
     private static DelayManager delayManager = null;
 
     private static final PluginManager pluginManager = new PluginManager();
@@ -64,10 +62,6 @@ public class Mediator {
         taskSelectionManager = taskSelection;
     }
 
-    public static void registerUndoManager(GPUndoManager undoMgr) {
-        undoManager = undoMgr;
-    }
-
     public static void registerDelayManager(DelayManager delayMgr) {
         delayManager = delayMgr;
     }
@@ -85,11 +79,6 @@ public class Mediator {
     @Deprecated
     public static TaskSelectionManager getTaskSelectionManager() {
         return taskSelectionManager;
-    }
-
-    @Deprecated
-    public static GPUndoManager getUndoManager() {
-        return undoManager;
     }
 
     @Deprecated

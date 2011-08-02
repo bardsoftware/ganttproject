@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2010 Dmitry Barashev
+Copyright (C) 2005-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -126,7 +126,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
                 return GanttProjectBase.this.getParserFactory();
             }
         };
-        Mediator.registerUndoManager(myUndoManager);
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);

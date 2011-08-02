@@ -74,7 +74,7 @@ public class ImportResources extends AbstractAction {
     public void actionPerformed(ActionEvent event) {
         final File file = getResourcesFile();
         if (file != null) {
-            Mediator.getUndoManager().undoableEdit("Import Resources",
+            myproject.getUndoManager().undoableEdit("Import Resources",
                     new Runnable() {
                         public void run() {
                             GanttXMLOpen loader = new GanttXMLOpen(
