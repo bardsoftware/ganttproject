@@ -56,14 +56,14 @@ public class DelayManager implements GPUndoListener {
 
     private TaskManager myTaskManager;
 
-    private TaskNode myRoot;
+    private Task myRootTask;
 
 	private GanttTree2 myTree;
 
     public DelayManager(TaskManager taskManager, IGanttProject project, GanttTree2 tree) {
         myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
-        myRoot = (TaskNode) tree.getRoot();
+        myRootTask = (Task) ((TaskNode) tree.getRoot()).getUserObject();
 		myTree = tree;
 		myTaskManager.addTaskListener(new TaskListenerImpl());
         project.getUndoManager().addUndoableEditListener(this);
@@ -82,11 +82,13 @@ public class DelayManager implements GPUndoListener {
         myToday = new Date();
         if (ourCriticProcess) {
         	ourCriticProcess = false;
-			myTaskManager.processCriticalPath(myRoot);
-			ArrayList<DefaultMutableTreeNode> projectTasks = myTree.getProjectTasks();
-	        if (projectTasks.size() != 0)
-				for (int i = 0 ; i < projectTasks.size() ; i++)
-					myTaskManager.processCriticalPath((TaskNode) projectTasks.get(i));
+			myTaskManager.processCriticalPath(myRootTask);
+			ArrayList<TaskNode> projectTasks = myTree.getProjectTasks();
+	        if (projectTasks.size() != 0) {
+				for (DefaultMutableTreeNode projectTask: projectTasks) {
+                    myTaskManager.processCriticalPath((Task) ((TaskNode) projectTask).getUserObject());
+				}
+	        }
 
 //            System.out.println("critical path processed");
         }
