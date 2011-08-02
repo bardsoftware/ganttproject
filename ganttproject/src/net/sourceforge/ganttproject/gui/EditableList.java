@@ -138,7 +138,7 @@ public abstract class EditableList<T>  {
             }
             //resourcesTable.setHighlighters(HighlighterFactory.createSimpleStriping());
             resourcesScrollPane = new JScrollPane(jnTable);
-            resourcesScrollPane.setPreferredSize(new Dimension(300, 130));
+            //resourcesScrollPane.setPreferredSize(new Dimension(300, 130));
 
             myTableAndActions = new TableAndActionsImpl();
         }
@@ -306,6 +306,7 @@ public abstract class EditableList<T>  {
                 //resourcesTable.setValueAt("<column name>", lastRow, 0);
             }
 
+            resourcesTable.getSelectionModel().setSelectionInterval(lastRow, lastRow);
             resourcesTable.editCellAt(lastRow, 0);
             resourcesTable.getEditorComponent().requestFocus();
         }

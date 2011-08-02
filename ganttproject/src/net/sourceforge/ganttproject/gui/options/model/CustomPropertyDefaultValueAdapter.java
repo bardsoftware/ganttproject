@@ -28,12 +28,14 @@ public abstract class CustomPropertyDefaultValueAdapter {
         case BOOLEAN:
             class BooleanDefaultValue extends DefaultBooleanOption {
                 BooleanDefaultValue() {
-                    super("customPropertyDialog.defaultValue.boolean", (Boolean)def.getDefaultValue());
+                    super("customPropertyDialog.defaultValue.boolean",
+                        def.getDefaultValue() == null ? Boolean.FALSE : (Boolean)def.getDefaultValue());
                 }
                 @Override
                 public void commit() {
                     if (isChanged()) {
-                        assert propertyClass == def.getPropertyClass();
+                        assert propertyClass == def.getPropertyClass()
+                            : "property class mismatch: " + propertyClass + " vs " + def.getPropertyClass();
                         super.commit();
                         def.setDefaultValueAsString(String.valueOf(getValue()));
                     }

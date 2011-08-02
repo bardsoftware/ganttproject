@@ -33,6 +33,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import net.sourceforge.ganttproject.CustomPropertyClass;
@@ -109,7 +110,15 @@ public class ColumnManagerPanel {
             }
             @Override
             protected CustomPropertyDefinition createValue(CustomPropertyDefinition prototype) {
-                return myManager.createDefinition(CustomPropertyClass.TEXT.getID(), prototype.getName(), null);
+                CustomPropertyDefinition def = myManager.createDefinition(
+                    CustomPropertyClass.TEXT.getID(), prototype.getName(), null);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getTableComponent().requestFocus();
+                    }
+                });
+                return def;
             }
             @Override
             protected void deleteValue(CustomPropertyDefinition value) {
@@ -222,7 +231,7 @@ public class ColumnManagerPanel {
         }
 
         Component optionsComponent = builder.createGroupComponent(null,
-            myIsVisibleOption, myNameOption, myType);
+            myNameOption, myType);
 
         Box result = Box.createVerticalBox();
         result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
