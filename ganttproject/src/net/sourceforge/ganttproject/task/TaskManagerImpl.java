@@ -819,10 +819,6 @@ public class TaskManagerImpl implements TaskManager {
         return getCalendar().findClosestWorkingTime(time);
     }
 
-    public void processCriticalPath(TaskNode root) {
-        processCriticalPath((Task)root.getUserObject());
-    }
-
     public void processCriticalPath(Task root) {
         try {
             myAlgorithmCollection.getRecalculateTaskScheduleAlgorithm().run();

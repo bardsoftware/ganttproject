@@ -1761,14 +1761,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
-            getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-            ArrayList<DefaultMutableTreeNode> projectTasks = tree
-                    .getProjectTasks();
-            if (projectTasks.size() != 0) {
-                for (int i = 0; i < projectTasks.size(); i++) {
-                    getTaskManager().processCriticalPath(
-                            (TaskNode) projectTasks.get(i));
-                }
+            getTaskManager().processCriticalPath(
+                    (Task) ((TaskNode) tree.getRoot()).getUserObject());
+            ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
+            for (TaskNode projectTask : projectTasks) {
+                getTaskManager().processCriticalPath(
+                        (Task) projectTask.getUserObject());
             }
             repaint();
         }
