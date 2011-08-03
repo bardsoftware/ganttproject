@@ -4,14 +4,18 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.sourceforge.ganttproject.GanttTreeTable.DisplayedColumnsList;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
@@ -44,26 +48,33 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
     final TextLengthCalculatorImpl lengthCalculator = new TextLengthCalculatorImpl((Graphics2D) g);
     // The list of column object which are currently being used or referenced
     // to by the code
-    final DisplayedColumnsList dispCols = getTree().getTreeTable().getDisplayColumns();
+    final TableHeaderUIFacade dispCols = getTree().getTreeTable().getVisibleFields();
 
     // A small constant offset for the X coordinates
     int x = 2;
 
+    List<Column> columns = new ArrayList<Column>();
+    for (int i = 0; i < dispCols.getSize(); i++) {
+        Column c = dispCols.getField(i);
+        if (c.isVisible()) {
+            columns.add(c);
+        }
+    }
+    Collections.sort(columns, new Comparator<Column>() {
+        @Override
+        public int compare(Column left, Column right) {
+            return left.getOrder() - right.getOrder();
+        }
+    });
     // The primary loop works based on the "Order" value of each
     // column entry because the column number does not correspond to
     // the physical location of that entry in the table but the order does
-    for (int colOrd = 0; colOrd < dispCols.size(); colOrd++) {
+    for (Column c : columns) {
 
       // Extract the name of the column from the order value
-      String colName = dispCols.getNameForOrder(colOrd);
+      String colName = c.getName();
 
       if (colName == null) {
-        continue;
-      }
-
-      // Only worry about columns which are actually displayed in the
-      // current view
-      if (!dispCols.isDisplayed(colName)) {
         continue;
       }
 

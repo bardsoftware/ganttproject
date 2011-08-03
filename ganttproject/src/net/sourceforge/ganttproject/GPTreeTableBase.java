@@ -278,6 +278,10 @@ public class GPTreeTableBase extends JNTreeTable{
 
     }
 
+    public TableHeaderUIFacade getVisibleFields() {
+        return getTableHeaderUiFacade();
+    }
+
     protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
         return myTableHeaderFacade;
     }
