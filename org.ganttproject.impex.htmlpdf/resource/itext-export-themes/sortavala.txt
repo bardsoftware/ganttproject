@@ -1,0 +1,2 @@
+font-family = arial
+manager-role = default:1
