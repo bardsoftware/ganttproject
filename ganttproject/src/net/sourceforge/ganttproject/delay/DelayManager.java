@@ -28,7 +28,6 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -38,6 +37,7 @@ import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * The DelayManager manages delays. It has all DelayObservers and notify each of
@@ -60,13 +60,13 @@ public class DelayManager implements GPUndoListener {
 
 	private GanttTree2 myTree;
 
-    public DelayManager(TaskManager taskManager, IGanttProject project, GanttTree2 tree) {
+    public DelayManager(TaskManager taskManager, GPUndoManager undoManager, GanttTree2 tree) {
         myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
         myRootTask = (Task) ((TaskNode) tree.getRoot()).getUserObject();
 		myTree = tree;
 		myTaskManager.addTaskListener(new TaskListenerImpl());
-        project.getUndoManager().addUndoableEditListener(this);
+        undoManager.addUndoableEditListener(this);
     }
 
     public void addObserver(DelayObserver observer) {
