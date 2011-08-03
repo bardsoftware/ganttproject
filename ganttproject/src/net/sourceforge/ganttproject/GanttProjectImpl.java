@@ -41,7 +41,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class GanttProjectImpl implements IGanttProject {
     private String myProjectName;
@@ -51,7 +50,6 @@ public class GanttProjectImpl implements IGanttProject {
     private final TaskManager myTaskManager;
     private final HumanResourceManager myResourceManager;
     private final TaskManagerConfigImpl myTaskManagerConfig;
-    private final GPUndoManager myUndoManager;
     private Document myDocument;
     private final List<ProjectEventListener> myListeners = new ArrayList<ProjectEventListener>();
     private UIConfiguration myUIConfiguration;
@@ -59,10 +57,9 @@ public class GanttProjectImpl implements IGanttProject {
     private final CustomColumnsStorage myTaskCustomColumnStorage;
     private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
 
-    public GanttProjectImpl(GPUndoManager undoManager) {
+    public GanttProjectImpl() {
         myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole());
         myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
-        myUndoManager = undoManager;
         myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
         myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT, Color.BLUE, true);
         myTaskCustomColumnStorage = new CustomColumnsStorage();
@@ -124,10 +121,6 @@ public class GanttProjectImpl implements IGanttProject {
 
     public TaskManager getTaskManager() {
         return myTaskManager;
-    }
-    
-    public GPUndoManager getUndoManager() {
-        return myUndoManager;
     }
 
     public TaskContainmentHierarchyFacade getTaskContainment() {
