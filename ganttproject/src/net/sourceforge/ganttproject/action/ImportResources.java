@@ -27,7 +27,6 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.OpenFileDialog;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -46,7 +45,7 @@ public class ImportResources extends AbstractAction {
 
     private final HumanResourceManager myResourceManager;
 
-    private final GanttProject myproject;
+    private final GanttProject myProject;
 
     private final RoleManager myRoleManager;
 
@@ -68,29 +67,29 @@ public class ImportResources extends AbstractAction {
             putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
         }
 
-        myproject = project;
+        myProject = project;
     }
 
     public void actionPerformed(ActionEvent event) {
         final File file = getResourcesFile();
         if (file != null) {
-            myproject.getUndoManager().undoableEdit("Import Resources",
+            myProject.getUndoManager().undoableEdit("Import Resources",
                     new Runnable() {
                         public void run() {
                             GanttXMLOpen loader = new GanttXMLOpen(
                                     myTaskManager);
                             ResourceTagHandler tagHandler = new ResourceTagHandler(
-                                    myResourceManager, myRoleManager, myproject.getResourceCustomPropertyManager());
+                                    myResourceManager, myRoleManager, myProject.getResourceCustomPropertyManager());
                             DependencyTagHandler dependencyHandler = new DependencyTagHandler(
-                                    loader.getContext(), myTaskManager, myproject.getUIFacade());
+                                    loader.getContext(), myTaskManager, myProject.getUIFacade());
                             RoleTagHandler rolesHandler = new RoleTagHandler(
                                     RoleManager.Access.getInstance());
                             loader.addTagHandler(tagHandler);
                             loader.addTagHandler(dependencyHandler);
                             loader.addTagHandler(rolesHandler);
                             loader.load(file);
-                            // myproject.setQuickSave (true);
-                            // myproject.quickSave ("Import Resources");
+                            // myProject.setQuickSave (true);
+                            // myProject.quickSave ("Import Resources");
                         }
                     });
         }
