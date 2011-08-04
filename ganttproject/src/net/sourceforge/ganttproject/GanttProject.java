@@ -1660,6 +1660,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
+        getTaskManager().getCalendar().clearPublicHolidays();
         setModified(false);
     }
 

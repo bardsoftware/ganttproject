@@ -103,6 +103,10 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         // TODO Auto-generated method stub
         return null;
     }
+    
+    public void clearPublicHolidays() {
+        // Nothing needs to be done
+    }
 
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
