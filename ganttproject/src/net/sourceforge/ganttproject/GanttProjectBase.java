@@ -98,6 +98,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
+
+    private final CustomColumnsManager myResourceCustomPropertyManager =
+        new CustomColumnsManager(new CustomColumnsStorage());
+
     private final RssFeedChecker myRssChecker;
 
     protected GanttProjectBase() {
@@ -470,6 +474,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
+    }
+
+    public CustomPropertyManager getResourceCustomPropertyManager() {
+        return myResourceCustomPropertyManager;
     }
 
     public CustomColumnsStorage getCustomColumnsStorage() {
