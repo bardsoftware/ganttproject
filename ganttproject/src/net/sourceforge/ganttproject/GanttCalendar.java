@@ -1,23 +1,23 @@
-/***************************************************************************
- GanttCalendar.java  -  description
- -------------------
- begin                : dec 2002
- copyright            : (C) 2002 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2002-2011 Thomas Alexandre, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
-import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -31,7 +31,7 @@ import org.w3c.util.InvalidDateException;
 /**
  * Class use for calendar
  */
-public class GanttCalendar extends GregorianCalendar implements Serializable {
+public class GanttCalendar extends GregorianCalendar {
     private final GanttLanguage language = GanttLanguage.getInstance();
 
     public GanttCalendar() {
@@ -129,7 +129,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
     /**
      * @deprecated Use TimeUnit related methods
      * @returns the difference (in days) between two date */
-    @Deprecated
     public int diff(GanttCalendar d) {
         int res = 0;
         GanttCalendar d1;
@@ -174,9 +173,8 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
      *         1 if the date is after 'when'
      */
     public int compareTo(GanttCalendar when) {
-        for (int i = 0; i < comparissons.length; i++) {
-            switch (module(this.get(comparissons[i])
-                    - when.get(comparissons[i]))) {
+        for (int comparisson : comparissons) {
+            switch (module(this.get(comparisson) - when.get(comparisson))) {
             case -1:
                 return -1;
             case 1:
@@ -202,7 +200,6 @@ public class GanttCalendar extends GregorianCalendar implements Serializable {
 
     public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
         public int compare(GanttCalendar o1, GanttCalendar o2) {
-            assert o1 instanceof GanttCalendar && o2 instanceof GanttCalendar;
             return o1.compareTo(o2);
         }
     };

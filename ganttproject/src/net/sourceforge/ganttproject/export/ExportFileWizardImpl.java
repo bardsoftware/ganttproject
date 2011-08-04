@@ -31,8 +31,8 @@ public class ExportFileWizardImpl extends WizardImpl {
 
     private final State myState;
 
-    private static Exporter myLastSelectedExporter;
-    private static List<Exporter> myExporters;
+    private static Exporter ourLastSelectedExporter;
+    private static List<Exporter> ourExporters;
 
     public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project,
             GanttOptions options) {
@@ -47,18 +47,18 @@ public class ExportFileWizardImpl extends WizardImpl {
         myProject = project;
         myOptions = options;
         myState = new State(project.getDocument());
-        if (myExporters == null) {
-            myExporters = PluginManager.getExporters();
+        if (ourExporters == null) {
+            ourExporters = PluginManager.getExporters();
         }
-        myState.setExporter(myLastSelectedExporter == null ?
-                myExporters.get(0) : myLastSelectedExporter);
-        for (Exporter e : myExporters) {
+        myState.setExporter(ourLastSelectedExporter == null ?
+                ourExporters.get(0) : ourLastSelectedExporter);
+        for (Exporter e : ourExporters) {
             e.setContext(project, uiFacade, myOptions.getPluginPreferences());
             if (e instanceof LegacyOptionsClient) {
                 ((LegacyOptionsClient)e).setOptions(myOptions);
             }
         }
-        addPage(new ExporterChooserPage(myExporters, myState));
+        addPage(new ExporterChooserPage(ourExporters, myState));
         addPage(new FileChooserPage(
                 myState,
                 myProject,
@@ -113,7 +113,7 @@ public class ExportFileWizardImpl extends WizardImpl {
 
         void setExporter(Exporter exporter) {
             myExporter = exporter;
-            ExportFileWizardImpl.myLastSelectedExporter = exporter;
+            ExportFileWizardImpl.ourLastSelectedExporter = exporter;
         }
 
         Exporter getExporter() {

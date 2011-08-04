@@ -417,7 +417,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new NewTaskAction(appli));
+        actions.add(new NewTaskAction(appli, appli.getUndoManager()));
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
             actions.add(getDeleteTasksAction());

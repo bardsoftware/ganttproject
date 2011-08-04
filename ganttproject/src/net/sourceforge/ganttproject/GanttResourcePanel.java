@@ -1,16 +1,21 @@
-/***************************************************************************
- * HumanResourcePanel.java  -  description
- * -------------------
- * begin                : jun 2003
- * copyright            : to the world :)
- * email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
-/*******************************************************************************
- * * This program is free software; you can redistribute it and/or modify * it
- * under the terms of the GNU General Public License as published by * the Free
- * Software Foundation; either version 2 of the License, or * (at your option)
- * any later version. * *
- ******************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 Thomas Alexandre, GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -71,7 +76,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     public ResourceLoadGraphicArea area;
 
-    private final ResourceContext myContext = (ResourceContext) this;
     private HumanResource [] clipboard = null;
     private boolean isCut = false;
 
@@ -216,14 +220,14 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     private void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton()==MouseEvent.BUTTON3) {
             DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
-            if (selectedNodes.length==1 && selectedNodes[0] instanceof AssignmentNode) {
+            if (selectedNodes.length == 1
+                    && selectedNodes[0] instanceof AssignmentNode) {
                 AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
                 getTaskSelectionManager().clear();
                 getTaskSelectionManager().addTask(assignmentNode.getTask());
                 Point popupPoint = getPopupMenuPoint(e);
                 getUIFacade().showPopupMenu(this, new Action[] {getTaskPropertiesAction(), myDeleteAssignmentAction}, popupPoint.x, popupPoint.y);
-            }
-            else {
+            } else {
                 createPopupMenu(e);
             }
         }
@@ -234,13 +238,12 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
-        final int x = popupTriggerEvent.getX()/* - scrollpane.getHorizontalScrollBar().getValue()/*
-        + (vbar.isVisible() ? vbar.getWidth() : 0)*/;
-        final int y = popupTriggerEvent.getY() + table.getRowHeight()/* +
-        + myImagePanel.getHeight()*/;
+        final int x = popupTriggerEvent.getX();
+        final int y = popupTriggerEvent.getY() + table.getRowHeight();
         return new Point(x,y);
     }
-    /* Create the popup menu */
+
+    /** Create the popup menu */
     private void createPopupMenu(MouseEvent e) {
         JPopupMenu menu = new JPopupMenu();
         AbstractAction[] resourceActions = myResourceActionSet.getActions();
@@ -392,7 +395,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     public ResourceContext getContext() {
-        return myContext;
+        return this;
     }
 
     public ResourceAssignment[] getResourceAssignments() {
@@ -400,15 +403,19 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         DefaultMutableTreeNode[] tNodes = table.getSelectedNodes();
         if (tNodes != null) {
             int nbAssign = 0;
-            for (int i = 0; i < tNodes.length; i++)
-                if (tNodes[i] instanceof AssignmentNode)
+            for (int i = 0; i < tNodes.length; i++) {
+                if (tNodes[i] instanceof AssignmentNode) {
                     nbAssign++;
+                }
+            }
 
             res = new ResourceAssignment[nbAssign];
-            for (int i = 0; i < nbAssign; i++)
-                if (tNodes[i] instanceof AssignmentNode)
+            for (int i = 0; i < nbAssign; i++) {
+                if (tNodes[i] instanceof AssignmentNode) {
                     res[i] = (ResourceAssignment) ((AssignmentNode) tNodes[i])
                             .getUserObject();
+                }
+            }
         }
         return res;
     }

@@ -36,6 +36,7 @@ public class GanttDialogProperties {
                                             e.printStackTrace();
                                         }
                                     }
+                                    uiFacade.refresh();
                                 }
                             });
                 }
