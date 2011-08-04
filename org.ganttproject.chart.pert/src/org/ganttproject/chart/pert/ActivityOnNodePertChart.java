@@ -247,7 +247,6 @@ public class ActivityOnNodePertChart extends PertChart {
 
     /**
      * Recalculated preferred size so that graphics fit with nodes positions.
-     * 
      */
     private void recalculatPreferredSize()
     {
@@ -295,9 +294,6 @@ public class ActivityOnNodePertChart extends PertChart {
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected void buildPertChart() {
         if (this.myPertAbstraction == null)
         {
@@ -421,10 +417,6 @@ public class ActivityOnNodePertChart extends PertChart {
         int row = graphicalNode.row;
         while(this.isOccupied(++row, graphicalNode.col));
         graphicalNode.row = row;
-        /*int nbRows = ((Integer)this.rowsList.get(new Integer(graphicalNode.col))).intValue();
-        if(nbRows-1<row) {
-            this.rowsList.put(new Integer(graphicalNode.col), new Integer(row+1));
-        }*/
     }
     
     private GraphicalNode getNode(int row, int col) {
@@ -500,38 +492,14 @@ public class ActivityOnNodePertChart extends PertChart {
     // TODO Translate:
     /** ajoute la graphical node dans la map position/liste des successeurs */
     private void add(int col, GraphicalNode graphicalNode) {
-        /*Integer key = new Integer(position);
-        List l = (List) myMapPositionListOfNodes.get(key);
-
-        int oldPosition = graphicalNode.col;
-        List lOld = (List) myMapPositionListOfNodes
-                .get(new Integer(oldPosition));
-        if (lOld != null)
-            lOld.remove(graphicalNode);
-
-        if (l == null)
-        {
-            List l2 = new ArrayList();
-            l2.add(graphicalNode);
-            myMapPositionListOfNodes.put(key, l2);
-            
-        }
-        else
-        {
-            l.add(graphicalNode);
-        }
-        myGraphicalNodes.remove(graphicalNode);
-        myGraphicalNodes.add(graphicalNode);
-        graphicalNode.col = position;*/
-        
         myGraphicalNodes.remove(graphicalNode);
         
-        if (this.nbCols - 1 < col) {
-            this.nbCols = col + 1;
+        if (nbCols - 1 < col) {
+            nbCols = col + 1;
         }
         
         int row = 0;
-        while(this.isOccupied(row, col)) {
+        while(isOccupied(row, col)) {
             row++;
         }
         
@@ -628,22 +596,22 @@ public class ActivityOnNodePertChart extends PertChart {
     }
     
     private void avoidCrossingNode() {
-        if (this.nbCols == 0) {
+        if (nbCols == 0) {
             return;
         }
 
-        int col = this.nbCols - 1;
+        int col = nbCols - 1;
         while (col > 0) {
             boolean hasmoved = false;
             Iterator<GraphicalNode> gnodes = this.getNodeInColumn(col).iterator();
             while (gnodes.hasNext()) {
                 GraphicalNode gnode = gnodes.next();
-                while (this.isCrossingNode(gnode)) {
-                    this.moveDown(gnode);
+                while (isCrossingNode(gnode)) {
+                    moveDown(gnode);
                     hasmoved = true;
                 }
             }
-            if (hasmoved && col < this.nbCols - 1) {
+            if (hasmoved && col < nbCols - 1) {
                 col++;
             } else {
                 col--;
@@ -657,10 +625,10 @@ public class ActivityOnNodePertChart extends PertChart {
         Iterator<TaskGraphNode> successors = gnode.node.getSuccessors().iterator();
         while(successors.hasNext()) {
             GraphicalNode successor = this.getGraphicalNodeByID(successors.next().getID());
-            if(successor.row<maxUp) {
+            if (successor.row < maxUp) {
                 maxUp = successor.row;
             }
-            if(successor.row>maxDown) {
+            if (successor.row > maxDown) {
                 maxDown = successor.row;
             }
         }
@@ -773,49 +741,20 @@ public class ActivityOnNodePertChart extends PertChart {
 
     private void calculateGraphicalNodesCoordinates()
     {
-        /*int nb = 0;
-        int col = 0;
-        int currentX = 0, currentY = 0;
-        //List graphicalNodesByPosition = (List) myMapPositionListOfNodes
-        //        .get(new Integer(position));
-        while (col<this.nbCols)
-        {
-            // parcours de toutes les
-            // positions
-            List graphicalNodesByCol = this.getNodeInColumn(col);
-            
-            currentY = 0;
-            Iterator it = graphicalNodesByCol.iterator();
-            while (it.hasNext())
-            {
-                GraphicalNode gn = (GraphicalNode) it.next();
-                gn.x += currentX;
-                gn.y += gn.row*(NODE_HEIGHT + Y_GAP);//currentY;
-                //currentY += NODE_HEIGHT + Y_GAP;
-                myMaxY = gn.y > myMaxY ? gn.y : myMaxY;
-            }
-            //myMaxY = currentY > myMaxY ? currentY : myMaxY;
-            currentX += NODE_WIDTH + X_GAP;
-            //graphicalNodesByC = (List) myMapPositionListOfNodes
-            //        .get(new Integer(++col));
-            col++;
-        }
-        myMaxX = currentX;
-        */
-        this.myMaxX = 0;
-        this.myMaxY = 0;
-        Iterator<GraphicalNode> gnodes = this.myGraphicalNodes.iterator();
+        myMaxX = 0;
+        myMaxY = 0;
+        Iterator<GraphicalNode> gnodes = myGraphicalNodes.iterator();
         while (gnodes.hasNext()) {
             GraphicalNode gnode = gnodes.next();
             gnode.x += (NODE_WIDTH + X_GAP) * gnode.col;
             gnode.y += (NODE_HEIGHT + Y_GAP) * gnode.row;
 
-            this.myMaxX = gnode.x > this.myMaxX ? gnode.x : this.myMaxX;
-            this.myMaxY = gnode.y > this.myMaxY ? gnode.y : this.myMaxY;
+            myMaxX = gnode.x > myMaxX ? gnode.x : myMaxX;
+            myMaxY = gnode.y > myMaxY ? gnode.y : myMaxY;
         }
 
-        this.myMaxX += NODE_WIDTH + X_GAP;
-        this.myMaxY += NODE_HEIGHT + Y_GAP;
+        myMaxX += NODE_WIDTH + X_GAP;
+        myMaxY += NODE_HEIGHT + Y_GAP;
     }
 
     private void calculateArrowsCoordinates() {
@@ -839,9 +778,6 @@ public class ActivityOnNodePertChart extends PertChart {
         return iconUrl==null ? null : new ImageIcon(iconUrl);
     }
 
-    /**
-     * @inheritDoc
-     */
     public Object getAdapter(Class adapter) {
         if (adapter.equals(Container.class) || adapter.equals(Chart.class)) {
             return this;

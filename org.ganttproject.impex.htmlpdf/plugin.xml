@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<?eclipse version="3.0"?>
 <plugin
    id="org.ganttproject.impex.htmlpdf"
    name="Export to HTML and PDF"
@@ -34,7 +33,7 @@
       <import plugin="net.sourceforge.ganttproject"/>
       <import plugin="org.eclipse.core.runtime"/>
    </requires>
-   <extension-point id="HTMLStylesheet" name="HTML Stylesheet" schema="schema/HTMLStylesheet.exsd"/>
+   <extension-point id="HTMLStylesheet" name="HTML Stylesheet"/>
    <extension-point id="PDFStylesheet" name="PDF Stylesheet"/>
    <extension-point id="ITextStylesheet" name="IText Stylesheet"/>
    <extension-point id="FontDirectory" name="Font Directory"/>

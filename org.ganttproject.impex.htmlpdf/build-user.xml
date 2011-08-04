@@ -14,24 +14,13 @@
         <pathelement location="bin"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/fop.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/fop-font-metrics.jar"/>
-        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/itext.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-avalon.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-batik.jar"/>
+        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/itext.jar"/>
     </path>
     <path id="ganttproject-2.0.classpath">
         <pathelement location="${ganttproject-2.0.location}/bin"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient-contrib.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-logging.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-transaction-1.0.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-poi-2.5.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jdnc-modifBen.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jdom-1.0.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-looks-1.2.2.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/xml-im-exporter1.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/development/junit-3.8.1.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>

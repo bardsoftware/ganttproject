@@ -33,10 +33,7 @@ class HighlightOnMouseOver extends MouseAdapter {
         Integer.toHexString(backgroundColor.getGreen()) +
         Integer.toHexString(backgroundColor.getBlue());
     private AbstractButton myComponent;
-    private Color myColorNoMouse;
     private Action myActionOnClick;
-    private Color myNormalBackground;
-    private Color myNormalForeground;
 
     HighlightOnMouseOver(AbstractButton component, Action onClick) {
         myComponent = component;
@@ -54,7 +51,7 @@ class HighlightOnMouseOver extends MouseAdapter {
     }
     @Override
     public void mouseClicked(MouseEvent arg0) {
-        if (myActionOnClick!=null) {
+        if (myActionOnClick != null) {
             myActionOnClick.actionPerformed(null);
         }
     }

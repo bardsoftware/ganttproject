@@ -98,7 +98,6 @@ class TaskActivityRenderer {
         return rectangle;
     }
 
-    
     private Rectangle processRegularActivity(int rowNum, TaskActivity nextStarted, List<Offset> offsets) {
         Task nextTask = nextStarted.getTask();
         if (nextTask.isMilestone() && !nextStarted.isFirst()) {
@@ -133,13 +132,11 @@ class TaskActivityRenderer {
         } else if (nextHasNested) {
             nextRectangle.setStyle("task.supertask");
             if (nextStarted.isFirst()) {
-                // CodeReview: why 12, not 15?
                 GraphicPrimitiveContainer.Rectangle supertaskStart = container.createRectangle(
                         nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
                 supertaskStart.setStyle("task.supertask.start");
             }
             if (nextStarted.isLast()) {
-                // CodeReview: why 12, not 15?
                 GraphicPrimitiveContainer.Rectangle supertaskEnd = container.createRectangle(
                         nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
                 supertaskEnd.setStyle("task.supertask.end");
@@ -191,9 +188,5 @@ class TaskActivityRenderer {
     
     private int getRowHeight() {
         return getChartModel().getRowHeight();
-    }
-    
-    private int getWidth() {
-        return (int) getChartModel().getBounds().getWidth();
     }
 }

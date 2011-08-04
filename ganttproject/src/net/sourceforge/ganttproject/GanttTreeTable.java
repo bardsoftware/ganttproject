@@ -265,7 +265,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
-    void editNewTask(Task t) {
+    void editSelectedTask() {
 
         TreePath selectedPath = getTree().getSelectionPath();
         Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
@@ -315,6 +315,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         public Column getField(int index) {
             return (Column) getDisplayColumns().get(index);
         }
+
 
         public int getSize() {
             return getDisplayColumns().size();

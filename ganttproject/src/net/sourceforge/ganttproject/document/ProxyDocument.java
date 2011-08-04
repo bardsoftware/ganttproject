@@ -68,8 +68,8 @@ class ProxyDocument implements Document {
         myVisibleFields = visibleFields;
     }
 
-    public String getDescription() {
-        return myPhysicalDocument.getDescription();
+    public String getFileName() {
+        return myPhysicalDocument.getFileName();
     }
 
     public boolean canRead() {
@@ -132,7 +132,7 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.getLastError();
     }
 
-    public void read() throws IOException {
+    public void read() throws IOException, DocumentException {
         FailureState failure = new FailureState();
         SuccessState success = new SuccessState();
         ParsingState parsing = new ParsingState(success, failure);
@@ -181,7 +181,7 @@ class ProxyDocument implements Document {
     }
 
     private HumanResourceManager getHumanResourceManager() {
-        return (HumanResourceManager) myProject.getHumanResourceManager();
+        return myProject.getHumanResourceManager();
     }
 
     private GPCalendar getActiveCalendar() {
@@ -197,17 +197,13 @@ class ProxyDocument implements Document {
 
         ParsingState myParsingState;
 
-        /**
-         * @param parsing
-         * @param confirmation
-         */
         public AcquireLockState(ParsingState parsing,
                 OpenCopyConfirmationState confirmation) {
             myParsingState = parsing;
             myConfirmationState = confirmation;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             boolean locked = acquireLock();
             if (!locked) {
                 myConfirmationState.enter();
@@ -217,11 +213,10 @@ class ProxyDocument implements Document {
         }
     }
 
-
     class OpenCopyConfirmationState {
-        ParsingState myParsingState;
+        private final ParsingState myParsingState;
 
-        FailureState myExitState;
+        private final FailureState myExitState;
 
         public OpenCopyConfirmationState(ParsingState parsing,
                 FailureState failure) {
@@ -229,7 +224,7 @@ class ProxyDocument implements Document {
             myExitState = failure;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             String message = GanttLanguage.getInstance().getText("msg13");
             String title = GanttLanguage.getInstance().getText("warning");
             if (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(message, title)) {
@@ -241,16 +236,16 @@ class ProxyDocument implements Document {
     }
 
     class ParsingState {
-        FailureState myFailureState;
+        private final FailureState myFailureState;
 
-        SuccessState mySuccessState;
+        private final SuccessState mySuccessState;
 
         public ParsingState(SuccessState success, FailureState failure) {
             mySuccessState = success;
             myFailureState = failure;
         }
 
-        void enter() throws IOException {
+        void enter() throws IOException, DocumentException {
             GPParser opener = myParserFactory.newParser();
             HumanResourceManager hrManager = getHumanResourceManager();
             RoleManager roleManager = getRoleManager();
@@ -314,7 +309,15 @@ class ProxyDocument implements Document {
 
             PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();
             opener.addTagHandler(portfolioHandler);
-            if (opener.load(getInputStream())) {
+            InputStream is;
+			try {
+				is = getInputStream();
+			} catch (IOException e) {
+				myFailureState.enter();
+				throw new DocumentException(GanttLanguage.getInstance().getText("msg8")
+						+ ": " + e.getLocalizedMessage(), e);
+			}
+            if (opener.load(is)) {
                 mySuccessState.enter();
             } else {
                 myFailureState.enter();
@@ -341,11 +344,6 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.isLocal();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     * @author arun_ram
-     * Added on Feb 26, 2006
-     */
     public boolean equals(Object doc) {
         if (false == doc instanceof ProxyDocument) {
             return false;
@@ -378,6 +376,7 @@ class ProxyDocument implements Document {
             myDefaultDocument = document;
         }
     }
+
     private class PortfolioTagHandler implements TagHandler {
         private static final String PORTFOLIO_TAG = "portfolio";
         private static final String PROJECT_TAG = "project";

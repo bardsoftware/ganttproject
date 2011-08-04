@@ -52,15 +52,19 @@ class FileChooserPage extends FileChooserPageBase {
         } else {
             String proposedExtension = myState.getExporter().proposeFileExtension();
             if(proposedExtension != null) {
-                String selectedFile = getPreferences().get(PREF_SELECTED_FILE, null);
-                int lastDot = selectedFile.lastIndexOf('.');
-                String extension = lastDot >=0 ? selectedFile.substring(lastDot + 1) : "";
+                File selectedFile = getChooser().getFile();
+                String fileName = selectedFile.getName();  
+                int lastDot = fileName.lastIndexOf('.');
+                if (lastDot < 0) {
+                	// No extension available, add one
+                	fileName += ".";
+                	lastDot = selectedFile.getName().length();
+                }
+                String extension = fileName.substring(lastDot + 1);
                 if (!extension.equals(proposedExtension)) {
-                    getChooser().setFile(new File(selectedFile.substring(0, lastDot+1) + proposedExtension));
-                    return;
+                    getChooser().setFile(new File(selectedFile.getParent(), fileName.substring(0, lastDot+1) + proposedExtension));
                 }
             }
-            getChooser().setFile(new File(getPreferences().get(PREF_SELECTED_FILE, null)));
         }
     }
 

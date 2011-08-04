@@ -18,15 +18,12 @@
       <library name="lib/core/commons-logging.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/commons-transaction-1.0.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/core/jakarta-slide-webdavlib-2.1.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/jcommander-1.17.jar">
          <export name="*"/>
-      </library>
+      </library>      
       <library name="lib/core/jdnc-modifBen.jar">
          <export name="*"/>
       </library>
@@ -42,9 +39,6 @@
       <library name="lib/core/trident.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/xml-im-exporter1.1.jar">
-         <export name="*"/>
-      </library>
       <library name="data/resources/">
          <export name="*"/>
       </library>
@@ -52,11 +46,11 @@
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
    </requires>
-   <extension-point id="exporter" name="Exporter" schema="schema/net.sourceforge.ganttproject.export.exsd"/>
-   <extension-point id="importer" name="Importer" schema="schema/net.sourceforge.gantproject.import.exsd"/>
-   <extension-point id="chart" name="Chart" schema="schema/net.sourceforge.ganttproject.chart.exsd"/>
+   <extension-point id="exporter" name="Exporter"/>
+   <extension-point id="importer" name="Importer"/>
+   <extension-point id="chart" name="Chart"/>
    <extension-point id="OptionPageProvider" name="OptionPageProvider"/>
-   <extension-point id="calendar" name="Calendar" schema="schema/net.sourceforge.ganttproject.calendar.exsd"/>
+   <extension-point id="calendar" name="Calendar"/>
    <extension-point id="search" name="SearchService"/>
 
    <extension point="org.eclipse.core.runtime.applications" id="GanttProject">

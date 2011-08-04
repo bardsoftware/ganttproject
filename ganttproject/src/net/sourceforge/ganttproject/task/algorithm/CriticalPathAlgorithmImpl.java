@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2009 Dmitry Barashev
+Copyright (C) 2009-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -61,11 +61,11 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
 
         public Node(Task t, Set<Task> taskScope) {
             assert t != null;
-            this.task = t;
-            this.est = t.getStart().getTime();
-            this.eft = t.getEnd().getTime();
-            this.lst = null;
-            this.lft = null;
+            task = t;
+            est = t.getStart().getTime();
+            eft = t.getEnd().getTime();
+            lst = null;
+            lft = null;
             numDependants = 0;
             TaskDependency[] deps = t.getDependenciesAsDependee().toArray();
             for (int i = 0; i < deps.length; i++) {
@@ -77,7 +77,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         }
 
         public Node(Task t, Date est, Date eft, Date lst, Date lft, int numDependants, Set<Task> taskScope) {
-            this.task = t;
+            task = t;
             this.est = est;
             this.eft = eft;
             this.lst = lst;
@@ -90,9 +90,9 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         
         void collectDependees(Task task, Set<Task> taskScope) {
             TaskDependency[] deps = task.getDependenciesAsDependant().toArray();
-            for (int i = 0; i < deps.length; i++) {
-                if (taskScope.contains(deps[i].getDependee())) {
-                    dependees.add(deps[i].getDependee());
+            for (TaskDependency dep : deps) {
+                if (taskScope.contains(dep.getDependee())) {
+                    dependees.add(dep.getDependee());
                 }
             }            
         }
@@ -105,7 +105,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             return task == null ? "[Deadline node " + eft + "]" : task.toString();
         }
     }
-    
+
     public Task[] getCriticalTasks() {
         Date projectEnd = myTaskManager.getProjectEnd();
         Node fakeFinalNode = new Node(null, projectEnd, projectEnd, projectEnd, projectEnd, 0, null);
@@ -114,12 +114,11 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             return tasks;
         }
         Map<Task, Node> task_node = createTaskNodeMap(tasks, fakeFinalNode);
-        for (Iterator<Node> nodes = task_node.values().iterator(); nodes.hasNext();) {
-            Node curNode = nodes.next();
-            curNode.numDependants += myTaskManager.getTaskHierarchy().getDepth(curNode.task)-1; 
+        for (Node curNode : task_node.values()) {
+            curNode.numDependants += myTaskManager.getTaskHierarchy().getDepth(curNode.task) - 1; 
         }
         assert fakeFinalNode.dependees.size() > 0;
-        
+
         LinkedHashSet<Task> result = new LinkedHashSet<Task>();
         Processor p = new Processor(task_node, fakeFinalNode);
         result.addAll(p.run());
@@ -129,15 +128,15 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
     private Map<Task, Node> createTaskNodeMap(Task[] tasks, Node deadlineNode) {
         Set<Task> taskScope = new HashSet<Task>(Arrays.asList(tasks));
         Map<Task, Node> task_node = new HashMap<Task, Node>();
-        for (int i=0; i<tasks.length; i++) {
-            Node newNode = new Node(tasks[i], taskScope);
-            deadlineNode.dependees.add(tasks[i]);
+        for (Task task : tasks) {
+            Node newNode = new Node(task, taskScope);
+            deadlineNode.dependees.add(task);
             newNode.numDependants++;
-            task_node.put(tasks[i], newNode);
+            task_node.put(task, newNode);
         }
         return task_node;
     }
-    
+
     class Processor {
         private final Map<Task, Node> myTask_Node;
         private LinkedList<Node> myQueue = new LinkedList<Node>();
@@ -149,18 +148,18 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             myTask_Node = task_node;
             myQueue.add(myDeadlineNode);
         }
-        
+
         boolean hasMoreInput() {
             return !myQueue.isEmpty();
         }
-        
+
         List<Task> run() {
             while (hasMoreInput()) {
                 myQueue = processQueue();
-            }            
+            }
             return myResult;
         }
-        
+
         private LinkedList<Node> processQueue() {
             LinkedList<Node> newQueue = new LinkedList<Node>();
             for (Iterator<Node> nodes = myQueue.iterator(); nodes.hasNext();) {
@@ -168,8 +167,8 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                 if (curNode.lft == null || curNode.lftFromSupertask) {
                     calculateLatestDates(curNode);
                     Task[] nestedTasks = myTaskManager.getTaskHierarchy().getNestedTasks(curNode.task);
-                    for (int i = 0; i < nestedTasks.length; i++) {
-                        Node nested = myTask_Node.get(nestedTasks[i]);
+                    for (Task nestedTask : nestedTasks) {
+                        Node nested = myTask_Node.get(nestedTask);
                         nested.numDependants -= (myTaskManager.getTaskHierarchy().getDepth(nested.task)-1);
                         assert nested.numDependants >= 0;
                         if (nested.numDependants == 0) {
@@ -180,7 +179,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                             nested.lftFromSupertask = true;
                         }
                     }
-                    
+
                     if (curNode.isCritical()) {
                         ourLogger.info("\n\nNode=" + curNode+" is critical\n\n");
                         myResult.add(curNode.task);
@@ -216,15 +215,14 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             Date result = curNode.lft;
             Node resultNode = null;
             TaskDependency[] deps = curNode.task.getDependenciesAsDependee().toArray();
-            for (int i=0; i<deps.length; i++) {
-                Node depNode = task_node.get(deps[i].getDependant());
-                if (depNode == null) {
-                    continue;
-                }
-                Date lft = findLatestFinishTime(curNode, depNode, deps[i]);
-                if (result==null || result.after(lft)) {
-                    result = lft;
-                    resultNode = depNode;
+            for (TaskDependency dep : deps) {
+                Node depNode = task_node.get(dep.getDependant());
+                if (depNode != null) {
+                    Date lft = findLatestFinishTime(curNode, depNode, dep);
+                    if (result == null || result.after(lft)) {
+                        result = lft;
+                        resultNode = depNode;
+                    }
                 }
             }
             if (result == null || result.after(myDeadlineNode.lft)) {
@@ -238,9 +236,8 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             Collision backwardCollision = dep.getConstraint().getBackwardCollision(depNode.lst);
             if (backwardCollision == null) {
                 return depNode.lst;
-            } else {
-                return backwardCollision.getAcceptableStart().getTime();
             }
+            return backwardCollision.getAcceptableStart().getTime();
         }
     }
 }

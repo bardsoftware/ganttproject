@@ -67,12 +67,12 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
             public void actionPerformed(ActionEvent e) {
                 StringBuffer urlString = new StringBuffer();
                 urlString.append("ftp://");
-                urlString.append(usernameOption.getUncommitedValue()==null ? "":usernameOption.getUncommitedValue());
-                urlString.append(passwordOption.getUncommitedValue()==null ? "" : ":"+passwordOption.getUncommitedValue());
+                urlString.append(usernameOption.getValue()==null ? "":usernameOption.getValue());
+                urlString.append(passwordOption.getValue()==null ? "" : ":"+passwordOption.getValue());
                 urlString.append("@");
-                urlString.append(servernameOption.getUncommitedValue());
+                urlString.append(servernameOption.getValue());
                 urlString.append("/");
-                urlString.append(dirnameOption.getUncommitedValue());
+                urlString.append(dirnameOption.getValue());
                 urlString.append("/");
                 URL url = null;
                 try {
@@ -118,7 +118,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
         final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);
         final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);
         final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
-        return servernameOption.getUncommitedValue()!=null && usernameOption.getUncommitedValue()!=null && passwordOption.getUncommitedValue()!=null;
+        return servernameOption.getValue()!=null && usernameOption.getValue()!=null && passwordOption.getValue()!=null;
     }
 
 }

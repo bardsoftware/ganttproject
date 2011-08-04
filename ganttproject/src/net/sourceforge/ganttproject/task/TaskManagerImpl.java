@@ -812,6 +812,8 @@ public class TaskManagerImpl implements TaskManager {
                     }
                 }
             }
+            // System.out.println ("Import : " + nextImported.getTaskID() + "
+            // -->> " + nextImported.getName());
 
             original2imported.put(nested[i], nextImported);
             getTaskHierarchy().move(nextImported, root);
@@ -821,10 +823,6 @@ public class TaskManagerImpl implements TaskManager {
 
     public Date findClosestWorkingTime(Date time) {
         return getCalendar().findClosestWorkingTime(time);
-    }
-
-    public void processCriticalPath(TaskNode root) {
-        processCriticalPath((Task)root.getUserObject());
     }
 
     public void processCriticalPath(Task root) {

@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.FileDocument;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
@@ -55,7 +56,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 public class ImporterFromGanttFile extends ImporterBase implements Importer {
-    private final DefaultEnumerationOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+    private final DefaultEnumerationOption<Object> myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
 
     private final GPOption[] myOptions = new GPOption[] {myMergeResourcesOption};
 
@@ -105,12 +106,38 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
     }
 
 
-    private static class TaskFieldImpl extends TableHeaderUIFacade.ColumnStub {
-        TaskFieldImpl(String id, int order, int width) {
-            super(id, null, true, order, width);
-        }
-    }
+    private static class TaskFieldImpl implements TableHeaderUIFacade.Column {
+        private final String myID;
+        private final int myOrder;
+        private final int myWidth;
 
+        TaskFieldImpl(String id, int order, int width) {
+            myID = id;
+            myOrder = order;
+            myWidth = width;
+        }
+        public String getID() {
+            return myID;
+        }
+
+        public int getOrder() {
+            return myOrder;
+        }
+
+        public int getWidth() {
+            return myWidth;
+        }
+        public boolean isVisible() {
+            return true;
+    }
+        public String getName() {
+            return null;
+        }
+        @Override
+        public void setVisible(boolean visible) {
+        }
+
+    }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
         private final List<Column> myFields = new ArrayList<Column>();
         public void add(String name, int order, int width) {
@@ -173,7 +200,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
     private BufferProject createBufferProject(
             final IGanttProject targetProject, final UIFacade uiFacade) {
         return new BufferProject(targetProject, uiFacade);
-    };
+    }
 
     protected Document getDocument(File selectedFile) {
         return new FileDocument(selectedFile);
@@ -211,6 +238,8 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                 origTaskManager.setEventsEnabled(true);
             }
             uiFacade.refresh();
+        } catch (DocumentException e) {
+            uiFacade.showErrorDialog(e);
         } catch (IOException e) {
             uiFacade.showErrorDialog(e);
         }

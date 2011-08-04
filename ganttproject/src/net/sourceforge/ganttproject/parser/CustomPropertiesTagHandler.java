@@ -43,12 +43,6 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
         myColumnStorage = columnStorage;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(java.lang.String,
-     *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("customproperty"))
@@ -84,18 +78,18 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
             CustomColumn cc = myColumnStorage.getCustomColumnByID(cps.taskPropertyID);
             String valueStr = cps.value;
             Object value = null;
-            Class cla = cc.getType();
+            Class<?> cla = cc.getType();
 
             if (valueStr!=null) {
-	            if (cla.equals(String.class))
+	            if (cla.equals(String.class)) {
 	                value = valueStr.toString();
-	            else if (cla.equals(Boolean.class))
+	            } else if (cla.equals(Boolean.class)) {
 	                value = Boolean.valueOf(valueStr);
-	            else if (cla.equals(Integer.class))
+	            } else if (cla.equals(Integer.class)) {
 	                value = Integer.valueOf(valueStr);
-	            else if (cla.equals(Double.class))
+	            } else if (cla.equals(Double.class)) {
 	                value = Double.valueOf(valueStr);
-	            else if (GregorianCalendar.class.isAssignableFrom(cla))
+	            } else if (GregorianCalendar.class.isAssignableFrom(cla)) {
 	                try {
 	                    value = new GanttCalendar(DateParser.parse(valueStr));
 	                } catch (InvalidDateException e) {
@@ -103,6 +97,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
 	                		e.printStackTrace(System.err);
 	                	}
 	                }
+	            }
             }
             try {
                 // System.out.println(task.getName());

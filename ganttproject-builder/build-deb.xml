@@ -1,22 +1,22 @@
 <project name="JavaDeb Task" basedir="." default="release-dist">
 
-    <property name="package.name" value="ganttproject-praha-beta1"/>
+  <property name="package.name" value="ganttproject-praha"/>
 
-	<path id="class.path">
-		<pathelement location="build-deb/classes"/>
-		<fileset dir="lib" includes="*.jar"/>
-	</path>
-
-
-	<target name="define_tasks" depends="compile">
-		<taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
-		<taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="class.path"/>
-	</target>
+  <path id="class.path">
+    <pathelement location="build-deb/classes"/>
+    <fileset dir="lib" includes="*.jar"/>
+  </path>
 
 
-	<target name="compile" description="Compile helper code">
-		<mkdir dir="build-deb/classes"/>
-		<javac
+  <target name="define_tasks" depends="compile">
+    <taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
+    <taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="class.path"/>
+  </target>
+
+
+  <target name="compile" description="Compile helper code">
+    <mkdir dir="build-deb/classes"/>
+    <javac
             srcdir="src"
             destdir="build-deb/classes"
             classpathref="class.path"
@@ -24,61 +24,63 @@
             source="1.4"
             debug="yes"
         />
-		<copy todir="build-deb/classes">
-			<fileset dir="src" includes="**/*.properties"/>
-			<fileset dir="src" includes="**/*.xml"/>
-		</copy>
-	</target>
+    <copy todir="build-deb/classes">
+      <fileset dir="src" includes="**/*.properties"/>
+      <fileset dir="src" includes="**/*.xml"/>
+    </copy>
+  </target>
 
 
-	<target name="antDoc" depends="compile" description="Generate Ant documentation">
-		<taskdef name="antTasksDocHtml" classname="net.sf.fikin.ant.AntTasksDocHtmlDocletTask" classpath="lib/fikin-ant-1.7.3.jar"/>
-		<taskdef name="antTasksDocText" classname="net.sf.fikin.ant.AntTasksDocTextDocletTask" classpath="lib/fikin-ant-1.7.3.jar"/>
-		<tstamp />
+  <target name="antDoc" depends="compile" description="Generate Ant documentation">
+    <taskdef name="antTasksDocHtml" classname="net.sf.fikin.ant.AntTasksDocHtmlDocletTask" classpath="lib/fikin-ant-1.7.3.jar"/>
+    <taskdef name="antTasksDocText" classname="net.sf.fikin.ant.AntTasksDocTextDocletTask" classpath="lib/fikin-ant-1.7.3.jar"/>
+    <tstamp />
 
-		<mkdir dir="build-deb/doc"/>
+    <mkdir dir="build-deb/doc"/>
 
-		<antTasksDocHtml file="build-deb/doc/ant-deb-tasks.html" classpathref="class.path" failonerror="yes">
-			<packageset dir="src" defaultexcludes="yes"/>
-			<param name="-J-DDSTAMP=${DSTAMP}" />
-			<param name="-J-DTSTAMP=${TSTAMP}" />
-			<param name="-J-Dheader=GanttProject"/>
-		</antTasksDocHtml>
-		<antTasksDocText file="build-deb/doc/ant-deb-tasks.txt" classpathref="class.path" failonerror="yes">
-			<packageset dir="src" defaultexcludes="yes"/>
-			<param name="-J-DDSTAMP=${DSTAMP}" />
-			<param name="-J-DTSTAMP=${TSTAMP}" />
-			<param name="-J-Dheader=GanttProject"/>
-		</antTasksDocText>
-	</target>
+    <antTasksDocHtml file="build-deb/doc/ant-deb-tasks.html" classpathref="class.path" failonerror="yes">
+      <packageset dir="src" defaultexcludes="yes"/>
+      <param name="-J-DDSTAMP=${DSTAMP}" />
+      <param name="-J-DTSTAMP=${TSTAMP}" />
+      <param name="-J-Dheader=GanttProject"/>
+    </antTasksDocHtml>
+    <antTasksDocText file="build-deb/doc/ant-deb-tasks.txt" classpathref="class.path" failonerror="yes">
+      <packageset dir="src" defaultexcludes="yes"/>
+      <param name="-J-DDSTAMP=${DSTAMP}" />
+      <param name="-J-DTSTAMP=${TSTAMP}" />
+      <param name="-J-Dheader=GanttProject"/>
+    </antTasksDocText>
+  </target>
 
 
-	<!-- - - - - - - - - - - - - - - - - - 
-          private target: dist-bin                      
+  <!-- - - - - - - - - - - - - - - - - -
+          private target: dist-bin
          - - - - - - - - - - - - - - - - - -->
-	<target name="dist-bin">
-		<description>Build the ganttproject application</description>
-		<mkdir dir="dist-bin"/>
-		<ant antfile="build.xml"/>
-	</target>
+  <target name="dist-bin">
+    <description>Build the ganttproject application</description>
+    <mkdir dir="dist-bin"/>
+    <ant antfile="build.xml"/>
+  </target>
 
 
-	<!-- ================================= 
+  <!-- =================================
           public target: release-dist
          ================================= -->
-	<target name="release-dist" depends="dist" description="Release all distribution files">
-		<input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="522" />
-		<antcall target="createdeb-minimal" />
-		<antcall target="createdeb-plugins" />
-		<antcall target="createdeb-meta" />
-	</target>
+  <target name="release-dist" depends="dist" description="Release all distribution files">
+    <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="522-beta1" />
+    <mkdir dir="dist-deb"/>
+    <antcall target="createdeb-full" />
+    <antcall target="createdeb-minimal" />
+    <antcall target="createdeb-plugins" />
+    <antcall target="createdeb-meta" />
+  </target>
 
 
-	<!-- ================================= 
-          public target: dist              
+  <!-- =================================
+          public target: dist
          ================================= -->
-	<target name="dist" depends="clean, dist-bin, desktop-file" description="Generate and package all distributables">
-	</target>
+  <target name="dist" depends="clean, dist-bin, desktop-file" description="Generate and package all distributables">
+  </target>
 
     <!-- - - - - - - - - - - - - - - - - -
           private target: createdeb-meta
@@ -86,7 +88,7 @@
     <target name="createdeb-meta" depends="define_tasks">
         <description>Create a debian meta package for GanttProject depending on minimal and plugins</description>
         <deb
-            todir="dist-bin"
+            todir="dist-deb"
             package="${package.name}"
             version="${dist.version.number}"
             homepage="http://ganttproject.biz/"
@@ -114,65 +116,89 @@
     </target>
 
 
-	<!-- - - - - - - - - - - - - - - - - - 
+  <target name="createdeb-full" depends="define_tasks">
+    <description>Create a complete GanttProject deb package. Everything included.</description>
+    <ganttproject-base-deb package-name="${package.name}" output-dir=".">
+      <application-files>
+        <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
+          <include name="plugins/**/"/>
+          <include name="*.jar"/>
+          <include name="*.gan"/>
+        </tarfileset>
+      </application-files>
+    </ganttproject-base-deb>
+  </target>
+
+  <!-- - - - - - - - - - - - - - - - - -
           private target: createdeb-minimal
          - - - - - - - - - - - - - - - - - -->
-	<target name="createdeb-minimal" depends="define_tasks">
-		<description>Create a debian package of the GanttProject (without plugins)</description>
-		<deb
-            todir="dist-bin"
-            package="${package.name}-minimal"
-            version="${dist.version.number}"
-			homepage="http://ganttproject.biz/"
-            section="editors"
-			priority="optional"
-            depends="sun-java5-jre | sun-java6-jre | openjdk-6-jre"
-    		postrm="deb/postrm"
-    		postinst="deb/postinst"
-		>
-			<version upstream="${dist.version.number}"/>
-			<maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
-			<description synopsis="Gantt chart based project scheduling and management tool.">
-				Minimal installation of GanttProject without (exporter) plugins.
+  <target name="createdeb-minimal" depends="define_tasks">
+    <description>Create a debian package of the GanttProject (without plugins)</description>
+    <ganttproject-base-deb package-name="${package.name}-minimal" output-dir="dist-deb">
+      <application-files>
+        <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
+          <include name="plugins/net.sourceforge.ganttproject_*/**/"/>
+          <include name="*.jar"/>
+          <include name="*.gan"/>
+        </tarfileset>
+      </application-files>
+    </ganttproject-base-deb>
+  </target>
 
-				GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
-				Our major features include:
+  <macrodef name="ganttproject-base-deb">
+    <attribute name="package-name"/>
+    <attribute name="output-dir"/>
+    <element name="application-files"/>
+    <sequential>
+      <deb todir="@{output-dir}"
+           package="@{package-name}"
+           version="${dist.version.number}"
+           homepage="http://ganttproject.biz/"
+           section="editors"
+           priority="optional"
+           depends="sun-java5-jre | sun-java6-jre | openjdk-6-jre"
+           postrm="deb/postrm"
+           postinst="deb/postinst">
+        <version upstream="${dist.version.number}"/>
+        <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
+        <description synopsis="Gantt chart based project scheduling and management tool.">
+          Minimal installation of GanttProject without (exporter) plugins.
 
-				* Task hierarchy and dependencies
-				* Gantt chart
-				* Resource load chart
-				* Generation of PERT chart
-				* PDF and HTML reports
-				* MS Project import/export
-				* WebDAV based groupwork
+          GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
+          Our major features include:
 
-				Visit http://ganttproject.biz to learn more
-            </description>
-			<tarfileset dir="${basedir}/../ganttproject/" prefix="usr/share/doc/${package.name}">
-				<include name="COPYING"/>
-				<include name="README"/>
-				<include name="AUTHORS"/>
-			</tarfileset>
-			<tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
-				<include name="plugins/net.sourceforge.ganttproject_*/**/"/>
-				<include name="*.jar"/>
-				<include name="*.gan"/>
-			</tarfileset>
-			<tarfileset dir="${basedir}/deb/usr" prefix="usr"/>
-			<tarfileset file="${basedir}/dist-bin/ganttproject" prefix="usr/share/${package.name}" filemode="755" />
-			<tarfileset dir="${basedir}/build-deb" prefix="usr/share/applications/">
-				<include name="ganttproject.desktop"/>
-			</tarfileset>
-		</deb>
-	</target>
+          * Task hierarchy and dependencies
+          * Gantt chart
+          * Resource load chart
+          * Generation of PERT chart
+          * PDF and HTML reports
+          * MS Project import/export
+          * WebDAV based groupwork
 
-	<!-- - - - - - - - - - - - - - - - - -
+          Visit http://ganttproject.biz to learn more
+        </description>
+        <tarfileset dir="${basedir}/../ganttproject/" prefix="usr/share/doc/${package.name}">
+          <include name="COPYING"/>
+          <include name="README"/>
+          <include name="AUTHORS"/>
+        </tarfileset>
+        <application-files/>
+        <tarfileset dir="${basedir}/deb/usr" prefix="usr"/>
+        <tarfileset file="${basedir}/dist-bin/ganttproject" prefix="usr/share/${package.name}" filemode="755" />
+        <tarfileset dir="${basedir}/build-deb" prefix="usr/share/applications/">
+          <include name="ganttproject.desktop"/>
+        </tarfileset>
+      </deb>
+    </sequential>
+  </macrodef>
+
+  <!-- - - - - - - - - - - - - - - - - -
           private target: createdeb-plugins
          - - - - - - - - - - - - - - - - - -->
-	<target name="createdeb-plugins" depends="define_tasks">
-		<description>Create a debian package of the GanttProject plugins (depending on minimal)</description>
-		<deb
-            todir="dist-bin"
+  <target name="createdeb-plugins" depends="define_tasks">
+    <description>Create a debian package of the GanttProject plugins (depending on minimal)</description>
+    <deb
+            todir="dist-deb"
             package="${package.name}-plugins"
             version="${dist.version.number}"
             homepage="http://ganttproject.biz/"
@@ -180,9 +206,9 @@
             priority="optional"
             depends="${package.name}-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre"
         >
-			<version upstream="${dist.version.number}"/>
-			<maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
-			<description synopsis="Gantt chart based project scheduling and management tool.">
+      <version upstream="${dist.version.number}"/>
+      <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
+      <description synopsis="Gantt chart based project scheduling and management tool.">
               Extra plugins for GanttProject
 
                 GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
@@ -198,15 +224,15 @@
 
                 Visit http://ganttproject.biz to learn more
             </description>
-			<tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
-				<include name="plugins/**"/>
-				<exclude name="plugins/net.sourceforge.ganttproject_*/**/"/>
-			</tarfileset>
-		</deb>
-	</target>
+      <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
+        <include name="plugins/**"/>
+        <exclude name="plugins/net.sourceforge.ganttproject_*/**/"/>
+      </tarfileset>
+    </deb>
+  </target>
 
-	<target name="desktop-file" depends="define_tasks" description="Fill in desktop file">
-		<desktopEntry
+  <target name="desktop-file" depends="define_tasks" description="Fill in desktop file">
+    <desktopEntry
             toFile="build-deb/ganttproject.desktop"
             name="GanttProject"
       icon="ganttproject.png"
@@ -215,19 +241,19 @@
             categories="Office"
             onlyshowin="GNOME;KDE"
         >
-			<!--
+      <!--
       <name lang="ro" value="Un nume"/>
       <name lang="hu" country="hu" value="Edgy nev"/>
       -->
-			<genericname value="GanttProject"/>
-		</desktopEntry>
-	</target>
+      <genericname value="GanttProject"/>
+    </desktopEntry>
+  </target>
 
 
-	<target name="clean" description="Clean work folders">
-		<delete dir="build-deb" verbose="true"/>
-		<delete dir="dist-bin" verbose="true"/>
-	</target>
+  <target name="clean" description="Clean work folders">
+    <delete dir="build-deb" verbose="true"/>
+    <delete dir="dist-bin" verbose="true"/>
+  </target>
 
 
 </project>

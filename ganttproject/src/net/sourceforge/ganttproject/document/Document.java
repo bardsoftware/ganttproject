@@ -1,6 +1,20 @@
 /*
- * Created on 18.08.2003
- *
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
@@ -28,12 +42,10 @@ public interface Document {
     }
 
     /**
-     * Gets the description of the document (can be displayed in the
-     * application's titlebar).
-     *
-     * @return the description of the document
+     * @return the filename of the document (can be used forthe
+     *         application's titlebar or the export dialog).
      */
-    public String getDescription();
+    public String getFileName();
 
     /**
      * Checks, whether the document is readable.
@@ -123,7 +135,7 @@ public interface Document {
     /**
      * Gets the password used to authenticate to the storage container
      *
-     * @return username
+     * @return password
      */
     public String getPassword();
 
@@ -134,7 +146,7 @@ public interface Document {
      */
     public String getLastError();
 
-    public void read() throws IOException;
+    public void read() throws IOException, DocumentException;
 
     public void write() throws IOException;
 
@@ -143,4 +155,13 @@ public interface Document {
     Portfolio getPortfolio();
 
     boolean isLocal();
+
+    /**
+     * Used to generate useful exceptions for document saving and loading
+     * (preventing bothersome errors for the end users when possible) 
+     */
+    public class DocumentException extends Exception {
+        public DocumentException(String msg) { super(msg); }  
+        public DocumentException(String msg, Throwable cause) { super(msg, cause); }  
+    }
 }
