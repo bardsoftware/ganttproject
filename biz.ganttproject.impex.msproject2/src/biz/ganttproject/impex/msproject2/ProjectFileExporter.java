@@ -21,6 +21,7 @@ package biz.ganttproject.impex.msproject2;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -110,7 +111,8 @@ class ProjectFileExporter {
 	}
 
 	private void exportHolidays(ProjectCalendar calendar) {
-		for (Date d : getCalendar().getPublicHolidays()) {
+		for (Iterator<Date> i = getCalendar().getPublicHolidays(); i.hasNext();) {
+		    Date d = i.next();
 			ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
 			calendarException.addRange(new DateRange(d, d));
 		}
