@@ -38,12 +38,7 @@ public interface UIFacade {
         void hide();
     }
 
-    public static class Choice {
-        public static final Choice YES = new Choice();
-        public static final Choice NO = new Choice();
-        public static final Choice CANCEL = new Choice();
-        public static final Choice OK = new Choice();
-    }
+    public enum Choice { YES, NO, CANCEL, OK };
 
     public static final int GANTT_INDEX = 0;
 
@@ -51,9 +46,8 @@ public interface UIFacade {
 
     ScrollingManager getScrollingManager();
 
-    //ChartViewState getGanttChartViewState();
-
     ZoomManager getZoomManager();
+
     GPUndoManager getUndoManager();
 
     void setLookAndFeel(GanttLookAndFeelInfo laf);
@@ -66,8 +60,6 @@ public interface UIFacade {
     void showOptionDialog(int messageType, String message, Action[] actions);
 
     Dialog createDialog(Component content, Action[] buttonActions, String title);
-//    void showDialog(Component content, Action[] buttonActions);
-//    void showDialog(Component content, Action[] buttonActions, String title);
 
     void setStatusText(String text);
 
@@ -92,9 +84,7 @@ public interface UIFacade {
 
     Chart getActiveChart();
 
-    /**
-     * @return the index of the displayed tab.
-     */
+    /** @return the index of the displayed tab. */
     int getViewIndex();
 
     void setViewIndex(int viewIndex);
@@ -116,11 +106,10 @@ public interface UIFacade {
     TaskTreeUIFacade getTaskTree();
 
     ResourceTreeUIFacade getResourceTree();
-    //void changeWorkingDirectory(File parentFile);
 
     TaskSelectionManager getTaskSelectionManager();
+
     TaskSelectionContext getTaskSelectionContext();
 
     GPOptionGroup getOptions();
-
 }

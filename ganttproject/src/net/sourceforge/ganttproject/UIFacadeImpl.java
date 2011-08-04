@@ -158,18 +158,15 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         menu.show(invoker, x, y);
     }
 
-    @Override
     public Dialog createDialog(Component content, Action[] buttonActions, String title) {
         final JDialog dlg = new JDialog(myMainFrame, true);
         final Dialog result = new Dialog() {
-            @Override
             public void hide() {
                 if (dlg.isVisible()) {
                     dlg.setVisible(false);
                     dlg.dispose();
                 }
             }
-            @Override
             public void show() {
                 DialogAligner.center(dlg, myMainFrame);
                 dlg.setVisible(true);
@@ -184,7 +181,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             if (nextAction instanceof OkAction) {
                 nextButton = new JButton(nextAction);
                 nextButton.addActionListener(new ActionListener() {
-                    @Override
                     public void actionPerformed(ActionEvent e) {
                         result.hide();
                         commiter.commit();
@@ -196,7 +192,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 cancelAction = nextAction;
                 nextButton = new JButton(nextAction);
                 nextButton.addActionListener(new ActionListener() {
-                    @Override
                     public void actionPerformed(ActionEvent e) {
                         result.hide();
                         commiter.commit();
@@ -207,7 +202,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                         nextAction.getValue(Action.NAME));
                 dlg.getRootPane().getActionMap().put(
                         nextAction.getValue(Action.NAME), new AbstractAction() {
-                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 nextAction.actionPerformed(e);
                                 result.hide();
@@ -247,7 +241,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public void showErrorDialog(String errorMessage) {
         if (myMainFrame.isVisible()) {
             showOptionDialog(JOptionPane.ERROR_MESSAGE, errorMessage, new Action[] {new OkAction() {
-                @Override
                 public void actionPerformed(ActionEvent e) {
                 }
             }});
@@ -280,6 +273,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
         }
     }
+
     public void showErrorDialog(Throwable e) {
         showErrorDialog(getExceptionReport(e));
         GPLogger.log(e);
@@ -350,6 +344,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     private static class Commiter {
+        private boolean isCommited;
+
         void commit() {
             isCommited = true;
         }
@@ -357,8 +353,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         boolean isCommited() {
             return isCommited;
         }
-
-        private boolean isCommited;
     }
 
     private static GanttLanguage getLanguage() {
@@ -419,13 +413,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return myLafOption.getLookAndFeel();
     }
 
-    @Override
     public void setLookAndFeel(final GanttLookAndFeelInfo laf) {
         if (laf == null) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
                 if (!doSetLookAndFeel(laf)) {
                     doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
@@ -455,24 +447,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         public GanttLookAndFeelInfo getLookAndFeel() {
             return GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue());
         }
-        @Override
         protected String objectToString(GanttLookAndFeelInfo laf) {
             return laf.getName();
         }
-        @Override
         public void commit() {
             super.commit();
             myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(getValue()));
         }
-        @Override
         public String getTagName() {
             return "looknfeel";
         }
-        @Override
         public String getAttributeName() {
             return "name";
         }
-        @Override
         public void loadValue(String legacyValue) {
             setValue(legacyValue, true);
             myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
@@ -483,7 +470,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         public LanguageOption() {
             super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
         }
-        @Override
         protected String objectToString(Locale locale) {
             String englishName = locale.getDisplayLanguage(Locale.US);
             String localName = locale.getDisplayLanguage(locale);
@@ -499,7 +485,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             return englishName + " (" + localName + ")";
         }
 
-        @Override
         public void commit() {
             super.commit();
             applyLocale();
@@ -513,19 +498,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
             GanttLanguage.getInstance().setLocale(l);
         }
-        @Override
+
         public String getTagName() {
             return "language";
         }
-        @Override
+
         public String getAttributeName() {
             return "selection";
         }
-        @Override
+
         public void loadValue(String legacyValue) {
             loadPersistentValue(legacyValue);
         }
-        @Override
+
         public String getPersistentValue() {
             Locale l = stringToObject(getValue());
             if (l == null) {
@@ -538,7 +523,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
             return result;
         }
-        @Override
+
         public void loadPersistentValue(String value) {
             String[] lang_country = value.split("_");
             Locale l;
@@ -555,7 +540,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
-    @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
