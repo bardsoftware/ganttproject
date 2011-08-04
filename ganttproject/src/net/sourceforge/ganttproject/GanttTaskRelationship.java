@@ -62,14 +62,12 @@ public class GanttTaskRelationship {
         this.difference = difference;
     }
 
-    // getters and setters
     /** @return the predecessor task */
     public GanttTask getPredecessorTask() {
         if (predecessorTaskID != -1) {
             return getManager().getTask(predecessorTaskID);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /** @return the predecessor task ID or -1 if there is no such ID */
@@ -96,14 +94,11 @@ public class GanttTaskRelationship {
     public Task getSuccessorTask() {
         if (successorTaskID != -1) {
             return getManager().getTask(successorTaskID);
-        } else {
-            return null;
         }
+        return null;
     }
 
-    /**
-     * @return id of successor task
-     */
+    /** @return id of successor task */
     public int getSuccessorTaskID() {
         return successorTaskID;
     }
