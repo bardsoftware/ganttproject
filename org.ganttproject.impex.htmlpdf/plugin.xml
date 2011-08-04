@@ -13,6 +13,9 @@
       <library name="lib/fop.jar">
          <export name="*"/>
       </library>
+      <library name="lib/fop-font-metrics.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/ganttproject-avalon.jar">
          <export name="*"/>
       </library>
