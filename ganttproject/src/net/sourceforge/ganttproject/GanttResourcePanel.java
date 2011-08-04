@@ -151,7 +151,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
         prj.addProjectEventListener(this);
         appli = prj;
-        model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager());
+        model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
         table = new ResourceTreeTable((GanttProject) appli.getProject(), model, uiFacade);
         table.setupActionMaps(myMoveUpAction, myMoveDownAction, null, null, myNewArtifactAction,
             appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myPropertiesAction, myDeleteAssignmentAction);

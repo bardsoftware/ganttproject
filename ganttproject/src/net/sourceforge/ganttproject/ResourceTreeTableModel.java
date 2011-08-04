@@ -33,15 +33,6 @@ import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
     private static GanttLanguage language = GanttLanguage.getInstance();
 
-    public static String strResourceName = null;
-
-    public static String strResourceRole = null;
-
-    public static String strResourceEMail = null;
-
-    public static String strResourcePhone = null;
-
-    public static String strResourceRoleForTask = null;
 
     public static final int INDEX_RESOURCE_NAME = 0;
 
@@ -54,7 +45,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     public static final int INDEX_RESOURCE_ROLE_TASK = 4;
 
     /** all the columns */
-    private final Map<Integer, ResourceColumn> columns = new LinkedHashMap<Integer, ResourceColumn>();
+//    private final Map<Integer, ResourceColumn> columns = new LinkedHashMap<Integer, ResourceColumn>();
 
     /** Column indexer */
     private static int index = -1;
@@ -67,8 +58,13 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     private TreeSelectionModel mySelectionModel;
 
-    public ResourceTreeTableModel(HumanResourceManager resMgr, TaskManager taskManager) {
+    private final CustomPropertyManager myCustomPropertyManager;
+
+    private String[] myDefaultColumnTitles;
+
+    public ResourceTreeTableModel(HumanResourceManager resMgr, TaskManager taskManager, CustomPropertyManager customPropertyManager) {
         super();
+        myCustomPropertyManager = customPropertyManager;
         myResourceManager = resMgr;
         myTaskManager = taskManager;
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
@@ -127,7 +123,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         Iterator<HumanResource> itRes = listResources.iterator();
 
         while (itRes.hasNext()) {
-        	HumanResource hr = itRes.next();
+            HumanResource hr = itRes.next();
             ResourceNode rnRes = new ResourceNode(hr); // the first for the resource
             root.add(rnRes);
         }
@@ -138,7 +134,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         HumanResource[] listResources = myResourceManager.getResourcesArray();
 
         for (int idxResource = 0; idxResource < listResources.length; idxResource++) {
-        	HumanResource hr = listResources[idxResource];
+            HumanResource hr = listResources[idxResource];
 
             ResourceNode rnRes = exists(hr);
             if (rnRes == null) {
@@ -179,26 +175,13 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
      *            New language to use.
      */
     public void changeLanguage(GanttLanguage ganttLanguage) {
-        strResourceName = language.getText("tableColResourceName");
-        strResourceRole = language.getText("tableColResourceRole");
-        strResourceEMail = language.getText("tableColResourceEMail");
-        strResourcePhone = language.getText("tableColResourcePhone");
-        strResourceRoleForTask = language
-                .getText("tableColResourceRoleForTask");
-
-        // hack assume that INDEX_RESOURCE_ROLE_TASK is the last index
-        String[] cols = new String[INDEX_RESOURCE_ROLE_TASK + 1];
-        cols[INDEX_RESOURCE_EMAIL] = strResourceEMail;
-        cols[INDEX_RESOURCE_NAME] = strResourceName;
-        cols[INDEX_RESOURCE_PHONE] = strResourcePhone;
-        cols[INDEX_RESOURCE_ROLE] = strResourceRole;
-        cols[INDEX_RESOURCE_ROLE_TASK] = strResourceRoleForTask;
-        for (int i = 0; i < cols.length; i++)
-        {
-            ResourceColumn col = columns.get(new Integer(i));
-            if (col != null)
-                col.setTitle(cols[i]);
-        }
+        myDefaultColumnTitles = new String[] {
+            language.getText("tableColResourceName"),
+            language.getText("tableColResourceRole"),
+            language.getText("tableColResourceEMail"),
+            language.getText("tableColResourcePhone"),
+            language.getText("tableColResourceRoleForTask")
+        };
     }
 
     /**
@@ -293,29 +276,39 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
 
     public int getColumnCount() {
-        return columns.size();
+        return myDefaultColumnTitles.length + myCustomPropertyManager.getDefinitions().size();
     }
 
-    public ArrayList<ResourceColumn> getColumns()
-    {
-        return new ArrayList<ResourceColumn>(columns.values());
-    }
+//    public ArrayList<ResourceColumn> getColumns()
+//    {
+//        return new ArrayList<ResourceColumn>(columns.values());
+//    }
+//
+//    /** @return the ResourceColumn associated to the given index */
+//    public ResourceColumn getColumn(int index) {
+//        return columns.get(new Integer(index));
+//    }
 
-    /** @return the ResourceColumn associated to the given index */
-    public ResourceColumn getColumn(int index) {
-        return columns.get(new Integer(index));
+    private CustomPropertyDefinition getCustomProperty(int columnIndex) {
+        return myCustomPropertyManager.getDefinitions().get(columnIndex - myDefaultColumnTitles.length);
     }
 
     public Class<?> getColumnClass(int colIndex) {
         if (colIndex == 0) {
             return hierarchicalColumnClass;
         }
-        ResourceColumn column = columns.get(new Integer(colIndex));
-        return column == null ? String.class : column.getType();
+        if (colIndex < myDefaultColumnTitles.length) {
+            return String.class;
+        }
+        return getCustomProperty(colIndex).getType();
     }
 
     public String getColumnName(int column) {
-        return columns.get(new Integer(column)).getTitle();
+        if (column < myDefaultColumnTitles.length) {
+            return myDefaultColumnTitles[column];
+        }
+        CustomPropertyDefinition customColumn = getCustomProperty(column);
+        return customColumn.getName();
     }
 
     public boolean isCellEditable(Object node, int column) {
@@ -411,37 +404,37 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         Mediator.getGanttProjectSingleton().setAskForSave(true);
     }
 
-    /** Adds a column that cannot be removed afterwards. */
-    public void addMandatoryColumn(ResourceColumn col) {
-        columns.put(new Integer(col.getIndex()), col);
-    }
-
-    /** Adds a custom column (which is removable) to the datamodel */
-    public void addCustomColumn(String title, ResourceColumn col) throws Exception{
-        if (myResourceManager.checkCustomField(title)) {
-            throw new Exception(language.getText("columnExists"));
-        }
-        myResourceManager.addCustomField(col);
-        columns.put(new Integer(index), col);
-    }
-
-    /** deletes a custom column from the datamodel */
-    public ResourceColumn deleteCustomColumn(String name){
-        ResourceColumn toDel = null;
-        Collection<ResourceColumn> vals = columns.values();
-        Iterator<ResourceColumn> i = vals.iterator();
-
-        while (i.hasNext()) {
-            toDel = i.next();
-            if (name.equals( toDel.getTitle() )) {
-                myResourceManager.removeCustomField(toDel.getTitle());
-                /* this deletes the object from the HashTable too */
-                vals.remove(toDel);
-                return toDel;
-            }
-        }
-        return null;
-    }
+//    /** Adds a column that cannot be removed afterwards. */
+//    public void addMandatoryColumn(ResourceColumn col) {
+//        columns.put(new Integer(col.getIndex()), col);
+//    }
+//
+//    /** Adds a custom column (which is removable) to the datamodel */
+//    public void addCustomColumn(String title, ResourceColumn col) throws Exception{
+//        if (myResourceManager.checkCustomField(title)) {
+//            throw new Exception(language.getText("columnExists"));
+//        }
+//        myResourceManager.addCustomField(col);
+//        columns.put(new Integer(index), col);
+//    }
+//
+//    /** deletes a custom column from the datamodel */
+//    public ResourceColumn deleteCustomColumn(String name){
+//        ResourceColumn toDel = null;
+//        Collection<ResourceColumn> vals = columns.values();
+//        Iterator<ResourceColumn> i = vals.iterator();
+//
+//        while (i.hasNext()) {
+//            toDel = i.next();
+//            if (name.equals( toDel.getTitle() )) {
+//                myResourceManager.removeCustomField(toDel.getTitle());
+//                /* this deletes the object from the HashTable too */
+//                vals.remove(toDel);
+//                return toDel;
+//            }
+//        }
+//        return null;
+//    }
 
     /** checks if the given column is removable */
     public boolean checkRemovableCol(String name) {
@@ -470,7 +463,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
 
     private void buildAssignmentsSubtree(ResourceNode resourceNode) {
-    	HumanResource resource = resourceNode.getResource();
+        HumanResource resource = resourceNode.getResource();
         resourceNode.removeAllChildren();
         ResourceAssignment[] assignments = resource.getAssignments();
         int[] indices = new int[assignments.length];
