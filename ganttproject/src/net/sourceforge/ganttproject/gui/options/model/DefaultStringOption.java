@@ -4,6 +4,9 @@ public class DefaultStringOption extends GPAbstractOption<String> implements Str
     public DefaultStringOption(String id) {
         super(id);
     }
+    public DefaultStringOption(String id, String initialValue) {
+        super(id, initialValue);
+    }
 
     public String getPersistentValue() {
         return getValue();
