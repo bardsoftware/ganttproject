@@ -5,13 +5,14 @@ import java.net.URL;
 
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class TestSetupHelper {
     public static class TaskManagerBuilder implements TaskManagerConfig {
@@ -24,12 +25,12 @@ public class TestSetupHelper {
         private RoleManager myRoleManager;
 
         public TaskManagerBuilder() {
-            myTimeUnitStack = new GregorianTimeUnitStack();
+            myTimeUnitStack = new GPTimeUnitStack(GanttLanguage.getInstance());
             myRoleManager = new RoleManagerImpl();
             myResourceManager = new HumanResourceManager(myRoleManager
                     .getDefaultRole());
         }
-        
+
         public Color getDefaultColor() {
             return null;
         }
@@ -58,7 +59,6 @@ public class TestSetupHelper {
         public TaskManager build() {
             return TaskManager.Access.newInstance(null, this);
         }
-
     }
 
     public static TaskManagerBuilder newTaskManagerBuilder() {
