@@ -471,6 +471,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         tabbedPane.setBorder(BorderFactory.createEmptyBorder(2,0,5,0));
     }
 
+    // TODO The name of the method is very confusing... Rename to applySettings and remove return value?
     public Task[] getReturnTask() {
         GanttTask[] returnTask = new GanttTask[selectedTasks.length];
 

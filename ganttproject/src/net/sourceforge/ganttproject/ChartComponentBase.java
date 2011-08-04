@@ -52,8 +52,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     private static final Cursor DEFAULT_CURSOR = Cursor
             .getPredefinedCursor(Cursor.HAND_CURSOR);
 
-    //protected final ChartViewState myChartViewState;
-
     private final IGanttProject myProject;
 
     private final ZoomManager myZoomManager;
@@ -69,7 +67,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         myProject = project;
         myUIFacade = uiFacade;
         myZoomManager = zoomManager;
-        //myChartViewState = new ChartViewState(this, uiFacade);
         myMouseWheelListener = new MouseWheelListenerBase();
         addMouseListener(getMouseListener());
         addMouseMotionListener(getMouseMotionListener());
@@ -88,10 +85,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public ZoomListener getZoomListener() {
         return getImplementation();
     }
+
     public ZoomManager getZoomManager(){
         return myZoomManager;
     }
-
 
     public GPOptionGroup[] getOptionGroups() {
         return getChartModel().getChartOptionGroups();
@@ -303,15 +300,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public void addRenderer(ChartRendererBase renderer) {
         getImplementation().addRenderer(renderer);
     }
-//    public void addTimeUnitVisitor(TimeUnitVisitor visitor) {
-//        getImplementation().addTimeUnitVisitor(visitor);
-//    }
+
     public void resetRenderers() {
         getImplementation().resetRenderers();
     }
-//    public TaskLength calculateLength(int x) {
-//        return getImplementation().calculateLength(x);
-//    }
 
     /** draw the panel */
     public void paintComponent(Graphics g) {

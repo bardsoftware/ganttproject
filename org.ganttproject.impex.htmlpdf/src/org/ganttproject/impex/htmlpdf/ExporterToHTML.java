@@ -1,5 +1,20 @@
 /*
- * Created on 17.05.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
@@ -27,13 +42,11 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.util.FileUtil;
 
-public class ExporterToHTML extends ExporterBase implements Exporter {
+public class ExporterToHTML extends ExporterBase {
     private static final String PNG_FORMAT_NAME = "png";
     private HTMLStylesheet mySelectedStylesheet;
     public String getFileTypeDescription() {
@@ -171,12 +184,8 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                     cancel();
                     ExporterToHTML.this.getUIFacade().showErrorDialog(e);
 				}
-                finally {
-
-                }
                 return Status.OK_STATUS;
             }
-
         };
         return result;
     }
@@ -190,7 +199,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 }
                 try {
                     File imagesDir = mySelectedStylesheet.getImagesDirectory();
-                    if (imagesDir!=null && imagesDir.isDirectory() && imagesDir.exists()) {
+                    if (imagesDir != null && imagesDir.isDirectory() && imagesDir.exists()) {
                         File[] lof = imagesDir.listFiles();
                         if (lof.length != 0) {
                             File resultImagesDir = new File(outputFile.getParentFile(), imagesDir.getName());
@@ -216,9 +225,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                     getUIFacade().showErrorDialog(e);
                     this.cancel();
                     return Status.CANCEL_STATUS;
-                }
-                finally {
-
                 }
                 return Status.OK_STATUS;
             }
@@ -262,7 +268,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
         addAttribute("mail", i18n("colMail"), attrs);
         addAttribute("phone", i18n("colPhone"), attrs);
         startElement("resources", attrs, handler);
-        writeResources((HumanResourceManager) getProject().getHumanResourceManager(), handler);
+        writeResources(getProject().getHumanResourceManager(), handler);
 
         String resourceChartFileName = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION).getName();
         addAttribute("path", resourceChartFileName, attrs);
@@ -312,7 +318,7 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 return new HTMLStylesheetImpl(resolvedUrl, localizedName);
             }
         };
-        return (Stylesheet[]) factory.createStylesheets(HTMLStylesheet.class);
+        return factory.createStylesheets(HTMLStylesheet.class);
     }
 
     class HTMLStylesheetImpl extends StylesheetImpl implements HTMLStylesheet {
@@ -329,7 +335,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL titleUrl = new URL(getUrl(), "gantt.xsl");
                 TransformerHandler result = createHandler(titleUrl.toString());
                 return result;
-
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -343,12 +348,11 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL tasksUrl = new URL(getUrl(), "gantt-tasks.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
             	}
-            	throw new RuntimeException(e);            	
+            	throw new RuntimeException(e);
             }
         }
 
@@ -357,7 +361,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL tasksUrl = new URL(getUrl(), "gantt-chart.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -371,7 +374,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
                 URL tasksUrl = new URL(getUrl(), "gantt-resources.xsl");
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
-
             } catch (MalformedURLException e) {
             	if (!GPLogger.log(e)) {
             		e.printStackTrace(System.err);
@@ -392,7 +394,6 @@ public class ExporterToHTML extends ExporterBase implements Exporter {
             	throw new RuntimeException(e);
             }
         }
-
     }
 
     private static File replaceExtension(File f, String newExtension) throws IOException {

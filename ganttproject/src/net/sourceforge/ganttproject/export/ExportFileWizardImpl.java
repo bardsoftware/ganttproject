@@ -11,7 +11,6 @@ import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -19,6 +18,7 @@ import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
  * @author bard
@@ -47,11 +47,11 @@ public class ExportFileWizardImpl extends WizardImpl {
         myProject = project;
         myOptions = options;
         myState = new State(project.getDocument());
-        if (ExportFileWizardImpl.ourExporters==null) {
-            ExportFileWizardImpl.ourExporters = Mediator.getPluginManager().getExporters();
+        if (ourExporters == null) {
+            ourExporters = PluginManager.getExporters();
         }
-        myState.setExporter(ExportFileWizardImpl.ourLastSelectedExporter==null
-            ? ourExporters.get(0) : ExportFileWizardImpl.ourLastSelectedExporter);
+        myState.setExporter(ourLastSelectedExporter == null ?
+                ourExporters.get(0) : ourLastSelectedExporter);
         for (Exporter e : ourExporters) {
             e.setContext(project, uiFacade, myOptions.getPluginPreferences());
             if (e instanceof LegacyOptionsClient) {
@@ -97,6 +97,7 @@ public class ExportFileWizardImpl extends WizardImpl {
             }
         }
     }
+
     static class State {
         //final Document myProjectDocument;
 

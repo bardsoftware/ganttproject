@@ -6,9 +6,10 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -130,7 +131,7 @@ public class TestResourceAssignments extends TestCase {
             }
 
             public TimeUnitStack getTimeUnitStack() {
-                return new GregorianTimeUnitStack();
+                return new GPTimeUnitStack(GanttLanguage.getInstance());
             }
 
             public HumanResourceManager getResourceManager() {

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class SaveURLAction extends GPAction {
     private final GanttProject myMainFrame;
@@ -16,7 +17,7 @@ class SaveURLAction extends GPAction {
     }
     
     protected String getLocalizedName() {
-        return getI18n("saveToServer");
+        return GanttLanguage.getInstance().correctLabel(getI18n("saveToServer"));
     }
 
     protected String getIconFilePrefix() {

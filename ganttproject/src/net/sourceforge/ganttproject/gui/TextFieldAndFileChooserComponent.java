@@ -1,5 +1,20 @@
 /*
- * Created on 01.05.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
@@ -13,9 +28,10 @@ import java.util.TimerTask;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -32,56 +48,37 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * @author bard
  */
-public abstract class TextFieldAndFileChooserComponent {
-    private JButton myChooserButton;
+public abstract class TextFieldAndFileChooserComponent extends JPanel {
+    private final JButton myChooserButton;
 
-    private JTextField myTextField;
+    private final JTextField myTextField;
 
     private File myFile;
 
     private FileFilter myFileFilter;
 
-    private String myDialogCaption;
-
-    private JComponent myComponent;
-
-//    private Component myParentComponent;
+    private final String myDialogCaption;
 
     private int myFileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES;
 
     private boolean myProcessTextEventEnabled = true;
 
-    private UIFacade myUiFacade;
-
-//    public TextFieldAndFileChooserComponent(final Component parentComponent,
-//            UIFacade uiFacade,
-//            String dialogCaption) {
-//        myDialogCaption = dialogCaption;
-//        myParentComponent = parentComponent;
-//        myUiFacade = uiFacade;
-//        initComponents();
-//    }
+    private final UIFacade myUiFacade;
 
     public TextFieldAndFileChooserComponent(UIFacade uiFacade, String label, String dialogCaption) {
-        Box innerBox = Box.createHorizontalBox();
-//        innerBox.add(new JLabel(label));
-//        innerBox.add(Box.createHorizontalStrut(5));
         myUiFacade = uiFacade;
-//        myParentComponent = innerBox;
         myDialogCaption = dialogCaption;
-        initComponents();
-        innerBox.add(myComponent);
-        myComponent = innerBox;
-    }
 
-    private void initComponents() {
+        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+
         myChooserButton = new JButton(new AbstractAction(GanttLanguage.getInstance().getText("fileChooser.browse")) {
             public void actionPerformed(ActionEvent e) {
                 showFileChooser();
             }
         });
+
         myTextField = new JTextField();
-        //myTextField.setColumns(40);
+
         myTextField.getDocument().addDocumentListener(new DocumentListener() {
             private final Timer myTimer = new Timer();
             private TimerTask myTimerTask = null;
@@ -111,24 +108,36 @@ public abstract class TextFieldAndFileChooserComponent {
                 }
             }
         });
-        Box box = Box.createHorizontalBox();
-        box.add(myTextField);
-        box.add(Box.createHorizontalStrut(3));
-        box.add(myChooserButton);
-        myComponent = box;
-    }
 
-    public JComponent getComponent() {
-        return myComponent;
+        add(myTextField);
+        add(Box.createHorizontalStrut(3));
+        add(myChooserButton);
     }
 
     public File getFile() {
         return myFile;
     }
 
+	/**
+	 * Updates the file path
+	 * 
+	 * @param file if this is point to a directory, the previously used file name
+	 *            is added
+	 */
     public void setFile(File file) {
-        myFile = file;
-        myTextField.setText(file == null ? "" : file.getAbsolutePath());
+    	if(file == null) {
+    		// Empty the files
+    		myFile = null;
+    		myTextField.setText("");
+    	}
+
+    	if(file.isDirectory()) {
+    		// Add previously used file name because we need/like to select files
+    		myFile = new File(file, myFile.getName());
+    	} else {
+    		myFile = file;
+    	}
+        myTextField.setText(file.getAbsolutePath());
     }
 
     public void setFileFilter(FileFilter filter) {
@@ -141,6 +150,7 @@ public abstract class TextFieldAndFileChooserComponent {
         fc.setControlButtonsAreShown(false);
         fc.setApproveButtonToolTipText(myDialogCaption);
         fc.setFileSelectionMode(myFileSelectionMode);
+
         // Remove the possibility to use a file filter for all files
         FileFilter[] filefilters = fc.getChoosableFileFilters();
         for (int i = 0; i < filefilters.length; i++) {
@@ -148,32 +158,12 @@ public abstract class TextFieldAndFileChooserComponent {
         }
 
         fc.addChoosableFileFilter(myFileFilter);
-        /*
-        Action[] actions = new Action[] {
-                new AbstractAction("Your project file directory") {
-                    public void actionPerformed(ActionEvent e) {
-                    }
-                },
-                new AbstractAction("Last used location") {
-                    public void actionPerformed(ActionEvent e) {
-                    }
-                },
-                new AbstractAction("Select a new file") {
-                    public void actionPerformed(ActionEvent arg0) {
-                    }
-                }};
-        JComponent[] components = new JComponent[] {new JLabel("/foo/bar"), new JLabel("/tmp/foo"), fc};
-        GPOptionChoicePanel filePanel = new GPOptionChoicePanel();
 
-        JComponent filePanelComponent = filePanel.getComponent(actions, components, 0);
-        filePanelComponent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        */
         Action[] dialogActions = new Action [] {
                 new OkAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        myFile = fc.getSelectedFile();
-                        myTextField.setText(myFile.getAbsolutePath());
+                        setFile(fc.getSelectedFile());
                         onFileChosen(myFile);
                     }
                 },
@@ -208,7 +198,5 @@ public abstract class TextFieldAndFileChooserComponent {
     }
 
     protected void showFileStatus(IStatus status) {
-
     }
-
 }

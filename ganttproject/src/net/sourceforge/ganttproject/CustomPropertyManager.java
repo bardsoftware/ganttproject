@@ -19,7 +19,7 @@ public interface CustomPropertyManager {
     void importData(CustomPropertyManager source);
     void addListener(CustomPropertyListener listener);
     class PropertyTypeEncoder {
-        public static String encodeFieldType(Class fieldType) {
+        public static String encodeFieldType(Class<?> fieldType) {
             String result = null;
             if (fieldType.equals(String.class)) {
                 result = "text";
@@ -105,7 +105,7 @@ public interface CustomPropertyManager {
                 public void setName(String name) {
                     throw new UnsupportedOperationException();
                 }
-                public Class getType() {
+                public Class<?> getType() {
                     return propertyClass.getJavaClass();
                 }
                 public String getTypeAsString() {

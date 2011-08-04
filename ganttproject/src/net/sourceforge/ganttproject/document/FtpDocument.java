@@ -55,7 +55,8 @@ public class FtpDocument extends AbstractURLDocument implements Document {
         }
     }
 
-    public String getDescription() {
+    public String getFileName() {
+        //TODO return filename instead of complete URI?
         return myURI.toString();
     }
 

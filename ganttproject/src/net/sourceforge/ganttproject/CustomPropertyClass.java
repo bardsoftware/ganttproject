@@ -15,7 +15,7 @@ public enum CustomPropertyClass {
     private final Class myJavaClass;
     private final String myDefaultValue;
 
-    private CustomPropertyClass(String i18ntifier, String defaultValue, Class javaClass) {
+    private CustomPropertyClass(String i18ntifier, String defaultValue, Class<?> javaClass) {
         myI18Ntifier = i18ntifier;
         myDefaultValue = defaultValue;
         myJavaClass  = javaClass;
@@ -24,7 +24,7 @@ public enum CustomPropertyClass {
         return GanttLanguage.getInstance().getText(myI18Ntifier);
     }
 
-    public Class getJavaClass() {
+    public Class<?> getJavaClass() {
         return myJavaClass;
     }
 
@@ -40,7 +40,8 @@ public enum CustomPropertyClass {
         return null;
     }
 
-    public static CustomPropertyClass fromJavaClass(Class javaClass) {
+
+    public static CustomPropertyClass fromJavaClass(Class<?> javaClass) {
         for (CustomPropertyClass klass : CustomPropertyClass.values()) {
             if (klass.getJavaClass().equals(javaClass)) {
                 return klass;

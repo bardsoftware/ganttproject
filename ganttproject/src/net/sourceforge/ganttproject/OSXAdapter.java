@@ -1,8 +1,27 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.io.IOException;
 
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
 
 import com.apple.eawt.ApplicationAdapter;
@@ -17,7 +36,7 @@ public class OSXAdapter extends ApplicationAdapter {
 		this.myProj = myProj;
 	}
 
-	/*
+	/**
 	 * This method handles the case when a file in the Finder is dropped onto
 	 * the app, or GanttProject is selected via the open-with menu option. The
 	 * event argument contains the path of the file in either case.
@@ -32,6 +51,8 @@ public class OSXAdapter extends ApplicationAdapter {
 			try {
 				myProj.getProjectUIFacade().openProject(myDocument,
 						myProj.getProject());
+			} catch (DocumentException e) {
+				myProj.getUIFacade().showErrorDialog(e);
 			} catch (IOException e) {
 				myProj.getUIFacade().showErrorDialog(e);
 			}
@@ -39,18 +60,15 @@ public class OSXAdapter extends ApplicationAdapter {
 		event.setHandled(true);
 	}
 
-	/*
-	 * Handle the Mac OSX "about" menu option.
-	 */
-
+	/** Handle the Mac OSX "about" menu option. */
 	public void handleAbout(ApplicationEvent event) {
 		AboutDialog abd = new AboutDialog(myProj);
 		abd.setVisible(true);
-		/* Indicate we've handled this event ourselves */
+		// Indicate we've handled this event ourselves
 		event.setHandled(true);
 	}
 
-	/*
+	/**
 	 * Handles the quit menu option (defaults to command-q) the same way
 	 * choosing Project->Quit does.
 	 */

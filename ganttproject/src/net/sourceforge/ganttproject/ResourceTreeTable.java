@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
@@ -65,16 +83,12 @@ import org.jdesktop.swing.table.TableColumnExt;
 public class ResourceTreeTable extends GPTreeTableBase implements CustomPropertyManager{
     private final RoleManager myRoleManager;
 
-    /**
-     * Unique instance of GanttLanguage.
-     */
+    /** Instance of GanttLanguage. */
     private static GanttLanguage language = GanttLanguage.getInstance();
 
     private final ResourceTreeTableModel myResourceTreeModel;
 
-    /**
-     * PopupMenu showed on right click on the table header.
-     */
+    /** PopupMenu showed on right click on the table header. */
     private JPopupMenu popupMenu = null;
 
     /** Component used to delete a custom column */
@@ -91,13 +105,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     private final UIFacade myUiFacade;
 
-    /**
-     * Creates an instance of GanttTreeTable with the given TreeTableModel.
-     *
-     * @param model
-     *            TreeTableModel.
-     */
-    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
+    public ResourceTreeTable(GanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
         super(project, uiFacade, model);
         myUiFacade = uiFacade;
         myProject = project;
@@ -119,21 +127,20 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             }
         });
         myResourceTreeModel = model;
-        this.setTreeTableModel(model);
+        setTreeTableModel(model);
         initTreeTable();
         myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
     }
 
     private void deleteAllColumns() {
         List<CustomPropertyDefinition> customPropsDefinitions = getDefinitions();
-        for (int i=0; i<customPropsDefinitions.size(); i++) {
-            CustomPropertyDefinition nextDefinition = customPropsDefinitions.get(i);
-            deleteCustomColumn(nextDefinition.getName());
+        for (CustomPropertyDefinition customPropsDefinition : customPropsDefinitions) {
+            deleteCustomColumn(customPropsDefinition.getName());
         }
         myResourceTreeModel.decreaseCustomPropertyIndex(customPropsDefinitions.size());
     }
     public boolean isVisible(DefaultMutableTreeNode node) {
-        return this.getTreeTable().getTree().isVisible(
+        return getTreeTable().getTree().isVisible(
                 new TreePath(node.getPath()));
     }
 
@@ -172,7 +179,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         TableColumnExt tce5 = newTableColumnExt(4);
         tce5.setTitle(ResourceTreeTableModel.strResourceRoleForTask);
 
-        /* adding the columns on the screen and to the data model*/
+        // adding the columns on the screen and to the data model
         this.addMandatoryColumn(new ResourceColumn(tce1, myResourceTreeModel.useNextIndex(), String.class));
         this.addMandatoryColumn(new ResourceColumn(tce2, myResourceTreeModel.useNextIndex(), String.class));
         this.addMandatoryColumn(new ResourceColumn(tce3, myResourceTreeModel.useNextIndex(), String.class));
@@ -240,7 +247,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         //
         // });
 
-        this.getTreeTable().getTree().addTreeExpansionListener(
+        getTreeTable().getTree().addTreeExpansionListener(
                 new TreeExpansionListener() {
                     public void treeExpanded(TreeExpansionEvent arg0) {
                         Mediator.getGanttProjectSingleton().repaint2();
@@ -251,10 +258,10 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                         Mediator.getGanttProjectSingleton().repaint2();
                     }
                 });
-        this.setPreferredSize(new Dimension(this.getPreferredSize().width, 0));
+        setPreferredSize(new Dimension(this.getPreferredSize().width, 0));
 
-        /* listener provoking the popup menu for the column management */
-        this.getTable().getTableHeader().addMouseListener(new MouseAdapter() {
+        // listener provoking the popup menu for the column management
+        getTable().getTableHeader().addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 handlePopupTrigger(e);
             }
@@ -269,11 +276,12 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                     String name = getTable().getColumnName(getTable().columnAtPoint(clickPoint));
                     createPopup();
 
-                    /* the delete button is activated only for removable columns*/
-                    if (myResourceTreeModel.checkRemovableCol(name))
+                    // the delete button is activated only for removable columns
+                    if (myResourceTreeModel.checkRemovableCol(name)) {
                         delColumnItem.setEnabled(true);
-                    else
+                    } else {
                         delColumnItem.setEnabled(false);
+                    }
 
                     Component c = (Component) e.getSource();
                     popupMenu.show(c, e.getX(), e.getY());
@@ -310,36 +318,28 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
 
     protected void updateColumnOrders(int fromIndex, int toIndex) {
         List<ResourceColumn> columns = myResourceTreeModel.getColumns();
-        for (int i=0; i<columns.size(); i++) {
-            ResourceColumn nextColumn = columns.get(i);
-            if (nextColumn.getOrder()==fromIndex) {
-                nextColumn.setOrder(toIndex);
-                continue;
-            }
-            if (nextColumn.getOrder()==toIndex) {
-                nextColumn.setOrder(fromIndex);
-                continue;
+        for (ResourceColumn column : columns) {
+            if (column.getOrder() == fromIndex) {
+                column.setOrder(toIndex);
+            } else if (column.getOrder() == toIndex) {
+                column.setOrder(fromIndex);
             }
         }
     }
 
-    /* creates the popup menu for the column management */
+    /** creates the popup menu for the column management */
     private void createPopup() {
         popupMenu = new JPopupMenu();
 
-        /* show columns list */
-        ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
-        ResourceColumn col;
-        int size = cols.size();
-        for (int i =0; i < size; i++) {
-            col = cols.get(i);
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(col.getTitle(), col.isVisible());
-            item.addActionListener(new ColumnHandler(col));
+        // show columns list
+        for (ResourceColumn column : myResourceTreeModel.getColumns()) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(column.getTitle(), column.isVisible());
+            item.addActionListener(new ColumnHandler(column));
             popupMenu.add(item);
         }
         popupMenu.addSeparator();
 
-        /* 'display all columns' button*/
+        // 'display all columns' button
         JMenuItem showAllItem = new JMenuItem(language.getText("displayAll"));
         showAllItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -347,12 +347,10 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                     Mediator.getGanttProjectSingleton().getUndoManager()
                     .undoableEdit("displayAllColumns", new Runnable() {
                             public void run() {
-                                /* sets all the columns visible */
-                                ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
-                                for (int i =0; i < cols.size(); i++) {
-                                    ResourceColumn col = cols.get(i);
-                                    if (!col.isVisible()) {
-                                        showColumn(col);
+                                // Set all the columns visible
+                                for (ResourceColumn column : myResourceTreeModel.getColumns()) {
+                                    if (!column.isVisible()) {
+                                        showColumn(column);
                                     }
                                 }
                                 getProject().setModified(true);
@@ -363,7 +361,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         popupMenu.add(showAllItem);
         popupMenu.addSeparator();
 
-        /* 'add new column' button */
+        // 'add new column' button
         JMenuItem addColumnItem = new JMenuItem(language.getText("addCustomColumn"));
         addColumnItem.setIcon(new ImageIcon(getClass().getResource("/icons/addCol_16.gif")));
         addColumnItem.addActionListener(new ActionListener(){
@@ -381,7 +379,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
             });
         popupMenu.add(addColumnItem);
 
-        /* 'delete column' button */
+        // 'delete column' button
         delColumnItem = new JMenuItem(language.getText("deleteCustomColumn"));
         delColumnItem.setIcon(new ImageIcon(getClass().getResource("/icons/removeCol_16.gif")));
         delColumnItem.addActionListener(new ActionListener() {
@@ -404,8 +402,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         popupMenu.add(delColumnItem);
     }
 
-    /* Shows the given column. The column will appear on
-     * it's default position */
+    /** Shows the given column. The column will appear on it's default position */
     void showColumn(ResourceColumn col) {
         col.setVisible(true);
         if (col.getOrder()<getTable().getColumnCount()) {
@@ -451,7 +448,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         }
 
         if (column.getTitle() != null) {
-            /* adding the column into the datamodel */
+            // add the column into the datamodel
             try {
                 myResourceTreeModel.addCustomColumn(column.getTitle(), column);
             }
@@ -463,31 +460,29 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            /* adding the column to the screen */
+            // add the column to the screen
             this.addColumn(column.getColumn());
 
-            /* setting the cell renderer */
+            // set the cell renderer
             String colClass = column.getType().getName();
             int align;
 
             if (colClass.equals("java.lang.Integer") || colClass.equals("java.lang.Double")) {
                 align = SwingConstants.RIGHT;
                 setColumnHorizontalAlignment(column.getTitle(), align);
-            }
-            else if (colClass.equals("java.util.GregorianCalendar")) {
+            } else if (colClass.equals("java.util.GregorianCalendar")) {
                 align = SwingConstants.CENTER;
                 setColumnHorizontalAlignment(column.getTitle(), align);
-                /* the customised date cell editor */
+                // the customized date cell editor
                 column.getColumn().setCellEditor(newDateCellEditor());
-            }
-            else {
+            } else {
                 align = SwingConstants.LEFT;
                 setColumnHorizontalAlignment(column.getTitle(), align);
             }
         }
     }
 
-    /* deletes the column from the screen and the data model */
+    /** deletes the column from the screen and the data model */
     public void deleteCustomColumn(String name) {
         ResourceColumn col = null;
         col = myResourceTreeModel.deleteCustomColumn(name);
@@ -497,12 +492,11 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
     void setUpRolesRenderer() {
         Role roles[] = getRoleManager().getEnabledRoles();
         final JComboBox comboBox = new JComboBox();
-        for (int i = 0; i < roles.length; i++)
-            comboBox.addItem(roles[i]);
-
+        for (Role role : roles) {
+            comboBox.addItem(role);
+        }
         try {
-            TableColumn roleColumn = this
-                    .getColumn(ResourceTreeTableModel.strResourceRole);
+            TableColumn roleColumn = getColumn(ResourceTreeTableModel.strResourceRole);
             comboBox.setEditable(false);
             roleColumn.setCellEditor(new DefaultCellEditor(comboBox));
         } catch (IllegalArgumentException ex) {
@@ -627,7 +621,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         return scrollPane.getVerticalScrollBar();
     }
 
-    /* This actionlistener changes the column's visibility */
+    /** This actionlistener changes the column's visibility */
     class ColumnHandler implements ActionListener {
         private ResourceColumn column;
 

@@ -1,5 +1,20 @@
 /*
- * Created on 26.02.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
@@ -58,6 +73,13 @@ public interface UIFacade {
 
     void showErrorDialog(String errorMessage);
 
+	/**
+	 * Shows the given exception in an error dialog and also puts it into the
+	 * log file
+	 * 
+	 * @param e
+	 *            the exception to show (and log)
+	 */
     void showErrorDialog(Throwable e);
 
     NotificationManager getNotificationManager();
@@ -71,8 +93,6 @@ public interface UIFacade {
     Chart getActiveChart();
 
     /**
-     * Returns the index of the displayed tab.
-     *
      * @return the index of the displayed tab.
      */
     int getViewIndex();
@@ -87,6 +107,7 @@ public interface UIFacade {
 
     void setResourceDividerLocation(int location);
 
+    /** Refreshes the UI (ie repaints all tasks in the chart) */
     void refresh();
 
     Frame getMainFrame();

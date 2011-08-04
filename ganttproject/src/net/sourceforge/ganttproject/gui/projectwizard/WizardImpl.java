@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.BorderLayout;
@@ -26,7 +44,6 @@ public abstract class WizardImpl {
         public void actionPerformed(ActionEvent e) {
             WizardImpl.this.nextPage();
         }
-
     }
 
     public class BackAction extends AbstractAction {
@@ -37,28 +54,27 @@ public abstract class WizardImpl {
         public void actionPerformed(ActionEvent e) {
             WizardImpl.this.backPage();
         }
-
     }
 
     private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
 
     private int myCurrentPage;
 
-    private JPanel myPagesContainer;
+    private final JPanel myPagesContainer;
 
-    private CardLayout myCardLayout;
+    private final CardLayout myCardLayout;
 
-    private NextAction myNextAction;
+    private final NextAction myNextAction;
 
-    private BackAction myBackAction;
+    private final BackAction myBackAction;
 
     private OkAction myOkAction;
 
-    private UIFacade myUIFacade;
-
-    private String myTitle;
-
     private CancelAction myCancelAction;
+
+    private final UIFacade myUIFacade;
+
+    private final String myTitle;
 
     public WizardImpl(UIFacade uiFacade, String title) {
         // super(frame, title, true);
@@ -93,7 +109,7 @@ public abstract class WizardImpl {
     public void show() {
         for (int i = 0; i < myPages.size(); i++) {
             WizardPage nextPage = myPages.get(i);
-            //
+
             JPanel pagePanel = new JPanel(new BorderLayout());
             JComponent titlePanel = TopPanel.create(nextPage.getTitle() + "   ("
                     + GanttLanguage.getInstance().getText("step") + " "
@@ -103,7 +119,7 @@ public abstract class WizardImpl {
             JComponent component = (JComponent) nextPage.getComponent();
             component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
             pagePanel.add(component);
-            //
+
             myPagesContainer.add(pagePanel, nextPage.getTitle());
         }
         myCardLayout.first(myPagesContainer);
@@ -124,14 +140,8 @@ public abstract class WizardImpl {
     }
 
     public void adjustButtonState() {
-        myBackAction.setEnabled(true);
-        myNextAction.setEnabled(true);
-        if (myCurrentPage == 0) {
-            myBackAction.setEnabled(false);
-        }
-        if (myCurrentPage == myPages.size() - 1) {
-            myNextAction.setEnabled(false);
-        }
+        myBackAction.setEnabled(myCurrentPage > 0);
+        myNextAction.setEnabled(myCurrentPage < myPages.size() - 1);
         myOkAction.setEnabled(canFinish());
     }
 
@@ -158,5 +168,4 @@ public abstract class WizardImpl {
     public UIFacade getUIFacade() {
         return myUIFacade;
     }
-
 }

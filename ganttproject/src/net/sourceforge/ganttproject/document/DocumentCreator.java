@@ -63,20 +63,24 @@ public class DocumentCreator implements DocumentManager {
      * @param pass
      *            password
      * @return an implementation of the interface Document
+     * @throws an Exception when the specified protocol is not supported
      */
     private Document createDocument(String path, String user, String pass) {
         assert path!=null;
         path = path.trim();
-        if (path.toLowerCase().startsWith("http://")
-                || path.toLowerCase().startsWith("https://")) {
+        String lowerPath = path.toLowerCase();
+        if (lowerPath.startsWith("http://")
+                || lowerPath.startsWith("https://")) {
             return new HttpDocument(path, user, pass);
         }
-        else if (path.toLowerCase().startsWith("ftp:")) {
+        else if (lowerPath.startsWith("ftp:")) {
             return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
         }
-        else {
-            return new FileDocument(new File(path));
+        else if (!lowerPath.startsWith("file://") && path.contains("://")) {
+            // Generate error for unknown protocol
+            throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
         }
+        return new FileDocument(new File(path));
     }
 
     public Document getDocument(String path) {
@@ -197,11 +201,8 @@ public class DocumentCreator implements DocumentManager {
         }
 
         public void loadValue(String legacyValue) {
-            lock();
             loadPersistentValue(legacyValue);
-            commit();
         }
-
     }
 
     private static class LockTimeoutOption extends DefaultIntegerOption implements GP1XOptionConverter {

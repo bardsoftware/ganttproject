@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -92,6 +92,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.OpenDocumentAction;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
@@ -116,7 +117,6 @@ import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -135,7 +135,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
  * Main frame of the project
  */
 public class GanttProject extends GanttProjectBase implements ActionListener,
-        IGanttProject, ResourceView, KeyListener, UIFacade {
+        ResourceView, KeyListener {
 
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
@@ -269,10 +269,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         Mediator.registerGanttProject(this);
 
         this.isOnlyViewer = isOnlyViewer;
-        if (!isOnlyViewer)
+        if (!isOnlyViewer) {
             setTitle(language.getText("appliTitle"));
-        else
+        } else {
             setTitle("GanttViewer");
+        }
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
         options = new GanttOptions(getRoleManager(), getDocumentManager(),
@@ -360,7 +361,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
         bar.add(myEditMenu.create());
 
-        myNewTaskAction = new NewTaskAction(getProject());
+        myNewTaskAction = new NewTaskAction(getProject(), getUndoManager());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
@@ -555,7 +556,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             addWindowListener(ourWindowListener);
         }
         addMouseListenerToAllContainer(this.getComponents());
-        myDelayManager = new DelayManager(myTaskManager, tree);
+        myDelayManager = new DelayManager(myTaskManager, getUndoManager(), tree);
         Mediator.registerDelayManager(myDelayManager);
         myDelayManager.addObserver(tree);
 
@@ -738,7 +739,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * @deprecated. Use GanttLanguage.correctLabel
+     * @deprecated Use GanttLanguage.correctLabel
      */
     public static String correctLabel(String label) {
         return GanttLanguage.getInstance().correctLabel(label);
@@ -1036,8 +1037,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public HumanResource newHumanResource() {
-        final HumanResource people = ((HumanResourceManager) getHumanResourceManager())
-                .newHumanResource();
+        final HumanResource people = getHumanResourceManager().newHumanResource();
         people.setRole(getRoleManager().getDefaultRole());
         GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(),
                 getLanguage(), people);
@@ -1199,7 +1199,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Open a local project file with dialog box (JFileChooser) */
-    public void openFile() throws IOException {
+    public void openFile() throws IOException, DocumentException {
         getProjectUIFacade().openProject(this);
     }
 
@@ -1207,12 +1207,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void openURL() {
         try {
             getProjectUIFacade().openRemoteProject(getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }
     }
 
-    public void open(Document document) throws IOException {
+    public void open(Document document) throws IOException, DocumentException {
         openDocument(document);
         if (document.getPortfolio() != null) {
             Document defaultDocument = document.getPortfolio()
@@ -1221,12 +1223,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    private void openDocument(Document document) throws IOException {
-        if (document.getDescription().toLowerCase().endsWith(".xml") == false
-                && document.getDescription().toLowerCase().endsWith(".gan") == false) {
+    private void openDocument(Document document) throws IOException, DocumentException {
+        if (document.getFileName().toLowerCase().endsWith(".xml") == false
+                && document.getFileName().toLowerCase().endsWith(".gan") == false) {
             // Unknown file extension
             String errorMessage = language.getText("msg2") + "\n"
-                    + document.getDescription();
+                    + document.getFileName();
             throw new IOException(errorMessage);
         }
 
@@ -1243,7 +1245,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             projectDocument = document;
         }
         setTitle(language.getText("appliTitle") + " ["
-                + document.getDescription() + "]");
+                + document.getFileName() + "]");
         for (Chart chart : PluginManager.getCharts()) {
             chart.setTaskManager(myTaskManager);
             chart.reset();
@@ -1266,6 +1268,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     try {
                         getProjectUIFacade()
                                 .openProject(document, getProject());
+                    } catch (DocumentException e) {
+                        if (!tryImportDocument(document)) {
+                        	// TODO use the/a nicer error dialog
+                            getUIFacade().showErrorDialog(e);
+                        }
                     } catch (IOException e) {
                         if (!tryImportDocument(document)) {
                             getUIFacade().showErrorDialog(e);
@@ -1301,25 +1308,27 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private void openStartupDocument(Document document) {
         try {
             getProjectUIFacade().openProject(document, getProject());
+        } catch (DocumentException e) {
+            getUIFacade().showErrorDialog(e);
         } catch (IOException e) {
             getUIFacade().showErrorDialog(e);
         }
     }
 
     /** Save the project as (with a dialog file chooser) */
-    public boolean saveAsProject() throws IOException {
+    public boolean saveAsProject() {
         getProjectUIFacade().saveProjectAs(getProject());
         return true;
     }
 
     /** Save the project on a server (with a GanttURLChooser) */
-    public boolean saveAsURLProject() throws IOException {
+    public boolean saveAsURLProject() {
         getProjectUIFacade().saveProjectRemotely(getProject());
         return true;
     }
 
     /** Save the project on a file */
-    public void saveProject() throws IOException {
+    public void saveProject() {
         getProjectUIFacade().saveProject(getProject());
     }
 
@@ -1352,7 +1361,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Open the web page */
-    public void openWebPage() throws IOException {
+    public void openWebPage() {
         if (!BrowserControl.displayURL("http://ganttproject.biz/")) {
             GanttDialogInfo gdi = new GanttDialogInfo(this,
                     GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
@@ -1429,8 +1438,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private ResourceActionSet getResourceActions() {
         if (myResourceActions == null) {
-            myResourceActions = new ResourceActionSet((IGanttProject) this,
-                    (ResourceContext) getResourcePanel(), this, getUIFacade());
+            myResourceActions = new ResourceActionSet(this,
+                    getResourcePanel(), this, getUIFacade());
         }
         return myResourceActions;
     }
@@ -1484,9 +1493,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
+        
+        // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
+        	// Export succeeded so exit applciation
             return false;
-        } else {
+        }
+
             GanttSplash splash = new GanttSplash();
             try {
                 splash.setVisible(true);
@@ -1520,7 +1533,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 });
             }
         }
-    }
 
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
 
@@ -1686,11 +1698,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // UIFacade
 
     public GanttChart getGanttChart() {
-        return (GanttChart) getArea();
+        return getArea();
     }
 
     public Chart getResourceChart() {
-        return (Chart) getResourcePanel().area;
+        return getResourcePanel().area;
     }
 
     public int getGanttDividerLocation() {
@@ -1726,7 +1738,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
 
         public GPSaver newSaver() {
-            return new GanttXMLSaver(GanttProject.this, (GanttTree2) getTree(),
+            return new GanttXMLSaver(GanttProject.this, getTree(),
                     getResourcePanel(), getArea(), getUIFacade());
         }
     }
@@ -1747,14 +1759,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
-            getTaskManager().processCriticalPath((TaskNode) tree.getRoot());
-            ArrayList<DefaultMutableTreeNode> projectTasks = tree
-                    .getProjectTasks();
-            if (projectTasks.size() != 0) {
-                for (int i = 0; i < projectTasks.size(); i++) {
                     getTaskManager().processCriticalPath(
-                            (TaskNode) projectTasks.get(i));
-                }
+                    (Task) ((TaskNode) tree.getRoot()).getUserObject());
+            ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
+            for (TaskNode projectTask : projectTasks) {
+                getTaskManager().processCriticalPath(
+                        (Task) projectTask.getUserObject());
             }
             repaint();
         }
