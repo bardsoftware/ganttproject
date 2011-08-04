@@ -6,9 +6,9 @@ package net.sourceforge.ganttproject.calendar;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -228,8 +228,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     }
 
-    public Collection<Date> getPublicHolidays() {
-        return publicHolidaysArray;
+    public Iterator<Date> getPublicHolidays() {
+        return publicHolidaysArray.iterator();
     }
 
     public void clearPublicHolidays() {

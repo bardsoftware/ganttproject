@@ -2,7 +2,6 @@ package net.sourceforge.ganttproject.io;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -48,9 +47,7 @@ public class CalendarSaver extends SaverBase {
         endElement("calendar", handler);
 
         endElement("day-types", handler);
-        Collection<Date> publicHoliday = project.getActiveCalendar()
-                .getPublicHolidays();
-        for (Iterator<Date> iter = publicHoliday.iterator(); iter.hasNext();) {
+        for (Iterator<Date> iter = project.getActiveCalendar().getPublicHolidays(); iter.hasNext();) {
             Date d = iter.next();
             if (d.getYear() == 1 - 1900) {
                 addAttribute("year", "", attrs);
