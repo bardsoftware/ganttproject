@@ -108,7 +108,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         addProjectEventListener(myViewManager);
         myTimeUnitStack = new GPTimeUnitStack(getLanguage());
         NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
-        myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), (UIFacade)this);
+        myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
             protected ParserFactory getParserFactory() {
@@ -120,8 +120,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             }
 
         };
-        myUndoManager = new UndoManagerImpl((IGanttProject) this,
-                null, myDocumentManager) {
+        myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
             protected ParserFactory getParserFactory() {
                 return GanttProjectBase.this.getParserFactory();
             }
@@ -132,7 +131,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     }
 
-
     private GanttLanguage getLanguage() {
         return GanttLanguage.getInstance();
     }
@@ -140,6 +138,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void addProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.add(listener);
     }
+
     public void removeProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.remove(listener);
     }
@@ -182,11 +181,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     public void setLookAndFeel(GanttLookAndFeelInfo laf) {
         myUIFacade.setLookAndFeel(laf);
     }
-    @Override
+
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myUIFacade.getLookAndFeel();
     }
-    @Override
+
     public GPOptionGroup getOptions() {
         return myUIFacade.getOptions();
     }
@@ -206,7 +205,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setStatusText(text);
     }
 
-    @Override
     public Dialog createDialog(Component content, Action[] buttonActions, String title) {
         return myUIFacade.createDialog(content, buttonActions, title);
     }
@@ -232,7 +230,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.logErrorMessage(e);
     }
 
-    @Override
     public NotificationManager getNotificationManager() {
         return myUIFacade.getNotificationManager();
     }
@@ -241,12 +238,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
 
-    @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myUIFacade.getTaskSelectionContext();
     }
 
-    @Override
     public TaskSelectionManager getTaskSelectionManager() {
         return myUIFacade.getTaskSelectionManager();
     }
@@ -331,6 +326,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             myCutAction.setEnabled(false==selection.isEmpty() && selection.isDeletable().isOK());
         }
 
+        // FIXME The actions below are also defined in separate classes/files in ganttproject.action package -> remove actions below?
         private final GPAction myCopyAction = new GPAction() {
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
@@ -345,6 +341,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
                 return getI18n("copy");
             }
         };
+
         private final GPAction myCutAction = new GPAction() {
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
@@ -359,6 +356,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
                 return getI18n("cut");
             }
         };
+
         private final GPAction myPasteAction = new GPAction() {
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));

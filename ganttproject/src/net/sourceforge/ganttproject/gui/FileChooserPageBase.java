@@ -93,10 +93,10 @@ public abstract class FileChooserPageBase implements WizardPage {
 
     protected abstract String getFileChooserTitle();
     
-	/** @return a default export filename */
-	protected String getDefaultFileName() {
-		Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
-		if(document == null) {
+    /** @return a default export filename */
+    protected String getDefaultFileName() {
+        Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
+        if(document == null) {
             return "document.gan";
         }
         return document.getFileName();
@@ -378,9 +378,9 @@ public abstract class FileChooserPageBase implements WizardPage {
                 }
             }
             catch (IOException e) {
-				setStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR,
-						MessageFormat.format("Failed to fetch from {0}\n{1}",
-								new Object[] { myUrl, e.getMessage() }), e));
+                setStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+                        MessageFormat.format("Failed to fetch from {0}\n{1}",
+                                new Object[] { myUrl, e.getMessage() }), e));
             }
             finally {
                 isFetching = false;

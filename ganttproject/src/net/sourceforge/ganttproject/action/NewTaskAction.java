@@ -30,14 +30,17 @@ import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class NewTaskAction extends AbstractAction implements
         GanttLanguage.Listener {
-
     private final IGanttProject myProject;
 
-    public NewTaskAction(IGanttProject project) {
+    private final GPUndoManager myUndoManager;
+
+    public NewTaskAction(IGanttProject project, GPUndoManager undoManager) {
         myProject = project;
+        myUndoManager = undoManager;
         setText(project.getI18n());
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_T,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -50,7 +53,7 @@ public class NewTaskAction extends AbstractAction implements
     }
 
     public void actionPerformed(ActionEvent e) {
-        myProject.getUndoManager().undoableEdit("New Task", new Runnable() {
+        myUndoManager.undoableEdit("New Task", new Runnable() {
             public void run() {
                 myProject.newTask();
             }

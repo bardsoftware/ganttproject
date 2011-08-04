@@ -361,7 +361,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
         bar.add(myEditMenu.create());
 
-        myNewTaskAction = new NewTaskAction(getProject());
+        myNewTaskAction = new NewTaskAction(getProject(), getUndoManager());
         mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
@@ -556,7 +556,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             addWindowListener(ourWindowListener);
         }
         addMouseListenerToAllContainer(this.getComponents());
-        myDelayManager = new DelayManager(myTaskManager, this, tree);
+        myDelayManager = new DelayManager(myTaskManager, getUndoManager(), tree);
         Mediator.registerDelayManager(myDelayManager);
         myDelayManager.addObserver(tree);
 

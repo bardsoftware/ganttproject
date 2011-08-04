@@ -35,18 +35,18 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
 public class ImportFileWizardImpl extends WizardImpl {
     private final State myState;
 
-    private static List<Importer> myImporters;
+    private static List<Importer> ourImporters;
 
     public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
         super(uiFacade, ImportFileWizardImpl.i18n("importWizard.dialog.title"));
         myState = new State();
-        if (myImporters == null) {
-            myImporters = getImporters();
+        if (ourImporters == null) {
+            ourImporters = getImporters();
         }
-        for (Importer importer : myImporters) {
+        for (Importer importer : ourImporters) {
             importer.setContext(project, uiFacade, options.getPluginPreferences());
         }
-        addPage(new ImporterChooserPage(myImporters, myState));
+        addPage(new ImporterChooserPage(ourImporters, myState));
         addPage(new FileChooserPage(
                 this,
                 options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/import"),
