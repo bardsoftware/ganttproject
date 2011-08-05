@@ -74,11 +74,11 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private final GanttLanguage language = GanttLanguage.getInstance(); // language
 
-    private GanttCalendar start;
+    private GanttCalendar myStart;
 
-    private GanttCalendar end;
+    private GanttCalendar myEnd;
 
-    private GanttCalendar third;
+    private GanttCalendar myThird;
 
     private JTabbedPane tabbedPane; // TabbedPane that includes the following four items
 
@@ -194,7 +194,9 @@ public class GanttTaskPropertiesBean extends JPanel {
 	        propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
 	        myEndDatePicker = createDatePicker(new ActionListener() {
 	            public void actionPerformed(ActionEvent e) {
-	                setEnd(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()).newAdd(Calendar.DATE, 1), false);
+                    GanttCalendar c = new GanttCalendar(((JXDatePicker)e.getSource()).getDate());
+	                c.add(Calendar.DATE, 1);
+	                setEnd(c, false);
 	            }
 	        });
 	        propertiesPanel.add(myEndDatePicker);
@@ -635,7 +637,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         durationField1.setText(_length + "");
 
         // Calculate the end date for the given length
-        myUnpluggedClone.setStart(start);
+        myUnpluggedClone.setStart(myStart);
         myUnpluggedClone.setDuration(myUnpluggedClone.getManager().createLength(_length));
         setEnd(myUnpluggedClone.getEnd(), false);
     }
@@ -663,67 +665,67 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
 
     private GanttCalendar getStart() {
-        return start;
+        return myStart;
     }
 
     private GanttCalendar getThird() {
-        return third;
+        return myThird;
     }
 
-    private void setStart(GanttCalendar dstart, boolean test) {
-        myStartDatePicker.setDate(dstart.getTime());
-        this.start = dstart;
+    private void setStart(GanttCalendar start, boolean test) {
+        myStart = start;
+        myStartDatePicker.setDate(myStart.getTime());
         if (test == true) {
             return;
         }
-        if (this.start.compareTo(this.end) < 0) {
+        if (myStart.compareTo(myEnd) < 0) {
             adjustLength();
         } else {
-            GanttCalendar _end = start.newAdd(Calendar.DATE, this.taskLength);
-            this.end = _end;
-            this.myEndDatePicker.setDate(this.end.getTime());
+            myEnd = myStart.clone();
+            myEnd.add(Calendar.DATE, taskLength);
+            myEndDatePicker.setDate(myEnd.getTime());
         }
     }
 
-    private void setEnd(GanttCalendar dend, boolean test) {
-        myEndDatePicker.setDate(dend.newAdd(Calendar.DATE, -1).getTime());
-        this.end = dend;
+    private void setEnd(GanttCalendar end, boolean test) {
+        myEnd = end;
+        myEndDatePicker.setDate(myEnd.newAdd(Calendar.DATE, -1).getTime());
         if (test == true) {
             return;
         }
-        if (this.start.compareTo(this.end) < 0) {
+        if (myStart.compareTo(myEnd) < 0) {
             adjustLength();
         } else {
-            GanttCalendar _start = this.end.newAdd(Calendar.DATE, -1 * getLength());
-            this.start = _start;
+            myStart = myEnd.clone();
+            myStart.add(Calendar.DATE, -1 * getLength());
         }
     }
 
-    private void setThird(GanttCalendar dthird, boolean test) {
-        myThirdDatePicker.setDate(dthird.getTime());
-        this.third = dthird;
+    private void setThird(GanttCalendar third, boolean test) {
+        myThird = third;
+        myThirdDatePicker.setDate(myThird.getTime());
     }
 
     private void adjustLength() {
         int length;
-        myUnpluggedClone.setStart(this.start);
-        myUnpluggedClone.setEnd(this.end);
+        myUnpluggedClone.setStart(this.myStart);
+        myUnpluggedClone.setEnd(this.myEnd);
         length = (int) myUnpluggedClone.getDuration().getLength();
         durationField1.setText("" + length);
     }
 
     private void setInitialValues(GanttTask task) {
-        this.taskWebLink = task.getWebLink();
-        this.taskIsMilestone = task.isMilestone();
-        this.taskStartDate = task.getStart();
-        this.taskLength = task.getLength();
-        this.taskNotes = task.getNotes();
-        this.taskCompletionPercentage = task.getCompletionPercentage();
-        this.taskPriority = task.getPriority();
-        this.taskShape = task.getShape();
-        this.taskThirdDate = task.getThird();
-        this.taskThirdDateConstraint = task.getThirdDateConstraint();
-        this.taskIsProjectTask = task.isProjectTask();
+        taskWebLink = task.getWebLink();
+        taskIsMilestone = task.isMilestone();
+        taskStartDate = task.getStart();
+        taskLength = task.getLength();
+        taskNotes = task.getNotes();
+        taskCompletionPercentage = task.getCompletionPercentage();
+        taskPriority = task.getPriority();
+        taskShape = task.getShape();
+        taskThirdDate = task.getThird();
+        taskThirdDateConstraint = task.getThirdDateConstraint();
+        taskIsProjectTask = task.isProjectTask();
     }
 
     private boolean canBeProjectTask(Task testedTask, TaskContainmentHierarchyFacade taskHierarchy) {

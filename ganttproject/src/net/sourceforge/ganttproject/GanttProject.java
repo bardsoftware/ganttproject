@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
+Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -425,20 +425,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         getTabs().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                bNewTask
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                bNewTask.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
 
-                bDelete
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                bDelete.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
 
-                bProperties
-                        .setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                bProperties.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                                 || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
 
-                if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) { // Gantt
-                    // Chart
+                if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
+                    // Gantt Chart
                     bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
                     bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteTask")));
                     bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesTask")));
@@ -449,8 +446,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         bProperties.setText(language.getCorrectedLabel("propertiesTask"));
                     }
 
-                } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resources
-                    // Chart
+                } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) {
+                    // Resources Chart
                     bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("newHuman")));
                     bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteHuman")));
                     bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesHuman")));
@@ -789,24 +786,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
-        miDeleteTask = changeMenuLabel(miDeleteTask, language
-                .getText("deleteTask"));
-        mHuman.insert(changeMenuLabel(mHuman.getItem(0), language
-                .getText("newHuman")), 0);
-        miDelHuman = changeMenuLabel(miDelHuman, language
-                .getText("deleteHuman"));
-        mHuman.insert(changeMenuLabel(mHuman.getItem(4), language
-                .getText("importResources")), 4);
-        miSendMailHuman = changeMenuLabel(miSendMailHuman, language
-                .getText("sendMail"));
+        miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("deleteTask"));
+        mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("newHuman")), 0);
+        miDelHuman = changeMenuLabel(miDelHuman, language.getText("deleteHuman"));
+        mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("importResources")), 4);
+        miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
 
-        miPrjCal = changeMenuLabel(miPrjCal, language
-                .getText("projectCalendar"));
+        miPrjCal = changeMenuLabel(miPrjCal, language.getText("projectCalendar"));
 
         miWebPage = changeMenuLabel(miWebPage, language.getText("webPage"));
         miAbout = changeMenuLabel(miAbout, language.getText("about"));
-        miChartOptions = changeMenuLabel(miChartOptions, language
-                .getText("chartOptions"));
+        miChartOptions = changeMenuLabel(miChartOptions, language.getText("chartOptions"));
 
         bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
         // bCut.setToolTipText(getToolTip(language.getCorrectedLabel("cut")));
@@ -977,29 +967,25 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /** A menu has been activate */
     public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() instanceof JMenuItem) {
-            String arg = evt.getActionCommand();
-            if (arg.equals(language.getCorrectedLabel("preview"))) {
+        Object source = evt.getSource();
+        if (source instanceof JMenuItem) {
+            if (source == miPreview) {
                 previewPrint();
-            } else if (arg.equals(language.getCorrectedLabel("deleteTask"))) {
+            } else if (source == miDeleteTask) {
                 deleteTasks(true);
-            } else if (arg.equals(language.getCorrectedLabel("projectCalendar"))) {
+            } else if (source == miPrjCal) {
                 System.out.println("Project calendar");
-            } else if (arg.equals(language.getCorrectedLabel("webPage"))) {
-                try {
-                    openWebPage();
-                } catch (Exception e) {
-                    System.err.println(e);
-                }
-            } else if (arg.equals(language.getCorrectedLabel("about"))) {
+            } else if (source == miWebPage) {
+                openWebPage();
+            } else if (source == miAbout) {
                 aboutDialog();
-            } else if (arg.equals(language.getCorrectedLabel("sendMail"))) {
+            } else if (source == miSendMailHuman) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
             }
-        } else if (evt.getSource() instanceof Document) {
+        } else if (source instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-                openStartupDocument((Document) evt.getSource());
+                openStartupDocument((Document) source);
             }
         }
     }
@@ -1050,9 +1036,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         task.setColor(area.getTaskColor());
         tree.addObject(task, node, index);
 
-        /*
-         * this will add new custom columns to the newly created task.
-         */
+        // this will add new custom columns to the newly created task.
         getCustomColumnsStorage().processNewTask(task);
 
         AdjustTaskBoundsAlgorithm alg = getTaskManager()
@@ -1239,7 +1223,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                                 .openProject(document, getProject());
                     } catch (DocumentException e) {
                         if (!tryImportDocument(document)) {
-                        	// TODO use the/a nicer error dialog
                             getUIFacade().showErrorDialog(e);
                         }
                     } catch (IOException e) {
@@ -1361,7 +1344,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                         setTitle(title + " *");
                     }
                 }
-
             }
         } catch (AccessControlException e) {
             // This can happen when running in a sandbox (Java WebStart)
@@ -1387,10 +1369,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public GanttTree2 getTree() {
-        if (this.tree == null) {
-            this.tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
+        if (tree == null) {
+            tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
         }
-        return this.tree;
+        return tree;
     }
 
     public Action getCopyAction() {

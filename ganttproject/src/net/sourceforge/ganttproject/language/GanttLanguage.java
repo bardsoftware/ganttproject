@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev, GanttProject team
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-
 package net.sourceforge.ganttproject.language;
 
 import java.awt.ComponentOrientation;
@@ -139,9 +138,7 @@ public class GanttLanguage {
             if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + "_" + l.getCountry() + ".properties") != null) {
                 removeLangOnly.add(new Locale(l.getLanguage()));
                 result.add(new Locale(l.getLanguage(), l.getCountry()));
-                continue;
-            }
-            if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
+            } else if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
                 result.add(new Locale(l.getLanguage()));
             }
         }
@@ -150,10 +147,9 @@ public class GanttLanguage {
         
         List<Locale> result1 = new ArrayList<Locale>(result);
         Collections.sort(result1, new Comparator<Locale>() {
-            @Override
             public int compare(Locale o1, Locale o2) {
                 return (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
-                    o2.getDisplayLanguage(Locale.US)+o2.getDisplayCountry(Locale.US));
+                    o2.getDisplayLanguage(Locale.US) + o2.getDisplayCountry(Locale.US));
             }
         });
         return result1;

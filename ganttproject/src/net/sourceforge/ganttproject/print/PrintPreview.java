@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.print;
 
 import java.awt.BorderLayout;
@@ -139,7 +157,7 @@ public class PrintPreview extends JDialog {
 
     public PrintPreview(IGanttProject project, UIFacade uifacade, Chart chart, Date start,
             Date end) {
-        super(uifacade.getMainFrame(), GanttLanguage.getInstance().getText("preview"), false);
+        super(uifacade.getMainFrame(), language.getText("preview"), false);
         myProject = project;
         myUIfacade = uifacade;
         Dimension screenDim = java.awt.Toolkit.getDefaultToolkit()
@@ -320,7 +338,6 @@ public class PrintPreview extends JDialog {
         }
         myComboMediaSize = new JComboBox(sizes.toArray());
         myComboMediaSize.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent arg0) {
                 run(new Runnable() {
                     public void run() {
@@ -526,11 +543,11 @@ public class PrintPreview extends JDialog {
         }
 
         Component[] comps = myPreviewContainer.getComponents();
-        for (int k = 0; k < comps.length; k++) {
-            if (!(comps[k] instanceof PagePreview)) {
+        for (Component c : comps) {
+            if (!(c instanceof PagePreview)) {
                 continue;
             }
-            PagePreview pp = (PagePreview) comps[k];
+            PagePreview pp = (PagePreview) c;
             pp.setScale(myScale);
         }
         PagePreview.clearCache();
@@ -542,11 +559,9 @@ public class PrintPreview extends JDialog {
         try {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             runnable.run();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             GPLogger.log(e);
-        }
-        finally {
+        } finally {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
@@ -577,8 +592,9 @@ public class PrintPreview extends JDialog {
         		   OrientationRequested.LANDSCAPE :
                    OrientationRequested.PORTRAIT);
         Document doc = myProject.getDocument();
-        if (doc != null)
+        if (doc != null) {
             attr.add(new JobName(doc.getFileName(), language.getLocale()));
+        }
 
         if (prnJob.printDialog(attr)) {
             try {
@@ -600,9 +616,8 @@ public class PrintPreview extends JDialog {
 	    	RenderedImage image = myChart.getRenderedImage(myExportSettings);
 	        myPrintable = new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT);
 	        changePageOrientation(myOrientation);
-    	}
-    	catch (OutOfMemoryError e) {
-    		myUIfacade.showErrorDialog(GanttLanguage.getInstance().getText("printing.out_of_memory"));
+        } catch (OutOfMemoryError e) {
+    		myUIfacade.showErrorDialog(language.getText("printing.out_of_memory"));
     	}
     }
 
@@ -728,7 +743,7 @@ public class PrintPreview extends JDialog {
         protected void paintComponent(Graphics g) {
         	super.paintComponent(g);
         	Image scaledImage = ourImageCache.get(new Integer (myPageIndex));
-        	if (scaledImage==null) {
+            if (scaledImage == null) {
 	        	BufferedImage bufferImage = new BufferedImage(
 	        			(int)myPageFormat.getWidth(), 
 	        			(int)myPageFormat.getHeight(), 
