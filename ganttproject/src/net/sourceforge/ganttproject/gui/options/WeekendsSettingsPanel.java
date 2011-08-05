@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2010-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -66,9 +66,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         if (hasChange) {
             // Update tasks for the new weekends
             // By setting their end dates to null it gets recalculated
-            Task[] tasks = project.getTaskManager().getTasks();
-            for(int i = 0; i < tasks.length; i++) {
-                tasks[i].setEnd(null);
+            for(Task task : project.getTaskManager().getTasks()) {
+                task.setEnd(null);
             }
             projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
             try {

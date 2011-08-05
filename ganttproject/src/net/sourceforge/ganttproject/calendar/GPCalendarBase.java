@@ -56,10 +56,10 @@ abstract class GPCalendarBase {
     }
 
     protected abstract List<GPCalendarActivity> getActivitiesBackward(Date startDate,
-            TimeUnit timeUnit, long l);
+            TimeUnit timeUnit, long unitCount);
 
     protected abstract List<GPCalendarActivity> getActivitiesForward(Date startDate,
-            TimeUnit timeUnit, long l);
+            TimeUnit timeUnit, long unitCount);
 
     public List<GPCalendarActivity> getActivities(Date startingFrom,
             TaskLength period) {

@@ -1,19 +1,21 @@
-/***************************************************************************
- ProjectSettingsPanel.java 
- ------------------------------------------
- begin                : 27 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -43,7 +45,6 @@ import net.sourceforge.ganttproject.util.BrowserControl;
  */
 public class ProjectSettingsPanel extends GeneralOptionPanel {
 
-    // JTextField tfFile;
     private final JTextField tfName;
 
     private final JTextField tfOrganization;
@@ -61,13 +62,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         myProject = project;
         Box vbproject = Box.createVerticalBox();
 
-        /*
-         * JPanel filePanel = new JPanel(new BorderLayout()); filePanel.add(new
-         * JLabel(language.getText("file")), BorderLayout.WEST);
-         * vbproject.add(filePanel); vbproject.add(tfFile = new JTextField());
-         * tfFile.setEditable(false); vbproject.add(new JPanel());
-         */
-
         JPanel namePanel = new JPanel(new BorderLayout());
         namePanel.add(new JLabel(language.getText("name")), BorderLayout.WEST);
         vbproject.add(namePanel);
@@ -75,8 +69,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         vbproject.add(new JPanel());
 
         JPanel orgaPanel = new JPanel(new BorderLayout());
-        orgaPanel.add(new JLabel(language.getText("organization")),
-                BorderLayout.WEST);
+        orgaPanel.add(new JLabel(language.getText("organization")), BorderLayout.WEST);
         vbproject.add(orgaPanel);
         vbproject.add(tfOrganization = new JTextField());
         vbproject.add(new JPanel());
@@ -106,8 +99,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         vbproject.add(new JPanel());
 
         JPanel descrPanel = new JPanel(new BorderLayout());
-        descrPanel.add(new JLabel(language.getText("shortDescription")),
-                BorderLayout.WEST);
+        descrPanel.add(new JLabel(language.getText("shortDescription")), BorderLayout.WEST);
         vbproject.add(descrPanel);
         taDescr = new JTextArea(12, 25);
         taDescr.setLineWrap(true);
@@ -143,12 +135,6 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
     }
 
     public void initialize() {
-        /*
-         * if(appli.projectDocument!=null) { String filename =
-         * appli.projectDocument.getFilePath(); if(appli.askForSave)
-         * filename+="*"; tfFile.setText(filename); }
-         */
-        // tfFile.setText("see ProjectSettingsPanel line 149 ??");
         tfName.setText(myProject.getProjectName());
         tfOrganization.setText(myProject.getOrganization());
         tfWebLink.setText(myProject.getWebLink());

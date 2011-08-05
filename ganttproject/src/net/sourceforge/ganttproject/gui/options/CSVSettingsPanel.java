@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2004-2011 Dmitry Barashev
+Copyright (C) 2004-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,8 +30,10 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.io.CSVOptions;
 
 /**
+ * Panel to edit the text export parameters
+ * 
  * @author dbarashev@gmail.com Major rewrite.
- * @author athomas Panel to edit the text export parameters
+ * @author athomas
  */
 public class CSVSettingsPanel extends GeneralOptionPanel {
 
@@ -178,7 +180,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
                 && getTextSeparat().equals(csvOptions.sSeparatedTextChar)) {
             hasChange = false;
         } else {
-            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply o not)
+            // apply changes if user clicked apply (or warn about pending changes and ask whether to apply or not)
             if (!askForApply || (askForApply && askForApplyChanges())) {
                 csvOptions.sSeparatedTextChar = getTextSeparat();
                 csvOptions.sSeparatedChar = getSeparat();
@@ -204,7 +206,6 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     }
 
     public void initialize() {
-
         cbTaskID.setSelected(getCsvOptions().bExportTaskID);
         cbTaskName.setSelected(getCsvOptions().bExportTaskName);
         cbStartDate.setSelected(getCsvOptions().bExportTaskStartDate);
@@ -221,10 +222,8 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
         cbResPhone.setSelected(getCsvOptions().bExportResourcePhone);
         cbResRole.setSelected(getCsvOptions().bExportResourceRole);
 
-        boolean bfixed = getCsvOptions().bFixedSize;
-
         String selectedSeparator;
-        if (bfixed) {
+        if (getCsvOptions().bFixedSize) {
             selectedSeparator = language.getText("fixedWidth");
         } else {
             String sSeparatedChar = getCsvOptions().sSeparatedChar;
@@ -243,7 +242,6 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
         if ("\"".equals(getCsvOptions().sSeparatedTextChar)) {
             cbTextSeparator.setSelectedIndex(1);
         }
-
     }
 
     private boolean getFixed() {

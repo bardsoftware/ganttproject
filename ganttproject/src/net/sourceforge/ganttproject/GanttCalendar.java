@@ -79,7 +79,6 @@ public class GanttCalendar extends GregorianCalendar {
     }
 
     /** @return a copy of the current date */
-    @Override
     public GanttCalendar clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         return clone;
