@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -35,19 +35,18 @@ public class TaskActivitiesAlgorithm {
         output.clear();
         List<GPCalendarActivity> activities = myCalendar.getActivities(startDate, endDate);
         for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity nextCalendarActivity = activities.get(i);
+            GPCalendarActivity activity = activities.get(i);
             TaskActivity nextTaskActivity;
-            if (nextCalendarActivity.isWorkingTime()) {
+            if (activity.isWorkingTime()) {
                 nextTaskActivity = new TaskActivityImpl(
-                    task, nextCalendarActivity.getStart(), nextCalendarActivity.getEnd());
+                    task, activity.getStart(), activity.getEnd());
             } else if (i > 0 && i + 1 < activities.size()) {
                 nextTaskActivity = new TaskActivityImpl(
-                    task, nextCalendarActivity.getStart(), nextCalendarActivity.getEnd(), 0);
+                    task, activity.getStart(), activity.getEnd(), 0);
             } else {
                 continue;
             }
             output.add(nextTaskActivity);
         }
     }
-
 }

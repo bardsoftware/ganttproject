@@ -82,18 +82,6 @@ public abstract class ConstraintImpl implements Cloneable{
 
     protected void addDelay(GanttCalendar calendar) {
         shift(calendar, myDependency.getDifference());
-//        calendar.add(difference);f
-//        GanttCalendar solutionStart = calendar.Clone();
-//        solutionStart.add(-1 * myDependency.getDifference());
-//        for (int i = 0; i <= difference; i++) {
-//            if ((myDependency.getDependant()
-//                    .getManager().getCalendar()).isNonWorkingDay(solutionStart
-//                    .getTime())) {
-//                calendar.add(1);
-//                difference++;
-//            }
-//            solutionStart.add(1);
-//        }
     }
 
     public TaskDependencyConstraint.Collision getBackwardCollision(Date dependantStart) {
