@@ -1,5 +1,20 @@
 /*
- * Created on 18.10.2004
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.calendar;
 
@@ -61,17 +76,16 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public void setPublicHoliDayType(int month, int date) {
-        // TODO Auto-generated method stub
-
+        // All days are working days for this calendar, so not public holidays
     }
 
     public boolean isPublicHoliDay(Date curDayStart) {
-        // TODO Auto-generated method stub
+        // All days are working days for this calendar, so not public holidays
         return false;
     }
 
     public boolean isNonWorkingDay(Date curDayStart) {
-        // TODO Auto-generated method stub
+        // All days are working days for this calendar
         return false;
     }
 
@@ -90,22 +104,20 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public void setPublicHoliDayType(Date curDayStart) {
-        // TODO Auto-generated method stub
-
+        // Nothing needs to be done, as the class does not have non working days
     }
 
     public void setPublicHolidays(URL calendar, IGanttProject gp) {
-        // TODO Auto-generated method stub
-
+        // Nothing needs to be done, as the class does not have non working days
     }
 
     public Iterator<Date> getPublicHolidays() {
-        // Nothing needs to be done
+        // Nothing needs to be done, as the class does not have non working days
         return null;
     }
     
     public void clearPublicHolidays() {
-        // Nothing needs to be done
+        // Nothing needs to be done, as the class does not have non working days
     }
 
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
