@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.Locale;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -47,8 +46,7 @@ public class CalendarSaver extends SaverBase {
         endElement("calendar", handler);
 
         endElement("day-types", handler);
-        for (Iterator<Date> iter = project.getActiveCalendar().getPublicHolidays(); iter.hasNext();) {
-            Date d = iter.next();
+        for (Date d : project.getActiveCalendar().getPublicHolidays()) {
             if (d.getYear() == 1 - 1900) {
                 addAttribute("year", "", attrs);
             } else {

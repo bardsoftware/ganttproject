@@ -4,9 +4,10 @@
 package net.sourceforge.ganttproject.calendar;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -99,9 +100,9 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
 
     }
 
-    public Iterator<Date> getPublicHolidays() {
-        // Nothing needs to be done
-        return null;
+    public Collection<Date> getPublicHolidays() {
+        // Return an empty collection, as there are no holidays in this calendar
+        return Collections.unmodifiableCollection(new LinkedHashSet<Date>());
     }
     
     public void clearPublicHolidays() {

@@ -111,8 +111,7 @@ class ProjectFileExporter {
 	}
 
 	private void exportHolidays(ProjectCalendar calendar) {
-		for (Iterator<Date> i = getCalendar().getPublicHolidays(); i.hasNext();) {
-		    Date d = i.next();
+		for (Date d : getCalendar().getPublicHolidays()) {
 			ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
 			calendarException.addRange(new DateRange(d, d));
 		}
