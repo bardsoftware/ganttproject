@@ -19,10 +19,8 @@ package net.sourceforge.ganttproject.gui.options;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.RolesTableModel;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * Panel to edit the roles for resources of the project.
  *
@@ -35,9 +33,8 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
     private final JTable rolesTable;
 
     public RolesSettingsPanel(IGanttProject project) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "resourceRole")), GanttLanguage.getInstance().getText(
-                "settingsRoles"));
+        super(language.getCorrectedLabel("resourceRole"), language
+                .getText("settingsRoles"));
 
         myRolesModel = new RolesTableModel(project.getRoleManager());
         rolesTable = new JTable(myRolesModel);

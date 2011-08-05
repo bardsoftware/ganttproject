@@ -27,7 +27,6 @@ import javax.swing.JPanel;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttSplash;
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
@@ -38,20 +37,17 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 public class AboutPanel extends GeneralOptionPanel {
 
     public AboutPanel() {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "about")), GanttLanguage.getInstance().getText("settingsAbout")
-                + " " + GanttProject.version);
+        super(language.getCorrectedLabel("about"), language
+                .getText("settingsAbout") + " " + GanttProject.version);
         GanttSplash splash = new GanttSplash();
         JLabel jLabelImage = splash.getSplashComponent();
         vb.add(new JPanel());
         vb.add(jLabelImage);
         vb.add(new JPanel());
-        JButton bHomePage = new JButton(GanttProject.correctLabel(language
-                .getText("webPage")), new ImageIcon(getClass().getResource(
-                "/icons/home_16.gif")));
+        JButton bHomePage = new JButton(language.getCorrectedLabel("webPage"),
+                new ImageIcon(getClass().getResource("/icons/home_16.gif")));
         bHomePage.setToolTipText(GanttProject.getToolTip(language
-                .getText("goTo")
-                + " " + "http://ganttproject.biz")); // add a simple tool tip text
+                .getText("goTo") + " " + "http://ganttproject.biz"));
         bHomePage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BrowserControl.displayURL("http://ganttproject.biz/");

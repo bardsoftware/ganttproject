@@ -217,13 +217,24 @@ public class GanttLanguage {
         return result.toString();
     }
 
+    /** @return the text in the current language for the given key */
     public String getText(String key) {
         try {
             return i18n.getString(key);
         } catch (MissingResourceException e) {
             return null;
         }
-    };
+    }
+
+    /**
+     * @return the text suitable for labels in the current language for the
+     *         given key (all $ characters are removed from the original text)
+     * @see #GanttLagetText()
+     * @see #correctLabel()
+     */
+    public String getCorrectedLabel(String key) {
+        return correctLabel(getText(key));
+    }
 
     public ComponentOrientation getComponentOrientation() {
         return ComponentOrientation.getOrientation(currentLocale);

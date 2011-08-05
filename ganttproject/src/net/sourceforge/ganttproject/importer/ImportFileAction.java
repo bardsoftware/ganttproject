@@ -41,7 +41,6 @@ public class ImportFileAction extends GPAction {
     }
 
     protected String getLocalizedName() {
-        return GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "import"));
+        return GanttLanguage.getInstance().getCorrectedLabel("import");
     }
 }

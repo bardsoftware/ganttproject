@@ -346,20 +346,19 @@ public class PrintPreview extends JDialog {
 //        myComboMediaSize.setMaximumSize(dim);
 //        myComboMediaSize.setPreferredSize(dim);
 
-        bPrint.setToolTipText(GanttProject.getToolTip(GanttProject
+        bPrint.setToolTipText(GanttProject.getToolTip(language
                 .correctLabel(language.getText("printProject"))));
-        bPortrait.setToolTipText(GanttProject.getToolTip(GanttProject
+        bPortrait.setToolTipText(GanttProject.getToolTip(language
                 .correctLabel(language.getText("portrait"))));
-        bLandscape.setToolTipText(GanttProject.getToolTip(GanttProject
+        bLandscape.setToolTipText(GanttProject.getToolTip(language
                 .correctLabel(language.getText("landscape"))));
-        bClose.setToolTipText(GanttProject.getToolTip(GanttProject
+        bClose.setToolTipText(GanttProject.getToolTip(language
                 .correctLabel(language.getText("close"))));
         final JButton bZoomOut;
         final JButton bZoomIn;
         if (isDate) {
             myWholeProjectButton.setToolTipText(GanttProject
-                    .getToolTip(GanttProject.correctLabel(language
-                            .getText("displayWholeProject"))));
+                    .getToolTip(language.getCorrectedLabel("displayWholeProject")));
             /*
             myStartDateButton.setToolTipText(GanttProject
                     .getToolTip(GanttProject.correctLabel(language

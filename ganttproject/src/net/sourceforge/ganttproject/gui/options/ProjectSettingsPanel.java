@@ -55,9 +55,8 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
     private final IGanttProject myProject;
 
     public ProjectSettingsPanel(IGanttProject project) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "project")), GanttLanguage.getInstance().getText(
-                "settingsProject"));
+        super(language.correctLabel(GanttLanguage.getInstance().getText(
+                "project")), language.getText("settingsProject"));
 
         myProject = project;
         Box vbproject = Box.createVerticalBox();
@@ -100,8 +99,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         });
 
         JPanel webPanel = new JPanel(new BorderLayout());
-        webPanel
-                .add(new JLabel(language.getText("webLink")), BorderLayout.WEST);
+        webPanel.add(new JLabel(language.getText("webLink")), BorderLayout.WEST);
         webPanel.add(bWeb, BorderLayout.EAST);
         vbproject.add(webPanel);
         vbproject.add(tfWebLink);

@@ -23,16 +23,14 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.GeneralDialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author athomas New dialog box for about GanttProject :)
  */
 public class AboutDialog extends GeneralDialog {
     public AboutDialog(GanttProject parent) {
-        super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
-                .getText("about"))
-                + " - Ganttproject", true, new AboutPanel());
+        super(parent, language.getCorrectedLabel("about") + " - Ganttproject",
+                true, new AboutPanel());
 
         // hide the cancel button
         cancelButton.setVisible(false);
@@ -52,7 +50,7 @@ public class AboutDialog extends GeneralDialog {
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttProject.correctLabel(language.getText("about")))) {
+        if (sNode.equals(language.getCorrectedLabel("about"))) {
             settingPanel = new AboutPanel();
         } else if (sNode.equals(language.getText("authors"))) {
             settingPanel = new AboutAuthorPanel();
@@ -78,7 +76,7 @@ public class AboutDialog extends GeneralDialog {
 
     /** Construct the menu settings. */
     public void constructSections() {
-        addObject(GanttProject.correctLabel(language.getText("about")), null);
+        addObject(language.getCorrectedLabel("about"), null);
         addObject(language.getText("authors"), null);
         addObject(language.getText("jinfos"), null);
         addObject(language.getText("license"), null);

@@ -49,7 +49,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
     static GanttLanguage language = GanttLanguage.getInstance();
 
     public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
-        super(language.correctLabel(language.getText("editPublicHolidays")));
+        super(language.getCorrectedLabel("editPublicHolidays"));
         myProject = project;
         myUIFacade = uiFacade;
         this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource(

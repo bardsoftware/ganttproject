@@ -439,38 +439,26 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                 if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) { // Gantt
                     // Chart
-                    bNewTask.setToolTipText(getToolTip(correctLabel(language
-                            .getText("createTask"))));
-                    bDelete.setToolTipText(getToolTip(correctLabel(language
-                            .getText("deleteTask"))));
-                    bProperties.setToolTipText(getToolTip(correctLabel(language
-                            .getText("propertiesTask"))));
+                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
+                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteTask")));
+                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesTask")));
 
                     if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(correctLabel(language
-                                .getText("createTask")));
-                        bDelete.setText(correctLabel(language
-                                .getText("deleteTask")));
-                        bProperties.setText(correctLabel(language
-                                .getText("propertiesTask")));
+                        bNewTask.setText(language.getCorrectedLabel("createTask"));
+                        bDelete.setText(language.getCorrectedLabel("deleteTask"));
+                        bProperties.setText(language.getCorrectedLabel("propertiesTask"));
                     }
 
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resources
                     // Chart
-                    bNewTask.setToolTipText(getToolTip(correctLabel(language
-                            .getText("newHuman"))));
-                    bDelete.setToolTipText(getToolTip(correctLabel(language
-                            .getText("deleteHuman"))));
-                    bProperties.setToolTipText(getToolTip(correctLabel(language
-                            .getText("propertiesHuman"))));
+                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("newHuman")));
+                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteHuman")));
+                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesHuman")));
 
                     if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(correctLabel(language
-                                .getText("newHuman")));
-                        bDelete.setText(correctLabel(language
-                                .getText("deleteHuman")));
-                        bProperties.setText(correctLabel(language
-                                .getText("propertiesHuman")));
+                        bNewTask.setText(language.getCorrectedLabel("newHuman"));
+                        bDelete.setText(language.getCorrectedLabel("deleteHuman"));
+                        bProperties.setText(language.getCorrectedLabel("propertiesHuman"));
                     }
                 }
             }
@@ -738,13 +726,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /**
-     * @deprecated Use GanttLanguage.correctLabel
-     */
-    public static String correctLabel(String label) {
-        return GanttLanguage.getInstance().correctLabel(label);
-    }
-
-    /**
      * Change the label for menu, in fact check in the label contains a mnemonic
      */
     public JMenu changeMenuLabel(JMenu menu, String label) {
@@ -827,26 +808,15 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miChartOptions = changeMenuLabel(miChartOptions, language
                 .getText("chartOptions"));
 
-        bNewTask.setToolTipText(getToolTip(correctLabel(language
-                .getText("createTask"))));
-        // bCut.setToolTipText(getToolTip(correctLabel(language.getText("cut"))));
-        // bCopy
-        // .setToolTipText(getToolTip(correctLabel(language
-        // .getText("copy"))));
-        // bPaste
-        // .setToolTipText(getToolTip(correctLabel(language
-        // .getText("paste"))));
-        bDelete.setToolTipText(getToolTip(correctLabel(language
-                .getText("deleteTask"))));
-        bProperties.setToolTipText(getToolTip(correctLabel(language
-                .getText("propertiesTask"))));
-        bUndo
-                .setToolTipText(getToolTip(correctLabel(language
-                        .getText("undo"))));
-        bRedo
-                .setToolTipText(getToolTip(correctLabel(language
-                        .getText("redo"))));
-        getTabs().setTitleAt(1, correctLabel(language.getText("human")));
+        bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
+        // bCut.setToolTipText(getToolTip(language.getCorrectedLabel("cut")));
+        // bCopy.setToolTipText(getToolTip(language.getCorrectedLabel("copy")));
+        // bPaste.setToolTipText(getToolTip(language.getCorrectedLabel("paste")));
+        bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteTask")));
+        bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesTask")));
+        bUndo.setToolTipText(getToolTip(language.getCorrectedLabel("undo")));
+        bRedo.setToolTipText(getToolTip(language.getCorrectedLabel("redo")));
+        getTabs().setTitleAt(1, language.getCorrectedLabel("human"));
     }
 
     /** Invoked when a key has been pressed. */
@@ -1009,22 +979,21 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JMenuItem) {
             String arg = evt.getActionCommand();
-            if (arg.equals(correctLabel(language.getText("preview")))) {
+            if (arg.equals(language.getCorrectedLabel("preview"))) {
                 previewPrint();
-            } else if (arg.equals(correctLabel(language.getText("deleteTask")))) {
+            } else if (arg.equals(language.getCorrectedLabel("deleteTask"))) {
                 deleteTasks(true);
-            } else if (arg.equals(correctLabel(language
-                    .getText("projectCalendar")))) {
+            } else if (arg.equals(language.getCorrectedLabel("projectCalendar"))) {
                 System.out.println("Project calendar");
-            } else if (arg.equals(correctLabel(language.getText("webPage")))) {
+            } else if (arg.equals(language.getCorrectedLabel("webPage"))) {
                 try {
                     openWebPage();
                 } catch (Exception e) {
                     System.err.println(e);
                 }
-            } else if (arg.equals(correctLabel(language.getText("about")))) {
+            } else if (arg.equals(language.getCorrectedLabel("about"))) {
                 aboutDialog();
-            } else if (arg.equals(correctLabel(language.getText("sendMail")))) {
+            } else if (arg.equals(language.getCorrectedLabel("sendMail"))) {
                 getTabs().setSelectedIndex(1);
                 getResourcePanel().sendMail(this);
             }
@@ -1131,10 +1100,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             getStatusBar().setSecondText("");
         else
             getStatusBar().setSecondText(
-                    correctLabel(language.getText("task")) + " : "
+                    language.getCorrectedLabel("task") + " : "
                             + getTaskManager().getTaskCount() + "  "
-                            + correctLabel(language.getText("resources"))
-                            + " : " + resp.nbPeople());
+                            + language.getCorrectedLabel("resources") + " : "
+                            + resp.nbPeople());
     }
 
     /** Print the project */
