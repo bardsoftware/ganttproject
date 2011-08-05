@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2009 Dmitry Barashev
+Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -143,7 +143,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     }
 
     public String[] getFileExtensions() {
-        return new String[]{"pdf"};
+        return new String[] {"pdf"};
     }
 
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
@@ -320,10 +320,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     static class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
         static List<String> ourSizes = new ArrayList<String>();
         static {
-            Field[] fields = PageSize.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType().equals(Rectangle.class)) {
-                    ourSizes.add(fields[i].getName());
+            for (Field field : PageSize.class.getDeclaredFields()) {
+                if (field.getType().equals(Rectangle.class)) {
+                    ourSizes.add(field.getName());
                 }
             }
         }
@@ -333,16 +332,16 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private IGanttProject myProject;
         private UIFacade myUIFacade;
         private String myLeftSubcolontitle;
-        private BooleanOption myShowNotesOption = new DefaultBooleanOption("export.itext.showNotes");
-        private BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
-        private EnumerationOption myPageSizeOption = new DefaultEnumerationOption(
+        private final BooleanOption myShowNotesOption = new DefaultBooleanOption("export.itext.showNotes");
+        private final BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
+        private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption<String>(
                 "export.itext.pageSize", ourSizes);
-        private GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", new GPOption[] {
+        private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", new GPOption[] {
                 myPageSizeOption, myLandscapeOption});
-        private GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data", new GPOption[] {
+        private final GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data", new GPOption[] {
                 myShowNotesOption});
         private boolean isColontitleEnabled = false;
-        private Properties myProperties;
+        private final Properties myProperties;
         private FontSubstitutionModel mySubstitutionModel;
 
         ThemeImpl(URL url, String localizedName) {
