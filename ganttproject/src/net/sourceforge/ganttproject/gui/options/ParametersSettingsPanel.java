@@ -27,7 +27,6 @@ import javax.swing.SpinnerNumberModel;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Panel to edit the project properties.
@@ -47,9 +46,8 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     private final GanttProject appli;
 
     public ParametersSettingsPanel(GanttProject parent) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "parameters")), GanttLanguage.getInstance().getText(
-                "settingsParameters"));
+        super(language.getCorrectedLabel("parameters"), language
+                .getText("settingsParameters"));
 
         appli = parent;
 

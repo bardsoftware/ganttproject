@@ -38,8 +38,7 @@ public class ServerDialog extends GeneralDialog {
      * @see net.sourceforge.ganttproject.gui.GeneralDialog#constructSections()
      */
     public void constructSections() {
-        addObject(language.correctLabel(language.getText("openFromServer")),
-                null);
+        addObject(language.getCorrectedLabel("openFromServer"), null);
     }
 
     /*

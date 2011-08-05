@@ -17,16 +17,14 @@
 package net.sourceforge.ganttproject.gui.options;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author athomas Simple class for welcome panel.
  */
 public class WelcomeSettingsPanel extends GeneralOptionPanel {
     public WelcomeSettingsPanel(GanttProject parent) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "settings")), GanttLanguage.getInstance().getText(
-                "settingsWelcome"));
+        super(language.getCorrectedLabel("settings"), language
+                .getText("settingsWelcome"));
 
         applyComponentOrientation(language.getComponentOrientation());
     }

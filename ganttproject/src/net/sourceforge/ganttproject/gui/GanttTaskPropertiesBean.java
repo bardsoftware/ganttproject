@@ -446,9 +446,8 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         constructResourcesPanel();
 
-        tabbedPane.addTab(GanttProject.correctLabel(language.getText("human")),
-                new ImageIcon(getClass().getResource("/icons/res_16.gif")),
-                resourcesPanel);
+        tabbedPane.addTab(language.getCorrectedLabel("human"), new ImageIcon(
+                getClass().getResource("/icons/res_16.gif")), resourcesPanel);
 
         setLayout(new BorderLayout());
 

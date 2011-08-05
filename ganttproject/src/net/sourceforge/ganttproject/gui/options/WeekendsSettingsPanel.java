@@ -19,13 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.options;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.I18N;
 import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -44,9 +42,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
     private final GPCalendar calendar;
 
     public WeekendsSettingsPanel(IGanttProject project) {
-        super(GanttProject.correctLabel(
-                GanttLanguage.getInstance().getText("weekends")),
-                GanttLanguage.getInstance().getText("settingsWeekends"));
+        super(language.getCorrectedLabel("weekends"), language
+                .getText("settingsWeekends"));
 
         this.project = project;
         calendar = new WeekendCalendarImpl();

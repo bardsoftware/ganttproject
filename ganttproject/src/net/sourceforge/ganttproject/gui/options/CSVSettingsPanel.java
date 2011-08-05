@@ -26,10 +26,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author dbarashev@gmail.com Major rewrite.
@@ -72,9 +70,8 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     private JComboBox myFieldSeparatorCombo;
 
     public CSVSettingsPanel(CSVOptions csvOptions) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "csvexport")), GanttLanguage.getInstance().getText(
-                "settingsCVSExport"));
+        super(language.getCorrectedLabel("csvexport"), language
+                .getText("settingsCVSExport"));
         myCsvOptions = csvOptions;
 
         vb.add(createSeparatorSettingsPanel());
