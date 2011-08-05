@@ -4,9 +4,9 @@
 package net.sourceforge.ganttproject.calendar;
 
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -99,9 +99,13 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
 
     }
 
-    public Collection<Date> getPublicHolidays() {
-        // TODO Auto-generated method stub
+    public Iterator<Date> getPublicHolidays() {
+        // Nothing needs to be done
         return null;
+    }
+    
+    public void clearPublicHolidays() {
+        // Nothing needs to be done
     }
 
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {

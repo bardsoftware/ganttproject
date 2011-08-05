@@ -215,10 +215,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     public boolean ensureProjectSaved(IGanttProject project) {
         if (project.isModified()) {
             UIFacade.Choice saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"), i18n.getText("warning"));
-			if (UIFacade.Choice.CANCEL == saveChoice) {
+            if (UIFacade.Choice.CANCEL == saveChoice) {
                 return false;
             }
-			if (UIFacade.Choice.YES == saveChoice) {
+            if (UIFacade.Choice.YES == saveChoice) {
                 try {
                     saveProject(project);
                 } catch (Exception e) {
@@ -312,14 +312,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             myDocumentManager.getWebDavLockTimeoutOption().getValue());
         uc.show(isOpenUrl);
         if (uc.getChoice() == UIFacade.Choice.OK) {
-            document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
-            myDocumentManager.getLastWebDAVDocumentOption().lock();
+            if (!sameDocument(document, uc)) {
+                document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
+            }
             myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
-            myDocumentManager.getLastWebDAVDocumentOption().commit();
             if (uc.isTimeoutEnabled()) {
                 HttpDocument.setLockDAVMinutes(uc.getTimeout());
                 myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-                myDocumentManager.getWebDavLockTimeoutOption().commit();
             } else {
                 HttpDocument.setLockDAVMinutes(-1);
             }
@@ -328,5 +327,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             document = null;
         }
         return document;
+    }
+
+    private boolean sameDocument(Document document, GanttURLChooser uc) {
+        if (document == null) {
+            return false;
+        }
+        return document.getURLPath().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
+            && document.getPassword().equals(uc.getPassword());
     }
 }

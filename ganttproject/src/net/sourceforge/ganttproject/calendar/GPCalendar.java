@@ -4,8 +4,8 @@
 package net.sourceforge.ganttproject.calendar;
 
 import java.net.URL;
-import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -52,7 +52,11 @@ public interface GPCalendar {
 
     public void setPublicHolidays(URL calendar, IGanttProject gp);
 
-    public Collection<Date> getPublicHolidays();
+    /** Clears all defined public holidays */
+    public void clearPublicHolidays();
+
+    /** @return an iterator which iterated over the defined (public) holidays */
+    public Iterator<Date> getPublicHolidays();
 
     public enum DayType {
         WORKING, NON_WORKING, WEEKEND, HOLIDAY

@@ -97,6 +97,7 @@ public interface UIFacade {
 
     void setResourceDividerLocation(int location);
 
+    /** Refreshes the UI (ie repaints all tasks in the chart) */
     void refresh();
 
     Frame getMainFrame();

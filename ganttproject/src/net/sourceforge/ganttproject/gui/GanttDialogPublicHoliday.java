@@ -24,7 +24,7 @@ public class GanttDialogPublicHoliday {
 
     public GanttDialogPublicHoliday(IGanttProject project) {
         publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
-        for (Iterator<Date> iter = project.getActiveCalendar().getPublicHolidays().iterator(); iter.hasNext();) {
+        for (Iterator<Date> iter = project.getActiveCalendar().getPublicHolidays(); iter.hasNext();) {
             Date d = iter.next();
             publicHolidays.add(new DateIntervalListEditor.DateInterval(d,d));
         }
