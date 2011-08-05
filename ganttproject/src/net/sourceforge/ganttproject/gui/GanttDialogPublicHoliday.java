@@ -6,7 +6,6 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -24,8 +23,7 @@ public class GanttDialogPublicHoliday {
 
     public GanttDialogPublicHoliday(IGanttProject project) {
         publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
-        for (Iterator<Date> iter = project.getActiveCalendar().getPublicHolidays(); iter.hasNext();) {
-            Date d = iter.next();
+        for (Date d : project.getActiveCalendar().getPublicHolidays()) {
             publicHolidays.add(new DateIntervalListEditor.DateInterval(d,d));
         }
 
