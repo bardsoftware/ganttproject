@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -40,9 +58,6 @@ import org.jdesktop.swing.treetable.TreeTableModel;
 
 public class GPTreeTableBase extends JNTreeTable{
     private final IGanttProject myProject;
-    protected IGanttProject getProject() {
-        return myProject;
-    }
 
     protected GPTreeTableBase(IGanttProject project, TreeTableModel model) {
         super(new JXTreeTable(model) {
@@ -54,9 +69,12 @@ public class GPTreeTableBase extends JNTreeTable{
                 putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
                 return result;
             }
-
         });
         myProject = project;
+    }
+
+    protected IGanttProject getProject() {
+        return myProject;
     }
 
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
@@ -71,7 +89,7 @@ public class GPTreeTableBase extends JNTreeTable{
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(getTreeTableModel().getColumnClass(modelIndex));
-        if (defaultEditor!=null) {
+        if (defaultEditor != null) {
             result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
         }
         return result;
@@ -85,22 +103,22 @@ public class GPTreeTableBase extends JNTreeTable{
                         GanttLanguage.getInstance().getMediumDateFormat(),
                         GanttLanguage.getInstance().getShortDateFormat(),
                 };
-                for (int i=0; i<formats.length; i++) {
+                for (DateFormat format : formats) {
                     try {
-                        Date typedDate = formats[i].parse(dateString);
+                        Date typedDate = format.parse(dateString);
                         Calendar typedCal = CalendarFactory.newCalendar();
                         typedCal.setTime(typedDate);
                         Calendar projectStartCal = CalendarFactory.newCalendar();
                         projectStartCal.setTime(myProject.getTaskManager().getProjectStart());
                         int yearDiff = Math.abs(typedCal.get(Calendar.YEAR) - projectStartCal.get(Calendar.YEAR));
                         if (yearDiff > 1500) {
-                            AttributedCharacterIterator iter = formats[i].formatToCharacterIterator(typedDate);
+                            AttributedCharacterIterator iter = format.formatToCharacterIterator(typedDate);
                             int additionalZeroes = -1;
                             StringBuffer result = new StringBuffer();
-                            for (char c = iter.first(); c!=AttributedCharacterIterator.DONE; c = iter.next()) {
+                            for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next()) {
                                 if (iter.getAttribute(DateFormat.Field.YEAR)!=null && additionalZeroes==-1) {
                                     additionalZeroes = iter.getRunLimit(DateFormat.Field.YEAR) - iter.getIndex();
-                                    for (int j=0; j<additionalZeroes; j++) {
+                                    for (int j = 0; j < additionalZeroes; j++) {
                                         result.append('0');
                                     }
                                 }
@@ -114,13 +132,10 @@ public class GPTreeTableBase extends JNTreeTable{
                         return typedDate;
                     }
                     catch (ParseException e) {
-                        if (i+1 == formats.length) {
-                            return null;
-                        }
+                        // Continue with next format and hope for the best
                     }
                 }
                 return null;
-
             }
         };
     }
@@ -133,12 +148,11 @@ public class GPTreeTableBase extends JNTreeTable{
         return scrollPane;
     }
 
-
     private static abstract class DateCellEditor extends DefaultCellEditor {
-        // normal textfield background color
+        /** normal textfield background color */
         private final Color colorNormal = null;
 
-        // error textfield background color (when the date isn't correct
+        /** error textfield background color (when the date isn't correct) */
         private final Color colorError = new Color(255, 125, 125);
 
         private Date myDate;
@@ -160,13 +174,12 @@ public class GPTreeTableBase extends JNTreeTable{
         protected abstract Date parseDate(String dateString);
 
         public boolean stopCellEditing() {
-            final String dateString = ((JTextComponent)getComponent()).getText();
+            final String dateString = ((JTextComponent) getComponent()).getText();
             Date parsedDate = parseDate(dateString);
-            if (parsedDate==null) {
+            if (parsedDate == null) {
                 getComponent().setBackground(colorError);
                 return false;
-            }
-            else {
+            } else {
                 myDate = parsedDate;
                 getComponent().setBackground(colorNormal);
                 super.fireEditingStopped();
@@ -181,18 +194,19 @@ public class GPTreeTableBase extends JNTreeTable{
         protected VscrollAdjustmentListener(boolean calculateMod) {
             isMod = calculateMod;
         }
+
         protected abstract TimelineChart getChart();
 
         public void adjustmentValueChanged(AdjustmentEvent e) {
-            if (getChart() == null) {
-                return;
+            if (getChart() != null) {
+                if (isMod) {
+                    getChart().getModel().setVerticalOffset(
+                            e.getValue() % getTreeTable().getRowHeight());
+                } else {
+                    getChart().getModel().setVerticalOffset(e.getValue());
+                }
+                getChart().reset();
             }
-            if (isMod) {
-                getChart().getModel().setVerticalOffset(e.getValue() % getTreeTable().getRowHeight());
-            } else {
-                getChart().getModel().setVerticalOffset(e.getValue());
-            }
-            getChart().reset();
         }
     }
 
@@ -214,8 +228,8 @@ public class GPTreeTableBase extends JNTreeTable{
                     jp.setVisible(false);
                 }
                 repaint();
-              }
-              });
+            }
+        });
         container.add(jp, BorderLayout.WEST);
     }
 

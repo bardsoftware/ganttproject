@@ -274,7 +274,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
-    /** Show and the log the exception */
+    /** Show and log the exception */
     public void showErrorDialog(Throwable e) {
         // TODO To a nice user experience, the error message and the stack trace should be separated. Where the exception is hidden in a foldable component.
         // or maybe add a message that the complete exception can be found in the logs and remove the exception form the dialog completely.
