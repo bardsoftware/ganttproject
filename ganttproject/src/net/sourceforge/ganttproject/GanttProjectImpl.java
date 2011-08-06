@@ -58,7 +58,9 @@ public class GanttProjectImpl implements IGanttProject {
     private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
 
     public GanttProjectImpl() {
-        myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole());
+        myResourceManager = new HumanResourceManager(
+                RoleManager.Access.getInstance().getDefaultRole(),
+                new CustomColumnsManager(new CustomColumnsStorage()));
         myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
         myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
         myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT, Color.BLUE, true);
@@ -176,8 +178,9 @@ public class GanttProjectImpl implements IGanttProject {
         // TODO Auto-generated method stub
         return null;
     }
+
     public CustomPropertyManager getResourceCustomPropertyManager() {
-        return myResourceManager;
+        return myResourceManager.getCustomPropertyManager();
     };
 
     private static class TaskManagerConfigImpl implements TaskManagerConfig {

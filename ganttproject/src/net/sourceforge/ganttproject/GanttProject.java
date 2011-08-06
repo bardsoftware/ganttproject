@@ -185,9 +185,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Is the application only for viewer. */
     public boolean isOnlyViewer;
 
-    /** The list of all managers installed in this project */
-    private Hashtable<String, Object> managerHash = new Hashtable<String, Object>();
-
     private ResourceActionSet myResourceActions;
 
     private final TaskManager myTaskManager;
@@ -1544,6 +1541,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private ParserFactory myParserFactory;
 
+    private HumanResourceManager myHumanResourceManager;
+
+    private RoleManager myRoleManager;
+
     private static WindowListener ourWindowListener;
 
     /////////////////////////////////////////////////////////
@@ -1585,15 +1586,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public HumanResourceManager getHumanResourceManager() {
-        HumanResourceManager result = (HumanResourceManager) managerHash
-                .get(HUMAN_RESOURCE_MANAGER_ID);
-        if (result == null) {
-            result = new HumanResourceManager(getRoleManager().getDefaultRole());
-            // result.addView(getPeople());
-            managerHash.put(HUMAN_RESOURCE_MANAGER_ID, result);
-            result.addView(this);
+        if (myHumanResourceManager == null) {
+            myHumanResourceManager = new HumanResourceManager(getRoleManager().getDefaultRole(), getResourceCustomPropertyManager());
+            myHumanResourceManager.addView(this);
         }
-        return result;
+        return myHumanResourceManager;
     }
 
     public TaskManager getTaskManager() {
@@ -1601,12 +1598,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public RoleManager getRoleManager() {
-        RoleManager result = (RoleManager) managerHash.get(ROLE_MANAGER_ID);
-        if (result == null) {
-            result = RoleManager.Access.getInstance();
-            managerHash.put(ROLE_MANAGER_ID, result);
+        if (myRoleManager == null) {
+            myRoleManager = RoleManager.Access.getInstance();
         }
-        return result;
+        return myRoleManager;
     }
 
     public Document getDocument() {
