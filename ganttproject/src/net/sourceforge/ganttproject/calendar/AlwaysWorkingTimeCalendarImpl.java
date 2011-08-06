@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -100,8 +101,12 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public Collection<Date> getPublicHolidays() {
-        // TODO Auto-generated method stub
-        return null;
+        // Return an empty collection, as there are no holidays in this calendar
+        return Collections.unmodifiableCollection(new LinkedHashSet<Date>());
+    }
+    
+    public void clearPublicHolidays() {
+        // Nothing needs to be done
     }
 
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {

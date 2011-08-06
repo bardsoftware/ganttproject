@@ -16,7 +16,7 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
 
     public HolidayTagHandler(IGanttProject project) {
         this.project = project;
-        project.getActiveCalendar().getPublicHolidays().clear();
+        project.getActiveCalendar().clearPublicHolidays();
     }
 
     /**
