@@ -28,7 +28,7 @@ public class TestSetupHelper {
             myTimeUnitStack = new GPTimeUnitStack(GanttLanguage.getInstance());
             myRoleManager = new RoleManagerImpl();
             myResourceManager = new HumanResourceManager(myRoleManager
-                    .getDefaultRole());
+                    .getDefaultRole(), null);
         }
 
         public Color getDefaultColor() {
