@@ -26,15 +26,13 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
      * CustomColumnName(String) -> Value (Object)
      */
     private final Map<String, Object> mapCustomColumnValue = new HashMap<String, Object>();
-    private final CustomColumnsStorage myColumnStorage;
-    private final CustomColumnsManager myManager;
+    private final CustomPropertyManager myManager;
 
     /**
      * Creates an instance of CustomColumnsValues.
      */
-    public CustomColumnsValues(CustomColumnsStorage columnStorage) {
-        myColumnStorage = columnStorage;
-        myManager = new CustomColumnsManager(myColumnStorage);
+    public CustomColumnsValues(CustomPropertyManager customPropertyManager) {
+        myManager = customPropertyManager;
     }
 
     /**
@@ -51,23 +49,27 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
      */
     public void setValue(String customColName, Object value)
             throws CustomColumnsException {
-        if (!myColumnStorage.exists(customColName)) {
-            throw new CustomColumnsException(
-                    CustomColumnsException.DO_NOT_EXIST, customColName);
+        CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, customColName);
+        if (def == null) {
+            throw new CustomColumnsException(CustomColumnsException.DO_NOT_EXIST, customColName);
         }
+        setValue(def, value);
+    }
 
+    public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
         if (value == null) {
-            mapCustomColumnValue.remove(customColName);
+            mapCustomColumnValue.remove(def.getName());
             return;
         }
-        Class<?> c1 = myColumnStorage.getCustomColumn(customColName).getType();
+        Class<?> c1 = def.getType();
         Class<?> c2 = value.getClass();
         if (!c1.isAssignableFrom(c2)) {
             throw new CustomColumnsException(
                     CustomColumnsException.CLASS_MISMATCH,
-                    "Failed to set value="+value+". value class="+c2+", column class="+c1);
+                    "Failed to set value=" + value + ". value class=" + c2
+                            + ", column class=" + c1);
         } else {
-            mapCustomColumnValue.put(customColName, value);
+            mapCustomColumnValue.put(def.getName(), value);
         }
     }
 
@@ -108,7 +110,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     }
 
     public Object clone() {
-        CustomColumnsValues res = new CustomColumnsValues(myColumnStorage);
+        CustomColumnsValues res = new CustomColumnsValues(myManager);
         res.mapCustomColumnValue.putAll(this.mapCustomColumnValue);
         return res;
     }
@@ -140,9 +142,16 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         return null;
     }
     @Override
-    public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) {
-        // TODO Auto-generated method stub
-        return null;
+    public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
+        CustomPropertyDefinition defStub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+                definition.getTypeAsString(), valueAsString);
+        try {
+            setValue(definition, defStub.getDefaultValue());
+        } catch (CustomColumnsException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return new CustomPropertyImpl(definition, defStub.getDefaultValue());
     }
 
     private static class CustomPropertyImpl implements CustomProperty {

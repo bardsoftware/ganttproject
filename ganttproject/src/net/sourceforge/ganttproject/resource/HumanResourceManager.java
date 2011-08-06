@@ -36,7 +36,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 /**
  * @author barmeier
  */
-public class HumanResourceManager implements CustomPropertyManager {
+public class HumanResourceManager {
 
     private List<ResourceView> myViews = new ArrayList<ResourceView>();
 
@@ -46,12 +46,11 @@ public class HumanResourceManager implements CustomPropertyManager {
 
     private final Role myDefaultRole;
 
-    /* customFields maintains a list of custom field names
-     * and their default values */
-    private final Map<String, CustomPropertyDefinition> customFields = new HashMap<String, CustomPropertyDefinition>();
+    private final CustomPropertyManager myCustomPropertyManager;
 
-    public HumanResourceManager(Role defaultRole) {
+    public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager) {
         myDefaultRole = defaultRole;
+        myCustomPropertyManager = customPropertyManager;
     }
 
     public HumanResource newHumanResource() {
@@ -78,35 +77,10 @@ public class HumanResourceManager implements CustomPropertyManager {
         fireResourceAdded(resource);
     }
 
-    public void addCustomField(CustomPropertyDefinition definition) {
-        customFields.put(definition.getName(), definition);
-
-        /* all the existent resources are added the new property field */
-        Iterator<HumanResource> it = resources.iterator();
-        while (it.hasNext()) {
-            it.next().setCustomField(definition.getName(), definition.getDefaultValue());
-        }
-    }
-
-    /** @return true if title is already used for a custom column */
-    public boolean checkCustomField(String title){
-        return customFields.containsKey(title);
-    }
-
-    public void removeCustomField(String title) {
-        customFields.remove(title);
-
-        /* the property field is removed from all the existent resources */
-        Iterator<HumanResource> it = resources.iterator();
-        while (it.hasNext()) {
-            it.next().removeCustomField(title);
-        }
-    }
-
     public HumanResource getById(int id) {
         // Linear search is not really efficient, but we do not have so many
         // resources !?
-    	HumanResource pr = null;
+        HumanResource pr = null;
         for (int i = 0; i < resources.size(); i++)
             if (resources.get(i).getId() == id) {
                 pr = resources.get(i);
@@ -222,16 +196,7 @@ public class HumanResourceManager implements CustomPropertyManager {
     }
 
     public CustomPropertyManager getCustomPropertyManager() {
-        return this;
-    }
-
-    public List<CustomPropertyDefinition> getDefinitions() {
-        List<CustomPropertyDefinition> result = new ArrayList<CustomPropertyDefinition>(customFields.values());
-        return result;
-    }
-
-    public CustomPropertyDefinition getCustomPropertyDefinition(String nextName) {
-        return customFields.get(nextName);
+        return myCustomPropertyManager;
     }
 
     static String getValueAsString(Object value) {
@@ -248,32 +213,5 @@ public class HumanResourceManager implements CustomPropertyManager {
             result = null;
         }
         return result;
-    }
-
-    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
-        final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        CustomPropertyDefinition result = new DefaultCustomPropertyDefinition(name, id, stubDefinition);
-        addCustomField(result);
-        return result;
-    }
-
-    public void deleteDefinition(CustomPropertyDefinition def) {
-        removeCustomField(def.getID());
-    }
-
-    public void importData(CustomPropertyManager source) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void addListener(CustomPropertyListener listener) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public CustomPropertyDefinition createDefinition(String typeAsString,
-            String colName, String defValue) {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

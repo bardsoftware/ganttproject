@@ -129,7 +129,7 @@ public class TaskImpl implements Task {
         bExpand = true;
         myColor = null;
 
-        customValues = new CustomColumnsValues(myManager.getCustomColumnStorage());
+        customValues = new CustomColumnsValues(myManager.getCustomPropertyManager());
     }
 
     protected TaskImpl(TaskImpl copy, boolean isUnplugged) {

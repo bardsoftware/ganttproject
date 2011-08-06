@@ -436,12 +436,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 //        return null;
 //    }
 
-    /** checks if the given column is removable */
-    public boolean checkRemovableCol(String name) {
-        /* only custom columns are removable */
-        return myResourceManager.checkCustomField(name);
-    }
-
     public void resourceChanged(HumanResource resource) {
         ResourceNode node = getNodeForResource(resource);
         if (node == null) {

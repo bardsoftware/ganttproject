@@ -18,68 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
+
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.gui.ResourceDialogCustomColumn;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceNode;
-import net.sourceforge.ganttproject.resource.ResourceColumn;
-import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManager.RoleEvent;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import org.jdesktop.swing.decorator.AlternateRowHighlighter;
-import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
-import org.jdesktop.swing.decorator.Highlighter;
-import org.jdesktop.swing.decorator.HighlighterPipeline;
-import org.jdesktop.swing.table.TableColumnExt;
 
 public class ResourceTreeTable extends GPTreeTableBase {
     private final RoleManager myRoleManager;
@@ -133,13 +93,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
         myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
     }
 
-//    private void deleteAllColumns() {
-//        List<CustomPropertyDefinition> customPropsDefinitions = getDefinitions();
-//        for (CustomPropertyDefinition customPropsDefinition : customPropsDefinitions) {
-//            deleteCustomColumn(customPropsDefinition.getName());
-//        }
-//        myResourceTreeModel.decreaseCustomPropertyIndex(customPropsDefinitions.size());
-//    }
     public boolean isVisible(DefaultMutableTreeNode node) {
         return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
     }
@@ -184,42 +137,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
         getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID())
             .getTableColumnExt().setCellEditor(new DefaultCellEditor(comboBox));
     }
-
-//    private void initColumnsAlignements() {
-//        // setColumnHorizontalAlignment(ResourceTreeTableModel.strResourceName,
-//        // SwingConstants.LEFT);
-//        setColumnHorizontalAlignment(ResourceTreeTableModel.strResourceRole,
-//                SwingConstants.LEFT);
-//        setColumnHorizontalAlignment(ResourceTreeTableModel.strResourceEMail,
-//                SwingConstants.LEFT);
-//        setColumnHorizontalAlignment(ResourceTreeTableModel.strResourcePhone,
-//                SwingConstants.RIGHT);
-//        setColumnHorizontalAlignment(
-//                ResourceTreeTableModel.strResourceRoleForTask,
-//                SwingConstants.LEFT);
-//
-//        // Set the columns widths
-//        getTable().getColumnExt(ResourceTreeTableModel.strResourceName)
-//                .setPreferredWidth(150);
-//        getTable().getColumnExt(ResourceTreeTableModel.strResourceRole)
-//                .setPreferredWidth(120);
-//        getTable().getColumnExt(ResourceTreeTableModel.strResourceEMail)
-//                .setPreferredWidth(100);
-//        getTable().getColumnExt(ResourceTreeTableModel.strResourcePhone)
-//                .setPreferredWidth(100);
-//        getTable().getColumnExt(ResourceTreeTableModel.strResourceRoleForTask)
-//                .setPreferredWidth(100);
-//        // getTable().getColumnExt(ResourceTreeTableModel.strResourceName)
-//        // .setMaxWidth(300);
-//        // getTable().getColumnExt(ResourceTreeTableModel.strResourceRole)
-//        // .setMaxWidth(300);
-//        // getTable().getColumnExt(ResourceTreeTableModel.strResourceEMail)
-//        // .setMaxWidth(300);
-//        // getTable().getColumnExt(ResourceTreeTableModel.strResourcePhone)
-//        // .setMaxWidth(300);
-//        // getTable().getColumnExt(ResourceTreeTableModel.strResourceRoleForTask)
-//        // .setMaxWidth(300);
-//    }
 
     /** @return the list of the selected nodes. */
     public DefaultMutableTreeNode[] getSelectedNodes() {
