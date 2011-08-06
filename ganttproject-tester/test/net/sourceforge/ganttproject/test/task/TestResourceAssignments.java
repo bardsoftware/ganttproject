@@ -113,7 +113,7 @@ public class TestResourceAssignments extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         myHumanResourceManager = new HumanResourceManager(RoleManager.Access
-                .getInstance().getDefaultRole());
+                .getInstance().getDefaultRole(), null);
         getResourceManager().create("test resource#1", 1);
         getResourceManager().create("test resource#2", 2);
         myTaskManager = newTaskManager();
