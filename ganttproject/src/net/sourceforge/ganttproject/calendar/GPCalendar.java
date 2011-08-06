@@ -52,6 +52,10 @@ public interface GPCalendar {
 
     public void setPublicHolidays(URL calendar, IGanttProject gp);
 
+    /** Clears all defined public holidays */
+    public void clearPublicHolidays();
+
+    /** @return an unmodifiable collection of (public) holidays */
     public Collection<Date> getPublicHolidays();
 
     public enum DayType {

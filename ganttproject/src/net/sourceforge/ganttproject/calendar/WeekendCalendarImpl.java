@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashSet;
@@ -229,9 +230,13 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     }
 
     public Collection<Date> getPublicHolidays() {
-        return publicHolidaysArray;
+        return Collections.unmodifiableCollection(publicHolidaysArray);
     }
 
+    public void clearPublicHolidays() {
+        publicHolidaysArray.clear();
+    }
+    
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());

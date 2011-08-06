@@ -1267,7 +1267,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                                 .openProject(document, getProject());
                     } catch (DocumentException e) {
                         if (!tryImportDocument(document)) {
-                            // TODO use the/a nicer error dialog
+                        	// TODO use the/a nicer error dialog
                             getUIFacade().showErrorDialog(e);
                         }
                     } catch (IOException e) {
@@ -1443,7 +1443,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public static class Args {
         @Parameter(names = "-log", description = "Enable logging")
-        public boolean log = false;
+        public boolean log = true;
 
         @Parameter(names = "-log_file", description = "Log file name")
         public String logFile = "";
@@ -1490,46 +1490,46 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
-
+        
         // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
-            // Export succeeded so exit applciation
+        	// Export succeeded so exit applciation
             return false;
         }
 
-            GanttSplash splash = new GanttSplash();
-            try {
-                splash.setVisible(true);
-                GanttProject ganttFrame = new GanttProject(false);
-                System.err.println("Main frame created");
-                if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
-                    ganttFrame.openStartupDocument(mainArgs.file.get(0));
-                }
-                ganttFrame.setVisible(true);
-                if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
-                    OSXAdapter.registerMacOSXApplication(ganttFrame);
-                }
-                ganttFrame.getActiveChart().reset();
-                return true;
-            } catch (Throwable e) {
-                e.printStackTrace();
-                return false;
-            } finally {
-                splash.close();
-                System.err.println("Splash closed");
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                            @Override
-                            public void uncaughtException(Thread t, Throwable e) {
-                                GPLogger.log(e);
-                            }
-                        });
-                    }
-                });
-            }
-        }
+		GanttSplash splash = new GanttSplash();
+		try {
+		    splash.setVisible(true);
+		    GanttProject ganttFrame = new GanttProject(false);
+		    System.err.println("Main frame created");
+		    if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
+		        ganttFrame.openStartupDocument(mainArgs.file.get(0));
+		    }
+		    ganttFrame.setVisible(true);
+		    if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
+		        OSXAdapter.registerMacOSXApplication(ganttFrame);
+		    }
+		    ganttFrame.getActiveChart().reset();
+		    return true;
+		} catch (Throwable e) {
+		    e.printStackTrace();
+		    return false;
+		} finally {
+		    splash.close();
+		    System.err.println("Splash closed");
+		    SwingUtilities.invokeLater(new Runnable() {
+		        @Override
+		        public void run() {
+		            Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+		                @Override
+		                public void uncaughtException(Thread t, Throwable e) {
+		                    GPLogger.log(e);
+		                }
+		            });
+		        }
+		    });
+		}
+    }
 
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
 
@@ -1653,6 +1653,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             myPreviousStates.get(i).remove();
         }
         myPreviousStates = new ArrayList<GanttPreviousState>();
+        getTaskManager().getCalendar().clearPublicHolidays();
         setModified(false);
     }
 
@@ -1754,7 +1755,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
-                    getTaskManager().processCriticalPath(
+            getTaskManager().processCriticalPath(
                     (Task) ((TaskNode) tree.getRoot()).getUserObject());
             ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
             for (TaskNode projectTask : projectTasks) {
