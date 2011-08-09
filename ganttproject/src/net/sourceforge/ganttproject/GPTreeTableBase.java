@@ -95,6 +95,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     private final CustomPropertyManager myCustomPropertyManager;
 
     protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
+        private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
         private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
         @Override
         public int getSize() {
@@ -106,17 +107,40 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
         @Override
         public void clear() {
+            clearUiColumns();
+            myColumns.clear();
+            new Exception("clear").printStackTrace();
+        }
+
+        private void clearUiColumns() {
+            List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
+            for (int i = 0; i < columns.size(); i++) {
+                getTable().removeColumn(columns.get(i));
+            }
         }
         @Override
-        public void add(String name, int order, int width) {
+        public void add(String id, int order, int width) {
+            ColumnImpl column = findColumnByID(id);
+            if (column == null) {
+                CustomPropertyDefinition def = myCustomPropertyManager.getCustomPropertyDefinition(id);
+                if (def == null) {
+                    return;
+                }
+                ColumnStub columnStub = new TableHeaderUIFacade.ColumnStub(id, def.getName(), true, getTable().getColumnCount(), width);
+                column = createColumn(getSize(), columnStub);
+            }
+            if (column == null) {
+                return;
+            }
+            insertColumnIntoUi(column);
         }
         @Override
         public void importData(TableHeaderUIFacade source) {
-        }
-
-        protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
-            for (int i = 0; i < stubs.size(); i++) {
-                createColumn(i, stubs.get(i));
+            for (int i = 0; i < source.getSize(); i++) {
+                Column stub = source.getField(i);
+                if (!hasColumn(stub)) {
+                    createColumn(getModelIndex(stub), stub);
+                }
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
                 @Override
@@ -127,6 +151,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                     return left.getStub().getOrder() - right.getStub().getOrder();
                 }
             });
+            clearUiColumns();
             for (ColumnImpl column : myColumns) {
                 if (column.getStub().isVisible()) {
                     insertColumnIntoUi(column);
@@ -134,27 +159,64 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             }
         }
 
+        private boolean hasColumn(Column c) {
+            for (Column customColumn : myColumns) {
+                if (c.getID().equals(customColumn.getID())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private int getModelIndex(Column c) {
+            for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
+                if (c.getID().equals(myDefaultColumnStubs.get(i).getID())) {
+                    return i;
+                }
+            }
+            List<CustomPropertyDefinition> definitions = myCustomPropertyManager.getDefinitions();
+            for (int i = 0; i < definitions.size(); i++) {
+                if (definitions.get(i).getID().equals(c.getID())) {
+                    return myDefaultColumnStubs.size() + i;
+                }
+            }
+            assert false : "Column=" + c + " was not defined";
+            return -1;
+        }
+
+        protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
+            myDefaultColumnStubs.addAll(stubs);
+            /*
+            for (int i = 0; i < stubs.size(); i++) {
+                createColumn(i, stubs.get(i));
+            }
+            */
+        }
+
         protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
+            System.err.println("creating column, modelindex=" + modelIndex + " stub=" + stub.getName());
             TableColumnExt tableColumn = newTableColumnExt(modelIndex);
             tableColumn.setPreferredWidth(stub.getWidth());
+            tableColumn.setIdentifier(stub.getID());
             ColumnImpl result = new ColumnImpl(getTreeTable(), tableColumn, stub);
             myColumns.add(result);
             return result;
         }
 
         protected void insertColumnIntoUi(ColumnImpl column) {
+            new Exception("inserting column=" + column.getID()).printStackTrace();
             getTable().addColumn(column.myTableColumn);
             int align = getTable().getModel().getColumnClass(column.myTableColumn.getModelIndex()).equals(GregorianCalendar.class)
                 ? SwingConstants.RIGHT : SwingConstants.CENTER;
-            setColumnHorizontalAlignment(column.getName(), align);
-        }
-
-        protected void clearColumns() {
-            List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
-            for (int i = 0; i < columns.size(); i++) {
-                getTable().removeColumn(columns.get(i));
+            try {
+                setColumnHorizontalAlignment(column.getID(), align);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                System.err.println("Failed to insert column=" + column.getName());
+                for (int i = 0; i < getTable().getColumns().size(); i++) {
+                    System.err.println(getTable().getColumns().get(i));
+                }
             }
-            myColumns.clear();
         }
 
         protected void renameColumn(CustomPropertyDefinition definition) {
@@ -275,6 +337,16 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         myCustomPropertyManager = customPropertyManager;
         myUiFacade = uiFacade;
         myProject = project;
+        myProject.addProjectEventListener(new ProjectEventListener.Stub() {
+            @Override
+            public void projectClosed() {
+                getTableHeaderUiFacade().clear();
+            }
+            @Override
+            public void projectOpened() {
+                getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+            }
+        });
     }
 
     protected void init() {
@@ -359,7 +431,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(
             customColumn.getId(), customColumn.getName(), true, getTable().getColumnCount(), 100);
         ColumnImpl columnImpl = getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
-        getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
+        //getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
     }
 
     private void deleteCustomColumn(CustomColumn column) {
@@ -387,6 +459,10 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
     protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
         return myTableHeaderFacade;
+    }
+
+    protected List<TableHeaderUIFacade.Column> getDefaultColumns() {
+        return Collections.emptyList();
     }
 
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {

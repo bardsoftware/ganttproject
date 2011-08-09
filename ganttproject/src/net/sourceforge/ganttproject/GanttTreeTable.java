@@ -31,6 +31,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         super(project, uifacade, project.getTaskCustomColumnManager(), model);
         this.ttModel = model;
         myUIfacade = uifacade;
+        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
         init();
     }
 
@@ -70,16 +71,14 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
-    void reloadColumns() {
-        getTableHeaderUiFacade().clearColumns();
-        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
+    protected List<Column> getDefaultColumns() {
+        return DefaultColumn.getColumnStubs();
     }
 
     protected void init() {
         super.init();
         getTable().getColumnModel().addColumnModelListener((TableColumnModelListener) this.getTreeTableModel());
         getTable().getModel().addTableModelListener(new ModelListener());
-        reloadColumns();
         scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
             @Override
             protected TimelineChart getChart() {
