@@ -30,6 +30,8 @@ import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.jdesktop.swing.table.TableColumnExt;
+
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
@@ -83,11 +85,20 @@ public class ResourceTreeTable extends GPTreeTableBase {
         myRoleManager = project.getRoleManager();
         myRoleManager.addRoleListener(new RoleManager.Listener() {
             public void rolesChanged(RoleEvent e) {
-                setUpRolesRenderer();
-                setUpAssignementRolesRenderer();
+                setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE.getStub().getID()));
+                setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID()));
+            }
+            private void setEditor(ColumnImpl column) {
+                if (column == null || column.getTableColumnExt() == null) {
+                    return;
+                }
+                JComboBox comboBox = new JComboBox(getRoleManager().getEnabledRoles());
+                comboBox.setEditable(false);
+                column.getTableColumnExt().setCellEditor(new DefaultCellEditor(comboBox));
             }
         });
         myResourceTreeModel = model;
+        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
         setTreeTableModel(model);
         init();
         myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
@@ -97,9 +108,9 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
     }
 
-    void reloadColumns() {
-        getTableHeaderUiFacade().clearColumns();
-        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
+
+    protected List<Column> getDefaultColumns() {
+        return DefaultColumn.getColumnStubs();
     }
 
     /**
@@ -107,9 +118,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
      */
     protected void init() {
         super.init();
-        reloadColumns();
-        setUpRolesRenderer();
-        setUpAssignementRolesRenderer();
         scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
             @Override
             protected TimelineChart getChart() {
@@ -119,23 +127,18 @@ public class ResourceTreeTable extends GPTreeTableBase {
         });
     }
 
-    void setUpRolesRenderer() {
-        final JComboBox comboBox = new JComboBox(getRoleManager().getEnabledRoles());
-        comboBox.setEditable(false);
-        getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE.getStub().getID())
-        .getTableColumnExt().setCellEditor(new DefaultCellEditor(comboBox));
-    }
-
     private RoleManager getRoleManager() {
         return myRoleManager;
     }
 
-    void setUpAssignementRolesRenderer() {
-        final JComboBox comboBox = new JComboBox(getRoleManager().getEnabledRoles());
-        comboBox.setEditable(false);
-
-        getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID())
-            .getTableColumnExt().setCellEditor(new DefaultCellEditor(comboBox));
+    protected TableColumnExt newTableColumnExt(int modelIndex) {
+        TableColumnExt tableColumn = super.newTableColumnExt(modelIndex);
+        if (modelIndex == DefaultColumn.ROLE.ordinal() || modelIndex == DefaultColumn.ROLE_IN_TASK.ordinal()) {
+            JComboBox comboBox = new JComboBox(getRoleManager().getEnabledRoles());
+            comboBox.setEditable(false);
+            tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
+        }
+        return tableColumn;
     }
 
     /** @return the list of the selected nodes. */

@@ -3,6 +3,8 @@
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.util.List;
+
 
 public interface TableHeaderUIFacade {
     int getSize();
@@ -56,4 +58,29 @@ public interface TableHeaderUIFacade {
 
     }
 
+    class Immutable {
+        public static TableHeaderUIFacade fromList(final List<Column> columns) {
+            return new TableHeaderUIFacade() {
+                public int getSize() {
+                    return columns.size();
+                }
+
+                public Column getField(int index) {
+                    return columns.get(index);
+                }
+
+                public void clear() {
+                    throw new UnsupportedOperationException();
+                }
+
+                public void add(String name, int order, int width) {
+                    throw new UnsupportedOperationException();
+                }
+
+                public void importData(TableHeaderUIFacade source) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
 }
