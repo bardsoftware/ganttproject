@@ -109,7 +109,6 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         public void clear() {
             clearUiColumns();
             myColumns.clear();
-            new Exception("clear").printStackTrace();
         }
 
         private void clearUiColumns() {
@@ -186,15 +185,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
         protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
             myDefaultColumnStubs.addAll(stubs);
-            /*
-            for (int i = 0; i < stubs.size(); i++) {
-                createColumn(i, stubs.get(i));
-            }
-            */
         }
 
         protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
-            System.err.println("creating column, modelindex=" + modelIndex + " stub=" + stub.getName());
             TableColumnExt tableColumn = newTableColumnExt(modelIndex);
             tableColumn.setPreferredWidth(stub.getWidth());
             tableColumn.setIdentifier(stub.getID());
@@ -204,7 +197,6 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
 
         protected void insertColumnIntoUi(ColumnImpl column) {
-            new Exception("inserting column=" + column.getID()).printStackTrace();
             getTable().addColumn(column.myTableColumn);
             int align = getTable().getModel().getColumnClass(column.myTableColumn.getModelIndex()).equals(GregorianCalendar.class)
                 ? SwingConstants.RIGHT : SwingConstants.CENTER;
@@ -415,6 +407,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                         myUiFacade.refresh();
                     }
                 });
+        getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
     }
 
