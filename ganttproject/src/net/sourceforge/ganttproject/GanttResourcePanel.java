@@ -62,7 +62,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public class GanttResourcePanel extends JPanel implements ResourceView,
-        ResourceContext, AssignmentContext, ProjectEventListener, ResourceTreeUIFacade {
+        ResourceContext, AssignmentContext, ResourceTreeUIFacade {
 
     private final ResourceTreeTableModel model;
 
@@ -149,7 +149,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         myUIFacade = uiFacade;
         myDeleteAssignmentAction = new DeleteAssignmentAction(this, prj);
 
-        prj.addProjectEventListener(this);
+        prj.addProjectEventListener(getProjectEventListener());
         appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
         table = new ResourceTreeTable((GanttProject) appli.getProject(), model, uiFacade);
@@ -215,6 +215,15 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
         });
         table.getTable().getSelectionModel().addListSelectionListener(myContextListener);
+    }
+
+    private ProjectEventListener getProjectEventListener() {
+        return new ProjectEventListener.Stub() {
+            public void projectClosed() {
+                area.repaint();
+                reset();
+            }
+        };
     }
 
     private void handlePopupTrigger(MouseEvent e) {
@@ -418,27 +427,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
         }
         return res;
-    }
-
-//    public void setDividerLocation(int location) {
-//        mySplitPane.setDividerLocation(location);
-//    }
-//
-//    public int getDividerLocation() {
-//        return mySplitPane.getDividerLocation();
-//    }
-
-    public void projectModified() {
-        // TODO Auto-generated method stub
-    }
-
-    public void projectSaved() {
-        // TODO Auto-generated method stub
-    }
-
-    public void projectClosed() {
-        area.repaint();
-        reset();
     }
 
     public void copySelection() {

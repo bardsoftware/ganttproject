@@ -118,7 +118,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * Class that generate the JTree
  */
 public class GanttTree2 extends JPanel implements DragSourceListener,
-        DragGestureListener, DelayObserver, ProjectEventListener, TaskTreeUIFacade {
+        DragGestureListener, DelayObserver, TaskTreeUIFacade {
     /** The root node of the Tree */
     private TaskNode rootNode;
 
@@ -234,14 +234,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             TaskSelectionManager selectionManager, final UIFacade uiFacade) {
 
         super(new BorderLayout());
-        app.getProject().addProjectEventListener(this);
         myUIFacade = uiFacade;
 
         myTaskManager = taskManager;
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
             public void taskModelReset() {
                 clearTree();
-                getTreeTable().reloadColumns();
             }
         });
         mySelectionManager = selectionManager;
@@ -393,7 +391,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         TaskSelectionManager taskSelectionManager = getTaskSelectionManager();
         taskSelectionManager.clear();
         taskSelectionManager.addTask(t);
-        
+
         treetable.editSelectedTask();
         treetable.centerViewOnSelectedCell();
     }
@@ -1749,19 +1747,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     private GPUndoManager getUndoManager() {
         return myUIFacade.getUndoManager();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // ProjectEventListener
-    public void projectModified() {
-        // TODO Auto-generated method stub
-    }
-
-    public void projectSaved() {
-        // TODO Auto-generated method stub
-    }
-
-    public void projectClosed() {
     }
 
     ////////////////////////////////////////////////////////////////////////

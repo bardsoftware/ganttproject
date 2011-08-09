@@ -7,7 +7,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 
-class FacadeInvalidator implements TreeModelListener, ProjectEventListener {
+class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelListener {
     boolean isValid;
 
     public FacadeInvalidator(TreeModel treeModel) {
@@ -39,17 +39,7 @@ class FacadeInvalidator implements TreeModelListener, ProjectEventListener {
         isValid = false;
     }
 
-	public void projectModified() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void projectSaved() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void projectClosed() {
-		isValid = false;
-	}
+    public void projectClosed() {
+        isValid = false;
+    }
 }

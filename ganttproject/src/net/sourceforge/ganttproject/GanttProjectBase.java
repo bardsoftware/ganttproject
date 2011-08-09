@@ -109,7 +109,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         statusBar = new GanttStatusBar(this);
         myTabPane = new GanttTabbedPane();
         myViewManager = new ViewManagerImpl(myTabPane);
-        addProjectEventListener(myViewManager);
+        addProjectEventListener(myViewManager.getProjectEventListener());
         myTimeUnitStack = new GPTimeUnitStack(getLanguage());
         NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
@@ -166,6 +166,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             modifiedStateChangeListener.projectClosed();
         }
     }
+
+    protected void fireProjectOpened() {
+        for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
+            modifiedStateChangeListener.projectOpened();
+        }
+    }
+
 
     //////////////////////////////////////////////////////////////////
     // UIFacade
@@ -268,10 +275,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 //        return visibleChart;
     }
 
-    private class ViewManagerImpl implements GPViewManager, ProjectEventListener {
-        private GanttTabbedPane myTabs;
-        private List<GPView> myViews = new ArrayList<GPView>();
+    private class ViewManagerImpl implements GPViewManager {
+        private final GanttTabbedPane myTabs;
+        private final List<GPView> myViews = new ArrayList<GPView>();
         private GPViewImpl mySelectedView;
+
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;
             myTabs.addChangeListener(new ChangeListener() {
@@ -309,19 +317,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             return myPasteAction;
         }
 
-        ////////////////////////////////////////////
-        //ProjectEventListener
-        public void projectModified() {
-        }
-
-        public void projectSaved() {
-        }
-
-        public void projectClosed() {
-            for (int i=0; i<myViews.size(); i++) {
-                GPViewImpl nextView = (GPViewImpl) myViews.get(i);
-                nextView.reset();
-            }
+        ProjectEventListener getProjectEventListener() {
+            return new ProjectEventListener.Stub() {
+                public void projectClosed() {
+                    for (int i=0; i<myViews.size(); i++) {
+                        GPViewImpl nextView = (GPViewImpl) myViews.get(i);
+                        nextView.reset();
+                    }
+                }
+            };
         }
 
         private void updateActions() {

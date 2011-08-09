@@ -28,17 +28,29 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
 
-class SaveProjectAction extends GPAction implements ProjectEventListener {
+class SaveProjectAction extends GPAction {
     private final GanttProject myMainFrame;
 
     SaveProjectAction(GanttProject mainFrame) {
         super("saveProject", "16");
         myMainFrame = mainFrame;
-        mainFrame.addProjectEventListener(this);
+        mainFrame.addProjectEventListener(new ProjectEventListener.Stub() {
+            public void projectModified() {
+                setEnabled(true);
+            }
+
+            public void projectSaved() {
+                setEnabled(false);
+            }
+
+            public void projectClosed() {
+                setEnabled(false);
+            }
+        });
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, MENU_MASK));
         setEnabled(false);
     }
-    
+
     protected String getLocalizedName() {
         return getI18n("saveProject");
     }
@@ -55,15 +67,4 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
         myMainFrame.saveProject();
     }
 
-    public void projectModified() {
-        setEnabled(true);
-    }
-
-    public void projectSaved() {
-        setEnabled(false);
-    }
-
-    public void projectClosed() {
-        setEnabled(false);
-    }
 }
