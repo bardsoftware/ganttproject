@@ -1214,8 +1214,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void open(Document document) throws IOException, DocumentException {
         openDocument(document);
         if (document.getPortfolio() != null) {
-            Document defaultDocument = document.getPortfolio()
-                    .getDefaultDocument();
+            Document defaultDocument = document.getPortfolio().getDefaultDocument();
             openDocument(defaultDocument);
         }
     }
@@ -1250,8 +1249,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         // myDelayManager.fireDelayObservation(); // it is done in repaint2
         addMouseListenerToAllContainer(this.getComponents());
-        getTaskManager().projectOpened();
 
+        getTaskManager().projectOpened();
+        fireProjectOpened();
         // As we just have opened a new file it is still unmodified, so mark it as such
         setModified(false);
     }
@@ -1263,11 +1263,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             getUndoManager().undoableEdit("OpenFile", new Runnable() {
                 public void run() {
                     try {
-                        getProjectUIFacade()
-                                .openProject(document, getProject());
+                        getProjectUIFacade().openProject(document, getProject());
                     } catch (DocumentException e) {
                         if (!tryImportDocument(document)) {
-                        	// TODO use the/a nicer error dialog
+                            // TODO use the/a nicer error dialog
                             getUIFacade().showErrorDialog(e);
                         }
                     } catch (IOException e) {
@@ -1490,45 +1489,47 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 e.printStackTrace();
             }
         }
-        
+
         // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
-        	// Export succeeded so exit applciation
+            // Export succeeded so exit applciation
             return false;
         }
 
-		GanttSplash splash = new GanttSplash();
-		try {
-		    splash.setVisible(true);
-		    GanttProject ganttFrame = new GanttProject(false);
-		    System.err.println("Main frame created");
-		    if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
-		        ganttFrame.openStartupDocument(mainArgs.file.get(0));
-		    }
-		    ganttFrame.setVisible(true);
-		    if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
-		        OSXAdapter.registerMacOSXApplication(ganttFrame);
-		    }
-		    ganttFrame.getActiveChart().reset();
-		    return true;
-		} catch (Throwable e) {
-		    e.printStackTrace();
-		    return false;
-		} finally {
-		    splash.close();
-		    System.err.println("Splash closed");
-		    SwingUtilities.invokeLater(new Runnable() {
-		        @Override
-		        public void run() {
-		            Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-		                @Override
-		                public void uncaughtException(Thread t, Throwable e) {
-		                    GPLogger.log(e);
-		                }
-		            });
-		        }
-		    });
-		}
+        GanttSplash splash = new GanttSplash();
+        try {
+            splash.setVisible(true);
+            GanttProject ganttFrame = new GanttProject(false);
+            System.err.println("Main frame created");
+            if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
+                ganttFrame.openStartupDocument(mainArgs.file.get(0));
+            } else {
+                ganttFrame.fireProjectOpened();
+            }
+            ganttFrame.setVisible(true);
+            if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
+                OSXAdapter.registerMacOSXApplication(ganttFrame);
+            }
+            ganttFrame.getActiveChart().reset();
+            return true;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            splash.close();
+            System.err.println("Splash closed");
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                        @Override
+                        public void uncaughtException(Thread t, Throwable e) {
+                            GPLogger.log(e);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
