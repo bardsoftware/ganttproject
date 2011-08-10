@@ -20,11 +20,12 @@ public interface TableHeaderUIFacade {
         int getWidth();
         boolean isVisible();
         void setVisible(boolean visible);
+        void setOrder(int order);
     }
 
     class ColumnStub implements TableHeaderUIFacade.Column {
         private final String myID;
-        private final int myOrder;
+        private int myOrder;
         private final int myWidth;
         private final String myName;
         private final boolean isVisible;
@@ -54,6 +55,9 @@ public interface TableHeaderUIFacade {
         @Override
         public void setVisible(boolean visible) {
             throw new UnsupportedOperationException();
+        }
+        public void setOrder(int order) {
+            myOrder = order;
         }
 
     }

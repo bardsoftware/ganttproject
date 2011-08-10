@@ -100,6 +100,8 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
         @Override
         public void setVisible(boolean visible) {
         }
+        public void setOrder(int order) {
+        }
     }
 
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {

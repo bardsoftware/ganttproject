@@ -110,11 +110,12 @@ public class ColumnManagerPanel {
             }
             @Override
             protected CustomPropertyDefinition createValue(CustomPropertyDefinition prototype) {
-                CustomPropertyDefinition def = myManager.createDefinition(
+                final CustomPropertyDefinition def = myManager.createDefinition(
                     CustomPropertyClass.TEXT.getID(), prototype.getName(), null);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        myVisibleFields.add(def.getID(), -1, -1);
                         getTableComponent().requestFocus();
                     }
                 });

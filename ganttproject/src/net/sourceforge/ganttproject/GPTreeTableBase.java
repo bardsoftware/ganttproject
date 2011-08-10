@@ -125,7 +125,13 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 if (def == null) {
                     return;
                 }
-                ColumnStub columnStub = new TableHeaderUIFacade.ColumnStub(id, def.getName(), true, getTable().getColumnCount(), width);
+                if (order == -1) {
+                    order = getTable().getColumnCount();
+                }
+                if (width == -1) {
+                    width = 75;
+                }
+                ColumnStub columnStub = new TableHeaderUIFacade.ColumnStub(id, def.getName(), true, order, width);
                 column = createColumn(getSize(), columnStub);
             }
             if (column == null) {
@@ -136,9 +142,12 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         @Override
         public void importData(TableHeaderUIFacade source) {
             for (int i = 0; i < source.getSize(); i++) {
-                Column stub = source.getField(i);
-                if (!hasColumn(stub)) {
-                    createColumn(getModelIndex(stub), stub);
+                Column foreign = source.getField(i);
+                ColumnImpl mine = findColumnByID(foreign.getID());
+                if (mine == null) {
+                    mine = createColumn(getModelIndex(foreign), foreign);
+                } else {
+                    mine.getStub().setOrder(foreign.getOrder());
                 }
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
@@ -158,14 +167,6 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             }
         }
 
-        private boolean hasColumn(Column c) {
-            for (Column customColumn : myColumns) {
-                if (c.getID().equals(customColumn.getID())) {
-                    return true;
-                }
-            }
-            return false;
-        }
 
         private int getModelIndex(Column c) {
             for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
@@ -308,6 +309,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         protected TableColumnExt getTableColumnExt() {
             return myTableColumn;
         }
+
+        public void setOrder(int order) {
+        }
     }
 
     protected IGanttProject getProject() {
@@ -336,7 +340,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             }
             @Override
             public void projectOpened() {
-                getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+                if (getTableHeaderUiFacade().myColumns.isEmpty()) {
+                    getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+                }
             }
         });
     }
