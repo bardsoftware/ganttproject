@@ -59,6 +59,10 @@ public interface TableHeaderUIFacade {
         public void setOrder(int order) {
             myOrder = order;
         }
+        public String toString() {
+            return myID;
+        }
+
 
     }
 
