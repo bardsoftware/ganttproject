@@ -24,6 +24,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.Action;
@@ -245,7 +246,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade.getNotificationManager();
     }
 
+    @Override
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
+        myUIFacade.showPopupMenu(invoker, actions, x, y);
+    }
+
+    @Override
+    public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
 
