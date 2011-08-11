@@ -20,7 +20,11 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.Collection;
+
 import javax.swing.Action;
+
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -63,6 +67,8 @@ public interface UIFacade {
 
     void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
+    void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y);
+
     void showOptionDialog(int messageType, String message, Action[] actions);
 
     Dialog createDialog(Component content, Action[] buttonActions, String title);
@@ -73,13 +79,13 @@ public interface UIFacade {
 
     void showErrorDialog(String errorMessage);
 
-	/**
-	 * Shows the given exception in an error dialog and also puts it into the
-	 * log file
-	 * 
-	 * @param e
-	 *            the exception to show (and log)
-	 */
+    /**
+     * Shows the given exception in an error dialog and also puts it into the
+     * log file
+     *
+     * @param e
+     *            the exception to show (and log)
+     */
     void showErrorDialog(Throwable e);
 
     NotificationManager getNotificationManager();
@@ -123,5 +129,4 @@ public interface UIFacade {
     TaskSelectionContext getTaskSelectionContext();
 
     GPOptionGroup getOptions();
-
 }

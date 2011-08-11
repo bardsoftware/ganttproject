@@ -3,6 +3,7 @@ package net.sourceforge.ganttproject.export;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.File;
+import java.util.Collection;
 
 import javax.swing.Action;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -39,9 +40,11 @@ public class ConsoleUIFacade implements UIFacade {
         return null;
     }
 
+    @Override
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
-        // TODO Auto-generated method stub
-
+    }
+    @Override
+    public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
     }
 
     @Override

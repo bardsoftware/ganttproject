@@ -29,6 +29,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -144,14 +146,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
+    @Override
     public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
+        showPopupMenu(invoker, Arrays.asList(actions), x, y);
+    }
+
+    @Override
+    public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
         JPopupMenu menu = new JPopupMenu();
-        for (int i = 0; i < actions.length; i++) {
-            Action next = actions[i];
-            if (next == null) {
+        for (Action action : actions) {
+            if (action == null) {
                 menu.addSeparator();
             } else {
-                menu.add(next);
+                menu.add(action);
             }
         }
         menu.applyComponentOrientation(getLanguage().getComponentOrientation());
@@ -369,12 +376,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         StringBuffer result = new StringBuffer();
         result.append(e.getMessage());
         if(e instanceof DocumentException == false) {
-        	result.append("\n\n");
-        	StringWriter stringWriter = new StringWriter();
-        	PrintWriter writer = new PrintWriter(stringWriter);
-        	e.printStackTrace(writer);
-        	writer.close();
-        	result.append(stringWriter.getBuffer().toString());
+            result.append("\n\n");
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            e.printStackTrace(writer);
+            writer.close();
+            result.append(stringWriter.getBuffer().toString());
         }
         return result.toString();
     }
