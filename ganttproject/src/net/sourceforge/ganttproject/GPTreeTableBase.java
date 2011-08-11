@@ -35,11 +35,17 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Queue;
+import java.util.Stack;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -55,6 +61,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -415,6 +422,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 });
         getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
+        getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
     private void onCellSelectionChanged() {
@@ -429,8 +437,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     private void addNewCustomColumn(CustomColumn customColumn) {
         TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(
             customColumn.getId(), customColumn.getName(), true, getTable().getColumnCount(), 100);
-        ColumnImpl columnImpl = getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
-        //getTableHeaderUiFacade().insertColumnIntoUi(columnImpl);
+        getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
     }
 
     private void deleteCustomColumn(CustomColumn column) {
@@ -676,6 +683,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
     private class HeaderMouseListener extends MouseAdapter {
         private final CustomPropertyManager myCustomPropertyManager;
+        private final LinkedList<Column> myRecentlyHiddenColumns = new LinkedList<Column>();
 
         public HeaderMouseListener(CustomPropertyManager customPropertyManager) {
             super();
@@ -696,36 +704,79 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
         private void handlePopupTrigger(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                GPAction[] popupActions = createPopupActions(e);
-                myUiFacade.showPopupMenu(e.getComponent(), popupActions, e.getX(), e.getY());
+                Collection<Action> actions = createPopupActions(e);
+                myUiFacade.showPopupMenu(e.getComponent(), actions, e.getX(), e.getY());
             }
         }
 
-        private GPAction[] createPopupActions(final MouseEvent mouseEvent) {
+        private Collection<Action> createPopupActions(final MouseEvent mouseEvent) {
+            List<Action> result = new ArrayList<Action>();
             final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
             final Column column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
-            GPAction hideAction = new GPAction("columns.hide.label") {
-                @Override
-                public void actionPerformed(ActionEvent arg0) {
-                    assert column.isVisible() : "how come it is at mouse click point?";
-                    column.setVisible(false);
-                }
-              };
-            if (columnAtPoint == -1) {
-                hideAction.setEnabled(false);
-            } else {
-                hideAction.putValue(Action.NAME, GanttLanguage.getInstance().formatText("columns.hide.label", column.getName()));
+
+            {
+                result.add(new GPAction("columns.manage.label") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(
+                                myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
+                        dialog.show();
+                    }
+                  });
             }
-            return new GPAction[] {
-              new GPAction("columns.manage.label") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
-                    dialog.show();
+            {
+                result.add(new GPAction("columns.pack.label") {
+                    public void actionPerformed(ActionEvent arg0) {
+                    }
+                });
+                GPAction fitAction = new GPAction("columns.fit.label") {
+                    public void actionPerformed(ActionEvent e) {
+                    }
+                };
+                result.add(fitAction);
+                fitAction.putValue(Action.NAME, GanttLanguage.getInstance().formatText(
+                        "columns.fit.label", column.getName()));
+
+            }
+            result.add(null);
+            {
+                GPAction hideAction = new GPAction("columns.hide.label") {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        assert column.isVisible() : "how come it is at mouse click point?";
+                        column.setVisible(false);
+                        myRecentlyHiddenColumns.add(column);
+                    }
+                };
+                if (columnAtPoint == -1) {
+                    hideAction.setEnabled(false);
+                } else {
+                    hideAction.putValue(Action.NAME, GanttLanguage.getInstance().formatText(
+                            "columns.hide.label", column.getName()));
                 }
-              },
-              hideAction
-            };
+                result.add(hideAction);
+            }
+            if (!myRecentlyHiddenColumns.isEmpty()) {
+                List<GPAction> showActions = new ArrayList<GPAction>();
+                for (ListIterator<Column> it = myRecentlyHiddenColumns.listIterator(myRecentlyHiddenColumns.size());
+                     it.hasPrevious();) {
+                    final Column hidden = it.previous();
+                    GPAction action = new GPAction("columns.show.label") {
+                        public void actionPerformed(ActionEvent arg0) {
+                            hidden.setVisible(true);
+                            myRecentlyHiddenColumns.remove(hidden);
+                        }
+                    };
+                    action.putValue(Action.NAME, GanttLanguage.getInstance().formatText(
+                            "columns.show.label", hidden.getName()));
+                    showActions.add(action);
+                    if (showActions.size() == 5) {
+                        break;
+                    }
+                }
+                result.addAll(showActions);
+            }
+            return result;
         }
     }
 
