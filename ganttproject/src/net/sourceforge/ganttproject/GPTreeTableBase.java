@@ -72,6 +72,7 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
@@ -712,7 +713,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         private Collection<Action> createPopupActions(final MouseEvent mouseEvent) {
             List<Action> result = new ArrayList<Action>();
             final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
-            final Column column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
+            final ColumnImpl column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
 
             {
                 result.add(new GPAction("columns.manage.label") {
@@ -731,6 +732,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 });
                 GPAction fitAction = new GPAction("columns.fit.label") {
                     public void actionPerformed(ActionEvent e) {
+                        autoFitColumnWidth(column);
                     }
                 };
                 result.add(fitAction);
@@ -780,4 +782,29 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
     }
 
+    private void autoFitColumnWidth(ColumnImpl column) {
+        final int margin = 5;
+        final JTable table = getTable();
+        final TableColumnExt tableColumn = column.myTableColumn;
+
+        TableCellRenderer renderer = tableColumn.getHeaderRenderer();
+        if (renderer == null) {
+            renderer = getTable().getTableHeader().getDefaultRenderer();
+        }
+        Component comp = renderer.getTableCellRendererComponent(
+                getTable(), tableColumn.getHeaderValue(), false, false, 0, 0);
+        int width = comp.getPreferredSize().width;
+
+        // Get maximum width of column data
+        renderer = tableColumn.getCellRenderer();
+        for (int r = 0; r < getTable().getRowCount(); r++) {
+            comp = renderer.getTableCellRendererComponent(
+                    table, table.getValueAt(r, column.getOrder()), false, false, r, column.getOrder());
+            width = Math.max(width, comp.getPreferredSize().width);
+        }
+        // Add margin
+        width += 2 * margin;
+        // Set the width
+        tableColumn.setPreferredWidth(width);
+    }
 }
