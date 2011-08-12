@@ -53,11 +53,11 @@ public class ResourceTreeTable extends GPTreeTableBase {
     private final UIFacade myUiFacade;
 
     private static enum DefaultColumn {
-        NAME(new TableHeaderUIFacade.ColumnStub("rpd0", null, true, 0, 200)),
-        ROLE(new TableHeaderUIFacade.ColumnStub("rpd1", null, true, 1, 75)),
-        EMAIL(new TableHeaderUIFacade.ColumnStub("rpd2", null, false, -1, 75)),
-        PHONE(new TableHeaderUIFacade.ColumnStub("rpd3", null, false, -1, 50)),
-        ROLE_IN_TASK(new TableHeaderUIFacade.ColumnStub("rpd4", null, false, -1, 75)),
+        NAME(new TableHeaderUIFacade.ColumnStub("0", null, true, 0, 200)),
+        ROLE(new TableHeaderUIFacade.ColumnStub("1", null, true, 1, 75)),
+        EMAIL(new TableHeaderUIFacade.ColumnStub("2", null, false, -1, 75)),
+        PHONE(new TableHeaderUIFacade.ColumnStub("3", null, false, -1, 50)),
+        ROLE_IN_TASK(new TableHeaderUIFacade.ColumnStub("4", null, false, -1, 75)),
         ;
 
         private final Column myDelegate;
