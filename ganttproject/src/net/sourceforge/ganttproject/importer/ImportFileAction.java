@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author bard
@@ -21,8 +20,6 @@ public class ImportFileAction extends GPAction {
 
     public ImportFileAction(UIFacade uiFacade, GanttProject project) {
         super(null, "16");
-        /*putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_I,
-                MENU_MASK));*/
         myUIFacade = uiFacade;
         myProject = project;
     }
@@ -41,7 +38,6 @@ public class ImportFileAction extends GPAction {
     }
 
     protected String getLocalizedName() {
-        return GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "import"));
+        return getI18n("import");
     }
 }

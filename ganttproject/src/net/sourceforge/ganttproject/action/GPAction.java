@@ -42,9 +42,16 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     protected boolean iconVisible = true;
+
     private Icon myIcon = null;
 
     private final String myKey;
+
+    private static Properties ourKeyboardProperties;
+
+    private static Properties ourIconProperties;
+
+    private static GanttLanguage language = GanttLanguage.getInstance();
 
     protected GPAction() {
         this(null, "16");
@@ -56,7 +63,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         updateIcon(iconSize);
         updateName();
         updateTooltip();
-        GanttLanguage.getInstance().addListener(this);
+        language.addListener(this);
     }
 
     public GPAction(String name) {
@@ -100,9 +107,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     protected String getKey() {
         return myKey;
     }
+
     protected String getTooltipText() {
         String localizedName = getLocalizedName();
-        return localizedName == null ? "" : GanttLanguage.getInstance().correctLabel(getLocalizedName());
+        return localizedName == null ? "" : language.correctLabel(localizedName);
     }
 
     protected String getI18n(String key) {
@@ -126,10 +134,12 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         if (localizedName != null) {
             int bucksPos = localizedName.indexOf('$');
             if (bucksPos >= 0) {
+                // Get name without the $ in it
                 localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();
             }
             putValue(Action.NAME, localizedName);
             if (bucksPos >= 0) {
+                // Activate mnemonic key
                 putValue(Action.MNEMONIC_KEY, new Integer(Character.toLowerCase(localizedName.charAt(bucksPos))));
             }
         }
@@ -193,7 +203,4 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             return null;
         }
     }
-
-    private static Properties ourKeyboardProperties;
-    private static Properties ourIconProperties;
 }
