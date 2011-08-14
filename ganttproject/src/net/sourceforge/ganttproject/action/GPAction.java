@@ -114,7 +114,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
 
     protected String getI18n(String key) {
-        return GanttLanguage.getInstance().getText(key);
+        return language.getText(key);
     }
 
     protected String getIconFilePrefix() {
