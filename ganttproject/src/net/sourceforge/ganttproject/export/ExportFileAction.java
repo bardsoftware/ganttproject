@@ -23,8 +23,6 @@ public class ExportFileAction extends GPAction {
     public ExportFileAction(UIFacade uiFacade, IGanttProject project,
             GanttOptions options) {
         super(null, "16");
-        /*putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_E,
-                MENU_MASK));*/
         myProject = project;
         myUIFacade = uiFacade;
         myOptions = options;
@@ -38,7 +36,6 @@ public class ExportFileAction extends GPAction {
         ExportFileWizardImpl wizard = new ExportFileWizardImpl(myUIFacade,
                 myProject, myOptions);
         wizard.show();
-        // myProject.export();
     }
 
     protected String getLocalizedName() {
