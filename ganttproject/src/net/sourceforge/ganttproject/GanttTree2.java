@@ -438,9 +438,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** Create a popup menu when mouse click */
     private void createPopupMenu(int x, int y) {
         Action[] popupMenuActions = getPopupMenuActions();
-        JScrollBar vbar = treetable.getScrollPane().getVerticalScrollBar();
+        JScrollBar vbar = treetable.getVerticalScrollBar();
         myUIFacade.showPopupMenu(this, popupMenuActions,
-                x - treetable.getScrollPane().getHorizontalScrollBar().getValue()
+                x - treetable.getHorizontalScrollBar().getValue()
                     + (vbar.isVisible() ? vbar.getWidth() : 0),
                 y - vbar.getValue() + treetable.getTable().getTableHeader().getHeight());
     }
@@ -1803,7 +1803,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     public List<Task> getVisibleNodes(VisibleNodesFilter visibleNodesFilter) {
         return visibleNodesFilter.getVisibleNodes(
-                getJTree(), getTreeTable().getScrollPane().getVerticalScrollBar().getValue(), getHeight(),
+                getJTree(), getTreeTable().getVerticalScrollBar().getValue(), getHeight(),
                 getTreeTable().getRowHeight());
     }
 }

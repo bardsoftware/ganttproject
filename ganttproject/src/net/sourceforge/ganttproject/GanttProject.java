@@ -546,8 +546,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     options.getHeight());
         }
         System.err.println("8. finalizing...");
-        applyComponentOrientation(GanttLanguage.getInstance()
-                .getComponentOrientation());
+//        applyComponentOrientation(GanttLanguage.getInstance()
+//                .getComponentOrientation());
         myTaskManager.addTaskListener(new TaskModelModificationListener(this));
         if (ourWindowListener != null) {
             addWindowListener(ourWindowListener);

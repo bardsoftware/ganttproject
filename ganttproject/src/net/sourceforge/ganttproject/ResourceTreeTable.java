@@ -116,9 +116,10 @@ public class ResourceTreeTable extends GPTreeTableBase {
     /**
      * Initialize the treetable. Addition of various listeners, tree's icons,
      */
-    protected void init() {
-        super.init();
-        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
+    @Override
+    protected void doInit() {
+        super.doInit();
+        getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
             @Override
             protected TimelineChart getChart() {
                 return (TimelineChart)myUiFacade.getResourceChart();

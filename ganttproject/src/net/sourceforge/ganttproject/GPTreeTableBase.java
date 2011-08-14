@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
@@ -43,18 +44,13 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Queue;
-import java.util.Stack;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -63,7 +59,6 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -71,6 +66,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -101,6 +97,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     private final UIFacade myUiFacade;
     private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
     private final CustomPropertyManager myCustomPropertyManager;
+    private boolean isInitialized;
 
     protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
         private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
@@ -329,6 +326,13 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
             DefaultTreeTableModel model) {
         super(new JXTreeTable(model) {
+            {
+                setTableHeader(new JTableHeader(getColumnModel()) {
+                    public void applyComponentOrientation(ComponentOrientation o) {
+                        super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                    }
+                });
+            }
             protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
                 if (e.isAltDown() || e.isControlDown()) {
                     putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
@@ -336,6 +340,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 boolean result = super.processKeyBinding(ks, e, condition, pressed);
                 putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
                 return result;
+            }
+            public void applyComponentOrientation(ComponentOrientation o) {
+                super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
             }
         });
         myCustomPropertyManager = customPropertyManager;
@@ -356,6 +363,16 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     }
 
     protected void init() {
+        doInit();
+        isInitialized = true;
+    }
+
+    protected void doInit() {
+        scrollPane = new JScrollPane() {
+            public void applyComponentOrientation(ComponentOrientation o) {
+                super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+            }
+        };
         myCustomPropertyManager.addListener(this);
 
         getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
@@ -424,6 +441,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
         getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        getTable().setFillsViewportHeight(true);
     }
 
     private void onCellSelectionChanged() {
@@ -544,11 +562,14 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         return this.getTreeTable().getTree();
     }
 
-    public JScrollBar getVerticalScrollBar() {
+    JScrollBar getVerticalScrollBar() {
         return scrollPane.getVerticalScrollBar();
     }
+    JScrollBar getHorizontalScrollBar() {
+        return scrollPane.createHorizontalScrollBar();
+    }
 
-    public JScrollPane getScrollPane() {
+    protected JScrollPane getScrollPane() {
         return scrollPane;
     }
 
@@ -618,6 +639,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         protected abstract TimelineChart getChart();
 
         public void adjustmentValueChanged(AdjustmentEvent e) {
+            if (!isInitialized) {
+                return;
+            }
             if (getChart() == null) {
                 return;
             }
@@ -631,26 +655,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     }
 
     void insertWithLeftyScrollBar(JComponent container) {
-        JScrollPane scrollpane = new JScrollPane();
-        container.add(scrollpane, BorderLayout.CENTER);
-        scrollpane.getViewport().add(this);
-        scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        container.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.getViewport().add(getTable());
 
-        final JPanel jp = new JPanel(new BorderLayout());
-        jp.add(getVerticalScrollBar(), BorderLayout.CENTER);
-        jp.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        jp.setVisible(false);
-        getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                if (getSize().getHeight() - 20 < e.getAdjustable().getMaximum()) {
-                    jp.setVisible(true);
-                } else {
-                    jp.setVisible(false);
-                }
-                repaint();
-              }
-              });
-        container.add(jp, BorderLayout.WEST);
     }
 
     void addAction(Action action, KeyStroke keyStroke) {
