@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JScrollBar;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -75,11 +76,12 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         return DefaultColumn.getColumnStubs();
     }
 
-    protected void init() {
-        super.init();
+    @Override
+    protected void doInit() {
+        super.doInit();
         getTable().getColumnModel().addColumnModelListener((TableColumnModelListener) this.getTreeTableModel());
         getTable().getModel().addTableModelListener(new ModelListener());
-        scrollPane.getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
+        getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
             @Override
             protected TimelineChart getChart() {
                 return myUIfacade.getGanttChart();
@@ -94,8 +96,8 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
             col = getTable().getSelectedColumn();
         }
         Rectangle rect = getTable().getCellRect(row, col, true);
-        scrollPane.getHorizontalScrollBar().scrollRectToVisible(rect);
-        scrollPane.getViewport().scrollRectToVisible(rect);
+        getHorizontalScrollBar().scrollRectToVisible(rect);
+        getScrollPane().getViewport().scrollRectToVisible(rect);
     }
 
     void setDelay(TaskNode taskNode, Delay delay) {
@@ -128,7 +130,6 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
         cellEditor.requestFocus();
     }
-
 
 
     /*

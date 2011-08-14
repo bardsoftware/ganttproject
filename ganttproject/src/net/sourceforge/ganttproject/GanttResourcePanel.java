@@ -173,7 +173,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         area.getChartModel().setRowHeight(table.getRowHeight());
 
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
-        applyComponentOrientation(lang.getComponentOrientation());
+        //applyComponentOrientation(lang.getComponentOrientation());
 
         table.addKeyListener(prj); // callback for keyboard pressed
         // Add listener for mouse click
