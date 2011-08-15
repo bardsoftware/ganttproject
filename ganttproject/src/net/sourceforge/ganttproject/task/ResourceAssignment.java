@@ -5,7 +5,7 @@ import net.sourceforge.ganttproject.roles.Role;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 05.02.2004
  */
 public interface ResourceAssignment {
@@ -19,7 +19,7 @@ public interface ResourceAssignment {
 
     /** Deletes this assignment */
     void delete();
-    
+
     void setCoordinator(boolean responsible);
 
     boolean isCoordinator();

@@ -106,7 +106,7 @@ public class HumanResourceManager implements CustomPropertyManager {
     public HumanResource getById(int id) {
         // Linear search is not really efficient, but we do not have so many
         // resources !?
-    	HumanResource pr = null;
+        HumanResource pr = null;
         for (int i = 0; i < resources.size(); i++)
             if (resources.get(i).getId() == id) {
                 pr = resources.get(i);

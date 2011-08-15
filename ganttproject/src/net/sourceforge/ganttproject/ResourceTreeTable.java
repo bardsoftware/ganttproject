@@ -703,7 +703,7 @@ public class ResourceTreeTable extends GPTreeTableBase implements CustomProperty
         selectedAssignment.getResource().swapAssignments(selectedAssignment, previousAssignment);
     }
 
-    public 	CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
+    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
         final ResourceColumn newColumn = newResourceColumn(Integer.valueOf(id).intValue());
         newColumn.setTitle(name);
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);

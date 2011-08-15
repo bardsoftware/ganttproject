@@ -386,7 +386,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     /**
      * Set value in left pane cell
-     * 
+     *
      * @param value
      * @param node
      * @param column

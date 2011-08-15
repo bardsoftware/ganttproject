@@ -38,7 +38,7 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, MENU_MASK));
         setEnabled(false);
     }
-    
+
     protected String getLocalizedName() {
         return getI18n("saveProject");
     }

@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -23,7 +41,7 @@ public class DeleteAssignmentAction extends GPAction {
         myProjectFrame.getTabs().setSelectedIndex(UIFacade.RESOURCES_INDEX);
         final ResourceAssignment[] context = myContext.getResourceAssignments();
         if (context != null && context.length > 0) {
-        	Choice choice = myProjectFrame.getUIFacade().showConfirmationDialog(getI18n("msg23") + " "
+            Choice choice = myProjectFrame.getUIFacade().showConfirmationDialog(getI18n("msg23") + " "
                     + getDisplayName(context) + "?", getI18n("warning"));
             if (choice==Choice.YES) {
                 myProjectFrame.getUIFacade().getUndoManager().undoableEdit("Resource removed",
@@ -38,7 +56,7 @@ public class DeleteAssignmentAction extends GPAction {
             }
         }
         else {
-        	myProjectFrame.deleteResources();
+            myProjectFrame.deleteResources();
         }
     }
 
@@ -65,11 +83,11 @@ public class DeleteAssignmentAction extends GPAction {
         return result.toString();
     }
 
-	protected String getIconFilePrefix() {
-		return "delete_";
-	}
+    protected String getIconFilePrefix() {
+        return "delete_";
+    }
 
-	protected String getLocalizedName() {
-		return getI18n("deleteAssignment");
-	}
+    protected String getLocalizedName() {
+        return getI18n("deleteAssignment");
+    }
 }

@@ -36,5 +36,5 @@ public class OffsetList extends ArrayList<Offset> {
         super.clear();
         myStartPx = 0;
     }
-    
+
 }

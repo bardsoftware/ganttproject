@@ -23,7 +23,7 @@ public class PreferenceServiceImpl implements IPreferencesService {
     public void applyPreferences(IEclipsePreferences node,
             IPreferenceFilter[] filters) throws CoreException {
         // TODO Auto-generated method stub
-        
+
     }
 
     public IStatus exportPreferences(IEclipsePreferences node,
@@ -36,7 +36,7 @@ public class PreferenceServiceImpl implements IPreferencesService {
             IPreferenceFilter[] filters, OutputStream output)
             throws CoreException {
         // TODO Auto-generated method stub
-        
+
     }
 
     public String get(String key, String defaultValue, Preferences[] nodes) {
@@ -121,7 +121,7 @@ public class PreferenceServiceImpl implements IPreferencesService {
     public void setDefaultLookupOrder(String qualifier, String key,
             String[] order) {
         // TODO Auto-generated method stub
-        
+
     }
 
 }

@@ -18,7 +18,7 @@ public class ToggleChartAction extends GPAction {
     private Chart myChart;
 
     private GPView myView;
-    
+
     GPViewManager myViewManager;
 
     public ToggleChartAction(Chart chart, GPViewManager viewManager) {

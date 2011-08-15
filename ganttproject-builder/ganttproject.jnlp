@@ -15,15 +15,15 @@
 	codebase="http://ganttproject.biz/jws209"
       href="ganttproject.jnlp">
 
-   <information> 
-      <title>GanttProject 2.0.9</title> 
+   <information>
+      <title>GanttProject 2.0.9</title>
       <vendor>GanttProject Team</vendor>
       <homepage href="http://ganttproject.biz"/>
       <description>GanttProject is a project scheduling application featuring gantt chart, resource management, calendaring, import/export (MS Project, HTML, PDF, spreadsheets).</description>
       <description kind="short">GanttProject is a project scheduling tool</description>
       <icon href="ganttproject.gif"/>
-      <offline-allowed/> 
-   </information> 
+      <offline-allowed/>
+   </information>
   <security>
       <all-permissions/>
   </security>
@@ -40,4 +40,4 @@
    <application-desc main-class="org.bardsoftware.eclipsito.Boot">
       <argument>ganttproject-webstart-config.xml</argument>
    </application-desc>
-</jnlp> 
+</jnlp>

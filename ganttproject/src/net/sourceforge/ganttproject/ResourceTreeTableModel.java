@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
@@ -127,7 +145,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         Iterator<HumanResource> itRes = listResources.iterator();
 
         while (itRes.hasNext()) {
-        	HumanResource hr = itRes.next();
+            HumanResource hr = itRes.next();
             ResourceNode rnRes = new ResourceNode(hr); // the first for the resource
             root.add(rnRes);
         }
@@ -138,7 +156,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         HumanResource[] listResources = myResourceManager.getResourcesArray();
 
         for (int idxResource = 0; idxResource < listResources.length; idxResource++) {
-        	HumanResource hr = listResources[idxResource];
+            HumanResource hr = listResources[idxResource];
 
             ResourceNode rnRes = exists(hr);
             if (rnRes == null) {
@@ -470,7 +488,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
 
     private void buildAssignmentsSubtree(ResourceNode resourceNode) {
-    	HumanResource resource = resourceNode.getResource();
+        HumanResource resource = resourceNode.getResource();
         resourceNode.removeAllChildren();
         ResourceAssignment[] assignments = resource.getAssignments();
         int[] indices = new int[assignments.length];

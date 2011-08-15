@@ -57,11 +57,10 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
     }
 
     public TaskLength run(Date startDate, Date endDate) {
-    	isMoving = true;
-    	myUnitCounter = 0;
+        isMoving = true;
+        myUnitCounter = 0;
         myEndDate = endDate;
         walk(startDate);
         return new TaskLengthImpl(getTimeUnit(), myUnitCounter);
     }
-
 }

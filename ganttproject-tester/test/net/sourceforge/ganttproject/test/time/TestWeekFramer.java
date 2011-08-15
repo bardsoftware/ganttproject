@@ -21,7 +21,7 @@ public class TestWeekFramer extends TestCase {
             return GregorianCalendar.getInstance(Locale.UK);  // Monday is the first day of week in UK locale.
         }
     }
-    
+
     public void testAdjustLeft() {
         WeekFramerImpl framer = new WeekFramerImpl(new TestCalendarFactory());
         Date adjusted = framer.adjustLeft(newMonday());

@@ -3,41 +3,41 @@
 
 <xsl:template name="header">
     <br /><br />
-    
+
     <center><table width="100%" border="0"><tr><td bgcolor="#dddddd">
     <font size="+2" color="#0000000"><b><xsl:value-of select="/ganttproject/project/name"/></b></font>
     </td></tr></table></center>
-    
-    <center><table width="100%" border="0"><tr>  
+
+    <center><table width="100%" border="0"><tr>
     <td bgcolor="#6d9ec6"><center>
-    
+
     <a>
 	<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />.html</xsl:attribute>
 	<xsl:value-of select="/ganttproject/links/home" />
-    </a>  | 
+    </a>  |
     <a>
 	<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-chart.html</xsl:attribute>
 	<xsl:value-of select="/ganttproject/links/chart" />
-    </a> | 
+    </a> |
     <a>
 	<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-tasks.html</xsl:attribute>
 	<xsl:value-of select="/ganttproject/links/tasks" />
-    </a> | 
+    </a> |
     <a>
 	<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-resources.html</xsl:attribute>
 	<xsl:value-of select="/ganttproject/links/resources" />
     </a>
-    
+
     </center></td></tr></table></center>
-    
+
     <br />
-    
+
 </xsl:template>
 
 <xsl:template name="footer">
     <br />
-    
-    <table width="100%" border="0" cellpadding="0" cellspacing="0"><tr>  
+
+    <table width="100%" border="0" cellpadding="0" cellspacing="0"><tr>
     <td bgcolor="#6d9ec6" width="50%">
     <font color="#FFFFFF">
     <b><xsl:value-of select="/ganttproject/footer/@version"/></b></font></td >
@@ -93,7 +93,7 @@
 	    H6 {
 		FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #000000
 	    }
-	    
+
 	    </style>
     </head>
     <body bgcolor="white">

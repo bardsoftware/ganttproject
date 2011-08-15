@@ -34,39 +34,39 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 
 public class GPLogger {
-	private static Logger ourLogger = Logger.getLogger("org.ganttproject");
-	private static Handler ourHandler;
-	private static UIFacade ourUIFacade;
+    private static Logger ourLogger = Logger.getLogger("org.ganttproject");
+    private static Handler ourHandler;
+    private static UIFacade ourUIFacade;
     private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
 
-	static {
+    static {
         ourHandler = new ConsoleHandler();
-		ourLogger.addHandler(ourHandler);
-		ourLogger.setLevel(Level.ALL);
-		ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
-	}
+        ourLogger.addHandler(ourHandler);
+        ourLogger.setLevel(Level.ALL);
+        ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+    }
 
-	public static boolean log(Throwable e) {
-		if (ourHandler == null) {
-			return false;
-		}
-		ourLogger.log(Level.WARNING, e.getMessage(), e);
-		if (ourUIFacade != null) {
-			ourUIFacade.logErrorMessage(e);
-		}
-		return true;
-	}
+    public static boolean log(Throwable e) {
+        if (ourHandler == null) {
+            return false;
+        }
+        ourLogger.log(Level.WARNING, e.getMessage(), e);
+        if (ourUIFacade != null) {
+            ourUIFacade.logErrorMessage(e);
+        }
+        return true;
+    }
 
-	public static void log(String message) {
-		ourLogger.log(Level.INFO, message);
-	}
+    public static void log(String message) {
+        ourLogger.log(Level.INFO, message);
+    }
 
-	public static Logger getLogger(Object o) {
-	    assert o!=null;
-	    return getLogger(o.getClass());
-	}
+    public static Logger getLogger(Object o) {
+        assert o!=null;
+        return getLogger(o.getClass());
+    }
 
-	public static Logger getLogger(Class<?> clazz) {
+    public static Logger getLogger(Class<?> clazz) {
         Logger logger = ourClass_Logger.get(clazz);
         if (logger == null) {
             logger = Logger.getLogger(clazz.getName());
@@ -74,10 +74,11 @@ public class GPLogger {
             ourClass_Logger.put(clazz, logger);
         }
         return logger;
-	}
-	public static void setUIFacade(UIFacade uifacade) {
-		ourUIFacade = uifacade;
-	}
+    }
+
+    public static void setUIFacade(UIFacade uifacade) {
+        ourUIFacade = uifacade;
+    }
 
     public static void setLogFile(String logFileName) {
         try {

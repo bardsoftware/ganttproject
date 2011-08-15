@@ -39,14 +39,14 @@ public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction
     }
 
     @Override
-	public void apply(MouseEvent e) {
-    	Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
-    	if (!dateUnderX.equals(getStartDate())) {
-    		myMutator.setStart(new GanttCalendar(dateUnderX));
-    		getTask().applyThirdDateConstraint();
-    	}
-    	updateTooltip(e);
-	}
+    public void apply(MouseEvent e) {
+        Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
+        if (!dateUnderX.equals(getStartDate())) {
+            myMutator.setStart(new GanttCalendar(dateUnderX));
+            getTask().applyThirdDateConstraint();
+        }
+        updateTooltip(e);
+    }
 
     @Override
     public void finish() {
@@ -54,7 +54,7 @@ public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction
         getTask().applyThirdDateConstraint();
     }
 
-	protected String getNotesText() {
+    protected String getNotesText() {
         return getTask().getStart().toString();
     }
 }

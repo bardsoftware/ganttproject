@@ -50,10 +50,10 @@ public class GanttDialogPublicHoliday {
     }
 
     public List<GanttCalendar> getHolidays() {
-    	List<GanttCalendar> result = new ArrayList<GanttCalendar>();
-    	for (DateInterval interval : publicHolidays.getIntervals()) {
-    		result.add(new GanttCalendar(interval.start));
-    	}
-    	return result;
+        List<GanttCalendar> result = new ArrayList<GanttCalendar>();
+        for (DateInterval interval : publicHolidays.getIntervals()) {
+            result.add(new GanttCalendar(interval.start));
+        }
+        return result;
     }
 }

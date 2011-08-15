@@ -240,7 +240,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     public void clearPublicHolidays() {
         publicHolidaysArray.clear();
     }
-    
+
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());

@@ -29,7 +29,7 @@ public abstract class UIUtil {
             }
         }
     }
-    
+
     public static void setBackgroundTree(JComponent root, Color background) {
         root.setBackground(background);
         Component[] components = root.getComponents();

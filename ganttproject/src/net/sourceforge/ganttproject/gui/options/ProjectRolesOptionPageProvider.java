@@ -41,11 +41,11 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
         myRolesPanel = new RolesSettingsPanel(getProject());
         myRolesPanel.initialize();
         return OptionPageProviderBase.wrapContentComponent(
-            myRolesPanel, 
-            GanttLanguage.getInstance().getText("resourceRole"), 
+            myRolesPanel,
+            GanttLanguage.getInstance().getText("resourceRole"),
             GanttLanguage.getInstance().getText("settingsRoles"));
-        
-        
+
+
     }
     @Override
     public void commit() {

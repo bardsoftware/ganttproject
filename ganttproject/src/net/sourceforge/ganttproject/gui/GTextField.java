@@ -20,7 +20,7 @@ import javax.swing.text.PlainDocument;
  * authorization. You can specify the valid characters you want authorize in
  * edition or a regular expression pattern.
  * </p>
- * 
+ *
  * @author Benoit Baranne
  */
 public class GTextField extends JFormattedTextField {
@@ -30,7 +30,7 @@ public class GTextField extends JFormattedTextField {
 
     /**
      * Creates an instance of GTextField with a default format.
-     * 
+     *
      * @param format
      *            Textfields format.
      */
@@ -42,7 +42,7 @@ public class GTextField extends JFormattedTextField {
 
     /**
      * Creates an instance of GTextField with a default text.
-     * 
+     *
      * @param text
      *            Text to be put into the text field.
      */
@@ -72,7 +72,7 @@ public class GTextField extends JFormattedTextField {
 
     /**
      * Indicates the valid characters to accept in edition.
-     * 
+     *
      * @param valid_chars
      *            String containing all the valid characters.
      */
@@ -85,7 +85,7 @@ public class GTextField extends JFormattedTextField {
 
     /**
      * Indicates the valid characters by giving an regular expression pattern.
-     * 
+     *
      * @param pattern
      *            The regular expression with which the matching is done.
      */
@@ -121,7 +121,7 @@ class GPlainDocument extends PlainDocument {
 
     /**
      * Creates an instance of GPlainDocument with a valid character string.
-     * 
+     *
      * @param validchars
      */
     public GPlainDocument(String validchars) {
@@ -132,7 +132,7 @@ class GPlainDocument extends PlainDocument {
     /**
      * Inserts the string <code>str</code> into the document if it matches
      * with the valid characters.
-     * 
+     *
      * @param offs
      *            Offset for the insertion.
      * @param str
@@ -167,7 +167,7 @@ class GPlainDocument extends PlainDocument {
 
     /**
      * Sets the valid characters.
-     * 
+     *
      * @param valid_chars
      *            The valid characters to set.
      */
@@ -177,7 +177,7 @@ class GPlainDocument extends PlainDocument {
 
     /**
      * Sets the regular expression pattern.
-     * 
+     *
      * @param pattern
      *            The regular expression pattern to set.
      */

@@ -61,7 +61,7 @@ public class GanttTask extends TaskImpl implements Serializable {
         return new GanttTask(this);
     }
 
-    /** @deprecated Use TimeUnit class instead and method getDuration() */ 
+    /** @deprecated Use TimeUnit class instead and method getDuration() */
     public int getLength() {
         return getDuration().getLength();
     }
@@ -85,5 +85,5 @@ public class GanttTask extends TaskImpl implements Serializable {
      */
     public void setTaskID(int taskID) {
         setTaskIDHack(taskID);
-    }    
+    }
 }

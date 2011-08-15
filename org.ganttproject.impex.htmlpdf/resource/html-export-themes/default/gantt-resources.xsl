@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-2" ?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:ganttproject="http://ganttproject.sf.net/"
                 version="1.0">
 

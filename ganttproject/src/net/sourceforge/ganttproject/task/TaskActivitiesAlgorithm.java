@@ -30,7 +30,7 @@ public class TaskActivitiesAlgorithm {
     public TaskActivitiesAlgorithm(GPCalendar calendar) {
         myCalendar = calendar;
     }
-    
+
     public void recalculateActivities(Task task, List<TaskActivity> output, Date startDate, Date endDate) {
         output.clear();
         List<GPCalendarActivity> activities = myCalendar.getActivities(startDate, endDate);

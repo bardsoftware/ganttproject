@@ -394,7 +394,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         TaskSelectionManager taskSelectionManager = getTaskSelectionManager();
         taskSelectionManager.clear();
         taskSelectionManager.addTask(t);
-        
+
         treetable.editSelectedTask();
         treetable.centerViewOnSelectedCell();
     }

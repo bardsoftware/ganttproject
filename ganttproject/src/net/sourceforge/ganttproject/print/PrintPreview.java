@@ -145,14 +145,14 @@ public class PrintPreview extends JDialog {
         }
     };
 
-	private final IGanttProject myProject;
+    private final IGanttProject myProject;
 
-	private final UIFacade myUIfacade;
+    private final UIFacade myUIfacade;
 
     private void onChangingDates() {
         myExportSettings.setStartDate(myStart.getValue());
         myExportSettings.setEndDate(myFinish.getValue());
-        updateSourceImage();            
+        updateSourceImage();
     }
 
     public PrintPreview(IGanttProject project, UIFacade uifacade, Chart chart, Date start,
@@ -507,8 +507,8 @@ public class PrintPreview extends JDialog {
         myFinish.setValue(end);
     }
 
-	private void createPages() {
-		int pageIndex = 0;
+    private void createPages() {
+        int pageIndex = 0;
         try {
             while (true) {
                 BufferedImage img = new BufferedImage(myPageWidth,
@@ -527,7 +527,7 @@ public class PrintPreview extends JDialog {
         } catch (PrinterException e) {
             myUIfacade.showErrorDialog(e);
         }
-	}
+    }
 
     private void changeScale() {
         String str = myComboScale.getSelectedItem().toString();
@@ -588,8 +588,8 @@ public class PrintPreview extends JDialog {
 
         PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
         attr.add(myMediaSizeName);
-        attr.add(myOrientation == PageFormat.LANDSCAPE ? 
-        		   OrientationRequested.LANDSCAPE :
+        attr.add(myOrientation == PageFormat.LANDSCAPE ?
+                   OrientationRequested.LANDSCAPE :
                    OrientationRequested.PORTRAIT);
         Document doc = myProject.getDocument();
         if (doc != null) {
@@ -602,8 +602,8 @@ public class PrintPreview extends JDialog {
                 setVisible(false);
 
             } catch (Exception e) {
-            	e.printStackTrace();
-            	myUIfacade.showErrorDialog(e);
+                e.printStackTrace();
+                myUIfacade.showErrorDialog(e);
             }
             dispose();
         }
@@ -612,13 +612,13 @@ public class PrintPreview extends JDialog {
     }
 
     private void updateSourceImage() {
-    	try { 
-	    	RenderedImage image = myChart.getRenderedImage(myExportSettings);
-	        myPrintable = new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT);
-	        changePageOrientation(myOrientation);
+        try {
+            RenderedImage image = myChart.getRenderedImage(myExportSettings);
+            myPrintable = new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT);
+            changePageOrientation(myOrientation);
         } catch (OutOfMemoryError e) {
-    		myUIfacade.showErrorDialog(language.getText("printing.out_of_memory"));
-    	}
+            myUIfacade.showErrorDialog(language.getText("printing.out_of_memory"));
+        }
     }
 
     static class PreviewContainer extends JPanel {
@@ -694,14 +694,14 @@ public class PrintPreview extends JDialog {
     }
 
     static class PagePreview extends JPanel {
-    	static SortedMap<Integer, Image> ourImageCache = new TreeMap<Integer, Image>();
-		private final int myPageIndex;
-		private final PageFormat myPageFormat;
-		private final Printable myPrintableChart;
-		private int myScalePercents;
-		
+        static SortedMap<Integer, Image> ourImageCache = new TreeMap<Integer, Image>();
+        private final int myPageIndex;
+        private final PageFormat myPageFormat;
+        private final Printable myPrintableChart;
+        private int myScalePercents;
+
         public PagePreview(int pageIndex, PageFormat pageFormat, Printable chart, int scalePercents) {
-        	myScalePercents = scalePercents;
+            myScalePercents = scalePercents;
             myPageIndex = pageIndex;
             myPageFormat = pageFormat;
             myPrintableChart = chart;
@@ -714,22 +714,22 @@ public class PrintPreview extends JDialog {
         }
 
         void setScale(int scale) {
-        	myScalePercents = scale; 
+            myScalePercents = scale;
         }
 
         private int getScaledWidth() {
-        	return (int)(myPageFormat.getWidth() * myScalePercents / 100);
+            return (int)(myPageFormat.getWidth() * myScalePercents / 100);
         }
 
         private int getScaledHeight() {
-        	return (int) (myPageFormat.getHeight() * myScalePercents / 100);
+            return (int) (myPageFormat.getHeight() * myScalePercents / 100);
         }
 
         public Dimension getPreferredSize() {
             Insets ins = getInsets();
             return new Dimension(
-            		getScaledWidth() + ins.left + ins.right, 
-            		getScaledHeight() + ins.top + ins.bottom);
+                    getScaledWidth() + ins.left + ins.right,
+                    getScaledHeight() + ins.top + ins.bottom);
         }
 
         public Dimension getMaximumSize() {
@@ -741,29 +741,29 @@ public class PrintPreview extends JDialog {
         }
 
         protected void paintComponent(Graphics g) {
-        	super.paintComponent(g);
-        	Image scaledImage = ourImageCache.get(new Integer (myPageIndex));
+            super.paintComponent(g);
+            Image scaledImage = ourImageCache.get(new Integer (myPageIndex));
             if (scaledImage == null) {
-	        	BufferedImage bufferImage = new BufferedImage(
-	        			(int)myPageFormat.getWidth(), 
-	        			(int)myPageFormat.getHeight(), 
-	        			BufferedImage.TYPE_INT_RGB);
+                BufferedImage bufferImage = new BufferedImage(
+                        (int)myPageFormat.getWidth(),
+                        (int)myPageFormat.getHeight(),
+                        BufferedImage.TYPE_INT_RGB);
                 Graphics bufferGraphics = bufferImage.getGraphics();
                 {
-    	            bufferGraphics.setColor(Color.white);
-    	            bufferGraphics.fillRect(0, 0, bufferImage.getWidth(), bufferImage.getHeight());
-    	            try {
-    					myPrintableChart.print(bufferGraphics, myPageFormat, myPageIndex);
-    				} catch (PrinterException e) {
-    		        	if (!GPLogger.log(e)) {
-    		        		e.printStackTrace(System.err);
-    		        	}
-    				}
+                    bufferGraphics.setColor(Color.white);
+                    bufferGraphics.fillRect(0, 0, bufferImage.getWidth(), bufferImage.getHeight());
+                    try {
+                        myPrintableChart.print(bufferGraphics, myPageFormat, myPageIndex);
+                    } catch (PrinterException e) {
+                        if (!GPLogger.log(e)) {
+                            e.printStackTrace(System.err);
+                        }
+                    }
                 }
                 scaledImage = bufferImage.getScaledInstance(
                     getScaledWidth(), getScaledHeight(), Image.SCALE_SMOOTH);
                 ourImageCache.put(new Integer(myPageIndex), scaledImage);
-        	}
+            }
             g.setColor(getBackground());
             g.fillRect(0, 0, getWidth(), getHeight());
             g.drawImage(scaledImage, 0, 0, null);

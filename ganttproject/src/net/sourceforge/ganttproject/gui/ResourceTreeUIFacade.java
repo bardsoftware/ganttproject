@@ -10,6 +10,6 @@ import javax.swing.Action;
 public interface ResourceTreeUIFacade {
     Action getMoveUpAction();
     Action getMoveDownAction();
-    Component getUIComponent();    
+    Component getUIComponent();
     TableHeaderUIFacade getVisibleFields();
 }

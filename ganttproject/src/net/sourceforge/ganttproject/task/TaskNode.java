@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -6,7 +24,7 @@ import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
  * This class is used to describe the hierarchy of the tasks.
- * 
+ *
  * @author bbaranne (Benoit Baranne)
  */
 public class TaskNode extends DefaultMutableTreeNode {
@@ -17,7 +35,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
     /**
      * Creates an instance of TaskNode with the given task as reference.
-     * 
+     *
      * @param t
      *            Task of reference.
      */
@@ -26,16 +44,14 @@ public class TaskNode extends DefaultMutableTreeNode {
         task = t;
     }
 
-    /**
-     * @return the priority of the task.
-     */
+    /** @return the priority of the task. */
     public Task.Priority getPriority() {
         return task.getPriority();
     }
 
     /**
      * Sets the name of the task.
-     * 
+     *
      * @param newName
      *            The name to be set.
      */
@@ -43,16 +59,14 @@ public class TaskNode extends DefaultMutableTreeNode {
         task.setName(newName);
     }
 
-    /**
-     * @return the name of the task.
-     */
+    /** @return the name of the task. */
     public String getName() {
         return task.getName();
     }
 
     /**
      * Sets the start date of the task.
-     * 
+     *
      * @param startDate
      *            The start date of the task to be set.
      */
@@ -62,35 +76,31 @@ public class TaskNode extends DefaultMutableTreeNode {
         mutator.commit();
     }
 
-    /**
-     * @return the start date of the task.
-     */
+    /** @return the start date of the task. */
     public GanttCalendar getStart() {
         return task.getStart();
     }
 
     /**
      * Sets the end date of the task.
-     * 
+     *
      * @param endDate
      *            The end date of the task to be set.
      */
     public void setEnd(GanttCalendar endDate) {
-    	TaskMutator mutator = task.createMutator();
+        TaskMutator mutator = task.createMutator();
         mutator.setEnd(endDate);
         mutator.commit();
     }
 
-    /**
-     * @return the end date of the task.
-     */
+    /** @return the end date of the task. */
     public GanttCalendar getEnd() {
         return task.getEnd();
     }
 
     /**
      * Sets the duration of the task.
-     * 
+     *
      * @param length
      *            The duration to be set.
      */
@@ -100,16 +110,14 @@ public class TaskNode extends DefaultMutableTreeNode {
         mutator.commit();
     }
 
-    /**
-     * @return the duration of the task.
-     */
+    /** @return the duration of the task. */
     public int getDuration() {
         return (int) task.getDuration().getValue();
     }
 
     /**
      * Sets the completion percentage of the task.
-     * 
+     *
      * @param percentage
      *            The percentage to be set.
      */
@@ -117,9 +125,7 @@ public class TaskNode extends DefaultMutableTreeNode {
         task.setCompletionPercentage(percentage);
     }
 
-    /**
-     * @return the completion percentage of the task.
-     */
+    /** @return the completion percentage of the task. */
     public int getCompletionPercentage() {
         return task.getCompletionPercentage();
     }
@@ -132,16 +138,10 @@ public class TaskNode extends DefaultMutableTreeNode {
         return task.getTaskInfo();
     }
 
-    /**
-     * @inheritDoc
-     */
     public String toString() {
         return task.getName();
     }
 
-    /**
-     * @inheritDoc
-     */
     public Object getUserObject() {
         return task;
     }
@@ -155,5 +155,4 @@ public class TaskNode extends DefaultMutableTreeNode {
                 }
             }
     }
-
 }

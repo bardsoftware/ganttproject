@@ -55,7 +55,7 @@ public class TestSetupHelper {
             myGPCalendar = calendar;
             return this;
         }
-        
+
         public TaskManager build() {
             return TaskManager.Access.newInstance(null, this);
         }
@@ -64,7 +64,7 @@ public class TestSetupHelper {
     public static TaskManagerBuilder newTaskManagerBuilder() {
         return new TaskManagerBuilder();
     }
-    
+
     public static GanttCalendar newFriday() {
         return new GanttCalendar(2004, 9, 15);
     }

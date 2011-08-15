@@ -117,7 +117,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         // Return an empty collection, as there are no holidays in this calendar
         return Collections.emptyList();
     }
-    
+
     public void clearPublicHolidays() {
         // Nothing needs to be done
     }

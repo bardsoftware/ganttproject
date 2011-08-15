@@ -76,7 +76,7 @@ public abstract class ConstraintImpl implements Cloneable{
             return date;
         }
         return myDependency.getDependant().getManager().getCalendar().shiftDate(
-                    date, 
+                    date,
                     myDependency.getDependant().getManager().createLength(shift));
     }
 

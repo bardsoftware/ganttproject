@@ -1,6 +1,6 @@
 /*
  * Created on 17.01.2004
- * 
+ *
  */
 package net.sourceforge.ganttproject.gui;
 

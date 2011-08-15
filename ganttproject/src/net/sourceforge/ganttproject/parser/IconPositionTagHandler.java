@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package net.sourceforge.ganttproject.parser;
 

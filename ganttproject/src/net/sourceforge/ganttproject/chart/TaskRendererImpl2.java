@@ -71,7 +71,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         getPrimitiveContainer().clear();
         getPrimitiveContainer().getLayer(0).clear();
         getPrimitiveContainer().getLayer(1).clear();
-        getPrimitiveContainer().getLayer(2).clear();        
+        getPrimitiveContainer().getLayer(2).clear();
         getPrimitiveContainer().setOffset(0, myModel.getChartUIConfiguration().getHeaderHeight()-myModel.getVerticalOffset());
         getPrimitiveContainer().getLayer(2).setOffset(0, myModel.getChartUIConfiguration().getHeaderHeight()-myModel.getVerticalOffset());
         List<Task> tasksAboveViewport = new ArrayList<Task>();
@@ -153,7 +153,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                         alg.recalculateActivities(t, baselineActivities, startDate, endDate);
                     }
                     TaskActivityRenderer activityRenderer = new TaskActivityRenderer(
-                        myModel, getPrimitiveContainer().getLayer(2), myLabelsRenderer, 
+                        myModel, getPrimitiveContainer().getLayer(2), myLabelsRenderer,
                         new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight()/2));
                     List<Rectangle> baselineRectangles = activityRenderer.renderActivities(
                         rowNum, baselineActivities, defaultUnitOffsets);
@@ -173,17 +173,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                     return;
                 }
             }
-        }        
+        }
     }
     private List<Rectangle> renderActivities(
             final int rowNum, Task t, List<TaskActivity> activities, List<Offset> defaultUnitOffsets) {
         TaskActivityRenderer activityRenderer = new TaskActivityRenderer(
-            myModel, getPrimitiveContainer(), myLabelsRenderer, 
+            myModel, getPrimitiveContainer(), myLabelsRenderer,
             new TaskActivityRenderer.Style(0, getRectangleHeight()));
         List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
         if (!rectangles.isEmpty()) {
             Rectangle lastRectangle = rectangles.get(rectangles.size()-1);
-            
+
             if (lastRectangle.isVisible()) {
                 myLabelsRenderer.createRightSideText(lastRectangle);
                 myLabelsRenderer.createDownSideText(lastRectangle);
@@ -279,7 +279,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         int arrowLength = 7;
         for (int i = 0; i < dependencyDrawData.size(); i++) {
             DependencyDrawData next = dependencyDrawData.get(i);
-            
+
             // Determine the line style (depending on type of dependency)
             Line line;
             String lineStyle;

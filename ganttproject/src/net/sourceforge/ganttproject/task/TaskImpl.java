@@ -198,7 +198,7 @@ public class TaskImpl implements Task {
         };
         return result;
     }
-    
+
     class MutatorException extends RuntimeException {
         public MutatorException(String msg) {
             super(msg);

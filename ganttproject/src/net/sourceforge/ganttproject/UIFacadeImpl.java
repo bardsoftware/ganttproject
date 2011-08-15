@@ -365,12 +365,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         StringBuffer result = new StringBuffer();
         result.append(e.getMessage());
         if(e instanceof DocumentException == false) {
-        	result.append("\n\n");
-        	StringWriter stringWriter = new StringWriter();
-        	PrintWriter writer = new PrintWriter(stringWriter);
-        	e.printStackTrace(writer);
-        	writer.close();
-        	result.append(stringWriter.getBuffer().toString());
+            result.append("\n\n");
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            e.printStackTrace(writer);
+            writer.close();
+            result.append(stringWriter.getBuffer().toString());
         }
         return result.toString();
     }

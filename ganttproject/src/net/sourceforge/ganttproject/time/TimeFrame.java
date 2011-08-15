@@ -4,7 +4,7 @@ import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 01.02.2004
  */
 public interface TimeFrame {

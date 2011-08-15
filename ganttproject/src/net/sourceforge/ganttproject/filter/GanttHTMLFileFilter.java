@@ -30,7 +30,7 @@ public class GanttHTMLFileFilter extends FileFilter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
      */
     public boolean accept(File f) {
@@ -41,7 +41,7 @@ public class GanttHTMLFileFilter extends FileFilter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.filechooser.FileFilter#getDescription()
      */
     public String getDescription() {

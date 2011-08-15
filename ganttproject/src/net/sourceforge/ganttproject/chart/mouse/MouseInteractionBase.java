@@ -26,33 +26,33 @@ import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
 
 abstract class MouseInteractionBase {
-	protected Date myStartDate;
+    protected Date myStartDate;
     private final MouseInteraction.TimelineFacade myChartDateGrid;
 
     protected MouseInteractionBase(Date startDate, MouseInteraction.TimelineFacade chartDateGrid) {
-    	myStartDate = startDate;
-    	myChartDateGrid = chartDateGrid;
+        myStartDate = startDate;
+        myChartDateGrid = chartDateGrid;
     }
 
     protected TaskLength getLengthDiff(MouseEvent event) {
-    	Date dateUnderX = myChartDateGrid.getDateAt(event.getX());
-    	TaskLength result = myChartDateGrid.createTimeInterval(
-    			myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
-    	return result;
+        Date dateUnderX = myChartDateGrid.getDateAt(event.getX());
+        TaskLength result = myChartDateGrid.createTimeInterval(
+                myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
+        return result;
     }
 
     protected TimelineFacade getChartDateGrid() {
         return myChartDateGrid;
     }
-    
+
     public void paint(Graphics g) {
     }
 
     protected void setStartDate(Date date) {
-    	myStartDate = date;
+        myStartDate = date;
     }
-    
+
     protected Date getStartDate() {
-    	return myStartDate;
+        return myStartDate;
     }
 }

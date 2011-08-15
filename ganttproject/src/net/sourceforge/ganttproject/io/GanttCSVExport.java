@@ -1,19 +1,21 @@
-/***************************************************************************
- GanttCSVExport.java
- -----------------
- begin                : 7 juil. 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas@ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2004-2011 Thomas Alexandre, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.io;
 
 import java.io.IOException;
@@ -36,7 +38,7 @@ import net.sourceforge.ganttproject.util.StringUtils;
 
 /**
  * Class to export the project in csv text format
- * 
+ *
  * @author athomas
  */
 public class GanttCSVExport {
@@ -56,14 +58,14 @@ public class GanttCSVExport {
     private boolean bFixedSize;
 
     public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
-    	myProject = project;
+        myProject = project;
         myTasks = project.getTaskManager().getTasks();
         myHrManager = project.getHumanResourceManager();
         this.csvOptions = csvOptions;
         bFixedSize = csvOptions.bFixedSize;
     }
 
-    /** Save the project as CSV on a stream 
+    /** Save the project as CSV on a stream
      * @throws IOException */
     public void save(OutputStream stream) throws IOException {
         OutputStreamWriter out = new OutputStreamWriter(stream);
@@ -92,57 +94,57 @@ public class GanttCSVExport {
     private void writeCell(OutputStreamWriter out, String cellValue) throws IOException {
         out.write(correctField(cellValue)
                 + (bFixedSize ? "" : csvOptions.sSeparatedChar));
-	}
+    }
 
     private void writeTextCell(OutputStreamWriter out, String cellValue) throws IOException {
         out.write((bFixedSize ? "" : csvOptions.sSeparatedTextChar)
                 + correctField(cellValue)
                 + (bFixedSize ? "" : csvOptions.sSeparatedTextChar
-                        + csvOptions.sSeparatedChar));    	
+                        + csvOptions.sSeparatedChar));
     }
 
     private void writeTaskHeaders(OutputStreamWriter out) throws IOException {
         if (csvOptions.bExportTaskID) {
-        	writeCell(out, i18n("tableColID"));
+            writeCell(out, i18n("tableColID"));
         }
         if (csvOptions.bExportTaskName) {
-        	writeCell(out, i18n("tableColName"));
+            writeCell(out, i18n("tableColName"));
         }
         if (csvOptions.bExportTaskStartDate) {
-        	writeCell(out, i18n("tableColBegDate"));
+            writeCell(out, i18n("tableColBegDate"));
         }
         if (csvOptions.bExportTaskEndDate) {
-        	writeCell(out, i18n("tableColEndDate"));        	
+            writeCell(out, i18n("tableColEndDate"));
         }
         if (csvOptions.bExportTaskDuration) {
-        	writeCell(out, i18n("tableColDuration"));        	        	
+            writeCell(out, i18n("tableColDuration"));
         }
         if (csvOptions.bExportTaskPercent) {
-        	writeCell(out, i18n("tableColCompletion"));	        	
+            writeCell(out, i18n("tableColCompletion"));
         }
         if (csvOptions.bExportTaskWebLink) {
-        	writeCell(out, i18n("webLink"));
+            writeCell(out, i18n("webLink"));
         }
         if (csvOptions.bExportTaskResources) {
-        	writeCell(out, i18n("resources"));        	
+            writeCell(out, i18n("resources"));
         }
         if (csvOptions.bExportTaskNotes) {
-        	writeCell(out, i18n("notes"));        	        	
+            writeCell(out, i18n("notes"));
         }
         List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         for (int i = 0; i < customFields.size(); i++) {
-        	writeCell(out, String.valueOf(customFields.get(i)));
+            writeCell(out, String.valueOf(customFields.get(i)));
         }
         out.write("\n\n");
-	}
+    }
 
-	private String i18n(String key) {
-		return GanttLanguage.getInstance().getText(key);
-	}
+    private String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
+    }
 
-	/** Write all tasks. */
+    /** Write all tasks. */
     private void writeTasks(OutputStreamWriter out) throws IOException {
-    	writeTaskHeaders(out);
+        writeTaskHeaders(out);
         List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
@@ -176,16 +178,16 @@ public class GanttCSVExport {
             }
             // associated resources
             if (csvOptions.bExportTaskResources) {
-            	writeTextCell(out, getAssignments(task));
+                writeTextCell(out, getAssignments(task));
             }
             // Notes
             if (csvOptions.bExportTaskNotes) {
-            	writeTextCell(out, task.getNotes());
+                writeTextCell(out, task.getNotes());
             }
             CustomColumnsValues customValues = task.getCustomValues();
             for (int j = 0; j < customFields.size(); j++) {
-            	Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
-            	writeCell(out, String.valueOf(nextCustomFieldValue));
+                Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
+                writeCell(out, String.valueOf(nextCustomFieldValue));
             }
             out.write("\n");
         }
@@ -193,31 +195,31 @@ public class GanttCSVExport {
 
     private void writeResourceHeaders(OutputStreamWriter out) throws IOException {
         if (csvOptions.bExportResourceID) {
-        	writeCell(out, i18n("tableColID"));
+            writeCell(out, i18n("tableColID"));
         }
         if (csvOptions.bExportResourceName) {
-        	writeCell(out, i18n("tableColResourceName"));
-        }		
+            writeCell(out, i18n("tableColResourceName"));
+        }
         if (csvOptions.bExportResourceMail) {
-        	writeCell(out, i18n("tableColResourceEMail"));
+            writeCell(out, i18n("tableColResourceEMail"));
         }
         if (csvOptions.bExportResourcePhone) {
-        	writeCell(out, i18n("tableColResourcePhone"));
+            writeCell(out, i18n("tableColResourcePhone"));
         }
         if (csvOptions.bExportResourceRole) {
-        	writeCell(out, i18n("tableColResourceRole"));        	
+            writeCell(out, i18n("tableColResourceRole"));
         }
         List<CustomPropertyDefinition> customFieldDefs = myProject.getResourceCustomPropertyManager().getDefinitions();
         for (int i=0; i<customFieldDefs.size(); i++) {
-        	CustomPropertyDefinition nextDef = customFieldDefs.get(i);
-        	writeCell(out, nextDef.getName());
+            CustomPropertyDefinition nextDef = customFieldDefs.get(i);
+            writeCell(out, nextDef.getName());
         }
         out.write("\n\n");
     }
 
-	/** write the resources. */
+    /** write the resources. */
     private void writeResources(OutputStreamWriter out) throws IOException {
-    	writeResourceHeaders(out);
+        writeResourceHeaders(out);
         // parse all resources
         for (int i = 0; i < resources.size(); i++) {
             HumanResource p = resources.get(i);
@@ -246,15 +248,15 @@ public class GanttCSVExport {
             }
             List<CustomProperty> customProps = p.getCustomProperties();
             for (int j=0; j<customProps.size(); j++) {
-            	CustomProperty nextProperty = customProps.get(j);
-            	writeTextCell(out, nextProperty.getValueAsString());
+                CustomProperty nextProperty = customProps.get(j);
+                writeTextCell(out, nextProperty.getValueAsString());
             }
             out.write("\n");
         }
     }
 
 
-	/** set the maximum size for all strings. */
+    /** set the maximum size for all strings. */
     private void getMaxSize() {
         List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
         iMaxSize = 0;
@@ -326,11 +328,11 @@ public class GanttCSVExport {
 
             CustomColumnsValues customValues = task.getCustomValues();
             for (int j=0; j<customFields.size(); j++) {
-            	Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
-            	String nextValueAsString = String.valueOf(nextCustomFieldValue); 
-            	if (nextValueAsString.length() > iMaxSize) {
-            		iMaxSize = nextValueAsString.length();
-            	}
+                Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
+                String nextValueAsString = String.valueOf(nextCustomFieldValue);
+                if (nextValueAsString.length() > iMaxSize) {
+                    iMaxSize = nextValueAsString.length();
+                }
             }
         }
 
@@ -375,10 +377,10 @@ public class GanttCSVExport {
             }
             List<CustomProperty> customProps = p.getCustomProperties();
             for (int j=0; j<customProps.size(); j++) {
-            	CustomProperty nextProperty = customProps.get(j);
-            	if (nextProperty.getValueAsString().length() > iMaxSize) {
-            		iMaxSize = nextProperty.getValueAsString().length();
-            	}
+                CustomProperty nextProperty = customProps.get(j);
+                if (nextProperty.getValueAsString().length() > iMaxSize) {
+                    iMaxSize = nextProperty.getValueAsString().length();
+                }
             }
         }
     }

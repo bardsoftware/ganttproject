@@ -11,5 +11,5 @@ import java.io.OutputStream;
  */
 public interface GPSaver {
     void save(OutputStream output) throws IOException;
-    
+
 }
