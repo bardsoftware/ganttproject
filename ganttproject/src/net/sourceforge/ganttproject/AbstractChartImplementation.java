@@ -65,7 +65,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     private final ChartComponentBase myChartComponent;
 
     public AbstractChartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
-		assert chartModel != null;
+        assert chartModel != null;
         myChartModel = chartModel;
         myProject = project;
         myChartComponent = chartComponent;
@@ -137,14 +137,14 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public void scrollBy(TaskLength duration) {
-    	setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
+        setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
     }
-    
+
     @Override
     public void setStartOffset(int pixels) {
         getChartModel().setHorizontalOffset(pixels);
     }
-    
+
     private TimeFrame scrollTimeFrame(Date scrolledDate) {
         TimeFrame result = null;
         if (getTopTimeUnit().isConstructedFrom(getBottomTimeUnit())) {
@@ -181,7 +181,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public void setBottomUnit(TimeUnit bottomUnit) {
         getChartModel().setBottomTimeUnit(bottomUnit);
     }
-    
+
     public void setTopUnit(TimeUnit topUnit) {
         getChartModel().setTopTimeUnit(topUnit);
     }

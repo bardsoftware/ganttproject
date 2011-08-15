@@ -9,11 +9,11 @@ public interface OptionPageProvider {
     GPOptionGroup[] getOptionGroups();
 
     String getPageID();
-    
+
     boolean hasCustomComponent();
     Component buildPageComponent();
 
     void init(IGanttProject project, UIFacade uiFacade);
-    
+
     void commit();
 }

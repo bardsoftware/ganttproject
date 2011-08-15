@@ -37,20 +37,20 @@ class TaskActivityRenderer {
     static class Style {
         int marginTop;
         int height;
-        
+
         Style(int marginTop, int height) {
             this.marginTop = marginTop;
             this.height = height;
         }
     }
-    TaskActivityRenderer(ChartModelImpl chartModel, GraphicPrimitiveContainer primitiveContainer, 
+    TaskActivityRenderer(ChartModelImpl chartModel, GraphicPrimitiveContainer primitiveContainer,
             TaskLabelsRendererImpl labelsRenderer, Style style) {
         myChartModel = chartModel;
         myStyle = style;
         myGraphicPrimitiveContainer = primitiveContainer;
         myLabelsRenderer = labelsRenderer;
     }
-    
+
     List<Rectangle> renderActivities(int rowNum, List<TaskActivity> activities, List<Offset> offsets) {
         List<Rectangle> rectangles = new ArrayList<Rectangle>();
         for (TaskActivity nextActivity : activities) {
@@ -185,7 +185,7 @@ class TaskActivityRenderer {
     private ChartModelImpl getChartModel() {
         return myChartModel;
     }
-    
+
     private int getRowHeight() {
         return getChartModel().getRowHeight();
     }

@@ -39,7 +39,7 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
     public Date getDateAt(int x) {
         return myChartModel.getOffsetAt(x).getOffsetStart();
     }
-    
+
     @Override
     public TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
         return myTaskManager.createLength(timeUnit, startDate, endDate);
@@ -60,5 +60,5 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
     public ScrollingSession createScrollingSession(int xpos) {
         return myChartModel.createScrollingSession(xpos);
     }
-    
+
 }

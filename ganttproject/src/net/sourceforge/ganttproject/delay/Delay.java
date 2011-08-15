@@ -5,7 +5,7 @@ import net.sourceforge.ganttproject.task.TaskInfo;
 /**
  * This class represents very basicaly delays. There are three type of delays : -
  * No delay - Normal delay - Critical delay (when the related task is critical)
- * 
+ *
  * @author bbaranne
  */
 public class Delay implements TaskInfo {

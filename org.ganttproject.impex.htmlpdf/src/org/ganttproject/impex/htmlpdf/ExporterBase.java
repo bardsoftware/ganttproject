@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team 
+Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -168,12 +168,12 @@ abstract class ExporterBase extends AbstractExporter {
                         getUIFacade().showErrorDialog(e);
                         monitor.setCanceled(true);
                     }
-                    
+
                     // Check if job got finished improperly
                     IStatus state = jobs[i].getResult();
                     if(state.isOK() == false) {
-                    	getUIFacade().showErrorDialog(state.getException());
-                    	monitor.setCanceled(true);
+                        getUIFacade().showErrorDialog(state.getException());
+                        monitor.setCanceled(true);
                     }
                 }
                 Job finishing = new Job("finishing") {
@@ -288,12 +288,12 @@ abstract class ExporterBase extends AbstractExporter {
     protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         int totalWidth = 0;
-		for (int i = 0; i < visibleFields.getSize(); i++) {
+        for (int i = 0; i < visibleFields.getSize(); i++) {
             if (visibleFields.getField(i).isVisible()) {
                 totalWidth += visibleFields.getField(i).getWidth();
             }
         }
-		for (int i = 0; i < visibleFields.getSize(); i++) {
+        for (int i = 0; i < visibleFields.getSize(); i++) {
             TableHeaderUIFacade.Column field = visibleFields.getField(i);
             if (field.isVisible()) {
                 addAttribute("id", field.getID(), attrs);
@@ -450,7 +450,7 @@ abstract class ExporterBase extends AbstractExporter {
         {
             List<HumanResource> resources = resourceManager.getResources();
 
-//			String[] function = RoleManager.Access.getInstance().getRoleNames();
+//            String[] function = RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
                 HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);

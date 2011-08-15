@@ -79,13 +79,13 @@ public class SortTasksAlgorithm {
         }
 
     };
-    
+
     public void sortByStartDate(List<TaskActivity> tasks) {
         Collections.sort(tasks, mySortActivitiesByStartDateComparator);
     }
-    
+
     public void sortTasksByStartDate(List<Task> tasks) {
         Collections.sort(tasks, mySortTasksByStartDateComparator);
     }
-    
+
 }

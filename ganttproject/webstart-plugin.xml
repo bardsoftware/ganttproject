@@ -57,9 +57,9 @@
         </application>
    </extension>
    <extension point="net.sourceforge.ganttproject.exporter">
-         <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>   
-         <exporter class="net.sourceforge.ganttproject.export.ExporterToCSV"/>   
-   </extension>   
+         <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>
+         <exporter class="net.sourceforge.ganttproject.export.ExporterToCSV"/>
+   </extension>
    <extension
          point="net.sourceforge.ganttproject.importer">
          <importer class="net.sourceforge.ganttproject.importer.ImporterFromGanttFile"/>
@@ -82,9 +82,9 @@
       <calendar resource-url="calendar/i18n_pt_brazil.calendar"/>
       <calendar resource-url="calendar/i18n_sk.calendar"/>
    </extension>
-   
+
 <!--   <extension point="net.sourceforge.ganttproject.chart">
-         <exporter class="net.sourceforge.ganttproject.chart.TestChart"/>   
+         <exporter class="net.sourceforge.ganttproject.chart.TestChart"/>
    </extension> -->
-   
+
 </plugin>

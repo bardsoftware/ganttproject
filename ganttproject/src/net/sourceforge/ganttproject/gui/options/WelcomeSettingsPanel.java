@@ -22,7 +22,7 @@ import net.sourceforge.ganttproject.GanttProject;
 
 /**
  * Simple class for welcome panel.
- * 
+ *
  * @author athomas
  */
 public class WelcomeSettingsPanel extends GeneralOptionPanel {

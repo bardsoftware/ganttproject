@@ -7,7 +7,7 @@ package net.sourceforge.ganttproject.resource;
  * management (e.g. listen mouse events); This interface may be implemented,
  * e.g., by tables, trees and other UI components which allow to select
  * something
- * 
+ *
  * @author dbarashev
  */
 public interface ResourceContext {

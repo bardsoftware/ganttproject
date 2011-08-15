@@ -52,14 +52,14 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
     public static interface ChartModelFacade {
         Task findTaskUnderMousePointer(int xpos, int ypos);
     }
-    
+
     public DrawDependencyInteraction(MouseEvent initiatingEvent,
             TaskRegularAreaChartItem taskArea, TimelineFacade timelineFacade, ChartModelFacade chartModelFacade,
             UIFacade uiFacade, TaskDependencyCollection dependencyCollection) {
         super(null, timelineFacade);
         myUiFacade = uiFacade;
         myChartModelFacade = chartModelFacade;
-        myDependencyCollection = dependencyCollection; 
+        myDependencyCollection = dependencyCollection;
         myStartPoint = initiatingEvent.getPoint();
         myTask = taskArea.getTask();
         myArrow = new DependencyInteractionRenderer(

@@ -25,7 +25,7 @@ class PropertyFetcher {
     }
     CustomColumnsStorage getCustomColumnStorage() {
         return myProject.getCustomColumnsStorage();
-    }    
+    }
     void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
 
@@ -38,7 +38,7 @@ class PropertyFetcher {
 
         HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
         if (coordinator!=null) {
-            id2value.put("tpd8", coordinator.getName());                        
+            id2value.put("tpd8", coordinator.getName());
         }
 
         CustomColumnsValues customValues = t.getCustomValues();

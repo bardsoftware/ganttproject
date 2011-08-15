@@ -67,7 +67,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         }
         renderNonWorkingDayColumns();
     }
-    
+
     private void renderLabel(int curX, Date curDate, Offset curOffset) {
         TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
         String unitText = timeUnitText.getText(-1);
@@ -91,8 +91,8 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
                 renderNonWorkingDay(curX, offset);
                 // And expand it to the timeline area.
                 Rectangle r = myTimelineContainer.createRectangle(
-                    curX, getLineTopPosition() + 1, 
-                    offset.getOffsetPixels() - curX, 
+                    curX, getLineTopPosition() + 1,
+                    offset.getOffsetPixels() - curX,
                     getLineBottomPosition() - getLineTopPosition() + 1);
                 //System.err.println(offset.getDayType()+": " + r);
                 applyRectangleStyle(r, offset.getDayType());
@@ -119,12 +119,12 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         else if (dayType == GPCalendar.DayType.HOLIDAY) {
             r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
         }
-        r.setStyle("calendar.holiday");        
+        r.setStyle("calendar.holiday");
     }
     private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
         if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {
             myTimelineContainer.createLine(
-                    prevOffset.getOffsetPixels(), getLineTopPosition(), 
+                    prevOffset.getOffsetPixels(), getLineTopPosition(),
                     prevOffset.getOffsetPixels(), getLineTopPosition()+10);
         }
     }

@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 Alexandre Thomas, GanttProject team 
+Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -47,7 +47,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Simulate a status bar under the main frame
- * 
+ *
  * @author athomas
  */
 public class GanttStatusBar extends JPanel implements Runnable {
@@ -99,7 +99,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
         message0.setText("GanttProject.biz (" + GanttProject.version + ")");
         //pbp.setValue(0);
-        
+
         setFirstText(GanttLanguage.getInstance().getText("welcome"), 5000);
     }
 
@@ -115,13 +115,13 @@ public class GanttStatusBar extends JPanel implements Runnable {
         message2.setText(text);
     }
 
-	/**
-	 * Show the given text in the first message area for the given amount of
-	 * milliseconds
-	 * 
-	 * @param text to show
-	 * @param milliseconds amount of milliseconds to show the text
-	 */
+    /**
+     * Show the given text in the first message area for the given amount of
+     * milliseconds
+     *
+     * @param text to show
+     * @param milliseconds amount of milliseconds to show the text
+     */
     public void setFirstText(String text, int milliseconds) {
         if (!isVisible()) {
             return;
@@ -134,13 +134,13 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
     }
 
-	/**
-	 * Show the given text in the second message area for the given amount of
-	 * milliseconds
-	 * 
-	 * @param text to show
-	 * @param milliseconds amount of milliseconds to show the text
-	 */
+    /**
+     * Show the given text in the second message area for the given amount of
+     * milliseconds
+     *
+     * @param text to show
+     * @param milliseconds amount of milliseconds to show the text
+     */
     public void setSecondText(String text, int milliseconds) {
         if (!isVisible()) {
             return;
@@ -239,7 +239,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
                 float dBlue = (float) cPanel.getBlue() / (float) step;
 
                 for (int i = 0; i < step; i++) {
-					textColor = new Color(dRed * i, dGreen * i, dBlue * i);
+                    textColor = new Color(dRed * i, dGreen * i, dBlue * i);
                     repaint();
                     Thread.sleep(20);
                 }
@@ -352,20 +352,20 @@ public class GanttStatusBar extends JPanel implements Runnable {
             myProgressDialog = new ProgressBarDialog(this);
         }
         public void beginTask(final String name, final int totalWork)  {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// pbp.reset(name, totalWork);
-					// pbp.setVisible(true);
-					// myMainFrame.setGlassPane(myProgressPanel);
-					// myProgressPanel.setVisible(true);
-					// myMainFrame.getRootPane().revalidate();
-					// myProgressPanel.start();
-					myProgressDialog.start(name, totalWork);
-					GPLogger.log("[ProgressMonitorImpl] beginTask: name="
-							+ name);
-				}
-			});
-		}
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // pbp.reset(name, totalWork);
+                    // pbp.setVisible(true);
+                    // myMainFrame.setGlassPane(myProgressPanel);
+                    // myProgressPanel.setVisible(true);
+                    // myMainFrame.getRootPane().revalidate();
+                    // myProgressPanel.start();
+                    myProgressDialog.start(name, totalWork);
+                    GPLogger.log("[ProgressMonitorImpl] beginTask: name="
+                            + name);
+                }
+            });
+        }
 
         public void done() {
             SwingUtilities.invokeLater(new Runnable() {
@@ -373,8 +373,8 @@ public class GanttStatusBar extends JPanel implements Runnable {
             //myProgressPanel.stop();
             //myProgressPanel.setVisible(false);
                     myProgressDialog.done();
-//		            pbp.reset();
-//		            pbp.setVisible(false);
+//                    pbp.reset();
+//                    pbp.setVisible(false);
                 }
             });
         }
@@ -399,32 +399,32 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
 
         public void worked(final int work) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					myWorked += work;
-					myProgressDialog.setProgress(myWorked);
-				}
-			});
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    myWorked += work;
+                    myProgressDialog.setProgress(myWorked);
+                }
+            });
         }
     }
 
     public void setErrorNotifier(Runnable notifier) {
-		if (notifier == null && myErrorNotifier != null) {
+        if (notifier == null && myErrorNotifier != null) {
             clearErrorNotification();
             return;
         }
-		if (myErrorNotifier == null) {
+        if (myErrorNotifier == null) {
             createErrorNotification(notifier);
         }
         myErrorNotifier = notifier;
     }
 
     private void clearErrorNotification() {
-//		myErrorNotificationPanel.disableNotifier();
+//        myErrorNotificationPanel.disableNotifier();
     }
 
     private void createErrorNotification(Runnable notifier) {
-//		myErrorNotificationPanel.enableNotifier(notifier);
+//        myErrorNotificationPanel.enableNotifier(notifier);
     }
 
     public void setNotificationManager(NotificationManagerImpl notificationManager) {

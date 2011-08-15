@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * List of Documents MRU (<b>m</b>ost <b>r</b>ecently <b>u</b>sed)
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentsMRU {
@@ -31,7 +31,7 @@ public class DocumentsMRU {
      * Adds a Document at the top of the list of Documents MRU. If the list is
      * already full, an old entry is removed, to make place for this new
      * document.
-     * 
+     *
      * @param document
      *            the Document that should be added
      * @return wether the list has changed through the addition
@@ -61,7 +61,7 @@ public class DocumentsMRU {
     /**
      * Appends a Document to the list of Documents MRU. If the list is already
      * full, the document will <b>not</b> be appended.
-     * 
+     *
      * @param document
      *            the Document that should be added
      * @return wether the list has changed through the addition

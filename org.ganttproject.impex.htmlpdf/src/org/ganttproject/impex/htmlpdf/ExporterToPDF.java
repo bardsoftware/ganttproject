@@ -94,10 +94,10 @@ public class ExporterToPDF extends ExporterBase {
     private Job createGenerateGanttChartJob(final ExportState state) {
         Job result = new ExportJob("generate gantt chart") {
             protected IStatus run(IProgressMonitor monitor) {
-            	if (monitor.isCanceled()) {
-            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-            		return Status.CANCEL_STATUS;
-            	}
+                if (monitor.isCanceled()) {
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    return Status.CANCEL_STATUS;
+                }
                 try {
                     RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
@@ -107,13 +107,13 @@ public class ExporterToPDF extends ExporterBase {
                             state.ganttChartImageFile);
                     monitor.worked(1);
                 } catch (Exception e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
 
                 } catch (OutOfMemoryError e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -125,27 +125,27 @@ public class ExporterToPDF extends ExporterBase {
     private Job createGenerateResourcechartJob(final ExportState state) {
         Job result = new ExportJob("Generate resource chart") {
             protected IStatus run(IProgressMonitor monitor) {
-            	if (monitor.isCanceled()) {
-            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-            		return Status.CANCEL_STATUS;
-            	}
+                if (monitor.isCanceled()) {
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    return Status.CANCEL_STATUS;
+                }
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-					File outputFile = File.createTempFile("resourcechart",
-							".jpg");
+                    File outputFile = File.createTempFile("resourcechart",
+                            ".jpg");
                     state.resourceChartImageFile = outputFile;
                     ImageIO.write(resourceChartImage, JPG_FORMAT_NAME,
                             outputFile);
                     monitor.worked(1);
                 } catch (Exception e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
 
                 } catch (OutOfMemoryError e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -157,10 +157,10 @@ public class ExporterToPDF extends ExporterBase {
     private Job createFOPInitializationJob(final ExportState state) {
         Job result = new ExportJob("Initializing FOP") {
             protected IStatus run(IProgressMonitor monitor) {
-            	if (monitor.isCanceled()) {
-            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-            		return Status.CANCEL_STATUS;
-            	}
+                if (monitor.isCanceled()) {
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    return Status.CANCEL_STATUS;
+                }
                 try {
                     Driver driver = new Driver();
                     driver.setRenderer(Driver.RENDER_PDF);
@@ -169,8 +169,8 @@ public class ExporterToPDF extends ExporterBase {
                     state.driver = driver;
                     monitor.worked(1);
                 } catch (Exception e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -182,10 +182,10 @@ public class ExporterToPDF extends ExporterBase {
     private Job createTransformationJob(final ExportState state, final List<File> resultFiles) {
         Job result = new ExportJob("Generating PDF") {
             protected IStatus run(IProgressMonitor monitor) {
-            	if (monitor.isCanceled()) {
-            		getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-            		return Status.CANCEL_STATUS;
-            	}
+                if (monitor.isCanceled()) {
+                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
+                    return Status.CANCEL_STATUS;
+                }
                 assert myStylesheet!=null;
                 OutputStream out = null;
                 try {
@@ -193,15 +193,15 @@ public class ExporterToPDF extends ExporterBase {
                     state.driver.setOutputStream(out);
                     TransformerHandler stylesheetHandler = createHandler(myStylesheet
                             .getUrl().toString());
-//					SAXTransformerFactory factory = getTransformerFactory();
-//					TransformerHandler stylesheetHandler = factory
-//							.newTransformerHandler();
-//					Transformer transformer = stylesheetHandler
-//							.getTransformer();
-//					transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-//					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//					transformer.setOutputProperty(
-//							"{http://xml.apache.org/xslt}indent-amount", "4");
+//                    SAXTransformerFactory factory = getTransformerFactory();
+//                    TransformerHandler stylesheetHandler = factory
+//                            .newTransformerHandler();
+//                    Transformer transformer = stylesheetHandler
+//                            .getTransformer();
+//                    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+//                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//                    transformer.setOutputProperty(
+//                            "{http://xml.apache.org/xslt}indent-amount", "4");
 
                     stylesheetHandler.setResult(new SAXResult(state.driver
                             .getContentHandler()));
@@ -209,8 +209,8 @@ public class ExporterToPDF extends ExporterBase {
                     exportProject(state, stylesheetHandler);
                     resultFiles.add(state.outputFile);
                 } catch (Exception e) {
-                	cancel();
-                	ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    cancel();
+                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 finally {
@@ -218,7 +218,7 @@ public class ExporterToPDF extends ExporterBase {
                     if (out!=null) {
                         try {
                             out.flush();
-                        	out.close();
+                            out.close();
                         } catch(IOException e) {
                             getUIFacade().showErrorDialog(e);
                         }
@@ -281,7 +281,7 @@ public class ExporterToPDF extends ExporterBase {
       return "\n\r";
     }
 
-	private void writeCharts(ExportState state, TransformerHandler handler)
+    private void writeCharts(ExportState state, TransformerHandler handler)
             throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("title", i18n("ganttChart"), attrs);
@@ -314,7 +314,7 @@ public class ExporterToPDF extends ExporterBase {
             throw new ExportException("Failed to create FOP options", e);
         } catch (UnsupportedEncodingException e) {
             throw new ExportException("Failed to create FOP options", e);
-		}
+        }
         Options result;
         try {
             result = new Options(new ByteArrayInputStream(outputStream

@@ -1,6 +1,21 @@
 /*
- * Created on 08.11.2004
- */
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.time.gregorian;
 
 import java.util.Calendar;
@@ -16,22 +31,22 @@ public class WeekFramerImpl implements DateFrameable {
     public static interface ICalendarFactory {
         Calendar newCalendar();
     }
-    
+
     private static class DefaultCalendarFactory implements ICalendarFactory {
         @Override
         public Calendar newCalendar() {
             return CalendarFactory.newCalendar();
         }
     }
-    
+
     public WeekFramerImpl() {
         this(new DefaultCalendarFactory());
     }
-    
+
     public WeekFramerImpl(ICalendarFactory calendarFactory) {
         myCalendarFactory = calendarFactory;
     }
-    
+
     public Date adjustRight(Date baseDate) {
         Calendar c = myCalendarFactory.newCalendar();
         do {
@@ -45,7 +60,7 @@ public class WeekFramerImpl implements DateFrameable {
         Calendar c = myCalendarFactory.newCalendar();
         c.setTime(myDayFramer.adjustLeft(baseDate));
         while (c.get(Calendar.DAY_OF_WEEK) != c.getFirstDayOfWeek()) {
-			c.setTime(myDayFramer.adjustLeft(myDayFramer.jumpLeft(c.getTime())));
+            c.setTime(myDayFramer.adjustLeft(myDayFramer.jumpLeft(c.getTime())));
         }
         return c.getTime();
     }

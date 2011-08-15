@@ -1,5 +1,5 @@
 /***************************************************************************
- AboutLicensePanel.java 
+ AboutLicensePanel.java
  ------------------------------------------
  begin                : 29 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre

@@ -158,10 +158,10 @@ public interface Document {
 
     /**
      * Used to generate useful exceptions for document saving and loading
-     * (preventing bothersome errors for the end users when possible) 
+     * (preventing bothersome errors for the end users when possible)
      */
     public class DocumentException extends Exception {
-        public DocumentException(String msg) { super(msg); }  
-        public DocumentException(String msg, Throwable cause) { super(msg, cause); }  
+        public DocumentException(String msg) { super(msg); }
+        public DocumentException(String msg, Throwable cause) { super(msg, cause); }
     }
 }

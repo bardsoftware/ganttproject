@@ -118,25 +118,25 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
         return myFile;
     }
 
-	/**
-	 * Updates the file path
-	 * 
-	 * @param file if this is point to a directory, the previously used file name
-	 *            is added
-	 */
+    /**
+     * Updates the file path
+     *
+     * @param file if this is point to a directory, the previously used file name
+     *            is added
+     */
     public void setFile(File file) {
-    	if(file == null) {
-    		// Empty the files
-    		myFile = null;
-    		myTextField.setText("");
-    	}
+        if(file == null) {
+            // Empty the files
+            myFile = null;
+            myTextField.setText("");
+        }
 
-    	if(file.isDirectory()) {
-    		// Add previously used file name because we need/like to select files
-    		myFile = new File(file, myFile.getName());
-    	} else {
-    		myFile = file;
-    	}
+        if(file.isDirectory()) {
+            // Add previously used file name because we need/like to select files
+            myFile = new File(file, myFile.getName());
+        } else {
+            myFile = file;
+        }
         myTextField.setText(file.getAbsolutePath());
     }
 

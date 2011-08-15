@@ -47,7 +47,7 @@ class HighlightOnMouseOver extends MouseAdapter {
     }
     @Override
     public void mouseExited(MouseEvent arg0) {
-        myComponent.setBorderPainted(false);        
+        myComponent.setBorderPainted(false);
     }
     @Override
     public void mouseClicked(MouseEvent arg0) {

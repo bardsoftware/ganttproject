@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.gui.options.TopPanel;
 
 /**
  * New dialog box for about GanttProject
- * 
+ *
  * @author athomas
  */
 public class AboutDialog extends GeneralDialog {

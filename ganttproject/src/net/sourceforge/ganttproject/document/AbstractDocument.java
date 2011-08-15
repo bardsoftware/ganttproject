@@ -1,6 +1,6 @@
 /*
  * Created on 28.09.2003
- * 
+ *
  */
 package net.sourceforge.ganttproject.document;
 
@@ -56,6 +56,6 @@ public abstract class AbstractDocument implements Document {
     public Portfolio getPortfolio() {
         throw new UnsupportedOperationException();
     }
-    
-    
+
+
 }

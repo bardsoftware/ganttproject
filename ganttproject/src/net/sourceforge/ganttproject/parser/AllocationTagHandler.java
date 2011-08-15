@@ -99,7 +99,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
                     e);
         }
 
-		HumanResource human = getResourceManager().getById(resourceId);
+        HumanResource human = getResourceManager().getById(resourceId);
         if (human == null) {
             throw new FileFormatException("Human resource with id="
                     + resourceId + " not found");

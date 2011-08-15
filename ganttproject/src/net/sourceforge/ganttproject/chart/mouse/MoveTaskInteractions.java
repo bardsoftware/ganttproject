@@ -38,32 +38,32 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
 
     private final RecalculateTaskScheduleAlgorithm myTaskScheduleAlgorithm;
 
-    public MoveTaskInteractions(MouseEvent e, List<Task> tasks, TimelineFacade chartDateGrid, 
+    public MoveTaskInteractions(MouseEvent e, List<Task> tasks, TimelineFacade chartDateGrid,
             UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
-    	super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
-    	myUiFacade = uiFacade;
+        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
+        myUiFacade = uiFacade;
         myTasks = tasks;
         myTaskScheduleAlgorithm = taskScheduleAlgorithm;
         myMutators = new ArrayList<TaskMutator>(tasks.size());
         for (Task t : tasks) {
-        	myMutators.add(t.createMutator());
+            myMutators.add(t.createMutator());
         }
     }
 
     public void apply(MouseEvent event) {
-    	TaskLength currentInterval = getLengthDiff(event);
-    	if (currentInterval.getLength() != 0) {
-    		for (TaskMutator mutator : myMutators) {
-    			mutator.shift(currentInterval);
-    		}
+        TaskLength currentInterval = getLengthDiff(event);
+        if (currentInterval.getLength() != 0) {
+            for (TaskMutator mutator : myMutators) {
+                mutator.shift(currentInterval);
+            }
             setStartDate(getChartDateGrid().getDateAt(event.getX()));
         }
     }
 
     public void finish() {
-    	for (TaskMutator mutator : myMutators) {
-    		mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-    	}
+        for (TaskMutator mutator : myMutators) {
+            mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
+        }
         myUiFacade.getUndoManager().undoableEdit("Task moved", new Runnable() {
             public void run() {
                 doFinish();
@@ -72,16 +72,16 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
     }
 
     private void doFinish() {
-    	for (TaskMutator mutator : myMutators) {
-    		mutator.commit();
-    	}
+        for (TaskMutator mutator : myMutators) {
+            mutator.commit();
+        }
         try {
             myTaskScheduleAlgorithm.run();
         } catch (TaskDependencyException e) {
             myUiFacade.showErrorDialog(e);
         }
         for (Task t : myTasks) {
-        	t.applyThirdDateConstraint();
+            t.applyThirdDateConstraint();
         }
         myUiFacade.getActiveChart().reset();
     }

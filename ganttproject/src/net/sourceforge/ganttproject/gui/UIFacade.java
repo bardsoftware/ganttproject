@@ -65,13 +65,13 @@ public interface UIFacade {
 
     void showErrorDialog(String errorMessage);
 
-	/**
-	 * Shows the given exception in an error dialog and also puts it into the
-	 * log file
-	 * 
-	 * @param e
-	 *            the exception to show (and log)
-	 */
+    /**
+     * Shows the given exception in an error dialog and also puts it into the
+     * log file
+     *
+     * @param e
+     *            the exception to show (and log)
+     */
     void showErrorDialog(Throwable e);
 
     NotificationManager getNotificationManager();

@@ -148,6 +148,6 @@ import org.jdesktop.swing.table.TableColumnExt;
         public String toString() {
             return getTitle() + ", " + getTypeAsString();
         }
-        
-        
+
+
     }

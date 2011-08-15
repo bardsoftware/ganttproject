@@ -708,7 +708,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
                 if (!GPLogger.log(e)) {
                     e.printStackTrace(System.err);
                 }
-            }            
+            }
 
             int align;
             if (customColumn.getType().equals(GregorianCalendar.class)) {

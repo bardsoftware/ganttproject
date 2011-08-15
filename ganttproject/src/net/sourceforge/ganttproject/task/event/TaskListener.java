@@ -22,6 +22,6 @@ public interface TaskListener extends EventListener {
     void taskPropertiesChanged(TaskPropertyEvent e);
 
     void taskProgressChanged(TaskPropertyEvent e);
-    
+
     void taskModelReset();
 }

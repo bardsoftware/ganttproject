@@ -33,7 +33,7 @@ public interface ProjectUIFacade {
     void openProject(IGanttProject project) throws IOException, DocumentException;
     void openRemoteProject(IGanttProject project) throws IOException, DocumentException;
     void openProject(Document document, IGanttProject project) throws IOException, DocumentException;
-    
+
     void createProject(IGanttProject project);
     GPOptionGroup getOptionGroup();
 }

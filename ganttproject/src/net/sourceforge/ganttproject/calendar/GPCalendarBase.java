@@ -68,9 +68,9 @@ abstract class GPCalendarBase {
     }
 
     public Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType) {
-    	return findClosest(time, timeUnit, direction, dayType, null);
+        return findClosest(time, timeUnit, direction, dayType, null);
     }
-    
+
     protected Date findClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
         Date nextUnitStart = direction == GPCalendar.MoveDirection.FORWARD ?
                 framer.adjustRight(time) : framer.jumpLeft(time);
@@ -89,10 +89,10 @@ abstract class GPCalendarBase {
             break;
         }
         if (limit != null) {
-	        if (direction == GPCalendar.MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
-	        	|| direction == GPCalendar.MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
-	        	return null;
-	        }
+            if (direction == GPCalendar.MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
+                    || direction == GPCalendar.MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
+                return null;
+            }
         }
         return findClosest(nextUnitStart, framer, direction, dayType, limit);
     }

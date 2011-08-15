@@ -57,8 +57,8 @@ public class GanttPreviousStateTask {
     public GanttCalendar getEnd(GPCalendar calendar) {
         int duration = myDuration;
         GanttCalendar end = myStart.newAdd(Calendar.DATE, myDuration);
-		for (int i = 0; i < duration; i++) {
-			if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
+        for (int i = 0; i < duration; i++) {
+            if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
                 end.add(Calendar.DATE, 1);
                 duration++;
             }

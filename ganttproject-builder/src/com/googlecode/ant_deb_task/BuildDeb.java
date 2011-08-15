@@ -7,7 +7,7 @@ import java.text.MessageFormat;
 public class BuildDeb
 {
     private static final String FILE_HEADER_FORMAT = "{0}{1}0     0     100644  {2}`\n";
-    
+
     private static final String DEBIAN_BINARY_CONTENT = "2.0\n";
     private static final String DEBIAN_BINARY_NAME = "debian-binary";
     private static final String CONTROL_NAME = "control.tar.gz";
@@ -17,7 +17,7 @@ public class BuildDeb
     {
         long now = new Date().getTime() / 1000;
         OutputStream deb = new FileOutputStream (debFile);
-        
+
         deb.write("!<arch>\n".getBytes ());
 
         startFileEntry (deb, DEBIAN_BINARY_NAME, now, DEBIAN_BINARY_CONTENT.length());

@@ -15,7 +15,7 @@ class SaveURLAction extends GPAction {
     SaveURLAction(GanttProject mainFrame){
         myMainFrame = mainFrame;
     }
-    
+
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().correctLabel(getI18n("saveToServer"));
     }

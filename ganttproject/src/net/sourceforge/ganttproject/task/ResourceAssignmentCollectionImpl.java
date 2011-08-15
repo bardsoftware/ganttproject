@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -18,8 +36,8 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     private HumanResourceManager myResourceManager;
 
-	public ResourceAssignmentCollectionImpl(TaskImpl task,
-			HumanResourceManager resourceManager) {
+    public ResourceAssignmentCollectionImpl(TaskImpl task,
+            HumanResourceManager resourceManager) {
         myTask = task;
         myResourceManager = resourceManager;
     }
@@ -81,9 +99,9 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         myAssignments.put(assignment.getResource(), assignment);
     }
 
-    /** 
+    /**
      * Removes the assignments related to the given resource.
-     *  
+     *
      * @param resource Assigned resource
      */
     public void removeAssignment(HumanResource resource) {
@@ -123,9 +141,9 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
          * Deletes all the assignments and all the related assignments
          */
         public void delete() {
-			ResourceAssignmentCollectionImpl.this
-					.deleteAssignment(getResource());
-			myAssignmentToResource.delete();
+            ResourceAssignmentCollectionImpl.this
+                    .deleteAssignment(getResource());
+            myAssignmentToResource.delete();
         }
 
         public void setCoordinator(boolean responsible) {
@@ -326,14 +344,13 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
     }
 
-	public HumanResource getCoordinator() {
-		for (Iterator<ResourceAssignment> assignments = myAssignments.values().iterator(); assignments.hasNext();) {
-			ResourceAssignment next = assignments.next();
-			if (next.isCoordinator()) {
-				return next.getResource();
-			}
-		}
-		return null;
-	}
-
+    public HumanResource getCoordinator() {
+        for (Iterator<ResourceAssignment> assignments = myAssignments.values().iterator(); assignments.hasNext();) {
+            ResourceAssignment next = assignments.next();
+            if (next.isCoordinator()) {
+                return next.getResource();
+            }
+        }
+        return null;
+    }
 }

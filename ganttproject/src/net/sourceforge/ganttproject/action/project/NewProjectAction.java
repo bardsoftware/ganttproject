@@ -32,7 +32,7 @@ public class NewProjectAction extends GPAction {
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().getText("newProject");
     }
-    
-    
+
+
 
 }

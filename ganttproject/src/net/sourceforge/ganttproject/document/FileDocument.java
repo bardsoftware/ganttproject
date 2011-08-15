@@ -1,12 +1,6 @@
 /*
- * Created on 18.08.2003
- *
- */
-package net.sourceforge.ganttproject.document;
-
-/*
-GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,7 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
+package net.sourceforge.ganttproject.document;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -129,11 +125,11 @@ public class FileDocument extends AbstractDocument {
     }
 
     public void open() {
-    	// Method is not used
+        // Method is not used
     }
 
     public void write() throws IOException {
-    	// Method is not used
+        // Method is not used
     }
 
     public URI getURI() {

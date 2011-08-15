@@ -1,5 +1,5 @@
 /***************************************************************************
- GeneralOptionPanel.java 
+ GeneralOptionPanel.java
  ------------------------------------------
  begin                : 24 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Abstract class for the Options panels
- * 
+ *
  * @author athomas
  */
 public abstract class GeneralOptionPanel extends JPanel {
@@ -57,7 +57,7 @@ public abstract class GeneralOptionPanel extends JPanel {
     /**
      * This method checks if options panel has value that got changed changed.
      * And ask the user to commit changes if askForApply is true.
-     * 
+     *
      * @returns true when there were changes which needed to be committed
      */
     public abstract boolean applyChanges(boolean askForApply);

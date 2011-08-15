@@ -20,8 +20,8 @@ package net.sourceforge.ganttproject;
 
 /**
  * Class to store the project information
- * 
- * @author athomas 
+ *
+ * @author athomas
  */
 public class PrjInfos {
     /** The name of the project */

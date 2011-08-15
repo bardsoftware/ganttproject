@@ -16,5 +16,5 @@ public interface GPViewManager {
     Action getCopyAction();
     Action getCutAction();
     Action getPasteAction();
-    
+
 }

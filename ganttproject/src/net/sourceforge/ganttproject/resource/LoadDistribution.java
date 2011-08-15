@@ -148,7 +148,6 @@ public class LoadDistribution {
             idxEnd = loads.size();
             loads.add(new Load(endDate, null, 0, t));
         }
-
     }
 
     public HumanResource getResource() {
@@ -164,10 +163,8 @@ public class LoadDistribution {
     }
 
     /**
-     * Returns a list of lists of <code>Load</code> instances. Each list
+     * @return a list of lists of <code>Load</code> instances. Each list
      * contains a set of <code>Load</code>
-     *
-     * @return a list of lists of <code>Load</code> instances.
      */
     public List<Load> getTasksLoads() {
         return myTasksLoads;
@@ -177,7 +174,7 @@ public class LoadDistribution {
         HashMap<Task, List<Load>> result = new HashMap<Task, List<Load>>();
         List<Load> taskLoads = getTasksLoads();
         for (int i=0; i<taskLoads.size(); i++) {
-        	Load nextLoad = taskLoads.get(i);
+            Load nextLoad = taskLoads.get(i);
             Task nextTask = nextLoad.refTask;
             List<Load> partition = result.get(nextTask);
             if (partition==null) {

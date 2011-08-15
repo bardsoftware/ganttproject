@@ -24,7 +24,7 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 
 /**
  * Interface providing paint methods
- * 
+ *
  * @author bard
  */
 public interface Painter {
@@ -34,6 +34,6 @@ public interface Painter {
     void paint(Rectangle rectangle);
 
     void paint(Line line);
-    
+
     void paint(Text next);
 }

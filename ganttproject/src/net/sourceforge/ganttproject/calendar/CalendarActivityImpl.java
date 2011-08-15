@@ -37,7 +37,7 @@ public class CalendarActivityImpl implements GPCalendarActivity {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     public String toString() {

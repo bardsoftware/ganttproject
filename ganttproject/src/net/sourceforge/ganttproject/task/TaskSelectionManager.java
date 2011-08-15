@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -16,14 +34,14 @@ import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 public class TaskSelectionManager implements TaskSelectionContext {
     public interface Listener {
         void selectionChanged(List<Task> currentSelection);
-		void userInputConsumerChanged(Object newConsumer);
+        void userInputConsumerChanged(Object newConsumer);
     }
     /**
      * List of the selected tasks.
      */
     private final List<Task> selectedTasks = new ArrayList<Task>();
     private final List<Listener> myListeners = new ArrayList<Listener>();
-	private Object myUserInputConsumer;
+    private Object myUserInputConsumer;
     /**
      * Creates an instance of TaskSelectionManager
      */
@@ -31,13 +49,13 @@ public class TaskSelectionManager implements TaskSelectionContext {
     }
 
     public void setUserInputConsumer(Object consumer) {
-    	if (consumer!=myUserInputConsumer) {
-    		fireUserInputConsumerChanged();
-    	}
-    	myUserInputConsumer = consumer;
+        if (consumer!=myUserInputConsumer) {
+            fireUserInputConsumerChanged();
+        }
+        myUserInputConsumer = consumer;
     }
 
-	/**
+    /**
      * Adds <code>task</code> to the selected tasks.
      *
      * @param task
@@ -64,9 +82,6 @@ public class TaskSelectionManager implements TaskSelectionContext {
     }
 
     /**
-     * Returns <code>true</code> if <code>task</code> is selected,
-     * <code>false</code> otherwise.
-     *
      * @param task
      *            The task to test.
      * @return <code>true</code> if <code>task</code> is selected,
@@ -76,20 +91,12 @@ public class TaskSelectionManager implements TaskSelectionContext {
         return selectedTasks.contains(task);
     }
 
-    /**
-     * Returns the selected tasks list.
-     *
-     * @return The selected tasks list.
-     */
+    /** @return The selected tasks list. */
     public List<Task> getSelectedTasks() {
         return Collections.unmodifiableList(selectedTasks);
     }
 
-    /**
-     * Returns the earliest start date.
-     *
-     * @return The earliest start date.
-     */
+    /** @return The earliest start date. */
     public Date getEarliestStart() {
         Date res = null;
         Iterator<Task> it = selectedTasks.iterator();
@@ -107,11 +114,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
         return res;
     }
 
-    /**
-     * Returns the latest end date.
-     *
-     * @return The latest end date.
-     */
+    /** @return The latest end date. */
     public Date getLatestEnd() {
         Date res = null;
         Iterator<Task> it = selectedTasks.iterator();
@@ -128,9 +131,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
         return res;
     }
 
-    /**
-     * Clears the selected tasks list.
-     */
+    /** Clears the selected tasks list. */
     public void clear() {
         selectedTasks.clear();
         fireSelectionChanged();
@@ -155,5 +156,5 @@ public class TaskSelectionManager implements TaskSelectionContext {
             Listener next = myListeners.get(i);
             next.userInputConsumerChanged(myUserInputConsumer);
         }
-	}
+    }
 }
