@@ -37,6 +37,7 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
         return myTabContentPanel;
     }
 
+    @Override
     protected Component createButtonPanel() {
         JToolBar buttonBar = new JToolBar();
         buttonBar.setFloatable(false);

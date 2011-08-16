@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.chart.Chart;
  * @author bard
  * @created 13.09.2004
  */
+@Deprecated
 public class DeprecatedProjectExportData {
     public final String myFilename;
 

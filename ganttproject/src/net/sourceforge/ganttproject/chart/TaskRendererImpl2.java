@@ -67,6 +67,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return ((ChartModelImpl) getChartModel()).getVisibleTasks();
     }
 
+    @Override
     public void render() {
         getPrimitiveContainer().clear();
         getPrimitiveContainer().getLayer(0).clear();
@@ -490,6 +491,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             myDependeeVector = dependeeVector;
         }
 
+        @Override
         public String toString() {
             return "From activity="
                     + myDependency.getActivityBinding().getDependantActivity()
@@ -520,14 +522,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             super(point);
         }
 
+        @Override
         boolean reaches(Point targetPoint) {
             return targetPoint.x <= getPoint().x;
         }
 
+        @Override
         Point getPoint(int diff) {
             return new Point(getPoint().x - diff, getPoint().y);
         }
 
+        @Override
         public String toString() {
             return "<=" + getPoint().toString();
         }
@@ -538,14 +543,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             super(point);
         }
 
+        @Override
         boolean reaches(Point targetPoint) {
             return targetPoint.x >= getPoint().x;
         }
 
+        @Override
         Point getPoint(int diff) {
             return new Point(getPoint().x + diff, getPoint().y);
         }
 
+        @Override
         public String toString() {
             return ">=" + getPoint().toString();
         }

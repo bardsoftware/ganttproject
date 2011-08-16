@@ -60,6 +60,7 @@ public class RolesTableModel extends AbstractTableModel {
     }
 
     /** @return the name of the column at col index */
+    @Override
     public String getColumnName(int col) {
         return columnNames[col];
     }
@@ -70,6 +71,7 @@ public class RolesTableModel extends AbstractTableModel {
     }
 
     /** @return true if the cell is editable */
+    @Override
     public boolean isCellEditable(int row, int col) {
         return col == 1;
     }
@@ -77,6 +79,7 @@ public class RolesTableModel extends AbstractTableModel {
     /*
      * Don't need to implement this method unless your table's data can change.
      */
+    @Override
     public void setValueAt(Object value, int row, int col) {
         data[row][col] = value;
         fireTableCellUpdated(row, col);

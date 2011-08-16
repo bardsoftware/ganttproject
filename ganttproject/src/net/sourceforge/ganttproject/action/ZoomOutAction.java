@@ -34,6 +34,7 @@ public class ZoomOutAction extends GPAction implements ZoomListener {
         setEnabled(myZoomManager.canZoomOut());
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "zoomm_";
     }
@@ -47,6 +48,7 @@ public class ZoomOutAction extends GPAction implements ZoomListener {
         return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n("zoomOut"));
     }
 
+    @Override
     public void isIconVisible(boolean isNull) {
         setIconVisible(isNull);
     }

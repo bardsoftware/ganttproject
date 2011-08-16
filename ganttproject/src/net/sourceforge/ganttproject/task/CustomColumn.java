@@ -69,6 +69,7 @@ public class CustomColumn implements CustomPropertyDefinition {
         return myPropertyClass.getJavaClass();
     }
 
+    @Override
     public String toString() {
         return this.name + " [" + getType() + "] <" + this.defaultValue + ">";
     }

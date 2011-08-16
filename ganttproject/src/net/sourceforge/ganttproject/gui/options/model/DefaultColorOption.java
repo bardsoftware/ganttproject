@@ -14,14 +14,17 @@ public class DefaultColorOption extends GPAbstractOption<Color> implements Color
         super(id);
     }
 
+    @Override
     public Color getValue() {
         return myValue;
     }
 
+    @Override
     public void setValue(Color value) {
         myLockedValue = value;
     }
 
+    @Override
     public void commit() {
         super.commit();
         myValue = myLockedValue;

@@ -84,6 +84,7 @@ public class GanttDialogCustomColumn  {
 
     //private GanttCalendar date = null;
     private DateOption myDate = new DefaultDateOption("taskProperties.customColumn.defaultDate") {
+        @Override
         public void setValue(Date value) {
             super.setValue(value);
             commit();
@@ -92,6 +93,7 @@ public class GanttDialogCustomColumn  {
     };
 
     private StringOption myName = new DefaultStringOption("taskProperties.customColumn.name") {
+        @Override
         public void setValue(String value) {
             super.setValue(value);
             commit();
@@ -101,6 +103,7 @@ public class GanttDialogCustomColumn  {
 
     private EnumerationOption myType = new DefaultEnumerationOption<CustomPropertyClass>(
             "taskProperties.customColumn.type", CustomPropertyClass.values()) {
+        @Override
         public void setValue(String value) {
             super.setValue(value);
             int selectedIndex = getSelectedIndex(value);

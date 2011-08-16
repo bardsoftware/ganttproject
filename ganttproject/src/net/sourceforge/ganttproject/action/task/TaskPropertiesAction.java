@@ -22,10 +22,12 @@ public class TaskPropertiesAction extends TaskActionBase {
         mySelectionManager = selectionManager;
     }
 
+    @Override
     protected boolean isEnabled(List<Task> selection) {
         return selection.size() == 1;
     }
 
+    @Override
     protected void run(List<Task> selection) throws Exception {
         if (selection.size() != 1) {
             return;
@@ -42,6 +44,7 @@ public class TaskPropertiesAction extends TaskActionBase {
         });
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "properties_";
     }

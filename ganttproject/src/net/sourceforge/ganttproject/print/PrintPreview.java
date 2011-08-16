@@ -128,6 +128,7 @@ public class PrintPreview extends JDialog {
     private StatusBar statusBar;
 
     private DateOption myStart = new DefaultDateOption("generic.startDate") {
+        @Override
         public void setValue(Date value) {
             super.setValue(value);
             commit();
@@ -137,6 +138,7 @@ public class PrintPreview extends JDialog {
     };
 
     private DateOption myFinish = new DefaultDateOption("generic.endDate") {
+        @Override
         public void setValue(Date value) {
             super.setValue(value);
             commit();
@@ -626,6 +628,7 @@ public class PrintPreview extends JDialog {
 
         protected final int V_GAP = 10;
 
+        @Override
         public Dimension getPreferredSize() {
             int n = getComponentCount();
             if (n == 0) {
@@ -650,14 +653,17 @@ public class PrintPreview extends JDialog {
                     + ins.bottom);
         }
 
+        @Override
         public Dimension getMaximumSize() {
             return getPreferredSize();
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return getPreferredSize();
         }
 
+        @Override
         public void doLayout() {
             Insets ins = getInsets();
             int x = ins.left + H_GAP;
@@ -725,6 +731,7 @@ public class PrintPreview extends JDialog {
             return (int) (myPageFormat.getHeight() * myScalePercents / 100);
         }
 
+        @Override
         public Dimension getPreferredSize() {
             Insets ins = getInsets();
             return new Dimension(
@@ -732,14 +739,17 @@ public class PrintPreview extends JDialog {
                     getScaledHeight() + ins.top + ins.bottom);
         }
 
+        @Override
         public Dimension getMaximumSize() {
             return getPreferredSize();
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return getPreferredSize();
         }
 
+        @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Image scaledImage = ourImageCache.get(new Integer (myPageIndex));

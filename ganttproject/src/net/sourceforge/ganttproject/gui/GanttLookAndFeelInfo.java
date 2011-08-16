@@ -26,6 +26,7 @@ public class GanttLookAndFeelInfo extends LookAndFeelInfo {
     /**
      * returns the name of the LookAndFeel
      */
+    @Override
     public String toString() {
         return toString;
     }

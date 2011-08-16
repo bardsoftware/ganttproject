@@ -29,6 +29,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
         super("impex.msproject2");
     }
 
+    @Override
     public String getFileNamePattern() {
         return "mpp|mpx|xml";
     }

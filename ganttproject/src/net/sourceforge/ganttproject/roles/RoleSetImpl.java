@@ -80,6 +80,7 @@ public class RoleSetImpl implements RoleSet {
         return isEnabled;
     }
 
+    @Override
     public String toString() {
         return getName();
     }

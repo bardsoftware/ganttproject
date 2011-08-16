@@ -23,6 +23,7 @@ public class YearTextFormatter extends CachingTextFormatter implements
         myCalendar = CalendarFactory.newCalendar();
     }
 
+    @Override
     protected TimeUnitText createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         // Integer yearNo = new Integer(myCalendar.get(Calendar.YEAR));

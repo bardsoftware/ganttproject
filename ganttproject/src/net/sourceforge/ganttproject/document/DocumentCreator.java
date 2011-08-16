@@ -160,18 +160,22 @@ public class DocumentCreator implements DocumentManager {
     private final StringOption myFtpDirectoryNameOption = new StringOptionImpl("directory-name", "ftp", "ftpdir");
     private final StringOption myFtpPasswordOption = new StringOptionImpl("password", "ftp", "ftppwd");
     private final FTPOptions myFtpOptions = new FTPOptions("ftp", new GPOption[] {myFtpUserOption, myFtpServerNameOption, myFtpDirectoryNameOption, myFtpPasswordOption}) {
+        @Override
         public StringOption getDirectoryName() {
             return myFtpDirectoryNameOption;
         }
 
+        @Override
         public StringOption getPassword() {
             return myFtpPasswordOption;
         }
 
+        @Override
         public StringOption getServerName() {
             return myFtpServerNameOption;
         }
 
+        @Override
         public StringOption getUserName() {
             return myFtpUserOption;
         }

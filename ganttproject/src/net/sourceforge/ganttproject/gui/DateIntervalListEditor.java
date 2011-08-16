@@ -53,6 +53,7 @@ public class DateIntervalListEditor extends JPanel{
             this.start = start;
             this.end = end;
         }
+        @Override
         public boolean equals(Object obj) {
             if (false==obj instanceof DateInterval) {
                 return false;
@@ -60,6 +61,7 @@ public class DateIntervalListEditor extends JPanel{
             DateInterval rvalue = (DateInterval) obj;
             return this.start.equals(rvalue.start) && this.end.equals(rvalue.end);
         }
+        @Override
         public int hashCode() {
             return this.start.hashCode();
         }
@@ -120,6 +122,7 @@ public class DateIntervalListEditor extends JPanel{
         super(new BorderLayout());
         myIntervalsModel = intervalsModel;
         myStart = new DefaultDateOption("generic.startDate") {
+            @Override
             public void setValue(Date value) {
                 super.setValue(value);
                 commit();
@@ -131,6 +134,7 @@ public class DateIntervalListEditor extends JPanel{
             }
         };
         myFinish = new DefaultDateOption("generic.endDate") {
+            @Override
             public void setValue(Date value) {
                 super.setValue(value);
                 commit();
@@ -154,9 +158,11 @@ public class DateIntervalListEditor extends JPanel{
     }
     private void init() {
         myAddAction = new GPAction(){
+            @Override
             protected String getIconFilePrefix() {
                 return null;
             }
+            @Override
             protected String getLocalizedName() {
                 return getI18n("add");
             }
@@ -167,9 +173,11 @@ public class DateIntervalListEditor extends JPanel{
             }
         };
         myDeleteAction = new GPAction() {
+            @Override
             protected String getIconFilePrefix() {
                 return null;
             }
+            @Override
             protected String getLocalizedName() {
                 return getI18n("delete");
             }

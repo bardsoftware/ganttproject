@@ -84,6 +84,7 @@ public class ChartModelResource extends ChartModelBase {
         myManager = resourceManager;
         {
             myResourceNormalLoadOption = new ResourceLoadOption("resourceChartColors.normalLoad", "colors", "resources") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setResourceColor(getValue());
@@ -95,6 +96,7 @@ public class ChartModelResource extends ChartModelBase {
         }
         {
             myResourceOverloadOption = new ResourceLoadOption("resourceChartColors.overLoad", "colors", "resourceOverload") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setResourceOverloadColor(getValue());
@@ -106,6 +108,7 @@ public class ChartModelResource extends ChartModelBase {
         }
         {
             myResourceUnderloadOption = new DefaultColorOption("resourceChartColors.underLoad") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setResourceUnderloadColor(getValue());
@@ -117,6 +120,7 @@ public class ChartModelResource extends ChartModelBase {
         }
         {
             myDayOffOption = new DefaultColorOption("resourceChartColors.dayOff") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setDayOffColor(getValue());
@@ -142,6 +146,7 @@ public class ChartModelResource extends ChartModelBase {
         return myManager.getResources().toArray(new HumanResource[0]);
     }
 
+    @Override
     public GPOptionGroup[] getChartOptionGroups() {
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
         result.add(myColorOptions);
@@ -179,6 +184,7 @@ public class ChartModelResource extends ChartModelBase {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public int calculateRowHeight() {
         return getChartUIConfiguration().getRowHeight();
     }

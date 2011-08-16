@@ -105,21 +105,25 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return myTypes[dayOfWeek - 1] == GPCalendar.DayType.WEEKEND;
     }
 
+    @Override
     protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
             final long unitCount) {
         final List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
         new ForwardTimeWalker(this, timeUnit) {
             long myUnitCount = unitCount;
 
+            @Override
             protected void processWorkingTime(Date intervalStart, Date nextIntervalStart) {
                 result.add(new CalendarActivityImpl(intervalStart, nextIntervalStart, true));
                 myUnitCount--;
             }
 
+            @Override
             protected void processNonWorkingTime(Date intervalStart, Date workingIntervalStart) {
                 result.add(new CalendarActivityImpl(intervalStart, workingIntervalStart, false));
             }
 
+            @Override
             protected boolean isMoving() {
                 return myUnitCount > 0;
             }
@@ -127,6 +131,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return result;
     }
 
+    @Override
     protected List<GPCalendarActivity> getActivitiesBackward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
         List<GPCalendarActivity> result = new LinkedList<GPCalendarActivity>();
@@ -212,6 +217,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
             return GPCalendar.DayType.WEEKEND;
     }
 
+    @Override
     public boolean isNonWorkingDay(Date curDayStart) {
         return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
     }
@@ -241,6 +247,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         publicHolidaysArray.clear();
     }
 
+    @Override
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());

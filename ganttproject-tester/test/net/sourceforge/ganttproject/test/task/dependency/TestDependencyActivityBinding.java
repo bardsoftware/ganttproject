@@ -28,6 +28,7 @@ public class TestDependencyActivityBinding extends TaskTestCase {
 
     private Date myJanuarySecond;
 
+    @Override
     protected void setUp() throws Exception {
         Calendar c = (Calendar) GregorianCalendar.getInstance().clone();
         c.clear();
@@ -42,6 +43,7 @@ public class TestDependencyActivityBinding extends TaskTestCase {
     }
 
     private GPCalendar myJanuaryFirstIsHolidayCalendar = new AlwaysWorkingTimeCalendarImpl() {
+        @Override
         public List<GPCalendarActivity> getActivities(Date startDate, Date endDate) {
             List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
             if (endDate.before(myJanuaryFirst)

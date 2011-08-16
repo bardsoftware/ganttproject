@@ -49,6 +49,7 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange = myRolesModel.hasChanges();
         if (hasChange) {
@@ -57,6 +58,7 @@ public class RolesSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
+    @Override
     public void initialize() {
         // automatic initialize with the role model
     }

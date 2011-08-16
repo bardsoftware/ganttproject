@@ -67,14 +67,17 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         myMergeResourcesOption.commit();
     }
 
+    @Override
     public String getFileNamePattern() {
         return "xml|gan";
     }
 
+    @Override
     protected GPOption[] getOptions() {
         return myOptions;
     }
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
         super.setContext(project, uiFacade, preferences);
         final Preferences node = preferences.node("/instance/net.sourceforge.ganttproject/import");
@@ -170,6 +173,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
 
         BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
             myDocumentManager = new DocumentCreator(this, uiFacade, this) {
+                @Override
                 protected TableHeaderUIFacade getVisibleFields() {
                     return myVisibleFields;
                 }
@@ -186,15 +190,19 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         public GPSaver newSaver() {
             return null;
         }
+        @Override
         public DocumentManager getDocumentManager() {
             return myDocumentManager;
         }
+        @Override
         public TaskManager getTaskManager() {
             return myTaskManager;
         }
+        @Override
         public CustomColumnsStorage getCustomColumnsStorage() {
             return myTaskManager.getCustomColumnStorage();
         }
+        @Override
         public CustomColumnsManager getTaskCustomColumnManager() {
             return super.getTaskCustomColumnManager();
         }

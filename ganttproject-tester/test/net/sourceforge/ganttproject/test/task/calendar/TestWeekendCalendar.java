@@ -24,6 +24,7 @@ public class TestWeekendCalendar extends TaskTestCase {
                 GregorianTimeUnitStack.DAY), 0.1);
     }
 
+    @Override
     protected TaskManager newTaskManager() {
         return TestSetupHelper.newTaskManagerBuilder().withCalendar(myWeekendCalendar).build();
     }

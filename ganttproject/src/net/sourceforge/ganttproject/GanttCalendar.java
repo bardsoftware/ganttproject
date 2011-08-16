@@ -79,12 +79,14 @@ public class GanttCalendar extends GregorianCalendar {
     }
 
     /** @return a copy of the current date */
+    @Override
     public GanttCalendar clone() {
         GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
         return clone;
     }
 
     /** @return the date to as a string */
+    @Override
     public String toString() {
         return language.formatShortDate(this);
     }
@@ -117,7 +119,11 @@ public class GanttCalendar extends GregorianCalendar {
         return this.get(Calendar.WEEK_OF_YEAR);
     }
 
-    /** Create of copy of the current date and add the specified (signed) amount of time */
+    /** 
+     * @deprecated (TODO: add what to use/do instead)
+     *
+     * Create of copy of the current date and add the specified (signed) amount of time
+     */
     @Deprecated
     public GanttCalendar newAdd(int field, int dayNumber) {
         GanttCalendar gc = clone();
@@ -128,6 +134,7 @@ public class GanttCalendar extends GregorianCalendar {
     /**
      * @deprecated Use TimeUnit related methods
      * @returns the difference (in days) between two date */
+    @Deprecated
     public int diff(GanttCalendar d) {
         int res = 0;
         GanttCalendar d1;

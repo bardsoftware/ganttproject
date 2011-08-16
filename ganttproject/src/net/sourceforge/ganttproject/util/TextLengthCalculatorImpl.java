@@ -83,6 +83,7 @@ public class TextLengthCalculatorImpl implements TextLengthCalculator {
             assert font != null;
         }
 
+        @Override
         public boolean equals(Object o) {
             State rvalue = (State) o;
             if (rvalue == null) {
@@ -92,6 +93,7 @@ public class TextLengthCalculatorImpl implements TextLengthCalculator {
                     && rvalue.font.equals(this.font);
         }
 
+        @Override
         public int hashCode() {
             return font.hashCode();
         }

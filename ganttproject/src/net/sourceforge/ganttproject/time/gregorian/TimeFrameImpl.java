@@ -337,6 +337,7 @@ class TimeFrameImpl implements TimeFrame {
         return result;
     }
 
+    @Override
     public String toString() {
         return "Time frame start=" + getStartDate() + " end=" + getFinishDate()
                 + "\n top unit=" + getTopUnit() + "\n bottom unit="
@@ -356,6 +357,7 @@ class TimeFrameImpl implements TimeFrame {
             this.myUnit = myUnit;
         }
 
+        @Override
         public String toString() {
             return myUnit.toString();
         }
@@ -399,6 +401,7 @@ class TimeFrameImpl implements TimeFrame {
             this.myEndDate = myEndDate;
         }
 
+        @Override
         public String toString() {
             return myStartDate.toString() + " - " + myEndDate.toString();
         }

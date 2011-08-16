@@ -31,6 +31,7 @@ public class AssignmentNode extends DefaultMutableTreeNode {
         return resourceAssignment.getTask();
     }
 
+    @Override
     public String toString() {
         return resourceAssignment.getTask().getName();
     }

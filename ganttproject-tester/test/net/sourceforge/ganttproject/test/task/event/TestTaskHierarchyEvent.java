@@ -9,6 +9,7 @@ public class TestTaskHierarchyEvent extends TaskTestCase {
     public void testEventIsSentOnCreatingNewTask() {
         TaskManager taskManager = getTaskManager();
         TaskListenerImpl listener = new TaskListenerImpl() {
+            @Override
             public void taskAdded(TaskHierarchyEvent e) {
                 setHasBeenCalled(true);
             }

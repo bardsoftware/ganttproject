@@ -62,6 +62,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         return myAssignments.size() + 1;
     }
 
+    @Override
     public String getColumnName(int col) {
         return columnNames[col];
     }
@@ -100,6 +101,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         return result;
     }
 
+    @Override
     public boolean isCellEditable(int row, int col) {
         boolean result = col > 0;
         if (result) {
@@ -110,6 +112,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         return result;
     }
 
+    @Override
     public void setValueAt(Object value, int row, int col) {
         if (row >= 0) {
             if (row >= myAssignments.size()) {

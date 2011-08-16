@@ -22,6 +22,7 @@ public class ZoomInAction extends GPAction implements ZoomListener {
         myZoomManager.addZoomListener(this);
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "zoomp_";
     }
@@ -37,6 +38,7 @@ public class ZoomInAction extends GPAction implements ZoomListener {
         setEnabled(myZoomManager.canZoomIn());
     }
 
+    @Override
     public void isIconVisible(boolean isNull) {
         setIconVisible(isNull);
     }

@@ -29,10 +29,12 @@ public class ToggleChartAction extends GPAction {
         myViewManager = viewManager;
     }
 
+    @Override
     protected String getLocalizedName() {
         return myChart == null ? null : myChart.getName();
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return null;
     }

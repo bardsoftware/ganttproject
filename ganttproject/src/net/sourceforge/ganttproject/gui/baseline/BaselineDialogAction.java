@@ -56,11 +56,13 @@ public class BaselineDialogAction extends GPAction {
         final EditableList<GanttPreviousState> list = new EditableList<GanttPreviousState>(
                 myBaselines, Collections.<GanttPreviousState>emptyList()) {
 
+            @Override
             protected GanttPreviousState updateValue(GanttPreviousState newValue, GanttPreviousState curValue) {
                 curValue.setName(newValue.getName());
                 return curValue;
             }
 
+            @Override
             protected GanttPreviousState createValue(GanttPreviousState prototype) {
                 try {
                     prototype.init();
@@ -72,6 +74,7 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
 
+            @Override
             protected GanttPreviousState createPrototype(Object editValue) {
                 if (editValue == null) {
                     return null;
@@ -81,6 +84,7 @@ public class BaselineDialogAction extends GPAction {
                 return newBaseline;
             }
 
+            @Override
             protected void deleteValue(GanttPreviousState value) {
                 for (GanttPreviousState baseline : myBaselines) {
                     if (baseline.getName().equals(value.getName())) {
@@ -90,6 +94,7 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
 
+            @Override
             protected String getStringValue(GanttPreviousState baseline) {
                 return baseline.getName();
             }
@@ -142,6 +147,7 @@ public class BaselineDialogAction extends GPAction {
         myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
     }
 
+    @Override
     protected String getLocalizedName() {
         return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", super.getLocalizedName());
     }

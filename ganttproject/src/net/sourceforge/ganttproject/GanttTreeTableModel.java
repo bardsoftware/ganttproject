@@ -210,6 +210,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return myCustomColumnsManager.getDefinitions().get(columnIndex - 11);
     }
 
+    @Override
     public boolean isCellEditable(Object node, int column) {
         if (node instanceof TaskNode) {
             Task task = (Task) ((TaskNode) node).getUserObject();
@@ -230,6 +231,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
 
+    @Override
     public Object getValueAt(Object node, int column) {
         Object res = null;
         if (!(node instanceof TaskNode))
@@ -326,6 +328,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return res;
     }
 
+    @Override
     public void setValueAt(final Object value, final Object node,
             final int column) {
         if (value==null) {

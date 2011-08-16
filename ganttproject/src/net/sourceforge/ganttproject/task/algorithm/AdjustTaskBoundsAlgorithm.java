@@ -73,6 +73,7 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
         }
         run(modifiedTasks.toArray(new Task[0]));
         RecalculateTaskScheduleAlgorithm alg = new RecalculateTaskScheduleAlgorithm(this) {
+            @Override
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return AdjustTaskBoundsAlgorithm.this.createContainmentFacade();
             }

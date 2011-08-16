@@ -17,11 +17,13 @@ public abstract class TaskTestCase extends TestCase {
         return myTaskManager;
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         myTaskManager = newTaskManager();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         myTaskManager = null;

@@ -20,6 +20,7 @@ class OpenProjectAction extends GPAction {
         myMainFrame = mainFrame;
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, MENU_MASK));
     }
+    @Override
     protected String getIconFilePrefix() {
         return "open_";
     }
@@ -31,6 +32,7 @@ class OpenProjectAction extends GPAction {
             myMainFrame.getUIFacade().showErrorDialog(ex);
         }
     }
+    @Override
     protected String getLocalizedName() {
         return getI18n("openProject");
     }

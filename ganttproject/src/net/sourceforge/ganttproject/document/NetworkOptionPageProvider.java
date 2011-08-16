@@ -32,14 +32,17 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
         super("impex.ftp");
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return getProject().getDocumentManager().getNetworkOptionGroups();
     }
 
+    @Override
     public boolean hasCustomComponent() {
         return true;
     }
 
+    @Override
     public Component buildPageComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
         final GPOptionGroup ftpGroup = getProject().getDocumentManager().getNetworkOptionGroups()[0];

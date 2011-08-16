@@ -32,6 +32,7 @@ public class PreviewPanel extends JPanel {
         this.pattern = pattern;
     }
 
+    @Override
     public void paintComponent(Graphics gc) {
         Graphics2D g = (Graphics2D) gc;
         int w = getSize().width;

@@ -27,6 +27,7 @@ public class MainApplication implements IPlatformRunnable {
                 getClass().getClassLoader());
         String[] cmdLine = (String[]) args;
         WindowAdapter closingListener = new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
                 GPLogger.log("Main window closed");
                 myLock.notify();

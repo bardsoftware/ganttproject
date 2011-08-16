@@ -30,6 +30,7 @@ public class OpenURLAction extends GPAction {
     OpenURLAction(GanttProject mainFrame) {
         myMainFrame = mainFrame;
     }
+    @Override
     protected String getIconFilePrefix() {
         return null;
     }
@@ -40,10 +41,12 @@ public class OpenURLAction extends GPAction {
         }
     }
 
+    @Override
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().correctLabel(getI18n("openFromServer"));
     }
 
+    @Override
     protected String getTooltipText() {
         return getLocalizedName();
     }

@@ -61,14 +61,17 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         return doc;
     }
 
+    @Override
     public boolean canUndo() {
         return myDocumentBefore.canRead();
     }
 
+    @Override
     public boolean canRedo() {
         return myDocumentAfter.canRead();
     }
 
+    @Override
     public void redo() throws CannotRedoException {
         try {
             restoreDocument(myDocumentAfter);
@@ -79,6 +82,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         }
     }
 
+    @Override
     public void undo() throws CannotUndoException {
         try {
             restoreDocument(myDocumentBefore);
@@ -97,6 +101,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
 
     }
 
+    @Override
     public String getPresentationName() {
         return myPresentationName;
     }

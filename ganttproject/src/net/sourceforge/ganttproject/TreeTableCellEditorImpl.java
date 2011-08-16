@@ -41,12 +41,14 @@ class TreeTableCellEditorImpl  implements TableCellEditor {
         if (result instanceof JTextComponent) {
             ((JTextComponent)result).selectAll();
             result.addFocusListener(new FocusAdapter() {
+                @Override
                 public void focusGained(FocusEvent arg0) {
                     super.focusGained(arg0);
                     ((JTextComponent)result).selectAll();
                     result.removeFocusListener(this);
                 }
 
+                @Override
                 public void focusLost(FocusEvent arg0) {
                     // TODO Auto-generated method stub
                     super.focusLost(arg0);

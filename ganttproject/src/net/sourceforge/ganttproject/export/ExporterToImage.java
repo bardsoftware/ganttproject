@@ -41,10 +41,12 @@ public class ExporterToImage extends AbstractExporter {
             return FileTypeOption.FILE_FORMAT_ID;
         }
 
+        @Override
         public void setValue(String value) {
             myValue = value;
         }
 
+        @Override
         public String getValue() {
             return myValue;
         }
@@ -67,6 +69,7 @@ public class ExporterToImage extends AbstractExporter {
         public void loadPersistentValue(String value) {
         }
 
+        @Override
         public boolean isChanged() {
             return false;
         }

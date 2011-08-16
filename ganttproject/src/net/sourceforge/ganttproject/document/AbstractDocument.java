@@ -11,6 +11,7 @@ import java.io.IOException;
  */
 public abstract class AbstractDocument implements Document {
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof Document) {
             return ((Document) o).getPath().equals(this.getPath());

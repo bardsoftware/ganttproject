@@ -26,6 +26,7 @@ public class ResourceChartOptionPageProvider extends OptionPageProviderBase {
         super("resourceChart");
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return getUiFacade().getResourceChart().getOptionGroups();
     }

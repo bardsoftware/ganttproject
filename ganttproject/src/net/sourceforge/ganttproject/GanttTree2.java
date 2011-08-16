@@ -157,6 +157,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private final TaskSelectionManager mySelectionManager;
 
     private final GPAction myIndentAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "indent_";
         }
@@ -165,6 +166,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             indentCurrentNodes();
         }
 
+        @Override
         protected String getLocalizedName() {
             return getI18n("indentTask");
         }
@@ -172,6 +174,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     private final GPAction myDedentAction = new GPAction() {
 
+        @Override
         protected String getIconFilePrefix() {
             return "unindent_";
         }
@@ -180,12 +183,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             dedentCurrentNodes();
         }
 
+        @Override
         protected String getLocalizedName() {
             return getI18n("dedentTask");
         }
     };
 
     private final GPAction myMoveUpAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "up_";
         }
@@ -194,12 +199,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             upCurrentNodes();
         }
 
+        @Override
         protected String getLocalizedName() {
             return getI18n("upTask");
         }
     };
 
     private final GPAction myMoveDownAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "down_";
         }
@@ -208,6 +215,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             downCurrentNodes();
         }
 
+        @Override
         protected String getLocalizedName() {
             return getI18n("downTask");
         }
@@ -239,6 +247,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         myTaskManager = taskManager;
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
+            @Override
             public void taskModelReset() {
                 clearTree();
             }
@@ -270,6 +279,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
         treetable.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
                 if (false == treetable.getTable().isEditing()) {
                     app.keyPressed(e);
@@ -313,6 +323,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
         });
         treetable.getTree().addFocusListener(new FocusAdapter() {
+            @Override
             public void focusGained(FocusEvent e) {
                 super.focusGained(e);
                 mySelectionManager.setUserInputConsumer(this);
@@ -321,14 +332,17 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         // A listener on mouse click (menu)
         MouseListener ml = new MouseAdapter() {
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 handlePopupTrigger(e);
             }
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 handlePopupTrigger(e);
             }
 
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
                     TreePath selPath = treetable.getTreeTable().getPathForLocation(e.getX(), e.getY());

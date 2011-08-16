@@ -45,6 +45,7 @@ public class TimeUnitImpl implements TimeUnit {
         return myDirectAtomUnit;
     }
 
+    @Override
     public String toString() {
         return getName() + " hash=" + hashCode();
     }

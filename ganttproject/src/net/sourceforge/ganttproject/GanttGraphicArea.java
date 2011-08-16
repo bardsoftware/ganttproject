@@ -131,15 +131,18 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myViewState = new ChartViewState(this, app.getUIFacade());
         super.setStartDate(GregorianCalendar.getInstance().getTime());
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
+            @Override
             public void taskScheduleChanged(TaskScheduleEvent e) {
                 adjustDependencies((Task) e.getSource());
             }
 
+            @Override
             public void dependencyAdded(TaskDependencyEvent e) {
                 adjustDependencies(e.getDependency().getDependee());
                 repaint();
             }
 
+            @Override
             public void dependencyRemoved(TaskDependencyEvent e) {
                 repaint();
             }
@@ -174,6 +177,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     /** @return the preferred size of the panel. */
+    @Override
     public Dimension getPreferredSize() {
 
         return new Dimension(465, 600);
@@ -191,6 +195,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 getHeight() + 18);
     }
 
+    @Override
     public String getName() {
         return GanttLanguage.getInstance().getText("gantt");
     }
@@ -230,10 +235,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return myUndoManager;
     }
 
+    @Override
     protected ChartModelBase getChartModel() {
         return myChartModel;
     }
 
+    @Override
     protected MouseListener getMouseListener() {
         return new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -254,6 +261,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         };
     }
 
+    @Override
     protected MouseMotionListener getMouseMotionListener() {
         return new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
@@ -270,6 +278,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 new PublicHolidayDialogAction(getProject(), getUIFacade()) };
     }
 
+    @Override
     public void repaint() {
         if (myChartModel != null && isShowing()) {
             myChartModel.setHeaderHeight(getHeaderHeight());
@@ -414,6 +423,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
 
+        @Override
         public void paintChart(Graphics g) {
             synchronized(ChartModelBase.STATIC_MUTEX) {
                 //GanttGraphicArea.super.paintComponent(g);
@@ -441,19 +451,24 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             return myMouseMotionListener;
         }
 
+        @Override
         public IStatus canPaste(ChartSelection selection) {
             return Status.OK_STATUS;
         }
 
+        @Override
         public ChartSelection getSelection() {
             ChartSelectionImpl result = new ChartSelectionImpl() {
+                @Override
                 public boolean isEmpty() {
                     return false;
                 }
+                @Override
                 public void startCopyClipboardTransaction() {
                     super.startCopyClipboardTransaction();
                     tree.copySelectedNode();
                 }
+                @Override
                 public void startMoveClipboardTransaction() {
                     super.startMoveClipboardTransaction();
                     tree.cutSelectedNode();
@@ -462,6 +477,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             return result;
         }
 
+        @Override
         public void paste(ChartSelection selection) {
             tree.pasteNode();
         }
@@ -473,6 +489,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     }
 
+    @Override
     protected AbstractChartImplementation getImplementation() {
         return (AbstractChartImplementation) getChartImplementation();
     }
@@ -561,10 +578,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             myScrollingManager.scrollTo(scrollDate);
         }
 
+        @Override
         protected String getIconFilePrefix() {
             return "scrollcenter_";
         }
 
+        @Override
         protected String getLocalizedName() {
             return super.getLocalizedName();
         }
@@ -578,6 +597,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             return getUIFacade().getTaskSelectionManager();
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 Task taskUnderPointer = myMouseSupport.findTaskUnderMousePointer(e.getX(), e.getY());
@@ -590,6 +610,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
 
+        @Override
         protected Action[] getPopupMenuActions() {
             Action[] treeActions = tree.getPopupMenuActions();
             int sep = 0;
@@ -605,6 +626,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             return result;
         }
 
+        @Override
         protected void processLeftButton(MouseEvent e) {
             boolean isMineEvent = true;
             ChartItem itemUnderPoint = myMouseSupport.getChartItemUnderMousePoint(e.getX(), e.getY());
@@ -635,6 +657,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             tree.stopEditing();
             super.mousePressed(e);
@@ -664,6 +687,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         private MouseSupport myMouseSupport = new MouseSupport();
 
         // Move the move on the area
+        @Override
         public void mouseMoved(MouseEvent e) {
             ChartItem itemUnderPoint = myMouseSupport
                     .getChartItemUnderMousePoint(e.getX(), e.getY());

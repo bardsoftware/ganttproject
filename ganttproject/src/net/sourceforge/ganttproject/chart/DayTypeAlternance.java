@@ -36,6 +36,7 @@ public class DayTypeAlternance {
         return myDuration;
     }
 
+    @Override
     public String toString() {
         return "period length=" + myDuration.getLength() + " ("
                 + myDuration.getTimeUnit().getName() + ")" + " is"

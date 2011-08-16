@@ -22,10 +22,12 @@ public class NewArtefactAction extends GPAction implements RolloverAction {
         public AbstractAction getActiveAction();
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "insert_";
     }
 
+    @Override
     public void isIconVisible(boolean isNull) {
         setIconVisible(isNull);
     }

@@ -88,6 +88,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
                 loadPersistentValue(legacyValue);
                 commit();
             }
+            @Override
             public void commit() {
                 super.commit();
                 projectConfig.setTaskColor(getValue());
@@ -97,6 +98,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         {
             myTaskAheadOfScheduleColor = new DefaultColorOption(
                     "ganttChartStateDiffColors.taskAheadOfScheduleColor") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setEarlierPreviousTaskColor(getValue());
@@ -108,6 +110,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             //
             myTaskBehindScheduleColor = new DefaultColorOption(
                     "ganttChartStateDiffColors.taskBehindScheduleColor") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setLaterPreviousTaskColor(getValue());
@@ -119,6 +122,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
             //
             myTaskOnScheduleColor = new DefaultColorOption(
                     "ganttChartStateDiffColors.taskOnScheduleColor") {
+                @Override
                 public void commit() {
                     super.commit();
                     projectConfig.setPreviousTaskColor(getValue());
@@ -265,6 +269,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return myTaskManager.getTaskHierarchy();
     }
 
+    @Override
     public int calculateRowHeight() {
         rowHeight = myTaskRendererImpl.calculateRowHeight();
         if (myBaseline != null) {
@@ -282,6 +287,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return myTaskRendererImpl.isVisible(index);
     }
 
+    @Override
     public TaskManager getTaskManager() {
         return taskManager;
     }
@@ -290,6 +296,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return rowHeight;
     }
 
+    @Override
     public GPOptionGroup[] getChartOptionGroups() {
         GPOptionGroup[] superGroups = super.getChartOptionGroups();
         GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
@@ -311,6 +318,7 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return myBaseline;
     }
 
+    @Override
     public ChartModelBase createCopy() {
         ChartModelBase result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
         super.setupCopy(result);

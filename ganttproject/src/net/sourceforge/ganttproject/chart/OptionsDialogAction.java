@@ -71,10 +71,12 @@ public class OptionsDialogAction extends GPAction {
         return comp;
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return null;
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("chartOptions");
     }

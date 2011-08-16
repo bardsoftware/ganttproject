@@ -98,6 +98,7 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
         }
     }
 
+    @Override
     public void paint(Graphics g) {
         myArrow.paint(g);
     }

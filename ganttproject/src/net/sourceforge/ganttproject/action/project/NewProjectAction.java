@@ -21,6 +21,7 @@ public class NewProjectAction extends GPAction {
         myMainFrame = mainFrame;
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, MENU_MASK));
     }
+    @Override
     protected String getIconFilePrefix() {
         return "new_";
     }
@@ -29,6 +30,7 @@ public class NewProjectAction extends GPAction {
         myMainFrame.newProject();
     }
 
+    @Override
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().getText("newProject");
     }

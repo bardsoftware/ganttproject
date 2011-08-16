@@ -284,6 +284,7 @@ public class HumanResource implements CustomPropertyHolder {
         fireAssignmentsChanged();
     }
 
+    @Override
     public boolean equals(Object obj) {
         boolean result = false;
         if (obj instanceof HumanResource) {
@@ -293,6 +294,7 @@ public class HumanResource implements CustomPropertyHolder {
         return result;
     }
 
+    @Override
     public String toString() {
         return name;
     }
@@ -351,6 +353,7 @@ public class HumanResource implements CustomPropertyHolder {
             myRoleForAssignment = role;
         }
 
+        @Override
         public String toString() {
             return this.getResource().getName() + " -> "
                     + this.getTask().getName();

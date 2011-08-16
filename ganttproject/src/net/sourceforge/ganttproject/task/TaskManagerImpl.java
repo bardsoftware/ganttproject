@@ -165,6 +165,7 @@ public class TaskManagerImpl implements TaskManager {
         myDependencyCollection = new TaskDependencyCollectionImpl(containmentFacadeFactory, dispatcher) {
             private TaskContainmentHierarchyFacade myTaskHierarchy;
 
+            @Override
             protected TaskContainmentHierarchyFacade getTaskHierarchy() {
                 if (myTaskHierarchy == null) {
                     myTaskHierarchy = TaskManagerImpl.this.getTaskHierarchy();
@@ -187,23 +188,27 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         FindPossibleDependeesAlgorithm alg1 = new FindPossibleDependeesAlgorithmImpl() {
+            @Override
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return TaskManagerImpl.this.getTaskHierarchy();
             }
 
         };
         AdjustTaskBoundsAlgorithm alg3 = new AdjustTaskBoundsAlgorithm() {
+            @Override
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return TaskManagerImpl.this.getTaskHierarchy();
             }
         };
         RecalculateTaskScheduleAlgorithm alg2 = new RecalculateTaskScheduleAlgorithm(
                 alg3) {
+            @Override
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return TaskManagerImpl.this.getTaskHierarchy();
             }
         };
         RecalculateTaskCompletionPercentageAlgorithm alg4 = new RecalculateTaskCompletionPercentageAlgorithm() {
+            @Override
             protected TaskContainmentHierarchyFacade createContainmentFacade() {
                 return TaskManagerImpl.this.getTaskHierarchy();
             }

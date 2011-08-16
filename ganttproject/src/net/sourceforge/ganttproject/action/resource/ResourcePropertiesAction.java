@@ -42,14 +42,17 @@ public class ResourcePropertiesAction extends GPAction {
         myUIFacade = uiFacade;
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK));
     }
+    @Override
     protected String getLocalizedName() {
         return getI18n("propertiesHuman");
     }
 
+    @Override
     protected String getTooltipText() {
         return getI18n("propertiesHuman");
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "properties_";
     }

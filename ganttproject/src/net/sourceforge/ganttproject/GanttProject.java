@@ -227,6 +227,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private final EditMenu myEditMenu;
 
+    @Override
     public TaskContainmentHierarchyFacade getTaskContainment() {
         if (myFacadeInvalidator == null) {
             return TaskContainmentHierarchyFacade.STUB;
@@ -367,6 +368,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
 
         myNewHumanAction = new NewHumanAction(getHumanResourceManager(), this) {
+            @Override
             public void actionPerformed(ActionEvent event) {
                 super.actionPerformed(event);
                 getTabs().setSelectedIndex(UIFacade.RESOURCES_INDEX);
@@ -498,10 +500,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bar.add(invisibleItem);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
             }
 
+            @Override
             public void windowOpened(WindowEvent e) {
                 myRowHeightAligner.optionsChanged();
                 ((NotificationManagerImpl)getNotificationManager()).showPending();
@@ -569,6 +573,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     private MouseListener getStopEditingMouseListener() {
         if (myStopEditingMouseListener == null)
             myStopEditingMouseListener = new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getSource() != bNewTask && e.getClickCount() == 1)
                         tree.stopEditing();
@@ -1006,6 +1011,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Create a new task */
+    @Override
     public Task newTask() {
 
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
@@ -1290,6 +1296,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** @return the UIConfiguration. */
+    @Override
     public UIConfiguration getUIConfiguration() {
         return myUIConfiguration;
     }
@@ -1506,42 +1513,51 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     /////////////////////////////////////////////////////////
     // IGanttProject implementation
+    @Override
     public String getProjectName() {
         return prjInfos.getName();
     }
 
+    @Override
     public void setProjectName(String projectName) {
         prjInfos.setName(projectName);
         setAskForSave(true);
     }
 
+    @Override
     public String getDescription() {
         return prjInfos.getDescription();
     }
 
+    @Override
     public void setDescription(String description) {
         prjInfos.setDescription(description);
         setAskForSave(true);
     }
 
+    @Override
     public String getOrganization() {
         return prjInfos.getOrganization();
     }
 
+    @Override
     public void setOrganization(String organization) {
         prjInfos.setOrganization(organization);
         setAskForSave(true);
     }
 
+    @Override
     public String getWebLink() {
         return prjInfos.getWebLink();
     }
 
+    @Override
     public void setWebLink(String webLink) {
         prjInfos.setWebLink(webLink);
         setAskForSave(true);
     }
 
+    @Override
     public HumanResourceManager getHumanResourceManager() {
         if (myHumanResourceManager == null) {
             myHumanResourceManager = new HumanResourceManager(getRoleManager().getDefaultRole(), getResourceCustomPropertyManager());
@@ -1550,10 +1566,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return myHumanResourceManager;
     }
 
+    @Override
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
 
+    @Override
     public RoleManager getRoleManager() {
         if (myRoleManager == null) {
             myRoleManager = RoleManager.Access.getInstance();
@@ -1561,6 +1579,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return myRoleManager;
     }
 
+    @Override
     public Document getDocument() {
         return projectDocument;
     }
@@ -1569,14 +1588,17 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         projectDocument = document;
     }
 
+    @Override
     public GanttLanguage getI18n() {
         return getLanguage();
     }
 
+    @Override
     public GPCalendar getActiveCalendar() {
         return myFakeCalendar;
     }
 
+    @Override
     public void setModified() {
         setAskForSave(true);
     }
@@ -1595,6 +1617,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return askForSave;
     }
 
+    @Override
     public void close() {
         fireProjectClosed();
         prjInfos = new PrjInfos();
@@ -1614,6 +1637,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         setModified(false);
     }
 
+    @Override
     protected ParserFactory getParserFactory() {
         if (myParserFactory == null) {
             myParserFactory = new ParserFactoryImpl();

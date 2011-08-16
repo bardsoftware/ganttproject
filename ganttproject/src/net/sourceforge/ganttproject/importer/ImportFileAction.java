@@ -46,13 +46,16 @@ public class ImportFileAction extends GPAction {
         wizard.show();
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "import_";
     }
 
+    @Override
     public void isIconVisible(boolean isNull) {
     }
 
+    @Override
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().getCorrectedLabel("import");
     }

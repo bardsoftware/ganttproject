@@ -77,6 +77,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     /** @return the preferred size of the panel. */
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(465, 600);
     }
@@ -104,6 +105,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
     }
 
+    @Override
     public String getName() {
         return GanttLanguage.getInstance().getText("resourcesChart");
     }
@@ -117,13 +119,16 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 //        return getTaskManager().getProjectEnd();
 //    }
 
+    @Override
     protected ChartModelBase getChartModel() {
         return myChartModel;
     }
 
+    @Override
     protected MouseListener getMouseListener() {
         if (myMouseListener == null) {
             myMouseListener = new MouseListenerBase() {
+                @Override
                 protected Action[] getPopupMenuActions() {
                     return new Action[] { getOptionsDialogAction()};
                 }
@@ -133,6 +138,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return myMouseListener;
     }
 
+    @Override
     protected MouseMotionListener getMouseMotionListener() {
         if (myMouseMotionListener == null) {
             myMouseMotionListener = new MouseMotionListenerBase();
@@ -140,6 +146,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return myMouseMotionListener;
     }
 
+    @Override
     protected AbstractChartImplementation getImplementation() {
         return myChartImplementation;
     }
@@ -174,6 +181,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
             super(project, chartModel, chartComponent);
             // TODO Auto-generated constructor stub
         }
+        @Override
         public void paintChart(Graphics g) {
             synchronized (ChartModelBase.STATIC_MUTEX) {
                 // LaboPM
@@ -194,16 +202,20 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 }
             }
         }
+        @Override
         public ChartSelection getSelection() {
             ChartSelectionImpl result = new ChartSelectionImpl() {
+                @Override
                 public boolean isEmpty() {
                     return false;
                 }
+                @Override
                 public void startCopyClipboardTransaction() {
                     super.startCopyClipboardTransaction();
                     appli.getResourcePanel().copySelection();
                 }
 
+                @Override
                 public void startMoveClipboardTransaction() {
                     super.startMoveClipboardTransaction();
                     appli.getResourcePanel().cutSelection();
@@ -211,9 +223,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
             };
             return result;
         }
+        @Override
         public IStatus canPaste(ChartSelection selection) {
             return Status.OK_STATUS;
         }
+        @Override
         public void paste(ChartSelection selection) {
             appli.getResourcePanel().pasteSelection();
         }

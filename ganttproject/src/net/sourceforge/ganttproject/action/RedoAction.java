@@ -55,6 +55,7 @@ public class RedoAction extends GPAction implements GPUndoListener {
         setEnabled(myUndoManager.canRedo());
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "redo_";
     }

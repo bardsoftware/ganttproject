@@ -41,6 +41,7 @@ class HttpDocumentOutputStream extends ByteArrayOutputStream {
         myDocument = document;
     }
 
+    @Override
     public void close() throws IOException {
         super.close();
         WebdavResource wr = myDocument.getWebdavResource();

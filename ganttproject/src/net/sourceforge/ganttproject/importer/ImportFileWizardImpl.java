@@ -57,6 +57,7 @@ public class ImportFileWizardImpl extends WizardImpl {
         return PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
     }
 
+    @Override
     protected void onOkPressed() {
         super.onOkPressed();
         if ("file".equals(myState.getUrl().getProtocol())) {
@@ -67,6 +68,7 @@ public class ImportFileWizardImpl extends WizardImpl {
         }
     }
 
+    @Override
     protected boolean canFinish() {
         return myState.myImporter != null
             && myState.getUrl() != null

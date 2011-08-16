@@ -35,6 +35,7 @@ public class LoadDistribution {
             this.endDate = endDate;
         }
 
+        @Override
         public String toString() {
             return "start="+this.startDate + " load=" + this.load
                     + " refTask = " + this.refTask;

@@ -49,6 +49,7 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
         updateTooltip(event);
     }
 
+    @Override
     protected String getNotesText() {
         return getTask().getEnd().toString();
     }

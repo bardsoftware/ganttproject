@@ -36,6 +36,7 @@ public class TaskGridRendererImpl extends ChartRendererBase {
         }
     }
 
+    @Override
     protected int getHeight() {
         return (int) getChartModel().getBounds().getHeight()
                 - getConfig().getHeaderHeight();

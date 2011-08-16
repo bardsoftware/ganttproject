@@ -7,10 +7,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ImporterFromTxtFile extends ImporterBase implements Importer {
 
+    @Override
     public String getFileNamePattern() {
         return "txt";
     }
 
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("textFiles");
     }

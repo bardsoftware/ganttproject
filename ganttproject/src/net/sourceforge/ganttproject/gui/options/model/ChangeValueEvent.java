@@ -31,6 +31,7 @@ public class ChangeValueEvent {
         return myNewValue;
     }
 
+    @Override
     public String toString() {
         return "[id:" + myID + ", old:" + myOldValue + ", new: " + myNewValue
                 + "]";

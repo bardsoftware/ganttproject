@@ -55,6 +55,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
      * Renders load distribution one by one, from top of the chart downwards
      * If some resource is expanded, calls rendering of the load details
      */
+    @Override
     public void render() {
        getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight() - myModel.getVerticalOffset());
        beforeProcessingTimeFrames();
@@ -236,6 +237,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
             return load;
         }
 
+        @Override
         public String toString() {
             return Float.toString(load);
         }

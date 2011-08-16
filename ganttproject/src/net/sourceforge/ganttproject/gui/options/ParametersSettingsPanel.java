@@ -100,6 +100,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
@@ -120,6 +121,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
+    @Override
     public void initialize() {
         cbAutomatic.setSelected(appli.getGanttOptions().getAutomatic());
         spLockDAV.setValue(new Integer(appli.getGanttOptions().getLockDAVMinutes()));

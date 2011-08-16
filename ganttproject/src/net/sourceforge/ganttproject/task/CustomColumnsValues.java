@@ -109,12 +109,14 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         mapCustomColumnValue.remove(oldName);
     }
 
+    @Override
     public Object clone() {
         CustomColumnsValues res = new CustomColumnsValues(myManager);
         res.mapCustomColumnValue.putAll(this.mapCustomColumnValue);
         return res;
     }
 
+    @Override
     public String toString() {
         return mapCustomColumnValue.toString();
     }

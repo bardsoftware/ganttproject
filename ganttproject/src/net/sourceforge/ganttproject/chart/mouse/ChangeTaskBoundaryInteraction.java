@@ -85,6 +85,7 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
         myUiFacade.getActiveChart().reset();
     }
 
+    @Override
     public void paint(Graphics g) {
         if (myLastNotes != null) {
             myLastNotes.paint(g);

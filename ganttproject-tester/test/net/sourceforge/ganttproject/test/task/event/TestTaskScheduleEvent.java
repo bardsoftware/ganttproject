@@ -63,6 +63,7 @@ public class TestTaskScheduleEvent extends TaskTestCase {
             super();
         }
 
+        @Override
         public void taskScheduleChanged(TaskScheduleEvent e) {
             hasBeenCalled = true;
         }

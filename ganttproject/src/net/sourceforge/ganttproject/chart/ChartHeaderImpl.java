@@ -41,6 +41,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         return myOptions;
     }
 
+    @Override
     public GraphicPrimitiveContainer getPrimitiveContainer() {
         return myPrimitiveContainer;
     }
@@ -90,6 +91,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         return myPrimitiveContainer;
     }
 
+    @Override
     public void render() {
         beforeProcessingTimeFrames();
         renderTopUnits();
