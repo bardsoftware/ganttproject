@@ -13,7 +13,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class TaskPropertiesAction extends TaskActionBase {
 
-    private IGanttProject myProject;
+    private final IGanttProject myProject;
     private final TaskSelectionManager mySelectionManager;
 
     public TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade) {

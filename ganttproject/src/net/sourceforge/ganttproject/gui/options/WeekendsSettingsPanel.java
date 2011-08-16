@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright (C) 2010-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,13 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.options;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.I18N;
 import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -44,9 +42,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
     private final GPCalendar calendar;
 
     public WeekendsSettingsPanel(IGanttProject project) {
-        super(GanttProject.correctLabel(
-                GanttLanguage.getInstance().getText("weekends")),
-                GanttLanguage.getInstance().getText("settingsWeekends"));
+        super(language.getCorrectedLabel("weekends"), language
+                .getText("settingsWeekends"));
 
         this.project = project;
         calendar = new WeekendCalendarImpl();
@@ -69,9 +66,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         if (hasChange) {
             // Update tasks for the new weekends
             // By setting their end dates to null it gets recalculated
-            Task[] tasks = project.getTaskManager().getTasks();
-            for(int i = 0; i < tasks.length; i++) {
-                tasks[i].setEnd(null);
+            for(Task task : project.getTaskManager().getTasks()) {
+                task.setEnd(null);
             }
             projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
             try {

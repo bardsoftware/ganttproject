@@ -1,5 +1,20 @@
 /*
- * Created on 18.10.2004
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.calendar;
 
@@ -7,7 +22,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -25,10 +39,10 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
-            long l) {
+            long unitCount) {
         Date activityStart = timeUnit.adjustLeft(startDate);
         Date activityEnd = activityStart;
-        for (; l > 0; l--) {
+        while (unitCount-- > 0) {
             activityEnd = timeUnit.adjustRight(activityEnd);
         }
         return Collections.singletonList((GPCalendarActivity)new CalendarActivityImpl(
@@ -54,25 +68,26 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public DayType getWeekDayType(int day) {
+        // Every day is a working day...
         return GPCalendar.DayType.WORKING;
     }
 
-    public Date findClosestWorkingTime(Date time) {
-        return time;
+    public Date findClosestWorkingTime(Date date) {
+        // No days off, so given date is good
+        return date;
     }
 
     public void setPublicHoliDayType(int month, int date) {
-        // TODO Auto-generated method stub
-
+        // Nothing to do, as this calendar does not support holidays
     }
 
     public boolean isPublicHoliDay(Date curDayStart) {
-        // TODO Auto-generated method stub
+        // Always return false, as this calendar does not support holidays
         return false;
     }
 
     public boolean isNonWorkingDay(Date curDayStart) {
-        // TODO Auto-generated method stub
+        // Always return false, as this calendar only has working days
         return false;
     }
 
@@ -91,18 +106,16 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     }
 
     public void setPublicHoliDayType(Date curDayStart) {
-        // TODO Auto-generated method stub
-
+        // Nothing to do, as this calendar does not support holidays
     }
 
     public void setPublicHolidays(URL calendar, IGanttProject gp) {
-        // TODO Auto-generated method stub
-
+        // Nothing to do, as this calendar does not support holidays
     }
 
     public Collection<Date> getPublicHolidays() {
         // Return an empty collection, as there are no holidays in this calendar
-        return Collections.unmodifiableCollection(new LinkedHashSet<Date>());
+        return Collections.emptyList();
     }
     
     public void clearPublicHolidays() {

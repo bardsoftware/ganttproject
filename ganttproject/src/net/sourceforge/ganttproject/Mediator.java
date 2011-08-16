@@ -25,7 +25,6 @@ import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * This class allow the developer to get some useful references. - GanttProject

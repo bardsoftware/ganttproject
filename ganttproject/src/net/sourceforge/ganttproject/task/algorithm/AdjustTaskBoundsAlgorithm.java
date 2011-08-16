@@ -1,19 +1,26 @@
 /*
- LICENSE:
- 
- This program is free software; you can redistribute it and/or modify  
- it under the terms of the GNU General Public License as published by  
- the Free Software Foundation; either version 2 of the License, or     
- (at your option) any later version.                                   
- 
- Copyright (C) 2004, GanttProject Development Team
- */
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -48,21 +55,20 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
         SortTasksAlgorithm sortAlgorithm = new SortTasksAlgorithm();
         sortAlgorithm.sortTasksByStartDate(nestedTasks);
         Set<Task> modifiedTasks = new HashSet<Task>();
-        for (int i=0; i<nestedTasks.size(); i++) {
-            Task nextNested = nestedTasks.get(i);
-            if (nextNested.getStart().getTime().before(supertask.getStart().getTime())) {
-                TaskMutator mutator = nextNested.createMutatorFixingDuration();
+        for (Task nestedTask : nestedTasks) {
+            if (nestedTask.getStart().getTime().before(supertask.getStart().getTime())) {
+                TaskMutator mutator = nestedTask.createMutatorFixingDuration();
                 mutator.setStart(supertask.getStart());
                 mutator.commit();
 
-                modifiedTasks.add(nextNested);
+                modifiedTasks.add(nestedTask);
             }
-            if (nextNested.getEnd().getTime().after(supertask.getEnd().getTime())) {
-                TaskMutator mutator = nextNested.createMutatorFixingDuration();
-                mutator.shift(supertask.getManager().createLength(supertask.getDuration().getTimeUnit(), nextNested.getEnd().getTime(), supertask.getEnd().getTime()));
+            if (nestedTask.getEnd().getTime().after(supertask.getEnd().getTime())) {
+                TaskMutator mutator = nestedTask.createMutatorFixingDuration();
+                mutator.shift(supertask.getManager().createLength(supertask.getDuration().getTimeUnit(), nestedTask.getEnd().getTime(), supertask.getEnd().getTime()));
                 mutator.commit();
 
-                modifiedTasks.add(nextNested);
+                modifiedTasks.add(nestedTask);
             }
         }
         run(modifiedTasks.toArray(new Task[0]));
@@ -86,61 +92,53 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
         while (!taskSet.isEmpty()) {
             recalculateSupertaskScheduleBottomUp(taskSet, containmentFacade);
             taskSet.clear();
-            for (Iterator<Task> modified = myModifiedTasks.iterator(); modified
-                    .hasNext();) {
-                Task nextTask = modified.next();
-                Task supertask = containmentFacade.getContainer(nextTask);
+            for (Task modifiedTask : myModifiedTasks) {
+                Task supertask = containmentFacade.getContainer(modifiedTask);
                 if (supertask != null) {
                     taskSet.add(supertask);
                 }
             }
             myModifiedTasks.clear();
         }
-        myModifiedTasks.clear();
     }
 
     private void recalculateSupertaskScheduleBottomUp(Set<Task> supertasks,
             TaskContainmentHierarchyFacade containmentFacade) {
-        for (Iterator<Task> it = supertasks.iterator(); it.hasNext();) {
-            Task nextSupertask = it.next();
-            recalculateSupertaskSchedule(nextSupertask, containmentFacade);
+        for (Task supertask : supertasks) {
+            recalculateSupertaskSchedule(supertask, containmentFacade);
         }
     }
 
     private void recalculateSupertaskSchedule(final Task supertask,
             final TaskContainmentHierarchyFacade containmentFacade) {
-        Task[] nested = containmentFacade.getNestedTasks(supertask);
-        if (nested.length == 0) {
+        Task[] nestedTasks = containmentFacade.getNestedTasks(supertask);
+        if (nestedTasks.length == 0) {
             return;
         }
+
         GanttCalendar maxEnd = null;
         GanttCalendar minStart = null;
-        for (int i = 0; i < nested.length; i++) {
-            Task nextNested = nested[i];
-            GanttCalendar nextStart = nextNested.getStart();
+        for (Task nestedTask : nestedTasks) {
+            GanttCalendar nextStart = nestedTask.getStart();
             if (minStart == null || nextStart.compareTo(minStart) < 0) {
                 minStart = nextStart;
             }
-            GanttCalendar nextEnd = nextNested.getEnd();
+            GanttCalendar nextEnd = nestedTask.getEnd();
             if (maxEnd == null || nextEnd.compareTo(maxEnd) > 0) {
                 maxEnd = nextEnd;
             }
         }
         TaskMutator mutator = supertask.createMutator();
         if (minStart.compareTo(supertask.getStart()) != 0) {
-        	//System.err.println("recalculating supertask="+supertask.getTaskID()+" start="+minStart);
-            //modifyTaskStart(supertask, minStart);
         	mutator.setStart(minStart);
         	myModifiedTasks.add(supertask);
         }
         if (maxEnd.compareTo(supertask.getEnd()) != 0) {
-            //modifyTaskEnd(supertask, maxEnd);
         	mutator.setEnd(maxEnd);
         	myModifiedTasks.add(supertask);
         }
         mutator.commit();
     }
 
-	}    
-
+	}
 }

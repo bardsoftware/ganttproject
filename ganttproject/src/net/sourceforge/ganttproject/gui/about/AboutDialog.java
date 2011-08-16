@@ -1,19 +1,21 @@
-/***************************************************************************
- AboutDialog.java
- ------------------------------------------
- begin                : 29 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.about;
 
 import javax.swing.Box;
@@ -23,16 +25,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.GeneralDialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas New dialog box for about GanttProject :)
+ * New dialog box for about GanttProject
+ * 
+ * @author athomas
  */
 public class AboutDialog extends GeneralDialog {
     public AboutDialog(GanttProject parent) {
-        super(parent, GanttProject.correctLabel(GanttLanguage.getInstance()
-                .getText("about"))
-                + " - Ganttproject", true, new AboutPanel());
+        super(parent, language.getCorrectedLabel("about") + " - Ganttproject",
+                true, new AboutPanel());
 
         // hide the cancel button
         cancelButton.setVisible(false);
@@ -40,19 +42,15 @@ public class AboutDialog extends GeneralDialog {
 
     /** Callback for the tree selection event. */
     public void valueChanged(TreeSelectionEvent e) {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e.getPath()
-                .getLastPathComponent());
-        String sNode = (String) (node.getUserObject());
-
-        // - ask the settingPanel if parameters are changed
-        // boolean bHasChange = settingPanel.applyChanges(true); //no change to
-        // do on this panel
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath()
+                .getLastPathComponent();
+        String sNode = (String) node.getUserObject();
 
         // - remove the settingPanel
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttProject.correctLabel(language.getText("about")))) {
+        if (sNode.equals(language.getCorrectedLabel("about"))) {
             settingPanel = new AboutPanel();
         } else if (sNode.equals(language.getText("authors"))) {
             settingPanel = new AboutAuthorPanel();
@@ -78,7 +76,7 @@ public class AboutDialog extends GeneralDialog {
 
     /** Construct the menu settings. */
     public void constructSections() {
-        addObject(GanttProject.correctLabel(language.getText("about")), null);
+        addObject(language.getCorrectedLabel("about"), null);
         addObject(language.getText("authors"), null);
         addObject(language.getText("jinfos"), null);
         addObject(language.getText("license"), null);

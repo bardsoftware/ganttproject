@@ -1,5 +1,20 @@
 /*
- * Created on 18.10.2004
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.calendar;
 
@@ -60,31 +75,24 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
         Date curDayStart = myFramer.adjustLeft(startDate);
         boolean isWeekendState = isNonWorkingDay(curDayStart);
-        // System.err.println("getActivities(): start="+startDate+"
-        // end="+endDate);
         while (curDayStart.before(endDate)) {
-            // System.err.println("curDayStart="+curDayStart);
             Date changeStateDayStart = findClosest(
                     curDayStart, myFramer, MoveDirection.FORWARD,
                     isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
-            // System.err.println("changeStateDayStart="+changeStateDayStart);
             if (changeStateDayStart == null) {
                 changeStateDayStart = endDate;
             }
-            if (changeStateDayStart.before(endDate)) {
-                result.add(new CalendarActivityImpl(curDayStart,
-                        changeStateDayStart, !isWeekendState));
-                curDayStart = changeStateDayStart;
-                isWeekendState = !isWeekendState;
-                continue;
-            } else {
+            if (changeStateDayStart.before(endDate) == false) {
                 result.add(new CalendarActivityImpl(curDayStart, endDate,
                         !isWeekendState));
                 break;
             }
+            result.add(new CalendarActivityImpl(curDayStart,
+                    changeStateDayStart, !isWeekendState));
+            curDayStart = changeStateDayStart;
+            isWeekendState = !isWeekendState;
         }
         return result;
-
     }
 
     public boolean isWeekend(Date curDayStart) {
@@ -102,16 +110,16 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         final List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
         new ForwardTimeWalker(this, timeUnit) {
             long myUnitCount = unitCount;
-            @Override
+
             protected void processWorkingTime(Date intervalStart, Date nextIntervalStart) {
                 result.add(new CalendarActivityImpl(intervalStart, nextIntervalStart, true));
                 myUnitCount--;
             }
-            @Override
+
             protected void processNonWorkingTime(Date intervalStart, Date workingIntervalStart) {
                 result.add(new CalendarActivityImpl(intervalStart, workingIntervalStart, false));
             }
-            @Override
+
             protected boolean isMoving() {
                 return myUnitCount > 0;
             }
@@ -205,14 +213,11 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     }
 
     public boolean isNonWorkingDay(Date curDayStart) {
-        if (isWeekend(curDayStart) || isPublicHoliDay(curDayStart))
-            return true;
-        else
-            return false;
+        return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
     }
 
     public void setPublicHolidays(URL calendar, IGanttProject gp) {
-        publicHolidaysArray.clear();
+        clearPublicHolidays();
         if (calendar != null) {
             XMLCalendarOpen opener = new XMLCalendarOpen();
 
@@ -226,7 +231,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
                 throw new RuntimeException(e);
             }
         }
-
     }
 
     public Collection<Date> getPublicHolidays() {

@@ -1,19 +1,21 @@
-/***************************************************************************
- GanttProject.java
- -----------------
- begin                : 30 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.server;
 
 import javax.swing.event.TreeSelectionEvent;
@@ -24,7 +26,9 @@ import net.sourceforge.ganttproject.gui.GeneralDialog;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Generic dialog for server I/O
+ * Generic dialog for server I/O
+ * 
+ * @author athomas
  */
 public class ServerDialog extends GeneralDialog {
     public ServerDialog(GanttProject parent) {
@@ -32,28 +36,14 @@ public class ServerDialog extends GeneralDialog {
                 .getText("webServer")), true, new ConnectionPanel());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.sourceforge.ganttproject.gui.GeneralDialog#constructSections()
-     */
     public void constructSections() {
-        addObject(language.correctLabel(language.getText("openFromServer")),
-                null);
+        addObject(language.getCorrectedLabel("openFromServer"), null);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
-     */
     public void valueChanged(TreeSelectionEvent e) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) (e.getPath()
                 .getLastPathComponent());
         String sNode = (String) (node.getUserObject());
-
-        // - ask the settingPanel if parameters are changed
-        // boolean bHasChange = settingPanel.applyChanges(true); //no change to do on this panel
 
         // - remove the settingPanel
         mainPanel2.remove(0);
@@ -72,5 +62,4 @@ public class ServerDialog extends GeneralDialog {
         mainPanel2.repaint();
         mainPanel2.validate(); // validate the changes
     }
-
 }
