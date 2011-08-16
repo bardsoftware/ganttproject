@@ -29,7 +29,9 @@ import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas The licence panel
+ * The license panel
+ *
+ * @author athomas
  */
 public class AboutLicensePanel extends GeneralOptionPanel {
 
@@ -37,6 +39,8 @@ public class AboutLicensePanel extends GeneralOptionPanel {
         super(GanttLanguage.getInstance().getText("license"), GanttLanguage
                 .getInstance().getText("settingsLicense"));
 
+        // TODO Put license in file and read it
+        // TODO Update license to GPL 2 we use
         JTextArea taLicense = new JTextArea();
         StringBuffer text = new StringBuffer();
         text.append("This program is free software; you can redistribute it and/or modify it under the terms of the GNU General ");

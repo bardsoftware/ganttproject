@@ -32,7 +32,9 @@ import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Panel to show used library
+ * Panel to show used library
+ *
+ * @author athomas
  */
 public class AboutLibraryPanel extends GeneralOptionPanel {
 
@@ -96,7 +98,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
     public void initialize() {
     }
 
-    /** Store informations for library uses. */
+    /** Store information for library uses. */
     class LibraryInfo {
         private String libName;
 
