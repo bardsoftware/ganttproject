@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
@@ -35,7 +53,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * Dialog opened to create a new customColumn.
  *
- * @author bbaranne Mar 2, 2005
+ * @author bbaranne
  */
 public class GanttDialogCustomColumn  {
     private static GanttLanguage language = GanttLanguage.getInstance();
@@ -71,8 +89,8 @@ public class GanttDialogCustomColumn  {
             commit();
             lock();
         }
-
     };
+
     private StringOption myName = new DefaultStringOption("taskProperties.customColumn.name") {
         public void setValue(String value) {
             super.setValue(value);
@@ -109,15 +127,6 @@ public class GanttDialogCustomColumn  {
         }
     };
 
-    private int getSelectedType(String typeName) {
-        for (CustomPropertyClass columnClass : CustomPropertyClass.values()) {
-            if (columnClass.getDisplayName().equals(typeName)) {
-                return columnClass.ordinal();
-            }
-        }
-        return -1;
-
-    }
     private final UIFacade myUIFacade;
     private final GPOption[] myOptions = new GPOption[] {myName, myType};
     private final GPOptionGroup myOptionGroup = new GPOptionGroup("taskProperties.customColumn", myOptions);
@@ -136,6 +145,17 @@ public class GanttDialogCustomColumn  {
         isOk = false;
     }
 
+    
+    private int getSelectedType(String typeName) {
+        for (CustomPropertyClass columnClass : CustomPropertyClass.values()) {
+            if (columnClass.getDisplayName().equals(typeName)) {
+                return columnClass.ordinal();
+            }
+        }
+        return -1;
+
+    }
+ 
     public void setVisible(boolean visible) {
         Component rootComponent = getComponent();
         getUIFacade().createDialog(rootComponent, new Action[] {

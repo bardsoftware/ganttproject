@@ -1,19 +1,21 @@
-/***************************************************************************
- ParametersSettingsPanel.java 
- ------------------------------------------
- begin                : 27 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -27,7 +29,6 @@ import javax.swing.SpinnerNumberModel;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Panel to edit the project properties.
@@ -47,9 +48,8 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     private final GanttProject appli;
 
     public ParametersSettingsPanel(GanttProject parent) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "parameters")), GanttLanguage.getInstance().getText(
-                "settingsParameters"));
+        super(language.getCorrectedLabel("parameters"), language
+                .getText("settingsParameters"));
 
         appli = parent;
 
@@ -103,9 +103,8 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
-                &&
-                // getDragTime() == appli.getOptions().getDragTime() &&
-                getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
+                // && getDragTime() == appli.getOptions().getDragTime()
+                && getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
             hasChange = false;
         } else {
             hasChange = true;
@@ -136,7 +135,7 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         return ((Integer) spLockDAV.getValue()).intValue();
     }
 
-    /** @return the undo number value. */
+    // /** @return the undo number value. */
     // public int getUndoNumber () {
     // return ((Integer) spUndoNumber.getValue()).intValue();
     // }

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.*;
@@ -40,8 +39,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class BaselineDialogAction extends GPAction {
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
+    private final IGanttProject myProject;
+    private final UIFacade myUiFacade;
     private List<GanttPreviousState> myBaselines;
     private List<GanttPreviousState> myTrash = new ArrayList<GanttPreviousState>();
 
@@ -50,19 +49,18 @@ public class BaselineDialogAction extends GPAction {
         myProject = project;
         myUiFacade = uiFacade;
     }
-    @Override
+
     public void actionPerformed(ActionEvent arg0) {
         myBaselines = new ArrayList<GanttPreviousState>(myProject.getBaselines());
 
         final EditableList<GanttPreviousState> list = new EditableList<GanttPreviousState>(
                 myBaselines, Collections.<GanttPreviousState>emptyList()) {
-            @Override
+
             protected GanttPreviousState updateValue(GanttPreviousState newValue, GanttPreviousState curValue) {
                 curValue.setName(newValue.getName());
                 return curValue;
             }
 
-            @Override
             protected GanttPreviousState createValue(GanttPreviousState prototype) {
                 try {
                     prototype.init();
@@ -74,7 +72,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
 
-            @Override
             protected GanttPreviousState createPrototype(Object editValue) {
                 if (editValue == null) {
                     return null;
@@ -84,10 +81,8 @@ public class BaselineDialogAction extends GPAction {
                 return newBaseline;
             }
 
-            @Override
             protected void deleteValue(GanttPreviousState value) {
-                for (Iterator<GanttPreviousState> it = myBaselines.iterator(); it.hasNext();) {
-                    GanttPreviousState baseline = it.next();
+                for (GanttPreviousState baseline : myBaselines) {
                     if (baseline.getName().equals(value.getName())) {
                         myTrash.add(baseline);
                         break;
@@ -95,7 +90,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
 
-            @Override
             protected String getStringValue(GanttPreviousState baseline) {
                 return baseline.getName();
             }
@@ -108,7 +102,7 @@ public class BaselineDialogAction extends GPAction {
         }
         list.getTableAndActions().addSelectionListener(
                 new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
-            @Override
+
             public void selectionChanged(List<GanttPreviousState> selection) {
                 if (selection.isEmpty()) {
                     myUiFacade.getGanttChart().setBaseline(null);
@@ -119,7 +113,6 @@ public class BaselineDialogAction extends GPAction {
             }
         });
         list.getTableAndActions().addAction(new GPAction("baselineDialog.hideBaselines") {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 list.getTableAndActions().setSelection(-1);
             }
@@ -133,7 +126,6 @@ public class BaselineDialogAction extends GPAction {
 
         Action[] actions = new Action[] {
             new OkAction() {
-                @Override
                 public void actionPerformed(ActionEvent e) {
                     myProject.getBaselines().clear();
                     myProject.getBaselines().addAll(myBaselines);
@@ -143,7 +135,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             },
             new CancelAction() {
-                @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                 }
             }
@@ -151,9 +142,7 @@ public class BaselineDialogAction extends GPAction {
         myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
     }
 
-    @Override
     protected String getLocalizedName() {
         return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", super.getLocalizedName());
     }
-
 }

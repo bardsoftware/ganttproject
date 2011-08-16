@@ -213,15 +213,13 @@ public abstract class EditableList<T>  {
                         fireTableRowsInserted(myValues.size(), myValues.size());
                     }
                 }
-            }
-            else if (row>=0) {
+            } else if (row>=0) {
                 if (prototype!=myValues.get(row)) {
                     T updatedValue = updateValue(prototype, myValues.get(row));
                     myValues.set(row, updatedValue);
                     fireTableRowsUpdated(row, row);
                 }
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("I can't set data in row=" + row);
             }
         }
@@ -246,8 +244,7 @@ public abstract class EditableList<T>  {
         ComboItem setItem = null;
         if (ComboItem.class.equals(editValue.getClass())) {
             setItem = (ComboItem) editValue;
-        }
-        else {
+        } else {
             for (int i=0; i<myComboBox.getModel().getSize(); i++) {
                 if (((ComboItem)myComboBox.getModel().getElementAt(i)).myText.equals(editValue)) {
                     setItem = (ComboItem)myComboBox.getModel().getElementAt(i);
@@ -312,9 +309,8 @@ public abstract class EditableList<T>  {
         }
         @Override
         protected void onDeleteEvent() {
-            int[] selectedRow = mySelectedRows;
-            for (int i = 0; i < selectedRow.length; ++i) {
-                resourcesTable.getModel().setValueAt(null, selectedRow[i], 0);
+            for (int selectedRow : mySelectedRows) {
+                resourcesTable.getModel().setValueAt(null, selectedRow, 0);
             }
         }
         @Override

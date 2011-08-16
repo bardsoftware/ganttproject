@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev, GanttProject team
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -140,9 +140,7 @@ public class GanttLanguage {
             if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + "_" + l.getCountry() + ".properties") != null) {
                 removeLangOnly.add(new Locale(l.getLanguage()));
                 result.add(new Locale(l.getLanguage(), l.getCountry()));
-                continue;
-            }
-            if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
+            } else if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
                 result.add(new Locale(l.getLanguage()));
             }
         }
@@ -218,13 +216,24 @@ public class GanttLanguage {
         return result.toString();
     }
 
+    /** @return the text in the current language for the given key */
     public String getText(String key) {
         try {
             return i18n.getString(key);
         } catch (MissingResourceException e) {
             return null;
         }
-    };
+    }
+
+    /**
+     * @return the text suitable for labels in the current language for the
+     *         given key (all $ characters are removed from the original text)
+     * @see #GanttLagetText()
+     * @see #correctLabel()
+     */
+    public String getCorrectedLabel(String key) {
+        return correctLabel(getText(key));
+    }
 
     public ComponentOrientation getComponentOrientation() {
         return ComponentOrientation.getOrientation(currentLocale);

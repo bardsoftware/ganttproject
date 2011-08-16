@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
@@ -113,8 +131,8 @@ public class TaskImpl implements Task {
                         + taskID + " already");
             }
             myID = taskID;
-
         }
+
         myAssignments = new ResourceAssignmentCollectionImpl(this, myManager
                 .getConfig().getResourceManager());
         myDependencySlice = new TaskDependencySliceImpl(this, myManager
@@ -181,20 +199,23 @@ public class TaskImpl implements Task {
         return result;
     }
 
+    class MutatorException extends RuntimeException {
+        public MutatorException(String msg) {
+            super(msg);
+        }
+    }
+
     public TaskMutator createMutator() {
         if (myMutator != null) {
-            throw new RuntimeException("Two mutators have been requested for task="+getName(),
-                    myException);
+            throw new MutatorException("Two mutators have been requested for task="+getName());
         }
         myMutator = new MutatorImpl();
-        myException = new Exception();
         return myMutator;
     }
 
     public TaskMutator createMutatorFixingDuration() {
         if (myMutator != null) {
-            throw new RuntimeException("Two mutators have been requested for task="+getName(),
-                    myException);
+            throw new MutatorException("Two mutators have been requested for task="+getName());
         }
         myMutator = new MutatorImpl() {
             public void setStart(GanttCalendar start) {
@@ -202,11 +223,8 @@ public class TaskImpl implements Task {
                 TaskImpl.this.myEnd = null;
             }
         };
-        myException = new Exception();
         return myMutator;
     }
-
-    private Exception myException;
 
     // main properties
     public int getTaskID() {
@@ -245,10 +263,9 @@ public class TaskImpl implements Task {
                 public URI getURI() {
                     try {
                         return new URI(new URL(getWebLink()).toString());
-                    }
-                    catch (URISyntaxException e) {
-                    }
-                    catch (MalformedURLException e) {
+                    } catch (URISyntaxException e) {
+                        // Do nothing
+                    } catch (MalformedURLException e) {
                         File f = new File(getWebLink());
                         if (f.exists()) {
                             return f.toURI();
@@ -263,10 +280,11 @@ public class TaskImpl implements Task {
                         return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
                     }
                     catch (URISyntaxException e) {
-                    }
-                    catch (MalformedURLException e) {
-                    }
-                    catch (UnsupportedEncodingException e) {
+                        // Do nothing
+                    } catch (MalformedURLException e) {
+                        // Do nothing
+                    } catch (UnsupportedEncodingException e) {
+                        // Do nothing
                     }
                     return null;
                 }
@@ -381,11 +399,11 @@ public class TaskImpl implements Task {
     }
 
     public GanttTaskRelationship[] getPredecessors() {
-        return new GanttTaskRelationship[0]; // To change body of implemented methods use Options | File Templates.
+        return new GanttTaskRelationship[0];
     }
 
     public GanttTaskRelationship[] getSuccessors() {
-        return new GanttTaskRelationship[0]; // To change body of implemented methods use Options | File Templates.
+        return new GanttTaskRelationship[0];
     }
 
     public ResourceAssignment[] getAssignments() {
@@ -543,9 +561,8 @@ public class TaskImpl implements Task {
                     GanttCalendar third = getThird();
                     TaskImpl.this.setThirdDate(third);
                 }
-                for (int i = 0; i < myCommands.size(); i++) {
-                    Runnable next = myCommands.get(i);
-                    next.run();
+                for (Runnable command : myCommands) {
+                    command.run();
                 }
                 myCommands.clear();
                 myPropertiesEventSender.fireEvent();
@@ -671,32 +688,9 @@ public class TaskImpl implements Task {
                 }
             }
 
-            // TODO Remove commented code?
-
-            //TaskLength prevLength = (TaskLength) myDurationChange.myFieldValue;
-            // System.err.println("new duration="+length+"
-            // previous="+prevLength);
-            // Date prevEnd =
-            // myDurationChange.getCachedDate((int)prevLength.getLength());
-            //Date prevEnd = null;
-            // System.err.println("previously cached shift="+prevEnd);
             myDurationChange.setValue(length);
-            GanttCalendar newEnd;
-            Date shifted;
-            // if (prevEnd == null) {
-                // System.err.println("no prev, length="+length.getLength());
-                shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
-            // } else {
-                // System.err.println("yes prev,
-                // length="+(length.getLength()-prevLength.getLength()));
-            //     shifted = TaskImpl.this.shiftDate(prevEnd, getManager()
-            //             .createLength(length.getTimeUnit(),
-            //                     length.getLength() - prevLength.getLength()));
-            // }
-            // System.err.println("caching shift="+shifted+" for
-            // duration="+length);
-            // myDurationChange.cacheDate(shifted, (int)length.getLength());
-            newEnd = new GanttCalendar(shifted);
+            Date shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
+            GanttCalendar newEnd = new GanttCalendar(shifted);
             setEnd(newEnd);
             myActivities = null;
         }
@@ -784,7 +778,7 @@ public class TaskImpl implements Task {
                 result = TaskImpl.this.shift(unitCount);
                 cachePrecomputedShift(result, unitCount);
             }
-            // System.err.println("[MutatorImpl] shift(): result="+result);
+
             setStart(result.getStart());
             setDuration(result.getDuration());
             setEnd(result.getEnd());
@@ -835,14 +829,12 @@ public class TaskImpl implements Task {
         start.setTime(closestWorkingStart);
         myStart = start;
 
-        //if (myID>=0) {
             recalculateActivities();
-        //}
     }
 
     private void adjustNestedTasks() {
+        assert myManager != null;
         try {
-            assert myManager!=null;
             AlgorithmCollection algorithmCollection = myManager.getAlgorithmCollection();
             if (algorithmCollection!=null) {
                 algorithmCollection.getAdjustTaskBoundsAlgorithm().adjustNestedTasks(this);
@@ -861,22 +853,16 @@ public class TaskImpl implements Task {
     public void setEnd(GanttCalendar end) {
         myEnd = end;
         recalculateActivities();
-        // System.err.println("we have "+myActivities.size()+" activities");
-//        if (areEventsEnabled()) {
-//            myManager.fireTaskScheduleChanged(this, myStart.Clone(), oldFinish);
-//        }
     }
 
     public void setThirdDate(GanttCalendar third) {
         myThird = third;
         // recalculateActivities();
-        // if (areEventsEnabled()) {
-        // myManager.fireTaskScheduleChanged(this, myThird.Clone(), oldThird);
-        // }
     }
 
     public void setThirdDateConstraint(int thirdDateConstraint) {
         myThirdDateConstraint = thirdDateConstraint;
+        // recalculateActivities();
     }
 
     public void shift(TaskLength shift) {
@@ -916,21 +902,9 @@ public class TaskImpl implements Task {
     public void setDuration(TaskLength length) {
         assert length.getLength()>0;
 
-        //GanttCalendar oldFinish = myEnd == null ? null : myEnd.Clone();
         myLength = length;
         myEnd=null;
-//            Date newEndDate = shiftDate(myStart.getTime(),
-//                    length.getTimeUnit(), length.getLength());
-
-            //myEnd = new GanttCalendar(newEndDate);
-            // myEnd = myStart.newAdd((int) length.getLength());
             recalculateActivities();
-//            if (areEventsEnabled()) {
-//                myManager.fireTaskScheduleChanged(this, myStart.Clone(),
-//                        oldFinish);
-//            }
-
-
     }
 
     private Date shiftDate(Date input, TaskLength duration) {
@@ -956,7 +930,7 @@ public class TaskImpl implements Task {
                     * duration.getTimeUnit().getAtomCount(
                             myLength.getTimeUnit());
         }
-        throw new RuntimeException("Can't transalte duration=" + duration
+        throw new RuntimeException("Can't translate duration=" + duration
                 + " into units=" + myLength.getTimeUnit());
     }
 
@@ -966,10 +940,9 @@ public class TaskImpl implements Task {
         }
         recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, myStart.getTime(), getEnd().getTime());
         int length = 0;
-        for (int i = 0; i < myActivities.size(); i++) {
-            TaskActivity next = (TaskActivity) myActivities.get(i);
-            if (next.getIntensity() > 0) {
-                length += next.getDuration().getLength(
+        for (TaskActivity activity : myActivities) {
+            if (activity.getIntensity() > 0) {
+                length += activity.getDuration().getLength(
                         getDuration().getTimeUnit());
             }
         }
@@ -982,9 +955,8 @@ public class TaskImpl implements Task {
     }
 
     public void setCompletionPercentage(int percentage) {
-        int oldPercentage = myCompletionPercentage;
+        if (percentage != myCompletionPercentage) {
         myCompletionPercentage = percentage;
-        if (oldPercentage != myCompletionPercentage) {
             EventSender progressEventSender = new ProgressEventSender();
             progressEventSender.enable();
             progressEventSender.fireEvent();
@@ -1045,9 +1017,7 @@ public class TaskImpl implements Task {
         return myTaskHierarchyItem == null;
     }
 
-    /**
-     * @return The CustomColumnValues.
-     */
+    /** @return The CustomColumnValues. */
     public CustomColumnsValues getCustomValues() {
         return customValues;
     }

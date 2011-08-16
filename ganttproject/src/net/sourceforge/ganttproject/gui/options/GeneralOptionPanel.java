@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public abstract class GeneralOptionPanel extends JPanel {
 
-    protected GanttLanguage language = GanttLanguage.getInstance();
+    protected static final GanttLanguage language = GanttLanguage.getInstance();
 
     /** General vertical box. */
     protected Box vb = Box.createVerticalBox();

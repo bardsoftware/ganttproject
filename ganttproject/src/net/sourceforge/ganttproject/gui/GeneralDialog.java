@@ -56,7 +56,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
         TreeSelectionListener {
 
     /** Language of the application. */
-    protected final GanttLanguage language = GanttLanguage.getInstance();
+    protected static final GanttLanguage language = GanttLanguage.getInstance();
 
     protected final GanttProject appli;
 
@@ -82,7 +82,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
 
     public GeneralDialog(GanttProject parent, String title, boolean modal,
             GeneralOptionPanel firstPanel) {
-        super(parent, GanttProject.correctLabel(title), modal);
+        super(parent, language.correctLabel(title), modal);
 
         appli = parent;
 

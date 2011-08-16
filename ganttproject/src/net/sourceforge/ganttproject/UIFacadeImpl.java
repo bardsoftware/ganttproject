@@ -287,7 +287,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
         }
     }
+
+    /** Show and log the exception */
     public void showErrorDialog(Throwable e) {
+        // TODO Improve the user friendliness of the dialog! (See issue 165)
         showErrorDialog(getExceptionReport(e));
         GPLogger.log(e);
     }
@@ -357,6 +360,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     private static class Commiter {
+        private boolean isCommited;
+
         void commit() {
             isCommited = true;
         }
@@ -364,8 +369,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         boolean isCommited() {
             return isCommited;
         }
-
-        private boolean isCommited;
     }
 
     private static GanttLanguage getLanguage() {

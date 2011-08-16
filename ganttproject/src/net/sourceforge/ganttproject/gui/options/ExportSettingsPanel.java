@@ -23,7 +23,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Export parameters panel (for png export, html, print ...)
@@ -41,16 +40,14 @@ public class ExportSettingsPanel extends GeneralOptionPanel {
     private final GanttProject appli;
 
     public ExportSettingsPanel(GanttProject parent) {
-        super(GanttProject.correctLabel(GanttLanguage.getInstance().getText(
-                "export")), GanttLanguage.getInstance().getText(
-                "settingsExport"));
+        super(language.getCorrectedLabel("export"), language
+                .getText("settingsExport"));
         appli = parent;
 
         // export the name of the task
         JPanel namePanel = new JPanel(new BorderLayout());
         namePanel.add(cbName = new JCheckBox(), BorderLayout.WEST);
-        namePanel
-                .add(new JLabel(language.getText("name")), BorderLayout.CENTER);
+        namePanel.add(new JLabel(language.getText("name")), BorderLayout.CENTER);
         vb.add(namePanel);
         vb.add(new JPanel());
 
