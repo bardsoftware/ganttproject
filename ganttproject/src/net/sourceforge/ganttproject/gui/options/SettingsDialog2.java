@@ -160,9 +160,8 @@ public class SettingsDialog2 {
                     }
                     headerWrapper.add(wrapper, BorderLayout.CENTER);
                     return headerWrapper;
-                } else {
-                    return wrapper;
                 }
+                return wrapper;
             }
         });
         pagesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
