@@ -96,6 +96,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
             myDisplayValue = displayValue;
         }
 
+        @Override
         public String toString() {
             return myDisplayValue;
         }

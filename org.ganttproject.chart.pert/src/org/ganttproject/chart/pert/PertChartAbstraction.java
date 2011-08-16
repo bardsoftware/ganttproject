@@ -176,6 +176,7 @@ public class PertChartAbstraction {
             return myTask.isCritical();
         }
 
+        @Override
         public String toString() {
             return "{" + getName() + ", " + getDuration()
                     + /* ", " + successors + */"}";

@@ -116,16 +116,19 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
+            @Override
             protected ParserFactory getParserFactory() {
                 return GanttProjectBase.this.getParserFactory();
             }
 
+            @Override
             protected TableHeaderUIFacade getVisibleFields() {
                 return getUIFacade().getTaskTree().getVisibleFields();
             }
 
         };
         myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
+            @Override
             protected ParserFactory getParserFactory() {
                 return GanttProjectBase.this.getParserFactory();
             }
@@ -326,6 +329,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
         ProjectEventListener getProjectEventListener() {
             return new ProjectEventListener.Stub() {
+                @Override
                 public void projectClosed() {
                     for (int i=0; i<myViews.size(); i++) {
                         GPViewImpl nextView = (GPViewImpl) myViews.get(i);
@@ -346,12 +350,14 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
             }
+            @Override
             protected String getIconFilePrefix() {
                 return "copy_";
             }
             public void actionPerformed(ActionEvent e) {
                 mySelectedView.myChart.getSelection().startCopyClipboardTransaction();
             }
+            @Override
             protected String getLocalizedName() {
                 return getI18n("copy");
             }
@@ -361,12 +367,14 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
             }
+            @Override
             protected String getIconFilePrefix() {
                 return "cut_";
             }
             public void actionPerformed(ActionEvent e) {
                 mySelectedView.myChart.getSelection().startMoveClipboardTransaction();
             }
+            @Override
             protected String getLocalizedName() {
                 return getI18n("cut");
             }
@@ -376,6 +384,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             {
                 putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
             }
+            @Override
             protected String getIconFilePrefix() {
                 return "paste_";
             }
@@ -385,6 +394,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
                 selection.commitClipboardTransaction();
             }
 
+            @Override
             protected String getLocalizedName() {
                 return getI18n("paste");
             }

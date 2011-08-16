@@ -95,6 +95,7 @@ public class DependencyTableModel extends AbstractTableModel {
         return myDependencies.size() + 1;
     }
 
+    @Override
     public String getColumnName(int col) {
         return MyColumn.values()[col].getCaption();
     }
@@ -128,11 +129,13 @@ public class DependencyTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public boolean isCellEditable(int row, int col) {
         MyColumn column = MyColumn.values()[col];
         return row == getRowCount() ? column ==  MyColumn.TASK_NAME : column.isEditable();
     }
 
+    @Override
     public void setValueAt(Object value, int row, int col) {
         assert row >= 0;
         try {
@@ -218,6 +221,7 @@ public class DependencyTableModel extends AbstractTableModel {
             myText = "[#" + task.getTaskID() + "] " + task.getName();
         }
 
+        @Override
         public String toString() {
             return myTask.getName();
         }

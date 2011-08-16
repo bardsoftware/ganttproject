@@ -130,6 +130,7 @@ public class XMLCalendarOpen {
         // SAX DocumentHandler methods
         // ===========================================================
 
+        @Override
         public void endDocument() throws SAXException {
             for (int i = 0; i < myListeners.size(); i++) {
                 ParsingListener l = myListeners.get(i);
@@ -137,6 +138,7 @@ public class XMLCalendarOpen {
             }
         }
 
+        @Override
         public void startElement(String namespaceURI, String sName, // simple
                 // name
                 String qName, // qualified name
@@ -152,6 +154,7 @@ public class XMLCalendarOpen {
             }
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName)
                 throws SAXException {
             for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers

@@ -41,6 +41,7 @@ public class OSXAdapter extends ApplicationAdapter {
      * the app, or GanttProject is selected via the open-with menu option. The
      * event argument contains the path of the file in either case.
      */
+    @Override
     public void handleOpenFile(ApplicationEvent event) {
         String file;
         Document myDocument;
@@ -61,6 +62,7 @@ public class OSXAdapter extends ApplicationAdapter {
     }
 
     /** Handle the Mac OSX "about" menu option. */
+    @Override
     public void handleAbout(ApplicationEvent event) {
         AboutDialog abd = new AboutDialog(myProj);
         abd.setVisible(true);
@@ -72,6 +74,7 @@ public class OSXAdapter extends ApplicationAdapter {
      * Handles the quit menu option (defaults to command-q) the same way
      * choosing Project->Quit does.
      */
+    @Override
     public void handleQuit(ApplicationEvent event) {
         myProj.quitApplication();
         /*

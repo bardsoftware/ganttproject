@@ -131,23 +131,29 @@ public class DelayManager implements GPUndoListener {
     }
 
     private class TaskListenerImpl extends TaskListenerAdapter {
+        @Override
         public void taskScheduleChanged(TaskScheduleEvent e) {
             if (!e.getNewFinishDate().equals(e.getOldFinishDate())) {
                 fireDelayObservation();
             }
         }
+        @Override
         public void dependencyAdded(TaskDependencyEvent e) {
             fireDelayObservation();
         }
+        @Override
         public void dependencyRemoved(TaskDependencyEvent e) {
             fireDelayObservation();
         }
+        @Override
         public void taskAdded(TaskHierarchyEvent e) {
             fireDelayObservation();
         }
+        @Override
         public void taskRemoved(TaskHierarchyEvent e) {
             fireDelayObservation();
         }
+        @Override
         public void taskProgressChanged(TaskPropertyEvent e) {
             fireDelayObservation();
         }

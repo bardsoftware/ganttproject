@@ -21,15 +21,18 @@ class ExitAction extends GPAction {
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Q, MENU_MASK));
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("quit");
     }
 
+    @Override
     protected String getTooltipText() {
         return getI18n("quit");
     }
 
 
+    @Override
     protected String getIconFilePrefix() {
         return "exit_";
     }

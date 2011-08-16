@@ -38,6 +38,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
                 endDate, true));
     }
 
+    @Override
     protected List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
         Date activityStart = timeUnit.adjustLeft(startDate);
@@ -49,6 +50,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
                 activityStart, activityEnd, true));
     }
 
+    @Override
     protected List<GPCalendarActivity> getActivitiesBackward(Date startDate, TimeUnit timeUnit,
             long unitCount) {
         Date activityEnd = timeUnit.adjustLeft(startDate);
@@ -86,6 +88,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         return false;
     }
 
+    @Override
     public boolean isNonWorkingDay(Date curDayStart) {
         // Always return false, as this calendar only has working days
         return false;
@@ -122,6 +125,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         // Nothing needs to be done
     }
 
+    @Override
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());

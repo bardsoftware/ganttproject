@@ -51,6 +51,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         weekendConfigurationPanel = null;
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         weekendConfigurationPanel.setActive(false);
         GPCalendar projectCalendar = project.getActiveCalendar();
@@ -83,6 +84,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
     // TODO It would be nicer to just update the checkboxes,
     //      but WeekendConfigurationPage does not allow it ATM
+    @Override
     public void initialize() {
         if(weekendConfigurationPanel != null) {
             vb.remove(weekendConfigurationPanel.getComponent());

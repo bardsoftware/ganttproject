@@ -42,10 +42,12 @@ public class ScrollGanttChartLeftAction extends GPAction implements
         myScrollingManager.scrollBy(myTaskManager.createLength(1));
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "prev_";
     }
 
+    @Override
     public void isIconVisible(boolean isNull) {
         setIconVisible(isNull);
     }

@@ -184,6 +184,7 @@ public class UIConfiguration {
 //                }
 //            }
         }
+        @Override
         public void commit() {
             super.commit();
             String value = getValue();
@@ -223,6 +224,7 @@ public class UIConfiguration {
             commit();
         }
 
+        @Override
         public void commit() {
             super.commit();
             setRedlineOn(isChecked());

@@ -31,10 +31,12 @@ public class UnlinkTasksAction extends TaskActionBase {
         super("unlink", taskManager, selectionManager, uiFacade);
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "unlink_";
     }
 
+    @Override
     protected boolean isEnabled(List<Task> selection) {
         for (Task task : selection) {
             if (task.getDependencies().hasLinks(selection)) {
@@ -44,6 +46,7 @@ public class UnlinkTasksAction extends TaskActionBase {
         return false;
     }
 
+    @Override
     protected void run(List<Task> selection) throws Exception {
         for (Task task : selection) {
             task.getDependencies().clear(selection);

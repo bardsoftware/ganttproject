@@ -53,6 +53,7 @@ public class ExporterToHTML extends ExporterBase {
         return GanttLanguage.getInstance().getText("impex.html.description");
     }
 
+    @Override
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         mySelectedStylesheet = (HTMLStylesheet) stylesheet;
     }
@@ -66,6 +67,7 @@ public class ExporterToHTML extends ExporterBase {
         return "html";
     }
 
+    @Override
     protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         Job generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
         Job generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
@@ -78,6 +80,7 @@ public class ExporterToHTML extends ExporterBase {
 
     private Job createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("generate gantt chart") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -107,6 +110,7 @@ public class ExporterToHTML extends ExporterBase {
 
     private Job createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate resource chart") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -136,6 +140,7 @@ public class ExporterToHTML extends ExporterBase {
     private Job createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Generate HTML pages") {
 
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -192,6 +197,7 @@ public class ExporterToHTML extends ExporterBase {
 
     private Job createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("Copying images") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -295,6 +301,7 @@ public class ExporterToHTML extends ExporterBase {
         handler.endDocument();
     }
 
+    @Override
     protected String getAssignedResourcesDelimiter() {
       return ", ";
     }
@@ -303,17 +310,21 @@ public class ExporterToHTML extends ExporterBase {
         return "html";
     }
 
+    @Override
     public String[] getFileExtensions() {
         String s [] = {"html"};
         return s;
     }
 
+    @Override
     protected String getStylesheetOptionID() {
         return "impex.html.stylesheet";
     }
 
+    @Override
     protected Stylesheet[] getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
+            @Override
             protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
                 return new HTMLStylesheetImpl(resolvedUrl, localizedName);
             }

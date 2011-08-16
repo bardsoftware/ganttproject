@@ -110,6 +110,7 @@ public class TestResourceAssignments extends TestCase {
         return result;
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         myHumanResourceManager = new HumanResourceManager(RoleManager.Access

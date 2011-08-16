@@ -8,6 +8,7 @@ public class GanttChartOptionPageProvider extends OptionPageProviderBase {
         super("ganttChart");
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return getUiFacade().getGanttChart().getOptionGroups();
     }

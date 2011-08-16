@@ -41,6 +41,7 @@ public class StartStartConstraintImpl extends ConstraintImpl implements
                 "startstart"));
     }
 
+    @Override
     public TaskDependencyConstraint.Collision getCollision() {
         TaskDependencyConstraint.Collision result = null;
         Task dependee = getDependency().getDependee();
@@ -64,6 +65,7 @@ public class StartStartConstraintImpl extends ConstraintImpl implements
         return result;
     }
 
+    @Override
     public Collision getBackwardCollision(Date dependantStart) {
         Task dependee = getDependency().getDependee();
         GanttCalendar dependeeEnd = dependee.getEnd().clone();

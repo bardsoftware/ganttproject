@@ -22,6 +22,7 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements
                 "finishstart"));
     }
 
+    @Override
     public TaskDependencyConstraint.Collision getCollision() {
         TaskDependencyConstraint.Collision result = null;
         Task dependee = getDependency().getDependee();
@@ -48,6 +49,7 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements
         return result;
     }
 
+    @Override
     public Collision getBackwardCollision(Date dependantStart) {
         if (dependantStart==null) {
             System.err.println();

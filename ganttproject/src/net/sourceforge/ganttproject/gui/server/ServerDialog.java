@@ -36,6 +36,7 @@ public class ServerDialog extends GeneralDialog {
                 .getText("webServer")), true, new ConnectionPanel());
     }
 
+    @Override
     public void constructSections() {
         addObject(language.getCorrectedLabel("openFromServer"), null);
     }

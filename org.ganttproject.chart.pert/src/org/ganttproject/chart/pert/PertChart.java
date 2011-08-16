@@ -62,6 +62,7 @@ public abstract class PertChart extends JPanel implements Chart {
     /**
      * @inheritDoc
      */
+    @Override
     public abstract String getName();
 
     /**

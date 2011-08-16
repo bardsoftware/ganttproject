@@ -122,14 +122,17 @@ public class CustomColumnsPanel extends JPanel {
             fireTableDataChanged();
         }
 
+        @Override
         public String getColumnName(int column) {
             return COLUMN_NAMES[column];
         }
 
+        @Override
         public Class<?> getColumnClass(int column) {
             return String.class;
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             return col != 1;
         }
@@ -144,6 +147,7 @@ public class CustomColumnsPanel extends JPanel {
             return myCustomPropertyManager.getDefinitions().size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             if (row < 0 || row >= myCustomPropertyManager.getDefinitions().size()) {
                 return null;
@@ -161,6 +165,7 @@ public class CustomColumnsPanel extends JPanel {
             }
         }
 
+        @Override
         public void setValueAt(Object o, int row, int col) {
             if (row < 0 || row >= myCustomPropertyManager.getDefinitions().size()) {
                 return;

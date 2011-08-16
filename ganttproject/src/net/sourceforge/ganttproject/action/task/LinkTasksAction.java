@@ -31,10 +31,12 @@ public class LinkTasksAction extends TaskActionBase {
         super("link", taskManager, selectionManager, uiFacade);
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "link_";
     }
 
+    @Override
     protected void run(List<Task> selection) throws TaskDependencyException {
         for (int i=0; i<selection.size()-1; i++) {
             Task dependant = selection.get(i+1);
@@ -47,6 +49,7 @@ public class LinkTasksAction extends TaskActionBase {
         getSelectionManager().fireSelectionChanged();
     }
 
+    @Override
     protected boolean isEnabled(List<Task> selection) {
         if(selection.size() <= 1) {
             return false;

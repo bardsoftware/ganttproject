@@ -60,11 +60,13 @@ public class AboutPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         // There are never changes for the about panel
         return false;
     }
 
+    @Override
     public void initialize() {
     }
 }

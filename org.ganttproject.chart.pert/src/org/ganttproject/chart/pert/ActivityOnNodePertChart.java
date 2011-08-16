@@ -58,27 +58,19 @@ import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
  */
 public class ActivityOnNodePertChart extends PertChart {
 
-    /**
-     * List of abstract nodes.
-     */
+    /** List of abstract nodes. */
     private List<TaskGraphNode> myTaskGraphNodes;
 
-    /**
-     * List of graphical arrows.
-     */
+    /** List of graphical arrows. */
     private List<GraphicalArrow> myGraphicalArrows;
 
-    /**
-     * List of graphical nodes (in relation with abstract nodes)
-     */
+    /** List of graphical nodes (in relation with abstract nodes) */
     private List<GraphicalNode> myGraphicalNodes;
 
     //private Map myMapPositionListOfNodes;
     private int nbCols;
 
-    /**
-     * PERT chart abstraction used to build graph.
-     */
+    /** PERT chart abstraction used to build graph. */
     private PertChartAbstraction myPertAbstraction;
 
     /**
@@ -87,9 +79,7 @@ public class ActivityOnNodePertChart extends PertChart {
      */
     private int myMaxX = 1, myMaxY = 1;
 
-    /**
-     * The currently mouse pressed graphical node.
-     */
+    /** The currently mouse pressed graphical node. */
     private GraphicalNode myPressedGraphicalNode;
 
     // private List pressedGraphicalNodes;
@@ -142,24 +132,16 @@ public class ActivityOnNodePertChart extends PertChart {
      */
     private final static int Y_OFFSET = 5;
 
-    /**
-     * Color of the border of normal tasks.
-     */
+    /** Color of the border of normal tasks. */
     private final static Color NORMAL_COLOR = Color.BLUE.brighter();
 
-    /**
-     * Color of the border of supertasks.
-     */
+    /** Color of the border of supertasks. */
     private final static Color SUPER_COLOR = Color.RED;
 
-    /**
-     * Color of the border of milestones.
-     */
+    /** Color of the border of milestones. */
     private final static Color MILESTONE_COLOR = Color.BLACK;
 
-    /**
-     * Color of the arrows.
-     */
+    /** Color of the arrows. */
     private final static Color ARROW_COLOR = Color.GRAY;
 
     public ActivityOnNodePertChart() {
@@ -244,9 +226,7 @@ public class ActivityOnNodePertChart extends PertChart {
         });
     }
 
-    /**
-     * Recalculated preferred size so that graphics fit with nodes positions.
-     */
+    /** Recalculated preferred size so that graphics fit with nodes positions. */
     private void recalculatPreferredSize()
     {
         int maxX = 0;
@@ -293,6 +273,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return null;
     }
 
+    @Override
     protected void buildPertChart() {
         if (this.myPertAbstraction == null)
         {
@@ -407,9 +388,8 @@ public class ActivityOnNodePertChart extends PertChart {
         GraphicalNode res = getGraphicalNodeByID(taskGraphNode.getID());
         if (res != null) {
             return res;
-        } else {
-            return new GraphicalNode(taskGraphNode);
         }
+        return new GraphicalNode(taskGraphNode);
     }
 
     private void moveDown(GraphicalNode graphicalNode) {
@@ -710,6 +690,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return getChart(settings);
     }
 
+    @Override
     public BufferedImage getChart(GanttExportSettings settings) {
         BufferedImage image = new BufferedImage(myMaxX, myMaxY,
                 BufferedImage.TYPE_INT_RGB);
@@ -719,6 +700,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return image;
     }
 
+    @Override
     public String getName() {
         return ourLanguage.getText("pertChartLongName");
     }
@@ -727,6 +709,7 @@ public class ActivityOnNodePertChart extends PertChart {
         this.myPertAbstraction = null;
     }
 
+    @Override
     public void paint(Graphics g) {
         this.buildPertChart();
         super.paint(g);
@@ -837,6 +820,7 @@ public class ActivityOnNodePertChart extends PertChart {
          * @param g
          *            Graphics where the graphical node is to be painted.
          */
+        @Override
         public void paint(Graphics g) {
             if (node.isCritical()) {
                 this.backgroundColor = defaultCriticalColor;
@@ -937,6 +921,7 @@ public class ActivityOnNodePertChart extends PertChart {
             return res;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof GraphicalNode) {
                 return node.equals(((GraphicalNode) o).node);
@@ -944,6 +929,7 @@ public class ActivityOnNodePertChart extends PertChart {
             return false;
         }
 
+        @Override
         public String toString() {
             return "[" + node.getName() + " (" + col + ") "
                     + node.getSuccessors() + "]";

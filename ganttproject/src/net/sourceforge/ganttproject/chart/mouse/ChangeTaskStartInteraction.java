@@ -54,6 +54,7 @@ public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction
         getTask().applyThirdDateConstraint();
     }
 
+    @Override
     protected String getNotesText() {
         return getTask().getStart().toString();
     }

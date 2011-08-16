@@ -15,22 +15,27 @@ public class GanttMetalTheme extends DefaultMetalTheme {
         font = new FontUIResource(config.getMenuFont());
     }
 
+    @Override
     public FontUIResource getControlTextFont() {
         return font;
     }
 
+    @Override
     public FontUIResource getMenuTextFont() {
         return font;
     }
 
+    @Override
     public FontUIResource getSystemTextFont() {
         return font;
     }
 
+    @Override
     public FontUIResource getUserTextFont() {
         return font;
     }
 
+    @Override
     public FontUIResource getWindowTitleFont() {
         return font;
     }

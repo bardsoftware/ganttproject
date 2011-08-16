@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.about;
 
 import java.awt.BorderLayout;
@@ -36,112 +36,67 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 public class AboutAuthorPanel extends GeneralOptionPanel {
 
     public AboutAuthorPanel() {
-        super(GanttLanguage.getInstance().getText("authors"), GanttLanguage
-                .getInstance().getText("settingsAuthors"));
+        super(GanttLanguage.getInstance().getText("authors"), GanttLanguage.getInstance().getText("settingsAuthors"));
 
         JTable jTableAuthors = new JTable();
         AuthorsFieldTableModel modelauthors = new AuthorsFieldTableModel();
 
         jTableAuthors.setModel(modelauthors);
-        modelauthors.addField(new AuthorsInfo("THOMAS Alexandre",
-                "alexthomas@ganttproject.org"));
-        modelauthors.addField(new AuthorsInfo("BARASHEV Dmitry",
-                "dbarashev@ganttproject.org"));
-        modelauthors.addField(new AuthorsInfo("AZURE Joe",
-                "jazure@fishalaska.com"));
-        modelauthors.addField(new AuthorsInfo("BARANNE Benoit",
-                "bbaranne@users.sourceforge.net"));
-        modelauthors.addField(new AuthorsInfo("BOHN Nicolas",
-                "nicolasbohn@users.sourceforge.net"));
-        modelauthors.addField(new AuthorsInfo("LIBS Jean-Marc",
-                "jyhem@users.sourceforge.net"));
+        modelauthors.addField(new AuthorsInfo("THOMAS Alexandre", "alexthomas@ganttproject.org"));
+        modelauthors.addField(new AuthorsInfo("BARASHEV Dmitry", "dbarashev@ganttproject.org"));
+        modelauthors.addField(new AuthorsInfo("AZURE Joe", "jazure@fishalaska.com"));
+        modelauthors.addField(new AuthorsInfo("BARANNE Benoit", "bbaranne@users.sourceforge.net"));
+        modelauthors.addField(new AuthorsInfo("BOHN Nicolas", "nicolasbohn@users.sourceforge.net"));
+        modelauthors.addField(new AuthorsInfo("LIBS Jean-Marc", "jyhem@users.sourceforge.net"));
         modelauthors.addField(new AuthorsInfo("", ""));
-        modelauthors.addField(new AuthorsInfo("BARMEIER Matthias",
-                "matthias.barmeier@sourcepark.de"));
-        modelauthors.addField(new AuthorsInfo("MURAS Joanna",
-                   "zabucha@users.sourceforge.net"));
+        modelauthors.addField(new AuthorsInfo("BARMEIER Matthias", "matthias.barmeier@sourcepark.de"));
+        modelauthors.addField(new AuthorsInfo("MURAS Joanna", "zabucha@users.sourceforge.net"));
         modelauthors.addField(new AuthorsInfo("LU Cui", "cuix1@yahoo.com"));
-        modelauthors.addField(new AuthorsInfo("SCHULZ Maik",
-                "post@maikschulz.de"));
-        modelauthors.addField(new AuthorsInfo("HAEUSLER Michael",
-                "michael@akatose.de"));
-        modelauthors.addField(new AuthorsInfo("ANDRESEN Roger",
-                "Roger@Andresen.com"));
+        modelauthors.addField(new AuthorsInfo("SCHULZ Maik", "post@maikschulz.de"));
+        modelauthors.addField(new AuthorsInfo("HAEUSLER Michael", "michael@akatose.de"));
+        modelauthors.addField(new AuthorsInfo("ANDRESEN Roger", "Roger@Andresen.com"));
         modelauthors.addField(new AuthorsInfo("", ""));
-        modelauthors.addField(new AuthorsInfo("LIPINSKI Pawel",
-                "pawel.lipinski@javart.com.pl"));
-        modelauthors.addField(new AuthorsInfo("AUDRU C�dric",
-                "cedricaudru@yahoo.fr"));
+        modelauthors.addField(new AuthorsInfo("LIPINSKI Pawel", "pawel.lipinski@javart.com.pl"));
+        modelauthors.addField(new AuthorsInfo("AUDRU C�dric", "cedricaudru@yahoo.fr"));
         modelauthors.addField(new AuthorsInfo("A S Hodel", "hodelas@ieee.org"));
-        modelauthors.addField(new AuthorsInfo("BALAZS Major",
-                "BMajor@Graphisoft.hu"));
-        modelauthors.addField(new AuthorsInfo("BARZILAI Igor",
-            "igor.barzilai@free.fr"));
-        modelauthors.addField(new AuthorsInfo("BREZINA Marek",
-                "marek.brezina@seznam.cz"));
-        modelauthors.addField(new AuthorsInfo("BROKER Rick",
-                "rick_broker@yahoo.com"));
-        modelauthors.addField(new AuthorsInfo("CASTILHO Danilo",
-                "dncastilho@yahoo.com.br"));
-        modelauthors.addField(new AuthorsInfo("CHRISTENSEN Carsten",
-                "coc-kultur@aalborg.dk"));
-        modelauthors.addField(new AuthorsInfo("CROUNSE Brian",
-                "brian@crounse.name"));
-        modelauthors.addField(new AuthorsInfo("FERRAZ Nelson",
-                "nferraz@phperl.com"));
-        modelauthors.addField(new AuthorsInfo("GLOEGL Michael",
-                "gloegl@fmi.uni-passau.de"));
-        modelauthors.addField(new AuthorsInfo("GIANTSIDIS Nikos",
-            "nickgiant@yahoo.com")); //greek translation
-        modelauthors.addField(new AuthorsInfo("HERRMANN G.",
-                "herr@nike.eonet.ne.jp"));
-        modelauthors.addField(new AuthorsInfo("HURSEY John",
-                "joshh@cs.earlham.edu"));
-        modelauthors.addField(new AuthorsInfo("ILES Jon",
-                "jon.iles@tapsterrock.com"));
-        modelauthors.addField(new AuthorsInfo("Jiwon Kim",
-                "yesdi@users.sourceforge.net")); // Korean language
-        modelauthors
-                .addField(new AuthorsInfo("KARLGREN Jussi", "jussi@sics.se"));
-        modelauthors.addField(new AuthorsInfo("KITSIK Ahti",
-                "ahti.kitsik@gmail.com"));
-        modelauthors.addField(new AuthorsInfo("LIN Kirin",
-                "kirinlin@users.sourceforge.net"));
-        modelauthors.addField(new AuthorsInfo("L'KENFACK Etienne",
-                "etiennelk@hotmail.com"));
-        modelauthors.addField(new AuthorsInfo("MADSEN Jan",
-                "JM-kultur@aalborg.dk"));
-        modelauthors.addField(new AuthorsInfo("MARCH Stephen",
-                "steve@enerds.ca"));
-        modelauthors.addField(new AuthorsInfo("MIYATA Yasuhiro",
-                "yasuhiro.miyata@ulsystems.co.jp"));
-        modelauthors.addField(new AuthorsInfo("NATHANAEL Uwe",
-                "Uwe.Nathanael@t-online.de"));
-        modelauthors
-                .addField(new AuthorsInfo("OGNESS John", "john@ogness.net"));
-        modelauthors.addField(new AuthorsInfo("PAOLETTI Tomaso",
-                "tom@ipaoletti.net"));
-        modelauthors.addField(new AuthorsInfo("PLUSCHKE Andreas",
-                "homepage.plueschke@gmx.de"));
-        modelauthors.addField(new AuthorsInfo("RACINOWSKI Przemyslaw",
-                "p.racinowski@wp.pl"));
+        modelauthors.addField(new AuthorsInfo("BALAZS Major", "BMajor@Graphisoft.hu"));
+        modelauthors.addField(new AuthorsInfo("BARZILAI Igor", "igor.barzilai@free.fr"));
+        modelauthors.addField(new AuthorsInfo("BREZINA Marek", "marek.brezina@seznam.cz"));
+        modelauthors.addField(new AuthorsInfo("BROKER Rick", "rick_broker@yahoo.com"));
+        modelauthors.addField(new AuthorsInfo("CASTILHO Danilo", "dncastilho@yahoo.com.br"));
+        modelauthors.addField(new AuthorsInfo("CHRISTENSEN Carsten", "coc-kultur@aalborg.dk"));
+        modelauthors.addField(new AuthorsInfo("CROUNSE Brian", "brian@crounse.name"));
+        modelauthors.addField(new AuthorsInfo("FERRAZ Nelson", "nferraz@phperl.com"));
+        modelauthors.addField(new AuthorsInfo("GLOEGL Michael", "gloegl@fmi.uni-passau.de"));
+        modelauthors.addField(new AuthorsInfo("GIANTSIDIS Nikos", "nickgiant@yahoo.com")); // greek
+                                                                                           // translation
+        modelauthors.addField(new AuthorsInfo("HERRMANN G.", "herr@nike.eonet.ne.jp"));
+        modelauthors.addField(new AuthorsInfo("HURSEY John", "joshh@cs.earlham.edu"));
+        modelauthors.addField(new AuthorsInfo("ILES Jon", "jon.iles@tapsterrock.com"));
+        modelauthors.addField(new AuthorsInfo("Jiwon Kim", "yesdi@users.sourceforge.net")); // Korean
+                                                                                            // language
+        modelauthors.addField(new AuthorsInfo("KARLGREN Jussi", "jussi@sics.se"));
+        modelauthors.addField(new AuthorsInfo("KITSIK Ahti", "ahti.kitsik@gmail.com"));
+        modelauthors.addField(new AuthorsInfo("LIN Kirin", "kirinlin@users.sourceforge.net"));
+        modelauthors.addField(new AuthorsInfo("L'KENFACK Etienne", "etiennelk@hotmail.com"));
+        modelauthors.addField(new AuthorsInfo("MADSEN Jan", "JM-kultur@aalborg.dk"));
+        modelauthors.addField(new AuthorsInfo("MARCH Stephen", "steve@enerds.ca"));
+        modelauthors.addField(new AuthorsInfo("MIYATA Yasuhiro", "yasuhiro.miyata@ulsystems.co.jp"));
+        modelauthors.addField(new AuthorsInfo("NATHANAEL Uwe", "Uwe.Nathanael@t-online.de"));
+        modelauthors.addField(new AuthorsInfo("OGNESS John", "john@ogness.net"));
+        modelauthors.addField(new AuthorsInfo("PAOLETTI Tomaso", "tom@ipaoletti.net"));
+        modelauthors.addField(new AuthorsInfo("PLUSCHKE Andreas", "homepage.plueschke@gmx.de"));
+        modelauthors.addField(new AuthorsInfo("RACINOWSKI Przemyslaw", "p.racinowski@wp.pl"));
         modelauthors.addField(new AuthorsInfo("REY Juan", "juanrey@inicia.es"));
-        modelauthors.addField(new AuthorsInfo("SAHIN Cengiz",
-                "cengiz@sahinc.de"));
-        modelauthors.addField(new AuthorsInfo("SENIGAGLIESI Paolo",
-                "senigagliesi_inf@hotmail.com"));
-        modelauthors.addField(new AuthorsInfo("SHABTAI Yoav",
-                "yoavs@pmp-medical.com"));
-        modelauthors.addField(new AuthorsInfo("STAVRIDES Paul",
-                "pstav@adelie.net"));
-        modelauthors.addField(new AuthorsInfo("VAN DER WIEL Andre",
-                "a.vd.wiel@chello.nl"));
-        modelauthors.addField(new AuthorsInfo("VOCI Elio",
-                "elio.voci@gawab.com"));
-        modelauthors.addField(new AuthorsInfo("ZAVOLZHSKY Alexandr",
-                "zavolzhsky@mail.ru"));
-        modelauthors.addField(new AuthorsInfo("Zheko Zhekov",
-                "zhekov@electrostart.com")); // bulgarian language
+        modelauthors.addField(new AuthorsInfo("SAHIN Cengiz", "cengiz@sahinc.de"));
+        modelauthors.addField(new AuthorsInfo("SENIGAGLIESI Paolo", "senigagliesi_inf@hotmail.com"));
+        modelauthors.addField(new AuthorsInfo("SHABTAI Yoav", "yoavs@pmp-medical.com"));
+        modelauthors.addField(new AuthorsInfo("STAVRIDES Paul", "pstav@adelie.net"));
+        modelauthors.addField(new AuthorsInfo("VAN DER WIEL Andre", "a.vd.wiel@chello.nl"));
+        modelauthors.addField(new AuthorsInfo("VOCI Elio", "elio.voci@gawab.com"));
+        modelauthors.addField(new AuthorsInfo("ZAVOLZHSKY Alexandr", "zavolzhsky@mail.ru"));
+        modelauthors.addField(new AuthorsInfo("Zheko Zhekov", "zhekov@electrostart.com")); // bulgarian
+                                                                                           // language
 
         JPanel authorsPanel = new JPanel(new BorderLayout());
         authorsPanel.add(new JScrollPane(jTableAuthors), BorderLayout.CENTER);
@@ -151,10 +106,12 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
+    @Override
     public void initialize() {
         // nothing to change
     }
@@ -181,8 +138,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
     class AuthorsFieldTableModel extends AbstractTableModel {
         private GanttLanguage language = GanttLanguage.getInstance();
 
-        final String[] columnNames = { language.getText("name"),
-                language.getText("colMail") };
+        final String[] columnNames = { language.getText("name"), language.getText("colMail") };
 
         final Class<?>[] columnClasses = { String.class, String.class };
 
@@ -201,10 +157,12 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
             return data.size();
         }
 
+        @Override
         public String getColumnName(int col) {
             return columnNames[col];
         }
 
+        @Override
         public Class<?> getColumnClass(int c) {
             return columnClasses[c];
         }
@@ -219,6 +177,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
                 return null;
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             return col == 1;
         }

@@ -59,6 +59,7 @@ public class TimeUnitText {
         return null;
     }
 
+    @Override
     public String toString() {
         return "long=" + myLongText + ", medium=" + myMediumText + ", short="
                 + myShortText;

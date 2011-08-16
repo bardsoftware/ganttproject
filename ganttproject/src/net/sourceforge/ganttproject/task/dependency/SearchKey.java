@@ -52,12 +52,14 @@ public class SearchKey implements Comparable<SearchKey> {
         return result;
     }
 
+    @Override
     public boolean equals(Object obj) {
         SearchKey rvalue = (SearchKey) obj;
         return myFirstTaskID == rvalue.myFirstTaskID && myType == rvalue.myType
                 && mySecondTaskID == rvalue.mySecondTaskID;
     }
 
+    @Override
     public int hashCode() {
         return 7 * myFirstTaskID + 11 * myType + 13 * mySecondTaskID;
     }

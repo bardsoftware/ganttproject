@@ -144,6 +144,7 @@ public class GanttTaskRelationship {
                 && successorTaskID == compareRel.successorTaskID;
     }
 
+    @Override
     public Object clone() {
         GanttTaskRelationship copyRel = new GanttTaskRelationship(myTaskManager);
         copyRel.relationshipType = relationshipType;
@@ -152,6 +153,7 @@ public class GanttTaskRelationship {
         return copyRel;
     }
 
+    @Override
     public String toString() {
         String res = "Relation ";
         res += (relationshipType == SS) ? "(SS) "

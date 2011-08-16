@@ -328,11 +328,13 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         super(new JXTreeTable(model) {
             {
                 setTableHeader(new JTableHeader(getColumnModel()) {
+                    @Override
                     public void applyComponentOrientation(ComponentOrientation o) {
                         super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
                     }
                 });
             }
+            @Override
             protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
                 if (e.isAltDown() || e.isControlDown()) {
                     putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
@@ -341,6 +343,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
                 return result;
             }
+            @Override
             public void applyComponentOrientation(ComponentOrientation o) {
                 super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
             }
@@ -369,6 +372,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
     protected void doInit() {
         scrollPane = new JScrollPane() {
+            @Override
             public void applyComponentOrientation(ComponentOrientation o) {
                 super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
             }
@@ -512,6 +516,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
     protected TableCellEditor newDateCellEditor() {
         return new DateCellEditor() {
+            @Override
             protected Date parseDate(String dateString) {
                 DateFormat[] formats = new DateFormat[] {
                         GanttLanguage.getInstance().getLongDateFormat(),
@@ -602,18 +607,21 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             super(new JTextField());
         }
 
+        @Override
         public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
             JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
             result.selectAll();
             return result;
         }
 
+        @Override
         public Object getCellEditorValue() {
             return new GanttCalendar(myDate == null ? new Date() : myDate);
         }
 
         protected abstract Date parseDate(String dateString);
 
+        @Override
         public boolean stopCellEditing() {
             final String dateString = ((JTextComponent)getComponent()).getText();
             Date parsedDate = parseDate(dateString);
@@ -702,10 +710,12 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
          * @inheritDoc Shows the popupMenu to hide/show columns and to add
          *             custom columns.
          */
+        @Override
         public void mousePressed(MouseEvent e) {
             handlePopupTrigger(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             handlePopupTrigger(e);
         }

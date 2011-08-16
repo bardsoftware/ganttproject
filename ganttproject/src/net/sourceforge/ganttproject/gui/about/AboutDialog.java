@@ -75,6 +75,7 @@ public class AboutDialog extends GeneralDialog {
     }
 
     /** Construct the menu settings. */
+    @Override
     public void constructSections() {
         addObject(language.getCorrectedLabel("about"), null);
         addObject(language.getText("authors"), null);

@@ -124,6 +124,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return "pdf";
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         waitRegisterFonts();
         JPanel result = new JPanel(new BorderLayout());
@@ -134,6 +135,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return result;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return new String[] {"itext"};
     }
@@ -142,10 +144,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return new FontSubstitutionPanel(mySubstitutionModel).getComponent();
     }
 
+    @Override
     public String[] getFileExtensions() {
         return new String[] {"pdf"};
     }
 
+    @Override
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         waitRegisterFonts();
         myStylesheet = (ITextStylesheet) stylesheet;
@@ -160,12 +164,15 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         myStylesheet = (ITextStylesheet) stylesheet;
     }
 
+    @Override
     protected String getStylesheetOptionID() {
         return "impex.pdf.stylesheet";
     }
 
+    @Override
     protected Stylesheet[] getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
+            @Override
             protected Stylesheet newStylesheet(URL resolvedUrl,
                     String localizedName) {
                 return new ThemeImpl(resolvedUrl, localizedName);
@@ -239,6 +246,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         }
     }
 
+    @Override
     protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         waitRegisterFonts();
         return new Job[] {createTransformationJob(outputFile)};
@@ -246,6 +254,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
     private Job createTransformationJob(final File outputFile) {
         Job result = new ExportJob("Generating PDF") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -552,6 +561,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getText("ganttChart"),
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc) {
+                @Override
                 protected void setupChart() {
                     myModel.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
                     super.setupChart();
@@ -568,6 +578,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
+                @Override
                 protected void setupChart() {
                     super.setupChart();
                     //myModel.setRowHeight(myModel.getBounds().height/getProject().getH);
@@ -658,6 +669,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 int myPreviousChildlessTaskCount = 0;
 
                 PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());
+                @Override
                 protected String serializeTask(Task t, int depth) throws Exception {
                     boolean addEmptyRow = false;
                     if (depth == 0) {

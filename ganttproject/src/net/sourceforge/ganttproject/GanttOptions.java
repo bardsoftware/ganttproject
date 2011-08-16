@@ -532,11 +532,13 @@ public class GanttOptions {
         if (myUIConfig == null) {
             myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
                     206), redline) {
+                @Override
                 public Font getMenuFont() {
                     return myMenuFont == null ? super.getMenuFont()
                             : myMenuFont;
                 }
 
+                @Override
                 public Font getChartMainFont() {
                     return myChartMainFont == null ? super.getChartMainFont()
                             : myChartMainFont;
@@ -557,6 +559,7 @@ public class GanttOptions {
 
         private PluginOptionsHandler myPluginOptionsHandler;
 
+        @Override
         public void startElement(String namespaceURI,
                 String sName, // simple name
                 String qName, // qualified name
@@ -764,6 +767,7 @@ public class GanttOptions {
             }
         }
 
+        @Override
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
             if ("cofiguration".equals(name)) {

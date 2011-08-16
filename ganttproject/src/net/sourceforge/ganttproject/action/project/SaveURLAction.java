@@ -16,10 +16,12 @@ class SaveURLAction extends GPAction {
         myMainFrame = mainFrame;
     }
 
+    @Override
     protected String getLocalizedName() {
         return GanttLanguage.getInstance().correctLabel(getI18n("saveToServer"));
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return null;
     }

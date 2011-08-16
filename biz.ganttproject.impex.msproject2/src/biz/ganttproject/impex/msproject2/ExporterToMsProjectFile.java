@@ -51,6 +51,7 @@ public class ExporterToMsProjectFile implements Exporter {
     private String myFileFormat = FILE_FORMAT_IDS[0];
 
     private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat", FILE_FORMAT_IDS) {
+        @Override
         public void commit() {
             super.commit();
             ExporterToMsProjectFile.this.myFileFormat = getValue();

@@ -51,6 +51,7 @@ public class FontRecord {
         return myTTFFile;
     }
 
+    @Override
     public String toString() {
         return "font file=" + myLocation + " metrics file=" + myMetricsLocation;
     }

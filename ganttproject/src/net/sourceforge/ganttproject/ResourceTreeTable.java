@@ -109,6 +109,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     }
 
 
+    @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
     }
@@ -132,6 +133,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return myRoleManager;
     }
 
+    @Override
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt tableColumn = super.newTableColumnExt(modelIndex);
         if (modelIndex == DefaultColumn.ROLE.ordinal() || modelIndex == DefaultColumn.ROLE_IN_TASK.ordinal()) {
@@ -253,7 +255,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         selectedAssignment.getResource().swapAssignments(selectedAssignment, previousAssignment);
     }
 /*
-    public 	CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
+    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
         final ResourceColumn newColumn = newResourceColumn(Integer.valueOf(id).intValue());
         newColumn.setTitle(name);
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);

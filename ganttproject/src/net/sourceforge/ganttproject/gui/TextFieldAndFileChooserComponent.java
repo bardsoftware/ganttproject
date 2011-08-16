@@ -95,6 +95,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
             private void onChange() {
                 if (myTimerTask == null && myProcessTextEventEnabled) {
                     myTimerTask = new TimerTask() {
+                        @Override
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {

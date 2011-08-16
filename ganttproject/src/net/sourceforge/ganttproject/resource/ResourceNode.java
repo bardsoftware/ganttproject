@@ -75,6 +75,7 @@ public class ResourceNode extends DefaultMutableTreeNode {
         resource.setCustomField(title, val);
     }
 
+    @Override
     public String toString() {
         if (resource != null) {
             return resource.getName();
@@ -86,6 +87,7 @@ public class ResourceNode extends DefaultMutableTreeNode {
         return resource;
     }
 
+    @Override
     public boolean equals(Object obj) {
         boolean res = false;
         if (this == obj) {

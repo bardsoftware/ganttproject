@@ -23,10 +23,12 @@ class PrintAction extends GPAction {
                 .getKeyStroke(KeyEvent.VK_P, MENU_MASK));
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("printProject");
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "print_";
     }

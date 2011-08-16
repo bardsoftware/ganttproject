@@ -15,6 +15,7 @@ public class BackgroundRendererImpl extends ChartRendererBase {
         return getPrimitiveContainer();
     }
 
+    @Override
     public void render() {
         getPrimitiveContainer().clear();
         GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer().createRectangle(0, 0, getWidth(), getHeight());

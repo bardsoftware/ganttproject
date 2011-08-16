@@ -55,6 +55,7 @@ public class UndoAction extends GPAction implements GPUndoListener {
         setEnabled(myUndoManager.canUndo());
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "undo_";
     }

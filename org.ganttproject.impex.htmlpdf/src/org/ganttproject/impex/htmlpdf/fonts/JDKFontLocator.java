@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject Team
+Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,9 +32,7 @@ import org.apache.fop.fonts.FontFileReader;
 import org.apache.fop.fonts.TTFFile;
 
 /**
- * Created by IntelliJ IDEA.
- *
- * @author bard Date: 07.01.2004
+ * @author bard
  */
 public class JDKFontLocator {
     private FontMetricsStorage myFontMetricsStorage = new FontMetricsStorage();

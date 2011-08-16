@@ -35,14 +35,17 @@ class SaveProjectAction extends GPAction {
         super("saveProject", "16");
         myMainFrame = mainFrame;
         mainFrame.addProjectEventListener(new ProjectEventListener.Stub() {
+            @Override
             public void projectModified() {
                 setEnabled(true);
             }
 
+            @Override
             public void projectSaved() {
                 setEnabled(false);
             }
 
+            @Override
             public void projectClosed() {
                 setEnabled(false);
             }
@@ -51,14 +54,17 @@ class SaveProjectAction extends GPAction {
         setEnabled(false);
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("saveProject");
     }
 
+    @Override
     protected String getTooltipText() {
         return getI18n("saveProject");
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "save_";
     }

@@ -54,6 +54,7 @@ class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelLi
         isValid = false;
     }
 
+    @Override
     public void projectClosed() {
         isValid = false;
     }

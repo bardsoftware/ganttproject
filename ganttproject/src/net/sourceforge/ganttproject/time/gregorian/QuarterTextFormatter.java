@@ -33,6 +33,7 @@ public class QuarterTextFormatter extends CachingTextFormatter implements
         myCalendar = CalendarFactory.newCalendar();
     }
 
+    @Override
     protected TimeUnitText createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         int month = myCalendar.get(Calendar.MONTH);

@@ -31,10 +31,12 @@ class SaveProjectAsAction extends GPAction {
         myMainFrame = mainFrame;
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("saveAsProject");
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "saveas_";
     }

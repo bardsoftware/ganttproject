@@ -54,6 +54,7 @@ public class ShapePaint extends TexturePaint {
     }
 
     /** @return true if the two shape are the same */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof ShapePaint) {
             ShapePaint paint = (ShapePaint) obj;
@@ -74,6 +75,7 @@ public class ShapePaint extends TexturePaint {
     }
 
     /** @return a string for the shape */
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("PatternPaint[");

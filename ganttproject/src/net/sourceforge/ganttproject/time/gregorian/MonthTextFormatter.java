@@ -15,6 +15,7 @@ public class MonthTextFormatter extends CachingTextFormatter implements
         initFormats();
     }
 
+    @Override
     protected TimeUnitText createTimeUnitText(Date adjustedLeft) {
         TimeUnitText result;
         String longText = MessageFormat.format("{0}",
@@ -35,6 +36,7 @@ public class MonthTextFormatter extends CachingTextFormatter implements
         myShortFormat = GanttLanguage.getInstance().createDateFormat("MM - yy");
     }
 
+    @Override
     public void languageChanged(Event event) {
         super.languageChanged(event);
         initFormats();

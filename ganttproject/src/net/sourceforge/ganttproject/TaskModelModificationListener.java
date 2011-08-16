@@ -13,34 +13,42 @@ public class TaskModelModificationListener extends TaskListenerAdapter {
         myGanttProject = ganttProject;
     }
 
+    @Override
     public void taskScheduleChanged(TaskScheduleEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void dependencyAdded(TaskDependencyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void dependencyRemoved(TaskDependencyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void taskAdded(TaskHierarchyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void taskRemoved(TaskHierarchyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void taskMoved(TaskHierarchyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void taskPropertiesChanged(TaskPropertyEvent e) {
         myGanttProject.setModified();
     }
 
+    @Override
     public void taskProgressChanged(TaskPropertyEvent e) {
         myGanttProject.setModified();
         e.getTask().getManager().getAlgorithmCollection()

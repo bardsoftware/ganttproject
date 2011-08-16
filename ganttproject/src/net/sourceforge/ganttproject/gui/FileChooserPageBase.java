@@ -110,6 +110,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         myComponent = new JPanel(new BorderLayout());
         myChooser = new TextFieldAndFileChooserComponent(
                 myWizard.getUIFacade(), GanttLanguage.getInstance().getText("file")+":", getFileChooserTitle()) {
+            @Override
             protected void onFileChosen(File file) {
                 IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
                 if (status.isOK()) {
@@ -126,6 +127,7 @@ public abstract class FileChooserPageBase implements WizardPage {
             contentPanel.add(myChooser, BorderLayout.NORTH);
         } else {
             final UrlFetcher urlFetcher = new UrlFetcher() {
+                @Override
                 protected void onFetchComplete(File file) {
                     super.onFetchComplete(file);
                     onSelectedFileChange(file);
@@ -411,6 +413,7 @@ public abstract class FileChooserPageBase implements WizardPage {
             isFetching = true;
             myTimer.schedule(new TimerTask() {
                 final URL myUrlAtStart = myUrl;
+                @Override
                 public void run() {
                     synchronized(myTimer) {
                         if (!myUrlAtStart.equals(myUrl)) {

@@ -50,6 +50,7 @@ class TaskActivityImpl implements TaskActivity {
         return myIntensity;
     }
 
+    @Override
     public String toString() {
         return myTask.toString() + "[" + getStart() + ", " + getEnd() + "]";
     }

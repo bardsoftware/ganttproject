@@ -192,6 +192,7 @@ public class TaskImpl implements Task {
 
     public Task unpluggedClone() {
         TaskImpl result = new TaskImpl(this, true) {
+            @Override
             public boolean isSupertask() {
                 return false;
             }
@@ -218,6 +219,7 @@ public class TaskImpl implements Task {
             throw new MutatorException("Two mutators have been requested for task="+getName());
         }
         myMutator = new MutatorImpl() {
+            @Override
             public void setStart(GanttCalendar start) {
                 super.setStart(start);
                 TaskImpl.this.myEnd = null;
@@ -1009,6 +1011,7 @@ public class TaskImpl implements Task {
         return (myColor != null);
     }
 
+    @Override
     public String toString() {
         return getName();
     }
