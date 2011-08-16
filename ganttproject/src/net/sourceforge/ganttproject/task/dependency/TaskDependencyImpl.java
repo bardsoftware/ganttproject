@@ -75,6 +75,7 @@ public class TaskDependencyImpl implements TaskDependency {
         myCollection.delete(this);
     }
 
+    @Override
     public boolean equals(Object obj) {
         boolean result = obj instanceof TaskDependency;
         if (result) {
@@ -85,6 +86,7 @@ public class TaskDependencyImpl implements TaskDependency {
         return result;
     }
 
+    @Override
     public int hashCode() {
         return 7 * myDependant.hashCode() + 9 * myDependee.hashCode();
     }
@@ -105,6 +107,7 @@ public class TaskDependencyImpl implements TaskDependency {
         myHardness = hardness;
     }
 
+    @Override
     public String toString() {
         return myDependant+"->"+myDependee;
     }

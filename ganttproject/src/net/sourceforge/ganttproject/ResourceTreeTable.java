@@ -109,6 +109,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     }
 
 
+    @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
     }
@@ -132,6 +133,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return myRoleManager;
     }
 
+    @Override
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt tableColumn = super.newTableColumnExt(modelIndex);
         if (modelIndex == DefaultColumn.ROLE.ordinal() || modelIndex == DefaultColumn.ROLE_IN_TASK.ordinal()) {

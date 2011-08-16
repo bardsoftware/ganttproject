@@ -28,6 +28,7 @@ public enum CustomPropertyClass {
         return myJavaClass;
     }
 
+    @Override
     public String toString() {
         return getDisplayName();
     }

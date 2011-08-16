@@ -45,6 +45,7 @@ public class GanttSplash extends JFrame {
         ImageIcon splashImage = new ImageIcon(getClass().getResource(
                 "/icons/splash.png"));
         mySplashComponent = new JLabel(splashImage) {
+            @Override
             public void paint(Graphics g) {
                 super.paint(g);
                 Graphics2D g2 = (Graphics2D) g;
@@ -63,6 +64,7 @@ public class GanttSplash extends JFrame {
         graphics.setColor(Color.GRAY);
         graphics.drawString(text, xpos , ypos);
     }
+    @Override
     public void setVisible(boolean b) {
         if (b) {
             getContentPane().add(mySplashComponent, BorderLayout.CENTER);
@@ -72,6 +74,7 @@ public class GanttSplash extends JFrame {
         super.setVisible(b);
     }
 
+    @Override
     protected void frameInit() {
         super.frameInit();
         ImageIcon icon = new ImageIcon(getClass().getResource(

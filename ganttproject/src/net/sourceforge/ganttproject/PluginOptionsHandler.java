@@ -30,6 +30,7 @@ class PluginOptionsHandler extends DefaultHandler {
         myCurrentNode = pluginPreferencesRootNode;
     }
 
+    @Override
     public void startElement(String uri, String localName, String name,
             Attributes attributes) throws SAXException {
         if ("option".equals(name)) {
@@ -39,6 +40,7 @@ class PluginOptionsHandler extends DefaultHandler {
         myCurrentNode = ((PluginPreferencesImpl)myCurrentNode).createChild(name);
     }
 
+    @Override
     public void endElement(String uri, String localName, String name)
             throws SAXException {
         if (name.equals(myCurrentNode.name())) {

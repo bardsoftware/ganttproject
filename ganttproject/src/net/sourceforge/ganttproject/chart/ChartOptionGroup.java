@@ -14,6 +14,7 @@ class ChartOptionGroup extends GPOptionGroup {
         myEventDispatcher = eventDispatcher;
     }
 
+    @Override
     public void commit() {
         super.commit();
         myEventDispatcher.optionsChanged();

@@ -147,6 +147,7 @@ public class GraphicPrimitiveContainer {
             return myTopY + myHeight;
         }
 
+        @Override
         public String toString() {
             return "leftx=" + myLeftX + " topy=" + myTopY + " width=" + myWidth
                     + " height=" + myHeight;

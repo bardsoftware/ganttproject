@@ -61,6 +61,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         return createContentComponent();
     }
 
+    @Override
     protected Component createButtonPanel() {
         JToolBar buttonBar = new JToolBar();
         buttonBar.setFloatable(false);
@@ -83,6 +84,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
 //        buttonBar.add(Box.createHorizontalStrut(8));
         //
         TestGanttRolloverButton unindentButton = new TestGanttRolloverButton(myTreeFacade.getUnindentAction()) {
+            @Override
             public String getText() {
                 return null;
             }
@@ -90,6 +92,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         buttonBar.add(unindentButton);
 
         TestGanttRolloverButton indentButton = new TestGanttRolloverButton(myTreeFacade.getIndentAction()) {
+            @Override
             public String getText() {
                 return null;
             }
@@ -97,6 +100,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         buttonBar.add(indentButton);
         //
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
+            @Override
             public String getText() {
                 return null;
             }
@@ -104,6 +108,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         buttonBar.add(upButton);
         //
         TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction()) {
+            @Override
             public String getText() {
                 return null;
             }
@@ -113,6 +118,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         Action linkAction = new LinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setLinkTasksAction(linkAction);
         TestGanttRolloverButton linkButton = new TestGanttRolloverButton(linkAction) {
+            @Override
             public String getText() {
                 return null;
             }
@@ -122,6 +128,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         Action unlinkAction = new UnlinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setUnlinkTasksAction(unlinkAction);
         TestGanttRolloverButton unlinkButton = new TestGanttRolloverButton(unlinkAction) {
+            @Override
             public String getText() {
                 return null;
             }

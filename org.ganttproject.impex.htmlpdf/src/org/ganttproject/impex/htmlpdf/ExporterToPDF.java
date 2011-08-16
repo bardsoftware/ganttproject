@@ -77,10 +77,12 @@ public class ExporterToPDF extends ExporterBase {
         return "pdf";
     }
 
+    @Override
     public String[] getFileExtensions() {
         return new String[]{"pdf"};
     }
 
+    @Override
     protected Job[] createJobs(File outputFile, List<File> resultFiles) {
         ExportState state = new ExportState(outputFile);
         Job generateGanttChart = createGenerateGanttChartJob(state);
@@ -93,6 +95,7 @@ public class ExporterToPDF extends ExporterBase {
 
     private Job createGenerateGanttChartJob(final ExportState state) {
         Job result = new ExportJob("generate gantt chart") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -124,6 +127,7 @@ public class ExporterToPDF extends ExporterBase {
 
     private Job createGenerateResourcechartJob(final ExportState state) {
         Job result = new ExportJob("Generate resource chart") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -156,6 +160,7 @@ public class ExporterToPDF extends ExporterBase {
 
     private Job createFOPInitializationJob(final ExportState state) {
         Job result = new ExportJob("Initializing FOP") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -181,6 +186,7 @@ public class ExporterToPDF extends ExporterBase {
 
     private Job createTransformationJob(final ExportState state, final List<File> resultFiles) {
         Job result = new ExportJob("Generating PDF") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 if (monitor.isCanceled()) {
                     getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
@@ -277,6 +283,7 @@ public class ExporterToPDF extends ExporterBase {
         handler.endDocument();
     }
 
+    @Override
     protected String getAssignedResourcesDelimiter() {
       return "\n\r";
     }
@@ -377,16 +384,20 @@ public class ExporterToPDF extends ExporterBase {
         File resourceChartImageFile;
     }
 
+    @Override
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         myStylesheet = (PDFStylesheet) stylesheet;
     }
 
+    @Override
     protected String getStylesheetOptionID() {
         return "impex.pdf.stylesheet";
     }
 
+    @Override
     protected Stylesheet[] getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
+            @Override
             protected Stylesheet newStylesheet(URL resolvedUrl,
                     String localizedName) {
                 return new PDFStylesheetImpl(resolvedUrl, localizedName);

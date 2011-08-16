@@ -83,6 +83,7 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
         myLastNotes = null;
     }
 
+    @Override
     public void paint(Graphics g) {
         if (myLastNotes != null) {
             myLastNotes.paint(g);

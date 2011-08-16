@@ -18,6 +18,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements
         myCalendar = CalendarFactory.newCalendar();
     }
 
+    @Override
     protected TimeUnitText createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         myCalendar.setMinimalDaysInFirstWeek(4);
@@ -29,6 +30,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements
         return new TimeUnitText(middleText, middleText, shortText);
     }
 
+    @Override
     public void languageChanged(Event event) {
         super.languageChanged(event);
         myCalendar = CalendarFactory.newCalendar();

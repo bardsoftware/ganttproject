@@ -27,6 +27,7 @@ public class TestTaskDependencyEvent extends TaskTestCase {
             throws TaskDependencyException {
         TaskManager taskManager = getTaskManager();
         TaskListenerImpl listener = new TaskListenerImpl() {
+            @Override
             public void dependencyAdded(TaskDependencyEvent e) {
                 setHasBeenCalled(true);
             }
@@ -46,6 +47,7 @@ public class TestTaskDependencyEvent extends TaskTestCase {
             throws TaskDependencyException {
         TaskManager taskManager = getTaskManager();
         TaskListenerImpl listener = new TaskListenerImpl() {
+            @Override
             public void dependencyRemoved(TaskDependencyEvent e) {
                 setHasBeenCalled(true);
             }

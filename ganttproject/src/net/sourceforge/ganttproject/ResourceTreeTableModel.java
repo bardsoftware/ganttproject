@@ -68,9 +68,11 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         myResourceManager = resMgr;
         myTaskManager = taskManager;
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
+            @Override
             public void taskRemoved(TaskHierarchyEvent e) {
                 fireResourceChange(e.getTask());
             }
+            @Override
             public void taskScheduleChanged(TaskScheduleEvent e) {
                 fireResourceChange(e.getTask());
             }
@@ -275,6 +277,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return myResourceManager.getResources();
     }
 
+    @Override
     public int getColumnCount() {
         return myDefaultColumnTitles.length + myCustomPropertyManager.getDefinitions().size();
     }
@@ -293,6 +296,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return myCustomPropertyManager.getDefinitions().get(columnIndex - myDefaultColumnTitles.length);
     }
 
+    @Override
     public Class<?> getColumnClass(int colIndex) {
         if (colIndex == 0) {
             return hierarchicalColumnClass;
@@ -303,6 +307,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return getCustomProperty(colIndex).getType();
     }
 
+    @Override
     public String getColumnName(int column) {
         if (column < myDefaultColumnTitles.length) {
             return myDefaultColumnTitles[column];
@@ -311,6 +316,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return customColumn.getName();
     }
 
+    @Override
     public boolean isCellEditable(Object node, int column) {
         return (node instanceof ResourceNode && (column == INDEX_RESOURCE_EMAIL
                 || column == INDEX_RESOURCE_NAME
@@ -320,6 +326,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
                 || column > INDEX_RESOURCE_ROLE_TASK);
     }
 
+    @Override
     public Object getValueAt(Object node, int column) {
         Object res = null;
         ResourceNode rn = null;
@@ -379,6 +386,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         return res;
     }
 
+    @Override
     public void setValueAt(Object value, Object node, int column) {
         if (isCellEditable(node, column))
             switch (column) {

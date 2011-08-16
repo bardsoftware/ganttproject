@@ -1,19 +1,21 @@
-/***************************************************************************
- AboutLibraryPanel.java
- ------------------------------------------
- begin                : 29 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 Thomas Alexandre, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui.about;
 
 import java.awt.BorderLayout;
@@ -85,10 +87,12 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
+    @Override
     public void initialize() {
     }
 
@@ -143,10 +147,12 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
             return data.size();
         }
 
+        @Override
         public String getColumnName(int col) {
             return columnNames[col];
         }
 
+        @Override
         public Class<?> getColumnClass(int c) {
             return columnClasses[c];
         }
@@ -164,6 +170,7 @@ public class AboutLibraryPanel extends GeneralOptionPanel {
             }
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             return col == 1;
         }

@@ -458,6 +458,7 @@ public class GanttTaskPropertiesBean extends JPanel {
                 myCustomColumnPanel);
         tabbedPane.addFocusListener(new FocusAdapter() {
             private boolean isFirstFocusGain = true;
+            @Override
             public void focusGained(FocusEvent e) {
                 super.focusGained(e);
                 if (isFirstFocusGain) {

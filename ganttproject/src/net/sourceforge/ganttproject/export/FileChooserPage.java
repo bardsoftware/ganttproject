@@ -55,6 +55,7 @@ class FileChooserPage extends FileChooserPageBase {
         myWebPublishingGroup.setTitled(false);
     }
 
+    @Override
     protected String getFileChooserTitle() {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
@@ -63,6 +64,7 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
 
+    @Override
     protected void loadPreferences() {
         super.loadPreferences();
         if (getPreferences().get(PREF_SELECTED_FILE, null) == null) {
@@ -86,11 +88,13 @@ class FileChooserPage extends FileChooserPageBase {
         }
     }
 
+    @Override
     protected void onSelectedUrlChange(URL selectedUrl) {
         myState.setUrl(selectedUrl);
         super.onSelectedUrlChange(selectedUrl);
     }
 
+    @Override
     protected IStatus onSelectedFileChange(File file) {
         if (file.exists() && !file.canWrite()) {
             return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to file", null);
@@ -113,6 +117,7 @@ class FileChooserPage extends FileChooserPageBase {
         return setStatus.isOK() ? result : setStatus;
     }
 
+    @Override
     protected Component createSecondaryOptionsPanel() {
         Component customUI = myState.getExporter().getCustomOptionsUI();
         return customUI == null ? super.createSecondaryOptionsPanel() : customUI;
@@ -149,12 +154,14 @@ class FileChooserPage extends FileChooserPageBase {
         return result;
     }
 
+    @Override
     protected FileFilter createFileFilter() {
         return new ExtensionBasedFileFilter(
                 myState.getExporter().getFileNamePattern(), myState.getExporter()
                         .getFileTypeDescription());
     }
 
+    @Override
     protected GPOptionGroup[] getOptionGroups() {
         GPOptionGroup[] exporterOptions = null;
         if (myState.getExporter()!=null) {

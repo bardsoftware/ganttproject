@@ -21,6 +21,7 @@ public class ExtensionBasedFileFilter extends FileFilter {
         myPattern = Pattern.compile(fileExtension);
     }
 
+    @Override
     public boolean accept(File f) {
         if (f.isDirectory()) {
             return true;
@@ -28,11 +29,12 @@ public class ExtensionBasedFileFilter extends FileFilter {
         return matches(getExtension(f));
     }
 
+    @Override
     public String getDescription() {
         return myDescription;
     }
 
-    /** Extention return */
+    /** @return extension of File f */
     private static String getExtension(File f) {
         String ext = null;
         String s = f.getName();

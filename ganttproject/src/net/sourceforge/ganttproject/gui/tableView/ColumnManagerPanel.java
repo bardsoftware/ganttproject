@@ -131,6 +131,7 @@ public class ColumnManagerPanel {
                 curValue.setName(newValue.getName());
                 return curValue;
             }
+            @Override
             protected Component getTableCellRendererComponent(
                     DefaultTableCellRenderer defaultRenderer, CustomPropertyDefinition def,
                     boolean isSelected, boolean hasFocus, int row) {

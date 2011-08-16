@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2003-2011 GanttProject team
+Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -164,6 +164,7 @@ public class HttpDocument extends AbstractURLDocument {
         return (!malformedURL);
     }
 
+    @Override
     public boolean acquireLock() {
         if (locked || lockDAVMinutes < 0) {
             return true;
@@ -186,6 +187,7 @@ public class HttpDocument extends AbstractURLDocument {
         return false;
     }
 
+    @Override
     public void releaseLock() {
         if (null == getWebdavResource()) {
             return;
@@ -232,18 +234,22 @@ public class HttpDocument extends AbstractURLDocument {
         return getFileName();
     }
 
+    @Override
     public String getURLPath() {
         return getPath();
     }
 
+    @Override
     public String getUsername() {
         return myUsername;
     }
 
+    @Override
     public String getPassword() {
         return myPassword;
     }
 
+    @Override
     public String getLastError() {
         return lastError;
     }
@@ -278,5 +284,4 @@ public class HttpDocument extends AbstractURLDocument {
             return "<unspecified> (" + code + ")";
         }
     }
-
 }

@@ -6,6 +6,7 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public class TaskDependencySliceAsDependant extends TaskDependencySliceImpl {
+    @Override
     public TaskDependency[] toArray() {
         return getDependencyCollection().getDependenciesAsDependant(getTask());
     }

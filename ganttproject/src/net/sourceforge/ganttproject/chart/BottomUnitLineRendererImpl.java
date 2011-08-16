@@ -50,6 +50,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         return myPrimitiveContainer;
     }
 
+    @Override
     public void render() {
         Offset prevOffset = null;
         List<Offset> bottomOffsets = getBottomUnitOffsets();

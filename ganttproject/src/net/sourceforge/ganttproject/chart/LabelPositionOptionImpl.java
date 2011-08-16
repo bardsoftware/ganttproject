@@ -36,14 +36,17 @@ abstract class LabelPositionOptionImpl extends GPAbstractOption<String> implemen
         return VALUES;
     }
 
+    @Override
     public void setValue(String value) {
         myLockedValue = value;
     }
 
+    @Override
     public String getValue() {
         return myValue;
     }
 
+    @Override
     public void commit() {
         super.commit();
         myValue = myLockedValue;

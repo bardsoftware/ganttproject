@@ -64,15 +64,18 @@ public class FontSubstitutionPanel {
                     throw new IllegalStateException();
                 }
             }
+            @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return columnIndex==1;
             }
+            @Override
             public void setValueAt(Object value, int rowIndex, int columnIndex) {
                 assert columnIndex==1;
                 assert value instanceof String;
                 getSubstitution(rowIndex).setSubstitutionFamily((String)value);
                 updateFontStatusMessage();
             }
+            @Override
             public String getColumnName(int column) {
                 switch (column) {
                 case 0:

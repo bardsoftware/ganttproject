@@ -24,6 +24,7 @@ public class GanttDaysOff {
         myFinish = finish;
     }
 
+    @Override
     public String toString() {
         return (myStart + " -> " + myFinish);
     }

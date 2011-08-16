@@ -38,6 +38,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
         return new ParameterizedTimeUnitImpl(date);
     }
 
+    @Override
     public int getAtomCount(TimeUnit atomUnit) {
         throw new UnsupportedOperationException(
                 "This time unit is function of date. Use method createTimeUnit() to create a parameterized instance.");
@@ -113,6 +114,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
                     this, baseDate);
         }
 
+        @Override
         public boolean equals(Object o) {
             return TimeUnitFunctionOfDateImpl.this.equals(o);
         }

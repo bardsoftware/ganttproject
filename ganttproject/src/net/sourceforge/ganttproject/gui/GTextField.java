@@ -141,6 +141,7 @@ class GPlainDocument extends PlainDocument {
      *            AttibutSet.
      * @throws BadLocationException
      */
+    @Override
     public void insertString(int offs, String str, AttributeSet a)
             throws BadLocationException {
         if (this.pattern != null) {

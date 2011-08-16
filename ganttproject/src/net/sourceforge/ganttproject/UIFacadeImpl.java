@@ -237,6 +237,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         final Action localCancelAction = cancelAction;
         dlg.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
                 if (localCancelAction != null && !commiter.isCommited()) {
                     localCancelAction.actionPerformed(null);
@@ -393,18 +394,22 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myMainFrame.setTitle(title);
     }
 
+    @Override
     public IProgressMonitor createMonitor(Job job) {
         return myStatusBar.createProgressMonitor();
     }
 
+    @Override
     public IProgressMonitor createProgressGroup() {
         return myStatusBar.createProgressMonitor();
     }
 
+    @Override
     public IProgressMonitor createMonitor(Job job, IProgressMonitor group, int ticks) {
         return group;
     }
 
+    @Override
     public IProgressMonitor getDefaultMonitor() {
         return null;
     }

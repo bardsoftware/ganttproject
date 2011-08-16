@@ -32,6 +32,7 @@ public class PaintCellRenderer extends JPanel implements ListCellRenderer {
         setPreferredSize(new Dimension(70, 16));
     }
 
+    @Override
     public void paintComponent(Graphics gc) {
         Graphics2D g = (Graphics2D) gc;
         int w = getSize().width;

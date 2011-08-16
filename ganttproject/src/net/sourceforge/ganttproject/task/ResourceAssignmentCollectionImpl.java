@@ -163,6 +163,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
         }
 
+        @Override
         public String toString() {
             return this.getResource().getName() + " -> "
                     + this.getTask().getName();
@@ -219,6 +220,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
         }
 
+        @Override
         public String toString() {
             return this.getResource().getName() + " -> "
                     + this.getTask().getName();
@@ -299,6 +301,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             this.myResource = resource;
         }
 
+        @Override
         public boolean equals(Object o) {
             boolean result = o instanceof MutationInfo;
             if (result) {

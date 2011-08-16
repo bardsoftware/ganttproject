@@ -83,6 +83,7 @@ public class ResourceDialogCustomColumn  {
     //private GanttCalendar date = null;
     // TODO all the options use the translations for task columns. should create new properties (resourceProperties) and the translations for every one of them
     private DateOption myDate = new DefaultDateOption("taskProperties.customColumn.defaultDate") {
+        @Override
         public void setValue(Date value) {
             super.setValue(value);
             commit();
@@ -91,6 +92,7 @@ public class ResourceDialogCustomColumn  {
 
     };
     private StringOption myName = new DefaultStringOption("taskProperties.customColumn.name") {
+        @Override
         public void setValue(String value) {
             super.setValue(value);
             commit();
@@ -99,6 +101,7 @@ public class ResourceDialogCustomColumn  {
     };
 
     private EnumerationOption myType = new DefaultEnumerationOption<Object>("taskProperties.customColumn.type", availableTypes) {
+        @Override
         public void setValue(String value) {
             super.setValue(value);
             commit();

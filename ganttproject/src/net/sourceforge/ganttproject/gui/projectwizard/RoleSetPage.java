@@ -58,6 +58,7 @@ public class RoleSetPage implements WizardPage {
         final JList roleSetsList = new JList(myListModel);
         roleSetsList.setCellRenderer(myListModel.getCellRenderer());
         roleSetsList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 int index = roleSetsList.locationToIndex(e.getPoint());
                 myListModel.toggle(index);

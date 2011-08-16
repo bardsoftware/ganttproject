@@ -158,6 +158,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         CSVOptions csvOptions = getCsvOptions();
@@ -205,6 +206,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
+    @Override
     public void initialize() {
         cbTaskID.setSelected(getCsvOptions().bExportTaskID);
         cbTaskName.setSelected(getCsvOptions().bExportTaskName);

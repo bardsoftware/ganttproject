@@ -154,6 +154,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
     }
 
     /** @return the preferred size of this component. */
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), 24);
     }
@@ -193,6 +194,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
             super(new FlowLayout());
             message = new JLabel() {
+                @Override
                 public void paint(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setColor(textColor);
@@ -266,6 +268,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
         void enableNotifier(final Runnable notifier) {
             myLabel = new JLabel("<html><body><b>Errors happened. Click here to see the details</b></body></html>");
             myLabel.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
                     notifier.run();
                 }
@@ -290,6 +293,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
             myProgressMonitor = progressMonitor;
         }
 
+        @Override
         protected void dialogInit() {
             super.dialogInit();
             myProgressBar = new JProgressBar();

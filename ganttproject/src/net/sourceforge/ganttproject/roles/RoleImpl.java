@@ -47,6 +47,7 @@ public class RoleImpl implements Role {
                 + getID();
     }
 
+    @Override
     public String toString() {
         return getName();
     }

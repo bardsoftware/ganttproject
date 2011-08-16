@@ -120,6 +120,7 @@ public class FileDocument extends AbstractDocument {
         return file.getPath();
     }
 
+    @Override
     public String getFilePath() {
         return getPath();
     }

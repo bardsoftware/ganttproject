@@ -85,6 +85,7 @@ public class TestGanttRolloverButton extends JButton {
         }
     };
 
+    @Override
     public void setIcon(Icon icon) {
         if (icon != null) {
             setRolloverIcon(icon);
@@ -97,12 +98,14 @@ public class TestGanttRolloverButton extends JButton {
     }
 
     class MouseOverHandler extends MouseAdapter {
+        @Override
         public void mouseEntered(MouseEvent e) {
             if (isEnabled()) {
                 setBorderPainted(true);
             }
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
             setBorderPainted(false);
         }
@@ -111,6 +114,7 @@ public class TestGanttRolloverButton extends JButton {
     class AutoRepeatHandler extends MouseAdapter {
         private Worker myWorker;
 
+        @Override
         public void mousePressed(MouseEvent e) {
             if (myAutoRepeatMilliseconds > 0) {
                 myWorker = new Worker(e);
@@ -118,6 +122,7 @@ public class TestGanttRolloverButton extends JButton {
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             if (myWorker != null) {
                 myWorker.interrupt();
@@ -135,6 +140,7 @@ public class TestGanttRolloverButton extends JButton {
                 e.getModifiers());
         }
 
+        @Override
         public void run() {
             while (true) {
                 try {

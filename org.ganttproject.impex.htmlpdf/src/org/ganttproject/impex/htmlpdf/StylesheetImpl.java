@@ -33,6 +33,7 @@ class StylesheetImpl implements Stylesheet {
         return myLocalizedName;
     }
 
+    @Override
     public String toString() {
         return getLocalizedName();
     }

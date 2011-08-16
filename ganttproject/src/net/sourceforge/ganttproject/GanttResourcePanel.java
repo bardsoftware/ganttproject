@@ -80,30 +80,35 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     private boolean isCut = false;
 
     private final GPAction myMoveUpAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "up_";
         }
         public void actionPerformed(ActionEvent e) {
             upResource();
         }
+        @Override
         protected String getLocalizedName() {
             return getI18n("upTask");
         }
     };
 
     private GPAction myMoveDownAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "down_";
         }
         public void actionPerformed(ActionEvent e) {
             downResource();
         }
+        @Override
         protected String getLocalizedName() {
             return getI18n("downTask");
         }
     };
 
     private GPAction myPropertiesAction = new GPAction() {
+        @Override
         protected String getIconFilePrefix() {
             return "";
         }
@@ -122,6 +127,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                 getTaskPropertiesAction().actionPerformed(null);
             }
         }
+        @Override
         protected String getLocalizedName() {
             return "";
         }
@@ -161,10 +167,12 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
         table.insertWithLeftyScrollBar(this);
         area = new ResourceLoadGraphicArea(prj, prj.getZoomManager()) {
+            @Override
             public boolean isExpanded(HumanResource hr) {
                 return getResourceTreeTable().isExpanded(hr);
             }
 
+            @Override
             protected int getRowHeight(){
                 return table.getRowHeight();
             }
@@ -178,6 +186,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         table.addKeyListener(prj); // callback for keyboard pressed
         // Add listener for mouse click
         MouseListener ml = new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 TreePath selPath = table.getTreeTable().getPathForLocation(
                         e.getX(), e.getY());
@@ -185,10 +194,12 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                 handlePopupTrigger(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 handlePopupTrigger(e);
             }
 
+            @Override
             public void mouseClicked(MouseEvent e) {
                 e.consume();
                 if (e.getClickCount()==2 && e.getButton()==MouseEvent.BUTTON1) {
@@ -219,6 +230,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private ProjectEventListener getProjectEventListener() {
         return new ProjectEventListener.Stub() {
+            @Override
             public void projectClosed() {
                 area.repaint();
                 reset();

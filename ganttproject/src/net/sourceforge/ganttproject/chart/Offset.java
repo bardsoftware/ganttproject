@@ -61,6 +61,7 @@ public class Offset {
     public DayType getDayType() {
         return myDayType;
     }
+    @Override
     public String toString() {
         return "end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels+" time unit: "+myOffsetUnit.getName();
     }

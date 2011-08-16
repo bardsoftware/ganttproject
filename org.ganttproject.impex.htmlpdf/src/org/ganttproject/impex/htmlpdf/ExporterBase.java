@@ -73,6 +73,7 @@ abstract class ExporterBase extends AbstractExporter {
             names[i] = stylesheets[i].getLocalizedName();
         }
         EnumerationOption stylesheetOption = new DefaultEnumerationOption<Stylesheet>(optionID, names) {
+            @Override
             public void commit() {
                 super.commit();
                 String value = getValue();
@@ -154,6 +155,7 @@ abstract class ExporterBase extends AbstractExporter {
             }
         };
         Job starting = new Job("starting") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask("Running export", jobs.length);
                 for (int i=0; i<jobs.length; i++) {
@@ -177,6 +179,7 @@ abstract class ExporterBase extends AbstractExporter {
                     }
                 }
                 Job finishing = new Job("finishing") {
+                    @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.done();
                         finalizationJob.run(resultFiles.toArray(new File[0]));
@@ -335,6 +338,7 @@ abstract class ExporterBase extends AbstractExporter {
         startPrefixedElement("tasks", attrs, handler);
         TaskVisitor visitor = new TaskVisitor() {
             AttributesImpl myAttrs = new AttributesImpl();
+            @Override
             protected String serializeTask(Task t, int depth) throws Exception {
                 addAttribute("depth", depth, myAttrs);
                 startPrefixedElement("task", myAttrs, handler);

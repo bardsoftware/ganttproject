@@ -83,6 +83,7 @@ public class TaskLengthImpl implements TaskLength {
         return new TaskLengthImpl(toUnit, translatedLength);
     }
 
+    @Override
     public String toString() {
         return "" + myCount + " " + myUnit.getName();
     }

@@ -190,26 +190,31 @@ public class StyledPainterImpl implements Painter {
 
     private final RectanglePainter myTaskRectanglePainter = new TaskRectanglePainter();
     private final RectanglePainter myTaskStartRectanglePainter = new TaskRectanglePainter() {
+        @Override
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
         }
+        @Override
         protected int getCorrectionShift() {
             return -1;
         }
     };
 
     private final RectanglePainter myTaskEndRectanglePainter = new TaskRectanglePainter() {
+        @Override
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.getRightX()-1, next.myTopY, next.getRightX()-1, next.getBottomY());
         }
+        @Override
         protected int getCorrectionShift() {
             return 1;
         }
     };
 
     private final RectanglePainter myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
+        @Override
         protected void drawBorder(Graphics g, Rectangle next) {
             super.drawBorder(g, next);
             g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());

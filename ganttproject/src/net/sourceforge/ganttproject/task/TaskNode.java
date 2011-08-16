@@ -138,10 +138,12 @@ public class TaskNode extends DefaultMutableTreeNode {
         return task.getTaskInfo();
     }
 
+    @Override
     public String toString() {
         return task.getName();
     }
 
+    @Override
     public Object getUserObject() {
         return task;
     }

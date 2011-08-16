@@ -66,12 +66,14 @@ public class ExportFileWizardImpl extends WizardImpl {
                 options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/export")));
     }
 
+    @Override
     protected boolean canFinish() {
         return myState.getExporter() != null
             && myState.myUrl != null
             && "file".equals(myState.getUrl().getProtocol());
     }
 
+    @Override
     protected void onOkPressed() {
         super.onOkPressed();
         SwingUtilities.invokeLater(new Runnable(){

@@ -112,6 +112,7 @@ public class OptionsPageBuilder {
         JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.add(optionsPanel, BorderLayout.NORTH);
         resultPanel.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusGained(FocusEvent e) {
                 optionsPanel.getComponent(0).requestFocus();
             }
@@ -153,6 +154,7 @@ public class OptionsPageBuilder {
             }
             if (i==0) {
                 optionsPanel.addFocusListener(new FocusAdapter() {
+                    @Override
                     public void focusGained(FocusEvent e) {
                         super.focusGained(e);
                         nextComponent.requestFocus();

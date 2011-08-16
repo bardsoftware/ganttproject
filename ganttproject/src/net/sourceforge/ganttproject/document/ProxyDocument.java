@@ -358,6 +358,7 @@ class ProxyDocument implements Document {
         return myPhysicalDocument.isLocal();
     }
 
+    @Override
     public boolean equals(Object doc) {
         if (false == doc instanceof ProxyDocument) {
             return false;

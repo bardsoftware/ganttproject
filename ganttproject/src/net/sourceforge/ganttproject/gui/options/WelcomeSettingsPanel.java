@@ -34,11 +34,13 @@ public class WelcomeSettingsPanel extends GeneralOptionPanel {
     }
 
     /** This method checks if the value has changed, and asks for commit changes. */
+    @Override
     public boolean applyChanges(boolean askForApply) {
         return false;
     }
 
     /** Initialize the component. */
+    @Override
     public void initialize() {
     }
 }

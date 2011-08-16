@@ -72,6 +72,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         }
     }
 
+    @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
     }

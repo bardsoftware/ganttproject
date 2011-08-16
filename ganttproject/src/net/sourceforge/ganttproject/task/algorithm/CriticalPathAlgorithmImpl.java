@@ -101,6 +101,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
             return est.equals(lst);
         }
 
+        @Override
         public String toString() {
             return task == null ? "[Deadline node " + eft + "]" : task.toString();
         }

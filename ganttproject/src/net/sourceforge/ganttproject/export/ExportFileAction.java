@@ -28,6 +28,7 @@ public class ExportFileAction extends GPAction {
         myOptions = options;
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "export_";
     }
@@ -38,6 +39,7 @@ public class ExportFileAction extends GPAction {
         wizard.show();
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("export");
     }

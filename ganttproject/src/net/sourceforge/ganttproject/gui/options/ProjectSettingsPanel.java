@@ -114,6 +114,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         applyComponentOrientation(language.getComponentOrientation());
     }
 
+    @Override
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (myProject.getProjectName().equals(tfName.getText())
@@ -134,6 +135,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         return hasChange;
     }
 
+    @Override
     public void initialize() {
         tfName.setText(myProject.getProjectName());
         tfOrganization.setText(myProject.getOrganization());

@@ -39,6 +39,7 @@ public abstract class ConstraintImpl implements Cloneable{
         this.myName = myName;
     }
 
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
@@ -59,6 +60,7 @@ public abstract class ConstraintImpl implements Cloneable{
         return myID;
     }
 
+    @Override
     public String toString() {
         return getName();
     }

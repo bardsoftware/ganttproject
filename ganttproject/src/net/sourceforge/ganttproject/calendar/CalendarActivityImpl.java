@@ -40,6 +40,7 @@ public class CalendarActivityImpl implements GPCalendarActivity {
      *
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return (isWorkingTime() ? "Working time: " : "Holiday: ") + "["
                 + getStart() + ", " + getEnd() + "]";

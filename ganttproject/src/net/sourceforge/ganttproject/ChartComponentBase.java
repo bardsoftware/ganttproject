@@ -165,6 +165,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     // protected abstract MouseWheelListener getMouseWheelListener();
 
     protected class MouseListenerBase extends MouseAdapter {
+        @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
             if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
@@ -187,6 +188,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
             ChartComponentBase.this.requestFocus();
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
             getImplementation().finishInteraction();
@@ -194,10 +196,12 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             setDefaultCursor();
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
@@ -208,6 +212,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     protected class MouseMotionListenerBase extends MouseMotionAdapter {
+        @Override
         public void mouseDragged(MouseEvent e) {
             super.mouseDragged(e);
             MouseInteraction activeInteraction = getImplementation()
@@ -306,6 +311,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     /** draw the panel */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         getChartModel().setBounds(getSize());

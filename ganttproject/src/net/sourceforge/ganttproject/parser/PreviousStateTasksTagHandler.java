@@ -51,6 +51,7 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements TagH
         myPreviousStates = previousStates;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("previous-tasks")) {
@@ -61,6 +62,7 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements TagH
         }
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("previous-tasks") && myPreviousStates != null) {
             try {

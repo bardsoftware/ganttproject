@@ -44,10 +44,12 @@ class FileChooserPage extends FileChooserPageBase {
         myState = state;
     }
 
+    @Override
     protected String getFileChooserTitle() {
         return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
     }
 
+    @Override
     protected int getFileChooserSelectionMode() {
         return JFileChooser.FILES_ONLY;
     }
@@ -56,15 +58,18 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
     }
 
+    @Override
     protected FileFilter createFileFilter() {
         return new ExtensionBasedFileFilter(
                 myState.myImporter.getFileNamePattern(), myState.myImporter.getFileTypeDescription());
     }
 
+    @Override
     protected GPOptionGroup[] getOptionGroups() {
         return myState.myImporter==null ? new GPOptionGroup[0] : myState.myImporter.getSecondaryOptions();
     }
 
+    @Override
     protected void onSelectedUrlChange(URL selectedUrl) {
         myState.setUrl(selectedUrl);
         super.onSelectedUrlChange(selectedUrl);

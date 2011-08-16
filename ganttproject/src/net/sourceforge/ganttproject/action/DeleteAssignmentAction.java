@@ -83,10 +83,12 @@ public class DeleteAssignmentAction extends GPAction {
         return result.toString();
     }
 
+    @Override
     protected String getIconFilePrefix() {
         return "delete_";
     }
 
+    @Override
     protected String getLocalizedName() {
         return getI18n("deleteAssignment");
     }

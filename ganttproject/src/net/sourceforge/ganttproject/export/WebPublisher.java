@@ -44,6 +44,7 @@ class WebPublisher {
         IJobManager jobManager = Job.getJobManager();
         IProgressMonitor monitor = jobManager.createProgressGroup();
         Job startingJob = new Job("starting") {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor
                         .beginTask("Publishing files on FTP",
@@ -61,6 +62,7 @@ class WebPublisher {
                         nextJob.join();
                     }
                     Job finishingJob = new Job("finishing") {
+                        @Override
                         protected IStatus run(IProgressMonitor monitor) {
                             monitor.done();
                             return Status.OK_STATUS;
@@ -117,6 +119,7 @@ class WebPublisher {
     private Job createTransferJob(URL baseUrl, final File file) throws IOException {
         final URL outUrl = new URL(baseUrl, file.getName());
         Job result = new Job("transfer file "+file.getName()) {
+            @Override
             protected IStatus run(IProgressMonitor monitor) {
                 byte[] buffer = new byte[(int) file.length()];
                 FileInputStream inputStream = null;

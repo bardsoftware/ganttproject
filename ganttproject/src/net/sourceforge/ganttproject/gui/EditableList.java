@@ -91,6 +91,7 @@ public abstract class EditableList<T>  {
             resourcesTable.setTableHeader(null);
             resourcesTable.getColumnModel().getColumn(0).setPreferredWidth(240);
             resourcesTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+                @Override
                 public Component getTableCellRendererComponent(
                         JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     assert column==0;
@@ -189,6 +190,7 @@ public abstract class EditableList<T>  {
                     + row);
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             if (row == myValues.size()) {
                 return true;
@@ -196,6 +198,7 @@ public abstract class EditableList<T>  {
             return EditableList.this.isEditable(myValues.get(row));
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
             assert col==0;
             if (value==null) {
@@ -235,6 +238,7 @@ public abstract class EditableList<T>  {
             myText = getStringValue(t);
         }
 
+        @Override
         public String toString() {
             return myText;
         }
