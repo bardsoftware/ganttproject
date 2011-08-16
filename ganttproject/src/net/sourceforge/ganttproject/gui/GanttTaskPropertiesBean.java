@@ -194,7 +194,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     private static void addEmptyRow(JPanel form) {
         form.add(Box.createRigidArea(new Dimension(1, 10)));
-        form.add(Box.createRigidArea(new Dimension(1, 10)));    	
+        form.add(Box.createRigidArea(new Dimension(1, 10)));
     }
 
     /** Construct the general panel */
@@ -217,7 +217,7 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
         });
         propertiesPanel.add(myStartDatePicker);
-        
+
         propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
         myEndDatePicker = createDatePicker(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -266,7 +266,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         extraConstraintBox.add(myThirdDatePicker);
         propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.extraConstraint.label")));
         propertiesPanel.add(extraConstraintBox);
-        
+
         addEmptyRow(propertiesPanel);
 
         propertiesPanel.add(new JLabel(language.getText("priority")));
@@ -281,7 +281,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(0, 0, 100, 1);
         percentCompleteSlider = new JSpinner(spinnerModel);
         propertiesPanel.add(percentCompleteSlider);
-        
+
         addEmptyRow(propertiesPanel);
 
         propertiesPanel.add(new JLabel(language.getText("shape")));
@@ -309,7 +309,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         });
         colorBox.add(colorButton);
         colorBox.add(Box.createHorizontalStrut(5));
-        
+
         defaultColorButton = new JButton(language.getText("defaultColor"));
         defaultColorButton.setBackground(GanttGraphicArea.taskDefaultColor);
         defaultColorButton.setToolTipText(GanttProject.getToolTip(language
@@ -324,13 +324,13 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         propertiesPanel.add(new JLabel(language.getText("colors")));
         propertiesPanel.add(colorBox);
-        
+
         Box weblinkBox = Box.createHorizontalBox();
         tfWebLink = new JTextField(20);
         weblinkBox.add(tfWebLink);
         weblinkBox.add(Box.createHorizontalStrut(2));
         bWebLink = new TestGanttRolloverButton(
-        		new ImageIcon(getClass().getResource("/icons/web_16.gif")));
+                new ImageIcon(getClass().getResource("/icons/web_16.gif")));
         bWebLink.setToolTipText(GanttProject.getToolTip(language
                 .getText("openWebLink")));
         weblinkBox.add(bWebLink);
@@ -350,7 +350,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         propertiesPanel.add(weblinkBox);
 
         SpringUtilities.makeCompactGrid(propertiesPanel, 14, 2, 1, 1, 5, 5);
-        
+
         generalPanel = new JPanel(new SpringLayout());
         generalPanel.add(propertiesPanel);
         generalPanel.add(notesPanel);
@@ -386,9 +386,9 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     /** Construct the resources panel */
     private void constructResourcesPanel() {
-    	myAllocationsPanel = new TaskAllocationsPanel(
-    			selectedTasks[0], myHumanResourceManager, myRoleManager);
-    	resourcesPanel = myAllocationsPanel.getComponent();
+        myAllocationsPanel = new TaskAllocationsPanel(
+                selectedTasks[0], myHumanResourceManager, myRoleManager);
+        resourcesPanel = myAllocationsPanel.getComponent();
     }
 
     /** Construct the notes panel */
@@ -767,7 +767,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         final Pair<String, JCheckBox> result;
         if (canBeProjectTask) {
             projectTaskCheckBox1 = new JCheckBox ();
-        	result = Pair.create(language.getText("projectTask"), projectTaskCheckBox1);
+            result = Pair.create(language.getText("projectTask"), projectTaskCheckBox1);
         } else if (canBeMilestone) {
             mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
                 public void actionPerformed(ActionEvent arg0) {

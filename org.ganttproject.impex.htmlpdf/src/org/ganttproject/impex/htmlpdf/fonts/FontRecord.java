@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 07.01.2004
  */
 public class FontRecord {

@@ -40,7 +40,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
  * Panel to edit the project properties
- * 
+ *
  * @author athomas
  */
 public class ProjectSettingsPanel extends GeneralOptionPanel {

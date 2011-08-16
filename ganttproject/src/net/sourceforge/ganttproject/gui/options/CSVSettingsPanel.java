@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.io.CSVOptions;
 
 /**
  * Panel to edit the text export parameters
- * 
+ *
  * @author dbarashev@gmail.com Major rewrite.
  * @author athomas
  */

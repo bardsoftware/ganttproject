@@ -1,5 +1,5 @@
 /***************************************************************************
- GanttXSLFileFilter.java 
+ GanttXSLFileFilter.java
  ------------------------------------------
  begin                : 28 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -29,7 +29,7 @@ public class GanttXSLFileFilter extends FileFilter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
      */
     public boolean accept(File f) {
@@ -38,7 +38,7 @@ public class GanttXSLFileFilter extends FileFilter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.filechooser.FileFilter#getDescription()
      */
     public String getDescription() {

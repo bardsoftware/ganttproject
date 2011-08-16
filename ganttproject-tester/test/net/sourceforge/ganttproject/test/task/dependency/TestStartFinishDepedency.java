@@ -31,11 +31,11 @@ public class TestStartFinishDepedency extends TaskTestCase {
         Task t1 = createTask();
         Task t2 = createTask();
 
-        GanttCalendar dependeeStart = TestSetupHelper.newFriday(); 
+        GanttCalendar dependeeStart = TestSetupHelper.newFriday();
         t1.setStart(dependeeStart);
         TaskDependency dep = createDependency(t2, t1);
         dep.setConstraint(new StartFinishConstraintImpl());
-        
+
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         assertEquals(dependeeStart, t2.getEnd());
     }
@@ -44,16 +44,16 @@ public class TestStartFinishDepedency extends TaskTestCase {
         Task t1 = createTask();
         Task t2 = createTask();
 
-        GanttCalendar dependeeStart = TestSetupHelper.newFriday(); 
+        GanttCalendar dependeeStart = TestSetupHelper.newFriday();
         t1.setStart(dependeeStart);
         TaskDependency dep = createDependency(t2, t1);
         dep.setDifference(3);
         dep.setConstraint(new StartFinishConstraintImpl());
-        
+
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         assertEquals(TestSetupHelper.newMonday(), t2.getEnd());
     }
-    
+
     public void testSFChain() throws Exception {
         Task t1 = createTask();
         Task t2 = createTask();
@@ -62,11 +62,11 @@ public class TestStartFinishDepedency extends TaskTestCase {
         t1.setStart(TestSetupHelper.newMonday());
         TaskDependency dep_t2_t1 = createDependency(t2, t1);
         dep_t2_t1.setConstraint(new StartFinishConstraintImpl());
-        
+
         TaskDependency dep_t3_t2 = createDependency(t3, t2);
         dep_t3_t2.setConstraint(new StartFinishConstraintImpl());
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        
+
         assertEquals(TestSetupHelper.newSunday(), t2.getStart());
         assertEquals(TestSetupHelper.newSaturday(), t3.getStart());
     }

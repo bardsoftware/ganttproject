@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Abstract class that should implement all PERT chart implementation.
- * 
+ *
  * @author bbaranne
  */
 public abstract class PertChart extends JPanel implements Chart {
@@ -66,7 +66,7 @@ public abstract class PertChart extends JPanel implements Chart {
 
     /**
      * Builds PERT chart.
-     * 
+     *
      */
     protected abstract void buildPertChart();
 
@@ -98,19 +98,19 @@ public abstract class PertChart extends JPanel implements Chart {
     public Chart createCopy() {
         return null;
     }
-    
+
     public ChartSelection getSelection() {
         throw new UnsupportedOperationException();
     }
-    
+
     public IStatus canPaste(ChartSelection selection) {
-        throw new UnsupportedOperationException();        
+        throw new UnsupportedOperationException();
     }
-    
+
     public void paste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
-    
+
     public void addSelectionListener(ChartSelectionListener listener) {
         myListeners.add(listener);
     }

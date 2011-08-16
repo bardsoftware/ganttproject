@@ -3,7 +3,7 @@ package net.sourceforge.ganttproject.gui.options.model;
 /**
  * Event that discribes a change in a value.
  * @author bbaranne
- * 
+ *
  */
 public class ChangeValueEvent {
 

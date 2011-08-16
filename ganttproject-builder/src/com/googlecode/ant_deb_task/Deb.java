@@ -21,7 +21,7 @@ import java.net.MalformedURLException;
 public class Deb extends Task
 {
     private static final Pattern PACKAGE_NAME_PATTERN = Pattern.compile("[a-z0-9][a-z0-9+\\-.]+");
-    
+
     public static class Description extends ProjectComponent
     {
         private String _synopsis;
@@ -91,12 +91,12 @@ public class Deb extends Task
             return buffer.toString ();
         }
     }
-    
+
     public static class Version extends ProjectComponent
     {
         private static final Pattern UPSTREAM_VERSION_PATTERN = Pattern.compile("[0-9][A-Za-z0-9.+\\-:~]*");
         private static final Pattern DEBIAN_VERSION_PATTERN = Pattern.compile("[A-Za-z0-9+.~]+");
-        
+
         private int _epoch = 0;
         private String _upstream;
         private String _debian = "1";
@@ -125,7 +125,7 @@ public class Deb extends Task
         public String toString()
         {
             StringBuffer version = new StringBuffer();
-            
+
             if (_epoch > 0)
             {
                 version.append(_epoch);
@@ -133,9 +133,9 @@ public class Deb extends Task
             }
             else if (_upstream.indexOf(':') > -1)
                 throw new BuildException("Upstream version can contain colons only if epoch is specified!");
-            
+
             version.append(_upstream);
-            
+
             if (_debian.length() > 0)
             {
                 version.append('-');
@@ -143,7 +143,7 @@ public class Deb extends Task
             }
             else if (_upstream.indexOf('-') > -1)
                 throw new BuildException("Upstream version can contain hyphens only if debian version is specified!");
-            
+
             return version.toString();
         }
     }
@@ -177,26 +177,26 @@ public class Deb extends Task
             return buffer.toString ();
         }
     }
-    
-    public static class Changelog extends ProjectComponent 
+
+    public static class Changelog extends ProjectComponent
     {
         public static class Format extends EnumeratedAttribute
         {
-            public String[] getValues ()    
+            public String[] getValues ()
             {
                 // XML format will be added when supported
                 return new String[] {"plain" /* , "xml" */};
             }
         }
-        
+
         private static final String STANDARD_FILENAME = "changelog.gz";
         private static final String DEBIAN_FILENAME = "changelog.Debian.gz";
-            
+
         private String _file;
         private Changelog.Format _format;
         private boolean _debian;
 
-        public Changelog() 
+        public Changelog()
         {
             _debian = false;
             _format = new Changelog.Format();
@@ -208,27 +208,27 @@ public class Deb extends Task
             _file = file.trim ();
         }
 
-        public String getFile() 
+        public String getFile()
         {
             return _file;
         }
-            
+
         public void setFormat (Changelog.Format format)
         {
             _format = format;
         }
 
-        public Changelog.Format getFormat() 
+        public Changelog.Format getFormat()
         {
             return _format;
         }
 
-        public void setDebian (boolean debian) 
+        public void setDebian (boolean debian)
         {
             _debian = debian;
         }
 
-        public boolean isDebian () 
+        public boolean isDebian ()
         {
             return _debian;
         }
@@ -238,7 +238,7 @@ public class Deb extends Task
             return _debian ? DEBIAN_FILENAME : STANDARD_FILENAME;
         }
     }
-    
+
     public static class Section extends EnumeratedAttribute
     {
         private static final String[] PREFIXES = new String[] {"", "contrib/", "non-free/"};
@@ -266,15 +266,15 @@ public class Deb extends Task
             return (String[]) sections.toArray (new String[sections.size()]);
         }
     }
-    
+
     public static class Priority extends EnumeratedAttribute
     {
-        public String[] getValues ()    
+        public String[] getValues ()
         {
             return new String[] {"required", "important", "standard", "optional", "extra"};
         }
     }
-    
+
     private File _toDir;
 
     private String _debFilenameProperty = "";
@@ -338,7 +338,7 @@ public class Deb extends Task
     {
         if (!PACKAGE_NAME_PATTERN.matcher(packageName).matches())
             throw new BuildException("Invalid package name!");
-            
+
         _package = packageName;
     }
 
@@ -464,7 +464,7 @@ public class Deb extends Task
     {
         _changelogs.add (changelog);
     }
-    
+
     public void addDescription (Deb.Description description)
     {
         _description = description;
@@ -625,7 +625,7 @@ public class Deb extends Task
 
         if (_triggers != null)
             addFileToTar (controlTar, _triggers, "triggers", "644");
-        
+
         controlTar.perform ();
 
         deleteFileCheck(controlFile);
@@ -659,7 +659,7 @@ public class Deb extends Task
 
             processChangelogs ();
             scanData ();
-            
+
             File debFile = new File (_toDir, _package + "_" + _version + "_" + _architecture + ".deb");
 
             File dataFile = createDataFile ();
@@ -729,14 +729,14 @@ public class Deb extends Task
         {
         	// create an empty data.tar.gz file which is still a valid tar
         	TarOutputStream tarStream = new TarOutputStream(
-        		new GZipOutputStream( 
+        		new GZipOutputStream(
         			new BufferedOutputStream(new FileOutputStream(dataFile)),
         			Deflater.BEST_COMPRESSION
 	        	)
         	);
         	tarStream.close();
         }
-        
+
         return dataFile;
     }
 
@@ -754,7 +754,7 @@ public class Deb extends Task
         deleteFileCheck(tempFile);
 
         log ("Temp folder: " + tempFolderName, Project.MSG_VERBOSE);
-        
+
         return new File (tempFolderName);
     }
 
@@ -921,7 +921,7 @@ public class Deb extends Task
             }
 
             inputStream.close();
-            
+
             byte[] md5Bytes = md5.digest ();
             StringBuffer md5Buffer = new StringBuffer (md5Bytes.length * 2);
             for (int i = 0; i < md5Bytes.length; i++)
@@ -941,27 +941,27 @@ public class Deb extends Task
             throw new BuildException(e);
         }
     }
-    
-    private void processChangelogs() throws IOException 
+
+    private void processChangelogs() throws IOException
     {
         for (Iterator iter = _changelogs.iterator (); iter.hasNext (); )
         {
             processChangelog ((Deb.Changelog) iter.next ());
         }
     }
-    
-    private void processChangelog (Deb.Changelog changelog) throws IOException 
-    {     
+
+    private void processChangelog (Deb.Changelog changelog) throws IOException
+    {
         // Compress file
-        File file = new File(changelog.getFile ()); 
+        File file = new File(changelog.getFile ());
         File temp = File.createTempFile ("changelog", ".gz");
         gzip(file, temp, Deflater.BEST_COMPRESSION, GZipOutputStream.FS_UNIX);
-        
+
         // Determine path
         StringBuffer path = new StringBuffer ("usr/share/doc/");
         path.append (_package).append ('/');
         path.append (changelog.getTargetFilename ());
-        
+
         // Add file to data
         TarFileSet fileSet = new TarFileSet ();
         fileSet.setProject (getProject ());
@@ -971,35 +971,35 @@ public class Deb extends Task
         _data.add (fileSet);
     }
 
-    private static void gzip (File input, File output, int level, byte fileSystem) 
+    private static void gzip (File input, File output, int level, byte fileSystem)
         throws IOException
     {
         GZipOutputStream out = null;
         InputStream in = null;
-        
-        try 
+
+        try
         {
             out = new GZipOutputStream (new FileOutputStream (output), level);
             out.setFileSystem (fileSystem);
-            
+
             in = new FileInputStream(input);
             byte[] buffer = new byte[8 * 1024];
-            
+
             int len;
-            while ((len = in.read (buffer, 0, buffer.length)) > 0) 
+            while ((len = in.read (buffer, 0, buffer.length)) > 0)
             {
-                out.write(buffer, 0, len);   
+                out.write(buffer, 0, len);
             }
-            
+
             out.finish ();
         }
-        finally 
+        finally
         {
-            if (in != null) 
+            if (in != null)
             {
                 in.close ();
             }
-            
+
             if (out != null)
             {
                 out.close ();

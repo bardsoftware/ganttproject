@@ -31,22 +31,21 @@ import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
 
 public class RenderedChartImage extends SimpleRenderedImage {
-
     private BufferedImage myTaskImage;
     ColorModel myColorModel = new DirectColorModel(32,
             0x00ff0000, // Red
             0x0000ff00, // Green
             0x000000ff, // Blue
-            0x0           // Alpha
+            0x0         // Alpha
             );
     SampleModel mySampleModel;
     //private final List myVisibleTasks;
-	private int myCurrentTile = -1;
-	private Raster myCurrentRaster;
-	private final ChartModelBase myChartModel;
-	
+    private int myCurrentTile = -1;
+    private Raster myCurrentRaster;
+    private final ChartModelBase myChartModel;
+
     public RenderedChartImage(ChartModelBase chartModel, BufferedImage taskImage, int chartWidth, int chartHeight) {
-    	myChartModel = chartModel;
+        myChartModel = chartModel;
         myTaskImage = taskImage;
         sampleModel = myColorModel.createCompatibleSampleModel(chartWidth,chartHeight);
         colorModel = myColorModel;
@@ -56,23 +55,21 @@ public class RenderedChartImage extends SimpleRenderedImage {
         height = chartHeight;
         tileWidth = width;
         tileHeight = 32;
-         
+
     }
 
-
     public BufferedImage getWholeImage() {
-		BufferedImage chartImage = getChart(0, 0, getWidth(), getHeight(), getWidth(), getHeight());
+        BufferedImage chartImage = getChart(0, 0, getWidth(), getHeight(), getWidth(), getHeight());
         BufferedImage result = new BufferedImage(chartImage.getWidth()+myTaskImage.getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics g = result.getGraphics();
         g.drawImage(myTaskImage,0,0,null);
         g.translate(myTaskImage.getWidth(), 0);
         g.drawImage(chartImage, 0,0,null);
         return result;
-	}
+    }
 
-
-	public Raster getTile(int tileX, int tileY) {
-		if (myCurrentTile!=tileY) {
+    public Raster getTile(int tileX, int tileY) {
+        if (myCurrentTile!=tileY) {
             int offsety = tileY*getTileHeight();
             BufferedImage tile = getChart(myTaskImage.getWidth(), offsety, getTileWidth(),getTileHeight(),  getWidth(), getHeight());
             Graphics g = tile.getGraphics();
@@ -80,14 +77,14 @@ public class RenderedChartImage extends SimpleRenderedImage {
             g.drawImage(myTaskImage,0,0,null);
             myCurrentRaster = tile.getRaster().createTranslatedChild(0, tileY*getTileHeight());
             myCurrentTile = tileY;
-		}
-		return myCurrentRaster;
+        }
+        return myCurrentRaster;
     }
 
     protected void paintChart(Graphics g) {
         myChartModel.paint(g);
     }
-    
+
     private BufferedImage getChart(int offsetx, int offsety,  int width, int height, int chartWidth, int chartHeight) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB );
         Graphics g2 = result.getGraphics();
@@ -100,9 +97,8 @@ public class RenderedChartImage extends SimpleRenderedImage {
         //myChartModel.setTuningOptions(ChartModelImpl.TuningOptions.DEFAULT);
         return result;
     }
-    
+
     protected ChartModelBase getChartModel() {
         return myChartModel;
     }
-    
 }

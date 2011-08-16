@@ -30,7 +30,7 @@ class SaveProjectAsAction extends GPAction {
         super("saveas");
         myMainFrame = mainFrame;
     }
-    
+
     protected String getLocalizedName() {
         return getI18n("saveAsProject");
     }

@@ -74,7 +74,7 @@ public class ConnectionPanel extends GeneralOptionPanel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#applyChanges(boolean)
      */
     public boolean applyChanges(boolean askForApply) {
@@ -83,7 +83,7 @@ public class ConnectionPanel extends GeneralOptionPanel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see net.sourceforge.ganttproject.gui.options.GeneralOptionPanel#initialize()
      */
     public void initialize() {

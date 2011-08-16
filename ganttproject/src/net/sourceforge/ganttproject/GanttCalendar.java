@@ -166,7 +166,7 @@ public class GanttCalendar extends GregorianCalendar {
     final static private int[] comparissons = { Calendar.YEAR, Calendar.MONTH, Calendar.DATE };
     /**
      * This function compares the calendar date with the given date
-     * 
+     *
      * @return 0 If the two date are equals<br/>
      *         -1 if the date is before 'when'<br/>
      *         1 if the date is after 'when'

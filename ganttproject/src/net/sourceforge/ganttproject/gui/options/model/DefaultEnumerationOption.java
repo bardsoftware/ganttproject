@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev, GanttProject team
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -56,7 +56,7 @@ implements EnumerationOption {
     }
 
     protected String objectToString(T obj) {
-		assert obj != null;
+        assert obj != null;
         return obj.toString();
     }
 

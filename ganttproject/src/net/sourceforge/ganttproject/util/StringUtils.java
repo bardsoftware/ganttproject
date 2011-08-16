@@ -20,13 +20,13 @@ package net.sourceforge.ganttproject.util;
 
 /**
  * This class groups static methods together to handle strings.
- * 
+ *
  * @author Maarten Bezemer
  */
 public class StringUtils {
 
     /** @return string with the given amount of spaces padded to the left.
-     * For negative amounts the original string will be returned */ 
+     * For negative amounts the original string will be returned */
     static public String padLeft(String string, int padding) {
         if(padding > 0) {
             padding += string.length();
@@ -36,7 +36,7 @@ public class StringUtils {
     }
 
     /** @return string with the given amount of spaces padded to the right.
-     * For negative amounts the original string will be returned */ 
+     * For negative amounts the original string will be returned */
     static public String padRight(String string, int padding) {
         if(padding > 0) {
             padding += string.length();

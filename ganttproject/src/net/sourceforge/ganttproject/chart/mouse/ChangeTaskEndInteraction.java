@@ -32,8 +32,8 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
         implements MouseInteraction {
     private TaskMutator myMutator;
     private WorkingUnitCounter myCounter;
-    
-    public ChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary, 
+
+    public ChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary,
             TimelineFacade chartDateGrid, UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
         super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask(),
             chartDateGrid, uiFacade, taskScheduleAlgorithm);
@@ -41,13 +41,13 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
         myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
     }
 
-	@Override
-	public void apply(MouseEvent event) {
-		Date dateUnderX = getChartDateGrid().getDateAt(event.getX());
-		TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
+    @Override
+    public void apply(MouseEvent event) {
+        Date dateUnderX = getChartDateGrid().getDateAt(event.getX());
+        TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
         myMutator.setDuration(newDuration);
         updateTooltip(event);
-	}
+    }
 
     protected String getNotesText() {
         return getTask().getEnd().toString();
@@ -57,5 +57,4 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
     public void finish() {
         super.finish(myMutator);
     }
-
 }

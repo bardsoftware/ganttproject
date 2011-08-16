@@ -22,7 +22,7 @@ class PrintAction extends GPAction {
         putValue(Action.ACCELERATOR_KEY, KeyStroke
                 .getKeyStroke(KeyEvent.VK_P, MENU_MASK));
     }
-    
+
     protected String getLocalizedName() {
         return getI18n("printProject");
     }

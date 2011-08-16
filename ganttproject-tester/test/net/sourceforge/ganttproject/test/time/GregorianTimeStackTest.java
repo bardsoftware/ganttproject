@@ -12,7 +12,7 @@ import java.util.GregorianCalendar;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 01.02.2004
  */
 public class GregorianTimeStackTest extends TestCase {

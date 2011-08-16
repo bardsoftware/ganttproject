@@ -30,5 +30,5 @@ public abstract class TaskListenerAdapter implements TaskListener {
 
     public void taskModelReset() {
     }
-    
+
 }

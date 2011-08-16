@@ -1,5 +1,5 @@
 /***************************************************************************
- RolesTableModel.java 
+ RolesTableModel.java
  ------------------------------------------
  begin                : 27 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre
@@ -24,7 +24,7 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 
 /**
  * Model of table for roles
- * 
+ *
  * @author athomas
  */
 public class RolesTableModel extends AbstractTableModel {

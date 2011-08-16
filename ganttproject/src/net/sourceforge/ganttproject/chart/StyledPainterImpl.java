@@ -58,7 +58,7 @@ public class StyledPainterImpl implements Painter {
 
     /** List Y coordinates used to draw polygons */
     private int[] myYPoints = new int[4];
-    
+
     /** Default stroke used for the primitives */
     private final static BasicStroke defaultStroke = new BasicStroke();
 
@@ -74,7 +74,7 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("task", myTaskRectanglePainter);
         myStyle2painter.put("task.start", myTaskStartRectanglePainter);
         myStyle2painter.put("task.end", myTaskEndRectanglePainter);
-        myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);        
+        myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);
         myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
         myStyle2painter.put("task.milestone", myMilestonePainter);
         myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
@@ -182,7 +182,7 @@ public class StyledPainterImpl implements Painter {
         protected void drawBorder(Graphics g, Rectangle next) {
             g.drawLine(next.myLeftX-getCorrectionShift(), next.myTopY, next.getRightX()-getCorrectionShift(), next.myTopY);
             g.drawLine(next.myLeftX-getCorrectionShift(), next.getBottomY(), next.getRightX()-getCorrectionShift(), next.getBottomY());
-        }     
+        }
         protected int getCorrectionShift() {
             return 0;
         }
@@ -231,7 +231,7 @@ public class StyledPainterImpl implements Painter {
                 throw new RuntimeException("Model object is expected to be TaskActivity ");
             }
             Task task = ((TaskActivity) modelObject).getTask();
-            myGraphics.setColor(task.getColor());            
+            myGraphics.setColor(task.getColor());
             Composite oldComposite = myGraphics.getComposite();
             myGraphics.setComposite(myAlphaComposite);
             myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
@@ -273,7 +273,7 @@ public class StyledPainterImpl implements Painter {
             myXPoints[1] = next.myLeftX + 3;
             myYPoints[1] = bottomy;
             myXPoints[2] = next.myLeftX;
-            myYPoints[2] = bottomy + 3;            
+            myYPoints[2] = bottomy + 3;
             myGraphics.setColor(Color.BLACK);
             myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
@@ -322,7 +322,7 @@ public class StyledPainterImpl implements Painter {
             myXPoints[2] = next.myLeftX;
             myYPoints[2] = bottomy + 3;
             myGraphics.setColor(Color.BLACK);
-            myGraphics.fillPolygon(myXPoints, myYPoints, 3);            
+            myGraphics.fillPolygon(myXPoints, myYPoints, 3);
         }
     };
 
@@ -509,19 +509,19 @@ public class StyledPainterImpl implements Painter {
             g.setColor(c);
 
             if (next.hasStyle("milestone")) {
-                int middleX = (next.myWidth <= next.myHeight) ? 
+                int middleX = (next.myWidth <= next.myHeight) ?
                     next.getRightX() - next.myWidth / 2 : next.myLeftX + next.myHeight / 2;
                 int middleY = next.getMiddleY();
 
                 myXPoints[0] = next.myLeftX + 2;
-                myYPoints[0] = middleY;                
+                myYPoints[0] = middleY;
                 myXPoints[1] = middleX + 3;
                 myYPoints[1] = next.myTopY - 1;
                 myXPoints[2] = (next.myWidth <= next.myHeight) ? next
                         .getRightX() + 4 : next.myLeftX + next.myHeight + 4;
                 myYPoints[2] = middleY;
-                myXPoints[3] = middleX + 3;                
-                myYPoints[3] = next.getBottomY() + 1;              
+                myXPoints[3] = middleX + 3;
+                myYPoints[3] = next.getBottomY() + 1;
 
                 g.fillPolygon(myXPoints, myYPoints, 4);
             } else if (next.hasStyle("super")) {
@@ -537,11 +537,11 @@ public class StyledPainterImpl implements Painter {
                 g.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
                 g.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
                 if (next.hasStyle("start")) {
-                    g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());                    
+                    g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
                 }
                 if (next.hasStyle("end")) {
-                    g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());                    
-                }                
+                    g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());
+                }
             }
         }
     };

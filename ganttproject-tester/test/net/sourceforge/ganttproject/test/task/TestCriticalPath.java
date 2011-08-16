@@ -65,7 +65,7 @@ public class TestCriticalPath extends TaskTestCase {
         assertTrue(criticalTasks.contains(t2));
         assertTrue(criticalTasks.contains(t3));
         assertTrue(criticalTasks.contains(t4));
-        assertFalse(criticalTasks.contains(t5));        
+        assertFalse(criticalTasks.contains(t5));
     }
 
     public void testEqualPathsAreBothCritical() throws Exception {
@@ -85,7 +85,7 @@ public class TestCriticalPath extends TaskTestCase {
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
         assertTrue(criticalTasks.contains(t3));
-        assertTrue(criticalTasks.contains(t4));        
+        assertTrue(criticalTasks.contains(t4));
     }
 
     public void testUnlinkedTaskICriticalIfEndsAtTheProjectEnd() throws Exception {
@@ -158,7 +158,7 @@ public class TestCriticalPath extends TaskTestCase {
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t1));
         assertTrue(criticalTasks.contains(t2));
-        assertTrue(criticalTasks.contains(t3));        
+        assertTrue(criticalTasks.contains(t3));
     }
 
     public void testTaskBeforeNonCriticalIsNonCritical() throws Exception {
@@ -180,10 +180,10 @@ public class TestCriticalPath extends TaskTestCase {
                 mgr.getAlgorithmCollection().getCriticalPathAlgorithm().getCriticalTasks()));
         assertTrue(criticalTasks.contains(t3));
         assertTrue(criticalTasks.contains(t4));
-        assertTrue(criticalTasks.contains(t5));        
-        assertTrue(criticalTasks.contains(t6));        
-        assertFalse(criticalTasks.contains(t1));        
-        assertFalse(criticalTasks.contains(t2));        
+        assertTrue(criticalTasks.contains(t5));
+        assertTrue(criticalTasks.contains(t6));
+        assertFalse(criticalTasks.contains(t1));
+        assertFalse(criticalTasks.contains(t2));
     }
 
     class LaggedDependencyChainCriticalPathTester {
@@ -212,24 +212,24 @@ public class TestCriticalPath extends TaskTestCase {
         public void runDefaultAsserts() {
             assertTrue(criticalTasks.contains(t1));
             assertTrue(criticalTasks.contains(t2));
-            assertTrue(criticalTasks.contains(t3));                            
+            assertTrue(criticalTasks.contains(t3));
         }
     }
 
     public void testFinishFinishConstraint() throws Exception {
-        LaggedDependencyChainCriticalPathTester tester = 
+        LaggedDependencyChainCriticalPathTester tester =
             new LaggedDependencyChainCriticalPathTester(new FinishFinishConstraintImpl());
         tester.runDefaultAsserts();
     }
 
     public void testStartStartConstraint() throws Exception {
-        LaggedDependencyChainCriticalPathTester tester = 
+        LaggedDependencyChainCriticalPathTester tester =
             new LaggedDependencyChainCriticalPathTester(new StartStartConstraintImpl());
         tester.runDefaultAsserts();
     }
 
     public void testStartFinishConstraint() throws Exception {
-        LaggedDependencyChainCriticalPathTester tester = 
+        LaggedDependencyChainCriticalPathTester tester =
             new LaggedDependencyChainCriticalPathTester(new StartStartConstraintImpl());
         assertTrue(tester.criticalTasks.contains(tester.t1));
         assertTrue(tester.criticalTasks.contains(tester.t2));

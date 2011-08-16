@@ -39,7 +39,7 @@ public class FontSubstitutionPanel {
     private FontSubstitutionModel myModel;
     private JComboBox myFamiliesComboBox;
     private JLabel myMessage;
-    
+
     public FontSubstitutionPanel(FontSubstitutionModel fontConfigurationModel) {
         myModel = fontConfigurationModel;
     }
@@ -61,7 +61,7 @@ public class FontSubstitutionPanel {
                     return substitution.getSubstitutionFamily();
                 default:
                     assert false;
-                    throw new IllegalStateException();    
+                    throw new IllegalStateException();
                 }
             }
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -81,15 +81,15 @@ public class FontSubstitutionPanel {
                     return "Substitution";
                 default:
                     assert false;
-                    throw new IllegalStateException(); 
-                }                    
+                    throw new IllegalStateException();
+                }
             }
-            
+
         };
         JTable table = new JTable(tableModel);
         table.setRowHeight(30);
-        
-        class CellRendererImpl implements TableCellRenderer {            
+
+        class CellRendererImpl implements TableCellRenderer {
             private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -110,16 +110,16 @@ public class FontSubstitutionPanel {
                      result.setForeground(Color.RED);
                  }
                  return result;
-            }                        
+            }
         }
-        
+
         myFamiliesComboBox = new JComboBox(myModel.getAvailableSubstitutionFamilies().toArray(new String[0]));
         table.getColumnModel().getColumn(0).setCellRenderer(new CellRendererImpl());
-        
+
         table.getColumnModel().getColumn(1).setCellRenderer(new CellRendererImpl());
         table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(myFamiliesComboBox));
         table.getTableHeader().setVisible(true);
-        
+
         myMessage = new JLabel(getMessageText());
         myMessage.setAlignmentX(0);
         Box result = Box.createVerticalBox();
@@ -134,7 +134,7 @@ public class FontSubstitutionPanel {
     }
 
     private String getMessageText() {
-        return myModel.hasUnresolvedFonts() ? 
+        return myModel.hasUnresolvedFonts() ?
                 "<html><p><b>Some fonts used in the selected theme have not been found</b></p>"
                 + "<p>You may define substitutions in the table</p></html>"
                 : "<html>All fonts have been found.</html>";

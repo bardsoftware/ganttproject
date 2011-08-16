@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -74,18 +74,18 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         isRunning = false;
     }
 
-	public void run(Set<Task> taskSet) throws TaskDependencyException {
+    public void run(Set<Task> taskSet) throws TaskDependencyException {
         if (!isEnabled()) {
             return;
         }
         isRunning = true;
         myEntranceCounter++;
         for (Iterator<Task> tasks = taskSet.iterator(); tasks.hasNext();) {
-        	Task nextTask = tasks.next();
-	        buildDistanceGraph(nextTask);
-	        fulfilDependencies();
-	        myDistance2dependencyList.clear();
-	        myModifiedTasks.add(nextTask);
+            Task nextTask = tasks.next();
+            buildDistanceGraph(nextTask);
+            fulfilDependencies();
+            myDistance2dependencyList.clear();
+            myModifiedTasks.add(nextTask);
         }
         myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
         myDistance2dependencyList.clear();
@@ -93,13 +93,13 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         myEntranceCounter--;
 
         isRunning = false;
-	}
+    }
 
     public void run() throws TaskDependencyException {
-    	if (!isEnabled()) {
-    		return;
-    	}
-    	myDistance2dependencyList.clear();
+        if (!isEnabled()) {
+            return;
+        }
+        myDistance2dependencyList.clear();
         isRunning = true;
         TaskContainmentHierarchyFacade facade = createContainmentFacade();
         Set<Task> independentTasks = new HashSet<Task>();

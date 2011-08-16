@@ -1,5 +1,6 @@
-/* LICENSE: GPL2
-Copyright (C) 2010 Dmitry Barashev
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2010-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
+
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
@@ -40,7 +42,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
     private final ResourceChart myResourcechart;
 
-	private final ChartModelResource myModel;
+    private final ChartModelResource myModel;
 
     public ResourceLoadRenderer(ChartModelResource model,
             ResourceChart resourceChart) {
@@ -58,7 +60,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
        beforeProcessingTimeFrames();
        int ypos = 0;
        for (int i=0; i<myDistributions.size(); i++) {
-    	   LoadDistribution nextDistribution = myDistributions.get(i);
+           LoadDistribution nextDistribution = myDistributions.get(i);
            List<Load> loads = nextDistribution.getLoads();
            renderLoads(nextDistribution.getDaysOff(), ypos);
            renderLoads(loads, ypos);
@@ -68,7 +70,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
            }
            ypos += getConfig().getRowHeight();
            GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(
-        		   0, ypos,(int) getChartModel().getBounds().getWidth(), ypos);
+                   0, ypos,(int) getChartModel().getBounds().getWidth(), ypos);
            nextLine.setForegroundColor(Color.GRAY);
        }
     }
@@ -83,7 +85,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
         ResourceAssignment[] assignments = distribution.getResource().getAssignments();
         for (int i=0; i<assignments.length; i++) {
-        	ResourceAssignment assignment = assignments[i];
+            ResourceAssignment assignment = assignments[i];
             List<Load> nextLoads = task2loads.get(assignment.getTask());
             yPos2 += getConfig().getRowHeight();
             if (nextLoads==null) {
@@ -211,7 +213,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
         HumanResource[] resources = ((ChartModelResource) getChartModel())
                 .getVisibleResources();
         for (int i = 0; i < resources.length; i++) {
-        	HumanResource nextResource = resources[i];
+            HumanResource nextResource = resources[i];
             LoadDistribution nextDistribution = nextResource.getLoadDistribution();
             myDistributions.add(nextDistribution);
         }

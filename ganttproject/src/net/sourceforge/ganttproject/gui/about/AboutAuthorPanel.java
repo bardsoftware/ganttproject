@@ -1,19 +1,21 @@
-/***************************************************************************
- AboutAuthorPanel.java 
- ------------------------------------------
- begin                : 29 juin 2004
- copyright            : (C) 2004 by Thomas Alexandre
- email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2004-2011 Thomas Alexandre, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.about;
 
 import java.awt.BorderLayout;
@@ -57,7 +59,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("BARMEIER Matthias",
                 "matthias.barmeier@sourcepark.de"));
         modelauthors.addField(new AuthorsInfo("MURAS Joanna",
-       			"zabucha@users.sourceforge.net"));
+                   "zabucha@users.sourceforge.net"));
         modelauthors.addField(new AuthorsInfo("LU Cui", "cuix1@yahoo.com"));
         modelauthors.addField(new AuthorsInfo("SCHULZ Maik",
                 "post@maikschulz.de"));
@@ -74,7 +76,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("BALAZS Major",
                 "BMajor@Graphisoft.hu"));
         modelauthors.addField(new AuthorsInfo("BARZILAI Igor",
-        	"igor.barzilai@free.fr"));
+            "igor.barzilai@free.fr"));
         modelauthors.addField(new AuthorsInfo("BREZINA Marek",
                 "marek.brezina@seznam.cz"));
         modelauthors.addField(new AuthorsInfo("BROKER Rick",
@@ -90,7 +92,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("GLOEGL Michael",
                 "gloegl@fmi.uni-passau.de"));
         modelauthors.addField(new AuthorsInfo("GIANTSIDIS Nikos",
-        	"nickgiant@yahoo.com")); //greek translation        
+            "nickgiant@yahoo.com")); //greek translation
         modelauthors.addField(new AuthorsInfo("HERRMANN G.",
                 "herr@nike.eonet.ne.jp"));
         modelauthors.addField(new AuthorsInfo("HURSEY John",

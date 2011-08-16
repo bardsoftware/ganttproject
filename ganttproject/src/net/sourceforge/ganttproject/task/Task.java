@@ -33,15 +33,11 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
  * @author bard
  */
 public interface Task extends MutableTask {
-    /**
-     * Available task priorities
-     */
+    /** Available task priorities */
     public enum Priority {
         LOWEST, LOW, NORMAL, HIGH, HIGHEST;
 
-        /**
-         * @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown
-         */
+        /** @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown */
         public static Priority getPriority(int value) {
             for (Task.Priority p: Task.Priority.values()) {
                 if (p.ordinal() == value) {
@@ -51,16 +47,12 @@ public interface Task extends MutableTask {
             return DEFAULT_PRIORITY;
         }
 
-        /**
-         * @return the priority as a lower-case String
-         */
+        /** @return the priority as a lower-case String */
         public String getLowerString() {
             return this.toString().toLowerCase();
         }
 
-        /**
-         * @return the key to get the I18n value for the priority
-         */
+        /** @return the key to get the I18n value for the priority */
         public String getI18nKey() {
             return "priority." + getLowerString();
         }
@@ -73,10 +65,8 @@ public interface Task extends MutableTask {
         }
     }
 
-    /**
-     * Default priority (for new tasks)
-     */
-    public static final Priority DEFAULT_PRIORITY = Priority.NORMAL; 
+    /** Default priority (for new tasks) */
+    public static final Priority DEFAULT_PRIORITY = Priority.NORMAL;
 
     TaskMutator createMutator();
     TaskMutator createMutatorFixingDuration();
@@ -161,10 +151,9 @@ public interface Task extends MutableTask {
 
     TaskInfo getTaskInfo();
 
-	boolean isProjectTask ();
-	
-	boolean isSupertask();
+    boolean isProjectTask ();
 
-	List<Document> getAttachments();
+    boolean isSupertask();
 
+    List<Document> getAttachments();
 }

@@ -40,7 +40,7 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
     private final WorkingUnitCounter myCounter;
 
     private UIFacade myUiFacade;
-    
+
     public ChangeTaskProgressInteraction(MouseEvent e,
             TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid, UIFacade uiFacade) {
         super(taskProgress.getTask().getStart().getTime(), chartDateGrid);
@@ -51,11 +51,11 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
     }
 
     private Task getTask() {
-    	return myTaskProgrssItem.getTask();
+        return myTaskProgrssItem.getTask();
     }
-    
+
     public void apply(MouseEvent event) {
-    	TaskLength currentInterval = myCounter.run(getStartDate(), getChartDateGrid().getDateAt(event.getX()));
+        TaskLength currentInterval = myCounter.run(getStartDate(), getChartDateGrid().getDateAt(event.getX()));
         int newProgress = (int) (100 * currentInterval.getValue() / getTask().getDuration().getValue());
         if (newProgress > 100) {
             newProgress = 100;

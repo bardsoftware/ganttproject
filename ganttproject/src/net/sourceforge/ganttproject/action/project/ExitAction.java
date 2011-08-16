@@ -20,7 +20,7 @@ class ExitAction extends GPAction {
         myMainFrame = mainFrame;
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Q, MENU_MASK));
     }
-    
+
     protected String getLocalizedName() {
         return getI18n("quit");
     }
@@ -31,7 +31,7 @@ class ExitAction extends GPAction {
 
 
     protected String getIconFilePrefix() {
-        return "exit_"; 
+        return "exit_";
     }
 
     public void actionPerformed(ActionEvent e) {

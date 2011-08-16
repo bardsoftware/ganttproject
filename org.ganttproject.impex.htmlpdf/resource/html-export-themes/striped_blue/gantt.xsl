@@ -54,7 +54,7 @@
                 <tr>
                   <td align="right" valign="top">
 		    <a target="inner" id="chart">
-			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-chart.html</xsl:attribute>  
+			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-chart.html</xsl:attribute>
 			<xsl:value-of select="/ganttproject/links/chart" />
 		    </a>
                   </td>
@@ -66,7 +66,7 @@
                 <tr>
                   <td align="right" valign="top">
 		    <a target="inner" id="tasks">
-			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-tasks.html</xsl:attribute>  
+			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-tasks.html</xsl:attribute>
 			<xsl:value-of select="/ganttproject/links/tasks" />
 		    </a>
                   </td>
@@ -78,7 +78,7 @@
                 <tr>
                   <td align="right" valign="top">
 		    <a target="inner" id="resources">
-			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-resources.html</xsl:attribute>  
+			<xsl:attribute name="href"><xsl:value-of select="/ganttproject/links/@prefix" />-resources.html</xsl:attribute>
 			<xsl:value-of select="/ganttproject/links/resources" />
 		    </a>
                   </td>
@@ -110,4 +110,4 @@
 </html>
 </xsl:template>
 
-</xsl:stylesheet>  
+</xsl:stylesheet>

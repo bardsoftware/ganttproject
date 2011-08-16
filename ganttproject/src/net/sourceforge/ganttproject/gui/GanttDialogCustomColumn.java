@@ -145,7 +145,7 @@ public class GanttDialogCustomColumn  {
         isOk = false;
     }
 
-    
+
     private int getSelectedType(String typeName) {
         for (CustomPropertyClass columnClass : CustomPropertyClass.values()) {
             if (columnClass.getDisplayName().equals(typeName)) {
@@ -155,7 +155,7 @@ public class GanttDialogCustomColumn  {
         return -1;
 
     }
- 
+
     public void setVisible(boolean visible) {
         Component rootComponent = getComponent();
         getUIFacade().createDialog(rootComponent, new Action[] {

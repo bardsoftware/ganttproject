@@ -150,11 +150,11 @@ public class HttpDocument extends AbstractURLDocument {
             }
             return Status.OK_STATUS;
         } catch (HttpException e) {
-		    return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-					Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-					(e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
-							: e.getReason()), e);
-		} catch (Exception e) {
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
+                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
+                    (e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
+                            : e.getReason()), e);
+        } catch (Exception e) {
             return new Status(IStatus.ERROR, Document.PLUGIN_ID,
                     Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
         }

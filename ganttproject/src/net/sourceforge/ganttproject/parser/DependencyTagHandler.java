@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.parser;
 
 import java.util.ArrayList;
@@ -17,7 +35,7 @@ import org.xml.sax.Attributes;
 public class DependencyTagHandler implements TagHandler, ParsingListener {
     private final TaskManager myTaskManager;
 
-	private final UIFacade myUIFacade;
+    private final UIFacade myUIFacade;
 
     public DependencyTagHandler(ParsingContext context, TaskManager taskManager, UIFacade uiFacade) {
         myContext = context;
@@ -64,10 +82,10 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
                         .createConstraint(ds.dependType));
                 dep.setDifference(ds.difference);
                 if (myContext.getTasksWithLegacyFixedStart().contains(dependant)) {
-                	dep.setHardness(TaskDependency.Hardness.RUBBER);
+                    dep.setHardness(TaskDependency.Hardness.RUBBER);
                 }
                 else {
-                	dep.setHardness(ds.myHardness);
+                    dep.setHardness(ds.myHardness);
                 }
             } catch (TaskDependencyException e) {
                 myUIFacade.logErrorMessage(e);
@@ -99,8 +117,8 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
                 }
             }
             if (hardnessAsString != null) {
-            	TaskDependency.Hardness hardness = TaskDependency.Hardness.parse(hardnessAsString);
-            	gds.setHardness(hardness);
+                TaskDependency.Hardness hardness = TaskDependency.Hardness.parse(hardnessAsString);
+                gds.setHardness(hardness);
             }
             getDependencies().add(gds);
         }
@@ -139,11 +157,11 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
         public int dependType = GanttTaskRelationship.FS;
 
-		private Hardness myHardness = TaskDependency.Hardness.STRONG;
+        private Hardness myHardness = TaskDependency.Hardness.STRONG;
 
         public void setHardness(Hardness hardness) {
-        	myHardness = hardness;
-		}
+            myHardness = hardness;
+        }
 
         public GanttDependStructure() {
         }

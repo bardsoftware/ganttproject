@@ -1,6 +1,21 @@
-/**
- * 
- */
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.calendar;
 
 import java.io.IOException;
@@ -29,11 +44,11 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author nbohn
  */
 public class XMLCalendarOpen {
-	public static class MyException extends Exception {
-		MyException(Throwable cause) {
-			super(cause);
-		}
-	}
+    public static class MyException extends Exception {
+        MyException(Throwable cause) {
+            super(cause);
+        }
+    }
     //private File myCalendarFiles[];
 
     private List<URL> myCalendarResources = new ArrayList<URL>();
@@ -50,17 +65,17 @@ public class XMLCalendarOpen {
 
         // Use the default (non-validating) parser
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        
-		try {
-			SAXParser saxParser = factory.newSAXParser();
-	        saxParser.parse(inputStream, handler);
-		} catch (ParserConfigurationException e) {
-			throw new MyException(e);
-		} catch (SAXException e) {
-			throw new MyException(e);
-		} catch (IOException e) {
-			throw new MyException(e);
-		}
+
+        try {
+            SAXParser saxParser = factory.newSAXParser();
+            saxParser.parse(inputStream, handler);
+        } catch (ParserConfigurationException e) {
+            throw new MyException(e);
+        } catch (SAXException e) {
+            throw new MyException(e);
+        } catch (IOException e) {
+            throw new MyException(e);
+        }
         return true;
     }
 
@@ -158,10 +173,10 @@ public class XMLCalendarOpen {
             URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
             if (calendarUrl != null) {
                 try {
-					load(calendarUrl.openStream());
-				} catch (IOException e) {
-					throw new MyException(e);
-				}
+                    load(calendarUrl.openStream());
+                } catch (IOException e) {
+                    throw new MyException(e);
+                }
                 myCalendarLabels[i] = th.getName();
                 myCalendarResources.add(calendarUrl);
             }

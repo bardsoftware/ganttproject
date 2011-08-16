@@ -36,7 +36,7 @@ public class TestLocalCriticalPath extends TaskTestCase {
      *     d2 <-+ --+ |
      *   n1<--------+ |
      * t3       <-----+
-     * 
+     *
      * The critical path is t1->t2->t3 and inside t2 it is d1->d2->n1
      */
     public void testDeepNestedTask() throws Exception {
@@ -76,7 +76,7 @@ public class TestLocalCriticalPath extends TaskTestCase {
         assertTrue(criticalTasks.contains(d2));
 
         assertFalse(criticalTasks.contains(n2));
-        assertFalse(criticalTasks.contains(n3));        
+        assertFalse(criticalTasks.contains(n3));
     }
 
     /*
@@ -86,14 +86,14 @@ public class TestLocalCriticalPath extends TaskTestCase {
      *   t12  <-+  |
      * t2   <---+  |
      * t3   <------+
-     * 
+     *
      * The critical path is t1->t3 and a local critical path inside t1 is t11->t12
      * However there is t11->t2 dependency which goes outside the local critical path.
      */
     public void testDependencyOutside() throws Exception {
         Task t1 = createTask();
         Task t11 = createTask();
-        t11.move(t1);        
+        t11.move(t1);
         Task t12 = createTask();
         t12.move(t1);
 

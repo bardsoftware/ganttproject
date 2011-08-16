@@ -60,8 +60,7 @@
 
 		    	<xsl:apply-templates select="ganttproject:project"/>
 	         </fo:block>
-			
-			 
+
 			 <fo:block font-size="10pt"
 		        line-height="24pt"
 		        space-after.optimum="15pt"
@@ -74,8 +73,7 @@
                 </xsl:attribute>
 		    	<xsl:apply-templates select="ganttproject:tasks"/>
 	         </fo:block>
-			 
-			 
+
 			 <fo:block font-size="10pt"
 		        line-height="24pt"
 		        space-after.optimum="15pt"
@@ -87,8 +85,7 @@
                  </xsl:attribute>
 		    	<xsl:apply-templates select="ganttproject:resources"/>
 	         </fo:block>
-			 
-			 
+
 			 <fo:block font-size="10pt"
 		        line-height="24pt"
 		        space-after.optimum="15pt"
@@ -146,7 +143,7 @@
         </xsl:attribute>
         <xsl:apply-templates select="@name"/>
 		<xsl:text> : </xsl:text>		
-		<xsl:apply-templates select="@nameValue"/>        
+		<xsl:apply-templates select="@nameValue"/>
     </fo:block>	
 	
 	<fo:block font-size="10pt"
@@ -160,7 +157,7 @@
         </xsl:attribute>
         <xsl:apply-templates select="@organisation"/>
 		<xsl:text> : </xsl:text>	
-		<xsl:apply-templates select="@organisationValue"/>        
+		<xsl:apply-templates select="@organisationValue"/>
     </fo:block>	
 
 	<fo:block font-size="10pt"
@@ -174,7 +171,7 @@
         </xsl:attribute>
         <xsl:apply-templates select="@webLink"/>
 		<xsl:text> : </xsl:text>	
-		<xsl:apply-templates select="@webLinkValue"/>        
+		<xsl:apply-templates select="@webLinkValue"/>
     </fo:block>	
 	
 	<fo:block font-size="10pt"
@@ -187,10 +184,10 @@
         </xsl:attribute>
         <xsl:apply-templates select="@description"/>
 		<xsl:text> : </xsl:text>	
-		<xsl:value-of select="desctiptionValue"/>		 
+		<xsl:value-of select="desctiptionValue"/>		
     </fo:block>
-	 
-	 
+	
+	
 	 <fo:block font-size="10pt"
 						line-height="1pt" color="#145277"
 						space-after.optimum="2pt" text-align="left"

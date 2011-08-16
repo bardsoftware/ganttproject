@@ -119,7 +119,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         // task1 x
         // task2 xxx
 
-        // Create dependency task2->task1 with "finish-finish" constraint. 
+        // Create dependency task2->task1 with "finish-finish" constraint.
         // This means that task2 can't finish earlier than task1 finishes
         TaskDependency dep = taskManager
                 .getDependencyCollection()
@@ -156,7 +156,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         // task1 xxx____
         // task2 _x_____
 
-        // Create dependency task2->task1 with "start-start" constraint. 
+        // Create dependency task2->task1 with "start-start" constraint.
         // This means that task2 can't start earlier than task1 starts
         TaskDependency dep = taskManager
                 .getDependencyCollection()
