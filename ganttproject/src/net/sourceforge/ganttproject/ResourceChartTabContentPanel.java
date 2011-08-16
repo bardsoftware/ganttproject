@@ -38,10 +38,10 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
     }
 
     protected Component createButtonPanel() {
-        JToolBar buttonBar = new JToolBar();        
+        JToolBar buttonBar = new JToolBar();
         buttonBar.setFloatable(false);
         buttonBar.setBorderPainted(false);
-        
+
         TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
         upButton.setTextHidden(true);
         buttonBar.add(upButton);

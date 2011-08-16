@@ -29,7 +29,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 /**
  * This class allow the developer to get some useful references. - GanttProject
  * reference; - CustomColumnManager reference; - CustomColumnStorage reference.
- * 
+ *
  * @author bbaranne Mar 2, 2005
  */
 public class Mediator {
@@ -48,7 +48,7 @@ public class Mediator {
 
     /**
      * Registers the unique GanttProject instance.
-     * 
+     *
      * @param gp
      *            The unique GanttProject instance.
      */

@@ -31,7 +31,7 @@ import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
 public class FontSubstitutionModel {
-    
+
     public static class FontSubstitution {
         final TTFontCache myFontCache;
         final String myOriginalFamily;
@@ -42,7 +42,7 @@ public class FontSubstitutionModel {
             myOriginalFamily = family;
             myPrefs = prefs;
         }
-        
+
         public boolean isResolved() {
             return getSubstitutionFont() != null;
         }
@@ -62,7 +62,7 @@ public class FontSubstitutionModel {
     private final TTFontCache myFontCache;
     private final Map<String,FontSubstitution> mySubstitutions = new LinkedHashMap<String, FontSubstitution>();
     private final ArrayList<FontSubstitution> myIndexedSubstitutions;
-    
+
     public FontSubstitutionModel(TTFontCache fontCache, ITextStylesheet stylesheet, Preferences prefs) {
         myFontCache = fontCache;
         List<FontSubstitution> unresolvedFonts = new ArrayList<FontSubstitution>();
@@ -93,7 +93,7 @@ public class FontSubstitutionModel {
     public Collection<FontSubstitution> getSubstitutions() {
         return Collections.unmodifiableCollection(mySubstitutions.values());
     }
-    
+
     public FontSubstitution getSubstitution(String originalFamily) {
         return mySubstitutions.get(originalFamily);
     }

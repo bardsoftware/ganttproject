@@ -58,7 +58,7 @@ public class GregorianCalendar extends java.util.GregorianCalendar {
     public GregorianCalendar(TimeZone zone, Locale aLocale) {
         super(zone, aLocale);
     }
-    
+
     public void add(int field, int value) {
         if (field == Calendar.DATE) {
             this.add(Calendar.HOUR, value * 24);

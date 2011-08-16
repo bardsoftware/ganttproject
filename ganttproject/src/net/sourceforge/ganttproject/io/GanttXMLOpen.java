@@ -1,20 +1,21 @@
-/***************************************************************************
- * GanttXMLOpen.java  -  description
- * -------------------
- * begin                : feb 2003
- * copyright            : (C) 2002 by Thomas Alexandre
- * email                : alexthomas(at)ganttproject.org
- ***************************************************************************/
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2002-2011 Thomas Alexandre, GanttProject Team
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.io;
 
 import java.awt.Color;
@@ -58,7 +59,7 @@ public class GanttXMLOpen implements GPParser {
     private String indent = "";
 
     private final String margin = "    "; // the margin
-    
+
     final static Pattern IGNORABLE_WHITESPACE = Pattern.compile("^\\s*$");
 
     private final ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
@@ -81,7 +82,7 @@ public class GanttXMLOpen implements GPParser {
 
     private boolean bMerge = false;
 
-	private UIConfiguration myUIConfig;
+    private UIConfiguration myUIConfig;
 
     public GanttXMLOpen(PrjInfos info, UIConfiguration uiConfig,
             TaskManager taskManager, UIFacade uiFacade) {
@@ -120,14 +121,14 @@ public class GanttXMLOpen implements GPParser {
             saxParser = factory.newSAXParser();
             saxParser.parse(inStream, handler);
         } catch (ParserConfigurationException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
             throw new IOException(e.getMessage());
         } catch (SAXException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
             throw new IOException(e.getMessage());
         }
         myTaskManager.getAlgorithmCollection()
@@ -217,7 +218,7 @@ public class GanttXMLOpen implements GPParser {
                         }
                         // TODO: 1.12 repair scrolling to the saved date
                         else if (aName.equals("view-date")) {
-                        	myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime());
+                            myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime());
                         }
                         else if (aName.equals("view-index")) {
                             viewIndex = new Integer(attrs.getValue(i))
@@ -289,7 +290,7 @@ public class GanttXMLOpen implements GPParser {
 
     private StringBuffer myCharacterBuffer = new StringBuffer();
     private final Stack<String> myTagStack = new Stack<String>();
-    
+
     class GanttXMLParser extends DefaultHandler {
         StringBuffer textBuffer;
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- ColorConvertion.java 
+ ColorConvertion.java
  ------------------------------------------
  begin                : 6 juil. 2004
  copyright            : (C) 2004 by Thomas Alexandre

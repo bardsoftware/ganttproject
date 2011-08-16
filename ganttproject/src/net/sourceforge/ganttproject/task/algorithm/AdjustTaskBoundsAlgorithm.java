@@ -82,63 +82,62 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
     protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
 
     private class AlgorithmImpl {
-		
-    private Set<Task> myModifiedTasks = new HashSet<Task>();
 
-    public void run(Task[] tasks) {
-        HashSet<Task> taskSet = new HashSet<Task>(Arrays.asList(tasks));
-        myModifiedTasks.addAll(taskSet);
-        TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
-        while (!taskSet.isEmpty()) {
-            recalculateSupertaskScheduleBottomUp(taskSet, containmentFacade);
-            taskSet.clear();
-            for (Task modifiedTask : myModifiedTasks) {
-                Task supertask = containmentFacade.getContainer(modifiedTask);
-                if (supertask != null) {
-                    taskSet.add(supertask);
+        private Set<Task> myModifiedTasks = new HashSet<Task>();
+
+        public void run(Task[] tasks) {
+            HashSet<Task> taskSet = new HashSet<Task>(Arrays.asList(tasks));
+            myModifiedTasks.addAll(taskSet);
+            TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
+            while (!taskSet.isEmpty()) {
+                recalculateSupertaskScheduleBottomUp(taskSet, containmentFacade);
+                taskSet.clear();
+                for (Task modifiedTask : myModifiedTasks) {
+                    Task supertask = containmentFacade.getContainer(modifiedTask);
+                    if (supertask != null) {
+                        taskSet.add(supertask);
+                    }
+                }
+                myModifiedTasks.clear();
+            }
+        }
+
+        private void recalculateSupertaskScheduleBottomUp(Set<Task> supertasks,
+                TaskContainmentHierarchyFacade containmentFacade) {
+            for (Task supertask : supertasks) {
+                recalculateSupertaskSchedule(supertask, containmentFacade);
+            }
+        }
+
+        private void recalculateSupertaskSchedule(final Task supertask,
+                final TaskContainmentHierarchyFacade containmentFacade) {
+            Task[] nestedTasks = containmentFacade.getNestedTasks(supertask);
+            if (nestedTasks.length == 0) {
+                return;
+            }
+
+            GanttCalendar maxEnd = null;
+            GanttCalendar minStart = null;
+            for (Task nestedTask : nestedTasks) {
+                GanttCalendar nextStart = nestedTask.getStart();
+                if (minStart == null || nextStart.compareTo(minStart) < 0) {
+                    minStart = nextStart;
+                }
+                GanttCalendar nextEnd = nestedTask.getEnd();
+                if (maxEnd == null || nextEnd.compareTo(maxEnd) > 0) {
+                    maxEnd = nextEnd;
                 }
             }
-            myModifiedTasks.clear();
-        }
-    }
-
-    private void recalculateSupertaskScheduleBottomUp(Set<Task> supertasks,
-            TaskContainmentHierarchyFacade containmentFacade) {
-        for (Task supertask : supertasks) {
-            recalculateSupertaskSchedule(supertask, containmentFacade);
-        }
-    }
-
-    private void recalculateSupertaskSchedule(final Task supertask,
-            final TaskContainmentHierarchyFacade containmentFacade) {
-        Task[] nestedTasks = containmentFacade.getNestedTasks(supertask);
-        if (nestedTasks.length == 0) {
-            return;
-        }
-
-        GanttCalendar maxEnd = null;
-        GanttCalendar minStart = null;
-        for (Task nestedTask : nestedTasks) {
-            GanttCalendar nextStart = nestedTask.getStart();
-            if (minStart == null || nextStart.compareTo(minStart) < 0) {
-                minStart = nextStart;
+            TaskMutator mutator = supertask.createMutator();
+            if (minStart.compareTo(supertask.getStart()) != 0) {
+                mutator.setStart(minStart);
+                myModifiedTasks.add(supertask);
             }
-            GanttCalendar nextEnd = nestedTask.getEnd();
-            if (maxEnd == null || nextEnd.compareTo(maxEnd) > 0) {
-                maxEnd = nextEnd;
+            if (maxEnd.compareTo(supertask.getEnd()) != 0) {
+                mutator.setEnd(maxEnd);
+                myModifiedTasks.add(supertask);
             }
+            mutator.commit();
         }
-        TaskMutator mutator = supertask.createMutator();
-        if (minStart.compareTo(supertask.getStart()) != 0) {
-        	mutator.setStart(minStart);
-        	myModifiedTasks.add(supertask);
-        }
-        if (maxEnd.compareTo(supertask.getEnd()) != 0) {
-        	mutator.setEnd(maxEnd);
-        	myModifiedTasks.add(supertask);
-        }
-        mutator.commit();
     }
-
-	}
 }

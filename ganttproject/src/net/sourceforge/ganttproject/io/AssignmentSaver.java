@@ -17,7 +17,7 @@ class AssignmentSaver extends SaverBase {
         startElement("allocations", handler);
         List<HumanResource> resources = project.getHumanResourceManager().getResources();
         for (int i=0; i<resources.size(); i++) {
-        	HumanResource resource = resources.get(i);
+            HumanResource resource = resources.get(i);
             ResourceAssignment[] assignments = resource.getAssignments();
             for (int j=0; j<assignments.length; j++) {
                 saveAssignment(handler, assignments[j]);

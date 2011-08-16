@@ -3,9 +3,9 @@ package net.sourceforge.ganttproject.font;
 import java.awt.Font;
 
 /**
- * 
+ *
  * @author bbaranne
- * 
+ *
  */
 public class Fonts {
 

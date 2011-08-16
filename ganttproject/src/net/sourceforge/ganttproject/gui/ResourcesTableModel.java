@@ -1,4 +1,4 @@
-/* 
+/*
 GanttProject is an opensource project management tool. License: GPL2
 Copyright (C) 2010 Dmitry Barashev
 
@@ -148,8 +148,8 @@ public class ResourcesTableModel extends AbstractTableModel {
                 float load = updateTarget.getLoad();
                 boolean coord = updateTarget.isCoordinator();
                 updateTarget.delete();
-				ResourceAssignment newAssignment = myMutator
-						.addAssignment((HumanResource) value);
+                ResourceAssignment newAssignment = myMutator
+                        .addAssignment((HumanResource) value);
                 newAssignment.setLoad(load);
                 newAssignment.setCoordinator(coord);
                 myAssignments.set(row, newAssignment);
@@ -195,7 +195,7 @@ public class ResourcesTableModel extends AbstractTableModel {
         return isChanged;
     }
 
-	public void delete(int[] selectedRows) {
+    public void delete(int[] selectedRows) {
         List<ResourceAssignment> selected = new ArrayList<ResourceAssignment>();
         for (int row : selectedRows) {
             selected.add(myAssignments.get(row));
@@ -205,6 +205,6 @@ public class ResourcesTableModel extends AbstractTableModel {
         }
         myAssignments.removeAll(selected);
         fireTableDataChanged();
-	}
+    }
 
 }

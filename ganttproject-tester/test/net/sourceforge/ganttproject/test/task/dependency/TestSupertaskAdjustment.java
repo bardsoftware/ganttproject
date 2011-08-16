@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.test.task.dependency;
 
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
@@ -73,33 +91,32 @@ public class TestSupertaskAdjustment extends TaskTestCase {
     }
 
     public void testTaskDurationChangeIsPropagatedTwoLevelsUp() {
-    	TaskManager taskManager = getTaskManager();
-    	Task supertask = taskManager.createTask();
-    	supertask.move(taskManager.getRootTask());
+        TaskManager taskManager = getTaskManager();
+        Task supertask = taskManager.createTask();
+        supertask.move(taskManager.getRootTask());
 
-    	Task level1task1 = taskManager.createTask();
-    	level1task1.move(supertask);
-    	Task level1task2 = taskManager.createTask();
-    	level1task2.move(supertask);
+        Task level1task1 = taskManager.createTask();
+        level1task1.move(supertask);
+        Task level1task2 = taskManager.createTask();
+        level1task2.move(supertask);
 
-    	Task level2task1 = taskManager.createTask();
-    	level2task1.move(level1task2);
+        Task level2task1 = taskManager.createTask();
+        level2task1.move(level1task2);
 
-    	supertask.setStart(TestSetupHelper.newMonday());
-    	supertask.setEnd(TestSetupHelper.newTuesday());
-    	level1task1.setStart(TestSetupHelper.newMonday());
-    	level1task1.setEnd(TestSetupHelper.newTuesday());
-    	level1task2.setStart(TestSetupHelper.newMonday());
-    	level1task2.setEnd(TestSetupHelper.newTuesday());
-    	level2task1.setStart(TestSetupHelper.newMonday());
-    	level2task1.setEnd(TestSetupHelper.newTuesday());
+        supertask.setStart(TestSetupHelper.newMonday());
+        supertask.setEnd(TestSetupHelper.newTuesday());
+        level1task1.setStart(TestSetupHelper.newMonday());
+        level1task1.setEnd(TestSetupHelper.newTuesday());
+        level1task2.setStart(TestSetupHelper.newMonday());
+        level1task2.setEnd(TestSetupHelper.newTuesday());
+        level2task1.setStart(TestSetupHelper.newMonday());
+        level2task1.setEnd(TestSetupHelper.newTuesday());
 
-    	level2task1.setEnd(TestSetupHelper.newWendesday());
+        level2task1.setEnd(TestSetupHelper.newWendesday());
 
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { level2task1 });
 
         assertEquals("Unexpected end of the topleveltask="+supertask, TestSetupHelper.newWendesday(), supertask.getEnd());
     }
-
 }

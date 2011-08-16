@@ -69,7 +69,7 @@ public class StartStartConstraintImpl extends ConstraintImpl implements
         GanttCalendar dependeeEnd = dependee.getEnd().clone();
 
         Date barrier = shift(
-                dependantStart, 
+                dependantStart,
                 dependee.getDuration().getLength() - getDependency().getDifference());
         boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ?
                 dependeeEnd.getTime().compareTo(barrier) > 0

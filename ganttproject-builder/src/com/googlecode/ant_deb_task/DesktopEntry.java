@@ -8,7 +8,7 @@ import java.util.*;
 
 /**
  * Task that generates a desktop entry file used to add menu entries.
- * 
+ *
  * @antTaskName desktopentry
  */
 public class DesktopEntry extends Task
@@ -317,7 +317,7 @@ public class DesktopEntry extends Task
             }
 
             validateKeys ();
-            
+
             PrintWriter out = new UnixPrintWriter(_toFile);
 
             out.println("[Desktop Entry]");
@@ -418,7 +418,7 @@ public class DesktopEntry extends Task
 
             if ("Type".equals (key))
                 continue;
-            
+
             int idxSquare = key.indexOf ('[');
 
             if (idxSquare != -1)

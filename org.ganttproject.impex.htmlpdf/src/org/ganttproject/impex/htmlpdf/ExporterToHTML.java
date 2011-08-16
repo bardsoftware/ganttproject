@@ -183,7 +183,7 @@ public class ExporterToHTML extends ExporterBase {
                 } catch (ExportException e) {
                     cancel();
                     ExporterToHTML.this.getUIFacade().showErrorDialog(e);
-				}
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -207,7 +207,7 @@ public class ExporterToHTML extends ExporterBase {
                                 for (int i = 0; i < lof.length; i++) {
                                     File nextInFile = lof[i];
                                     if (nextInFile.isDirectory()) {
-                                    	continue;
+                                        continue;
                                     }
                                     File outFile = new File(resultImagesDir, nextInFile.getName());
                                     outFile.createNewFile();
@@ -336,10 +336,10 @@ public class ExporterToHTML extends ExporterBase {
                 TransformerHandler result = createHandler(titleUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
-            	throw new RuntimeException(e);
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+                throw new RuntimeException(e);
             }
         }
 
@@ -349,10 +349,10 @@ public class ExporterToHTML extends ExporterBase {
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
-            	throw new RuntimeException(e);
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+                throw new RuntimeException(e);
             }
         }
 
@@ -362,10 +362,10 @@ public class ExporterToHTML extends ExporterBase {
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
-            	throw new RuntimeException(e);
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+                throw new RuntimeException(e);
             }
         }
 
@@ -375,10 +375,10 @@ public class ExporterToHTML extends ExporterBase {
                 TransformerHandler result = createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
-            	throw new RuntimeException(e);
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+                throw new RuntimeException(e);
             }
         }
 
@@ -388,10 +388,10 @@ public class ExporterToHTML extends ExporterBase {
                 File result = new File(imagesUrl.getPath());
                 return result;
             } catch (MalformedURLException e) {
-            	if (!GPLogger.log(e)) {
-            		e.printStackTrace(System.err);
-            	}
-            	throw new RuntimeException(e);
+                if (!GPLogger.log(e)) {
+                    e.printStackTrace(System.err);
+                }
+                throw new RuntimeException(e);
             }
         }
     }

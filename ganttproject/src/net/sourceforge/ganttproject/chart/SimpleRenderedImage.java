@@ -2,7 +2,7 @@ package net.sourceforge.ganttproject.chart;
 
 /*
 
-Copyright 2001,2003  The Apache Software Foundation 
+Copyright 2001,2003  The Apache Software Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -136,14 +136,14 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      return tileHeight;
  }
 
- /** 
+ /**
   * Returns the X coordinate of the upper-left pixel of tile (0, 0).
   */
  public int getTileGridXOffset() {
      return tileGridXOffset;
  }
 
- /** 
+ /**
   * Returns the Y coordinate of the upper-left pixel of tile (0, 0).
   */
  public int getTileGridYOffset() {
@@ -181,7 +181,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  /**
   * Returns the vertical index of the uppermost row of tiles.  getMinTileY()
   * is implemented in terms of getMinY() and so does not need to be
-  * implemented by subclasses. 
+  * implemented by subclasses.
   */
  public int getMinTileY() {
      return YToTileY(getMinY());
@@ -334,7 +334,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  }
 
  /**
-  * Converts a pixel's Y coordinate into a vertical tile index. 
+  * Converts a pixel's Y coordinate into a vertical tile index.
   * This is a convenience method.  No attempt is made to detect
   * out-of-range coordinates.
   *
@@ -485,7 +485,7 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   *
   * @param dest a WritableRaster to hold the returned portion of
   *        the image.
-  * @return a reference to the supplied WritableRaster, or to a 
+  * @return a reference to the supplied WritableRaster, or to a
   *         new WritableRaster if the supplied one was null.
   */
  public WritableRaster copyData(WritableRaster dest) {

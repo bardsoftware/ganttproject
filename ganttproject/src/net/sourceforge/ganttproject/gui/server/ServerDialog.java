@@ -27,7 +27,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Generic dialog for server I/O
- * 
+ *
  * @author athomas
  */
 public class ServerDialog extends GeneralDialog {

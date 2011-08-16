@@ -73,9 +73,9 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         try {
             restoreDocument(myDocumentAfter);
         } catch (DocumentException e) {
-        	undoRedoExceptionHandler(e);
+            undoRedoExceptionHandler(e);
         } catch (IOException e) {
-        	undoRedoExceptionHandler(e);
+            undoRedoExceptionHandler(e);
         }
     }
 
@@ -83,18 +83,18 @@ class UndoableEditImpl extends AbstractUndoableEdit {
         try {
             restoreDocument(myDocumentBefore);
         } catch (DocumentException e) {
-        	undoRedoExceptionHandler(e);
+            undoRedoExceptionHandler(e);
         } catch (IOException e) {
-        	undoRedoExceptionHandler(e);
+            undoRedoExceptionHandler(e);
         }
     }
 
     private void restoreDocument(Document document) throws IOException, DocumentException {
-        Document projectDocument = myManager.getProject().getDocument(); 
-		myManager.getProject().close();
+        Document projectDocument = myManager.getProject().getDocument();
+        myManager.getProject().close();
         document.read();
         myManager.getProject().setDocument(projectDocument);
-        
+
     }
 
     public String getPresentationName() {
@@ -106,9 +106,9 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     }
 
     private void undoRedoExceptionHandler(Exception e) {
-    	if (!GPLogger.log(e)) {
-    		e.printStackTrace(System.err);
-		}
-		throw new CannotRedoException();
-	}
+        if (!GPLogger.log(e)) {
+            e.printStackTrace(System.err);
+        }
+        throw new CannotRedoException();
+    }
 }

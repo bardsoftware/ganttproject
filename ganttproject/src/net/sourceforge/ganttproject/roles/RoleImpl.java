@@ -5,7 +5,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 25.01.2004
  */
 public class RoleImpl implements Role {
@@ -19,7 +19,7 @@ public class RoleImpl implements Role {
         myID = id;
         myName = name;
         myRoleSet = roleSet;
-        
+
         GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
             public void languageChanged(Event event) {
                 Role role = myRoleSet.findRole(myID);
@@ -37,7 +37,7 @@ public class RoleImpl implements Role {
     public String getName() {
         return myName;
     }
-    
+
     public void setName(String name) {
         myName = name;
     }

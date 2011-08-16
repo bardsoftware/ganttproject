@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,7 +51,7 @@ public class DeleteHumanAction extends ResourceAction {
 
     private GanttProject myProjectFrame;
 
-	public DeleteHumanAction(HumanResourceManager hrManager,
+    public DeleteHumanAction(HumanResourceManager hrManager,
             ResourceContext context, GanttProject projectFrame, UIFacade uiFacade) {
         super(hrManager);
         myUIFacade = uiFacade;
@@ -67,24 +67,24 @@ public class DeleteHumanAction extends ResourceAction {
         myContext = context;
     }
 
-	public void actionPerformed(ActionEvent event) {
-		final HumanResource[] context = getContext().getResources();
-		if (context.length > 0) {
-			final String message = getLanguage().getText("msg6") + " "
-					+ getDisplayName(context) + "?";
-			final String title = getLanguage().getText("question");
-			Choice choice = myUIFacade.showConfirmationDialog(message, title);
-			if (choice == Choice.YES) {
-				myUIFacade.getUndoManager().undoableEdit("Resource removed",
-						new Runnable() {
-							public void run() {
-								deleteResources(context);
-								getProjectFrame().repaint2();
-							}
-						});
-			}
-		}
-	}
+    public void actionPerformed(ActionEvent event) {
+        final HumanResource[] context = getContext().getResources();
+        if (context.length > 0) {
+            final String message = getLanguage().getText("msg6") + " "
+                    + getDisplayName(context) + "?";
+            final String title = getLanguage().getText("question");
+            Choice choice = myUIFacade.showConfirmationDialog(message, title);
+            if (choice == Choice.YES) {
+                myUIFacade.getUndoManager().undoableEdit("Resource removed",
+                        new Runnable() {
+                            public void run() {
+                                deleteResources(context);
+                                getProjectFrame().repaint2();
+                            }
+                        });
+            }
+        }
+    }
 
     private GanttProject getProjectFrame() {
         return myProjectFrame;

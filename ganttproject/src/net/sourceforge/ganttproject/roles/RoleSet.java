@@ -19,7 +19,7 @@ public interface RoleSet {
     Role createRole(String name, int persistentID);
 
     void deleteRole(Role role);
-    
+
     void changeRole(String name, int roleID);
 
     Role findRole(int roleID);

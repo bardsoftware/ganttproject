@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.roles;
 
 import java.util.ArrayList;
@@ -12,7 +30,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  * @author athomas
  */
 public class RoleManagerImpl implements RoleManager {
-	private final List<Listener> myListeners = new ArrayList<Listener>();
+    private final List<Listener> myListeners = new ArrayList<Listener>();
 
     private final RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);
 
@@ -132,21 +150,21 @@ public class RoleManagerImpl implements RoleManager {
     }
 
 
-	public void addRoleListener(Listener listener) {
-		myListeners.add(listener);
-	}
+    public void addRoleListener(Listener listener) {
+        myListeners.add(listener);
+    }
 
-	public void removeRoleListener(Listener listener) {
-		myListeners.remove(listener);
-	}
+    public void removeRoleListener(Listener listener) {
+        myListeners.remove(listener);
+    }
 
-	void fireRolesChanged(RoleSet changedRoleSet) {
-		RoleEvent event = new RoleEvent(this, changedRoleSet);
-		for (int i=0; i<myListeners.size(); i++) {
-			Listener next = myListeners.get(i);
-			next.rolesChanged(event);
-		}
-	}
+    void fireRolesChanged(RoleSet changedRoleSet) {
+        RoleEvent event = new RoleEvent(this, changedRoleSet);
+        for (int i=0; i<myListeners.size(); i++) {
+            Listener next = myListeners.get(i);
+            next.rolesChanged(event);
+        }
+    }
 
     private void createRoleSet() {
         GanttLanguage language = GanttLanguage.getInstance();

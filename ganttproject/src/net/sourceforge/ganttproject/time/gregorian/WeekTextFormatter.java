@@ -33,7 +33,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements
         super.languageChanged(event);
         myCalendar = CalendarFactory.newCalendar();
     }
-    
-    
+
+
 
 }

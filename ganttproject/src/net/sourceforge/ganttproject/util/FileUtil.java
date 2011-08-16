@@ -67,6 +67,6 @@ public abstract class FileUtil {
     public static String getFilenameWithoutExtension(File f) {
         String filename = f.getName();
         int i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR);
-        return i >= 0 ? filename.substring(0, i) : filename; 
+        return i >= 0 ? filename.substring(0, i) : filename;
     }
 }

@@ -46,5 +46,5 @@
        <theme name="Default theme" url="pdf-export-themes/ganttproject.xsl"/>
        <theme name="Landscape theme" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
    </extension>
-   
+
 </plugin>

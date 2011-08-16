@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2003-2011 Alexandre Thomas, GanttProject team 
+Copyright (C) 2003-2011 Alexandre Thomas, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -208,10 +208,10 @@ public class GanttOptions {
     public void save() {
         try {
             String sFileName = ".ganttproject";
-            
-//			if (System.getProperty("os.name").startsWith("Windows")
-//					|| System.getProperty("os.name").startsWith("Mac"))
-//				sFileName = "ganttproject.ini";             
+
+//            if (System.getProperty("os.name").startsWith("Windows")
+//                    || System.getProperty("os.name").startsWith("Mac"))
+//                sFileName = "ganttproject.ini";
 
             File file = new File(System.getProperty("user.home")
                     + System.getProperty("file.separator") + sFileName);
@@ -226,10 +226,10 @@ public class GanttOptions {
                     "{http://xml.apache.org/xslt}indent-amount", "4");
             handler.setResult(new StreamResult(file));
             handler.startDocument();
-//			handler.startDTD("ganttproject.sourceforge.net",
-//					"-//GanttProject.org//DTD GanttProject-1.x//EN",
-//					"http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
-//			handler.endDTD();
+//            handler.startDTD("ganttproject.sourceforge.net",
+//                    "-//GanttProject.org//DTD GanttProject-1.x//EN",
+//                    "http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
+//            handler.endDTD();
 
             final AttributesImpl attrs = new AttributesImpl();
             handler.startElement("", "ganttproject-options",
@@ -238,43 +238,43 @@ public class GanttOptions {
             attrs.clear();
             // write the task Color
 
-//			Color color = getUIConfiguration().getTaskColor();
-//			attrs.addAttribute("", "red", "red", "CDATA", "" + color.getRed());
-//			attrs.addAttribute("", "green", "green", "CDATA", ""
-//					+ color.getGreen());
-//			attrs.addAttribute("", "blue", "blue", "CDATA", ""
-//					+ color.getBlue());
-//			handler.startElement("", "task-color", "task-color", attrs);
-//			handler.endElement("", "task-color", "task-color"); attrs.clear();
+//            Color color = getUIConfiguration().getTaskColor();
+//            attrs.addAttribute("", "red", "red", "CDATA", "" + color.getRed());
+//            attrs.addAttribute("", "green", "green", "CDATA", ""
+//                    + color.getGreen());
+//            attrs.addAttribute("", "blue", "blue", "CDATA", ""
+//                    + color.getBlue());
+//            handler.startElement("", "task-color", "task-color", attrs);
+//            handler.endElement("", "task-color", "task-color"); attrs.clear();
 
             Color resourceColor = myUIConfig.getResourceColor();
-			if (resourceColor != null) {
-				attrs.addAttribute("", "resources", "resources", "CDATA",
-						ColorConvertion.getColor(resourceColor));
-			}
+            if (resourceColor != null) {
+                attrs.addAttribute("", "resources", "resources", "CDATA",
+                        ColorConvertion.getColor(resourceColor));
+            }
             Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();
-			if (resourceOverloadColor != null) {
-				attrs.addAttribute("", "resourcesOverload",
-						"resourcesOverload", "CDATA", ColorConvertion
-								.getColor(resourceOverloadColor));
-			}
+            if (resourceOverloadColor != null) {
+                attrs.addAttribute("", "resourcesOverload",
+                        "resourcesOverload", "CDATA", ColorConvertion
+                                .getColor(resourceOverloadColor));
+            }
             Color resourceUnderloadColor = myUIConfig
                     .getResourceUnderloadColor();
-			if (resourceUnderloadColor != null) {
-				attrs.addAttribute("", "resourcesUnderload",
-						"resourcesUnderload", "CDATA", ColorConvertion
-								.getColor(resourceUnderloadColor));
-			}
+            if (resourceUnderloadColor != null) {
+                attrs.addAttribute("", "resourcesUnderload",
+                        "resourcesUnderload", "CDATA", ColorConvertion
+                                .getColor(resourceUnderloadColor));
+            }
             Color weekEndColor = myUIConfig.getWeekEndColor();
-			if (weekEndColor != null) {
-				attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA",
-						ColorConvertion.getColor(weekEndColor));
-			}
+            if (weekEndColor != null) {
+                attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA",
+                        ColorConvertion.getColor(weekEndColor));
+            }
             Color daysOffColor = myUIConfig.getDayOffColor();
-			if (daysOffColor != null) {
-				attrs.addAttribute("", "daysOff", "daysOff", "CDATA",
-						ColorConvertion.getColor(daysOffColor));
-			}
+            if (daysOffColor != null) {
+                attrs.addAttribute("", "daysOff", "daysOff", "CDATA",
+                        ColorConvertion.getColor(daysOffColor));
+            }
             handler.startElement("", "colors", "colors", attrs);
             handler.endElement("", "colors", "colors");
             attrs.clear();
@@ -398,13 +398,13 @@ public class GanttOptions {
         AttributesImpl attrs = new AttributesImpl();
         startElement(node.name(), attrs, handler);
         String[] keys = node.keys();
-		for (int i = 0; i < keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             addAttribute("name", keys[i], attrs);
             addAttribute("value", node.get(keys[i], ""), attrs);
             emptyElement("option", attrs, handler);
         }
         String[] children = node.childrenNames();
-		for (int i = 0; i < children.length; i++) {
+        for (int i = 0; i < children.length; i++) {
             savePreferences(node.node(children[i]), handler);
         }
         endElement(node.name(), handler);
@@ -530,8 +530,8 @@ public class GanttOptions {
 
     public UIConfiguration getUIConfiguration() {
         if (myUIConfig == null) {
-			myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
-					206), redline) {
+            myUIConfig = new UIConfiguration(null, null, new Color(140, 182,
+                    206), redline) {
                 public Font getMenuFont() {
                     return myMenuFont == null ? super.getMenuFont()
                             : myMenuFont;
@@ -581,14 +581,14 @@ public class GanttOptions {
 
             if (attrs != null) {
                 for (int i = 0; i < attrs.getLength(); i++) {
-                	/** Attribute name */
+                    /** Attribute name */
                     String aName = attrs.getQName(i);
                     /** Value of attribute */
                     String value = attrs.getValue(i);
 
                     String tagDotAttribute = qName+"."+aName;
                     GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);
-					if (converter != null) {
+                    if (converter != null) {
                         converter.loadValue(value);
                         continue;
                     }
@@ -697,52 +697,52 @@ public class GanttOptions {
                             csvOptions.sSeparatedChar = value;
                         if (aName.equals("separatedTextChar"))
                             csvOptions.sSeparatedTextChar = value;
-					} else if (qName.equals("csv-tasks")) {
-						if (aName.equals("id")) {
-							csvOptions.bExportTaskID = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("name")) {
-							csvOptions.bExportTaskName = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("start-date")) {
-							csvOptions.bExportTaskStartDate = (new Boolean(
-									value)).booleanValue();
-						} else if (aName.equals("end-date")) {
-							csvOptions.bExportTaskEndDate = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("percent")) {
-							csvOptions.bExportTaskPercent = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("duration")) {
-							csvOptions.bExportTaskDuration = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("webLink")) {
-							csvOptions.bExportTaskWebLink = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("resources")) {
-							csvOptions.bExportTaskResources = (new Boolean(
-									value)).booleanValue();
-						} else if (aName.equals("notes")) {
-							csvOptions.bExportTaskNotes = (new Boolean(value))
-									.booleanValue();
-						}
+                    } else if (qName.equals("csv-tasks")) {
+                        if (aName.equals("id")) {
+                            csvOptions.bExportTaskID = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("name")) {
+                            csvOptions.bExportTaskName = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("start-date")) {
+                            csvOptions.bExportTaskStartDate = (new Boolean(
+                                    value)).booleanValue();
+                        } else if (aName.equals("end-date")) {
+                            csvOptions.bExportTaskEndDate = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("percent")) {
+                            csvOptions.bExportTaskPercent = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("duration")) {
+                            csvOptions.bExportTaskDuration = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("webLink")) {
+                            csvOptions.bExportTaskWebLink = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("resources")) {
+                            csvOptions.bExportTaskResources = (new Boolean(
+                                    value)).booleanValue();
+                        } else if (aName.equals("notes")) {
+                            csvOptions.bExportTaskNotes = (new Boolean(value))
+                                    .booleanValue();
+                        }
                     } else if (qName.equals("csv-resources")) {
-						if (aName.equals("id")) {
-							csvOptions.bExportResourceID = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("name")) {
-							csvOptions.bExportResourceName = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("mail")) {
-							csvOptions.bExportResourceMail = (new Boolean(value))
-									.booleanValue();
-						} else if (aName.equals("phone")) {
-							csvOptions.bExportResourcePhone = (new Boolean(
-									value)).booleanValue();
-						} else if (aName.equals("role")) {
-							csvOptions.bExportResourceRole = (new Boolean(value))
-									.booleanValue();
-						}
+                        if (aName.equals("id")) {
+                            csvOptions.bExportResourceID = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("name")) {
+                            csvOptions.bExportResourceName = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("mail")) {
+                            csvOptions.bExportResourceMail = (new Boolean(value))
+                                    .booleanValue();
+                        } else if (aName.equals("phone")) {
+                            csvOptions.bExportResourcePhone = (new Boolean(
+                                    value)).booleanValue();
+                        } else if (aName.equals("role")) {
+                            csvOptions.bExportResourceRole = (new Boolean(value))
+                                    .booleanValue();
+                        }
                     }
                 }
             }

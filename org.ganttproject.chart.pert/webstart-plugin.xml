@@ -16,6 +16,6 @@
    </requires>
    <extension
          point="net.sourceforge.ganttproject.chart">
-         <exporter class="org.ganttproject.chart.pert.ActivityOnNodePertChart"/> 
+         <exporter class="org.ganttproject.chart.pert.ActivityOnNodePertChart"/>
    </extension>
 </plugin>

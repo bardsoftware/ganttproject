@@ -29,7 +29,7 @@ import java.util.WeakHashMap;
 /**
  * Stores the available primitives and their information (used for painting) and
  * provides methods to retrieve them
- * 
+ *
  * @author bard
  */
 public class GraphicPrimitiveContainer {
@@ -66,22 +66,22 @@ public class GraphicPrimitiveContainer {
         private boolean isVisible = true;
 
         private LinkedHashSet<String> myStyles;
-        
+
         private LinkedHashSet<String> getStyles() {
             if (myStyles == null) {
                 myStyles = new LinkedHashSet<String>();
             }
             return myStyles;
         }
-        
+
         public void addStyle(String style) {
             getStyles().add(style);
         }
-        
+
         public boolean hasStyle(String style) {
             return getStyles().contains(style);
         }
-        
+
         public void setStyle(String styleName) {
             myStyleName = styleName;
         }

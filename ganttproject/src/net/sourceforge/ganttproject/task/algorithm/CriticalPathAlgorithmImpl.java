@@ -87,20 +87,20 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
                 collectDependees(task, taskScope);
             }
         }
-        
+
         void collectDependees(Task task, Set<Task> taskScope) {
             TaskDependency[] deps = task.getDependenciesAsDependant().toArray();
             for (TaskDependency dep : deps) {
                 if (taskScope.contains(dep.getDependee())) {
                     dependees.add(dep.getDependee());
                 }
-            }            
+            }
         }
 
         boolean isCritical() {
             return est.equals(lst);
         }
-        
+
         public String toString() {
             return task == null ? "[Deadline node " + eft + "]" : task.toString();
         }
@@ -115,7 +115,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         }
         Map<Task, Node> task_node = createTaskNodeMap(tasks, fakeFinalNode);
         for (Node curNode : task_node.values()) {
-            curNode.numDependants += myTaskManager.getTaskHierarchy().getDepth(curNode.task) - 1; 
+            curNode.numDependants += myTaskManager.getTaskHierarchy().getDepth(curNode.task) - 1;
         }
         assert fakeFinalNode.dependees.size() > 0;
 

@@ -41,7 +41,7 @@ h5.header {
     </td>
   </xsl:for-each>
  </tr>
-  <xsl:for-each select="ganttproject:resource">  
+  <xsl:for-each select="ganttproject:resource">
 	  <xsl:variable name="current-resource" select="." />
 	  <tr>
 	    <xsl:for-each select="//view[@id='resource-table']/field">
@@ -53,7 +53,7 @@ h5.header {
 	      </td>
 	    </xsl:for-each>
 	    <!-- field -->
-	  </tr>  
+	  </tr>
   </xsl:for-each>
 </table>
 

@@ -65,9 +65,9 @@ public class UndoManagerImpl implements GPUndoManager {
             mySwingUndoManager.addEdit(swingEditImpl);
             fireUndoableEditHappened(swingEditImpl);
         } catch (IOException e) {
-        	if (!GPLogger.log(e)) {
-        		e.printStackTrace(System.err);
-        	}
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 

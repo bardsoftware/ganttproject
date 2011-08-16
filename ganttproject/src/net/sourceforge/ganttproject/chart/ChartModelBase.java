@@ -458,8 +458,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             if (startDate == null) {
                 throw new RuntimeException("No date is set");
             }
-			result = ((TimeUnitFunctionOfDate) myTopUnit)
-			        .createTimeUnit(startDate);
+            result = ((TimeUnitFunctionOfDate) myTopUnit)
+                    .createTimeUnit(startDate);
         }
         return result;
     }

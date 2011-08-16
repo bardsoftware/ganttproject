@@ -33,7 +33,7 @@ public class TestTaskActivitiesRecalculation extends TaskTestCase {
                             .getEnd());
         }
     }
-    
+
     public void testRecalculateOnChangingStartByFixingDurationMutator() {
         Task task = getTaskManager().createTask();
         {

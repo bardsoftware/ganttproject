@@ -82,7 +82,7 @@ public class GanttTaskRelationship {
 
     /**
      * set the predecessor task ID by integer
-     * 
+     *
      * @param predecessorTaskID
      *            ID of predecessor task
      */
@@ -105,7 +105,7 @@ public class GanttTaskRelationship {
 
     /**
      * set the successor task by GanttTask object
-     * 
+     *
      * @param successorTask
      *            GanttTask object of successor
      */
@@ -115,7 +115,7 @@ public class GanttTaskRelationship {
 
     /**
      * set the successor task ID by the integer
-     * 
+     *
      * @param seccessorTaskID
      *            id of the successor
      */

@@ -25,11 +25,11 @@
       <import plugin="net.sourceforge.ganttproject"/>
       <import plugin="org.eclipse.core.runtime" version="3.4.0"/>
    </requires>
-   
+
    <extension point="net.sourceforge.ganttproject.exporter">
          <exporter class="biz.ganttproject.impex.msproject2.ExporterToMsProjectFile"/>
    </extension>
-   
+
    <extension
          point="net.sourceforge.ganttproject.importer">
          <importer class="biz.ganttproject.impex.msproject2.ImporterFromMsProjectFile"/>

@@ -54,9 +54,9 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
             myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
         }
         myLastNotes.setString(getNotesText());
-        myLastNotes.setX(e.getX());        	
+        myLastNotes.setX(e.getX());
     }
-    
+
     protected Task getTask() {
         return myTask;
     }

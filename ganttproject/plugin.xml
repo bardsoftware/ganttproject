@@ -23,7 +23,7 @@
       </library>
       <library name="lib/core/jcommander-1.17.jar">
          <export name="*"/>
-      </library>      
+      </library>
       <library name="lib/core/jdnc-modifBen.jar">
          <export name="*"/>
       </library>

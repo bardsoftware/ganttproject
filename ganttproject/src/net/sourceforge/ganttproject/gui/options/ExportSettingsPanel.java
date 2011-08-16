@@ -1,5 +1,5 @@
 /***************************************************************************
- ExportSettingsPanel.java 
+ ExportSettingsPanel.java
  ------------------------------------------
  begin                : 30 juin 2004
  copyright            : (C) 2004 by Thomas Alexandre

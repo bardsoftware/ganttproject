@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
 /**
  * Date parser for ISO 8601 format
  * http://www.w3.org/TR/1998/NOTE-datetime-19980827
- * 
+ *
  * @version $Revision: 1.5 $
  * @author Benoît Mahé (bmahe@w3.org)
  */
@@ -158,7 +158,7 @@ public class DateParser {
 
     /**
      * Parse the given string in ISO 8601 format and build a Date object.
-     * 
+     *
      * @param isodate
      *            the date in ISO 8601 format
      * @return a Date instance
@@ -179,7 +179,7 @@ public class DateParser {
 
     /**
      * Generate a ISO 8601 date
-     * 
+     *
      * @param date
      *            a Date instance
      * @return a string representing the date in the ISO 8601 format
@@ -202,7 +202,7 @@ public class DateParser {
 
     /**
      * Generate a ISO 8601 date
-     * 
+     *
      * @param date
      *            a Date instance
      * @return a string representing the date in the ISO 8601 format
