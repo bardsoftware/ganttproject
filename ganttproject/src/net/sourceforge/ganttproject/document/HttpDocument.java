@@ -96,12 +96,12 @@ public class HttpDocument extends AbstractURLDocument {
     public String getFileName() {
         // TODO return filename instead of URL?
         String filenName = httpURL.toString();
-        return (filenName != null) ? filenName : url;
+        return (filenName != null ? filenName : url);
     }
 
     public boolean canRead() {
         WebdavResource res = getWebdavResource();
-        return (null == res) ? false : (res.exists() && !res.isCollection());
+        return (null == res ? false : (res.exists() && !res.isCollection()));
     }
 
     public IStatus canWrite() {
@@ -124,10 +124,8 @@ public class HttpDocument extends AbstractURLDocument {
         }
 
         if (res.exists()) {
-            return (res.isCollection())
-                ? new Status(
-                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(),  null)
-                : Status.OK_STATUS;
+            return (res.isCollection()) ? new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY
+                    .ordinal(), res.getPath(), null) : Status.OK_STATUS;
         }
 
         try {

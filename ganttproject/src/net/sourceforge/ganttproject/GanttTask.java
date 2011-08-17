@@ -71,13 +71,11 @@ public class GanttTask extends TaskImpl implements Serializable {
     @Deprecated
     public void setLength(int l) {
         if (l <= 0) {
-            throw new IllegalArgumentException(
-                    "Length of task must be >=0. You've passed length=" + l
-                            + " to task=" + this);
+            throw new IllegalArgumentException("Length of task must be >=0. You've passed length=" + l + " to task="
+                    + this);
         }
         TaskMutator mutator = createMutator();
-        mutator.setDuration(getManager().createLength(
-                getDuration().getTimeUnit(), l));
+        mutator.setDuration(getManager().createLength(getDuration().getTimeUnit(), l));
         mutator.commit();
     }
 

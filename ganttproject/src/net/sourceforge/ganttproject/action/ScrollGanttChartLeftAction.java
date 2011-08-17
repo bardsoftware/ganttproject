@@ -31,8 +31,7 @@ public class ScrollGanttChartLeftAction extends GPAction implements
     private final ScrollingManager myScrollingManager;
     private final TaskManager myTaskManager;
 
-    public ScrollGanttChartLeftAction(ScrollingManager scrollingManager, TaskManager taskManager,
-            String iconSize) {
+    public ScrollGanttChartLeftAction(ScrollingManager scrollingManager, TaskManager taskManager, String iconSize) {
         super("ScrollLeft", iconSize);
         myScrollingManager = scrollingManager;
         myTaskManager = taskManager;

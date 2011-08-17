@@ -31,7 +31,6 @@ import javax.swing.KeyStroke;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
@@ -49,20 +48,17 @@ public class DeleteHumanAction extends ResourceAction {
     private final int MENU_MASK = Toolkit.getDefaultToolkit()
             .getMenuShortcutKeyMask();
 
-    private GanttProject myProjectFrame;
+    private GanttProject myProject;
 
-    public DeleteHumanAction(HumanResourceManager hrManager,
-            ResourceContext context, GanttProject projectFrame, UIFacade uiFacade) {
+    public DeleteHumanAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
         super(hrManager);
         myUIFacade = uiFacade;
-        myProjectFrame = projectFrame;
-        this.putValue(AbstractAction.NAME, GanttLanguage.getInstance()
-                .correctLabel(getLanguage().getText("deleteHuman")));
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-                KeyEvent.VK_J, MENU_MASK));
-        URL iconUrl = this.getClass().getClassLoader().getResource(ICON_URL);
+        myProject = project;
+        putValue(AbstractAction.NAME, language.getCorrectedLabel("deleteHuman"));
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_J, MENU_MASK));
+        URL iconUrl = getClass().getClassLoader().getResource(ICON_URL);
         if (iconUrl != null) {
-            this.putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
+            putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
         }
         myContext = context;
     }
@@ -70,24 +66,22 @@ public class DeleteHumanAction extends ResourceAction {
     public void actionPerformed(ActionEvent event) {
         final HumanResource[] context = getContext().getResources();
         if (context.length > 0) {
-            final String message = getLanguage().getText("msg6") + " "
-                    + getDisplayName(context) + "?";
-            final String title = getLanguage().getText("question");
+            final String message = language.getText("msg6") + " " + getDisplayName(context) + "?";
+            final String title = language.getText("question");
             Choice choice = myUIFacade.showConfirmationDialog(message, title);
             if (choice == Choice.YES) {
-                myUIFacade.getUndoManager().undoableEdit("Resource removed",
-                        new Runnable() {
-                            public void run() {
-                                deleteResources(context);
-                                getProjectFrame().repaint2();
-                            }
-                        });
+                myUIFacade.getUndoManager().undoableEdit("Resource removed", new Runnable() {
+                    public void run() {
+                        deleteResources(context);
+                        getProjectFrame().repaint2();
+                    }
+                });
             }
         }
     }
 
     private GanttProject getProjectFrame() {
-        return myProjectFrame;
+        return myProject;
     }
 
     private void deleteResources(HumanResource[] resources) {

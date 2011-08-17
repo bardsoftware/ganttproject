@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
@@ -58,8 +57,8 @@ public class ResourcePropertiesAction extends GPAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if (getSelectedResource()!=null) {
-            GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(), GanttLanguage.getInstance(), getSelectedResource());
+        if (getSelectedResource() != null) {
+            GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(), getSelectedResource());
             dp.setVisible(true);
             if (dp.result()) {
                 getProject().setModified(true);
@@ -70,6 +69,7 @@ public class ResourcePropertiesAction extends GPAction {
     private IGanttProject getProject() {
         return myProject;
     }
+
     private UIFacade getUIFacade() {
         return myUIFacade;
     }
@@ -80,11 +80,10 @@ public class ResourcePropertiesAction extends GPAction {
 
     public void setContext(ResourceContext context) {
         HumanResource[] resources = context.getResources();
-        if (resources.length==1) {
+        if (resources.length == 1) {
             mySelectedResource = resources[0];
             setEnabled(true);
-        }
-        else {
+        } else {
             setEnabled(false);
         }
     }

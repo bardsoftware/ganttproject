@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
 /**
@@ -38,19 +37,15 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 public class NewHumanAction extends ResourceAction {
     private final GanttProject myProject;
 
-    private final int MENU_MASK = Toolkit.getDefaultToolkit()
-            .getMenuShortcutKeyMask();
+    private final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     public NewHumanAction(HumanResourceManager hrManager, GanttProject project) {
         super(hrManager);
         myProject = project;
 
-        putValue(AbstractAction.NAME, GanttLanguage.getInstance()
-                .correctLabel(getLanguage().getText("newHuman")));
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-                KeyEvent.VK_H, MENU_MASK));
-        URL iconUrl = this.getClass().getClassLoader().getResource(
-                "icons/insert_16.gif");
+        putValue(AbstractAction.NAME, language.getCorrectedLabel("newHuman"));
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, MENU_MASK));
+        URL iconUrl = this.getClass().getClassLoader().getResource("icons/insert_16.gif");
         if (iconUrl != null) {
             putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
         }
@@ -61,7 +56,6 @@ public class NewHumanAction extends ResourceAction {
     }
 
     public void languageChanged() {
-        putValue(AbstractAction.NAME, GanttLanguage.getInstance()
-                .correctLabel(getLanguage().getText("newHuman")));
+        putValue(AbstractAction.NAME, language.getCorrectedLabel("newHuman"));
     }
 }
