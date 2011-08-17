@@ -53,7 +53,7 @@ public class GanttDialogPerson {
 
     private HumanResource person;
 
-    /** The language use */
+    /** The used language */
     private GanttLanguage language = GanttLanguage.getInstance();
 
     private JTabbedPane tabbedPane;
@@ -64,20 +64,16 @@ public class GanttDialogPerson {
     private final EnumerationOption myRoleField;
     private final GPOptionGroup myGroup;
     private final UIFacade myUIFacade;
-    /** Creates new form GanttDialogPerson */
-    public GanttDialogPerson(UIFacade uiFacade, GanttLanguage language,
-            HumanResource person) {
-//        super(parent, GanttProject.correctLabel(language.getText("human")),
-//                true);
-//
+    
+    public GanttDialogPerson(UIFacade uiFacade, HumanResource person) {
         myUIFacade = uiFacade;
         this.person = person;
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
         String[] roleFieldValues = new String[enabledRoles.length];
-        for (int i=0; i<enabledRoles.length; i++) {
+        for (int i = 0; i < enabledRoles.length; i++) {
             roleFieldValues[i]= enabledRoles[i].getName();
         }
-        myRoleField = new DefaultEnumerationOption("colRole", roleFieldValues);
+        myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
         myGroup = new GPOptionGroup("", new GPOption[] {myNameField, myPhoneField, myMailField,myRoleField});
         myGroup.setTitled(false);
     }
@@ -93,7 +89,7 @@ public class GanttDialogPerson {
             OkAction okAction = new OkAction() {
                 public void actionPerformed(ActionEvent e) {
                     myGroup.commit();
-                    okButtonActionPerformed(e);
+                    okButtonActionPerformed();
                 }
             };
             CancelAction cancelAction = new CancelAction(){
@@ -136,31 +132,6 @@ public class GanttDialogPerson {
         tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass()
                 .getResource("/icons/holidays_16.gif")),
                 constructDaysOffPanel());
-        //mainPage.requestDefaultFocus();
-//        final FocusTraversalPolicy defaultPolicy = mainPage.getFocusTraversalPolicy();
-//        FocusTraversalPolicy customPolicy = new FocusTraversalPolicy() {
-//            public Component getComponentAfter(Container aContainer, Component aComponent) {
-//                return defaultPolicy.getComponentAfter(aContainer, aComponent);
-//            }
-//
-//            public Component getComponentBefore(Container aContainer, Component aComponent) {
-//                return defaultPolicy.getComponentBefore(aContainer, aComponent);
-//            }
-//
-//            public Component getFirstComponent(Container aContainer) {
-//                return defaultPolicy.getFirstComponent(aContainer);
-//            }
-//
-//            public Component getLastComponent(Container aContainer) {
-//                return defaultPolicy.getLastComponent(aContainer);
-//            }
-//
-//            public Component getDefaultComponent(Container aContainer) {
-//                return mainPage;
-//            }
-//        };
-//        //mainPage.setFocusCycleRoot(true);
-//        mainPage.setFocusTraversalPolicy(customPolicy);
         tabbedPane.addFocusListener(new FocusAdapter() {
             boolean isFirstTime = true;
             @Override
@@ -171,23 +142,20 @@ public class GanttDialogPerson {
                 }
                 super.focusGained(e);
             }
-
         });
         return tabbedPane;
     }
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_okButtonActionPerformed
-        if (person.getId() != -1) {// person ID is -1 when it is new one
-            // i.e. before the Person dialog is
-            // closed
-            myUIFacade.getUndoManager().undoableEdit(
-                    "Resource properties changed", new Runnable() {
-                        public void run() {
-                            applyChanges();
-                        }
-                    });
-        }
-        else {
+    private void okButtonActionPerformed() {
+        if (person.getId() != -1) {
+            // person ID is -1 when it is new one
+            // i.e. before the Person dialog is closed
+            myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
+                public void run() {
+                    applyChanges();
+                }
+            });
+        } else {
             applyChanges();
         }
         change = true;
@@ -198,21 +166,21 @@ public class GanttDialogPerson {
         person.setMail(myMailField.getValue());
         person.setPhone(myPhoneField.getValue());
         Role role = findRole(myRoleField.getValue());
-        if (role!=null) {
+        if (role != null) {
             person.setRole(role);
         }
-        DateInterval[] intervals = myDaysOffModel.getIntervals();
         person.getDaysOff().clear();
-        for (int i=0; i<intervals.length; i++) {
-            person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].end));
+        for (DateInterval interval : myDaysOffModel.getIntervals()) {
+            person.addDaysOff(new GanttDaysOff(interval.start, interval.end));
         }
+        // FIXME change = false;? (after applying changed they are not changes anymore...)
     }
 
     private Role findRole(String roleName) {
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
-        for (int i=0; i<enabledRoles.length; i++) {
-            if (enabledRoles[i].getName().equals(roleName)) {
-                return enabledRoles[i];
+        for (Role enabledRole : enabledRoles) {
+            if (enabledRole.getName().equals(roleName)) {
+                return enabledRole;
             }
         }
         return null;

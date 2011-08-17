@@ -29,8 +29,7 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 public class DeleteAssignmentAction extends GPAction {
     private final AssignmentContext myContext;
 
-    private GanttProject myProjectFrame;
-
+    private final GanttProject myProjectFrame;
 
     public DeleteAssignmentAction(AssignmentContext context, GanttProject projectFrame) {
         myProjectFrame = projectFrame;
@@ -43,29 +42,25 @@ public class DeleteAssignmentAction extends GPAction {
         if (context != null && context.length > 0) {
             Choice choice = myProjectFrame.getUIFacade().showConfirmationDialog(getI18n("msg23") + " "
                     + getDisplayName(context) + "?", getI18n("warning"));
-            if (choice==Choice.YES) {
-                myProjectFrame.getUIFacade().getUndoManager().undoableEdit("Resource removed",
-                        new Runnable() {
-                            public void run() {
-                                deleteAssignments(context);
-                                myProjectFrame.setAskForSave(true);
-                                myProjectFrame.refreshProjectInfos();
-                                myProjectFrame.repaint2();
-                            }
-                        });
+            if (choice == Choice.YES) {
+                myProjectFrame.getUIFacade().getUndoManager().undoableEdit("Resource removed", new Runnable() {
+                    public void run() {
+                        deleteAssignments(context);
+                        myProjectFrame.setAskForSave(true);
+                        myProjectFrame.refreshProjectInfos();
+                        myProjectFrame.repaint2();
+                    }
+                });
             }
-        }
-        else {
+        } else {
             myProjectFrame.deleteResources();
         }
     }
 
     private void deleteAssignments(ResourceAssignment[] context) {
-        for (int i = 0; i < context.length; i++) {
-            ResourceAssignment ra = context[i];
+        for (ResourceAssignment ra : context) {
             ra.delete();
-            ra.getTask().getAssignmentCollection().deleteAssignment(
-                    ra.getResource());
+            ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
         }
     }
 

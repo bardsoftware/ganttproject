@@ -36,8 +36,8 @@ public class ResourceActionSet {
 
     private AbstractAction[] myActions;
 
-    public ResourceActionSet(IGanttProject project, ResourceContext context,
-            GanttProject projectFrame, UIFacade uiFacade) {
+    public ResourceActionSet(IGanttProject project, ResourceContext context, GanttProject projectFrame,
+            UIFacade uiFacade) {
         myManager = project.getHumanResourceManager();
         myProjectFrame = projectFrame;
         myDeleteHumanAction = new DeleteHumanAction(myManager, context, myProjectFrame, uiFacade);
@@ -45,9 +45,7 @@ public class ResourceActionSet {
 
     public AbstractAction[] getActions() {
         if (myActions == null) {
-            myActions = new AbstractAction[] {
-                    new NewHumanAction(myManager, myProjectFrame),
-                    myDeleteHumanAction };
+            myActions = new AbstractAction[] { new NewHumanAction(myManager, myProjectFrame), myDeleteHumanAction };
         }
         return myActions;
     }
