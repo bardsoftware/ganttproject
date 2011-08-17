@@ -44,6 +44,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         jTableAuthors.setModel(modelauthors);
         modelauthors.addField(new AuthorsInfo("THOMAS Alexandre", "alexthomas@ganttproject.org"));
         modelauthors.addField(new AuthorsInfo("BARASHEV Dmitry", "dbarashev@ganttproject.org"));
+        modelauthors.addField(new AuthorsInfo("BEZEMER Maarten", "maarten.bezemer@gmail.com"));
         modelauthors.addField(new AuthorsInfo("AZURE Joe", "jazure@fishalaska.com"));
         modelauthors.addField(new AuthorsInfo("BARANNE Benoit", "bbaranne@users.sourceforge.net"));
         modelauthors.addField(new AuthorsInfo("BOHN Nicolas", "nicolasbohn@users.sourceforge.net"));
@@ -57,7 +58,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("ANDRESEN Roger", "Roger@Andresen.com"));
         modelauthors.addField(new AuthorsInfo("", ""));
         modelauthors.addField(new AuthorsInfo("LIPINSKI Pawel", "pawel.lipinski@javart.com.pl"));
-        modelauthors.addField(new AuthorsInfo("AUDRU C�dric", "cedricaudru@yahoo.fr"));
+        modelauthors.addField(new AuthorsInfo("AUDRU Cédric", "cedricaudru@yahoo.fr"));
         modelauthors.addField(new AuthorsInfo("A S Hodel", "hodelas@ieee.org"));
         modelauthors.addField(new AuthorsInfo("BALAZS Major", "BMajor@Graphisoft.hu"));
         modelauthors.addField(new AuthorsInfo("BARZILAI Igor", "igor.barzilai@free.fr"));
@@ -68,13 +69,11 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("CROUNSE Brian", "brian@crounse.name"));
         modelauthors.addField(new AuthorsInfo("FERRAZ Nelson", "nferraz@phperl.com"));
         modelauthors.addField(new AuthorsInfo("GLOEGL Michael", "gloegl@fmi.uni-passau.de"));
-        modelauthors.addField(new AuthorsInfo("GIANTSIDIS Nikos", "nickgiant@yahoo.com")); // greek
-                                                                                           // translation
+        modelauthors.addField(new AuthorsInfo("GIANTSIDIS Nikos", "nickgiant@yahoo.com")); // greek translation
         modelauthors.addField(new AuthorsInfo("HERRMANN G.", "herr@nike.eonet.ne.jp"));
         modelauthors.addField(new AuthorsInfo("HURSEY John", "joshh@cs.earlham.edu"));
         modelauthors.addField(new AuthorsInfo("ILES Jon", "jon.iles@tapsterrock.com"));
-        modelauthors.addField(new AuthorsInfo("Jiwon Kim", "yesdi@users.sourceforge.net")); // Korean
-                                                                                            // language
+        modelauthors.addField(new AuthorsInfo("Jiwon Kim", "yesdi@users.sourceforge.net")); // Korean language
         modelauthors.addField(new AuthorsInfo("KARLGREN Jussi", "jussi@sics.se"));
         modelauthors.addField(new AuthorsInfo("KITSIK Ahti", "ahti.kitsik@gmail.com"));
         modelauthors.addField(new AuthorsInfo("LIN Kirin", "kirinlin@users.sourceforge.net"));
@@ -95,8 +94,7 @@ public class AboutAuthorPanel extends GeneralOptionPanel {
         modelauthors.addField(new AuthorsInfo("VAN DER WIEL Andre", "a.vd.wiel@chello.nl"));
         modelauthors.addField(new AuthorsInfo("VOCI Elio", "elio.voci@gawab.com"));
         modelauthors.addField(new AuthorsInfo("ZAVOLZHSKY Alexandr", "zavolzhsky@mail.ru"));
-        modelauthors.addField(new AuthorsInfo("Zheko Zhekov", "zhekov@electrostart.com")); // bulgarian
-                                                                                           // language
+        modelauthors.addField(new AuthorsInfo("Zheko Zhekov", "zhekov@electrostart.com")); // bulgarian language
 
         JPanel authorsPanel = new JPanel(new BorderLayout());
         authorsPanel.add(new JScrollPane(jTableAuthors), BorderLayout.CENTER);
