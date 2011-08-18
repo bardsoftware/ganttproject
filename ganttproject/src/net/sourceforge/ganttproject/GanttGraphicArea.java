@@ -111,20 +111,17 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private GanttPreviousState myBaseline;
 
-    public GanttGraphicArea(GanttProject app, GanttTree2 ttree,
-            TaskManager taskManager, ZoomManager zoomManager,
+    public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
             GPUndoManager undoManager) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
         this.setBackground(Color.WHITE);
         myTaskManager = taskManager;
         myUndoManager = undoManager;
-        //
-        myChartModel = new ChartModelImpl(getTaskManager(), app
-                .getTimeUnitStack(), app.getUIConfiguration());
+
+        myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
         myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
             public void optionsChanged() {
                 repaint();
-
             }
         });
         this.tree = ttree;
@@ -160,9 +157,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 }
             }
         });
-
         appli = app;
-
         getProject().getTaskCustomColumnManager().addListener(this);
     }
 
@@ -179,9 +174,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     /** @return the preferred size of the panel. */
     @Override
     public Dimension getPreferredSize() {
-
         return new Dimension(465, 600);
-
     }
 
     public ChartModelImpl getMyChartModel() {
@@ -355,13 +348,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             // TODO Auto-generated constructor stub
         }
 
-        public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
-                TaskBoundaryChartItem taskBoundary) {
-            setActiveInteraction(new ChangeTaskEndInteraction(
-                initiatingEvent, taskBoundary,
-                new TimelineFacadeImpl(getChartModel(), getTaskManager()),
-                getUIFacade(),
-                getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+        public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
+            setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(getChartModel(),
+                    getTaskManager()), getUIFacade(), getTaskManager().getAlgorithmCollection()
+                    .getRecalculateTaskScheduleAlgorithm()));
             setCursor(E_RESIZE_CURSOR);
         }
 
@@ -411,8 +401,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 GanttGraphicArea.super.paintComponent(g);
                 ChartModel model = myChartModel;
                 model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-                model.setRowHeight(((GanttTree2) tree).getTreeTable()
-                        .getRowHeight());
+                model.setRowHeight(tree.getTreeTable().getRowHeight());
                 model.setTopTimeUnit(getViewState().getTopTimeUnit());
                 model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
                 model.setVisibleTasks(visibleTasks);
@@ -429,8 +418,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 //GanttGraphicArea.super.paintComponent(g);
                 ChartModel model = myChartModel;
                 model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-                model.setRowHeight(((GanttTree2) tree).getTreeTable()
-                        .getRowHeight());
+                model.setRowHeight(tree.getTreeTable().getRowHeight());
                 model.setTopTimeUnit(getViewState().getTopTimeUnit());
                 model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
                 VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
@@ -482,7 +470,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             tree.pasteNode();
         }
 
-
         private OldChartMouseListenerImpl myMouseListener = new OldChartMouseListenerImpl();
 
         private OldMouseMotionListenerImpl myMouseMotionListener = new OldMouseMotionListenerImpl();
@@ -511,9 +498,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setBaseline(tasks);
-        ((GanttTree2) appli.getTree()).getTable().setRowHeight(rowHeight);
+        appli.getTree().getTable().setRowHeight(rowHeight);
     }
-
 
     private ChartImplementation myChartComponentImpl;
 
@@ -589,8 +575,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         }
     }
 
-    private class OldChartMouseListenerImpl extends MouseListenerBase implements
-            MouseListener {
+    private class OldChartMouseListenerImpl extends MouseListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
 
         private TaskSelectionManager getTaskSelectionManager() {
@@ -634,20 +619,15 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 TaskBoundaryChartItem taskBoundary = (TaskBoundaryChartItem) itemUnderPoint;
                 if (taskBoundary.isStartBoundary()) {
                     getChartImplementation().beginChangeTaskStartInteraction(e, taskBoundary);
-                }
-                else {
+                } else {
                     getChartImplementation().beginChangeTaskEndInteraction(e, taskBoundary);
                 }
-            }
-            else if (itemUnderPoint instanceof TaskProgressChartItem) {
-                getChartImplementation().beginChangeTaskProgressInteraction(
-                        e, (TaskProgressChartItem) itemUnderPoint);
-            }
-            else if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
-                getChartImplementation().beginDrawDependencyInteraction(
-                        e, (TaskRegularAreaChartItem) itemUnderPoint, myMouseSupport);
-            }
-            else {
+            } else if (itemUnderPoint instanceof TaskProgressChartItem) {
+                getChartImplementation().beginChangeTaskProgressInteraction(e, (TaskProgressChartItem) itemUnderPoint);
+            } else if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
+                getChartImplementation().beginDrawDependencyInteraction(e, (TaskRegularAreaChartItem) itemUnderPoint,
+                        myMouseSupport);
+            } else {
                 isMineEvent = false;
                 super.processLeftButton(e);
             }
@@ -665,7 +645,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             if (taskUnderPointer == null) {
                 return;
             }
-            if (taskUnderPointer!=null && !getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
+            if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
                 boolean ctrl = (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK;
                 if (!ctrl) {
                     getTaskSelectionManager().clear();
@@ -686,21 +666,16 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private class OldMouseMotionListenerImpl extends MouseMotionListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
 
-        // Move the move on the area
+        /** Move the move on the area */
         @Override
         public void mouseMoved(MouseEvent e) {
-            ChartItem itemUnderPoint = myMouseSupport
-                    .getChartItemUnderMousePoint(e.getX(), e.getY());
-            Task taskUnderPoint = itemUnderPoint == null ? null
-                    : itemUnderPoint.getTask();
-            // System.err.println("[OldMouseMotionListenerImpl] mouseMoved:
-            // taskUnderPoint="+taskUnderPoint);
+            ChartItem itemUnderPoint = myMouseSupport.getChartItemUnderMousePoint(e.getX(), e.getY());
+            Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();
             if (taskUnderPoint == null) {
                 setDefaultCursor();
             } else {
                 if (itemUnderPoint instanceof TaskBoundaryChartItem) {
-                    Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint)
-                            .isStartBoundary() ? W_RESIZE_CURSOR
+                    Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? W_RESIZE_CURSOR
                             : E_RESIZE_CURSOR;
                     setCursor(cursor);
                 }
@@ -753,8 +728,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void projectWillBeOpened() {
     }
+
     public void projectOpened() {
     }
+
     @Override
     public ChartViewState getViewState() {
         return myViewState;

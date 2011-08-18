@@ -60,14 +60,13 @@ class ResourceLoadRenderer extends ChartRendererBase {
        getPrimitiveContainer().setOffset(0, getConfig().getHeaderHeight() - myModel.getVerticalOffset());
        beforeProcessingTimeFrames();
        int ypos = 0;
-       for (int i=0; i<myDistributions.size(); i++) {
-           LoadDistribution nextDistribution = myDistributions.get(i);
-           List<Load> loads = nextDistribution.getLoads();
-           renderLoads(nextDistribution.getDaysOff(), ypos);
+       for (LoadDistribution distribution : myDistributions) {
+           List<Load> loads = distribution.getLoads();
+           renderLoads(distribution.getDaysOff(), ypos);
            renderLoads(loads, ypos);
-           if (myResourcechart.isExpanded(nextDistribution.getResource())) {
-               renderLoadDetails(nextDistribution, ypos);
-               ypos += calculateGap(nextDistribution.getResource());
+           if (myResourcechart.isExpanded(distribution.getResource())) {
+               renderLoadDetails(distribution, ypos);
+               ypos += calculateGap(distribution.getResource());
            }
            ypos += getConfig().getRowHeight();
            GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(
@@ -134,17 +133,13 @@ class ResourceLoadRenderer extends ChartRendererBase {
         String style;
         if (prevLoad.isResourceUnavailable()) {
             style = "dayoff";
-        }
-        else {
+        } else {
             suffix += curLoad.load == 0 ? ".last" : "";
-
             if (prevLoad.load < 100f) {
                 style = "load.underload";
-            }
-            else if (prevLoad.load > 100f) {
+            } else if (prevLoad.load > 100f) {
                 style = "load.overload";
-            }
-            else {
+            } else {
                 style = "load.normal";
             }
             style += suffix;
@@ -167,7 +162,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
             final Date nextEnd = nextLoad.endDate;
 
             Rectangle nextRect = createRectangle(offsets, nextStart, nextEnd, ypos);
-            if (nextRect==null) {
+            if (nextRect == null) {
                 continue;
             }
             String style;
@@ -192,8 +187,8 @@ class ResourceLoadRenderer extends ChartRendererBase {
         }
         OffsetLookup offsetLookup = new OffsetLookup();
         int[] bounds = offsetLookup.getBounds(start, end, offsets);
-        return getPrimitiveContainer().createRectangle(
-                bounds[0], ypos, bounds[1]-bounds[0], getConfig().getRowHeight());
+        return getPrimitiveContainer().createRectangle(bounds[0], ypos, bounds[1] - bounds[0],
+                getConfig().getRowHeight());
     }
 
     private Date getChartStartDate() {
@@ -201,7 +196,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
     }
 
     private Date getChartEndDate() {
-        return ((Offset) getChartModel().getBottomUnitOffsets().get(getChartModel().getBottomUnitOffsets().size()-1)).getOffsetEnd();
+        return getChartModel().getBottomUnitOffsets().get(getChartModel().getBottomUnitOffsets().size()-1).getOffsetEnd();
     }
 
     private List<Offset> getDefaultOffsets() {
@@ -211,11 +206,9 @@ class ResourceLoadRenderer extends ChartRendererBase {
     public void beforeProcessingTimeFrames() {
         myDistributions = new ArrayList<LoadDistribution>();
         getPrimitiveContainer().clear();
-        HumanResource[] resources = ((ChartModelResource) getChartModel())
-                .getVisibleResources();
-        for (int i = 0; i < resources.length; i++) {
-            HumanResource nextResource = resources[i];
-            LoadDistribution nextDistribution = nextResource.getLoadDistribution();
+        HumanResource[] resources = ((ChartModelResource) getChartModel()).getVisibleResources();
+        for (HumanResource resource : resources) {
+            LoadDistribution nextDistribution = resource.getLoadDistribution();
             myDistributions.add(nextDistribution);
         }
     }

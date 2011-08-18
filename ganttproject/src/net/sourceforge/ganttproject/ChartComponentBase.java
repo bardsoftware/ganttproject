@@ -359,13 +359,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         public void commitClipboardTransaction() {
             isTransactionRunning = false;
         }
-
     }
 
     public MouseInteraction newScrollViewInteraction(MouseEvent e) {
-        return new ScrollViewInteraction(
-            e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(),
-            getChartModel().getBottomUnit());
+        return new ScrollViewInteraction(e, new TimelineFacadeImpl(getChartModel(), getTaskManager()));
     }
 
     protected RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {

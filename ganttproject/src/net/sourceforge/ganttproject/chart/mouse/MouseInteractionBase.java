@@ -45,6 +45,11 @@ abstract class MouseInteractionBase {
         return myChartDateGrid;
     }
 
+    /**
+     * Method to show the visible cues of the interaction
+     * 
+     * @param g is the graphics context 
+     */
     public void paint(Graphics g) {
     }
 
