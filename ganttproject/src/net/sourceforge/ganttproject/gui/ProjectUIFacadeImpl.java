@@ -276,14 +276,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         if (false == ensureProjectSaved(project)) {
             return;
         }
-        getUndoManager().undoableEdit("Init new Project", new Runnable() {
-            public void run() {
-                beforeClose();
-                project.close();
-                myWorkbenchFacade.setStatusText(i18n.getText("newProject2"));
-                showNewProjectWizard(project);
-            }
-        });
+        beforeClose();
+        project.close();
+        myWorkbenchFacade.setStatusText(i18n.getText("newProject2"));
+        showNewProjectWizard(project);
     }
 
     private void showNewProjectWizard(IGanttProject project) {

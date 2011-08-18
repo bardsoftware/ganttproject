@@ -28,7 +28,7 @@ public interface TableHeaderUIFacade {
         private int myOrder;
         private final int myWidth;
         private final String myName;
-        private final boolean isVisible;
+        private boolean isVisible;
 
         public ColumnStub(String id, String name, boolean visible, int order, int width) {
             myName = name;
@@ -37,25 +37,31 @@ public interface TableHeaderUIFacade {
             myWidth = width;
             isVisible = visible;
         }
+        @Override
         public String getID() {
             return myID;
         }
+        @Override
         public int getOrder() {
             return myOrder;
         }
+        @Override
         public int getWidth() {
             return myWidth;
         }
+        @Override
         public boolean isVisible() {
             return isVisible;
         }
+        @Override
         public String getName() {
             return myName;
         }
         @Override
         public void setVisible(boolean visible) {
-            throw new UnsupportedOperationException();
+            isVisible = visible;
         }
+        @Override
         public void setOrder(int order) {
             myOrder = order;
         }
