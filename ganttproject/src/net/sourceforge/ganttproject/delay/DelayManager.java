@@ -168,5 +168,4 @@ public class DelayManager implements GPUndoListener {
     public void undoableEditHappened(UndoableEditEvent arg0) {
         // TODO Auto-generated method stub
     }
-
 }

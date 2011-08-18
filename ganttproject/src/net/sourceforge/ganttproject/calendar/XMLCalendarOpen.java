@@ -49,12 +49,10 @@ public class XMLCalendarOpen {
             super(cause);
         }
     }
-    //private File myCalendarFiles[];
 
     private List<URL> myCalendarResources = new ArrayList<URL>();
     private String myCalendarLabels[];
 
-    /** The main frame */
     private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
     private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
@@ -94,16 +92,13 @@ public class XMLCalendarOpen {
     private class DefaultTagHandler implements TagHandler {
         private String name;
 
-        public void startElement(String namespaceURI, String sName,
-                String qName, Attributes attrs) {
-            String eName = qName; // element name
+        public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
             if (attrs != null) {
+                String eName = qName; // element name
                 for (int i = 0; i < attrs.getLength(); i++) {
                     String aName = attrs.getLocalName(i); // Attr name
                     if ("".equals(aName)) {
                         aName = attrs.getQName(i);
-
-                        // The project part
                     }
                     if (eName.equals("calendar")) {
                         if (aName.equals("name")) {
@@ -121,11 +116,9 @@ public class XMLCalendarOpen {
         public String getName() {
             return name;
         }
-
     }
 
     private class GanttXMLParser extends DefaultHandler {
-
         // ===========================================================
         // SAX DocumentHandler methods
         // ===========================================================

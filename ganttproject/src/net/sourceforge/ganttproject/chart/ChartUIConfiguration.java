@@ -35,8 +35,7 @@ public class ChartUIConfiguration {
 
     private final Color myHeaderBorderColor;
 
-    private final Color myHorizontalGutterColor1 = new Color(0.807f, 0.807f,
-            0.807f);
+    private final Color myHorizontalGutterColor1 = new Color(0.807f, 0.807f, 0.807f);
 
     private final Color myHorizontalGutterColor2 = Color.white;
 
