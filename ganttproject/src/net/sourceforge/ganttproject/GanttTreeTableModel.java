@@ -180,6 +180,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     @Override
     public Class getColumnClass(int column) {
+        if (column < 0) {
+            return null;
+        }
         switch (column) {
         case 0:
         case 1:

@@ -114,6 +114,10 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         public void clear() {
             clearUiColumns();
             myColumns.clear();
+            for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
+                myDefaultColumnStubs.get(i).setVisible(false);
+                createColumn(i, myDefaultColumnStubs.get(i));
+            }
         }
 
         private void clearUiColumns() {
@@ -153,6 +157,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                     mine = createColumn(getModelIndex(foreign), foreign);
                 } else {
                     mine.getStub().setOrder(foreign.getOrder());
+                    mine.getStub().setVisible(foreign.isVisible());
                 }
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
@@ -190,7 +195,11 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
 
         protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
-            myDefaultColumnStubs.addAll(stubs);
+            myDefaultColumnStubs.clear();
+            for (Column stub : stubs) {
+                myDefaultColumnStubs.add(new TableHeaderUIFacade.ColumnStub(
+                        stub.getID(), stub.getName(), stub.isVisible(), stub.getOrder(), stub.getWidth()));
+            }
         }
 
         protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
@@ -357,10 +366,9 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 getTableHeaderUiFacade().clear();
             }
             @Override
-            public void projectOpened() {
-                if (getTableHeaderUiFacade().myColumns.isEmpty()) {
-                    getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
-                }
+            public void projectCreated() {
+                getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
+                getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
             }
         });
     }
