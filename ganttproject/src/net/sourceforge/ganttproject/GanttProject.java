@@ -1154,6 +1154,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Create a new project */
     public void newProject() {
         getProjectUIFacade().createProject(getProject());
+        fireProjectCreated();
     }
 
     /** Open a local project file with dialog box (JFileChooser) */
@@ -1467,7 +1468,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
             if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
                 ganttFrame.openStartupDocument(mainArgs.file.get(0));
             } else {
-                ganttFrame.fireProjectOpened();
+                ganttFrame.fireProjectCreated();
             }
             ganttFrame.setVisible(true);
             if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
