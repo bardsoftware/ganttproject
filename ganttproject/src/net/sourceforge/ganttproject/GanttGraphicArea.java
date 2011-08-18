@@ -724,11 +724,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         repaint();
     }
 
+    @Override
     public Icon getIcon() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public void customPropertyChange(CustomPropertyEvent event) {
         repaint();
     }
@@ -737,26 +739,33 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myUIConfiguration = configuration;
     }
 
+    @Override
     public void projectModified() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void projectSaved() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void projectClosed() {
         repaint();
         setProjectLevelTaskColor(null);
         setPreviousStateTasks(null);
     }
-
-    public void projectWillBeOpened() {
-    }
+    @Override
     public void projectOpened() {
+    }
+    @Override
+    public void projectCreated() {
+        // TODO Auto-generated method stub
+
     }
     @Override
     public ChartViewState getViewState() {
         return myViewState;
     }
+
 }
