@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 
 public abstract class AbstractExporter implements Exporter {
@@ -34,6 +35,9 @@ public abstract class AbstractExporter implements Exporter {
     private Chart myResourceChart;
     private UIFacade myUIFacade;
     private Preferences myRootPreferences;
+    private DefaultDateOption myExportRangeStart;
+    private DefaultDateOption myExportRangeEnd;
+
 
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myGanttChart= uiFacade.getGanttChart();
@@ -41,6 +45,16 @@ public abstract class AbstractExporter implements Exporter {
         myProject = project;
         myUIFacade = uiFacade;
         myRootPreferences = prefs;
+        myExportRangeStart = new DefaultDateOption("export.range.start", myGanttChart.getStartDate());
+        myExportRangeEnd = new DefaultDateOption("export.range.end", myGanttChart.getEndDate());
+    }
+
+    protected DefaultDateOption getExportRangeStartOption() {
+        return myExportRangeStart;
+    }
+
+    protected DefaultDateOption getExportRangeEndOption() {
+        return myExportRangeEnd;
     }
 
     protected UIFacade getUIFacade() {
@@ -72,7 +86,10 @@ public abstract class AbstractExporter implements Exporter {
             result.setZoomLevel(zoomState);
 
             String exportRange = myRootPreferences.get("exportRange", null);
-            if (exportRange != null) {
+            if (exportRange == null) {
+                result.setStartDate(myExportRangeStart.getValue());
+                result.setEndDate(myExportRangeEnd.getValue());
+            } else  {
                 String[] rangeBounds = exportRange.split(" ");
 
                 try {
