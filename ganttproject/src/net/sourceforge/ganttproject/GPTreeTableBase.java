@@ -213,8 +213,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
         protected void insertColumnIntoUi(ColumnImpl column) {
             getTable().addColumn(column.myTableColumn);
-            int align = getTable().getModel().getColumnClass(column.myTableColumn.getModelIndex()).equals(GregorianCalendar.class)
-                ? SwingConstants.RIGHT : SwingConstants.CENTER;
+            int align = SwingConstants.LEFT;
             try {
                 setColumnHorizontalAlignment(column.getID(), align);
             } catch (IllegalArgumentException e) {
