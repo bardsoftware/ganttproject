@@ -95,8 +95,9 @@ public class ExporterToImage extends AbstractExporter {
     }
 
     public GPOptionGroup[] getSecondaryOptions() {
-        //return myGanttChart.getOptionGroups();
-        return null;
+        return new GPOptionGroup[] {new GPOptionGroup("", new GPOption[] {
+           getExportRangeStartOption(), getExportRangeEndOption()
+        })};
     }
 
     public Component getCustomOptionsUI() {

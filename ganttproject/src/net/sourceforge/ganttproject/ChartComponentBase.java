@@ -379,7 +379,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                 settings.setWidth(getSize().width);
             }
         }
-        getChartModel().setBounds(getSize());
         return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, treeTable);
     }
 }
