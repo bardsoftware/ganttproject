@@ -32,6 +32,7 @@ import javax.swing.tree.TreePath;
 
 import org.jdesktop.swing.table.TableColumnExt;
 
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
@@ -112,6 +113,11 @@ public class ResourceTreeTable extends GPTreeTableBase {
     @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
+    }
+
+    @Override
+    protected Chart getChart() {
+        return myUiFacade.getResourceChart();
     }
 
     /**
