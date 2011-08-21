@@ -74,6 +74,7 @@ import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
@@ -92,7 +93,7 @@ import org.jdesktop.swing.table.TableColumnExt;
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 import org.jdesktop.swing.treetable.TreeTableModel;
 
-public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListener{
+public abstract class GPTreeTableBase extends JNTreeTable implements CustomPropertyListener{
     private final IGanttProject myProject;
     private final UIFacade myUiFacade;
     private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
@@ -443,10 +444,10 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         getTreeTable().getTree().addTreeExpansionListener(
                 new TreeExpansionListener() {
                     public void treeExpanded(TreeExpansionEvent arg0) {
-                        myUiFacade.refresh();
+                        getChart().reset();
                     }
                     public void treeCollapsed(TreeExpansionEvent arg0) {
-                        myUiFacade.refresh();
+                        getChart().reset();
                     }
                 });
         getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
@@ -500,6 +501,8 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
     protected List<TableHeaderUIFacade.Column> getDefaultColumns() {
         return Collections.emptyList();
     }
+
+    protected abstract Chart getChart();
 
     protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
         TableColumnExt result = new TableColumnExt(modelIndex);
