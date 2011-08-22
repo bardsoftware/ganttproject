@@ -34,7 +34,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         this.ttModel = model;
         myUIfacade = uifacade;
         getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
-        init();
+        initTreeTable();
     }
 
     private UIFacade getUiFacade() {

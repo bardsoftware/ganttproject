@@ -214,16 +214,6 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
         protected void insertColumnIntoUi(ColumnImpl column) {
             getTable().addColumn(column.myTableColumn);
-            int align = SwingConstants.LEFT;
-            try {
-                setColumnHorizontalAlignment(column.getID(), align);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                System.err.println("Failed to insert column=" + column.getName());
-                for (int i = 0; i < getTable().getColumns().size(); i++) {
-                    System.err.println(getTable().getColumns().get(i));
-                }
-            }
         }
 
         protected void renameColumn(CustomPropertyDefinition definition) {
@@ -366,6 +356,11 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                 getTableHeaderUiFacade().clear();
             }
             @Override
+            public void projectOpened() {
+                onProjectOpened();
+            }
+
+            @Override
             public void projectCreated() {
                 getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
                 getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
@@ -373,7 +368,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         });
     }
 
-    protected void init() {
+    protected void onProjectOpened() {
+    }
+
+    protected void initTreeTable() {
         doInit();
         isInitialized = true;
     }
@@ -410,14 +408,14 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         getTable().setAutoCreateColumnsFromModel(false);
         getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         setShowHorizontalLines(true);
+        setHasColumnControl(true);
 
-        setOpenIcon(null);
-        setClosedIcon(null);
+        ImageIcon icon = new ImageIcon(getClass().getResource("/icons/simple_task.gif"));
+        setOpenIcon(icon);
+        setClosedIcon(icon);
         setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
         setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
-        setLeafIcon(null);
-
-        setHasColumnControl(false);
+        setLeafIcon(icon);
         getTreeTable().getParent().setBackground(Color.WHITE);
 
         InputMap inputMap = getInputMap();
@@ -504,14 +502,14 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
     protected abstract Chart getChart();
 
-    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
-        TableColumnExt result = new TableColumnExt(modelIndex);
-        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
-        if (defaultEditor!=null) {
-            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
-        }
-        return result;
-    }
+//    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
+//        TableColumnExt result = new TableColumnExt(modelIndex);
+//        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
+//        if (defaultEditor!=null) {
+//            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
+//        }
+//        return result;
+//    }
 
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);

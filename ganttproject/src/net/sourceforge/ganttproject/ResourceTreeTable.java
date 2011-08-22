@@ -101,7 +101,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         myResourceTreeModel = model;
         getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
         setTreeTableModel(model);
-        init();
+        initTreeTable();
         myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
     }
 
@@ -126,6 +126,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     @Override
     protected void doInit() {
         super.doInit();
+        myResourceTreeModel.updateResources();
         getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
             @Override
             protected TimelineChart getChart() {
@@ -133,6 +134,12 @@ public class ResourceTreeTable extends GPTreeTableBase {
             }
 
         });
+    }
+
+    @Override
+    protected void onProjectOpened() {
+        super.onProjectOpened();
+        myResourceTreeModel.updateResources();
     }
 
     private RoleManager getRoleManager() {
