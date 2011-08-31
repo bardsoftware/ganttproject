@@ -60,7 +60,7 @@ class SaveProjectAction extends GPAction {
     }
 
     @Override
-    protected String getTooltipText() {
+    protected String getActionName() {
         return getI18n("saveProject");
     }
 

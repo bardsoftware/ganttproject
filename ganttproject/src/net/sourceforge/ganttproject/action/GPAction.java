@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,11 +41,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
     public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
+    /** Location of the icon files */
+    public static final String ICON_FILE_DIRECTORY = "/icons";
+
     protected boolean iconVisible = true;
 
     private Icon myIcon = null;
 
-    private final String myKey;
+    private final String myName;
 
     private static Properties ourKeyboardProperties;
 
@@ -54,12 +57,17 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     private static GanttLanguage language = GanttLanguage.getInstance();
 
     protected GPAction() {
-        this(null, "16");
+        this(null);
+    }
+
+    public GPAction(String name) {
+        // TODO use icon size given in options as default size
+        this(name, "16");
     }
 
     protected GPAction(String name, String iconSize) {
         super(name);
-        myKey = name;
+        myName = name;
         updateIcon(iconSize);
         updateName();
         updateTooltip();
@@ -67,10 +75,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         if(name != null) {
             putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
         }
-    }
-
-    public GPAction(String name) {
-        this(name, "16");
     }
 
     public Icon getIconOnMouseOver() {
@@ -89,34 +93,31 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         if (iconSize == null || false == iconVisible) {
             return null;
         }
-        String resourcePath = getIconResource();
-        if (resourcePath == null) {
-            resourcePath = getIconFileDirectory() + "/" + getIconFilePrefix() + iconSize + ".gif";
+        String customIcon = getCustomIconPath();
+        String resourcePath;
+        if (customIcon == null) {
+            resourcePath = MessageFormat.format("{0}/{1}{2}.gif", ICON_FILE_DIRECTORY, getIconFilePrefix(), iconSize);
         } else {
-            resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", getIconFileDirectory(), iconSize, resourcePath);
+            resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, customIcon);
         }
         URL resource = getClass().getResource(resourcePath);
         return resource == null ? null : new ImageIcon(resource);
     }
 
-    protected final String getIconFileDirectory() {
-        return "/icons";
-    }
-
     protected String getLocalizedName() {
-        return getKey() == null ? null : getI18n(getKey());
+        return getID() == null ? null : getI18n(getID());
     }
 
-    protected String getKey() {
-        return myKey;
+    protected String getID() {
+        return myName;
     }
 
-    protected String getTooltipText() {
+    protected String getActionName() {
         String localizedName = getLocalizedName();
         return localizedName == null ? "" : language.correctLabel(localizedName);
     }
 
-    protected String getI18n(String key) {
+    protected static String getI18n(String key) {
         return language.getText(key);
     }
 
@@ -154,7 +155,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
 
     private void updateTooltip() {
-        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getTooltipText() + "</body></html>");
+        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getActionName() + "</body></html>");
     }
 
     public void isIconVisible(boolean isNull) {
@@ -166,14 +167,14 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         updateTooltip();
     }
 
-    private String getIconResource() {
-        if (getKey() == null) {
+    private String getCustomIconPath() {
+        if (getID() == null) {
             return null;
         }
         if (ourIconProperties == null) {
             ourIconProperties = loadProperties("/icons.properties");
         }
-        return (String)ourIconProperties.get(getKey());
+        return (String) ourIconProperties.get(getID());
     }
 
     public static KeyStroke getKeyStroke(String keystrokeID) {

@@ -69,11 +69,11 @@ public class CalculateCriticalPathAction extends GPAction {
 
     @Override
     protected String getLocalizedName() {
-        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n(getKey()));
+        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n(getID()));
     }
 
     @Override
-    protected String getKey() {
+    protected String getID() {
         return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
     }
 }

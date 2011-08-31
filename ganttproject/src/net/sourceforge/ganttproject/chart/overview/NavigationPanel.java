@@ -125,7 +125,7 @@ public class NavigationPanel {
             }
             @Override
             protected String getLocalizedName() {
-                return MessageFormat.format("<html><b>{0}</b></html>", getI18n(getKey()));
+                return MessageFormat.format("<html><b>{0}</b></html>", getI18n(getID()));
             }
 
         }
