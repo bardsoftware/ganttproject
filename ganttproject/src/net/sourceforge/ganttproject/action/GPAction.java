@@ -64,6 +64,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         updateName();
         updateTooltip();
         language.addListener(this);
+        if(name != null) {
+            putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
+        }
     }
 
     public GPAction(String name) {
@@ -178,7 +181,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
     }
 
-    public static String getKeyStrokeText(String keystrokeID) {
+    private static String getKeyStrokeText(String keystrokeID) {
         if (ourKeyboardProperties == null) {
             ourKeyboardProperties = loadProperties("/keyboard.properties");
         }

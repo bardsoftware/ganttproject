@@ -142,7 +142,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private Action myUnlinkTasksAction;
 
     /** The language use */
-    private GanttLanguage language = GanttLanguage.getInstance();
+    private static GanttLanguage language = GanttLanguage.getInstance();
 
     /** Number of tasks on the tree. */
     private int nbTasks = 0;
@@ -156,84 +156,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private final TaskManager myTaskManager;
     private final TaskSelectionManager mySelectionManager;
 
-    private final GPAction myIndentAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "indent_";
-        }
+    private final GPAction myIndentAction = new TaskIndentAction();
 
-        public void actionPerformed(ActionEvent e) {
-            indentCurrentNodes();
-        }
+    private final GPAction myUnindentAction = new TaskUnindentAction();
 
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("indentTask");
-        }
-    };
+    private final GPAction myMoveUpAction = new TaskMoveUpAction();
 
-    private final GPAction myDedentAction = new GPAction() {
+    private final GPAction myMoveDownAction = new TaskMoveDownAction();
 
-        @Override
-        protected String getIconFilePrefix() {
-            return "unindent_";
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            dedentCurrentNodes();
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("dedentTask");
-        }
-    };
-
-    private final GPAction myMoveUpAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "up_";
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            upCurrentNodes();
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("upTask");
-        }
-    };
-
-    private final GPAction myMoveDownAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "down_";
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            downCurrentNodes();
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("downTask");
-        }
-    };
-
-    private final Action myNewTaskAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            if (getSelectedTask() != null) {
-                setEditingTask(getSelectedTask());
-            }
-            getUiFacade().getUndoManager().undoableEdit("New Task", new Runnable() {
-                        public void run() {
-                            Task t = getAppFrame().newTask();
-                            setEditingTask(t);
-                        }
-                    });
-        }
-    };
+    private final Action myNewTaskAction;
 
     private final Action myDeleteAction;
 
@@ -263,8 +194,12 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             }
         });
         this.appli = app;
+        
+        // Create Actions
         myTaskPropertiesAction = new TaskPropertiesAction(app.getProject(), selectionManager, uiFacade);
         myDeleteAction = new DeleteTasksAction(taskManager, selectionManager, uiFacade, this);
+        myNewTaskAction = new NewTaskAction(app.getProject(), getUndoManager());
+
         // Create the root node
         initRootNode();
 
@@ -273,7 +208,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         // Create the JTree
         treetable = new GanttTreeTable(app.getProject(), uiFacade, treeModel);
 
-        treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myDedentAction, myNewTaskAction,
+        treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, myNewTaskAction,
             getAppFrame().getCutAction(), getAppFrame().getCopyAction(), getAppFrame().getPasteAction(),
             getTaskPropertiesAction(), myDeleteAction);
 
@@ -436,7 +371,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             actions.add(getDeleteTasksAction());
             actions.add(null);
             actions.add(myIndentAction);
-            actions.add(myDedentAction);
+            actions.add(myUnindentAction);
             actions.add(getMoveUpAction());
             actions.add(getMoveDownAction());
             actions.add(null);
@@ -1017,6 +952,86 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             while (children.hasMoreElements()) {
                 expandRefresh((DefaultMutableTreeNode) children.nextElement());
             }
+        }
+    }
+
+    private final class TaskMoveDownAction extends GPAction {
+        public TaskMoveDownAction() {
+            super("task.movedown");
+        }
+
+        @Override
+        protected String getIconFilePrefix() {
+            return "down_";
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            downCurrentNodes();
+        }
+
+        @Override
+        protected String getLocalizedName() {
+            return getI18n("downTask");
+        }
+    }
+
+    private final class TaskMoveUpAction extends GPAction {
+        public TaskMoveUpAction() {
+            super("task.moveup");
+        }
+
+        @Override
+        protected String getIconFilePrefix() {
+            return "up_";
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            upCurrentNodes();
+        }
+
+        @Override
+        protected String getLocalizedName() {
+            return getI18n("upTask");
+        }
+    }
+
+    private final class TaskUnindentAction extends GPAction {
+        TaskUnindentAction() {
+            super("task.unindent");
+        }
+
+        @Override
+        protected String getIconFilePrefix() {
+            return "unindent_";
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            dedentCurrentNodes();
+        }
+
+        @Override
+        protected String getLocalizedName() {
+            return getI18n("dedentTask");
+        }
+    }
+
+    private final class TaskIndentAction extends GPAction {
+        TaskIndentAction() {
+            super("task.indent");
+        }
+
+        @Override
+        protected String getIconFilePrefix() {
+            return "indent_";
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            indentCurrentNodes();
+        }
+
+        @Override
+        protected String getLocalizedName() {
+            return getI18n("indentTask");
         }
     }
 
@@ -1775,16 +1790,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     public Action getUnindentAction() {
-        return myDedentAction;
+        return myUnindentAction;
     }
 
-    // FIXME naming of method and returned variable seems wrong!
-    public Action getMoveDownAction() {
+    public Action getMoveUpAction() {
         return myMoveUpAction;
     }
 
-    // FIXME naming of method and returned variable seems wrong!
-    public Action getMoveUpAction() {
+    public Action getMoveDownAction() {
         return myMoveDownAction;
     }
 

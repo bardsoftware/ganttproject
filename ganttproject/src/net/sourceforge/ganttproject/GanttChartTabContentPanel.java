@@ -98,23 +98,23 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
             }
         };
         buttonBar.add(indentButton);
-        //
-        TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
+
+        TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction()) {
             @Override
             public String getText() {
                 return null;
             }
         };
         buttonBar.add(upButton);
-        //
-        TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction()) {
+
+        TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
             @Override
             public String getText() {
                 return null;
             }
         };
         buttonBar.add(downButton);
-        //
+
         Action linkAction = new LinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setLinkTasksAction(linkAction);
         TestGanttRolloverButton linkButton = new TestGanttRolloverButton(linkAction) {
@@ -124,7 +124,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
             }
         };
         buttonBar.add(linkButton);
-        //
+
         Action unlinkAction = new UnlinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
         myTreeFacade.setUnlinkTasksAction(unlinkAction);
         TestGanttRolloverButton unlinkButton = new TestGanttRolloverButton(unlinkAction) {
@@ -134,7 +134,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
             }
         };
         buttonBar.add(unlinkButton);
-        //
+
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;
