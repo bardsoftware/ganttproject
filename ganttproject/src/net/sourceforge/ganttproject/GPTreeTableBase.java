@@ -700,6 +700,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
     }
 
+    /** Adds keyStroke to the given action (if action is null nothing happens) */
     void addAction(Action action, KeyStroke keyStroke) {
         if (action != null) {
             InputMap inputMap = getInputMap();
@@ -708,25 +709,24 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         }
     }
 
-    void addActionWithKeyStroke(Action action) {
+    void addActionWithAccelleratorKey(Action action) {
         if (action != null) {
             addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
         }
     }
 
-    void setupActionMaps(Action up, Action down, Action indent, Action outdent, Action newArtifact,
+    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action newArtifact,
             Action cut, Action copy, Action paste, Action properties, Action delete) {
-        addAction(up, GPAction.getKeyStroke("moveUp.shortcut"));
-        addAction(down, GPAction.getKeyStroke("moveDown.shortcut"));
-
-        addAction(indent, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-        addAction(outdent, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK));
+        addActionWithAccelleratorKey(up);
+        addActionWithAccelleratorKey(down);
+        addActionWithAccelleratorKey(indent);
+        addActionWithAccelleratorKey(unindent);
         addAction(newArtifact, GPAction.getKeyStroke("newArtifact.shortcut"));
-        addAction(properties, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK));
-        addAction(delete, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        addActionWithKeyStroke(cut);
-        addActionWithKeyStroke(copy);
-        addActionWithKeyStroke(paste);
+        addAction(properties, GPAction.getKeyStroke("task.properties"));
+        addAction(delete, GPAction.getKeyStroke("task.delete"));
+        addActionWithAccelleratorKey(cut);
+        addActionWithAccelleratorKey(copy);
+        addActionWithAccelleratorKey(paste);
     }
 
     private class HeaderMouseListener extends MouseAdapter {
