@@ -514,7 +514,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         return this;
     }
 
-    public Action getResourcePropertiesAction() {
+    public AbstractAction getResourcePropertiesAction() {
         return myResourcePropertiesAction;
     }
 

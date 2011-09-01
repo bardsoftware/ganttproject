@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,21 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui;
-
-import java.awt.Component;
+package net.sourceforge.ganttproject.action;
 
 import javax.swing.AbstractAction;
 
-public interface TaskTreeUIFacade {
-    AbstractAction getIndentAction();
-    AbstractAction getUnindentAction();
-    AbstractAction getMoveUpAction();
-    AbstractAction getMoveDownAction();
-    AbstractAction getLinkTasksAction();
-    AbstractAction getUnlinkTasksAction();
-    Component getTreeComponent();
-    void setLinkTasksAction(AbstractAction action);
-    void setUnlinkTasksAction(AbstractAction unlinkAction);
-    TableHeaderUIFacade getVisibleFields();
+/**
+ * Interface to provide an action related class with a dynamic action when activated 
+ */
+public interface ActiveActionProvider {
+    /** Provides the active action, which might depend on external influences */
+    public abstract AbstractAction getActiveAction();
 }
