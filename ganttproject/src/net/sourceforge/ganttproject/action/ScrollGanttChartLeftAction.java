@@ -26,8 +26,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 /**
  * @author bard
  */
-public class ScrollGanttChartLeftAction extends GPAction implements
-        RolloverAction {
+public class ScrollGanttChartLeftAction extends GPAction {
     private final ScrollingManager myScrollingManager;
     private final TaskManager myTaskManager;
 

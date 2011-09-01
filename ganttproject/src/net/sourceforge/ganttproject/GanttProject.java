@@ -72,12 +72,13 @@ import javax.swing.tree.TreePath;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
+import net.sourceforge.ganttproject.action.ActiveActionProvider;
+import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
+import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.EditMenu;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
-import net.sourceforge.ganttproject.action.NewArtefactAction;
-import net.sourceforge.ganttproject.action.NewHumanAction;
-import net.sourceforge.ganttproject.action.NewTaskAction;
+import net.sourceforge.ganttproject.action.ArtefactNewAction;
 import net.sourceforge.ganttproject.action.ResourceActionSet;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -158,9 +159,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     // public JMenu mView;
 
     /** Menuitem */
-    private JMenuItem miPreview,/* miCut, miCopy, miPaste, miOptions,*/
-            miDeleteTask, /* miUp, miDown, */miDelHuman, miSendMailHuman,
-            miPrjCal, miWebPage, miAbout, miChartOptions;
+    private JMenuItem miPreview, miDeleteTask, miSendMailHuman, miPrjCal, miWebPage, miAbout, miChartOptions;
 
     private static final int maxSizeMRU = 5;
 
@@ -198,15 +197,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private JToolBar toolBar;
 
-    private Action myTaskPropertiesAction;
-
-    private NewTaskAction myNewTaskAction;
-
-    private NewHumanAction myNewHumanAction;
-
-    private NewArtefactAction myNewArtefactAction;
-
-    private Action myDeleteHumanAction;
+    private AbstractAction myTaskPropertiesAction;
 
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
 
@@ -358,28 +349,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
         bar.add(myEditMenu.create());
 
-        myNewTaskAction = new NewTaskAction(getProject(), getUndoManager());
-        mTask.add(myNewTaskAction);
         miDeleteTask = createNewItem("/icons/delete_16.gif");
         mTask.add(miDeleteTask);
         myTaskPropertiesAction = getTree().getTaskPropertiesAction();
         mTask.add(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
 
-        myNewHumanAction = new NewHumanAction(getHumanResourceManager(), this) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                super.actionPerformed(event);
-                getTabs().setSelectedIndex(UIFacade.RESOURCES_INDEX);
-            }
-        };
-
-        mHuman.add(myNewHumanAction);
-        myDeleteHumanAction = getResourceActions().getDeleteHumanAction();
-        miDelHuman = new JMenuItem(myDeleteHumanAction);
-        mHuman.add(miDelHuman);
-        // miPropHuman = createNewItem("/icons/properties_16.gif");
-        // mHuman.add(miPropHuman);
+        mHuman.add(getResourceActions().getNewHumanAction());
+        mHuman.add(getResourceActions().getDeleteHumanAction());
         mHuman.add(getResourcePanel().getResourcePropertiesAction());
         miSendMailHuman = createNewItem("/icons/send_mail_16.gif");
         mHuman.add(miSendMailHuman);
@@ -775,6 +752,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         return menu;
     }
 
+    //FIXME method is not called when language changes?!
+    //TODO Make sure that the actions handle language changes, so this method is ot required
     /** Set the menus language after the user select a different language */
     private void changeLanguageOfMenu() {
         mProject = changeMenuLabel(mProject, language.getText("project"));
@@ -790,7 +769,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("deleteTask"));
         mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("newHuman")), 0);
-        miDelHuman = changeMenuLabel(miDelHuman, language.getText("deleteHuman"));
         mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("importResources")), 4);
         miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
 
@@ -861,63 +839,24 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bCopy = new TestGanttRolloverButton(getCopyAction());
         bPaste = new TestGanttRolloverButton(getPasteAction());
 
-        myNewArtefactAction = new NewArtefactAction(
-                new NewArtefactAction.ActiveActionProvider() {
-                    public AbstractAction getActiveAction() {
-                        return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? (AbstractAction) myNewTaskAction
-                                : (AbstractAction) myNewHumanAction;
-
-                    }
-                }, options.getIconSize());
-        bNewTask = new TestGanttRolloverButton(myNewArtefactAction);
-        bDelete = new TestGanttRolloverButton(
-                new ImageIcon(getClass().getResource(
-                        "/icons/delete_" + options.getIconSize() + ".gif")));
-        bDelete.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {// Gantt
-                    deleteTasks(true);
-                } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resource
-                    // chart
-                    final HumanResource[] context = getResourcePanel()
-                            .getContext().getResources();
-                    if (context.length > 0) {
-                        Choice choice = getUIFacade().showConfirmationDialog(
-                                getLanguage().getText("msg6")
-                                        + getDisplayName(context) + "?",
-                                getLanguage().getText("question"));
-                        if (choice == Choice.YES) {
-                            getUndoManager().undoableEdit("Delete Human OK",
-                                    new Runnable() {
-                                        public void run() {
-                                            for (int i = 0; i < context.length; i++) {
-                                                context[i].delete();
-                                            }
-                                        }
-                                    });
-                            repaint2();
-                            refreshProjectInfos();
-                        }
-                    }
-                }
+        bNewTask = new TestGanttRolloverButton(new ArtefactNewAction(new ActiveActionProvider() {
+            public AbstractAction getActiveAction() {
+                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getNewTaskAction()
+                        : getResourceActions().getNewHumanAction();
             }
-        });
-
-        bProperties = new TestGanttRolloverButton(new ImageIcon(getClass()
-                .getResource(
-                        "/icons/properties_" + options.getIconSize() + ".gif")));
-        bProperties.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {// Gantt
-                    // Chart
-                    propertiesTask();
-                } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) { // Resource
-                    // chart
-                    getResourcePanel().getResourcePropertiesAction()
-                            .actionPerformed(null);
-                }
+        }));
+        bDelete = new TestGanttRolloverButton(new ArtefactDeleteAction(new ActiveActionProvider() {
+            public AbstractAction getActiveAction() {
+                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getDeleteTasksAction()
+                        : getResourceActions().getDeleteHumanAction();
             }
-        });
+        }));
+        bProperties = new TestGanttRolloverButton(new ArtefactPropertiesAction(new ActiveActionProvider() {
+            public AbstractAction getActiveAction() {
+                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? myTaskPropertiesAction
+                        : getResourcePanel().getResourcePropertiesAction();
+            }
+        }));
 
         ScrollingManager scrollingManager = getScrollingManager();
         scrollingManager.addScrollingListener(area.getViewState());
@@ -1063,7 +1002,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void deleteResources() {
-        myDeleteHumanAction.actionPerformed(null);
+        getResourceActions().getDeleteHumanAction().actionPerformed(null);
     }
 
     /**
@@ -1397,8 +1336,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     private ResourceActionSet getResourceActions() {
         if (myResourceActions == null) {
-            myResourceActions = new ResourceActionSet(this,
-                    getResourcePanel(), this, getUIFacade());
+            myResourceActions = new ResourceActionSet(getResourcePanel(), this, getUIFacade());
         }
         return myResourceActions;
     }

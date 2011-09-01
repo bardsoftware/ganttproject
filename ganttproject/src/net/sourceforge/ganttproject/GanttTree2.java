@@ -137,9 +137,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     /** Pointer on application */
     private GanttProject appli;
 
-    private Action myLinkTasksAction;
+    private AbstractAction myLinkTasksAction;
 
-    private Action myUnlinkTasksAction;
+    private AbstractAction myUnlinkTasksAction;
 
     /** The language use */
     private static GanttLanguage language = GanttLanguage.getInstance();
@@ -156,17 +156,19 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private final TaskManager myTaskManager;
     private final TaskSelectionManager mySelectionManager;
 
-    private final GPAction myIndentAction = new TaskIndentAction();
+    private final AbstractAction myIndentAction = new TaskIndentAction();
 
-    private final GPAction myUnindentAction = new TaskUnindentAction();
+    private final AbstractAction myUnindentAction = new TaskUnindentAction();
 
-    private final GPAction myMoveUpAction = new TaskMoveUpAction();
+    private final AbstractAction myMoveUpAction = new TaskMoveUpAction();
 
-    private final GPAction myMoveDownAction = new TaskMoveDownAction();
+    private final AbstractAction myMoveDownAction = new TaskMoveDownAction();
 
-    private final Action myNewTaskAction;
+    private final AbstractAction myNewTaskAction;
 
-    private final Action myDeleteAction;
+    private final AbstractAction myDeleteAction;
+    
+    private final AbstractAction myTaskPropertiesAction;
 
     private boolean isOnTaskSelectionEventProcessing;
 
@@ -1433,8 +1435,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     private int where = -1;
 
-    private final Action myTaskPropertiesAction;
-
     /** Copy the current selected tree node */
     void copySelectedNode() {
         DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
@@ -1785,43 +1785,47 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return this;
     }
 
-    public Action getIndentAction() {
+    public AbstractAction getIndentAction() {
         return myIndentAction;
     }
 
-    public Action getUnindentAction() {
+    public AbstractAction getUnindentAction() {
         return myUnindentAction;
     }
 
-    public Action getMoveUpAction() {
+    public AbstractAction getMoveUpAction() {
         return myMoveUpAction;
     }
 
-    public Action getMoveDownAction() {
+    public AbstractAction getMoveDownAction() {
         return myMoveDownAction;
     }
 
-    public void setLinkTasksAction(Action action) {
+    public void setLinkTasksAction(AbstractAction action) {
         myLinkTasksAction = action;
     }
 
-    public Action getLinkTasksAction() {
+    public AbstractAction getLinkTasksAction() {
         return myLinkTasksAction;
     }
 
-    public void setUnlinkTasksAction(Action action) {
+    public void setUnlinkTasksAction(AbstractAction action) {
         myUnlinkTasksAction = action;
     }
 
-    public Action getUnlinkTasksAction() {
+    public AbstractAction getUnlinkTasksAction() {
         return myUnlinkTasksAction;
     }
 
-    Action getTaskPropertiesAction() {
+    AbstractAction getTaskPropertiesAction() {
         return myTaskPropertiesAction;
     }
 
-    Action getDeleteTasksAction() {
+    AbstractAction getNewTaskAction() {
+        return myNewTaskAction;
+    }
+
+    AbstractAction getDeleteTasksAction() {
         return myDeleteAction;
     }
 
