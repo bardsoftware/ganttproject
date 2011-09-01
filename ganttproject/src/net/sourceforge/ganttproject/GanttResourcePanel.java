@@ -85,7 +85,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
         @Override
         protected String getLocalizedName() {
-            return getI18n("upTask");
+            return getI18n("task.move.up");
         }
     };
 
@@ -99,7 +99,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
         @Override
         protected String getLocalizedName() {
-            return getI18n("downTask");
+            return getI18n("task.move.down");
         }
     };
 

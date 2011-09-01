@@ -413,14 +413,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                 if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
                     // Gantt Chart
-                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
-                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteTask")));
-                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesTask")));
+                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("task.new")));
+                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("task.delete")));
+                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("task.properties")));
 
                     if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(language.getCorrectedLabel("createTask"));
-                        bDelete.setText(language.getCorrectedLabel("deleteTask"));
-                        bProperties.setText(language.getCorrectedLabel("propertiesTask"));
+                        bNewTask.setText(language.getCorrectedLabel("task.new"));
+                        bDelete.setText(language.getCorrectedLabel("task.delete"));
+                        bProperties.setText(language.getCorrectedLabel("task.properties"));
                     }
 
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) {
@@ -773,7 +773,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
-        miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("deleteTask"));
+        miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("task.delete"));
         mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("resource.new")), 0);
         mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("importResources")), 4);
         miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
@@ -788,8 +788,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // bCut.setToolTipText(getToolTip(language.getCorrectedLabel("cut")));
         // bCopy.setToolTipText(getToolTip(language.getCorrectedLabel("copy")));
         // bPaste.setToolTipText(getToolTip(language.getCorrectedLabel("paste")));
-        bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteTask")));
-        bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesTask")));
+        bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("task.delete")));
+        bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("task.properties")));
         bUndo.setToolTipText(getToolTip(language.getCorrectedLabel("undo")));
         bRedo.setToolTipText(getToolTip(language.getCorrectedLabel("redo")));
         getTabs().setTitleAt(1, language.getCorrectedLabel("human"));

@@ -28,8 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
-import net.sourceforge.ganttproject.action.task.LinkTasksAction;
-import net.sourceforge.ganttproject.action.task.UnlinkTasksAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -44,7 +42,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     private final Container myTaskTree;
     private final JComponent myGanttChart;
     private final TaskTreeUIFacade myTreeFacade;
-    private final IGanttProject myProject;
     private final UIFacade myWorkbenchFacade;
     private final CalculateCriticalPathAction myCriticalPathAction;
     private final BaselineDialogAction myBaselineAction;
@@ -53,7 +50,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
             JComponent ganttChart, UIConfiguration uiConfiguration) {
         super(project, workbenchFacade, workbenchFacade.getGanttChart());
-        myProject = project;
         myWorkbenchFacade = workbenchFacade;
         myTreeFacade = treeFacade;
         myTaskTree = (Container) treeFacade.getTreeComponent();
@@ -98,62 +94,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
 //        //
 //        buttonBar.add(Box.createHorizontalStrut(8));
         //
-        TestGanttRolloverButton unindentButton = new TestGanttRolloverButton(myTreeFacade.getUnindentAction()) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(unindentButton);
-
-        TestGanttRolloverButton indentButton = new TestGanttRolloverButton(myTreeFacade.getIndentAction()) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(indentButton);
-
-        TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction()) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(upButton);
-
-        TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction()) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(downButton);
-
-        AbstractAction linkAction = new LinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
-        myTreeFacade.setLinkTasksAction(linkAction);
-        TestGanttRolloverButton linkButton = new TestGanttRolloverButton(linkAction) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(linkButton);
-
-        AbstractAction unlinkAction = new UnlinkTasksAction(myProject.getTaskManager(), Mediator.getTaskSelectionManager(), myWorkbenchFacade);
-        myTreeFacade.setUnlinkTasksAction(unlinkAction);
-        TestGanttRolloverButton unlinkButton = new TestGanttRolloverButton(unlinkAction) {
-            @Override
-            public String getText() {
-                return null;
-            }
-        };
-        buttonBar.add(unlinkButton);
+        for(AbstractAction a : myTreeFacade.getTreeActions()) {
+            buttonBar.add(new TestGanttRolloverButton(a));
+        }
 
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;
     }
+
     public Object getAdapter(Class adapter) {
         if (Container.class.equals(adapter)) {
             return getComponent();

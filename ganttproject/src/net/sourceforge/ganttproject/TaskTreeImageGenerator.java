@@ -171,7 +171,7 @@ class TaskTreeImageGenerator {
 
     private boolean isVisible(Task thetask) {
         boolean res = true;
-        DefaultMutableTreeNode father = getTree().getFatherNode(thetask);
+        DefaultMutableTreeNode father = getTree().getParentNode(thetask);
         if (father == null) {
             return false;
         }
