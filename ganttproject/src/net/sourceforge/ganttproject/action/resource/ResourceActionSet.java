@@ -16,40 +16,49 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action.resource;
 
 import javax.swing.AbstractAction;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
+import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
 public class ResourceActionSet {
-    private final NewHumanAction myNewHumanAction;
+    private final ResourceNewAction myResourceNewAction;
 
-    private final DeleteHumanAction myDeleteHumanAction;
+    private final ResourceDeleteAction myResourceDeleteAction;
+
+    private final ResourcePropertiesAction myResourcePropertiesAction;
 
     private AbstractAction[] myActions;
 
     public ResourceActionSet(ResourceContext context, GanttProject projectFrame, UIFacade uiFacade) {
         HumanResourceManager manager = projectFrame.getHumanResourceManager();
-        myNewHumanAction = new NewHumanAction(manager, projectFrame);
-        myDeleteHumanAction = new DeleteHumanAction(manager, context, projectFrame, uiFacade);
+        myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
+        myResourceDeleteAction = new ResourceDeleteAction(manager, context, projectFrame, uiFacade);
+        myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, context, uiFacade);
     }
 
     public AbstractAction[] getActions() {
         if (myActions == null) {
-            myActions = new AbstractAction[] {myNewHumanAction , myDeleteHumanAction };
+            myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction, myResourceDeleteAction };
         }
         return myActions;
     }
 
-    public AbstractAction getNewHumanAction() {
-        return myNewHumanAction;
+    public ResourceNewAction getResourceNewAction() {
+        return myResourceNewAction;
     }
 
-    public AbstractAction getDeleteHumanAction() {
-        return myDeleteHumanAction;
+    public ResourceDeleteAction getResourceDeleteAction() {
+        return myResourceDeleteAction;
+    }
+    
+    public ResourcePropertiesAction getResourcePropertiesAction() {
+        return myResourcePropertiesAction;
     }
 }
