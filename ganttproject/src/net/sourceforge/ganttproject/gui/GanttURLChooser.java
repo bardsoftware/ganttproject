@@ -149,9 +149,9 @@ class GanttURLChooser {
             public void actionPerformed(ActionEvent e) {
             }
         };
-        myUiFacade.createDialog(panel, new Action[] {okAction, cancelAction},
-                GanttLanguage.getInstance().correctLabel(
-                        language.getText(isOpenUrl ? "openFromServer" : "saveToServer"))).show();
+        myUiFacade.createDialog(panel, new Action[] { okAction, cancelAction },
+                GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url")))
+                .show();
     }
 
     UIFacade.Choice getChoice() {

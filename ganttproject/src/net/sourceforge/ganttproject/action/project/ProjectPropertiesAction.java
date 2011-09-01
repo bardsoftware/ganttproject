@@ -21,49 +21,31 @@ package net.sourceforge.ganttproject.action.project;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 
-class SaveProjectAction extends GPAction implements ProjectEventListener {
+class ProjectPropertiesAction extends GPAction {
     private final GanttProject myMainFrame;
 
-    SaveProjectAction(GanttProject mainFrame) {
-        super("project.save");
+    ProjectPropertiesAction(GanttProject mainFrame) {
+        super("project.properties");
         myMainFrame = mainFrame;
-        mainFrame.addProjectEventListener(this);
-        setEnabled(false);
     }
 
     @Override
     protected String getIconFilePrefix() {
-        return "save_";
+        return "properties_";
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        myMainFrame.saveProject();
-    }
-
-    @Override
-    public void projectModified() {
-        setEnabled(true);
-    }
-
-    @Override
-    public void projectSaved() {
-        setEnabled(false);
-    }
-
-    @Override
-    public void projectClosed() {
-        setEnabled(false);
-    }
-
-    public void projectCreated() {
-        setEnabled(false);
-    }
-
-    public void projectOpened() {
-        setEnabled(false);
+        myMainFrame.getUIFacade().getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
+            @Override
+            public void run() {
+                SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame
+                        .getUIFacade(), "settings.project.pageOrder");
+                settingsDialog.show();
+            }
+        });
     }
 }

@@ -366,7 +366,7 @@ public class PrintPreview extends JDialog {
 //        myComboMediaSize.setPreferredSize(dim);
 
         bPrint.setToolTipText(GanttProject.getToolTip(language
-                .correctLabel(language.getText("printProject"))));
+                .correctLabel(language.getText("project.print"))));
         bPortrait.setToolTipText(GanttProject.getToolTip(language
                 .correctLabel(language.getText("portrait"))));
         bLandscape.setToolTipText(GanttProject.getToolTip(language
