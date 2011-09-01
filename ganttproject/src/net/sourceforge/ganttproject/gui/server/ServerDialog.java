@@ -38,7 +38,7 @@ public class ServerDialog extends GeneralDialog {
 
     @Override
     public void constructSections() {
-        addObject(language.getCorrectedLabel("openFromServer"), null);
+        addObject(language.getCorrectedLabel("project.open.url"), null);
     }
 
     public void valueChanged(TreeSelectionEvent e) {
@@ -50,8 +50,7 @@ public class ServerDialog extends GeneralDialog {
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttLanguage.getInstance().correctLabel(
-                language.getText("openFromServer")))) {
+        if (sNode.equals(language.getCorrectedLabel("project.open.url"))) {
             settingPanel = new ConnectionPanel();
         }
 

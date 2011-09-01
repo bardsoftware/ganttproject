@@ -19,10 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Action;
-import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -38,18 +34,9 @@ public class ResourcePropertiesAction extends GPAction {
     private HumanResource mySelectedResource;
 
     public ResourcePropertiesAction(IGanttProject project, UIFacade uiFacade) {
+        super("resource.properties");
         myProject = project;
         myUIFacade = uiFacade;
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK));
-    }
-    @Override
-    protected String getLocalizedName() {
-        return getI18n("propertiesHuman");
-    }
-
-    @Override
-    protected String getActionName() {
-        return getI18n("propertiesHuman");
     }
 
     @Override
@@ -58,33 +45,21 @@ public class ResourcePropertiesAction extends GPAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if (getSelectedResource()!=null) {
-            GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(), GanttLanguage.getInstance(), getSelectedResource());
+        if (mySelectedResource!=null) {
+            GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), mySelectedResource);
             dp.setVisible(true);
             if (dp.result()) {
-                getProject().setModified(true);
+                myProject.setModified(true);
             }
         }
     }
 
-    private IGanttProject getProject() {
-        return myProject;
-    }
-    private UIFacade getUIFacade() {
-        return myUIFacade;
-    }
-
-    private HumanResource getSelectedResource() {
-        return mySelectedResource;
-    }
-
     public void setContext(ResourceContext context) {
         HumanResource[] resources = context.getResources();
-        if (resources.length==1) {
+        if (resources.length == 1) {
             mySelectedResource = resources[0];
             setEnabled(true);
-        }
-        else {
+        } else {
             setEnabled(false);
         }
     }

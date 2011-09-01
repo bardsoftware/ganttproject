@@ -45,7 +45,6 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -449,12 +448,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                     // Resources Chart
                     bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("newHuman")));
                     bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteHuman")));
-                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("propertiesHuman")));
+                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("resource.properties")));
 
                     if (options.getButtonShow() != GanttOptions.ICONS) {
                         bNewTask.setText(language.getCorrectedLabel("newHuman"));
                         bDelete.setText(language.getCorrectedLabel("deleteHuman"));
-                        bProperties.setText(language.getCorrectedLabel("propertiesHuman"));
+                        bProperties.setText(language.getCorrectedLabel("resource.properties"));
                     }
                 }
             }
@@ -502,7 +501,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
+                exitForm();
             }
 
             @Override
@@ -964,7 +963,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     /** Exit the Application */
-    private void exitForm(java.awt.event.WindowEvent evt) {
+    private void exitForm() {
         quitApplication();
     }
 

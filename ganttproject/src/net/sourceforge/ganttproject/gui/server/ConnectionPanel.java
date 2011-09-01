@@ -27,7 +27,6 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * The connection panel for HTTP access.
@@ -36,8 +35,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ConnectionPanel extends GeneralOptionPanel {
     public ConnectionPanel() {
-        super(GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(
-                "openFromServer")), GanttLanguage.getInstance().getText(
+        super(language.getCorrectedLabel("project.open.url"), language.getText(
                 "settingsConnection"));
 
         Box vbServer = Box.createVerticalBox();
