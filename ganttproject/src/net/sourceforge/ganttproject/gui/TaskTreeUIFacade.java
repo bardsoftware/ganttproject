@@ -23,14 +23,7 @@ import java.awt.Component;
 import javax.swing.AbstractAction;
 
 public interface TaskTreeUIFacade {
-    AbstractAction getIndentAction();
-    AbstractAction getUnindentAction();
-    AbstractAction getMoveUpAction();
-    AbstractAction getMoveDownAction();
-    AbstractAction getLinkTasksAction();
-    AbstractAction getUnlinkTasksAction();
+    AbstractAction[] getTreeActions();
     Component getTreeComponent();
-    void setLinkTasksAction(AbstractAction action);
-    void setUnlinkTasksAction(AbstractAction unlinkAction);
     TableHeaderUIFacade getVisibleFields();
 }

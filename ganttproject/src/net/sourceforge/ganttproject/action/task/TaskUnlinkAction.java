@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Dmitry Barashev
+Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,41 +24,34 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-public class LinkTasksAction extends TaskActionBase {
-    public LinkTasksAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-        super("link", taskManager, selectionManager, uiFacade);
+public class TaskUnlinkAction extends TaskActionBase {
+
+    public TaskUnlinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+        super("task.unlink", taskManager, selectionManager, uiFacade, null);
     }
 
     @Override
     protected String getIconFilePrefix() {
-        return "link_";
-    }
-
-    @Override
-    protected void run(List<Task> selection) throws TaskDependencyException {
-        for (int i=0; i<selection.size()-1; i++) {
-            Task dependant = selection.get(i+1);
-            Task dependee = selection.get(i);
-            if (getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {
-                getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
-            }
-        }
-        // Update (un)link buttons
-        getSelectionManager().fireSelectionChanged();
+        return "unlink_";
     }
 
     @Override
     protected boolean isEnabled(List<Task> selection) {
-        if(selection.size() <= 1) {
-            return false;
-        }
         for (Task task : selection) {
-            if (task.getDependencies().hasLinks(selection) == false ) {
+            if (task.getDependencies().hasLinks(selection)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    protected void run(List<Task> selection) throws Exception {
+        for (Task task : selection) {
+            task.getDependencies().clear(selection);
+        }
+        // Update (un)link buttons
+        getSelectionManager().fireSelectionChanged();
     }
 }

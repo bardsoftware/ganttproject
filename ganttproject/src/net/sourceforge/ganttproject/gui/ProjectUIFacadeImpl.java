@@ -278,7 +278,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
         beforeClose();
         project.close();
-        myWorkbenchFacade.setStatusText(i18n.getText("project.new.statusbar"));
+        myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"));
         showNewProjectWizard(project);
     }
 
