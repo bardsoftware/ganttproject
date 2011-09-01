@@ -31,12 +31,13 @@ import net.sourceforge.ganttproject.resource.ResourceContext;
 public class ResourcePropertiesAction extends GPAction {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
-    private HumanResource mySelectedResource;
+    private final ResourceContext myContext;
 
-    public ResourcePropertiesAction(IGanttProject project, UIFacade uiFacade) {
+    public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
         super("resource.properties");
         myProject = project;
         myUIFacade = uiFacade;
+        myContext = context;
     }
 
     @Override
@@ -45,22 +46,14 @@ public class ResourcePropertiesAction extends GPAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if (mySelectedResource!=null) {
-            GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), mySelectedResource);
+        HumanResource[] selectedResources = myContext.getResources();
+        if (selectedResources != null) {
+            // TODO Delete multiple resources (instead of [0])
+            GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), selectedResources[0]);
             dp.setVisible(true);
             if (dp.result()) {
                 myProject.setModified(true);
             }
-        }
-    }
-
-    public void setContext(ResourceContext context) {
-        HumanResource[] resources = context.getResources();
-        if (resources.length == 1) {
-            mySelectedResource = resources[0];
-            setEnabled(true);
-        } else {
-            setEnabled(false);
         }
     }
 }

@@ -79,7 +79,7 @@ import net.sourceforge.ganttproject.action.EditMenu;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ResourceActionSet;
+import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -95,7 +95,6 @@ import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
-import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -115,7 +114,6 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.print.PrintPreview;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
@@ -183,7 +181,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     /** Is the application only for viewer. */
     public boolean isOnlyViewer;
 
-    private ResourceActionSet myResourceActions;
+    private final ResourceActionSet myResourceActions;
 
     private final TaskManager myTaskManager;
 
@@ -319,6 +317,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         options.addOptions(getRssFeedChecker().getOptions());
         myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
         area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
+
+
         System.err.println("2. loading options");
         initOptions();
         area.setUIConfiguration(myUIConfiguration);
@@ -330,7 +330,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
 
         System.err.println("3. creating menu...");
-
+        myResourceActions = getResourcePanel().getResourceActionSet();
         bar = new JMenuBar();
         setJMenuBar(bar);
         // Allocation of the menus
@@ -355,9 +355,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         mTask.add(myTaskPropertiesAction);
         getResourcePanel().setTaskPropertiesAction(myTaskPropertiesAction);
 
-        mHuman.add(getResourceActions().getNewHumanAction());
-        mHuman.add(getResourceActions().getDeleteHumanAction());
-        mHuman.add(getResourcePanel().getResourcePropertiesAction());
+        for (AbstractAction a : myResourceActions.getActions()) {
+            mHuman.add(a);
+        }
         miSendMailHuman = createNewItem("/icons/send_mail_16.gif");
         mHuman.add(miSendMailHuman);
 
@@ -381,6 +381,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         setMnemonic();
         // to create a default project
         // createDefaultTree(tree);
+
+
         System.err.println("4. creating views...");
         myGanttChartTabContent = new GanttChartTabContentPanel(
             getProject(), getUIFacade(), getTaskTree(), area, getUIConfiguration());
@@ -423,13 +425,13 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
                 } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) {
                     // Resources Chart
-                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("newHuman")));
-                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("deleteHuman")));
+                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("resource.new")));
+                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("resource.delete")));
                     bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("resource.properties")));
 
                     if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(language.getCorrectedLabel("newHuman"));
-                        bDelete.setText(language.getCorrectedLabel("deleteHuman"));
+                        bNewTask.setText(language.getCorrectedLabel("resource.new"));
+                        bDelete.setText(language.getCorrectedLabel("resource.delete"));
                         bProperties.setText(language.getCorrectedLabel("resource.properties"));
                     }
                 }
@@ -491,6 +493,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         });
 
+
         System.err.println("5. calculating size and packing...");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -500,16 +503,19 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
                 screenSize.height / 2 - (windowSize.height / 2));
         this.pack();
 
+
         System.err.println("6. changing language ...");
         changeLanguage();
 
-        // changeUndoNumber ();
+
         System.err.println("7. changing look'n'feel ...");
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         if (options.isLoaded()) {
             setBounds(options.getX(), options.getY(), options.getWidth(),
                     options.getHeight());
         }
+
+
         System.err.println("8. finalizing...");
 //        applyComponentOrientation(GanttLanguage.getInstance()
 //                .getComponentOrientation());
@@ -768,7 +774,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // miNewTask = changeMenuLabel(miNewTask,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("deleteTask"));
-        mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("newHuman")), 0);
+        mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("resource.new")), 0);
         mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("importResources")), 4);
         miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
 
@@ -842,19 +848,19 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         bNewTask = new TestGanttRolloverButton(new ArtefactNewAction(new ActiveActionProvider() {
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getNewTaskAction()
-                        : getResourceActions().getNewHumanAction();
+                        : myResourceActions.getResourceNewAction();
             }
         }));
         bDelete = new TestGanttRolloverButton(new ArtefactDeleteAction(new ActiveActionProvider() {
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getDeleteTasksAction()
-                        : getResourceActions().getDeleteHumanAction();
+                        : myResourceActions.getResourceDeleteAction();
             }
         }));
         bProperties = new TestGanttRolloverButton(new ArtefactPropertiesAction(new ActiveActionProvider() {
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? myTaskPropertiesAction
-                        : getResourcePanel().getResourcePropertiesAction();
+                        : myResourceActions.getResourcePropertiesAction();
             }
         }));
 
@@ -931,23 +937,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         }
     }
 
-    public HumanResource newHumanResource() {
-        final HumanResource people = getHumanResourceManager().newHumanResource();
-        people.setRole(getRoleManager().getDefaultRole());
-        GanttDialogPerson dp = new GanttDialogPerson(getUIFacade(),
-                getLanguage(), people);
-        dp.setVisible(true);
-        if (dp.result()) {
-
-            getUndoManager().undoableEdit("new Resource", new Runnable() {
-                public void run() {
-                    getHumanResourceManager().add(people);
-                }
-            });
-        }
-        return people;
-    }
-
     /** Create a new task */
     @Override
     public Task newTask() {
@@ -1002,7 +991,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     }
 
     public void deleteResources() {
-        getResourceActions().getDeleteHumanAction().actionPerformed(null);
+        myResourceActions.getResourceDeleteAction().actionPerformed(null);
     }
 
     /**
@@ -1300,8 +1289,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public GanttResourcePanel getResourcePanel() {
         if (this.resp == null) {
-            this.resp = new GanttResourcePanel(this, getTree(), getUIFacade());
-            this.resp.setResourceActions(getResourceActions()); // TODO pass
+            this.resp = new GanttResourcePanel(this, getUIFacade());
             getHumanResourceManager().addView(this.resp);
         }
         return this.resp;
@@ -1332,13 +1320,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
     public Action getPasteAction() {
         return getViewManager().getPasteAction();
-    }
-
-    private ResourceActionSet getResourceActions() {
-        if (myResourceActions == null) {
-            myResourceActions = new ResourceActionSet(getResourcePanel(), this, getUIFacade());
-        }
-        return myResourceActions;
     }
 
     public static class Args {
@@ -1588,9 +1569,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
     public void resourceAdded(ResourceEvent event) {
         if (getStatusBar() != null) {
             // tabpane.setSelectedIndex(1);
-            getUIFacade().setStatusText(
-                    GanttLanguage.getInstance().correctLabel(
-                            GanttLanguage.getInstance().getText("newHuman")));
+            String description = language.getCorrectedLabel("resource.new.description");
+            if(description == null) {
+                description = language.getCorrectedLabel("resource.new");
+            }
+            getUIFacade().setStatusText(description);
             setAskForSave(true);
             refreshProjectInfos();
         }

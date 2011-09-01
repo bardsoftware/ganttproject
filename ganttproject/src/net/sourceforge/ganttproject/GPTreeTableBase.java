@@ -715,15 +715,15 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         }
     }
 
-    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action newArtifact,
+    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action _new,
             Action cut, Action copy, Action paste, Action properties, Action delete) {
         addActionWithAccelleratorKey(up);
         addActionWithAccelleratorKey(down);
         addActionWithAccelleratorKey(indent);
         addActionWithAccelleratorKey(unindent);
-        addAction(newArtifact, GPAction.getKeyStroke("newArtifact.shortcut"));
-        addAction(properties, GPAction.getKeyStroke("task.properties"));
-        addAction(delete, GPAction.getKeyStroke("task.delete"));
+        addActionWithAccelleratorKey(_new);
+        addActionWithAccelleratorKey(properties);
+        addActionWithAccelleratorKey(delete);
         addActionWithAccelleratorKey(cut);
         addActionWithAccelleratorKey(copy);
         addActionWithAccelleratorKey(paste);
