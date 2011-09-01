@@ -232,7 +232,8 @@ public class GanttLanguage {
      * @see #correctLabel()
      */
     public String getCorrectedLabel(String key) {
-        return correctLabel(getText(key));
+        String label = getText(key);
+        return label == null ? null : correctLabel(label);
     }
 
     public ComponentOrientation getComponentOrientation() {
