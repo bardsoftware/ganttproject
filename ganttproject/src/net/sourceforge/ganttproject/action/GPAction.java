@@ -104,6 +104,16 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return resource == null ? null : new ImageIcon(resource);
     }
 
+    /** @return translation of "ID.description" if available, otherwise translation of "ID" */
+    protected String getLocalizedDescription() {
+        if(getID() == null) {
+            return null;
+        }
+        String description = getI18n(getID() + ".description");
+        return description == null ? language.getCorrectedLabel(getID()) : description;
+    }
+
+    /** @return translation of ID */
     protected String getLocalizedName() {
         return getID() == null ? null : getI18n(getID());
     }
@@ -113,8 +123,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
 
     protected String getActionName() {
-        String localizedName = getLocalizedName();
-        return localizedName == null ? "" : language.correctLabel(localizedName);
+        String name = getLocalizedDescription();
+        return name == null ? "" : language.correctLabel(name);
     }
 
     protected static String getI18n(String key) {
@@ -155,7 +165,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
 
     private void updateTooltip() {
-        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getActionName() + "</body></html>");
+        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
     }
 
     public void isIconVisible(boolean isNull) {
