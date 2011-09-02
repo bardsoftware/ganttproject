@@ -15,18 +15,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
 
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class CalculateCriticalPathAction extends GPAction {
-    private final TaskManager taskManager;
+    private final TaskManager myTaskManager;
 
     private final static String ICON_PREFIX_ON = "criticalPathOn_";
 
@@ -36,10 +35,9 @@ public class CalculateCriticalPathAction extends GPAction {
 
     private final UIFacade myUiFacade;
 
-    public CalculateCriticalPathAction(
-            TaskManager taskManager, String iconSize, UIConfiguration uiConfiguration, UIFacade uiFacade) {
-        super(null, iconSize);
-        this.taskManager = taskManager;
+    public CalculateCriticalPathAction(TaskManager taskManager, UIConfiguration uiConfiguration, UIFacade uiFacade) {
+        super("criticalPath.toggle");
+        myTaskManager = taskManager;
         myUIConfiguration = uiConfiguration;
         myUiFacade = uiFacade;
     }
@@ -54,7 +52,7 @@ public class CalculateCriticalPathAction extends GPAction {
         setOn(!isOn());
         updateAction();
         if (isOn()) {
-            taskManager.processCriticalPath(taskManager.getRootTask());
+            myTaskManager.processCriticalPath(myTaskManager.getRootTask());
         }
         myUiFacade.refresh();
     }
@@ -68,12 +66,8 @@ public class CalculateCriticalPathAction extends GPAction {
     }
 
     @Override
-    protected String getLocalizedName() {
-        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", getI18n(getID()));
-    }
-
-    @Override
     protected String getID() {
+        // Override ID, so the text will change depending on the state
         return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
     }
 }

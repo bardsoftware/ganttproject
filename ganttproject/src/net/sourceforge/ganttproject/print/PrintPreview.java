@@ -69,8 +69,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.ZoomInAction;
-import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
@@ -386,9 +384,10 @@ public class PrintPreview extends JDialog {
                     .correctLabel(language.getText("setEndDate"))));
                     */
             //GanttProject gp = Mediator.getGanttProjectSingleton();
+            
             final ZoomManager zoomManager = myUIfacade.getZoomManager();
-            final Action zoomOut = new ZoomOutAction(zoomManager, "16");
-            final Action zoomIn = new ZoomInAction(zoomManager, "16");
+            final Action zoomOut = zoomManager.getZoomOutAction();
+            final Action zoomIn = zoomManager.getZoomInAction();
             bZoomOut = new JButton((Icon) zoomOut.getValue(Action.SMALL_ICON));
             bZoomIn = new JButton((Icon) zoomIn.getValue(Action.SMALL_ICON));
 

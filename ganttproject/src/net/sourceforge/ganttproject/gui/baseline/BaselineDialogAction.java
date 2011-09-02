@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.gui.baseline;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +44,12 @@ public class BaselineDialogAction extends GPAction {
     private List<GanttPreviousState> myTrash = new ArrayList<GanttPreviousState>();
 
     public BaselineDialogAction(IGanttProject project, UIFacade uiFacade) {
-        super("baselineDialogAction");
+        super("baseline.dialog");
         myProject = project;
         myUiFacade = uiFacade;
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         myBaselines = new ArrayList<GanttPreviousState>(myProject.getBaselines());
 
@@ -145,10 +145,5 @@ public class BaselineDialogAction extends GPAction {
             }
         };
         myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
-    }
-
-    @Override
-    protected String getLocalizedName() {
-        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", super.getLocalizedName());
     }
 }
