@@ -141,7 +141,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
         //applyComponentOrientation(lang.getComponentOrientation());
 
-        table.addKeyListener(prj); // callback for keyboard pressed
         // Add listener for mouse click
         MouseListener ml = new MouseAdapter() {
             @Override
@@ -200,7 +199,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                 getTaskSelectionManager().addTask(assignmentNode.getTask());
                 Point popupPoint = getPopupMenuPoint(e);
                 getUIFacade().showPopupMenu(this,
-                        new Action[] { getTaskPropertiesAction(), myResourceActionSet.getResourceDeleteAction() },
+                        new Action[] { myTaskPropertiesAction, myResourceActionSet.getResourceDeleteAction() },
                         popupPoint.x, popupPoint.y);
             } else {
                 createPopupMenu(e);
@@ -469,10 +468,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     void setTaskPropertiesAction(Action action) {
         myTaskPropertiesAction = action;
-    }
-
-    private Action getTaskPropertiesAction() {
-        return myTaskPropertiesAction;
     }
 
     private UIFacade getUIFacade() {
