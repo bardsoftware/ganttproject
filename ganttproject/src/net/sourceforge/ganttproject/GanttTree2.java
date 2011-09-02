@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -140,7 +139,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private ChartComponentBase area = null;
 
     /** Pointer on application */
-    private GanttProject appli;
+    private final GanttProject appli;
 
     /** The language use */
     private static GanttLanguage language = GanttLanguage.getInstance();
@@ -226,14 +225,6 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
             getTaskPropertiesAction(), myDeleteAction);
 
         treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
-        treetable.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (false == treetable.getTable().isEditing()) {
-                    app.keyPressed(e);
-                }
-            }
-        }); // callback for keyboard pressed
         treetable.getTree().addTreeSelectionListener(
                 new TreeSelectionListener() {
                     public void valueChanged(TreeSelectionEvent e) {
@@ -378,10 +369,10 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getNewTaskAction());
+        actions.add(getTaskNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
-            actions.add(getDeleteTasksAction());
+            actions.add(getTaskDeleteAction());
             actions.add(null);
             for(AbstractAction a : getTreeActions()) {
                 actions.add(a);
@@ -1477,15 +1468,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myTreeActions;
     }
 
-    AbstractAction getTaskPropertiesAction() {
+    public AbstractAction getTaskPropertiesAction() {
         return myTaskPropertiesAction;
     }
 
-    AbstractAction getNewTaskAction() {
+    public AbstractAction getTaskNewAction() {
         return myNewTaskAction;
     }
 
-    AbstractAction getDeleteTasksAction() {
+    public AbstractAction getTaskDeleteAction() {
         return myDeleteAction;
     }
 
