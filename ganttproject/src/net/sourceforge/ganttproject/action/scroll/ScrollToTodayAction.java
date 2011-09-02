@@ -16,23 +16,24 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
+import java.util.Date;
 
-import javax.swing.JTabbedPane;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 
-public class SwitchViewAction extends GPAction {
-    private final JTabbedPane myTabbedPane;
-
-    public SwitchViewAction(JTabbedPane tabbedPane) {
-        super("views.switch");
-        myTabbedPane = tabbedPane;
+public class ScrollToTodayAction extends GPAction {
+    private final TimelineChart myChart;
+    
+    public ScrollToTodayAction(TimelineChart chart) {
+        super("scroll.today");
+        myChart = chart;
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
-        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1)
-                % myTabbedPane.getTabCount());
+    public void actionPerformed(ActionEvent e) {
+        myChart.setStartDate(new Date());
     }
 }

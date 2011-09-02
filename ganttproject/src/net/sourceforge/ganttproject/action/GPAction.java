@@ -110,7 +110,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             return null;
         }
         String description = getI18n(getID() + ".description");
-        return description == null ? language.getCorrectedLabel(getID()) : description;
+        if(description == null) {
+            description = language.correctLabel(getLocalizedName());
+        }
+        return description == null ? "" : description;
     }
 
     /** @return translation of ID */
@@ -164,7 +167,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         updateTooltip();
     }
 
-    private void updateTooltip() {
+    protected void updateTooltip() {
         putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
     }
 

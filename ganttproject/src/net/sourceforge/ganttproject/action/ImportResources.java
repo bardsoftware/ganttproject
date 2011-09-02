@@ -20,16 +20,10 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.net.URL;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.OpenFileDialog;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
@@ -38,9 +32,10 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
- * Action connected to the menu item for importing some resources
+ * Import resources action, the user selects a GanttProject file to import the
+ * resources from
  */
-public class ImportResources extends AbstractAction {
+public class ImportResources extends GPAction {
     private final TaskManager myTaskManager;
 
     private final HumanResourceManager myResourceManager;
@@ -49,63 +44,48 @@ public class ImportResources extends AbstractAction {
 
     private final RoleManager myRoleManager;
 
-    private File startFile = null;
+    private OpenFileDialog myOpenDialog;
 
     public ImportResources(HumanResourceManager resourceManager,
             TaskManager taskManager, RoleManager roleManager,
             GanttProject project) {
+        super("resource.import");
         myTaskManager = taskManager;
         myRoleManager = roleManager;
-        GanttLanguage language = GanttLanguage.getInstance();
-
-        putValue(AbstractAction.NAME, language.getText("importResources"));
         myResourceManager = resourceManager;
-
-        URL iconUrl = this.getClass().getClassLoader().getResource(
-                "icons/impres_16.gif");
-        if (iconUrl != null) {
-            putValue(Action.SMALL_ICON, new ImageIcon(iconUrl));
-        }
-
         myProject = project;
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
         final File file = getResourcesFile();
         if (file != null) {
-            myProject.getUndoManager().undoableEdit("Import Resources",
-                    new Runnable() {
-                        public void run() {
-                            GanttXMLOpen loader = new GanttXMLOpen(
-                                    myTaskManager);
-                            ResourceTagHandler tagHandler = new ResourceTagHandler(
-                                    myResourceManager, myRoleManager, myProject.getResourceCustomPropertyManager());
-                            DependencyTagHandler dependencyHandler = new DependencyTagHandler(
-                                    loader.getContext(), myTaskManager, myProject.getUIFacade());
-                            RoleTagHandler rolesHandler = new RoleTagHandler(
-                                    RoleManager.Access.getInstance());
-                            loader.addTagHandler(tagHandler);
-                            loader.addTagHandler(dependencyHandler);
-                            loader.addTagHandler(rolesHandler);
-                            loader.load(file);
-                            // myProject.setQuickSave (true);
-                            // myProject.quickSave ("Import Resources");
-                        }
-                    });
+            myProject.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                public void run() {
+                    GanttXMLOpen loader = new GanttXMLOpen(myTaskManager);
+                    ResourceTagHandler tagHandler = new ResourceTagHandler(myResourceManager, myRoleManager, myProject
+                            .getResourceCustomPropertyManager());
+                    DependencyTagHandler dependencyHandler = new DependencyTagHandler(loader.getContext(),
+                            myTaskManager, myProject.getUIFacade());
+                    RoleTagHandler rolesHandler = new RoleTagHandler(RoleManager.Access.getInstance());
+                    loader.addTagHandler(tagHandler);
+                    loader.addTagHandler(dependencyHandler);
+                    loader.addTagHandler(rolesHandler);
+                    loader.load(file);
+                }
+            });
         }
     }
 
     private File getResourcesFile() {
-        OpenFileDialog openDialog;
-        if (startFile != null) {
-            openDialog = new OpenFileDialog(startFile.getPath());
-        } else {
-            openDialog = new OpenFileDialog();
+        if (myOpenDialog == null) {
+            myOpenDialog = new OpenFileDialog();
         }
-        File result = openDialog.show();
-        if (result != null) {
-            startFile = result;
-        }
-        return result;
+        return myOpenDialog.show();
+    }
+
+    @Override
+    protected String getIconFilePrefix() {
+        return "impres_";
     }
 }

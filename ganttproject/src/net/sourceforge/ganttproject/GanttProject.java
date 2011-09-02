@@ -472,11 +472,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // add a keyboard listener
         addKeyListener(this);
 
-        SwitchViewAction switchAction = new SwitchViewAction(this);
-        JMenuItem invisibleItem = new JMenuItem(switchAction);
-        invisibleItem.setVisible(false);
-        bar.add(invisibleItem);
-
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -607,7 +602,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         JMenu result = changeMenuLabel(new JMenu(), language.getText("view"));
         result.add(miChartOptions);
         List<Chart> charts = PluginManager.getCharts();
-
+        result.add(new SwitchViewAction(getTabs()));
         if (!charts.isEmpty()) {
             result.addSeparator();
         }
@@ -775,7 +770,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
         // language.getText("createTask"));
         miDeleteTask = changeMenuLabel(miDeleteTask, language.getText("task.delete"));
         mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("resource.new")), 0);
-        mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("importResources")), 4);
+        mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("resource.import")), 4);
         miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
 
         miPrjCal = changeMenuLabel(miPrjCal, language.getText("projectCalendar"));
@@ -866,8 +861,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener,
 
         ScrollingManager scrollingManager = getScrollingManager();
         scrollingManager.addScrollingListener(area.getViewState());
-        scrollingManager.addScrollingListener(getResourcePanel().area
-                .getViewState());
+        scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
         bUndo = new TestGanttRolloverButton(myEditMenu.getUndoAction());
         bRedo = new TestGanttRolloverButton(myEditMenu.getRedoAction());
 

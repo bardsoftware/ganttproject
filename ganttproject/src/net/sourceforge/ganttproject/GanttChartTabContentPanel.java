@@ -54,8 +54,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         myTreeFacade = treeFacade;
         myTaskTree = (Container) treeFacade.getTreeComponent();
         myGanttChart = ganttChart;
-        myCriticalPathAction = new CalculateCriticalPathAction(
-            project.getTaskManager(), "16", uiConfiguration, workbenchFacade);
+        //FIXME KeyStrokes of these 2 actions are not working...
+        myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration,
+                workbenchFacade);
         myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
         addChartPanel(createSchedulePanel());
     }
