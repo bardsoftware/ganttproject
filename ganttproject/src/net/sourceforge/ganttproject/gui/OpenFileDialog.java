@@ -1,19 +1,21 @@
-/***************************************************************************
- OpenFileDialog.java  -  description
- -------------------
- begin                : may 2003
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 GanttProject Team
 
- ***************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.io.File;
@@ -23,33 +25,35 @@ import javax.swing.JFileChooser;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 
 /**
- * Open A dialog box to select an xml file for import resources
+ * Open A dialog box to select an GanttProject or XML
+ *
+ * The current directory is stored, when the user selected a file
  */
 public class OpenFileDialog {
 
-    private File myStartDirectory;
+    private final JFileChooser myFileChooser;
 
     public OpenFileDialog() {
-        myStartDirectory = new File(System.getProperty("user.home"));
+        this(System.getProperty("user.home"));
     }
 
-    /** Open the file chooser */
     public OpenFileDialog(String startDirectory) {
-        myStartDirectory = new File(startDirectory);
+        File myStartDirectory = new File(startDirectory);
         if (!myStartDirectory.isDirectory()) {
             myStartDirectory = myStartDirectory.getParentFile();
         }
+        myFileChooser = new JFileChooser(myStartDirectory);
+        myFileChooser.addChoosableFileFilter(new GanttXMLFileFilter());
     }
 
-    /** Show the dialog box */
+    /** Show the dialog box
+     * @return the selected file, or null if the user aborted */
     public File show() {
         File result = null;
-        JFileChooser fc = new JFileChooser(myStartDirectory);
-        fc.addChoosableFileFilter(new GanttXMLFileFilter());
 
-        int returnVal = fc.showOpenDialog(null);
+        int returnVal = myFileChooser.showOpenDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            result = fc.getSelectedFile();
+            result = myFileChooser.getSelectedFile();
         }
         return result;
     }
