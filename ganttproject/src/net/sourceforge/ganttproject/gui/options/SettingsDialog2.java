@@ -86,12 +86,7 @@ public class SettingsDialog2 {
                 }
             }
         };
-        CancelAction cancelAction = new CancelAction() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-            }
-        };
-        myUIFacade.createDialog(getComponent(), new Action[] { okAction, cancelAction },
+        myUIFacade.createDialog(getComponent(), new Action[] { okAction, new CancelAction() },
                 GanttLanguage.getInstance().getCorrectedLabel("settings.app")).show();
     }
 

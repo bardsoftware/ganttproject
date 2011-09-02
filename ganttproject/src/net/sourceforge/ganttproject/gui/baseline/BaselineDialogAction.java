@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class BaselineDialogAction extends GPAction {
+    private static final GanttLanguage language = GanttLanguage.getInstance();
     private final IGanttProject myProject;
     private final UIFacade myUiFacade;
     private List<GanttPreviousState> myBaselines;
@@ -99,7 +100,7 @@ public class BaselineDialogAction extends GPAction {
                 return baseline.getName();
             }
         };
-        list.setUndefinedValueLabel(GanttLanguage.getInstance().getText("baselineDialog.undefinedValueLabel"));
+        list.setUndefinedValueLabel(language.getText("baselineDialog.undefinedValueLabel"));
         list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         if (myUiFacade.getGanttChart().getBaseline() != null) {
             int index = myBaselines.indexOf(myUiFacade.getGanttChart().getBaseline());
@@ -129,21 +130,15 @@ public class BaselineDialogAction extends GPAction {
         result.add(actionsComponent, BorderLayout.NORTH);
         result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        Action[] actions = new Action[] {
-            new OkAction() {
-                public void actionPerformed(ActionEvent e) {
-                    myProject.getBaselines().clear();
-                    myProject.getBaselines().addAll(myBaselines);
-                    for (GanttPreviousState trashBaseline : myTrash) {
-                        trashBaseline.remove();
-                    }
-                }
-            },
-            new CancelAction() {
-                public void actionPerformed(ActionEvent actionEvent) {
+        Action[] actions = new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                myProject.getBaselines().clear();
+                myProject.getBaselines().addAll(myBaselines);
+                for (GanttPreviousState trashBaseline : myTrash) {
+                    trashBaseline.remove();
                 }
             }
-        };
-        myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
+        }, new CancelAction() };
+        myUiFacade.createDialog(result, actions, language.getText("baselineDialog.title")).show();
     }
 }

@@ -59,25 +59,19 @@ public class PublicHolidayDialogAction extends AbstractAction {
     public void actionPerformed(ActionEvent arg0) {
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
-        myUIFacade.createDialog(dialogContent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        updateHolidays(dialog.getHolidays());
-                        myProject.setModified();
-                        try {
-                            myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                        } catch (TaskDependencyException e1) {
-                            GPLogger.getLogger(PublicHolidayDialogAction.class).log(
-                                    Level.SEVERE, "Exception after changing holidays", e1);
-                        }
-                        myUIFacade.getActiveChart().reset();
-                    }
-                },
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                    }
+        myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                updateHolidays(dialog.getHolidays());
+                myProject.setModified();
+                try {
+                    myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+                } catch (TaskDependencyException e1) {
+                    GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE,
+                            "Exception after changing holidays", e1);
                 }
-        }, "").show();
+                myUIFacade.getActiveChart().reset();
+            }
+        }, new CancelAction() }, "").show();
     }
 
     private void updateHolidays(List<GanttCalendar> holidays) {

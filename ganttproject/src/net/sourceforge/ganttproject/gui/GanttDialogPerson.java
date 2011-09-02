@@ -97,6 +97,7 @@ public class GanttDialogPerson {
                 }
             };
             CancelAction cancelAction = new CancelAction(){
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     myGroup.rollback();
                     change = false;
