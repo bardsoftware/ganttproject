@@ -262,6 +262,10 @@ public class GanttLanguage {
 
     /** @return label with the $ removed from it (if it was included) */
     public String correctLabel(String label) {
+        if(label == null) {
+            return null;
+        }
+
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
             label = label.substring(0, index).concat(label.substring(++index));
