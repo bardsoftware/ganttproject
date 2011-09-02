@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -45,7 +45,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -63,15 +62,15 @@ class SearchDialog {
         myUiFacade = uiFacade;
         myResultViewDataModel = new DefaultListModel();
         myDialog = myUiFacade.createDialog(getComponent(), new Action[] {
-            new CancelAction("search.dialog.button.goto") {
+            new GPAction("search.dialog.button.goto") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gotoSelection();
                 }
             },
-            new CancelAction("close") {
+            new GPAction("close") {
                 @Override
-                public void actionPerformed(ActionEvent arg0) {
+                public void actionPerformed(ActionEvent e) {
                 }
             }
         }, GanttLanguage.getInstance().getText("search.dialog.title"));

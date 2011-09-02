@@ -45,6 +45,7 @@ public class OptionsDialogAction extends GPAction {
             }
         };
         final CancelAction cancelAction = new CancelAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 rollback();
             }
