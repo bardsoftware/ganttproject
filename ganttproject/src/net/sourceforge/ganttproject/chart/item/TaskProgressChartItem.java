@@ -24,10 +24,4 @@ public class TaskProgressChartItem extends ChartItem {
         myUnitWidth = unitWidth;
         myTaskLength = task.getDuration().getLength(bottomUnit);
     }
-
-    public float getProgressDelta(int currentX) {
-        int deltaX = currentX - myPosX;
-        float deltaUnits = (float) deltaX / (float) myUnitWidth;
-        return 100 * deltaUnits / myTaskLength;
-    }
 }

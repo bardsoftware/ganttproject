@@ -15,6 +15,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -32,8 +33,11 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.GraphicPrimitive;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
+import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -55,6 +59,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -355,6 +360,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             // TODO Auto-generated constructor stub
         }
 
+        @Override
         public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
                 TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskEndInteraction(
@@ -365,6 +371,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             setCursor(E_RESIZE_CURSOR);
         }
 
+        @Override
         public void beginChangeTaskStartInteraction(MouseEvent e,
                 TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary,
@@ -374,14 +381,28 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             setCursor(W_RESIZE_CURSOR);
         }
 
+        @Override
         public void beginChangeTaskProgressInteraction(MouseEvent e,
                 TaskProgressChartItem taskProgress) {
             setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress,
                 new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                new TaskChartModelFacade() {
+                    public List<Rectangle> getTaskRectangles(Task t) {
+                        List<Rectangle> result = new ArrayList<Rectangle>();
+                        for (TaskActivity activity : t.getActivities()) {
+                            GraphicPrimitive graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
+                            assert graphicPrimitive != null;
+                            assert graphicPrimitive instanceof Rectangle;
+                            result.add((Rectangle)graphicPrimitive);
+                        }
+                        return result;
+                    }
+                },
                 getUIFacade()));
             setCursor(CHANGE_PROGRESS_CURSOR);
         }
 
+        @Override
         public void beginDrawDependencyInteraction(MouseEvent initiatingEvent,
                 TaskRegularAreaChartItem taskArea,
                 GanttGraphicArea.MouseSupport mouseSupport) {
@@ -399,6 +420,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         }
 
+        @Override
         public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks,
                 new TimelineFacadeImpl(getChartModel(), getTaskManager()),

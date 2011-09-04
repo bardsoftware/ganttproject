@@ -20,12 +20,18 @@ package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskInteractionHintRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskMutator;
 
@@ -41,12 +47,18 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
     private UIFacade myUiFacade;
 
+    private ChangeTaskProgressRuler myChangeScale;
+
+    private int myStartPixel;
+
     public ChangeTaskProgressInteraction(MouseEvent e,
-            TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid, UIFacade uiFacade) {
+            TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid, TaskChartModelFacade taskFacade, UIFacade uiFacade) {
         super(taskProgress.getTask().getStart().getTime(), chartDateGrid);
+        myStartPixel = e.getX();
         myUiFacade = uiFacade;
         myTaskProgrssItem = taskProgress;
         myMutator = myTaskProgrssItem.getTask().createMutator();
+        myChangeScale = new ChangeTaskProgressRuler(taskProgress.getTask(), taskFacade);
         myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
     }
 
@@ -54,9 +66,9 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
         return myTaskProgrssItem.getTask();
     }
 
+    @Override
     public void apply(MouseEvent event) {
-        TaskLength currentInterval = myCounter.run(getStartDate(), getChartDateGrid().getDateAt(event.getX()));
-        int newProgress = (int) (100 * currentInterval.getValue() / getTask().getDuration().getValue());
+        int newProgress = myChangeScale.getProgress(event.getX());
         if (newProgress > 100) {
             newProgress = 100;
         }
@@ -67,10 +79,12 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
         myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
     }
 
+    @Override
     public void finish() {
         myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
         myUiFacade.getUndoManager().undoableEdit("Task progress changed",
                 new Runnable() {
+                    @Override
                     public void run() {
                         doFinish(myMutator);
                     }

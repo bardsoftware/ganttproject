@@ -54,7 +54,7 @@ public class GraphicPrimitiveContainer {
     public enum VAlignment { CENTER, TOP, BOTTOM };
 
 
-    static class GraphicPrimitive {
+    public static class GraphicPrimitive {
         private Color myBackgroundColor;
 
         private Color myForegroundColor;
@@ -153,12 +153,20 @@ public class GraphicPrimitiveContainer {
                     + " height=" + myHeight;
         }
 
+        public int getLeftX() {
+            return myLeftX;
+        }
+
         public int getMiddleY() {
             return myTopY + myHeight / 2;
         }
 
         public int getMiddleX() {
             return myLeftX + myWidth / 2;
+        }
+
+        public int getWidth() {
+            return myWidth;
         }
     }
 
@@ -326,7 +334,7 @@ public class GraphicPrimitiveContainer {
         myModelObject2primitive.clear();
     }
 
-    void bind(GraphicPrimitive primitive, Object modelObject) {
+    public void bind(GraphicPrimitive primitive, Object modelObject) {
         myModelObject2primitive.put(modelObject, primitive);
         primitive.setModelObject(modelObject);
     }

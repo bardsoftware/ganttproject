@@ -46,8 +46,6 @@ public interface ChartModel {
 
     void paint(Graphics g);
 
-    Rectangle getBoundingRectangle(Task task);
-
     void setVerticalOffset(int i);
 
     ChartUIConfiguration getChartUIConfiguration();
@@ -57,7 +55,6 @@ public interface ChartModel {
     List<Offset> getTopUnitOffsets();
     List<Offset> getBottomUnitOffsets();
     List<Offset> getDefaultUnitOffsets();
-    //List<Offset> getDefaultUnitOffsetsInRange(Offset startOffset, Offset endOffset);
     Offset getOffsetAt(int x);
     TaskManager getTaskManager();
     TimeUnitStack getTimeUnitStack();

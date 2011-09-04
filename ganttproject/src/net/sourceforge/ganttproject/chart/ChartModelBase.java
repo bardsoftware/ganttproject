@@ -276,7 +276,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
     }
 
-    private List<ChartRendererBase> getRenderers() {
+    protected List<ChartRendererBase> getRenderers() {
         return myRenderers;
     }
 
