@@ -501,96 +501,14 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return myChartComponentImpl;
     }
 
-    public Action getScrollCenterAction(ScrollingManager scrollMgr,
-            TaskSelectionManager taskSelMgr, String iconSize) {
-        if (myScrollCenterAction == null)
-            myScrollCenterAction = new ScrollGanttChartCenterAction(scrollMgr,
-                    taskSelMgr, iconSize);
-        return myScrollCenterAction;
-    }
-
     public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setBaseline(tasks);
-        ((GanttTree2) appli.getTree()).getTable().setRowHeight(rowHeight);
+        appli.getTree().getTable().setRowHeight(rowHeight);
     }
-
 
     private ChartImplementation myChartComponentImpl;
 
-    private ScrollGanttChartCenterAction myScrollCenterAction;
-
-    protected class ScrollGanttChartCenterAction extends GPAction {
-        private final ScrollingManager myScrollingManager;
-
-        private final TaskSelectionManager myTaskSelectionManager;
-
-        public ScrollGanttChartCenterAction(ScrollingManager scrollingManager,
-                TaskSelectionManager taskSelectionManager, String iconSize) {
-            super("ScrollCenter", iconSize);
-            myScrollingManager = scrollingManager;
-            myTaskSelectionManager = taskSelectionManager;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getUIFacade().setStatusText(GanttLanguage.getInstance().getText("centerOnSelectedTasks"));
-            scroll();
-        }
-
-        private void scroll() {
-            GanttCalendar min = null;
-            GanttCalendar max = null;
-            Date scrollDate = null;
-
-            Iterator<Task> it = null;
-            if (myTaskSelectionManager.getSelectedTasks().isEmpty()) {
-                // scrollDate = getTaskManager().getProjectStart();
-                it = Arrays.asList(getTaskManager().getTasks()).iterator();
-            } else {
-                it = myTaskSelectionManager.getSelectedTasks().iterator();
-            }
-            while (it.hasNext()) {
-                Task t = it.next();
-                GanttCalendar dStart = t.getStart();
-                GanttCalendar dEnd = t.getEnd();
-
-                min = min == null ? dStart.clone()
-                        : (min.compareTo(dStart) > 0 ? dStart.clone() : min);
-                max = max == null ? dEnd.clone()
-                        : (max.compareTo(dEnd) < 0 ? dEnd.clone() : max);
-            }
-
-            //no tasks defined, nothing to do
-            if(min == null || max == null)
-                return;
-
-            TimeUnit defaultUnit = getTimeUnitStack().getDefaultTimeUnit();
-            final TaskLength selectionLength = getTaskManager().createLength(
-                    defaultUnit, min.getTime(), max.getTime());
-            final TaskLength viewLength = getChartModel().getVisibleLength();
-            float viewLengthInDefaultUnits = viewLength.getLength(defaultUnit);
-            // if selection is shorter than view we'll scroll right,
-            // otherwise we'll scroll left
-            // delta is measured in the bottom line time units
-            final float delta = (selectionLength.getValue() - viewLengthInDefaultUnits) / 2;
-            scrollDate = GPCalendar.PLAIN.shiftDate(min.getTime(),
-                    getTaskManager().createLength(defaultUnit, delta));
-
-            myScrollingManager.scrollTo(scrollDate);
-        }
-
-        @Override
-        protected String getIconFilePrefix() {
-            return "scrollcenter_";
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return super.getLocalizedName();
-        }
-    }
-
-    private class OldChartMouseListenerImpl extends MouseListenerBase implements
-            MouseListener {
+    private class OldChartMouseListenerImpl extends MouseListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
 
         private TaskSelectionManager getTaskSelectionManager() {

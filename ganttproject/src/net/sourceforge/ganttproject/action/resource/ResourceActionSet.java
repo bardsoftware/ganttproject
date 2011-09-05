@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.resource;
 import javax.swing.AbstractAction;
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.ResourceTreeTable;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -33,14 +34,27 @@ public class ResourceActionSet {
     private final ResourceDeleteAction myResourceDeleteAction;
 
     private final ResourcePropertiesAction myResourcePropertiesAction;
+    
+    private final ResourceMoveUpAction myResourceMoveUpAction;
+    
+    private final ResourceMoveDownAction myResourceMoveDownAction;
+
+    private final ResourceSendMailAction myResourceSendMailAction;
+
+    private final ResourceImportAction myResourceImportAction;
 
     private AbstractAction[] myActions;
 
-    public ResourceActionSet(ResourceContext context, GanttProject projectFrame, UIFacade uiFacade) {
+    public ResourceActionSet(ResourceContext context, GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
         HumanResourceManager manager = projectFrame.getHumanResourceManager();
         myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
         myResourceDeleteAction = new ResourceDeleteAction(manager, context, projectFrame, uiFacade);
         myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, context, uiFacade);
+        myResourceMoveUpAction = new ResourceMoveUpAction(table);
+        myResourceMoveDownAction = new ResourceMoveDownAction(table);
+        myResourceSendMailAction = new ResourceSendMailAction(table);
+        myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(), projectFrame
+                .getRoleManager(), projectFrame);
     }
 
     public AbstractAction[] getActions() {
@@ -57,8 +71,24 @@ public class ResourceActionSet {
     public ResourceDeleteAction getResourceDeleteAction() {
         return myResourceDeleteAction;
     }
-    
+
     public ResourcePropertiesAction getResourcePropertiesAction() {
         return myResourcePropertiesAction;
+    }
+
+    public ResourceMoveUpAction getResourceMoveUpAction() {
+        return myResourceMoveUpAction;
+    }
+
+    public ResourceMoveDownAction getResourceMoveDownAction() {
+        return myResourceMoveDownAction;
+    }
+
+    public ResourceSendMailAction getResourceSendMailAction() {
+        return myResourceSendMailAction;
+    }
+
+    public ResourceImportAction getResourceImportAction() {
+        return myResourceImportAction;
     }
 }

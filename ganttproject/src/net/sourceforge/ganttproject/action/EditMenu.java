@@ -26,7 +26,6 @@ import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.search.SearchDialogAction;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu {

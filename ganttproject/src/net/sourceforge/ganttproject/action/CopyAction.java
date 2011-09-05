@@ -20,19 +20,22 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JTabbedPane;
+import net.sourceforge.ganttproject.GPViewManager;
 
-public class SwitchViewAction extends GPAction {
-    private final JTabbedPane myTabbedPane;
+//TODO Enable/Disable action on selection changes
+public class CopyAction extends GPAction {
+    private final GPViewManager myViewmanager;
 
-    public SwitchViewAction(JTabbedPane tabbedPane) {
-        super("views.switch");
-        myTabbedPane = tabbedPane;
+    public CopyAction(GPViewManager viewManager) {
+        super("copy");
+        myViewmanager = viewManager;
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
-        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1)
-                % myTabbedPane.getTabCount());
+    protected String getIconFilePrefix() {
+        return "copy_";
+    }
+    public void actionPerformed(ActionEvent e) {
+        myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
     }
 }

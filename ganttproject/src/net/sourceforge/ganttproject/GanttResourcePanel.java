@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -34,12 +33,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -75,34 +71,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     private HumanResource [] clipboard = null;
     private boolean isCut = false;
 
-    private final GPAction myMoveUpAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "up_";
-        }
-        public void actionPerformed(ActionEvent e) {
-            upResource();
-        }
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("task.move.up");
-        }
-    };
-
-    private GPAction myMoveDownAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "down_";
-        }
-        public void actionPerformed(ActionEvent e) {
-            downResource();
-        }
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("task.move.down");
-        }
-    };
-
     private Action myTaskPropertiesAction;
 
     private final UIFacade myUIFacade;
@@ -111,14 +79,16 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         super(new BorderLayout());
         appli = prj;
         myUIFacade = uiFacade;
-        myResourceActionSet = new ResourceActionSet(this, prj, uiFacade);
 
         prj.addProjectEventListener(getProjectEventListener());
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
         table = new ResourceTreeTable(appli, model, uiFacade);
-        table.setupActionMaps(myMoveUpAction, myMoveDownAction, null, null, myResourceActionSet
-                .getResourceDeleteAction(), appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),
-                myResourceActionSet.getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
+        myResourceActionSet = new ResourceActionSet(this, prj, uiFacade, table);
+
+        table.setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
+                .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
+                .getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myResourceActionSet
+                .getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
         table.setRowHeight(20);
         table.setBackground(new Color(1.0f, 1.0f, 1.0f));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -171,12 +141,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             table.addMouseListener(ml);
             table.getTreeTable().getParent().addMouseListener(ml);
         }
-        table.getTree().getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                myMoveUpAction.setEnabled(table.canMoveSelectionUp());
-                myMoveDownAction.setEnabled(table.canMoveSelectionDown());
-            }
-        });
     }
 
     private ProjectEventListener getProjectEventListener() {
@@ -226,12 +190,10 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             for (int i = 1; i < resourceActions.length; i++) {
                 menu.add(resourceActions[i]);
             }
-            menu.add(appli.createNewItem(GanttLanguage.getInstance()
-                    .correctLabel(lang.getText("sendMail")),
-                    "/icons/send_mail_16.gif"));
+            menu.add(myResourceActionSet.getResourceSendMailAction());
             menu.addSeparator();
-            menu.add(myMoveUpAction);
-            menu.add(myMoveDownAction);
+            menu.add(myResourceActionSet.getResourceMoveUpAction());
+            menu.add(myResourceActionSet.getResourceMoveDownAction());
             menu.addSeparator();
             menu.add(appli.getCutAction());
             menu.add(appli.getCopyAction());
@@ -303,41 +265,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             DefaultMutableTreeNode result = model.addResource(people);
             table.getTree().scrollPathToVisible(new TreePath(result.getPath()));
         }
-    }
-
-    /** Send an Email to the current resource */
-    public void sendMail(GanttProject parent) {
-        if(table != null && table.getSelectedNodes()!=null && table.getSelectedNodes().length>0)
-        {
-            HumanResource people = (HumanResource) table.getSelectedNodes()[0]
-                .getUserObject();
-            if (people != null) {
-                try {
-                    BrowserControl.displayURL("mailto:" + people.getMail());
-                } catch (Exception e) {
-                    System.err.println(e);
-                }
-            }
-        }
-        else
-        {
-            GanttDialogInfo gdi = new GanttDialogInfo(
-                    appli, GanttDialogInfo.INFO,
-                    GanttDialogInfo.YES_OPTION, GanttLanguage.getInstance()
-                            .getText("msg26"),
-                    GanttLanguage.getInstance().getText("sendMail"));
-            gdi.setVisible(true);
-        }
-    }
-
-    /** Move up the selected resource */
-    private void upResource() {
-        table.upResource();
-    }
-
-    /** Move down the selected resource */
-    private void downResource() {
-        table.downResource();
     }
 
     /** Return the list of the person */
@@ -450,12 +377,12 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
     }
 
-    public Action getMoveUpAction() {
-        return myMoveUpAction;
+    public AbstractAction getMoveUpAction() {
+        return myResourceActionSet.getResourceMoveUpAction();
     }
 
-    public Action getMoveDownAction() {
-        return myMoveDownAction;
+    public AbstractAction getMoveDownAction() {
+        return myResourceActionSet.getResourceMoveDownAction();
     }
 
     public Component getUIComponent() {

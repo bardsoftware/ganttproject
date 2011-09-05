@@ -50,19 +50,20 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
-class SearchDialog {
+public class SearchDialog {
     private final UIFacade myUiFacade;
     private DefaultListModel myResultViewDataModel;
     private final IGanttProject myProject;
     private JList myResultView;
     private UIFacade.Dialog myDialog;
 
-    SearchDialog(IGanttProject project, UIFacade uiFacade) {
+    public SearchDialog(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
         myUiFacade = uiFacade;
         myResultViewDataModel = new DefaultListModel();
         myDialog = myUiFacade.createDialog(getComponent(), new Action[] {
-            new GPAction("search.dialog.button.goto") {
+            new GPAction("search.dialog.goto") {
+                // TODO search.dialog.goto keyboard shortcut is not working
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gotoSelection();
@@ -76,7 +77,7 @@ class SearchDialog {
         }, GanttLanguage.getInstance().getText("search.dialog.title"));
     }
 
-    void show() {
+    public void show() {
         myDialog.show();
     }
 
@@ -85,17 +86,18 @@ class SearchDialog {
         selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
     }
 
-    JComponent getComponent() {
+    private JComponent getComponent() {
         JPanel result = new JPanel(new BorderLayout());
         JPanel inputPanel = new JPanel(new BorderLayout());
         final JTextField inputField = new JTextField(30);
-        final GPAction searchAction = new GPAction("search.dialog.button.search") {
+        final GPAction searchAction = new GPAction("search.dialog.search") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 runSearch(inputField.getText());
             }
         };
         JButton searchButton = new JButton(searchAction);
+        // TODO Add keyboard shortcut to searchAction
         inputField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {

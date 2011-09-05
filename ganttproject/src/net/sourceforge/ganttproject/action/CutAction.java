@@ -16,24 +16,26 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.action;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.GPViewManager;
 
-import org.eclipse.core.runtime.IAdaptable;
+//TODO Enable/Disable action on selection changes
+public class CutAction extends GPAction {
+    private final GPViewManager myViewmanager;
 
-/**
- * @author bard
- */
-public interface GPViewManager {
-    public GPView createView(IAdaptable adaptable, Icon icon);
-    public AbstractAction getCopyAction();
-    public AbstractAction getCutAction();
-    public AbstractAction getPasteAction();
-    public ChartSelection getSelectedArtefacts();
-    public Chart getActiveChart();
+    public CutAction(GPViewManager viewManager) {
+        super("cut");
+        myViewmanager = viewManager;
+    }
+
+    @Override
+    protected String getIconFilePrefix() {
+        return "cut_";
+    }
+    public void actionPerformed(ActionEvent e) {
+        myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
+    }
 }

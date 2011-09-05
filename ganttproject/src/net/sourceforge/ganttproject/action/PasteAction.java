@@ -16,24 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.action;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 
-import org.eclipse.core.runtime.IAdaptable;
+//TODO Enable/Disable action depending on clipboard contents
+public class PasteAction extends GPAction {
+    private final GPViewManager myViewmanager;
 
-/**
- * @author bard
- */
-public interface GPViewManager {
-    public GPView createView(IAdaptable adaptable, Icon icon);
-    public AbstractAction getCopyAction();
-    public AbstractAction getCutAction();
-    public AbstractAction getPasteAction();
-    public ChartSelection getSelectedArtefacts();
-    public Chart getActiveChart();
+    public PasteAction(GPViewManager viewManager) {
+        super("paste");
+        myViewmanager = viewManager;
+    }
+
+    @Override
+    protected String getIconFilePrefix() {
+        return "paste_";
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        ChartSelection selection = myViewmanager.getSelectedArtefacts();
+        myViewmanager.getActiveChart().paste(selection);
+        selection.commitClipboardTransaction();
+    }
 }

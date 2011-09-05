@@ -16,24 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.action;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.ChartSelection;
+import javax.swing.JTabbedPane;
 
-import org.eclipse.core.runtime.IAdaptable;
+public class ViewCycleAction extends GPAction {
+    private final JTabbedPane myTabbedPane;
 
-/**
- * @author bard
- */
-public interface GPViewManager {
-    public GPView createView(IAdaptable adaptable, Icon icon);
-    public AbstractAction getCopyAction();
-    public AbstractAction getCutAction();
-    public AbstractAction getPasteAction();
-    public ChartSelection getSelectedArtefacts();
-    public Chart getActiveChart();
+    public ViewCycleAction(JTabbedPane tabbedPane) {
+        super("view.cycle");
+        myTabbedPane = tabbedPane;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1) % myTabbedPane.getTabCount());
+    }
 }

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.gui.baseline;
+package net.sourceforge.ganttproject.action;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -35,10 +35,8 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class BaselineDialogAction extends GPAction {
-    private static final GanttLanguage language = GanttLanguage.getInstance();
     private final IGanttProject myProject;
     private final UIFacade myUiFacade;
     private List<GanttPreviousState> myBaselines;
@@ -100,7 +98,7 @@ public class BaselineDialogAction extends GPAction {
                 return baseline.getName();
             }
         };
-        list.setUndefinedValueLabel(language.getText("baselineDialog.undefinedValueLabel"));
+        list.setUndefinedValueLabel(getI18n("baseline.dialog.undefinedValueLabel"));
         list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         if (myUiFacade.getGanttChart().getBaseline() != null) {
             int index = myBaselines.indexOf(myUiFacade.getGanttChart().getBaseline());
@@ -118,7 +116,8 @@ public class BaselineDialogAction extends GPAction {
                 myUiFacade.getGanttChart().reset();
             }
         });
-        list.getTableAndActions().addAction(new GPAction("baselineDialog.hideBaselines") {
+        list.getTableAndActions().addAction(new GPAction("baseline.dialog.hide") {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 list.getTableAndActions().setSelection(-1);
             }
@@ -139,6 +138,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
         }, new CancelAction() };
-        myUiFacade.createDialog(result, actions, language.getText("baselineDialog.title")).show();
+        myUiFacade.createDialog(result, actions, getI18n("baseline.dialog.title")).show();
     }
 }
