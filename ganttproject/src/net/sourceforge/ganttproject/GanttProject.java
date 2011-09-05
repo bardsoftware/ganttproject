@@ -75,16 +75,15 @@ import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.EditMenu;
-import net.sourceforge.ganttproject.action.ImportResources;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
+import net.sourceforge.ganttproject.action.ViewCycleAction;
+import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
-import net.sourceforge.ganttproject.action.SwitchViewAction;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.chart.ToggleChartAction;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
@@ -154,7 +153,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     // public JMenu mView;
 
     /** Menuitem */
-    private JMenuItem miPreview, miSendMailHuman, miPrjCal, miWebPage, miAbout, miChartOptions;
+    private JMenuItem miPreview, miPrjCal, miWebPage, miAbout, miChartOptions;
 
     private static final int maxSizeMRU = 5;
 
@@ -351,11 +350,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         for (AbstractAction a : myResourceActions.getActions()) {
             mHuman.add(a);
         }
-        miSendMailHuman = createNewItem("/icons/send_mail_16.gif");
-        mHuman.add(miSendMailHuman);
 
-        mHuman.add(new ImportResources(getHumanResourceManager(),
-                getTaskManager(), getRoleManager(), this));
+        mHuman.add(myResourceActions.getResourceSendMailAction());
+        mHuman.add(myResourceActions.getResourceImportAction());
 
         miPrjCal = createNewItem("/icons/default_calendar_16.gif");
         mCalendar.add(miPrjCal);
@@ -568,8 +565,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         mProject.add(myProjectMenu.getSaveProjectAsAction());
         mProject.addSeparator();
 
-        mProject.add(myProjectMenu.getImportFileAction());
-        mProject.add(myProjectMenu.getExportFileAction());
+        mProject.add(myProjectMenu.getProjectImportAction());
+        mProject.add(myProjectMenu.getProjectExportAction());
         mProject.addSeparator();
 
         mServer.add(myProjectMenu.getOpenURLAction());
@@ -587,12 +584,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         JMenu result = changeMenuLabel(new JMenu(), language.getText("view"));
         result.add(miChartOptions);
         List<Chart> charts = PluginManager.getCharts();
-        result.add(new SwitchViewAction(getTabs()));
+        result.add(new ViewCycleAction(getTabs()));
         if (!charts.isEmpty()) {
             result.addSeparator();
         }
         for (Chart chart : charts) {
-            result.add(new JCheckBoxMenuItem(new ToggleChartAction(chart, getViewManager())));
+            result.add(new JCheckBoxMenuItem(new ViewToggleAction(chart, getViewManager())));
         }
         return result;
     }
@@ -746,13 +743,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         miPreview = changeMenuLabel(miPreview, language.getText("preview"));
         mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("resource.new")), 0);
         mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("resource.import")), 4);
-        miSendMailHuman = changeMenuLabel(miSendMailHuman, language.getText("sendMail"));
 
         miPrjCal = changeMenuLabel(miPrjCal, language.getText("projectCalendar"));
 
         miWebPage = changeMenuLabel(miWebPage, language.getText("webPage"));
         miAbout = changeMenuLabel(miAbout, language.getText("about"));
-        miChartOptions = changeMenuLabel(miChartOptions, language.getText("chartOptions"));
+        miChartOptions = changeMenuLabel(miChartOptions, language.getText("chart.options"));
 
         bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
         // bCut.setToolTipText(getToolTip(language.getCorrectedLabel("cut")));
@@ -856,9 +852,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
                     openWebPage();
             } else if (source == miAbout) {
                 aboutDialog();
-            } else if (source == miSendMailHuman) {
-                getTabs().setSelectedIndex(1);
-                getResourcePanel().sendMail(this);
             }
         } else if (source instanceof Document) {
             if (getProjectUIFacade().ensureProjectSaved(getProject())) {

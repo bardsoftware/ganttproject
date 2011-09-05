@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@ import javax.swing.JButton;
 public enum NotificationChannel {
     RSS(Color.YELLOW.brighter()), ERROR(new Color(255, 191, 207));
 
-    static interface Listener {
+   public interface Listener {
         void notificationAdded();
 
         void notificationRead(NotificationItem item);
@@ -104,11 +104,11 @@ public enum NotificationChannel {
         }
     }
 
-    NotificationItem getDefaultNotification() {
+    public NotificationItem getDefaultNotification() {
         return myDefaultNotification;
     }
 
-    void addListener(Listener listener) {
+    public void addListener(Listener listener) {
         myListeners.add(listener);
     }
 
@@ -136,5 +136,10 @@ public enum NotificationChannel {
         for (Listener l : myListeners) {
             l.channelCleared();
         }
+    }
+
+    /** @return true if no more items are available in the channel */
+    public boolean isEmpty() {
+        return getItems().isEmpty();
     }
 }

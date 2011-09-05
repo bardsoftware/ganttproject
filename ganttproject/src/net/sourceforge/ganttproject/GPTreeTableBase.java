@@ -594,7 +594,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         };
     }
 
-    JTree getTree() {
+    public JTree getTree() {
         return this.getTreeTable().getTree();
     }
 

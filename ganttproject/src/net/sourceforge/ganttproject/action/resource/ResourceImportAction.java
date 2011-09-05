@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -35,10 +35,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
  * Import resources action, the user selects a GanttProject file to import the
  * resources from
  */
-public class ImportResources extends GPAction {
+public class ResourceImportAction extends ResourceAction {
     private final TaskManager myTaskManager;
-
-    private final HumanResourceManager myResourceManager;
 
     private final GanttProject myProject;
 
@@ -46,13 +44,11 @@ public class ImportResources extends GPAction {
 
     private OpenFileDialog myOpenDialog;
 
-    public ImportResources(HumanResourceManager resourceManager,
-            TaskManager taskManager, RoleManager roleManager,
+    public ResourceImportAction(HumanResourceManager resourceManager, TaskManager taskManager, RoleManager roleManager,
             GanttProject project) {
-        super("resource.import");
+        super("resource.import", resourceManager);
         myTaskManager = taskManager;
         myRoleManager = roleManager;
-        myResourceManager = resourceManager;
         myProject = project;
     }
 
@@ -63,7 +59,7 @@ public class ImportResources extends GPAction {
             myProject.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                 public void run() {
                     GanttXMLOpen loader = new GanttXMLOpen(myTaskManager);
-                    ResourceTagHandler tagHandler = new ResourceTagHandler(myResourceManager, myRoleManager, myProject
+                    ResourceTagHandler tagHandler = new ResourceTagHandler(getManager(), myRoleManager, myProject
                             .getResourceCustomPropertyManager());
                     DependencyTagHandler dependencyHandler = new DependencyTagHandler(loader.getContext(),
                             myTaskManager, myProject.getUIFacade());

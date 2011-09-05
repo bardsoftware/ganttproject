@@ -18,12 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action.project;
 
-import javax.swing.Action;
+import javax.swing.AbstractAction;
 
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.export.ExportFileAction;
-import net.sourceforge.ganttproject.importer.ImportFileAction;
 
 /**
  * Collection of actions present in the project menu
@@ -37,8 +34,8 @@ public class ProjectMenu {
     private final ExitAction myExitAction;
     private final SaveURLAction mySaveURLAction;
     private final PrintAction myPrintAction;
-    private final ImportFileAction myImportFileAction;
-    private final ExportFileAction myExportFileAction;
+    private final ProjectImportAction myProjectImportAction;
+    private final ProjectExportAction myProjectExportAction;
     private final ProjectPropertiesAction myProjectSettingsAction;
 
     public ProjectMenu(final GanttProject mainFrame) {
@@ -51,40 +48,40 @@ public class ProjectMenu {
         mySaveURLAction = new SaveURLAction(mainFrame);
         myPrintAction = new PrintAction(mainFrame);
         myExitAction = new ExitAction(mainFrame);
-        myImportFileAction = new ImportFileAction(mainFrame.getUIFacade(), mainFrame);
-        myExportFileAction = new ExportFileAction(mainFrame.getUIFacade(), mainFrame, mainFrame.getGanttOptions());
+        myProjectImportAction = new ProjectImportAction(mainFrame.getUIFacade(), mainFrame);
+        myProjectExportAction = new ProjectExportAction(mainFrame.getUIFacade(), mainFrame, mainFrame.getGanttOptions());
     }
-    public GPAction getNewProjectAction() {
+    public AbstractAction getNewProjectAction() {
         return myNewProjectAction;
     }
-    public GPAction getOpenProjectAction() {
+    public AbstractAction getOpenProjectAction() {
         return myOpenProjectAction;
     }
-    public GPAction getSaveProjectAction() {
+    public AbstractAction getSaveProjectAction() {
         return mySaveProjectAction;
     }
-    public GPAction getSaveProjectAsAction() {
+    public AbstractAction getSaveProjectAsAction() {
         return mySaveProjectAsAction;
     }
-    public GPAction getOpenURLAction() {
+    public AbstractAction getOpenURLAction() {
         return myOpenURLAction;
     }
-    public GPAction getExitAction() {
+    public AbstractAction getExitAction() {
         return myExitAction;
     }
-    public GPAction getSaveURLAction() {
+    public AbstractAction getSaveURLAction() {
         return mySaveURLAction;
     }
-    public GPAction getPrintAction() {
+    public AbstractAction getPrintAction() {
         return myPrintAction;
     }
-    public Action getImportFileAction() {
-        return myImportFileAction;
+    public AbstractAction getProjectImportAction() {
+        return myProjectImportAction;
     }
-    public Action getExportFileAction() {
-        return myExportFileAction;
+    public AbstractAction getProjectExportAction() {
+        return myProjectExportAction;
     }
-    public Action getProjectSettingsAction() {
+    public AbstractAction getProjectSettingsAction() {
         return myProjectSettingsAction;
     }
 }

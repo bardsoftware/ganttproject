@@ -16,47 +16,42 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.importer;
+package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.GPView;
+import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.chart.Chart;
 
 /**
  * @author bard
  */
-public class ImportFileAction extends GPAction {
+public class ViewToggleAction extends GPAction {
+    private final Chart myChart;
 
-    private final UIFacade myUIFacade;
+    private final GPView myView;
 
-    private final GanttProject myProject;
-
-    public ImportFileAction(UIFacade uiFacade, GanttProject project) {
-        super(null, "16");
-        myUIFacade = uiFacade;
-        myProject = project;
+    public ViewToggleAction(Chart chart, GPViewManager viewManager) {
+        myChart = chart;
+        myView = viewManager.createView(chart, chart.getIcon());
+        updateAction();
     }
-
-    public void actionPerformed(ActionEvent e) {
-        ImportFileWizardImpl wizard = new ImportFileWizardImpl(
-                myUIFacade, myProject, myProject.getGanttOptions());
-        wizard.show();
-    }
-
+    
     @Override
-    protected String getIconFilePrefix() {
-        return "import_";
-    }
-
-    @Override
-    public void isIconVisible(boolean isNull) {
+    protected String getLocalizedDescription() {
+        return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
     }
 
     @Override
     protected String getLocalizedName() {
-        return GanttLanguage.getInstance().getCorrectedLabel("import");
+        return myChart == null ? null : myChart.getName();
+    }    
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        myView.setVisible(!myView.isVisible());
     }
 }

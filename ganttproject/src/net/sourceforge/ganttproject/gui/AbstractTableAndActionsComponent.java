@@ -107,15 +107,6 @@ public abstract class AbstractTableAndActionsComponent<T> {
     private Action getAddResourceAction() {
         return new GPAction("add") {
             @Override
-            protected String getLocalizedName() {
-                return getI18n("add");
-            }
-
-            @Override
-            protected String getIconFilePrefix() {
-                return null;
-            }
-
             public void actionPerformed(ActionEvent e) {
                 onAddEvent();
             }
@@ -125,15 +116,6 @@ public abstract class AbstractTableAndActionsComponent<T> {
     private Action getDeleteResourceAction() {
         return new GPAction("delete") {
             @Override
-            protected String getLocalizedName() {
-                return getI18n("delete");
-            }
-
-            @Override
-            protected String getIconFilePrefix() {
-                return null;
-            }
-
             public void actionPerformed(ActionEvent e) {
                 onDeleteEvent();
             }

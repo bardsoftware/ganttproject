@@ -1,13 +1,27 @@
 /*
- * Created on 02.04.2005
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart;
+package net.sourceforge.ganttproject.action;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
@@ -17,27 +31,24 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author bard
  */
-public class OptionsDialogAction extends GPAction {
+public class ChartOptionsDialogAction extends GPAction {
     private UIFacade myUIFacade;
 
     private GPOptionGroup[] myGroups;
 
-    public OptionsDialogAction(GPOptionGroup[] groups, UIFacade uifacade) {
-        super(GanttLanguage.getInstance().getText("chartOptions"));
+    public ChartOptionsDialogAction(GPOptionGroup[] groups, UIFacade uifacade) {
+        super("chart.options");
         myGroups = groups;
         myUIFacade = uifacade;
-        this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource(
-                "/icons/chartOptions_16.gif")));
     }
 
     public void actionPerformed(ActionEvent e) {
-        for (int i = 0; i < myGroups.length; i++) {
-            myGroups[i].lock();
+        for (GPOptionGroup group : myGroups) {
+            group.lock();
         }
         final OkAction okAction = new OkAction() {
             public void actionPerformed(ActionEvent e) {
@@ -54,14 +65,14 @@ public class OptionsDialogAction extends GPAction {
     }
 
     private void commit() {
-        for (int i = 0; i < myGroups.length; i++) {
-            myGroups[i].commit();
+        for (GPOptionGroup group : myGroups) {
+            group.commit();
         }
     }
 
     private void rollback() {
-        for (int i = 0; i < myGroups.length; i++) {
-            myGroups[i].rollback();
+        for (GPOptionGroup group : myGroups) {
+            group.rollback();
         }
     }
 
@@ -74,13 +85,6 @@ public class OptionsDialogAction extends GPAction {
 
     @Override
     protected String getIconFilePrefix() {
-        return null;
+        return "chartOptions_";
     }
-
-    @Override
-    protected String getLocalizedName() {
-        return getI18n("chartOptions");
-    }
-
-
 }
