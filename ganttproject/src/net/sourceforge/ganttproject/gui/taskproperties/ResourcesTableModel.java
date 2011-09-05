@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.gui;
+package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,15 +32,35 @@ import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 
 /**
+ * Table model of a table of resources assigned to a task.
+ *
  * @author dbarashev (Dmitry Barashev)
  */
-public class ResourcesTableModel extends AbstractTableModel {
+class ResourcesTableModel extends AbstractTableModel {
 
-    final String[] columnNames = { GanttLanguage.getInstance().getText("id"),
-            GanttLanguage.getInstance().getText("resourcename"),
-            GanttLanguage.getInstance().getText("unit"),
-            GanttLanguage.getInstance().getText("coordinator"),
-            GanttLanguage.getInstance().getText("role") };
+    static enum Column {
+        ID("id", String.class),
+        NAME("resourcename", String.class),
+        UNIT("unit", String.class),
+        COORDINATOR("coordinator", Boolean.class),
+        ROLE("role", String.class);
+
+        private final String myName;
+        private final Class<?> myClass;
+
+        Column(String key, Class<?> clazz) {
+            myName = GanttLanguage.getInstance().getText(key);
+            myClass = clazz;
+        }
+
+        String getName() {
+            return myName;
+        }
+
+        Class<?> getColumnClass() {
+            return myClass;
+        }
+    }
 
     private final List<ResourceAssignment> myAssignments;
 
@@ -54,19 +74,28 @@ public class ResourcesTableModel extends AbstractTableModel {
         myMutator = assignmentCollection.createMutator();
     }
 
-    public int getColumnCount() {
-        return columnNames.length;
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return Column.values()[columnIndex].getColumnClass();
     }
 
+
+    @Override
+    public int getColumnCount() {
+        return Column.values().length;
+    }
+
+    @Override
     public int getRowCount() {
         return myAssignments.size() + 1;
     }
 
     @Override
     public String getColumnName(int col) {
-        return columnNames[col];
+        return Column.values()[col].getName();
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
         Object result;
         if (row >= 0) {
@@ -92,7 +121,7 @@ public class ResourcesTableModel extends AbstractTableModel {
                     result = "";
                 }
             } else {
-                result = "";
+                result = null;
             }
         } else {
             throw new IllegalArgumentException("I can't return data in row="
@@ -175,12 +204,7 @@ public class ResourcesTableModel extends AbstractTableModel {
             if (myAssignments.isEmpty())
                 coord = true;
             newAssignment.setCoordinator(coord);
-
-            if (newAssignment.getResource() instanceof HumanResource)
-                newAssignment
-                        .setRoleForAssignment(((HumanResource) newAssignment
-                                .getResource()).getRole());
-
+            newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
             myAssignments.add(newAssignment);
             fireTableRowsInserted(myAssignments.size(), myAssignments.size());
         }
