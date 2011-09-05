@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,47 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.importer;
+package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import javax.swing.AbstractAction;
 
-/**
- * @author bard
- */
-public class ImportFileAction extends GPAction {
+public class ArtefactNewAction extends GPAction {
+    private final ActiveActionProvider myProvider;
 
-    private final UIFacade myUIFacade;
-
-    private final GanttProject myProject;
-
-    public ImportFileAction(UIFacade uiFacade, GanttProject project) {
-        super(null, "16");
-        myUIFacade = uiFacade;
-        myProject = project;
+    public ArtefactNewAction(ActiveActionProvider provider) {
+        myProvider = provider;
     }
 
     public void actionPerformed(ActionEvent e) {
-        ImportFileWizardImpl wizard = new ImportFileWizardImpl(
-                myUIFacade, myProject, myProject.getGanttOptions());
-        wizard.show();
+        AbstractAction activeAction = myProvider.getActiveAction();
+        activeAction.actionPerformed(e);
     }
 
     @Override
     protected String getIconFilePrefix() {
-        return "import_";
+        return "insert_";
     }
 
     @Override
     public void isIconVisible(boolean isNull) {
-    }
-
-    @Override
-    protected String getLocalizedName() {
-        return GanttLanguage.getInstance().getCorrectedLabel("import");
+        setIconVisible(isNull);
     }
 }

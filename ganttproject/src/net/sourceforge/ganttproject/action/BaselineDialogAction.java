@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,12 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.gui.baseline;
+package net.sourceforge.ganttproject.action;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,6 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class BaselineDialogAction extends GPAction {
     private final IGanttProject myProject;
@@ -45,11 +43,12 @@ public class BaselineDialogAction extends GPAction {
     private List<GanttPreviousState> myTrash = new ArrayList<GanttPreviousState>();
 
     public BaselineDialogAction(IGanttProject project, UIFacade uiFacade) {
-        super("baselineDialogAction");
+        super("baseline.dialog");
         myProject = project;
         myUiFacade = uiFacade;
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         myBaselines = new ArrayList<GanttPreviousState>(myProject.getBaselines());
 
@@ -99,7 +98,7 @@ public class BaselineDialogAction extends GPAction {
                 return baseline.getName();
             }
         };
-        list.setUndefinedValueLabel(GanttLanguage.getInstance().getText("baselineDialog.undefinedValueLabel"));
+        list.setUndefinedValueLabel(getI18n("baseline.dialog.undefinedValueLabel"));
         list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         if (myUiFacade.getGanttChart().getBaseline() != null) {
             int index = myBaselines.indexOf(myUiFacade.getGanttChart().getBaseline());
@@ -117,7 +116,8 @@ public class BaselineDialogAction extends GPAction {
                 myUiFacade.getGanttChart().reset();
             }
         });
-        list.getTableAndActions().addAction(new GPAction("baselineDialog.hideBaselines") {
+        list.getTableAndActions().addAction(new GPAction("baseline.dialog.hide") {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 list.getTableAndActions().setSelection(-1);
             }
@@ -129,26 +129,15 @@ public class BaselineDialogAction extends GPAction {
         result.add(actionsComponent, BorderLayout.NORTH);
         result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        Action[] actions = new Action[] {
-            new OkAction() {
-                public void actionPerformed(ActionEvent e) {
-                    myProject.getBaselines().clear();
-                    myProject.getBaselines().addAll(myBaselines);
-                    for (GanttPreviousState trashBaseline : myTrash) {
-                        trashBaseline.remove();
-                    }
-                }
-            },
-            new CancelAction() {
-                public void actionPerformed(ActionEvent actionEvent) {
+        Action[] actions = new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                myProject.getBaselines().clear();
+                myProject.getBaselines().addAll(myBaselines);
+                for (GanttPreviousState trashBaseline : myTrash) {
+                    trashBaseline.remove();
                 }
             }
-        };
-        myUiFacade.createDialog(result, actions, GanttLanguage.getInstance().getText("baselineDialog.title")).show();
-    }
-
-    @Override
-    protected String getLocalizedName() {
-        return MessageFormat.format("<html><b>&nbsp;{0}&nbsp;</b></html>", super.getLocalizedName());
+        }, new CancelAction() };
+        myUiFacade.createDialog(result, actions, getI18n("baseline.dialog.title")).show();
     }
 }

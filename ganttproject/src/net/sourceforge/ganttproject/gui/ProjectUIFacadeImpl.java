@@ -89,11 +89,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                     }
                 });
             }
-            actions.add(new CancelAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                }
-            });
+            actions.add(new CancelAction());
             myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toArray(new Action[0]));
 
             return false;
@@ -278,7 +274,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
         beforeClose();
         project.close();
-        myWorkbenchFacade.setStatusText(i18n.getText("newProject2"));
+        myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"));
         showNewProjectWizard(project);
     }
 

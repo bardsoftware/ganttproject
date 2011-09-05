@@ -19,16 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
-import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.search.SearchDialogAction;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu {
@@ -43,9 +40,7 @@ public class EditMenu {
         myUiFacade = uiFacade;
         myViewManager = viewManager;
         myUndoAction = new UndoAction(getUndoManager(), getUIFacade());
-        myUndoAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, GPAction.MENU_MASK));
         myRedoAction = new RedoAction(getUndoManager(), getUIFacade());
-        myRedoAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y, GPAction.MENU_MASK));
     }
 
     public JMenu create() {
@@ -55,7 +50,6 @@ public class EditMenu {
             }
         });
         result.add(getUndoAction());
-
         result.add(getRedoAction());
         result.addSeparator();
         result.add(new RefreshViewAction(getUIFacade()));

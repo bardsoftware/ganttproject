@@ -1,5 +1,5 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool.
 Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
@@ -15,36 +15,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.task.TaskManager;
+import javax.swing.AbstractAction;
 
-/**
- * @author bard
- */
-public class ScrollGanttChartRightAction extends GPAction implements
-        RolloverAction {
-    private final ScrollingManager myScrollingManager;
-    private final TaskManager myTaskManager;
+public class ArtefactPropertiesAction extends GPAction {
+    private final ActiveActionProvider myProvider;
 
-    public ScrollGanttChartRightAction(ScrollingManager scrollingManager, TaskManager taskManager,
-            String iconSize) {
-        super("ScrollRight", iconSize);
-        myScrollingManager = scrollingManager;
-        myTaskManager = taskManager;
+    public ArtefactPropertiesAction(ActiveActionProvider provider) {
+        myProvider = provider;
     }
 
     public void actionPerformed(ActionEvent e) {
-        myScrollingManager.scrollBy(myTaskManager.createLength(-1));
+        AbstractAction activeAction = myProvider.getActiveAction();
+        activeAction.actionPerformed(e);
     }
 
     @Override
     protected String getIconFilePrefix() {
-        return "next_";
+        return "properties_";
     }
 
     @Override

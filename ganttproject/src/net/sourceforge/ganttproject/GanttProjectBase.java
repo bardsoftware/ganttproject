@@ -21,21 +21,22 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFrame;
-import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
+import net.sourceforge.ganttproject.action.CopyAction;
+import net.sourceforge.ganttproject.action.CutAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.PasteAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -282,26 +283,31 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     public Chart getActiveChart() {
-        GPViewImpl activeView = myViewManager.mySelectedView;
-        return activeView.myChart;
-//        Chart resourcesChart = getResourceChart();
-//        Chart ganttChart = getGanttChart();
-//        Chart visibleChart = (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) ? resourcesChart
-//                : ganttChart;
-//        return visibleChart;
+        GPView activeView = myViewManager.mySelectedView;
+        return activeView.getChart();
     }
 
     private class ViewManagerImpl implements GPViewManager {
         private final GanttTabbedPane myTabs;
         private final List<GPView> myViews = new ArrayList<GPView>();
-        private GPViewImpl mySelectedView;
+        private GPView mySelectedView;
+
+        private final AbstractAction myCopyAction;
+        private final AbstractAction myCutAction;
+        private final AbstractAction myPasteAction;
 
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;
+
+            // Create actions
+            myCopyAction = new CopyAction(this);
+            myCutAction = new CutAction(this);
+            myPasteAction = new PasteAction(this);
+
             myTabs.addChangeListener(new ChangeListener() {
 
                 public void stateChanged(ChangeEvent e) {
-                    GPViewImpl selectedView = (GPViewImpl) myTabs.getSelectedUserObject();
+                    GPView selectedView = (GPView) myTabs.getSelectedUserObject();
                     if (mySelectedView == selectedView) {
                         return;
                     }
@@ -321,16 +327,20 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             return view;
         }
 
-        public Action getCopyAction() {
+        public AbstractAction getCopyAction() {
             return myCopyAction;
         }
 
-        public Action getCutAction() {
+        public AbstractAction getCutAction() {
             return myCutAction;
         }
 
-        public Action getPasteAction() {
+        public AbstractAction getPasteAction() {
             return myPasteAction;
+        }
+        
+        public ChartSelection getSelectedArtefacts() {
+            return mySelectedView.getChart().getSelection();
         }
 
         ProjectEventListener getProjectEventListener() {
@@ -346,65 +356,14 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
 
         private void updateActions() {
-            ChartSelection selection = mySelectedView.myChart.getSelection();
+            ChartSelection selection = mySelectedView.getChart().getSelection();
             myCopyAction.setEnabled(false==selection.isEmpty());
             myCutAction.setEnabled(false==selection.isEmpty() && selection.isDeletable().isOK());
         }
 
-        // FIXME The actions below are also defined in separate classes/files in ganttproject.action package -> remove actions below?
-        private final GPAction myCopyAction = new GPAction() {
-            {
-                putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
-            }
-            @Override
-            protected String getIconFilePrefix() {
-                return "copy_";
-            }
-            public void actionPerformed(ActionEvent e) {
-                mySelectedView.myChart.getSelection().startCopyClipboardTransaction();
-            }
-            @Override
-            protected String getLocalizedName() {
-                return getI18n("copy");
-            }
-        };
-
-        private final GPAction myCutAction = new GPAction() {
-            {
-                putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
-            }
-            @Override
-            protected String getIconFilePrefix() {
-                return "cut_";
-            }
-            public void actionPerformed(ActionEvent e) {
-                mySelectedView.myChart.getSelection().startMoveClipboardTransaction();
-            }
-            @Override
-            protected String getLocalizedName() {
-                return getI18n("cut");
-            }
-        };
-
-        private final GPAction myPasteAction = new GPAction() {
-            {
-                putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
-            }
-            @Override
-            protected String getIconFilePrefix() {
-                return "paste_";
-            }
-            public void actionPerformed(ActionEvent e) {
-                ChartSelection selection = mySelectedView.myChart.getSelection();
-                mySelectedView.myChart.paste(selection);
-                selection.commitClipboardTransaction();
-            }
-
-            @Override
-            protected String getLocalizedName() {
-                return getI18n("paste");
-            }
-        };
+        public Chart getActiveChart() {
+            return mySelectedView.getChart();
+        }
     }
 
     private class GPViewImpl implements GPView, ChartSelectionListener {
@@ -464,6 +423,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
         public void selectionChanged() {
             myManager.updateActions();
+        }
+        
+        public Chart getChart() {
+            return myChart;
         }
     }
 

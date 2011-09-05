@@ -30,13 +30,11 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
-public class DeleteTasksAction extends TaskActionBase {
+public class TaskDeleteAction extends TaskActionBase {
 
-    private final GanttTree2 myTree;
-
-    public DeleteTasksAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade, GanttTree2 tree) {
-        super("deleteTask", taskManager, selectionManager, uiFacade);
-        myTree = tree;
+    public TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+            GanttTree2 tree) {
+        super("task.delete", taskManager, selectionManager, uiFacade, tree);
     }
 
     @Override
@@ -50,27 +48,24 @@ public class DeleteTasksAction extends TaskActionBase {
     }
 
     @Override
-    protected void run(List<Task> selection) throws Exception {
-        final DefaultMutableTreeNode[] cdmtn = myTree.getSelectedNodes();
+    protected boolean askUserPermission(List<Task> selection) {
         Choice choice = getUIFacade().showConfirmationDialog(getI18n("msg19"), getI18n("question"));
-
-        if (choice == Choice.YES) {
-            getUIFacade().getUndoManager().undoableEdit("Task removed", new Runnable() {
-                public void run() {
-                    myTree.stopEditing();
-                    for (int i = 0; i < cdmtn.length; i++) {
-                        if (cdmtn[i] != null && cdmtn[i] instanceof TaskNode) {
-                            Task ttask = (Task) (cdmtn[i].getUserObject());
-                            myTree.removeCurrentNode(cdmtn[i]);
-                            ttask.delete();
-                        }
-                    }
-                }
-            });
-            getUIFacade().getGanttChart().reset();
-            getUIFacade().getResourceChart().reset();
-            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        }
+        return choice == Choice.YES;
     }
 
+    @Override
+    protected void run(List<Task> selection) throws Exception {
+        final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
+        getTree().stopEditing();
+        for (DefaultMutableTreeNode node : cdmtn) {
+            if (node != null && node instanceof TaskNode) {
+                Task task = (Task) node.getUserObject();
+                getTree().removeCurrentNode(node);
+                task.delete();
+            }
+        }
+        getUIFacade().getGanttChart().reset();
+        getUIFacade().getResourceChart().reset();
+        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+    }
 }

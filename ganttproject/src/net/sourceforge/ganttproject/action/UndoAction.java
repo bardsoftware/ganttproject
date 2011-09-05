@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2005-2011 Dmitry Barashev
+Copyright (C) 2005-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -43,16 +42,27 @@ public class UndoAction extends GPAction implements GPUndoListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        myUiFacade.setStatusText(GanttLanguage.getInstance().getText("undo"));
+        myUiFacade.setStatusText(getLocalizedDescription());
         myUndoManager.undo();
     }
 
     public void undoableEditHappened(UndoableEditEvent e) {
         setEnabled(myUndoManager.canUndo());
+        updateAction();
     }
 
     public void undoOrRedoHappened() {
         setEnabled(myUndoManager.canUndo());
+        updateAction();
+    }
+    
+    @Override
+    protected String getLocalizedName() {
+        if(myUndoManager == null || myUndoManager.canUndo() == false) {
+            return super.getLocalizedName();
+        }
+        // Use name of undoable action
+        return myUndoManager.getUndoPresentationName();
     }
 
     @Override

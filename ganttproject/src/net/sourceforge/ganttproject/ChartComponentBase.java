@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Component;
@@ -22,6 +40,7 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import net.sourceforge.ganttproject.action.ChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -30,7 +49,6 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
-import net.sourceforge.ganttproject.chart.OptionsDialogAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
@@ -60,7 +78,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     private final UIFacade myUIFacade;
 
-    private OptionsDialogAction myOptionsDialogAction;
+    private ChartOptionsDialogAction myOptionsDialogAction;
 
     public ChartComponentBase(IGanttProject project, UIFacade uiFacade,
             ZoomManager zoomManager) {
@@ -139,7 +157,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     public Action getOptionsDialogAction() {
         if (myOptionsDialogAction == null) {
-            myOptionsDialogAction = new OptionsDialogAction(getOptionGroups(), getUIFacade());
+            myOptionsDialogAction = new ChartOptionsDialogAction(getOptionGroups(), getUIFacade());
         }
         return myOptionsDialogAction;
     }

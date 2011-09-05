@@ -307,6 +307,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
             JPanel labelAndButton = new JPanel(new BorderLayout());
             labelAndButton.add(myLabel, BorderLayout.CENTER);
             JButton cancelButton = new JButton(new CancelAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     myProgressMonitor.setCanceled(true);
                     //System.err.println("\n\n"+Platform.getJobManager().currentJob().getName()+"\n\n");

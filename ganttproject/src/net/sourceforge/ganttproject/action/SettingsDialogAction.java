@@ -19,10 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Action;
-import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -33,8 +29,7 @@ public class SettingsDialogAction extends GPAction {
     private final IGanttProject myProject;
 
     public SettingsDialogAction(IGanttProject project, UIFacade uiFacade) {
-        super("settings");
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, MENU_MASK));
+        super("settings.app");
         myUiFacade = uiFacade;
         myProject = project;
     }
