@@ -95,9 +95,11 @@ public class ExporterToImage extends AbstractExporter {
     }
 
     public GPOptionGroup[] getSecondaryOptions() {
-        return new GPOptionGroup[] {new GPOptionGroup("", new GPOption[] {
-           getExportRangeStartOption(), getExportRangeEndOption()
-        })};
+        GPOptionGroup[] optionGroup =  {new GPOptionGroup("", new GPOption[] {
+                getExportRangeStartOption(), getExportRangeEndOption()
+             })};
+        optionGroup[0].setTitled(false);
+        return optionGroup;
     }
 
     public Component getCustomOptionsUI() {
