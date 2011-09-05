@@ -30,31 +30,14 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class WizardImpl {
-    public class NextAction extends AbstractAction {
-        NextAction() {
-            super(GanttLanguage.getInstance().getText("next"));
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            WizardImpl.this.nextPage();
-        }
-    }
-
-    public class BackAction extends AbstractAction {
-        BackAction() {
-            super(GanttLanguage.getInstance().getText("back"));
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            WizardImpl.this.backPage();
-        }
-    }
+    private final static GanttLanguage language = GanttLanguage.getInstance();
 
     private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
 
@@ -64,13 +47,13 @@ public abstract class WizardImpl {
 
     private final CardLayout myCardLayout;
 
-    private final NextAction myNextAction;
+    private final AbstractAction myNextAction;
 
-    private final BackAction myBackAction;
+    private final AbstractAction myBackAction;
 
-    private OkAction myOkAction;
+    private final AbstractAction myOkAction;
 
-    private CancelAction myCancelAction;
+    private final AbstractAction myCancelAction;
 
     private final UIFacade myUIFacade;
 
@@ -82,8 +65,27 @@ public abstract class WizardImpl {
         myTitle = title;
         myCardLayout = new CardLayout();
         myPagesContainer = new JPanel(myCardLayout);
-        myNextAction = new NextAction();
-        myBackAction = new BackAction();
+        myNextAction = new GPAction("next") {
+            public void actionPerformed(ActionEvent e) {
+                WizardImpl.this.nextPage();
+            }
+        };
+        myBackAction = new GPAction("back") {
+            public void actionPerformed(ActionEvent e) {
+                WizardImpl.this.backPage();
+            }
+        };
+        myOkAction = new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                onOkPressed();
+            }
+        };
+        myCancelAction = new CancelAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onCancelPressed();
+            }
+        };
     }
 
     public void nextPage() {
@@ -111,10 +113,8 @@ public abstract class WizardImpl {
             WizardPage nextPage = myPages.get(i);
 
             JPanel pagePanel = new JPanel(new BorderLayout());
-            JComponent titlePanel = TopPanel.create(nextPage.getTitle() + "   ("
-                    + GanttLanguage.getInstance().getText("step") + " "
-                    + (i + 1) + " " + GanttLanguage.getInstance().getText("of")
-                    + " " + (myPages.size()) + ")", null);
+            JComponent titlePanel = TopPanel.create(nextPage.getTitle() + "   (" + language.getText("step") + " "
+                    + (i + 1) + " " + language.getText("of") + " " + (myPages.size()) + ")", null);
             pagePanel.add(titlePanel, BorderLayout.NORTH);
             JComponent component = (JComponent) nextPage.getComponent();
             component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
@@ -124,19 +124,9 @@ public abstract class WizardImpl {
         }
         myCardLayout.first(myPagesContainer);
         myPagesContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        myOkAction = new OkAction() {
-            public void actionPerformed(ActionEvent e) {
-                onOkPressed();
-            }
-        };
-        myCancelAction = new CancelAction() {
-            public void actionPerformed(ActionEvent e) {
-                onCancelPressed();
-            }
-        };
         adjustButtonState();
-        myUIFacade.createDialog(myPagesContainer, new Action[] { myBackAction,
-                myNextAction, myOkAction, myCancelAction }, myTitle).show();
+        myUIFacade.createDialog(myPagesContainer,
+                new Action[] { myBackAction, myNextAction, myOkAction, myCancelAction }, myTitle).show();
     }
 
     public void adjustButtonState() {

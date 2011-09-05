@@ -40,6 +40,8 @@ import javax.swing.SwingConstants;
 public class TestGanttRolloverButton extends JButton {
 
     private int myAutoRepeatMilliseconds;
+    
+    private boolean myTextHidden = false;
 
     public TestGanttRolloverButton() {
         setBorderPainted(false);
@@ -75,6 +77,7 @@ public class TestGanttRolloverButton extends JButton {
     }
 
     public void setTextHidden(boolean isHidden) {
+        myTextHidden = isHidden;
         if (isHidden) {
             setText("");
         } else {
@@ -93,6 +96,16 @@ public class TestGanttRolloverButton extends JButton {
         super.setIcon(icon);
     }
 
+    @Override
+    public void setText(String text) {
+        // Only set/update text if no icon is present
+        if(myTextHidden) {
+            super.setText("");
+        } else {
+            super.setText(text);
+        }
+    }
+    
     public void setDefaultIcon(Icon iconOn) {
         setIcon(iconOn);
     }

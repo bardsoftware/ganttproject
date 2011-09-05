@@ -22,39 +22,53 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-abstract class TaskActionBase extends GPAction implements Listener {
+abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener {
     private final TaskManager myTaskManager;
     private List<Task> mySelection;
     private final UIFacade myUIFacade;
-    private TaskSelectionManager mySelectionManager;
+    private final TaskSelectionManager mySelectionManager;
+    private final GanttTree2 myTree;
 
-    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+            UIFacade uiFacade, GanttTree2 tree) {
         super(name);
         myTaskManager = taskManager;
         mySelectionManager = selectionManager;
+        myUIFacade = uiFacade;
+        myTree = tree;
         selectionManager.addSelectionListener(this);
         selectionChanged(selectionManager.getSelectedTasks());
-        myUIFacade = uiFacade;
     }
 
     public void actionPerformed(ActionEvent e) {
         final List<Task> selection = new ArrayList<Task>(mySelection);
-        myUIFacade.getUndoManager().undoableEdit(getLocalizedName(), new Runnable() {
-            public void run() {
-                try {
-                    TaskActionBase.this.run(selection);
-                } catch (Exception e) {
-                    getUIFacade().showErrorDialog(e);
+        if(askUserPermission(selection)) {
+            myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                public void run() {
+                    try {
+                        TaskActionBase.this.run(selection);
+                    } catch (Exception e) {
+                        getUIFacade().showErrorDialog(e);
+                    }
                 }
-            }
-        });
+            });
+        }
+    }
+
+    /**
+     * @param selection of tasks for which permission is required 
+     * @return true if the operation is accepted by the user */
+    protected boolean askUserPermission(List<Task> selection) {
+        // Accept operation by default
+        return true;
     }
 
     public void selectionChanged(List<Task> currentSelection) {
@@ -75,6 +89,14 @@ abstract class TaskActionBase extends GPAction implements Listener {
 
     protected UIFacade getUIFacade() {
         return myUIFacade;
+    }
+    
+    protected GanttTree2 getTree() {
+        return myTree;
+    }
+
+    protected void forwardScheduling() throws TaskDependencyException {
+        myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
     }
 
     protected abstract boolean isEnabled(List<Task> selection);

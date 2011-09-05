@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 import javax.swing.Action;
 
@@ -38,40 +39,36 @@ public class GanttDialogProperties {
     }
 
     public void show(final IGanttProject project, final UIFacade uiFacade) {
+        final GanttLanguage language = GanttLanguage.getInstance();
         final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
-        final Action[] actions = new Action[] {
-            new OkAction() {
-                public void actionPerformed(ActionEvent arg0) {
-                    uiFacade.getUndoManager().undoableEdit("Properties changed",
-                            new Runnable() {
-                                public void run() {
-                                    taskPropertiesBean.getReturnTask();
-                                    try {
-                                        project.getTaskManager().getAlgorithmCollection()
-                                        .getRecalculateTaskScheduleAlgorithm().run();
-                                    } catch (TaskDependencyException e) {
-                                        if (!GPLogger.log(e)) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                    uiFacade.refresh();
-                                }
-                            });
-                }
-            },
-            new CancelAction() {
-                public void actionPerformed(ActionEvent arg0) {
-                }
+        final Action[] actions = new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), new Runnable() {
+                    public void run() {
+                        taskPropertiesBean.getReturnTask();
+                        try {
+                            project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()
+                                    .run();
+                        } catch (TaskDependencyException e) {
+                            if (!GPLogger.log(e)) {
+                                e.printStackTrace();
+                            }
+                        }
+                        uiFacade.refresh();
+                    }
+                });
             }
-        };
+        }, new CancelAction() };
+
         StringBuffer taskNames = new StringBuffer();
         for (int i = 0; i < myTasks.length; i++) {
             if (i > 0) {
-                taskNames.append(',');
+                taskNames.append(language.getText(i + 1 == myTasks.length ? "list.separator.last" : "list.separator"));
             }
             taskNames.append(myTasks[i].getName());
         }
-        String title = GanttLanguage.getInstance().getText("propertiesFor")+" '"+taskNames+"'";
+        
+        final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
         uiFacade.createDialog(taskPropertiesBean, actions, title).show();
     }
 }

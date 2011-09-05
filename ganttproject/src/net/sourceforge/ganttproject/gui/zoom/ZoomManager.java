@@ -6,6 +6,8 @@ package net.sourceforge.ganttproject.gui.zoom;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.action.ZoomInAction;
+import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.time.TimeUnitPair;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -66,12 +68,19 @@ public class ZoomManager {
     /** If this value is false the maximum ZoomState is not reached */
     private boolean myMaximumZoomStateReached = false;
 
+    private final ZoomInAction myZoomInAction;
+
+    private final ZoomOutAction myZoomOutAction;
+
     public ZoomManager(TimeUnitStack timeUnitStack) {
         TimeUnitPair[] unitPairs = timeUnitStack.getTimeUnitPairs();
         myZoomStates = new ArrayList<ZoomState>(unitPairs.length);
         for (int i = 0; i < unitPairs.length; i++) {
             myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], i));
         }
+
+        myZoomInAction = new ZoomInAction(this);
+        myZoomOutAction = new ZoomOutAction(this);
     }
 
     public boolean canZoomIn() {
@@ -147,10 +156,18 @@ public class ZoomManager {
                 // since a width of 0 is not possible (and breaking stuff).
                 myMaximumZoomStateReached = true;
             }
-            myZoomStates.add(new ZoomState(lastZoomState.getTimeUnitPair(),
-                    (int) bottomUnitWidth, zoom));
+            myZoomStates.add(new ZoomState(lastZoomState.getTimeUnitPair(), bottomUnitWidth, zoom));
         }
 
         return myZoomStates.get(zoom);
+    }
+    
+    public ZoomInAction getZoomInAction() {
+        return myZoomInAction;
+    }
+    
+    
+    public ZoomOutAction getZoomOutAction() {
+        return myZoomOutAction;
     }
 }

@@ -160,20 +160,22 @@ public class GanttDialogCustomColumn  {
     }
 
     public void setVisible(boolean visible) {
-        Component rootComponent = getComponent();
-        getUIFacade().createDialog(rootComponent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.commit();
-                        myDate.commit();
-                        GanttDialogCustomColumn.this.ok();
-                    }},
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.rollback();
-                        myDate.rollback();
-                    }
-        }}, "").show();
+        if(visible) {
+            Component rootComponent = getComponent();
+            getUIFacade().createDialog(rootComponent, new Action[] { new OkAction() {
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.commit();
+                    myDate.commit();
+                    GanttDialogCustomColumn.this.ok();
+                }
+            }, new CancelAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.rollback();
+                    myDate.rollback();
+                }
+            } }, "").show();
+        }
     }
 
     private UIFacade getUIFacade() {

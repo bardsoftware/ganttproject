@@ -160,20 +160,13 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
         fc.addChoosableFileFilter(myFileFilter);
 
-        Action[] dialogActions = new Action [] {
-                new OkAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        setFile(fc.getSelectedFile());
-                        onFileChosen(myFile);
-                    }
-                },
-                new CancelAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                    }
-                }
-        };
+        Action[] dialogActions = new Action[] { new OkAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setFile(fc.getSelectedFile());
+                onFileChosen(myFile);
+            }
+        }, new CancelAction() };
         myUiFacade.createDialog(fc, dialogActions, "").show();
     }
 

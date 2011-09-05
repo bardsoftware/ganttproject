@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -196,7 +196,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         getTreeTable().getActionMap().put(action.getValue(Action.NAME), action);
     }
 
-    boolean canMoveSelectionUp() {
+    public boolean canMoveSelectionUp() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return false;
@@ -209,7 +209,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return true;
     }
 
-    void upResource() {
+    /** Move selected resource up */
+    public void upResource() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return;
@@ -228,7 +229,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         }
     }
 
-    boolean canMoveSelectionDown() {
+    public boolean canMoveSelectionDown() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return false;
@@ -241,8 +242,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return true;
     }
 
-    /** Move down the selected resource */
-    void downResource() {
+    /** Move the selected resource down */
+    public void downResource() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length==0) {
             return;

@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 200242011 Alexandre Thomas, GanttProject Team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,31 +16,26 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui.options;
+package net.sourceforge.ganttproject.action;
 
-import net.sourceforge.ganttproject.GanttProject;
+import java.awt.event.ActionEvent;
 
-/**
- * Simple class for welcome panel.
- *
- * @author athomas
- */
-public class WelcomeSettingsPanel extends GeneralOptionPanel {
-    public WelcomeSettingsPanel(GanttProject parent) {
-        super(language.getCorrectedLabel("settings"), language
-                .getText("settingsWelcome"));
+import net.sourceforge.ganttproject.GPViewManager;
 
-        applyComponentOrientation(language.getComponentOrientation());
+//TODO Enable/Disable action on selection changes
+public class CopyAction extends GPAction {
+    private final GPViewManager myViewmanager;
+
+    public CopyAction(GPViewManager viewManager) {
+        super("copy");
+        myViewmanager = viewManager;
     }
 
-    /** This method checks if the value has changed, and asks for commit changes. */
     @Override
-    public boolean applyChanges(boolean askForApply) {
-        return false;
+    protected String getIconFilePrefix() {
+        return "copy_";
     }
-
-    /** Initialize the component. */
-    @Override
-    public void initialize() {
+    public void actionPerformed(ActionEvent e) {
+        myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
     }
 }
