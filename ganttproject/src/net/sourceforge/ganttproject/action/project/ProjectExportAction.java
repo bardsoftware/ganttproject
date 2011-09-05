@@ -38,7 +38,7 @@ public class ProjectExportAction extends GPAction {
     private final GanttOptions myOptions;
 
     public ProjectExportAction(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
-        super("file.export");
+        super("project.export");
         myProject = project;
         myUIFacade = uiFacade;
         myOptions = options;
