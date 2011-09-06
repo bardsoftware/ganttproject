@@ -106,6 +106,7 @@ import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
@@ -129,7 +130,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 /**
  * Main frame of the project
  */
-public class GanttProject extends GanttProjectBase implements ActionListener, ResourceView {
+public class GanttProject extends GanttProjectBase implements ActionListener, ResourceView, GanttLanguage.Listener {
 
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
@@ -482,7 +483,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
 
         System.err.println("6. changing language ...");
-        changeLanguage();
+        languageChanged(null);
+        // Add Listener after language update (to be sure that it is not updated twice)
+        language.addListener(this);
 
 
         System.err.println("7. changing look'n'feel ...");
@@ -664,7 +667,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     }
 
     /** Function to change language of the project */
-    public void changeLanguage() {
+    public void languageChanged(Event event) {
         applyComponentOrientation(language.getComponentOrientation());
         changeLanguageOfMenu();
         area.repaint();
@@ -728,7 +731,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return menu;
     }
 
-    //FIXME method is not called when language changes?!
     //TODO Make sure that the actions handle language changes, so this method is ot required
     /** Set the menus language after the user select a different language */
     private void changeLanguageOfMenu() {
