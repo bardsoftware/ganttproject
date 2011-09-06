@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.util.StringUtils;
 
 public class AssignmentDeleteAction extends GPAction {
     private final AssignmentContext myContext;
@@ -41,7 +42,7 @@ public class AssignmentDeleteAction extends GPAction {
         final ResourceAssignment[] context = myContext.getResourceAssignments();
         if (context != null && context.length > 0) {
             Choice choice = myProject.getUIFacade().showConfirmationDialog(
-                    getI18n("msg23") + " " + getDisplayName(context) + "?", getI18n("warning"));
+                    getI18n("msg23") + " " + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
             if (choice == Choice.YES) {
                 myProject.getUIFacade().getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                     public void run() {
@@ -60,21 +61,6 @@ public class AssignmentDeleteAction extends GPAction {
             ra.getTask().getAssignmentCollection().deleteAssignment(
                     ra.getResource());
         }
-    }
-
-    // TODO Move to StringUtils
-    private static String getDisplayName(Object[] objs) {
-        if (objs.length == 1) {
-            return objs[0].toString();
-        }
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < objs.length; i++) {
-            result.append(objs[i].toString());
-            if (i < objs.length - 1) {
-                result.append(", ");
-            }
-        }
-        return result.toString();
     }
 
     @Override

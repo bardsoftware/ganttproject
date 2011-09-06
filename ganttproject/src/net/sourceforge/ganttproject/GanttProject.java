@@ -699,20 +699,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         agp.setVisible(true);
     }
 
-    private String getDisplayName(Object[] objs) {
-        if (objs.length == 1) {
-            return objs[0].toString();
-        }
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < objs.length; i++) {
-            result.append(objs[i].toString());
-            if (i < objs.length - 1) {
-                result.append(", ");
-            }
-        }
-        return result.toString();
-    }
-
     /** Exit the Application */
     private void exitForm() {
         quitApplication();
