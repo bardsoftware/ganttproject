@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.ResourceTreeTable;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
@@ -43,18 +44,21 @@ public class ResourceActionSet {
 
     private final ResourceImportAction myResourceImportAction;
 
+    private final AssignmentDeleteAction myAssignmentDelete;
+
     private AbstractAction[] myActions;
 
-    public ResourceActionSet(ResourceContext context, GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
+    public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext, GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
         HumanResourceManager manager = projectFrame.getHumanResourceManager();
         myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
-        myResourceDeleteAction = new ResourceDeleteAction(manager, context, projectFrame, uiFacade);
-        myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, context, uiFacade);
+        myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);
+        myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);
         myResourceMoveUpAction = new ResourceMoveUpAction(table);
         myResourceMoveDownAction = new ResourceMoveDownAction(table);
         myResourceSendMailAction = new ResourceSendMailAction(table);
         myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(), projectFrame
                 .getRoleManager(), projectFrame);
+        myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, projectFrame);
     }
 
     public AbstractAction[] getActions() {
@@ -90,5 +94,9 @@ public class ResourceActionSet {
 
     public ResourceImportAction getResourceImportAction() {
         return myResourceImportAction;
+    }
+    
+    public AssignmentDeleteAction getAssignmentDelete() {
+        return myAssignmentDelete;
     }
 }
