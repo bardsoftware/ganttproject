@@ -27,9 +27,10 @@ import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
+import net.sourceforge.ganttproject.util.StringUtils;
 
 /**
- * Action connected to the menu item for delete a resource
+ * Action for deleting resources
  */
 public class ResourceDeleteAction extends ResourceAction {
     private final UIFacade myUIFacade;
@@ -50,7 +51,7 @@ public class ResourceDeleteAction extends ResourceAction {
     public void actionPerformed(ActionEvent event) {
         final HumanResource[] selectedResources = myContext.getResources();
         if (selectedResources.length > 0) {
-            final String message = getI18n("msg6") + " " + getDisplayName(selectedResources) + "?";
+            final String message = getI18n("msg6") + " " + StringUtils.getDisplayNames(selectedResources) + "?";
             final String title = getI18n("question");
             Choice choice = myUIFacade.showConfirmationDialog(message, title);
             if (choice == Choice.YES) {
@@ -68,21 +69,6 @@ public class ResourceDeleteAction extends ResourceAction {
         for (HumanResource resource : resources) {
             resource.delete();
         }
-    }
-
-    // TODO Move to StringUtils
-    private String getDisplayName(HumanResource[] resources) {
-        if (resources.length == 1) {
-            return resources[0].toString();
-        }
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < resources.length; i++) {
-            result.append(resources[i].toString());
-            if (i < resources.length - 1) {
-                result.append(", ");
-            }
-        }
-        return result.toString();
     }
 
     @Override
