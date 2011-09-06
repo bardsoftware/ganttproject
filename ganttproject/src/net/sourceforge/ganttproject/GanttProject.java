@@ -92,6 +92,7 @@ import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
+import net.sourceforge.ganttproject.gui.GanttLanguageMenu;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -135,9 +136,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
 
-    /** The language use */
-    private GanttLanguage language = GanttLanguage.getInstance();
-
     /** The JTree part. */
     private GanttTree2 tree;
 
@@ -147,18 +145,19 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** Menu */
-    private JMenu mProject, mMRU, /*mEdit,*/ mTask, mHuman, mHelp, mServer,
-            mCalendar;
+    /** Most Recent Used Menu */
+    private final JMenu mMRU;
 
-    // public JMenu mView;
+    private final EditMenu myEditMenu;
 
-    /** Menuitem */
-    private JMenuItem miPreview, miPrjCal, miWebPage, miAbout, miChartOptions;
+    private final ProjectMenu myProjectMenu;
 
     private static final int maxSizeMRU = 5;
 
-    private DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
+    /** Menuitem */
+    private final JMenuItem miPreview, miPrjCal, miWebPage, miAbout;
+
+    private final DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
 
     /** Toolbar button */
     private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
@@ -200,15 +199,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     private DelayManager myDelayManager;
 
-    private ProjectMenu myProjectMenu;
-
     private GanttChartTabContentPanel myGanttChartTabContent;
 
     private ResourceChartTabContentPanel myResourceChartTabContent;
 
     private RowHeightAligner myRowHeightAligner;
-
-    private final EditMenu myEditMenu;
 
     @Override
     public TaskContainmentHierarchyFacade getTaskContainment() {
@@ -319,58 +314,53 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         area.setUIConfiguration(myUIConfiguration);
         getTree().setGraphicArea(area);
 
-        miChartOptions = new JMenuItem(area.getOptionsDialogAction());
-
         getZoomManager().addZoomListener(area.getZoomListener());
 
 
-        System.err.println("3. creating menu...");
+        System.err.println("3. creating menus...");
         myResourceActions = getResourcePanel().getResourceActionSet();
         bar = new JMenuBar();
         setJMenuBar(bar);
         // Allocation of the menus
-        mProject = new JMenu();
-        mMRU = new JMenu();
-        mMRU.setIcon(new ImageIcon(getClass().getResource(
-                "/icons/recent_16.gif")));
-        // mView = new JMenu ();
-        mTask = new JMenu();
-        mHuman = new JMenu();
-        mHelp = new JMenu();
-        mCalendar = new JMenu();
-
-        createProjectMenu();
+        
+        // Project menu related sub menus and items
+        myProjectMenu = new ProjectMenu(this);
+        mMRU = createNewMenu("lastOpen", "/icons/recent_16.gif");
+        miPreview = createNewMenuItem("preview", "/icons/preview_16.gif");
+        JMenu mProject = createProjectMenu();
         bar.add(mProject);
+
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
+        GanttLanguageMenu.addListener(myEditMenu, "edit");
         bar.add(myEditMenu);
 
+        JMenu viewMenu = createViewMenu();
+        bar.add(viewMenu);
+
+        JMenu mTask = createNewMenu("task");
         mTask.add(getTree().getTaskDeleteAction());
         mTask.add(getTree().getTaskPropertiesAction());
         getResourcePanel().setTaskPropertiesAction(getTree().getTaskPropertiesAction());
+        bar.add(mTask);
 
+        JMenu mHuman = createNewMenu("human");
         for (AbstractAction a : myResourceActions.getActions()) {
             mHuman.add(a);
         }
-
         mHuman.add(myResourceActions.getResourceSendMailAction());
         mHuman.add(myResourceActions.getResourceImportAction());
-
-        miPrjCal = createNewItem("/icons/default_calendar_16.gif");
-        mCalendar.add(miPrjCal);
-        miWebPage = createNewItem("/icons/home_16.gif");
-        mHelp.add(miWebPage);
-        miAbout = createNewItem("/icons/manual_16.gif");
-        mHelp.add(miAbout);
-        JMenu viewMenu = createViewMenu();
-        if (viewMenu != null)
-            bar.add(viewMenu);
-        // bar.add (mView);
-        bar.add(mTask);
         bar.add(mHuman);
-        // bar.add(mCalendar);
+
+        JMenu mCalendar = createNewMenu("calendars");
+        miPrjCal = createNewMenuItem("projectCalendar", "/icons/default_calendar_16.gif");
+        mCalendar.add(miPrjCal);
+        miWebPage = createNewMenuItem("webPage", "/icons/home_16.gif");
+
+        JMenu mHelp = createNewMenu("help");
+        mHelp.add(miWebPage);
+        miAbout = createNewMenuItem("about", "/icons/manual_16.gif");
+        mHelp.add(miAbout);
         bar.add(mHelp);
-        // to create a default project
-        // createDefaultTree(tree);
 
 
         System.err.println("4. creating views...");
@@ -553,11 +543,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return myStopEditingMouseListener;
     }
 
-    private void createProjectMenu() {
-        mServer = new JMenu();
-        mServer.setIcon(new ImageIcon(getClass().getResource(
-                "/icons/server_16.gif")));
-        myProjectMenu = new ProjectMenu(this);
+    private JMenu createProjectMenu() {
+        JMenu mProject = createNewMenu("project");
         mProject.add(myProjectMenu.getProjectSettingsAction());
         mProject.add(myProjectMenu.getNewProjectAction());
         mProject.add(myProjectMenu.getOpenProjectAction());
@@ -572,20 +559,24 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         mProject.add(myProjectMenu.getProjectExportAction());
         mProject.addSeparator();
 
+        JMenu mServer = createNewMenu("webServer", "/icons/server_16.gif");
         mServer.add(myProjectMenu.getOpenURLAction());
         mServer.add(myProjectMenu.getSaveURLAction());
+
         mProject.add(mServer);
         mProject.addSeparator();
         mProject.add(myProjectMenu.getPrintAction());
-        miPreview = createNewItem("/icons/preview_16.gif");
         mProject.add(miPreview);
         mProject.addSeparator();
         mProject.add(myProjectMenu.getExitAction());
+
+        return mProject;
     }
 
     private JMenu createViewMenu() {
-        JMenu result = changeMenuLabel(new JMenu(), language.getText("view"));
-        result.add(miChartOptions);
+        JMenu result = createNewMenu("view");
+
+        result.add(new JMenuItem(area.getOptionsDialogAction()));
         List<Chart> charts = PluginManager.getCharts();
         result.add(new ViewCycleAction(getTabs()));
         if (!charts.isEmpty()) {
@@ -633,43 +624,44 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         area.repaint();
     }
 
-    // /** @return the status Bar of the main frame. */
-    // public GanttStatusBar getStatusBar() {
-    // return statusBar;
-    // }
-
-    public String getXslFo() {
-        return options.getXslFo();
-    }
-
-    /** Create an item with a label */
-    public JMenuItem createNewItemText(String label) {
-        JMenuItem item = new JMenuItem(label);
+    /**
+     * Create a menu with a label (which is kept up to date with language
+     * changes)
+     */
+    public JMenu createNewMenu(String key) {
+        JMenu item = new JMenu();
         item.addActionListener(this);
+        GanttLanguageMenu.addListener(item, key);
+
         return item;
     }
 
-    /** Create an item with an icon */
-    public JMenuItem createNewItem(String icon) {
-        URL url = getClass().getResource(icon);
-        JMenuItem item = url == null ? new JMenuItem() : new JMenuItem(
-                new ImageIcon(url));
-        item.addActionListener(this);
+    /**
+     * Create a menu with a label (which is kept up to date with language
+     * changes) and an icon
+     */
+    public JMenu createNewMenu(String key, String icon) {
+        JMenu item = createNewMenu(key);
+        item.setIcon(new ImageIcon(getClass().getResource(icon)));
         return item;
     }
 
-    /** Create an item with a label and an icon */
-    public JMenuItem createNewItem(String label, String icon) {
-        JMenuItem item = new JMenuItem(label, new ImageIcon(getClass()
-                .getResource(icon)));
+    /**
+     * Create a menu item with a label (which is kept up to date with language
+     * changes) and an icon.
+     */
+    public JMenuItem createNewMenuItem(String key, String icon) {
+        JMenuItem item = new JMenuItem(new ImageIcon(getClass().getResource(icon)));
         item.addActionListener(this);
+        GanttLanguageMenu.addListener(item, key);
+
         return item;
     }
 
+    // TODO Move language updating methods which do not belong to GanttProject to their own class with their own listener
     /** Function to change language of the project */
     public void languageChanged(Event event) {
         applyComponentOrientation(language.getComponentOrientation());
-        changeLanguageOfMenu();
         area.repaint();
         getResourcePanel().area.repaint();
         getResourcePanel().refresh(language);
@@ -713,61 +705,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return menu;
     }
 
-    /**
-     * Change the label for JCheckBoxmenuItem, in fact check in the label
-     * contains a mnemonic
-     */
-    public JCheckBoxMenuItem changeMenuLabel(JCheckBoxMenuItem menu,
-            String label) {
-        int index = label.indexOf('$');
-        if (index != -1 && label.length() - index > 1) {
-            menu.setText(label.substring(0, index).concat(
-                    label.substring(++index)));
-            menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
-        } else {
-            menu.setText(label);
-            // menu.setMnemonic('');
-        }
-        return menu;
-    }
-
-    //TODO Make sure that the actions handle language changes, so this method is ot required
-    /** Set the menus language after the user select a different language */
-    private void changeLanguageOfMenu() {
-        mProject = changeMenuLabel(mProject, language.getText("project"));
-        mTask = changeMenuLabel(mTask, language.getText("task"));
-        mHuman = changeMenuLabel(mHuman, language.getText("human"));
-        mHelp = changeMenuLabel(mHelp, language.getText("help"));
-        mCalendar = changeMenuLabel(mCalendar, language.getText("calendars"));
-        mMRU = changeMenuLabel(mMRU, language.getText("lastOpen"));
-
-        mServer = changeMenuLabel(mServer, language.getText("webServer"));
-        miPreview = changeMenuLabel(miPreview, language.getText("preview"));
-        mHuman.insert(changeMenuLabel(mHuman.getItem(0), language.getText("resource.new")), 0);
-        mHuman.insert(changeMenuLabel(mHuman.getItem(4), language.getText("resource.import")), 4);
-
-        miPrjCal = changeMenuLabel(miPrjCal, language.getText("projectCalendar"));
-
-        miWebPage = changeMenuLabel(miWebPage, language.getText("webPage"));
-        miAbout = changeMenuLabel(miAbout, language.getText("about"));
-        miChartOptions = changeMenuLabel(miChartOptions, language.getText("chart.options"));
-
-        bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("createTask")));
-        // bCut.setToolTipText(getToolTip(language.getCorrectedLabel("cut")));
-        // bCopy.setToolTipText(getToolTip(language.getCorrectedLabel("copy")));
-        // bPaste.setToolTipText(getToolTip(language.getCorrectedLabel("paste")));
-        bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("task.delete")));
-        bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("task.properties")));
-        bUndo.setToolTipText(getToolTip(language.getCorrectedLabel("undo")));
-        bRedo.setToolTipText(getToolTip(language.getCorrectedLabel("redo")));
-        getTabs().setTitleAt(1, language.getCorrectedLabel("human"));
-    }
-
     /** Return the ToolTip in HTML (with gray bgcolor) */
     public static String getToolTip(String msg) {
         return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
     }
-
 
     /** Create the button on toolbar */
     private void addButtons(JToolBar toolBar) {

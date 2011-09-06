@@ -35,7 +35,6 @@ import javax.swing.table.AbstractTableModel;
 
 import net.sourceforge.ganttproject.action.CopyAction;
 import net.sourceforge.ganttproject.action.CutAction;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.PasteAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -62,6 +61,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -88,6 +88,7 @@ import org.eclipse.core.runtime.IAdaptable;
  * @author dbarashev
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
+    protected final static GanttLanguage language = GanttLanguage.getInstance();
     private final ViewManagerImpl myViewManager;
     private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
     private final UIFacadeImpl myUIFacade;
@@ -112,7 +113,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myTabPane = new GanttTabbedPane();
         myViewManager = new ViewManagerImpl(myTabPane);
         addProjectEventListener(myViewManager.getProjectEventListener());
-        myTimeUnitStack = new GPTimeUnitStack(getLanguage());
+        myTimeUnitStack = new GPTimeUnitStack(language);
         NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
@@ -138,10 +139,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
-    }
-
-    private GanttLanguage getLanguage() {
-        return GanttLanguage.getInstance();
     }
 
     public void addProjectEventListener(ProjectEventListener listener) {
@@ -366,7 +363,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
     }
 
-    private class GPViewImpl implements GPView, ChartSelectionListener {
+    private class GPViewImpl implements GPView, ChartSelectionListener, GanttLanguage.Listener {
         private final GanttTabbedPane myTabs;
 
         private int myIndex;
@@ -387,6 +384,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             myComponent = component;
             myIcon = icon;
             myChart = chart;
+            language.addListener(this);
             assert myChart!=null;
         }
 
@@ -427,6 +425,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         
         public Chart getChart() {
             return myChart;
+        }
+
+        public void languageChanged(Event event) {
+            if(isVisible()) {
+                myTabs.setTitleAt(myIndex, myChart.getName());
+            }
         }
     }
 

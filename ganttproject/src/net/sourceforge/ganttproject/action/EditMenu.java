@@ -30,6 +30,7 @@ public class EditMenu extends JMenu {
     private final RedoAction myRedoAction;
 
     public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager) {
+        super();
         myUndoAction = new UndoAction(uiFacade);
         myRedoAction = new RedoAction(uiFacade);
         
