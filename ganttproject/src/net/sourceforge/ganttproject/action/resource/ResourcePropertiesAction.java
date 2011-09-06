@@ -48,7 +48,7 @@ public class ResourcePropertiesAction extends GPAction {
     public void actionPerformed(ActionEvent arg0) {
         HumanResource[] selectedResources = myContext.getResources();
         if (selectedResources != null) {
-            // TODO Delete multiple resources (instead of [0])
+            // TODO Allow to edit multiple resources (instead of [0])
             GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), selectedResources[0]);
             dp.setVisible(true);
             if (dp.result()) {

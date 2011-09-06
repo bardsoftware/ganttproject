@@ -48,6 +48,7 @@ public class TaskPropertiesAction extends TaskActionBase {
         if (selection.size() != 1) {
             return;
         }
+        // TODO Allow to edit multiple tasks (instead of [0])
         final GanttTask[] tasks = new GanttTask[] {(GanttTask)selection.get(0)};
         GanttDialogProperties pd = new GanttDialogProperties(tasks);
         getSelectionManager().setUserInputConsumer(pd);
