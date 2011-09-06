@@ -22,7 +22,6 @@ import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 
 import net.sourceforge.ganttproject.GPView;
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 
@@ -34,9 +33,9 @@ public class ViewToggleAction extends GPAction {
 
     private final GPView myView;
 
-    public ViewToggleAction(Chart chart, GPViewManager viewManager) {
+    public ViewToggleAction(Chart chart, GPView view) {
         myChart = chart;
-        myView = viewManager.createView(chart, chart.getIcon());
+        myView = view;
         updateAction();
     }
     

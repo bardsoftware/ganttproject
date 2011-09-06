@@ -38,9 +38,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sourceforge.ganttproject.action.project.ProjectMRUMenu;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -86,7 +86,7 @@ public class GanttOptions {
 
     private final RoleManager myRoleManager;
 
-    private DocumentsMRU documentsMRU;
+    private ProjectMRUMenu documentsMRU;
 
     private UIConfiguration myUIConfig;
 
@@ -352,8 +352,7 @@ public class GanttOptions {
             // The last opened files
             {
                 startElement("files", attrs, handler);
-                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator
-                        .hasNext();) {
+                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator.hasNext();) {
                     Document document = iterator.next();
                     addAttribute("path", document.getPath(), attrs);
                     emptyElement("file", attrs, handler);
@@ -615,8 +614,7 @@ public class GanttOptions {
                         }
                     } else if (qName.equals("file")) {
                         if (aName.equals("path")) {
-                            documentsMRU.append(myDocumentManager
-                                    .getDocument(value));
+                            documentsMRU.add(myDocumentManager.getDocument(value));
                         }
                     } else if (qName.equals("automatic-launch")) {
                         if (aName.equals("value")) {
@@ -1028,7 +1026,7 @@ public class GanttOptions {
         this.xslFo = xslFo;
     }
 
-    public void setDocumentsMRU(DocumentsMRU documentsMRU) {
+    public void setDocumentsMRU(ProjectMRUMenu documentsMRU) {
         this.documentsMRU = documentsMRU;
     }
 

@@ -19,69 +19,70 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.project;
 
 import javax.swing.AbstractAction;
-
+import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GanttProject;
 
 /**
  * Collection of actions present in the project menu
  */
-public class ProjectMenu {
-    private final NewProjectAction myNewProjectAction;
-    private final OpenProjectAction myOpenProjectAction;
-    private final SaveProjectAction mySaveProjectAction;
-    private final SaveProjectAsAction mySaveProjectAsAction;
-    private final OpenURLAction myOpenURLAction;
-    private final ExitAction myExitAction;
-    private final SaveURLAction mySaveURLAction;
-    private final PrintAction myPrintAction;
-    private final ProjectImportAction myProjectImportAction;
-    private final ProjectExportAction myProjectExportAction;
-    private final ProjectPropertiesAction myProjectSettingsAction;
+public class ProjectMenu extends JMenu {
 
-    public ProjectMenu(final GanttProject mainFrame) {
-        myProjectSettingsAction = new ProjectPropertiesAction(mainFrame);
-        myNewProjectAction = new NewProjectAction(mainFrame);
-        myOpenProjectAction = new OpenProjectAction(mainFrame);
-        mySaveProjectAction =new SaveProjectAction(mainFrame);
-        mySaveProjectAsAction =new SaveProjectAsAction(mainFrame);
-        myOpenURLAction = new OpenURLAction(mainFrame);
-        mySaveURLAction = new SaveURLAction(mainFrame);
-        myPrintAction = new PrintAction(mainFrame);
-        myExitAction = new ExitAction(mainFrame);
-        myProjectImportAction = new ProjectImportAction(mainFrame.getUIFacade(), mainFrame);
-        myProjectExportAction = new ProjectExportAction(mainFrame.getUIFacade(), mainFrame, mainFrame.getGanttOptions());
+    private final NewProjectAction myNewProjectAction;
+    private final SaveProjectAction mySaveProjectAction;
+    private final PrintAction myPrintAction;
+
+    public ProjectMenu(final GanttProject project, JMenu mru) {
+        super();
+        myNewProjectAction = new NewProjectAction(project);
+        mySaveProjectAction = new SaveProjectAction(project);
+        myPrintAction = new PrintAction(project);
+
+        ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
+        OpenProjectAction openProjectAction = new OpenProjectAction(project);
+        SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
+        OpenURLAction openURLAction = new OpenURLAction(project);
+        SaveURLAction saveURLAction = new SaveURLAction(project);
+        ExitAction exitAction = new ExitAction(project);
+        ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
+        ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project, project
+                .getGanttOptions());
+        
+        add(projectSettingsAction);
+        add(myNewProjectAction);
+        add(openProjectAction);
+        add(mru);
+
+        addSeparator();
+        add(mySaveProjectAction);
+        add(saveProjectAsAction);
+        addSeparator();
+
+        add(projectImportAction);
+        add(projectExportAction);
+        addSeparator();
+
+        JMenu mServer = project.createNewMenu("webServer", "/icons/server_16.gif");
+        mServer.add(openURLAction);
+        mServer.add(saveURLAction);
+        add(mServer);
+
+        addSeparator();
+        add(myPrintAction);
+        add(new ProjectPreviewAction(project));
+        addSeparator();
+        add(exitAction);
     }
+
     public AbstractAction getNewProjectAction() {
         return myNewProjectAction;
     }
-    public AbstractAction getOpenProjectAction() {
-        return myOpenProjectAction;
-    }
+
     public AbstractAction getSaveProjectAction() {
         return mySaveProjectAction;
     }
-    public AbstractAction getSaveProjectAsAction() {
-        return mySaveProjectAsAction;
-    }
-    public AbstractAction getOpenURLAction() {
-        return myOpenURLAction;
-    }
-    public AbstractAction getExitAction() {
-        return myExitAction;
-    }
-    public AbstractAction getSaveURLAction() {
-        return mySaveURLAction;
-    }
+
     public AbstractAction getPrintAction() {
         return myPrintAction;
     }
-    public AbstractAction getProjectImportAction() {
-        return myProjectImportAction;
-    }
-    public AbstractAction getProjectExportAction() {
-        return myProjectExportAction;
-    }
-    public AbstractAction getProjectSettingsAction() {
-        return myProjectSettingsAction;
-    }
+
 }

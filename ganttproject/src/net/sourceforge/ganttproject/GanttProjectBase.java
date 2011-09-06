@@ -33,9 +33,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.action.CopyAction;
-import net.sourceforge.ganttproject.action.CutAction;
-import net.sourceforge.ganttproject.action.PasteAction;
+import net.sourceforge.ganttproject.action.edit.CopyAction;
+import net.sourceforge.ganttproject.action.edit.CutAction;
+import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -275,7 +275,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setWorkbenchTitle(title);
     }
 
-    protected GPViewManager getViewManager() {
+    public GPViewManager getViewManager() {
         return myViewManager;
     }
 

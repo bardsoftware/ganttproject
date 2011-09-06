@@ -1,6 +1,6 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2005-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,27 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.action;
+*/
+package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
-//TODO Enable/Disable action on selection changes
-public class CopyAction extends GPAction {
-    private final GPViewManager myViewmanager;
+public class RefreshViewAction extends GPAction {
 
-    public CopyAction(GPViewManager viewManager) {
-        super("copy");
-        myViewmanager = viewManager;
+    private UIFacade myUIFacade;
+
+    public RefreshViewAction(UIFacade uiFacade) {
+        super("refresh");
+        myUIFacade = uiFacade;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        myUIFacade.refresh();
     }
 
     @Override
     protected String getIconFilePrefix() {
-        return "copy_";
-    }
-    public void actionPerformed(ActionEvent e) {
-        myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
+        return "refresh_";
     }
 }

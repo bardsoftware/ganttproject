@@ -43,8 +43,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -52,7 +50,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -74,11 +71,11 @@ import com.beust.jcommander.Parameter;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
-import net.sourceforge.ganttproject.action.EditMenu;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ViewCycleAction;
-import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
+import net.sourceforge.ganttproject.action.view.ViewMenu;
+import net.sourceforge.ganttproject.action.edit.EditMenu;
+import net.sourceforge.ganttproject.action.project.ProjectMRUMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
@@ -86,9 +83,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.document.OpenDocumentAction;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
@@ -112,7 +107,6 @@ import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.print.PrintManager;
-import net.sourceforge.ganttproject.print.PrintPreview;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
@@ -145,19 +139,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** GanttPeoplePanel to edit person that work on the project */
     private GanttResourcePanel resp;
 
-    /** Most Recent Used Menu */
-    private final JMenu mMRU;
-
     private final EditMenu myEditMenu;
 
     private final ProjectMenu myProjectMenu;
 
-    private static final int maxSizeMRU = 5;
+    private final ProjectMRUMenu myMRU;
 
     /** Menuitem */
-    private final JMenuItem miPreview, miPrjCal, miWebPage, miAbout;
-
-    private final DocumentsMRU documentsMRU = new DocumentsMRU(maxSizeMRU);
+    private final JMenuItem miPrjCal, miWebPage, miAbout;
 
     /** Toolbar button */
     private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
@@ -204,32 +193,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     private ResourceChartTabContentPanel myResourceChartTabContent;
 
     private RowHeightAligner myRowHeightAligner;
-
-    @Override
-    public TaskContainmentHierarchyFacade getTaskContainment() {
-        if (myFacadeInvalidator == null) {
-            return TaskContainmentHierarchyFacade.STUB;
-        }
-        if (!myFacadeInvalidator.isValid() || myCachedFacade == null) {
-            myCachedFacade = new TaskContainmentHierarchyFacadeImpl(tree);
-            myFacadeInvalidator.reset();
-        }
-        return myCachedFacade;
-    }
-
-    private void initOptions() {
-        // Color color = GanttGraphicArea.taskDefaultColor;
-        // myApplicationConfig.register(options);
-        options.setUIConfiguration(myUIConfiguration);
-        options.setDocumentsMRU(documentsMRU);
-        if (options.load()) {
-            GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
-
-            HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
-        }
-
-        myUIConfiguration = options.getUIConfiguration();
-    }
 
     public GanttProject(boolean isOnlyViewer, boolean isApplet) {
         System.err.println("Creating main frame...");
@@ -310,6 +273,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
 
         System.err.println("2. loading options");
+        myMRU = new ProjectMRUMenu(this);
+        myMRU.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
+        GanttLanguageMenu.addListener(myMRU, "lastOpen");
         initOptions();
         area.setUIConfiguration(myUIConfiguration);
         getTree().setGraphicArea(area);
@@ -324,17 +290,16 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         // Allocation of the menus
         
         // Project menu related sub menus and items
-        myProjectMenu = new ProjectMenu(this);
-        mMRU = createNewMenu("lastOpen", "/icons/recent_16.gif");
-        miPreview = createNewMenuItem("preview", "/icons/preview_16.gif");
-        JMenu mProject = createProjectMenu();
-        bar.add(mProject);
+        myProjectMenu = new ProjectMenu(this, myMRU);
+        GanttLanguageMenu.addListener(myProjectMenu, "project");
+        bar.add(myProjectMenu);
 
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
         GanttLanguageMenu.addListener(myEditMenu, "edit");
         bar.add(myEditMenu);
 
-        JMenu viewMenu = createViewMenu();
+        JMenu viewMenu = new ViewMenu(this);
+        GanttLanguageMenu.addListener(viewMenu, "view");
         bar.add(viewMenu);
 
         JMenu mTask = createNewMenu("task");
@@ -510,6 +475,32 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         this.setModified(false);
     }
 
+    @Override
+    public TaskContainmentHierarchyFacade getTaskContainment() {
+        if (myFacadeInvalidator == null) {
+            return TaskContainmentHierarchyFacade.STUB;
+        }
+        if (!myFacadeInvalidator.isValid() || myCachedFacade == null) {
+            myCachedFacade = new TaskContainmentHierarchyFacadeImpl(tree);
+            myFacadeInvalidator.reset();
+        }
+        return myCachedFacade;
+    }
+
+    private void initOptions() {
+        // Color color = GanttGraphicArea.taskDefaultColor;
+        // myApplicationConfig.register(options);
+        options.setUIConfiguration(myUIConfiguration);
+        options.setDocumentsMRU(myMRU);
+        if (options.load()) {
+            GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
+
+            HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
+        }
+
+        myUIConfiguration = options.getUIConfiguration();
+    }
+
     private void addMouseListenerToAllContainer(Component[] cont) {
         for (int i = 0; i < cont.length; i++) {
             cont[i].addMouseListener(getStopEditingMouseListener());
@@ -543,69 +534,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return myStopEditingMouseListener;
     }
 
-    private JMenu createProjectMenu() {
-        JMenu mProject = createNewMenu("project");
-        mProject.add(myProjectMenu.getProjectSettingsAction());
-        mProject.add(myProjectMenu.getNewProjectAction());
-        mProject.add(myProjectMenu.getOpenProjectAction());
-        mProject.add(mMRU);
-        updateMenuMRU();
-        mProject.addSeparator();
-        mProject.add(myProjectMenu.getSaveProjectAction());
-        mProject.add(myProjectMenu.getSaveProjectAsAction());
-        mProject.addSeparator();
-
-        mProject.add(myProjectMenu.getProjectImportAction());
-        mProject.add(myProjectMenu.getProjectExportAction());
-        mProject.addSeparator();
-
-        JMenu mServer = createNewMenu("webServer", "/icons/server_16.gif");
-        mServer.add(myProjectMenu.getOpenURLAction());
-        mServer.add(myProjectMenu.getSaveURLAction());
-
-        mProject.add(mServer);
-        mProject.addSeparator();
-        mProject.add(myProjectMenu.getPrintAction());
-        mProject.add(miPreview);
-        mProject.addSeparator();
-        mProject.add(myProjectMenu.getExitAction());
-
-        return mProject;
-    }
-
-    private JMenu createViewMenu() {
-        JMenu result = createNewMenu("view");
-
-        result.add(new JMenuItem(area.getOptionsDialogAction()));
-        List<Chart> charts = PluginManager.getCharts();
-        result.add(new ViewCycleAction(getTabs()));
-        if (!charts.isEmpty()) {
-            result.addSeparator();
-        }
-        for (Chart chart : charts) {
-            result.add(new JCheckBoxMenuItem(new ViewToggleAction(chart, getViewManager())));
-        }
-        return result;
-    }
-
     public GanttProject(boolean isOnlyViewer) {
         this(isOnlyViewer, false);
-    }
-
-    /**
-     * Updates the last open file menu items.
-     */
-    private void updateMenuMRU() {
-        mMRU.removeAll();
-        int index = 0;
-        Iterator<Document> iterator = documentsMRU.iterator();
-        while (iterator.hasNext()) {
-            index++;
-            Document document = iterator.next();
-            JMenuItem mi = new JMenuItem(new OpenDocumentAction(index,
-                    document, this));
-            mMRU.add(mi);
-        }
     }
 
     public String getXslDir() {
@@ -615,6 +545,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** @return the options of ganttproject. */
     public GanttOptions getGanttOptions() {
         return options;
+    }
+
+    /** @return the options of the GanttChart */
+    public GPOptionGroup[] getGanttOptionsGroup() {
+        return area.getOptionGroups();
     }
 
     public void restoreOptions() {
@@ -787,18 +722,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     public void actionPerformed(ActionEvent evt) {
         Object source = evt.getSource();
         if (source instanceof JMenuItem) {
-            if (source == miPreview) {
-                previewPrint();
-            } else if (source == miPrjCal) {
+            if (source == miPrjCal) {
                 System.out.println("Project calendar");
             } else if (source == miWebPage) {
                     openWebPage();
             } else if (source == miAbout) {
                 aboutDialog();
-            }
-        } else if (source instanceof Document) {
-            if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-                openStartupDocument((Document) source);
             }
         }
     }
@@ -905,45 +834,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         }
     }
 
-    public void previewPrint() {
-
-        Date startDate, endDate;
-        Chart chart = getUIFacade().getActiveChart();
-
-        if (chart == null) {
-            getUIFacade()
-                    .showErrorDialog(
-                            "Failed to find active chart.\nPlease report this problem to GanttProject development team");
-            return;
-        }
-
-        try {
-            startDate = chart.getStartDate();
-            endDate = chart.getEndDate();
-        } catch (UnsupportedOperationException e) {
-            startDate = null;
-            endDate = null;
-        }
-
-        if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
-            startDate = area.getChartModel().getStartDate();
-            endDate = area.getChartModel().getEndDate();
-        } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) {
-            startDate = getResourcePanel().area.getChartModel().getStartDate();
-            endDate = getResourcePanel().area.getChartModel().getEndDate();
-        }
-        try {
-            PrintPreview preview = new PrintPreview(getProject(),
-                    getUIFacade(), chart, startDate, endDate);
-            preview.setVisible(true);
-        } catch (OutOfMemoryError e) {
-            getUIFacade().showErrorDialog(
-                    GanttLanguage.getInstance().getText(
-                            "printing.out_of_memory"));
-            return;
-        }
-    }
-
     /** Create a new project */
     public void newProject() {
         getProjectUIFacade().createProject(getProject());
@@ -990,9 +880,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
                     new Exception(language.getText("msg13")));
         }
         document.read();
-        if (documentsMRU.add(document)) {
-            updateMenuMRU();
-        }
+        myMRU.add(document);
         if (locked) {
             projectDocument = document;
         }
@@ -1100,7 +988,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         options.setWindowPosition(getX(), getY());
         options.setWindowSize(getWidth(), getHeight());
         options.setUIConfiguration(myUIConfiguration);
-        options.setDocumentsMRU(documentsMRU);
         options.setToolBarPosition(toolBar.getOrientation());
         options.save();
         if (getProjectUIFacade().ensureProjectSaved(getProject())) {

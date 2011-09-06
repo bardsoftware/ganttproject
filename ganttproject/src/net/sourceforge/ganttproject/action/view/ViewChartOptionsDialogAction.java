@@ -16,7 +16,25 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action;
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.action.view;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -25,6 +43,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
+import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -33,21 +52,22 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 /**
- * @author bard
+ * Action to show the options dialog of a chart. The contents of the options
+ * dialog are given by the groups parameter of the constructor
  */
-public class ChartOptionsDialogAction extends GPAction {
-    private UIFacade myUIFacade;
+public class ViewChartOptionsDialogAction extends GPAction {
+    private final UIFacade myUIFacade;
+    private final ChartComponentBase myChart;
 
-    private GPOptionGroup[] myGroups;
-
-    public ChartOptionsDialogAction(GPOptionGroup[] groups, UIFacade uifacade) {
+    public ViewChartOptionsDialogAction(ChartComponentBase chart, UIFacade uifacade) {
         super("chart.options");
-        myGroups = groups;
         myUIFacade = uifacade;
+        myChart = chart;
     }
 
+    // TODO What is the difference between this class and SettingsDialogAction? Can probably get merged...?
     public void actionPerformed(ActionEvent e) {
-        for (GPOptionGroup group : myGroups) {
+        for (GPOptionGroup group : myChart.getOptionGroups()) {
             group.lock();
         }
         final OkAction okAction = new OkAction() {
@@ -65,20 +85,20 @@ public class ChartOptionsDialogAction extends GPAction {
     }
 
     private void commit() {
-        for (GPOptionGroup group : myGroups) {
+        for (GPOptionGroup group : myChart.getOptionGroups()) {
             group.commit();
         }
     }
 
     private void rollback() {
-        for (GPOptionGroup group : myGroups) {
+        for (GPOptionGroup group : myChart.getOptionGroups()) {
             group.rollback();
         }
     }
 
     private Component createDialogComponent() {
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        JComponent comp = builder.buildPage(myGroups, "ganttChart");
+        JComponent comp = builder.buildPage(myChart.getOptionGroups(), "ganttChart");
         comp.setBorder(new EmptyBorder(5, 5, 5, 5));
         return comp;
     }
