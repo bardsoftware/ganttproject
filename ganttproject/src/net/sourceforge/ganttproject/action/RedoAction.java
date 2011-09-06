@@ -34,9 +34,9 @@ public class RedoAction extends GPAction implements GPUndoListener {
     private GPUndoManager myUndoManager;
     private UIFacade myUiFacade;
 
-    public RedoAction(GPUndoManager undoManager, UIFacade uiFacade) {
+    public RedoAction(UIFacade uiFacade) {
         super("redo");
-        myUndoManager = undoManager;
+        myUndoManager = uiFacade.getUndoManager();
         myUndoManager.addUndoableEditListener(this);
         myUiFacade = uiFacade;
         setEnabled(myUndoManager.canRedo());

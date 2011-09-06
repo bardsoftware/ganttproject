@@ -342,7 +342,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         createProjectMenu();
         bar.add(mProject);
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
-        bar.add(myEditMenu.create());
+        bar.add(myEditMenu);
 
         mTask.add(getTree().getTaskDeleteAction());
         mTask.add(getTree().getTaskPropertiesAction());

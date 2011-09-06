@@ -33,9 +33,9 @@ public class UndoAction extends GPAction implements GPUndoListener {
     private final GPUndoManager myUndoManager;
     private final UIFacade myUiFacade;
 
-    public UndoAction(GPUndoManager undoManager, UIFacade uiFacade) {
+    public UndoAction(UIFacade uiFacade) {
         super("undo");
-        myUndoManager = undoManager;
+        myUndoManager = uiFacade.getUndoManager();
         myUndoManager.addUndoableEditListener(this);
         myUiFacade = uiFacade;
         setEnabled(myUndoManager.canUndo());
