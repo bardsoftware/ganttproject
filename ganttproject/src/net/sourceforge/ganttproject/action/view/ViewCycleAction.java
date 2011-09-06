@@ -1,6 +1,6 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2005-2011 Dmitry Barashev, GanttProject Team
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,29 +15,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
-package net.sourceforge.ganttproject.action;
+ */
+package net.sourceforge.ganttproject.action.view;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.gui.UIFacade;
+import javax.swing.JTabbedPane;
 
-class RefreshViewAction extends GPAction {
+import net.sourceforge.ganttproject.action.GPAction;
 
-    private UIFacade myUIFacade;
+public class ViewCycleAction extends GPAction {
+    private final JTabbedPane myTabbedPane;
 
-    public RefreshViewAction(UIFacade uiFacade) {
-        super("refresh");
-        myUIFacade = uiFacade;
+    public ViewCycleAction(JTabbedPane tabbedPane) {
+        super("view.cycle");
+        myTabbedPane = tabbedPane;
     }
 
     @Override
-    public void actionPerformed(ActionEvent ae) {
-        myUIFacade.refresh();
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "refresh_";
+    public void actionPerformed(ActionEvent arg0) {
+        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1) % myTabbedPane.getTabCount());
     }
 }

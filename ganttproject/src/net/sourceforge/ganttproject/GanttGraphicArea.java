@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -17,16 +16,12 @@ import java.awt.image.RenderedImage;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -53,14 +48,12 @@ import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
-import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
@@ -68,7 +61,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
-import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -116,16 +108,17 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private GanttPreviousState myBaseline;
 
-    public GanttGraphicArea(GanttProject app, GanttTree2 ttree,
-            TaskManager taskManager, ZoomManager zoomManager,
+    private final PublicHolidayDialogAction myPublicHolidayDialogAction;
+
+    public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
             GPUndoManager undoManager) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
         this.setBackground(Color.WHITE);
         myTaskManager = taskManager;
         myUndoManager = undoManager;
-        //
-        myChartModel = new ChartModelImpl(getTaskManager(), app
-                .getTimeUnitStack(), app.getUIConfiguration());
+        appli = app;
+
+        myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
         myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
             public void optionsChanged() {
                 repaint();
@@ -166,7 +159,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         });
 
-        appli = app;
+        myPublicHolidayDialogAction = new PublicHolidayDialogAction(getProject(), getUIFacade());
 
         getProject().getTaskCustomColumnManager().addListener(this);
     }
@@ -279,8 +272,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     private Action[] getPopupMenuActions() {
-        return new Action[] { getOptionsDialogAction(),
-                new PublicHolidayDialogAction(getProject(), getUIFacade()) };
+        return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction };
     }
 
     @Override

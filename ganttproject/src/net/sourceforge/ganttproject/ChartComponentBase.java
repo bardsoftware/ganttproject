@@ -40,7 +40,7 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import net.sourceforge.ganttproject.action.ChartOptionsDialogAction;
+import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -78,13 +78,16 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     private final UIFacade myUIFacade;
 
-    private ChartOptionsDialogAction myOptionsDialogAction;
+    private final ViewChartOptionsDialogAction myOptionsDialogAction;
 
     public ChartComponentBase(IGanttProject project, UIFacade uiFacade,
             ZoomManager zoomManager) {
         myProject = project;
         myUIFacade = uiFacade;
         myZoomManager = zoomManager;
+
+        myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
+
         myMouseWheelListener = new MouseWheelListenerBase();
         addMouseListener(getMouseListener());
         addMouseMotionListener(getMouseMotionListener());
@@ -156,14 +159,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     public Action getOptionsDialogAction() {
-        if (myOptionsDialogAction == null) {
-            myOptionsDialogAction = new ChartOptionsDialogAction(getOptionGroups(), getUIFacade());
-        }
         return myOptionsDialogAction;
-    }
-
-    protected Component createPreviewComponent() {
-        return null;
     }
 
     public ChartModel getModel() {

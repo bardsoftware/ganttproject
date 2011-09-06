@@ -1,6 +1,6 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,32 +15,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.action;
+*/
+package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
-import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.search.SearchDialog;
 
-//TODO Enable/Disable action depending on clipboard contents
-public class PasteAction extends GPAction {
-    private final GPViewManager myViewmanager;
+public class SearchDialogAction extends GPAction {
+    private final IGanttProject myProject;
+    private final UIFacade myUiFacade;
 
-    public PasteAction(GPViewManager viewManager) {
-        super("paste");
-        myViewmanager = viewManager;
+    public SearchDialogAction(IGanttProject project, UIFacade uiFacade) {
+        super("search.dialog.open");
+        myProject = project;
+        myUiFacade = uiFacade;
     }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "paste_";
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        ChartSelection selection = myViewmanager.getSelectedArtefacts();
-        myViewmanager.getActiveChart().paste(selection);
-        selection.commitClipboardTransaction();
+        SearchDialog dlg = new SearchDialog(myProject, myUiFacade);
+        dlg.show();
     }
 }

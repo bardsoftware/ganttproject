@@ -16,22 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JTabbedPane;
+import net.sourceforge.ganttproject.GPViewManager;
+import net.sourceforge.ganttproject.action.GPAction;
 
-public class ViewCycleAction extends GPAction {
-    private final JTabbedPane myTabbedPane;
+//TODO Enable/Disable action on selection changes
+public class CopyAction extends GPAction {
+    private final GPViewManager myViewmanager;
 
-    public ViewCycleAction(JTabbedPane tabbedPane) {
-        super("view.cycle");
-        myTabbedPane = tabbedPane;
+    public CopyAction(GPViewManager viewManager) {
+        super("copy");
+        myViewmanager = viewManager;
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
-        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1) % myTabbedPane.getTabCount());
+    protected String getIconFilePrefix() {
+        return "copy_";
+    }
+    public void actionPerformed(ActionEvent e) {
+        myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
     }
 }

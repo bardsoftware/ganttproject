@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.event.UndoableEditEvent;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
