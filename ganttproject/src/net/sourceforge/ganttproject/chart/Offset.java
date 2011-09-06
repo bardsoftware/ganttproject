@@ -63,7 +63,7 @@ public class Offset {
     }
     @Override
     public String toString() {
-        return "end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels+" time unit: "+myOffsetUnit.getName();
+        return "start date: " + myOffsetStart + " end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels+" time unit: "+myOffsetUnit.getName();
     }
     @Override
     public boolean equals(Object that) {
@@ -78,5 +78,18 @@ public class Offset {
     @Override
     public int hashCode() {
         return myOffsetEnd.hashCode();
+    }
+    /**
+     * @param concreteTimeUnit
+     * @param startDate
+     * @param currentDate
+     * @param endDate
+     * @param i
+     * @param dayType
+     * @return
+     */
+    public static Offset createFullyClosed(
+            TimeUnit timeUnit, Date anchor, Date closedStartDate, Date closedEndDate, int pixels, DayType dayType) {
+        return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, pixels, dayType);
     }
 }
