@@ -80,6 +80,9 @@ public class TaskAllocationsPanel {
     }
 
     public void commit() {
+        if (myTable.isEditing()) {
+            myTable.getCellEditor().stopCellEditing();
+        }
         myModel.commit();
     }
 }
