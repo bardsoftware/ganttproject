@@ -785,10 +785,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return task;
     }
 
-    public void deleteResources() {
-        myResourceActions.getResourceDeleteAction().actionPerformed(null);
-    }
-
     /**
      * Delete the current task
      *

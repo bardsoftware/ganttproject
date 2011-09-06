@@ -70,6 +70,7 @@ public class ResourceDeleteAction extends ResourceAction {
         }
     }
 
+    // TODO Move to StringUtils
     private String getDisplayName(HumanResource[] resources) {
         if (resources.length == 1) {
             return resources[0].toString();

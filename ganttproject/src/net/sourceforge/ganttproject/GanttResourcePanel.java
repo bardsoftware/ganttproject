@@ -37,7 +37,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -51,7 +50,6 @@ import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.util.BrowserControl;
 
 public class GanttResourcePanel extends JPanel implements ResourceView,
         ResourceContext, AssignmentContext, ResourceTreeUIFacade {
@@ -83,7 +81,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         prj.addProjectEventListener(getProjectEventListener());
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
         table = new ResourceTreeTable(appli, model, uiFacade);
-        myResourceActionSet = new ResourceActionSet(this, prj, uiFacade, table);
+        myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, table);
 
         table.setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
                 .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
@@ -156,14 +154,16 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     private void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
             DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
+            // TODO Allow to have multiple assignments selected as well!
             if (selectedNodes.length == 1
                     && selectedNodes[0] instanceof AssignmentNode) {
+                // Clicked on an assignment node (ie a task assigned to a resource)
                 AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
                 getTaskSelectionManager().clear();
                 getTaskSelectionManager().addTask(assignmentNode.getTask());
                 Point popupPoint = getPopupMenuPoint(e);
                 getUIFacade().showPopupMenu(this,
-                        new Action[] { myTaskPropertiesAction, myResourceActionSet.getResourceDeleteAction() },
+                        new Action[] { myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete() },
                         popupPoint.x, popupPoint.y);
             } else {
                 createPopupMenu(e);
