@@ -120,7 +120,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
                 shift = (int) (step.parrots * getDefaultUnitWidth());
             }
             offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
-            offsets.add(new Offset(
+            offsets.add(Offset.createFullyClosed(
                 concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType));
             currentDate = endDate;
 
@@ -160,7 +160,8 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
                     offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
                 }
             }
-            topOffsets.add(new Offset(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
+            topOffsets.add(Offset.createFullyClosed(
+                    concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
             currentDate = endDate;
 
         } while (offsetEnd <= lastBottomOffset && (myEndDate==null || currentDate.before(myEndDate)));
