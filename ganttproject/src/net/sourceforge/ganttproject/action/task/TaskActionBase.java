@@ -96,6 +96,10 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
     }
 
     protected void forwardScheduling() throws TaskDependencyException {
+        // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if this indeed is the case
+//        // TODO Find out which chart is opened and only reset that one (maybe add a resetChart to UIFacade?) 
+//        myUIFacade.getGanttChart().reset();
+//        myUIFacade.getResourceChart().reset();
         myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
     }
 

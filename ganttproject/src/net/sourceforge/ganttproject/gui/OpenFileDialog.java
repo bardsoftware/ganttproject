@@ -38,11 +38,11 @@ public class OpenFileDialog {
     }
 
     public OpenFileDialog(String startDirectory) {
-        File myStartDirectory = new File(startDirectory);
-        if (!myStartDirectory.isDirectory()) {
-            myStartDirectory = myStartDirectory.getParentFile();
+        File f = new File(startDirectory);
+        if (!f.isDirectory()) {
+            f = f.getParentFile();
         }
-        myFileChooser = new JFileChooser(myStartDirectory);
+        myFileChooser = new JFileChooser(f);
         myFileChooser.addChoosableFileFilter(new GanttXMLFileFilter());
     }
 

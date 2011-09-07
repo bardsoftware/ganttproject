@@ -98,7 +98,6 @@ public class TaskMoveDownAction extends TaskActionBase {
                         myTreeTableModel.nodesWereInserted(cdmtn[i], new int[] { j });
                     }
                 }
-
                 forwardScheduling();
             }
         }
