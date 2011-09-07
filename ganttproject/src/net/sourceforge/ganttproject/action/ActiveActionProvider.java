@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject.action;
 import javax.swing.AbstractAction;
 
 /**
- * Interface to provide an action related class with a dynamic action when activated 
+ * Interface to provide an action related class with a dynamic action when activated
  */
 public interface ActiveActionProvider {
     /** Provides the active action, which might depend on external influences */

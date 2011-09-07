@@ -49,7 +49,7 @@ public class ResourceNewAction extends ResourceAction {
         GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), resource);
         dp.setVisible(true);
         if (dp.result()) {
-            myUIFacade.getUndoManager().undoableEdit("new Resource", new Runnable() {
+            myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                 public void run() {
                     getManager().add(resource);
                 }
