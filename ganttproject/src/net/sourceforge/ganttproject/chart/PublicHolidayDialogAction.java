@@ -71,7 +71,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
                 }
                 myUIFacade.getActiveChart().reset();
             }
-        }, new CancelAction() }, "").show();
+        }, CancelAction.EMPTY }, "").show();
     }
 
     private void updateHolidays(List<GanttCalendar> holidays) {

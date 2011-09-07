@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -62,18 +63,13 @@ public class SearchDialog {
         myUiFacade = uiFacade;
         myResultViewDataModel = new DefaultListModel();
         myDialog = myUiFacade.createDialog(getComponent(), new Action[] {
-            new GPAction("search.dialog.goto") {
-                // TODO search.dialog.goto keyboard shortcut is not working
+            new CancelAction("search.dialog.goto") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gotoSelection();
                 }
             },
-            new GPAction("close") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                }
-            }
+            new CancelAction("close")
         }, GanttLanguage.getInstance().getText("search.dialog.title"));
     }
 

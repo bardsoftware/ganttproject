@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 /**
- * @author bard
+ * Default OK/confirm action for dialogs.
+ * {@link UIFacade#createDialog(java.awt.Component, javax.swing.Action[], String)}
+ * adds additional/special functionalities for this action
  */
 public abstract class OkAction extends GPAction {
     public OkAction() {

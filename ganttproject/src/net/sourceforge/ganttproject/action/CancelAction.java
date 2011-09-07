@@ -21,11 +21,21 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 
 /**
- * @author bard
+ * Default cancel action for dialogs.
+ * {@link UIFacade#createDialog(java.awt.Component, javax.swing.Action[], String)}
+ * adds additional/special functionalities for this action
  */
 public class CancelAction extends GPAction {
+    /** CancelAction which does not do anything */
+    public final static CancelAction EMPTY = new CancelAction();
+
     public CancelAction() {
-        super("cancel");
+        this("cancel");
+    }
+
+    /** For concealed CancelActions (with a different text) */
+    public CancelAction(String key) {
+        super(key);
     }
 
     @Override
