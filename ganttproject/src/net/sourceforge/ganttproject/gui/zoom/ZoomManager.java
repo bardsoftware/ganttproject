@@ -1,13 +1,26 @@
 /*
- * Created on 03.11.2004
- */
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.zoom;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.action.ZoomInAction;
-import net.sourceforge.ganttproject.action.ZoomOutAction;
 import net.sourceforge.ganttproject.time.TimeUnitPair;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -68,19 +81,12 @@ public class ZoomManager {
     /** If this value is false the maximum ZoomState is not reached */
     private boolean myMaximumZoomStateReached = false;
 
-    private final ZoomInAction myZoomInAction;
-
-    private final ZoomOutAction myZoomOutAction;
-
     public ZoomManager(TimeUnitStack timeUnitStack) {
         TimeUnitPair[] unitPairs = timeUnitStack.getTimeUnitPairs();
         myZoomStates = new ArrayList<ZoomState>(unitPairs.length);
         for (int i = 0; i < unitPairs.length; i++) {
             myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], i));
         }
-
-        myZoomInAction = new ZoomInAction(this);
-        myZoomOutAction = new ZoomOutAction(this);
     }
 
     public boolean canZoomIn() {
@@ -160,14 +166,5 @@ public class ZoomManager {
         }
 
         return myZoomStates.get(zoom);
-    }
-    
-    public ZoomInAction getZoomInAction() {
-        return myZoomInAction;
-    }
-    
-    
-    public ZoomOutAction getZoomOutAction() {
-        return myZoomOutAction;
     }
 }

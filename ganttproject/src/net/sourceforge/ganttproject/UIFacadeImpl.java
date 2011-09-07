@@ -51,6 +51,7 @@ import javax.swing.WindowConstants;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
@@ -125,6 +126,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     public GPUndoManager getUndoManager() {
         return myFallbackDelegate.getUndoManager();
+    }
+
+    public ZoomActionSet getZoomActionSet() {
+        return myFallbackDelegate.getZoomActionSet();
     }
 
     public Choice showConfirmationDialog(String message, String title) {

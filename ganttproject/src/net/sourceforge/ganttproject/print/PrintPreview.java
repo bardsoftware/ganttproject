@@ -69,6 +69,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
@@ -76,7 +77,6 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class PrintPreview extends JDialog {
@@ -147,7 +147,7 @@ public class PrintPreview extends JDialog {
 
     private final IGanttProject myProject;
 
-    private final UIFacade myUIfacade;
+    private final UIFacade myUIFacade;
 
     private void onChangingDates() {
         myExportSettings.setStartDate(myStart.getValue());
@@ -159,7 +159,7 @@ public class PrintPreview extends JDialog {
             Date end) {
         super(uifacade.getMainFrame(), language.getText("preview"), false);
         myProject = project;
-        myUIfacade = uifacade;
+        myUIFacade = uifacade;
         Dimension screenDim = java.awt.Toolkit.getDefaultToolkit()
                 .getScreenSize();
         setSize((int) (screenDim.width * 0.75), (int) (screenDim.height * 0.75));
@@ -384,10 +384,10 @@ public class PrintPreview extends JDialog {
                     .correctLabel(language.getText("setEndDate"))));
                     */
             //GanttProject gp = Mediator.getGanttProjectSingleton();
-            
-            final ZoomManager zoomManager = myUIfacade.getZoomManager();
-            final Action zoomOut = zoomManager.getZoomOutAction();
-            final Action zoomIn = zoomManager.getZoomInAction();
+
+            final ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
+            final Action zoomOut = zoomActionSet.getZoomOutAction();
+            final Action zoomIn = zoomActionSet.getZoomInAction();
             bZoomOut = new JButton((Icon) zoomOut.getValue(Action.SMALL_ICON));
             bZoomIn = new JButton((Icon) zoomIn.getValue(Action.SMALL_ICON));
 
@@ -399,8 +399,8 @@ public class PrintPreview extends JDialog {
                         public void run() {
                             zoomOut.actionPerformed(null);
                             updateSourceImage();
-                            bZoomOut.setEnabled(zoomManager.canZoomOut());
-                            bZoomIn.setEnabled(zoomManager.canZoomIn());
+                            bZoomOut.setEnabled(zoomOut.isEnabled());
+                            bZoomIn.setEnabled(zoomIn.isEnabled());
                         }
                     });
                 }
@@ -414,8 +414,8 @@ public class PrintPreview extends JDialog {
                         public void run() {
                             zoomIn.actionPerformed(null);
                             updateSourceImage();
-                            bZoomOut.setEnabled(zoomManager.canZoomOut());
-                            bZoomIn.setEnabled(zoomManager.canZoomIn());
+                            bZoomOut.setEnabled(zoomOut.isEnabled());
+                            bZoomIn.setEnabled(zoomIn.isEnabled());
                         }
                     });
                 }
@@ -489,7 +489,7 @@ public class PrintPreview extends JDialog {
                 + ms.getY(MediaSize.MM));
 
         if (myPageFormat.getHeight() == 0 || myPageFormat.getWidth() == 0) {
-            myUIfacade.showErrorDialog("Unable to determine default page size");
+            myUIFacade.showErrorDialog("Unable to determine default page size");
             return;
         }
         myPageWidth = (int) (myPageFormat.getWidth());
@@ -526,7 +526,7 @@ public class PrintPreview extends JDialog {
             }
             statusBar.setText0("" + pageIndex);
         } catch (PrinterException e) {
-            myUIfacade.showErrorDialog(e);
+            myUIFacade.showErrorDialog(e);
         }
     }
 
@@ -604,7 +604,7 @@ public class PrintPreview extends JDialog {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                myUIfacade.showErrorDialog(e);
+                myUIFacade.showErrorDialog(e);
             }
             dispose();
         }
@@ -618,7 +618,7 @@ public class PrintPreview extends JDialog {
             myPrintable = new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT);
             changePageOrientation(myOrientation);
         } catch (OutOfMemoryError e) {
-            myUIfacade.showErrorDialog(language.getText("printing.out_of_memory"));
+            myUIFacade.showErrorDialog(language.getText("printing.out_of_memory"));
         }
     }
 
