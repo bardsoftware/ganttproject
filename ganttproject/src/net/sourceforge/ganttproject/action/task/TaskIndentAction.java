@@ -54,17 +54,17 @@ public class TaskIndentAction extends TaskActionBase {
             DefaultMutableTreeNode newParent = node.getPreviousSibling();
             // If there is no more indentation possible we must stop
             if (!(newParent instanceof TaskNode)) {
-                continue;
+                return false;
             }
             if (node instanceof TaskNode && newParent instanceof TaskNode) {
                 Task nextTask = (Task) node.getUserObject();
                 Task container = (Task) newParent.getUserObject();
-                if (getTaskManager().getDependencyCollection().canCreateDependency(container, nextTask)) {
-                    return true;
+                if (!getTaskManager().getDependencyCollection().canCreateDependency(container, nextTask)) {
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     @Override

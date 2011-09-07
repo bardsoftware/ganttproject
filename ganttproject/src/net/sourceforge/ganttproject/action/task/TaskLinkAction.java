@@ -41,6 +41,7 @@ public class TaskLinkAction extends TaskActionBase {
         for (int i = 0; i < selection.size() - 1; i++) {
             Task dependant = selection.get(i + 1);
             Task dependee = selection.get(i);
+            // FIXME If dependant is a supertask containing dependee, this check fails and the dependency is created!!
             if (getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {
                 getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
             }
@@ -54,11 +55,15 @@ public class TaskLinkAction extends TaskActionBase {
         if(selection.size() <= 1) {
             return false;
         }
-        for (Task task : selection) {
-            if (task.getDependencies().hasLinks(selection) == false ) {
-                return true;
+        for (int i = 0; i < selection.size() - 1; i++) {
+            Task dependant = selection.get(i + 1);
+            Task dependee = selection.get(i);
+            // FIXME If dependant is a supertask containing dependee, this check fails!
+            if (!getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {
+                // It is not possible to create a dependency
+                return false;
             }
         }
-        return false;
+        return true;
     }
 }
