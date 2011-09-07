@@ -1,6 +1,21 @@
 /*
- * Created on 29.09.2005
- */
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
@@ -114,6 +129,27 @@ class TaskContainmentHierarchyFacadeImpl implements
                 .getUserObject();
     }
 
+    public Task getPreviousSibling(Task nestedTask) {
+        DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+        assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
+        DefaultMutableTreeNode siblingNode = treeNode.getPreviousSibling();
+        return siblingNode == null ? null : (Task) siblingNode.getUserObject();
+    }
+
+    public Task getNextSibling(Task nestedTask) {
+        DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+        assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
+        DefaultMutableTreeNode siblingNode = treeNode.getNextSibling();
+        return siblingNode == null ? null : (Task) siblingNode.getUserObject();
+    }
+
+    public int getTaskIndex(Task nestedTask) {
+        DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+        assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
+        DefaultMutableTreeNode containerNode = (DefaultMutableTreeNode) treeNode.getParent();
+        return containerNode.getIndex(treeNode);
+    }
+
     public boolean areUnrelated(Task first, Task second) {
         myPathBuffer.clear();
         for (Task container = getContainer(first); container != null; container = getContainer(container)) {
@@ -133,10 +169,13 @@ class TaskContainmentHierarchyFacadeImpl implements
     }
 
     public void move(Task whatMove, Task whereMove) {
-        DefaultMutableTreeNode targetNode = myTask2treeNode
-                .get(whereMove);
-        DefaultMutableTreeNode movedNode = myTask2treeNode
-                .get(whatMove);
+        DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
+        move(whatMove, whereMove, targetNode.getChildCount());
+    }
+
+    public void move(Task whatMove, Task whereMove, int index) {
+        DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
+        DefaultMutableTreeNode movedNode = myTask2treeNode.get(whatMove);
         if (movedNode != null) {
             TreePath movedPath = new TreePath(movedNode.getPath());
             boolean wasSelected = (myTree.getJTree().getSelectionModel()
@@ -145,8 +184,7 @@ class TaskContainmentHierarchyFacadeImpl implements
                 myTree.getJTree().getSelectionModel().removeSelectionPath(movedPath);
             }
             myTree.getModel().removeNodeFromParent(movedNode);
-            myTree.getModel().insertNodeInto(movedNode, targetNode,
-                    targetNode.getChildCount());
+            myTree.getModel().insertNodeInto(movedNode, targetNode, index);
             if (wasSelected) {
                 movedPath = new TreePath(movedNode.getPath());
                 myTree.getJTree().getSelectionModel().addSelectionPath(movedPath);
