@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Dmitry Barashev
+Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -50,7 +50,7 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
 
     public void actionPerformed(ActionEvent e) {
         final List<Task> selection = new ArrayList<Task>(mySelection);
-        if(askUserPermission(selection)) {
+        if(isEnabled() && askUserPermission(selection)) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                 public void run() {
                     try {
@@ -64,8 +64,9 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
     }
 
     /**
-     * @param selection of tasks for which permission is required 
-     * @return true if the operation is accepted by the user */
+     * @param selection of tasks for which permission is required
+     * @return true if the operation is accepted by the user
+     */
     protected boolean askUserPermission(List<Task> selection) {
         // Accept operation by default
         return true;
@@ -90,17 +91,18 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
     protected UIFacade getUIFacade() {
         return myUIFacade;
     }
-    
+
     protected GanttTree2 getTree() {
         return myTree;
     }
 
     protected void forwardScheduling() throws TaskDependencyException {
         // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if this indeed is the case
-//        // TODO Find out which chart is opened and only reset that one (maybe add a resetChart to UIFacade?) 
+//        // TODO Find out which chart is opened and only reset that one (maybe add a resetChart to UIFacade?)
 //        myUIFacade.getGanttChart().reset();
 //        myUIFacade.getResourceChart().reset();
         myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        getUIFacade().getTaskTree().getTreeComponent().repaint();
     }
 
     protected abstract boolean isEnabled(List<Task> selection);
