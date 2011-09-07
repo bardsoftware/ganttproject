@@ -65,6 +65,5 @@ public class TaskDeleteAction extends TaskActionBase {
             }
         }
         forwardScheduling();
-        getUIFacade().getTaskTree().getTreeComponent().repaint();
     }
 }
