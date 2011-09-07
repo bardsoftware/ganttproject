@@ -1,4 +1,4 @@
-#Wed Sep 07 11:56:32 CEST 2011
+#Wed Sep 07 13:04:20 CEST 2011
 cleanup.add_default_serial_version_id=true
 cleanup.add_generated_serial_version_id=false
 cleanup.add_missing_annotations=true
@@ -74,7 +74,7 @@ sp_cleanup.always_use_parentheses_in_expressions=false
 sp_cleanup.always_use_this_for_non_static_field_access=false
 sp_cleanup.always_use_this_for_non_static_method_access=false
 sp_cleanup.convert_to_enhanced_for_loop=false
-sp_cleanup.correct_indentation=true
+sp_cleanup.correct_indentation=false
 sp_cleanup.format_source_code=false
 sp_cleanup.format_source_code_changes_only=false
 sp_cleanup.make_local_variable_final=false
