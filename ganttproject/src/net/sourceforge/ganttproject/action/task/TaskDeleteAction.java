@@ -64,8 +64,6 @@ public class TaskDeleteAction extends TaskActionBase {
                 task.delete();
             }
         }
-        getUIFacade().getGanttChart().reset();
-        getUIFacade().getResourceChart().reset();
-        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        forwardScheduling();
     }
 }

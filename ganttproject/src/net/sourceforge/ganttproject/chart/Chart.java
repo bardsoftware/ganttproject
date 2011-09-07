@@ -33,6 +33,7 @@ public interface Chart extends IAdaptable {
 
     public void setTaskManager(TaskManager taskManager);
 
+    /** Repaints the chart */
     public void reset();
 
     public Icon getIcon();
