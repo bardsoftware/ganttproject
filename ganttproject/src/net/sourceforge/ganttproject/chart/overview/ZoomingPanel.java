@@ -20,21 +20,25 @@ package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
 
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 
+/**
+ * Creates a panel containing buttons of the zoom actions
+ */
 public class ZoomingPanel {
     private final TimelineChart myChart;
-    private final ZoomManager myZoomManager;
+    private final UIFacade myUIFacade;
 
     public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
         myChart = chart;
-        myZoomManager = uiFacade.getZoomManager();
+        myUIFacade = uiFacade;
     }
 
     public Component getComponent() {
+        ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
         return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
-                myZoomManager.getZoomInAction()).addButton(myZoomManager.getZoomOutAction()).build();
+                zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
     }
 }

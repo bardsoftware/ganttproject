@@ -74,6 +74,7 @@ import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMRUMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -167,6 +168,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     public boolean isOnlyViewer;
 
     private final ResourceActionSet myResourceActions;
+
+    private final ZoomActionSet myZoomActions;
 
     private final TaskManager myTaskManager;
 
@@ -285,10 +288,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
         System.err.println("3. creating menus...");
         myResourceActions = getResourcePanel().getResourceActionSet();
+        myZoomActions = new ZoomActionSet(getZoomManager());
         bar = new JMenuBar();
         setJMenuBar(bar);
         // Allocation of the menus
-        
+
         // Project menu related sub menus and items
         myProjectMenu = new ProjectMenu(this, myMRU);
         GanttLanguageMenu.addListener(myProjectMenu, "project");
@@ -1055,6 +1059,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     public Action getPasteAction() {
         return getViewManager().getPasteAction();
+    }
+
+    public ZoomActionSet getZoomActionSet() {
+        return myZoomActions;
     }
 
     public static class Args {

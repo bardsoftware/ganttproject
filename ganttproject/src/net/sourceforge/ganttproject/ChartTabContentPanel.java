@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -40,17 +40,14 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 abstract class ChartTabContentPanel {
-
     private JSplitPane mySplitPane;
-    protected final NavigationPanel myNavigationPanel;
-    protected final ZoomingPanel myZoomingPanel;
     private final List<Component> myPanels = new ArrayList<Component>();
 
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
-        myNavigationPanel = new NavigationPanel(project, chart, workbenchFacade);
-        myZoomingPanel = new ZoomingPanel(workbenchFacade, chart);
-        addChartPanel(myZoomingPanel.getComponent());
-        addChartPanel(myNavigationPanel.getComponent());
+        NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
+        ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
+        addChartPanel(zoomingPanel.getComponent());
+        addChartPanel(navigationPanel.getComponent());
     }
 
     protected JComponent createContentComponent() {
@@ -82,7 +79,7 @@ abstract class ChartTabContentPanel {
             mySplitPane.setRightComponent(left);
             mySplitPane.setLeftComponent(right);
             mySplitPane.setDividerLocation(
-                (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
+                    (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
             mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         }
         mySplitPane.setOneTouchExpandable(true);
