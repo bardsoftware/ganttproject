@@ -639,6 +639,18 @@ public class TaskManagerImpl implements TaskManager {
             return nestedTask.getSupertask();
         }
 
+        public Task getPreviousSibling(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Task getNextSibling(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getTaskIndex(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
         public boolean areUnrelated(Task first, Task second) {
             myPathBuffer.clear();
             for (Task container = getContainer(first); container != null; container = getContainer(container)) {
@@ -659,6 +671,10 @@ public class TaskManagerImpl implements TaskManager {
 
         public void move(Task whatMove, Task whereMove) {
             whatMove.move(whereMove);
+        }
+
+        public void move(Task whatMove, Task whereMove, int index) {
+            throw new UnsupportedOperationException();
         }
 
         public int getDepth(Task task) {

@@ -171,7 +171,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private final AbstractAction myNewTaskAction;
 
     private final AbstractAction myDeleteAction;
-    
+
     private final AbstractAction myTaskPropertiesAction;
 
     private boolean isOnTaskSelectionEventProcessing;
@@ -200,7 +200,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 onTaskSelectionChanged(currentSelection);
             }
         });
-        
+
 
         // Create the root node
         initRootNode();
@@ -217,9 +217,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
         myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
         myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, this);
-        myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this, treeModel);
-        myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this, treeModel);
-        myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this, treeModel);
+        myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
+        myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
+        myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
         treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, myNewTaskAction,
             getAppFrame().getCutAction(), getAppFrame().getCopyAction(), getAppFrame().getPasteAction(),
             getTaskPropertiesAction(), myDeleteAction);

@@ -20,14 +20,13 @@ package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 
 /**
  * Indent several nodes that are selected
@@ -45,23 +44,15 @@ public class TaskIndentAction extends TaskActionBase {
 
     @Override
     protected boolean isEnabled(List<Task> selection) {
-        final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
-        if(cdmtn == null) {
+        if(selection.size() == 0) {
             return false;
         }
-        for (DefaultMutableTreeNode node : cdmtn) {
-            // Where is my nearest sibling in ascending order ?
-            DefaultMutableTreeNode newParent = node.getPreviousSibling();
-            // If there is no more indentation possible we must stop
-            if (!(newParent instanceof TaskNode)) {
+        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+        TaskDependencyCollection dependencyCollection = getTaskManager().getDependencyCollection();
+        for(Task task: selection) {
+            Task newParent = taskHierarchy.getPreviousSibling(task);
+            if(newParent == null || dependencyCollection.canCreateDependency(newParent, task) == false) {
                 return false;
-            }
-            if (node instanceof TaskNode && newParent instanceof TaskNode) {
-                Task nextTask = (Task) node.getUserObject();
-                Task container = (Task) newParent.getUserObject();
-                if (!getTaskManager().getDependencyCollection().canCreateDependency(container, nextTask)) {
-                    return false;
-                }
             }
         }
         return true;
@@ -69,22 +60,10 @@ public class TaskIndentAction extends TaskActionBase {
 
     @Override
     protected void run(List<Task> selection) throws Exception {
-        final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
-        for (DefaultMutableTreeNode node : cdmtn) {
-            // Where is my nearest sibling in ascending order ?
-            DefaultMutableTreeNode newParent = node.getPreviousSibling();
-            // If there is no more indentation possible we must stop
-            if (!(newParent instanceof TaskNode)) {
-                continue;
-            }
-            if (node instanceof TaskNode && newParent instanceof TaskNode) {
-                Task nextTask = (Task) node.getUserObject();
-                Task container = (Task) newParent.getUserObject();
-                if (!getTaskManager().getDependencyCollection().canCreateDependency(container, nextTask)) {
-                    continue;
-                }
-                getTaskManager().getTaskHierarchy().move(nextTask, container);
-            }
+        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+        for(Task task: selection) {
+            Task newParent = taskHierarchy.getPreviousSibling(task);
+            taskHierarchy.move(task, newParent);
         }
     }
 }
