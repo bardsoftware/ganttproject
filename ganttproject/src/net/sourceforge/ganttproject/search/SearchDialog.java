@@ -79,7 +79,9 @@ public class SearchDialog {
 
     protected void gotoSelection() {
         SearchResult selectedValue = (SearchResult) myResultView.getSelectedValue();
-        selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
+        if(selectedValue != null ) {
+            selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
+        }
     }
 
     private JComponent getComponent() {
