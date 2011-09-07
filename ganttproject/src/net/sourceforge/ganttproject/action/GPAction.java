@@ -162,7 +162,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         }
     }
 
-    protected void updateAction() {
+    /**
+     * Updates the action. Can be called when external influences resulted in
+     * changed action name and/or description
+     */
+    public void updateAction() {
         updateName();
         updateTooltip();
     }
@@ -176,8 +180,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
 
     public void languageChanged(Event event) {
-        updateName();
-        updateTooltip();
+        updateAction();
     }
 
     private String getCustomIconPath() {

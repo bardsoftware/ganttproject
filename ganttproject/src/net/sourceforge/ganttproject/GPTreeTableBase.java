@@ -709,7 +709,8 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         }
     }
 
-    void addActionWithAccelleratorKey(Action action) {
+    /** Adds an action to the object and makes it active */
+    public void addActionWithAccelleratorKey(Action action) {
         if (action != null) {
             addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
         }

@@ -28,7 +28,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -49,7 +48,10 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -69,6 +71,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
+import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
@@ -151,9 +154,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     /** Toolbar button */
     private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties;
+            bProperties, bUndo, bRedo;
 
-    private TestGanttRolloverButton bUndo, bRedo;
+    /** List of buttons that have changing actions depending on the visible tab (ie Task or Resource) */
+    private JButton[] myArtefactButtons;
 
     /** The project filename */
     public Document projectDocument = null;
@@ -307,8 +311,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         bar.add(viewMenu);
 
         JMenu mTask = createNewMenu("task");
-        mTask.add(getTree().getTaskDeleteAction());
+        mTask.add(getTree().getTaskNewAction());
         mTask.add(getTree().getTaskPropertiesAction());
+        mTask.add(getTree().getTaskDeleteAction());
         getResourcePanel().setTaskPropertiesAction(getTree().getTaskPropertiesAction());
         bar.add(mTask);
 
@@ -345,49 +350,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
                 myResourceChartTabContent,
                 new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
-        getTabs().setSelectedIndex(0);
 
-        // pert area
-        // getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        getTabs().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                bNewTask.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-
-                bDelete.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-
-                bProperties.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                                || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-
-                if (getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX) {
-                    // Gantt Chart
-                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("task.new")));
-                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("task.delete")));
-                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("task.properties")));
-
-                    if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(language.getCorrectedLabel("task.new"));
-                        bDelete.setText(language.getCorrectedLabel("task.delete"));
-                        bProperties.setText(language.getCorrectedLabel("task.properties"));
-                    }
-
-                } else if (getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX) {
-                    // Resources Chart
-                    bNewTask.setToolTipText(getToolTip(language.getCorrectedLabel("resource.new")));
-                    bDelete.setToolTipText(getToolTip(language.getCorrectedLabel("resource.delete")));
-                    bProperties.setToolTipText(getToolTip(language.getCorrectedLabel("resource.properties")));
-
-                    if (options.getButtonShow() != GanttOptions.ICONS) {
-                        bNewTask.setText(language.getCorrectedLabel("resource.new"));
-                        bDelete.setText(language.getCorrectedLabel("resource.delete"));
-                        bProperties.setText(language.getCorrectedLabel("resource.properties"));
-                    }
-                }
-            }
-        });
-        // Add tab pane on the content pane
-        getContentPane().add(getTabs(), BorderLayout.CENTER);
         // Add toolbar
         toolBar = new JToolBar();
         toolBar.addComponentListener(new ComponentListener() {
@@ -409,6 +372,21 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         this.addButtons(toolBar);
         getContentPane().add(toolBar,
                 (toolBar.getOrientation() == JToolBar.HORIZONTAL) ? BorderLayout.NORTH : BorderLayout.WEST);
+
+        // Chart tabs
+        getTabs().addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                for(JButton button: myArtefactButtons) {
+                    button.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                            || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
+                    ((ArtefactAction) button.getAction()).updateAction();
+                }
+            }
+        });
+        getTabs().setSelectedIndex(0);
+
+        // Add tab pane on the content pane
+        getContentPane().add(getTabs(), BorderLayout.CENTER);
 
         // add the status bar
         if (!isOnlyViewer) {
@@ -467,15 +445,15 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         Mediator.registerDelayManager(myDelayManager);
         myDelayManager.addObserver(tree);
 
-        getRootPane()
-                .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "refresh");
-        getRootPane().getActionMap().put("refresh", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                getActiveChart().reset();
-                repaint();
-            }
-        });
+        // Add globally available actions/key strokes
+        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = getRootPane().getActionMap();
+        for(JButton button : myArtefactButtons) {
+            Action action = button.getAction();
+            Object actionName = action.getValue(Action.NAME);
+            inputMap.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), actionName);
+            actionMap.put(actionName, action);
+        }
         this.setModified(false);
     }
 
@@ -674,6 +652,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
                         : myResourceActions.getResourcePropertiesAction();
             }
         }));
+        myArtefactButtons = new TestGanttRolloverButton[] {bNewTask, bDelete, bProperties};
 
         ScrollingManager scrollingManager = getScrollingManager();
         scrollingManager.addScrollingListener(area.getViewState());

@@ -18,29 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-
-public class ArtefactPropertiesAction extends GPAction {
-    private final ActiveActionProvider myProvider;
-
+public class ArtefactPropertiesAction extends ArtefactAction {
     public ArtefactPropertiesAction(ActiveActionProvider provider) {
-        myProvider = provider;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        AbstractAction activeAction = myProvider.getActiveAction();
-        activeAction.actionPerformed(e);
+        super("artefact.properties", provider);
     }
 
     @Override
     protected String getIconFilePrefix() {
         return "properties_";
-    }
-
-    @Override
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(isNull);
     }
 }

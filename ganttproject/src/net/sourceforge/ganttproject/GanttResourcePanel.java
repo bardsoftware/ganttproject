@@ -87,6 +87,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
                 .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
                 .getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myResourceActionSet
                 .getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
+        table.addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
         table.setRowHeight(20);
         table.setBackground(new Color(1.0f, 1.0f, 1.0f));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
