@@ -58,11 +58,11 @@ public class TaskUnindentAction extends TaskActionBase {
         }
         final DefaultMutableTreeNode root = getTree().getRoot();
         for(DefaultMutableTreeNode node : cdmtn) {
-            if(!root.equals(GanttTree2.getParentNode(node))) {
-                return true;
+            if(root.equals(GanttTree2.getParentNode(node))) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override

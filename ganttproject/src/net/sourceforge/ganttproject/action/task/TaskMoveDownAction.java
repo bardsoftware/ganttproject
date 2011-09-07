@@ -54,12 +54,12 @@ public class TaskMoveDownAction extends TaskActionBase {
         }
         for (int i = cdmtn.length - 1; i >= 0; i--) {
             DefaultMutableTreeNode parent = GanttTree2.getParentNode(cdmtn[i]);
-            if (parent != null && parent.getIndex(cdmtn[i]) + 1 < parent.getChildCount()) {
-                // We can move this node down
-                return true;
+            if (parent == null || parent.getIndex(cdmtn[i]) + 1 >= parent.getChildCount()) {
+                // We cannot move this node down
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
