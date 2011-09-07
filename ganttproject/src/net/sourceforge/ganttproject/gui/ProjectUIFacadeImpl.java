@@ -89,7 +89,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                     }
                 });
             }
-            actions.add(new CancelAction());
+            actions.add(CancelAction.EMPTY);
             myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toArray(new Action[0]));
 
             return false;

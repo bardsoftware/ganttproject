@@ -142,7 +142,7 @@ class GanttURLChooser {
                 }
             }
         };
-        myUiFacade.createDialog(panel, new Action[] { okAction, new CancelAction() },
+        myUiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY },
                 language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     }
 

@@ -86,7 +86,7 @@ public class SettingsDialog2 {
                 }
             }
         };
-        myUIFacade.createDialog(getComponent(), new Action[] { okAction, new CancelAction() },
+        myUIFacade.createDialog(getComponent(), new Action[] { okAction, CancelAction.EMPTY },
                 GanttLanguage.getInstance().getCorrectedLabel("settings.app")).show();
     }
 

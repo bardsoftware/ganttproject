@@ -137,7 +137,7 @@ public class BaselineDialogAction extends GPAction {
                     trashBaseline.remove();
                 }
             }
-        }, new CancelAction() };
+        }, CancelAction.EMPTY };
         myUiFacade.createDialog(result, actions, getI18n("baseline.dialog.title")).show();
     }
 }

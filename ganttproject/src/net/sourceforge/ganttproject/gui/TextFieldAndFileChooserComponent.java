@@ -166,7 +166,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
                 setFile(fc.getSelectedFile());
                 onFileChosen(myFile);
             }
-        }, new CancelAction() };
+        }, CancelAction.EMPTY };
         myUiFacade.createDialog(fc, dialogActions, "").show();
     }
 

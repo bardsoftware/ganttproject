@@ -58,7 +58,7 @@ public class GanttDialogProperties {
                     }
                 });
             }
-        }, new CancelAction() };
+        }, CancelAction.EMPTY };
 
         StringBuffer taskNames = new StringBuffer();
         for (int i = 0; i < myTasks.length; i++) {
@@ -67,7 +67,7 @@ public class GanttDialogProperties {
             }
             taskNames.append(myTasks[i].getName());
         }
-        
+
         final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
         uiFacade.createDialog(taskPropertiesBean, actions, title).show();
     }
