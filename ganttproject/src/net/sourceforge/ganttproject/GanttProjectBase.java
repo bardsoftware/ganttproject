@@ -167,6 +167,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
             modifiedStateChangeListener.projectCreated();
         }
+        // A new project just got created, so it is not yet modified
+        setModified(false);
     }
 
     protected void fireProjectClosed() {
@@ -335,7 +337,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         public AbstractAction getPasteAction() {
             return myPasteAction;
         }
-        
+
         public ChartSelection getSelectedArtefacts() {
             return mySelectedView.getChart().getSelection();
         }
@@ -422,7 +424,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         public void selectionChanged() {
             myManager.updateActions();
         }
-        
+
         public Chart getChart() {
             return myChart;
         }

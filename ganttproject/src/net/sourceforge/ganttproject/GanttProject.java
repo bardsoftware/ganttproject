@@ -454,7 +454,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             inputMap.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), actionName);
             actionMap.put(actionName, action);
         }
-        this.setModified(false);
     }
 
     @Override
@@ -984,7 +983,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             return;
         fireProjectModified(afs);
         String title = getTitle();
-        // String last = title.substring(title.length() - 11, title.length());
         askForSave = afs;
         try {
             if (System.getProperty("mrj.version") != null) {
