@@ -23,7 +23,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.GeneralDialog;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Generic dialog for server I/O
@@ -32,8 +31,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ServerDialog extends GeneralDialog {
     public ServerDialog(GanttProject parent) {
-        super(parent, GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance()
-                .getText("webServer")), true, new ConnectionPanel());
+        super(parent, language.getCorrectedLabel("webServer"), true, new ConnectionPanel());
     }
 
     @Override

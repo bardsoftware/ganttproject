@@ -53,8 +53,7 @@ public class GanttDialogPerson {
 
     private HumanResource person;
 
-    /** The language use */
-    private GanttLanguage language = GanttLanguage.getInstance();
+    private static final GanttLanguage language = GanttLanguage.getInstance();
 
     private JTabbedPane tabbedPane;
 
@@ -65,8 +64,7 @@ public class GanttDialogPerson {
     private final GPOptionGroup myGroup;
     private final UIFacade myUIFacade;
     /** Creates new form GanttDialogPerson */
-    public GanttDialogPerson(UIFacade uiFacade, GanttLanguage language,
-            HumanResource person) {
+    public GanttDialogPerson(UIFacade uiFacade, HumanResource person) {
 //        super(parent, GanttProject.correctLabel(language.getText("human")),
 //                true);
 //

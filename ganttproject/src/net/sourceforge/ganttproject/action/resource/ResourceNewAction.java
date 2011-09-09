@@ -22,7 +22,6 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -46,7 +45,7 @@ public class ResourceNewAction extends ResourceAction {
     public void actionPerformed(ActionEvent event) {
         final HumanResource resource = getManager().newHumanResource();
         resource.setRole(myRoleManager.getDefaultRole());
-        GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), resource);
+        GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, resource);
         dp.setVisible(true);
         if (dp.result()) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {

@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class WizardImpl {
-    private final static GanttLanguage language = GanttLanguage.getInstance();
+    protected final static GanttLanguage language = GanttLanguage.getInstance();
 
     private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
 

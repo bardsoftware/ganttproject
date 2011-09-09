@@ -24,7 +24,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
@@ -49,7 +48,7 @@ public class ResourcePropertiesAction extends GPAction {
         HumanResource[] selectedResources = myContext.getResources();
         if (selectedResources != null) {
             // TODO Allow to edit multiple resources (instead of [0])
-            GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, GanttLanguage.getInstance(), selectedResources[0]);
+            GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, selectedResources[0]);
             dp.setVisible(true);
             if (dp.result()) {
                 myProject.setModified(true);

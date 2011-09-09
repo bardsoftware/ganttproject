@@ -24,7 +24,6 @@ import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -44,7 +43,7 @@ public class RedoAction extends GPAction implements GPUndoListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        myUiFacade.setStatusText(GanttLanguage.getInstance().getText("redo"));
+        myUiFacade.setStatusText(getI18n("redo"));
         myUndoManager.redo();
     }
 
@@ -57,7 +56,7 @@ public class RedoAction extends GPAction implements GPUndoListener {
         setEnabled(myUndoManager.canRedo());
         updateAction();
     }
-    
+
     @Override
     protected String getLocalizedName() {
         if(myUndoManager == null || myUndoManager.canRedo() == false) {
