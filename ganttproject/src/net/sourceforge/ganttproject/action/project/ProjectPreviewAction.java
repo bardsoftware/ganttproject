@@ -25,7 +25,6 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.print.PrintPreview;
 
 /**
@@ -64,7 +63,7 @@ public class ProjectPreviewAction extends GPAction {
             PrintPreview preview = new PrintPreview(myProject, myUIFacade, chart, startDate, endDate);
             preview.setVisible(true);
         } catch (OutOfMemoryError exception) {
-            myUIFacade.showErrorDialog(GanttLanguage.getInstance().getText("printing.out_of_memory"));
+            myUIFacade.showErrorDialog(getI18n("printing.out_of_memory"));
             return;
         }
     }

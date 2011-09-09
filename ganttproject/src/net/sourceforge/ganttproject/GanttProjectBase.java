@@ -502,8 +502,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     public abstract Task newTask();
 
-    public abstract GanttLanguage getI18n();
-
     public abstract UIConfiguration getUIConfiguration();
 
     public abstract HumanResourceManager getHumanResourceManager();

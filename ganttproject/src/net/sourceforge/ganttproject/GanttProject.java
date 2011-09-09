@@ -1011,10 +1011,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return this.resp;
     }
 
-    public GanttLanguage getLanguage() {
-        return this.language;
-    }
-
     public GanttGraphicArea getArea() {
         return this.area;
     }
@@ -1227,10 +1223,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         projectDocument = document;
     }
 
-    @Override
-    public GanttLanguage getI18n() {
-        return getLanguage();
-    }
 
     @Override
     public GPCalendar getActiveCalendar() {
