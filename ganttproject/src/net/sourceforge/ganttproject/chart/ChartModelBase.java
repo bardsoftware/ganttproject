@@ -121,6 +121,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
                   model.getOffsetAnchorDate(),
+                  model.getStartDate(),
                   model.getBottomUnitWidth(),
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
@@ -240,6 +241,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             .withEndOffset((int)getBounds().getWidth())
             .withRightMargin(myScrollingSession==null ? 0 : 1)
             .withStartDate(getOffsetAnchorDate())
+            .withViewportStartDate(getStartDate())
             .withTopUnit(myTopUnit)
             .withWeekendDecreaseFactor(getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);

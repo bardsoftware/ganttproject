@@ -35,6 +35,7 @@ public interface OffsetBuilder {
         protected float myWeekendDecreaseFactor;
         protected GPCalendar myCalendar;
         protected int myRightMarginTimeUnits;
+        protected Date myViewportStartDate;
 
         protected Factory() {
         }
@@ -51,6 +52,11 @@ public interface OffsetBuilder {
 
         public Factory withStartDate(Date startDate) {
             myStartDate = startDate;
+            return this;
+        }
+
+        public Factory withViewportStartDate(Date viewportStartDate) {
+            myViewportStartDate = viewportStartDate;
             return this;
         }
 
