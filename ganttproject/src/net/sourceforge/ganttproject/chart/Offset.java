@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
+import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
@@ -91,5 +92,13 @@ public class Offset {
     public static Offset createFullyClosed(
             TimeUnit timeUnit, Date anchor, Date closedStartDate, Date closedEndDate, int pixels, DayType dayType) {
         return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, pixels, dayType);
+    }
+    public static String debugPrint(List<Offset> offsets) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("anchor=" + offsets.get(0).getOffsetAnchor());
+        for (Offset offset : offsets) {
+            builder.append(offset.toString()).append("\n");
+        }
+        return builder.toString();
     }
 }
