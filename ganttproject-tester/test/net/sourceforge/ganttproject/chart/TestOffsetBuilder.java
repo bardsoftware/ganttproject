@@ -16,10 +16,14 @@ public class TestOffsetBuilder extends TestCase {
         GPCalendar calendar = GPCalendar.PLAIN;
         GPTimeUnitStack timeUnitStack = new GPTimeUnitStack(GanttLanguage.getInstance());
         Date start = TestSetupHelper.newMonday().getTime();
-        RegularFrameOffsetBuilder builder = new RegularFrameOffsetBuilder(
-            calendar, timeUnitStack.WEEK, timeUnitStack.DAY, start, 20, 210, 1.0f);
-        List<Offset> bottomUnitOffsets = new ArrayList<Offset>();
-        builder.constructBottomOffsets(bottomUnitOffsets, 0);
+
+        OffsetBuilder builder = new RegularFrameOffsetBuilder.FactoryImpl()
+            .withStartDate(start).withViewportStartDate(start)
+            .withCalendar(calendar).withTopUnit(timeUnitStack.WEEK).withBottomUnit(timeUnitStack.DAY)
+            .withAtomicUnitWidth(20).withEndOffset(210).withWeekendDecreaseFactor(1.0f)
+            .build();
+        OffsetList bottomUnitOffsets = new OffsetList();
+        builder.constructOffsets(new ArrayList<Offset>(), bottomUnitOffsets);
 
         assertEquals(11, bottomUnitOffsets.size());
         assertEquals(20, bottomUnitOffsets.get(0).getOffsetPixels());
