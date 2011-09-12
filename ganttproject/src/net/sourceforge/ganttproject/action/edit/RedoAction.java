@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -31,19 +30,16 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public class RedoAction extends GPAction implements GPUndoListener {
-    private GPUndoManager myUndoManager;
-    private UIFacade myUiFacade;
+    private final GPUndoManager myUndoManager;
 
-    public RedoAction(UIFacade uiFacade) {
+    public RedoAction(GPUndoManager undoManager) {
         super("redo");
-        myUndoManager = uiFacade.getUndoManager();
+        myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
-        myUiFacade = uiFacade;
         setEnabled(myUndoManager.canRedo());
     }
 
     public void actionPerformed(ActionEvent e) {
-        myUiFacade.setStatusText(getI18n("redo"));
         myUndoManager.redo();
     }
 
