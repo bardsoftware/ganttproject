@@ -34,8 +34,7 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 /**
- * Action to show the options dialog of a chart. The contents of the options
- * dialog are given by the groups parameter of the constructor
+ * Action to show the options dialog for {@code myChart}.
  */
 public class ViewChartOptionsDialogAction extends GPAction {
     private final UIFacade myUIFacade;
@@ -47,7 +46,6 @@ public class ViewChartOptionsDialogAction extends GPAction {
         myChart = chart;
     }
 
-    // TODO What is the difference between this class and SettingsDialogAction? Can probably get merged...?
     public void actionPerformed(ActionEvent e) {
         for (GPOptionGroup group : myChart.getOptionGroups()) {
             group.lock();

@@ -25,6 +25,10 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 
+/**
+ * Action to show the options dialog for the application. It will seach and show
+ * all available OptionPageProvider classes
+ */
 public class SettingsDialogAction extends GPAction {
     private final UIFacade myUiFacade;
     private final IGanttProject myProject;
@@ -34,6 +38,7 @@ public class SettingsDialogAction extends GPAction {
         myUiFacade = uiFacade;
         myProject = project;
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder");
