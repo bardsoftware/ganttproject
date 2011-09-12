@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -32,18 +31,15 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  */
 public class UndoAction extends GPAction implements GPUndoListener {
     private final GPUndoManager myUndoManager;
-    private final UIFacade myUiFacade;
 
-    public UndoAction(UIFacade uiFacade) {
+    public UndoAction(GPUndoManager undoManager) {
         super("undo");
-        myUndoManager = uiFacade.getUndoManager();
+        myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
-        myUiFacade = uiFacade;
         setEnabled(myUndoManager.canUndo());
     }
 
     public void actionPerformed(ActionEvent e) {
-        myUiFacade.setStatusText(getLocalizedDescription());
         myUndoManager.undo();
     }
 
@@ -56,7 +52,7 @@ public class UndoAction extends GPAction implements GPUndoListener {
         setEnabled(myUndoManager.canUndo());
         updateAction();
     }
-    
+
     @Override
     protected String getLocalizedName() {
         if(myUndoManager == null || myUndoManager.canUndo() == false) {
