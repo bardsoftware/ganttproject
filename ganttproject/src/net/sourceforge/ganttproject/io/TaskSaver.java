@@ -59,7 +59,7 @@ class TaskSaver extends SaverBase {
         if (task.isProjectTask()) {
             addAttribute("project", Boolean.TRUE.toString(), attrs);
         }
-        addAttribute("fixedDates", Boolean.valueOf(task.hasFixedDates()).toString(), attrs);
+        addAttribute("fixedDates", task.hasFixedDates(), attrs);
         addAttribute("start", task.getStart().toXMLString(), attrs);
         addAttribute("duration", String.valueOf(task.getLength()), attrs);
         addAttribute("complete", String.valueOf(task.getCompletionPercentage()), attrs);
