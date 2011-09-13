@@ -83,7 +83,10 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
         String widthStr = atts.getValue(myWidthPropertyName);
         int order = Integer.parseInt(orderStr);
         int width = widthStr == null ? -1 : Integer.parseInt(widthStr);
-        boolean visible = Boolean.parseBoolean(atts.getValue(myVisiblePropertyName));
+        boolean visible = true;
+        if (atts.getValue(myVisiblePropertyName) != null) {
+            visible = Boolean.parseBoolean(atts.getValue(myVisiblePropertyName));
+        }
         myBuffer.add(new TableHeaderUIFacade.ColumnStub(id, id, visible, order, width));
     }
 }
