@@ -23,23 +23,29 @@ import java.util.Iterator;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
+/**
+ * Menu that contains a number of Most Recently Used documents. When clicked on
+ * a menu item, the corresponding document is opened.
+ */
 public class ProjectMRUMenu extends JMenu {
-    private final GanttProject myProject;
+    private final IGanttProject myProject;
+    private final UIFacade myUIFacade;
+    private final ProjectUIFacade myProjectUIFacade;
 
     private static final int maxSizeMRU = 5;
     private final DocumentsMRU myDocumentsMRU = new DocumentsMRU(maxSizeMRU);
 
-    public ProjectMRUMenu(GanttProject project) {
+    public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade) {
         super();
         myProject = project;
-    }
-
-    public DocumentsMRU getDocumentsMRU() {
-        return myDocumentsMRU;
+        myUIFacade = uiFacade;
+        myProjectUIFacade = projectUIFacade;
     }
 
     public void add(Document document) {
@@ -51,11 +57,12 @@ public class ProjectMRUMenu extends JMenu {
     private void updateMenuMRU() {
         removeAll();
         int index = 0;
-        Iterator<Document> iterator = myDocumentsMRU.iterator();
+        Iterator<Document> iterator = iterator();
         while (iterator.hasNext()) {
             index++;
-            Document document = iterator.next();
-            JMenuItem mi = new JMenuItem(new OpenMRUDocumentAction(index, document, myProject));
+            Document doc = iterator.next();
+            JMenuItem mi = new JMenuItem(
+                    new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade));
             add(mi);
         }
     }

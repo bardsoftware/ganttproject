@@ -21,10 +21,12 @@ package net.sourceforge.ganttproject.action.project;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
  * Creates a new action, that stores the specified document and invokes the
@@ -32,13 +34,18 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
  */
 public class OpenMRUDocumentAction extends GPAction {
     private final Document myDocument;
-    private final GanttProject myProject;
+    private final IGanttProject myProject;
+    private final UIFacade myUIFacade;
+    private final ProjectUIFacade myProjectUIFacade;
 
     // FIXME Keyboard shortcuts are not working... (because action is created dynamically?)
-    public OpenMRUDocumentAction(int index, Document document, GanttProject project) {
+    public OpenMRUDocumentAction(int index, Document document, IGanttProject project, UIFacade uiFacade,
+            ProjectUIFacade projectUIFacade) {
         super("project.mru." + index);
         myDocument = document;
         myProject = project;
+        myUIFacade = uiFacade;
+        myProjectUIFacade = projectUIFacade;
     }
 
     @Override
@@ -48,13 +55,13 @@ public class OpenMRUDocumentAction extends GPAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (myProject.getProjectUIFacade().ensureProjectSaved(myProject)) {
+        if (myProjectUIFacade.ensureProjectSaved(myProject)) {
             try {
                 myProject.open(myDocument);
             } catch (DocumentException exception) {
-                myProject.getUIFacade().showErrorDialog(exception);
+                myUIFacade.showErrorDialog(exception);
             } catch (IOException exception) {
-                myProject.getUIFacade().showErrorDialog(exception);
+                myUIFacade.showErrorDialog(exception);
             }
         }
     }

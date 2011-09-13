@@ -280,7 +280,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
 
         System.err.println("2. loading options");
-        myMRU = new ProjectMRUMenu(this);
+        myMRU = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade());
         myMRU.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
         GanttLanguageMenu.addListener(myMRU, "lastOpen");
         initOptions();
