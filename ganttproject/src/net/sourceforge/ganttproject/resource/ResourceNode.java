@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.resource;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.roles.Role;
 
 public class ResourceNode extends DefaultMutableTreeNode {
@@ -66,13 +67,13 @@ public class ResourceNode extends DefaultMutableTreeNode {
     }
 
     /** @return the value of a custom field referenced by its title */
-    public Object getCustomField(String title) {
-        return resource.getCustomField(title);
+    public Object getCustomField(CustomPropertyDefinition def) {
+        return resource.getCustomField(def);
     }
 
     /** sets the new value to the custom field referenced by its title */
-    public void setCustomField(String title, Object val) {
-        resource.setCustomField(title, val);
+    public void setCustomField(CustomPropertyDefinition def, Object val) {
+        resource.setCustomField(def, val);
     }
 
     @Override

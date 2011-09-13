@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -13,13 +31,10 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
- * This class handles the custom columns for one single task. It associate a
- * customColumn name with a value. The name of the custom column has to exist in
- * the CustomColumnsStorage otherwise an exception will be thrown. The type
- * (Class) of the given object as value has to match the class in the
- * CustomColumnsManager.
+ * Keeps a map of custom property ID to value.
  *
- * @author bbaranne Mar 2, 2005
+ * @author bbaranne Mar 2, 2005 -- initial code
+ * @auuthor dbarashev (Dmitry Barashev) -- complete rewrite
  */
 public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     /**
@@ -35,30 +50,9 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         myManager = customPropertyManager;
     }
 
-    /**
-     * Set the value for the customColumn whose name is given.
-     *
-     * @param customColName
-     *            The name of the CustomColumn.
-     * @param value
-     *            The associated value.
-     * @throws CustomColumnsException
-     *             Throws if <code>customColName</code> does not exist or
-     *             <code>value</code> class does not match the CustomColum
-     *             class.
-     */
-    public void setValue(String customColName, Object value)
-            throws CustomColumnsException {
-        CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, customColName);
-        if (def == null) {
-            throw new CustomColumnsException(CustomColumnsException.DO_NOT_EXIST, customColName);
-        }
-        setValue(def, value);
-    }
-
     public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
         if (value == null) {
-            mapCustomColumnValue.remove(def.getName());
+            mapCustomColumnValue.remove(def.getID());
             return;
         }
         Class<?> c1 = def.getType();
@@ -68,45 +62,21 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
                     CustomColumnsException.CLASS_MISMATCH,
                     "Failed to set value=" + value + ". value class=" + c2
                             + ", column class=" + c1);
-        } else {
-            mapCustomColumnValue.put(def.getName(), value);
         }
+        mapCustomColumnValue.put(def.getID(), value);
     }
 
-    /**
-     * @param customColName
-     *            The name of the custom column we want to get the value.
-     * @return The value for the given customColName.
-     */
-    public Object getValue(String customColName) {
-        Object result = mapCustomColumnValue.get(customColName);
-        return (result == null) ? tryGetDefaultValue(customColName) : result;
+    public Object getValue(CustomPropertyDefinition def) {
+        Object result = mapCustomColumnValue.get(def.getID());
+        return (result == null) ? def.getDefaultValue() : result;
     }
 
-    public boolean hasOwnValue(String propertyName) {
-        return mapCustomColumnValue.containsKey(propertyName);
+    public boolean hasOwnValue(CustomPropertyDefinition def) {
+        return mapCustomColumnValue.containsKey(def.getID());
     }
 
-    private Object tryGetDefaultValue(String customColName) {
-        CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, customColName);
-        return def == null ? null : def.getDefaultValue();
-    }
-
-    /**
-     * Remove the custom column (and also its value) from this
-     * CustomColumnValues.
-     *
-     * @param colName
-     *            Name of the column to remove.
-     */
-    public void removeCustomColumn(String colName) {
-        mapCustomColumnValue.remove(colName);
-    }
-
-    public void renameCustomColumn(String oldName, String newName) {
-        Object o = mapCustomColumnValue.get(oldName);
-        mapCustomColumnValue.put(newName, o);
-        mapCustomColumnValue.remove(oldName);
+    public void removeCustomColumn(CustomPropertyDefinition definition) {
+        mapCustomColumnValue.remove(definition.getID());
     }
 
     @Override
@@ -125,9 +95,9 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     public List<CustomProperty> getCustomProperties() {
         List<CustomProperty> result = new ArrayList<CustomProperty>(mapCustomColumnValue.size());
         for (Entry<String, Object> entry : mapCustomColumnValue.entrySet()) {
-            String name = entry.getKey();
+            String id = entry.getKey();
             Object value = entry.getValue();
-            CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, name);
+            CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, id);
             if (def != null) {
                 result.add(new CustomPropertyImpl(def, value));
             }
@@ -135,14 +105,10 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         return result;
     }
 
-    private static CustomPropertyDefinition getCustomPropertyDefinition(CustomPropertyManager manager, String name) {
-        for (CustomPropertyDefinition def : manager.getDefinitions()) {
-            if (name.equals(def.getName())) {
-                return def;
-            }
-        }
-        return null;
+    private static CustomPropertyDefinition getCustomPropertyDefinition(CustomPropertyManager manager, String id) {
+        return manager.getCustomPropertyDefinition(id);
     }
+
     @Override
     public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
         CustomPropertyDefinition defStub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
@@ -191,5 +157,4 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         }
         return result;
     }
-
 }

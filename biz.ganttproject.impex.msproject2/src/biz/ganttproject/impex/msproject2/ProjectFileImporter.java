@@ -228,7 +228,7 @@ class ProjectFileImporter {
                         typeAsString, name, null);
                 myResourceCustomPropertyMapping.put(rf, def);
             }
-            nativeResource.setCustomField(def.getName(), convertDataValue(rf, r.getCurrentValue(rf)));
+            nativeResource.setCustomField(def, convertDataValue(rf, r.getCurrentValue(rf)));
         }
     }
 
@@ -317,7 +317,7 @@ class ProjectFileImporter {
                         myCustomPropertyUniqueValueMapping.put(def.getName(), null);
                     }
                 }
-                nativeTask.getCustomValues().setValue(def.getName(), value);
+                nativeTask.getCustomValues().setValue(def, value);
             } catch (CustomColumnsException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
