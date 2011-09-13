@@ -155,8 +155,6 @@ public class TaskProperties {
                     sb.append(dep[i].getDependee().getTaskID());
                 }
                 res = sb.toString();
-            } else {
-                res = task.getCustomValues().getValue(propertyID);
             }
         }
         return res;

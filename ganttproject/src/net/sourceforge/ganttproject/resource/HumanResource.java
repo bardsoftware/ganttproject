@@ -178,21 +178,17 @@ public class HumanResource implements CustomPropertyHolder {
         return myDaysOffList;
     }
 
-    public Object getCustomField(String propertyName) {
-        return myCustomProperties.getValue(propertyName);
+    public Object getCustomField(CustomPropertyDefinition def) {
+        return myCustomProperties.getValue(def);
     }
 
-    public void setCustomField(String propertyName, Object value) {
+    public void setCustomField(CustomPropertyDefinition def, Object value) {
         try {
-            myCustomProperties.setValue(propertyName, value);
+            myCustomProperties.setValue(def, value);
         } catch (CustomColumnsException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    public void removeCustomField(String propertyName) {
-        myCustomProperties.removeCustomColumn(propertyName);
     }
 
     public ResourceAssignment createAssignment(ResourceAssignment assignmentToTask) {
@@ -232,7 +228,7 @@ public class HumanResource implements CustomPropertyHolder {
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder
                 .decodeTypeAndDefaultValue(definition.getTypeAsString(),
                         valueAsString);
-        setCustomField(definition.getName(), stubDefinition.getDefaultValue());
+        setCustomField(definition, stubDefinition.getDefaultValue());
         return new CustomPropertyImpl(definition, stubDefinition
                 .getDefaultValue());
     }

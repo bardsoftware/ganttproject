@@ -822,10 +822,10 @@ public class TaskManagerImpl implements TaskManager {
             Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
             for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
                 CustomColumn nextColumn = it.next();
-                Object value = customValues.getValue(nextColumn.getName());
+                Object value = customValues.getValue(nextColumn);
                 if (value!=null) {
                     try {
-                        nextImported.getCustomValues().setValue(nextColumn.getName(), value);
+                        nextImported.getCustomValues().setValue(nextColumn, value);
                     } catch (CustomColumnsException e) {
                         if (!GPLogger.log(e)) {
                             e.printStackTrace(System.err);

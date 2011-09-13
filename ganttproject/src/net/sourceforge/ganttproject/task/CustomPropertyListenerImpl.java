@@ -39,7 +39,7 @@ class CustomPropertyListenerImpl implements CustomPropertyListener {
 
     private void removeCustomPropertyValues(CustomPropertyDefinition definition) {
         for (Task t : myTaskManager.getTasks()) {
-            t.getCustomValues().removeCustomColumn(definition.getID());
+            t.getCustomValues().removeCustomColumn(definition);
         }
     }
 

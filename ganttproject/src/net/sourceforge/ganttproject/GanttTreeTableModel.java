@@ -322,7 +322,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             //String colName = this.getColumnName(column);
             // System.out.println(" -> "+colName);
             // System.out.println(t+" : "+t.getCustomValues());
-            res = t.getCustomValues().getValue(customColumn.getName());
+            res = t.getCustomValues().getValue(customColumn);
             break;
         }
         // }
@@ -394,7 +394,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         default: // custom colums
             try {
                 ((Task) ((TaskNode) node).getUserObject()).getCustomValues().setValue(
-                    getCustomProperty(column).getName(), value);
+                    getCustomProperty(column), value);
             } catch (CustomColumnsException e) {
                 if (!GPLogger.log(e)) {
                     e.printStackTrace(System.err);

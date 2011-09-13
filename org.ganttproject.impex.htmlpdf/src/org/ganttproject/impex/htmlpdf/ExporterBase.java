@@ -420,7 +420,7 @@ abstract class ExporterBase extends AbstractExporter {
                     for (Iterator<CustomColumn> it = getCustomColumnStorage()
                             .getCustomColums().iterator(); it.hasNext();) {
                         CustomColumn nextColumn = it.next();
-                        Object value = customValues.getValue(nextColumn.getName());
+                        Object value = customValues.getValue(nextColumn);
                         String valueAsString = value==null ? "" : value.toString();
                         addAttribute("id", nextColumn.getId(), attrs);
                         textElement("custom-field", attrs, valueAsString, handler);
