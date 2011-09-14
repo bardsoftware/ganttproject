@@ -79,7 +79,6 @@ import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
-import net.sourceforge.ganttproject.action.project.ProjectMRUMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
@@ -87,12 +86,14 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.GanttLanguageMenu;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
+import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
@@ -147,7 +148,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     private final ProjectMenu myProjectMenu;
 
-    private final ProjectMRUMenu myMRU;
+    /** List containing the Most Recent Used documents */
+    private final DocumentsMRU myMRU = new DocumentsMRU(5);
 
     /** Menuitem */
     private final JMenuItem miPrjCal, miWebPage, miAbout;
@@ -223,7 +225,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         setFocusable(true);
         System.err.println("1. loading look'n'feels");
         options = new GanttOptions(getRoleManager(), getDocumentManager(),
-                isOnlyViewer);
+                isOnlyViewer, myMRU);
         myUIConfiguration = options.getUIConfiguration();
         class TaskManagerConfigImpl implements TaskManagerConfig {
             public Color getDefaultColor() {
@@ -280,9 +282,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
 
         System.err.println("2. loading options");
-        myMRU = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade());
-        myMRU.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
-        GanttLanguageMenu.addListener(myMRU, "lastOpen");
         initOptions();
         area.setUIConfiguration(myUIConfiguration);
         getTree().setGraphicArea(area);
@@ -298,7 +297,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         // Allocation of the menus
 
         // Project menu related sub menus and items
-        myProjectMenu = new ProjectMenu(this, myMRU);
+        ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade());
+        mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
+        GanttLanguageMenu.addListener(mruMenu, "lastOpen");
+        myMRU.addListener(mruMenu);
+
+        myProjectMenu = new ProjectMenu(this, mruMenu);
         GanttLanguageMenu.addListener(myProjectMenu, "project");
         bar.add(myProjectMenu);
 
@@ -472,7 +476,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         // Color color = GanttGraphicArea.taskDefaultColor;
         // myApplicationConfig.register(options);
         options.setUIConfiguration(myUIConfiguration);
-        options.setDocumentsMRU(myMRU);
         if (options.load()) {
             GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
 

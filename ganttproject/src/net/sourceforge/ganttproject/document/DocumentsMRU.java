@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,10 +35,14 @@ public class DocumentsMRU {
 
     private List<Document> documents;
 
+    private final ArrayList<DocumentMRUListener> myListeners = new ArrayList<DocumentMRUListener>();
+
+    interface Listener {
+        void MRUChanged();
+    }
+
     public DocumentsMRU(int maxSize) {
-        if (maxSize <= 0) {
-            throw new IllegalArgumentException("maxSize must be larger than zero (" + maxSize + ")");
-        }
+        assert maxSize > 0: "maxSize must be larger than zero (" + maxSize + ")";
         this.maxSize = maxSize;
         documents = new ArrayList<Document>(maxSize);
     }
@@ -70,12 +76,15 @@ public class DocumentsMRU {
         }
         documents.add(0, document);
 
+        fireMRUListChanged();
+
         return true;
     }
 
     /** clears the list of Documents MRU */
     public void clear() {
         documents.clear();
+        fireMRUListChanged();
     }
 
     /** @return an Iterator over the entries of the list of Documents MRU */
@@ -83,4 +92,17 @@ public class DocumentsMRU {
         return documents.iterator();
     }
 
+    public void addListener(DocumentMRUListener listener) {
+        myListeners.add(listener);
+        // Fire event for listener to give it a possibility on getting access to the current MRU list
+        listener.mruListChanged(Collections.unmodifiableCollection(documents));
+    }
+
+    private void fireMRUListChanged() {
+        Collection<Document> unmodifiableCollection = Collections.unmodifiableCollection(documents);
+        for (int i = 0; i < myListeners.size(); i++) {
+            DocumentMRUListener next = myListeners.get(i);
+            next.mruListChanged(unmodifiableCollection);
+        }
+    }
 }
