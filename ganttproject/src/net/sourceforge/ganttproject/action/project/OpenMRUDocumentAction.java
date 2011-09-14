@@ -46,6 +46,9 @@ public class OpenMRUDocumentAction extends GPAction {
         myProject = project;
         myUIFacade = uiFacade;
         myProjectUIFacade = projectUIFacade;
+
+        // Now the muDocument field is set, the correct name can be found, so force updating the action
+        updateAction();
     }
 
     @Override

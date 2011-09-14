@@ -38,9 +38,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sourceforge.ganttproject.action.project.ProjectMRUMenu;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -86,7 +86,7 @@ public class GanttOptions {
 
     private final RoleManager myRoleManager;
 
-    private ProjectMRUMenu documentsMRU;
+    private final DocumentsMRU documentsMRU;
 
     private UIConfiguration myUIConfig;
 
@@ -134,9 +134,10 @@ public class GanttOptions {
 
     private final PluginPreferencesImpl myPluginPreferencesRootNode;
 
-    public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
+    public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer, DocumentsMRU mru) {
         myDocumentManager = documentManager;
         myRoleManager = roleManager;
+        documentsMRU = mru;
         myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
         initDefault();
         try {
@@ -1024,10 +1025,6 @@ public class GanttOptions {
     /** Set a new xsl-fo file for pdf export. */
     public void setXslFo(String xslFo) {
         this.xslFo = xslFo;
-    }
-
-    public void setDocumentsMRU(ProjectMRUMenu documentsMRU) {
-        this.documentsMRU = documentsMRU;
     }
 
     public void setUIConfiguration(UIConfiguration uiConfiguration) {

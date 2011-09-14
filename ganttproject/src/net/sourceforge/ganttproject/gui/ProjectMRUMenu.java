@@ -16,30 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.action.project;
+package net.sourceforge.ganttproject.gui;
 
-import java.util.Iterator;
+import java.util.Collection;
 
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.project.OpenMRUDocumentAction;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentsMRU;
+import net.sourceforge.ganttproject.document.DocumentMRUListener;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
- * Menu that contains a number of Most Recently Used documents. When clicked on
- * a menu item, the corresponding document is opened.
+ * Menu that shows the Most Recently Used documents. It is a regular menu,
+ * except is implements the DocumentsMRUListener interface. When it is added to
+ * the DocumentsMRU listeners the menu is kept up to date with the MRU list.
+ * The automatically added menu items open their corresponding document when clicked.
  */
-public class ProjectMRUMenu extends JMenu {
+public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
     private final ProjectUIFacade myProjectUIFacade;
-
-    private static final int maxSizeMRU = 5;
-    private final DocumentsMRU myDocumentsMRU = new DocumentsMRU(maxSizeMRU);
 
     public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade) {
         super();
@@ -48,31 +49,13 @@ public class ProjectMRUMenu extends JMenu {
         myProjectUIFacade = projectUIFacade;
     }
 
-    public void add(Document document) {
-        if (myDocumentsMRU.add(document)) {
-            updateMenuMRU();
-        }
-    }
-
-    private void updateMenuMRU() {
+    public void mruListChanged(Collection<Document> newMRUList) {
         removeAll();
         int index = 0;
-        Iterator<Document> iterator = iterator();
-        while (iterator.hasNext()) {
+        for(Document doc : newMRUList) {
             index++;
-            Document doc = iterator.next();
-            JMenuItem mi = new JMenuItem(
-                    new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade));
-            add(mi);
+            Action a = new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade);
+            add(new JMenuItem(a));
         }
-    }
-
-    public void clear() {
-        myDocumentsMRU.clear();
-        removeAll();
-    }
-
-    public Iterator<Document> iterator() {
-        return myDocumentsMRU.iterator();
     }
 }
