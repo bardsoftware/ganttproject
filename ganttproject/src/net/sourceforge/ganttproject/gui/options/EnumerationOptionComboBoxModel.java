@@ -45,8 +45,10 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
     }
 
     public void setSelectedItem(Object item) {
-        mySelectedItem = (Item) item;
-        myOption.setValue(mySelectedItem.myID);
+        if (item != null) {
+            mySelectedItem = (Item) item;
+            myOption.setValue(mySelectedItem.myID);
+        }
     }
 
     public Object getSelectedItem() {
@@ -80,10 +82,12 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
     }
 
     public void onValueChange() {
-        Item selectedItem = new Item(myOption.getValue(), myOption.getValue());
-        int index = myValues.indexOf(selectedItem);
-        mySelectedItem = myValues.get(index);
-        fireContentsChanged(this, 0, myValues.size()-1);
+        if (myOption.getValue() != null) {
+            Item selectedItem = new Item(myOption.getValue(), myOption.getValue());
+            int index = myValues.indexOf(selectedItem);
+            mySelectedItem = myValues.get(index);
+            fireContentsChanged(this, 0, myValues.size()-1);
+        }
     }
 
     private static class Item {
@@ -92,6 +96,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
         private final String myDisplayValue;
 
         public Item(String id, String displayValue) {
+            assert id != null : "ID is null for display value=" + displayValue;
             myID = id;
             myDisplayValue = displayValue;
         }
