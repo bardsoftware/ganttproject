@@ -41,7 +41,7 @@ public class ChartImageBuilder {
 
     public RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
         final int logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
-        final int treeHeight = treeTable.getRowHeight() * (settings.getRowCount() + 1);
+        final int treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
         final int tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
         final int treeWidth = treeTable.getTable().getWidth();
         final int wholeImageHeight = treeHeight + tableHeaderHeight + logoHeight;
@@ -82,7 +82,7 @@ public class ChartImageBuilder {
         int chartHeight = wholeImageHeight;
         modelCopy.setBounds(new Dimension(chartWidth, chartHeight));
 
-        modelCopy.setHeaderHeight(logoHeight + tableHeaderHeight);
+        modelCopy.setHeaderHeight(logoHeight + tableHeaderHeight - 1);
         modelCopy.setVisibleTasks(settings.getVisibleTasks());
 
         RenderedChartImage result = new RenderedChartImage(
