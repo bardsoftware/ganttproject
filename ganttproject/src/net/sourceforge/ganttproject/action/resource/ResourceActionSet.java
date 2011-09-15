@@ -35,9 +35,9 @@ public class ResourceActionSet {
     private final ResourceDeleteAction myResourceDeleteAction;
 
     private final ResourcePropertiesAction myResourcePropertiesAction;
-    
+
     private final ResourceMoveUpAction myResourceMoveUpAction;
-    
+
     private final ResourceMoveDownAction myResourceMoveDownAction;
 
     private final ResourceSendMailAction myResourceSendMailAction;
@@ -58,7 +58,7 @@ public class ResourceActionSet {
         myResourceSendMailAction = new ResourceSendMailAction(table);
         myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(), projectFrame
                 .getRoleManager(), projectFrame);
-        myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, projectFrame);
+        myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
     }
 
     public AbstractAction[] getActions() {
@@ -95,7 +95,7 @@ public class ResourceActionSet {
     public ResourceImportAction getResourceImportAction() {
         return myResourceImportAction;
     }
-    
+
     public AssignmentDeleteAction getAssignmentDelete() {
         return myAssignmentDelete;
     }
