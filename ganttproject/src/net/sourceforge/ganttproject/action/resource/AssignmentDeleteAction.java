@@ -20,34 +20,37 @@ package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.util.StringUtils;
 
+/**
+ * Action that deletes the assignment of a task to a resource
+ */
 public class AssignmentDeleteAction extends GPAction {
     private final AssignmentContext myContext;
 
-    private GanttProject myProject;
+    private final UIFacade myUIFacade;
 
-    public AssignmentDeleteAction(AssignmentContext context, GanttProject project) {
+    public AssignmentDeleteAction(AssignmentContext context, UIFacade uiFadade) {
         super("assignment.delete");
-        myProject = project;
         myContext = context;
+        myUIFacade = uiFadade;
     }
 
     public void actionPerformed(ActionEvent e) {
         final ResourceAssignment[] context = myContext.getResourceAssignments();
         if (context != null && context.length > 0) {
-            Choice choice = myProject.getUIFacade().showConfirmationDialog(
-                    getI18n("msg23") + " " + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
+            Choice choice = myUIFacade.showConfirmationDialog(getI18n("msg23") + " "
+                    + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
             if (choice == Choice.YES) {
-                myProject.getUIFacade().getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                     public void run() {
                         deleteAssignments(context);
-                        myProject.repaint2();
+                        myUIFacade.refresh();
                     }
                 });
             }
@@ -55,11 +58,9 @@ public class AssignmentDeleteAction extends GPAction {
     }
 
     private void deleteAssignments(ResourceAssignment[] context) {
-        for (int i = 0; i < context.length; i++) {
-            ResourceAssignment ra = context[i];
+        for (ResourceAssignment ra : context) {
             ra.delete();
-            ra.getTask().getAssignmentCollection().deleteAssignment(
-                    ra.getResource());
+            ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
         }
     }
 
