@@ -203,7 +203,7 @@ public class GanttDialogPerson {
         DateInterval[] intervals = myDaysOffModel.getIntervals();
         person.getDaysOff().clear();
         for (int i=0; i<intervals.length; i++) {
-            person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].end));
+            person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].getEnd()));
         }
     }
 

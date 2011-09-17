@@ -191,7 +191,7 @@ public class GanttProjectImpl implements IGanttProject {
 
         private TaskManagerConfigImpl(HumanResourceManager resourceManager, GanttLanguage i18n) {
             myResourceManager = resourceManager;
-            myTimeUnitStack = new GPTimeUnitStack(i18n);
+            myTimeUnitStack = new GPTimeUnitStack();
             myCalendar = new WeekendCalendarImpl();
         }
 
