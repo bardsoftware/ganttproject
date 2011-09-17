@@ -186,6 +186,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 DialogAligner.center(dlg, myMainFrame);
                 dlg.setVisible(true);
             }
+            @Override
+            public void layout() {
+                dlg.pack();
+            }
+
         };
         dlg.setTitle(title);
         final Commiter commiter = new Commiter();

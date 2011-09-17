@@ -223,6 +223,7 @@ public abstract class FileChooserPageBase implements WizardPage {
             myChooser.setFileFilter(createFileFilter());
             loadPreferences();
             onSelectedUrlChange(getSelectedUrl());
+            myWizard.getDialog().layout();
         }
     }
 
