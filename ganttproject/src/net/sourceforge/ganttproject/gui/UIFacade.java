@@ -40,6 +40,7 @@ public interface UIFacade {
     public interface Dialog {
         void show();
         void hide();
+        void layout();
     }
 
     public enum Choice { YES, NO, CANCEL, OK };
