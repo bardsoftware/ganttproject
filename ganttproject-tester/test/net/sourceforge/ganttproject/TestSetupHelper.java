@@ -5,7 +5,6 @@ import java.net.URL;
 
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
@@ -25,7 +24,7 @@ public class TestSetupHelper {
         private RoleManager myRoleManager;
 
         public TaskManagerBuilder() {
-            myTimeUnitStack = new GPTimeUnitStack(GanttLanguage.getInstance());
+            myTimeUnitStack = new GPTimeUnitStack();
             myRoleManager = new RoleManagerImpl();
             myResourceManager = new HumanResourceManager(myRoleManager
                     .getDefaultRole(), null);

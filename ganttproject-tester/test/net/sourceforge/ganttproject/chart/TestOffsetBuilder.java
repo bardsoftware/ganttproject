@@ -3,23 +3,20 @@ package net.sourceforge.ganttproject.chart;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import junit.framework.TestCase;
 
 public class TestOffsetBuilder extends TestCase {
     public void testBasicOffsets() {
         GPCalendar calendar = GPCalendar.PLAIN;
-        GPTimeUnitStack timeUnitStack = new GPTimeUnitStack(GanttLanguage.getInstance());
         Date start = TestSetupHelper.newMonday().getTime();
 
         OffsetBuilder builder = new RegularFrameOffsetBuilder.FactoryImpl()
             .withStartDate(start).withViewportStartDate(start)
-            .withCalendar(calendar).withTopUnit(timeUnitStack.WEEK).withBottomUnit(timeUnitStack.DAY)
+            .withCalendar(calendar).withTopUnit(GPTimeUnitStack.WEEK).withBottomUnit(GPTimeUnitStack.DAY)
             .withAtomicUnitWidth(20).withEndOffset(210).withWeekendDecreaseFactor(1.0f)
             .build();
         OffsetList bottomUnitOffsets = new OffsetList();
