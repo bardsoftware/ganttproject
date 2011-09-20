@@ -25,8 +25,6 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,7 +44,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
- * Simulate a status bar under the main frame
+ * Status bar (located below the main frame)
  *
  * @author athomas
  */
@@ -65,8 +63,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     private static final int MESSAGE_2 = 1;
 
-    // private static final int PROGRESS_FINISH = 2;
-
     int mode = NO_MESSAGE;
 
     boolean bRunning = false;
@@ -82,25 +78,16 @@ public class GanttStatusBar extends JPanel implements Runnable {
     public GanttStatusBar(JFrame mainFrame) {
         super(new BorderLayout());
         myMainFrame = mainFrame;
-        //pbp = new ProgressBarPanel();
         message0 = new MessagePanel(215, false);
         message1 = new MessagePanel(400, true);
         message2 = new MessagePanel(250, true);
         myErrorNotificationPanel = new JPanel();
-        //myMainFrame.setGlassPane(pbp);
 
-        //pbp.setPreferredSize(new Dimension(160, 16));
-        // message1.setPreferredSize(new Dimension(360,25));
-        // message2.setPreferredSize(new Dimension(210,25));
-
-        //add(pbp, BorderLayout.WEST);
-        //add(message0, BorderLayout.WEST);
         add(myErrorNotificationPanel, BorderLayout.WEST);
         add(message1, BorderLayout.CENTER);
         add(message2, BorderLayout.EAST);
 
         message0.setText("GanttProject.biz (" + GanttProject.version + ")");
-        //pbp.setValue(0);
 
         setFirstText(GanttLanguage.getInstance().getText("welcome"), 5000);
     }
@@ -189,7 +176,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     /** Class to display a message */
     private class MessagePanel extends JPanel {
-        private JLabel message;
+        private final JLabel message;
 
         private Color textColor = Color.BLACK;
 
@@ -234,26 +221,29 @@ public class GanttStatusBar extends JPanel implements Runnable {
             message.setText("");
         }
 
-        /** Hide the text by decrease the color. */
+        /** Hide the text by decreasing the color. */
         public void hideText() {
-            try {
-                Color cPanel = getBackground();
+            /** Number of (20 ms) steps to use for the fading effect */
+            final int step = 50;
 
-                int step = 50;
+            // Get panel background color, and calculate the steps for each
+            // color component to reach this color in the number of steps
+            final Color cPanel = getBackground();
+            float dRed = (float) cPanel.getRed() / (float) step / 255;
+            float dGreen = (float) cPanel.getGreen() / (float) step / 255;
+            float dBlue = (float) cPanel.getBlue() / (float) step / 255;
 
-                float dRed = (float) cPanel.getRed() / (float) step;
-                float dGreen = (float) cPanel.getGreen() / (float) step;
-                float dBlue = (float) cPanel.getBlue() / (float) step;
-
-                for (int i = 0; i < step; i++) {
-                    textColor = new Color(dRed * i, dGreen * i, dBlue * i);
-                    repaint();
+            for (int i = 0; i < step; i++) {
+                textColor = new Color(dRed * i, dGreen * i, dBlue * i);
+                repaint(0);
+                try {
                     Thread.sleep(20);
+                } catch (Exception e) {
+                    // Ignore exceptions
                 }
-                textColor = Color.BLACK;
-            } catch (Exception e) {
-                // exception for the thread.sleep
             }
+            // Reset textColor for next message
+            textColor = Color.BLACK;
         }
 
         /** @return the timer. */
@@ -262,31 +252,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
         }
     }
 
-    // TODO class is never used, remove?
-    private static class ErrorNotificationPanel extends JPanel {
-        private JLabel myLabel;
-
-        ErrorNotificationPanel() {
-            super(new BorderLayout());
-        }
-
-        void enableNotifier(final Runnable notifier) {
-            myLabel = new JLabel("<html><body><b>Errors happened. Click here to see the details</b></body></html>");
-            myLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    notifier.run();
-                }
-            });
-            add(myLabel);
-            revalidate();
-        }
-
-        void disableNotifier() {
-            remove(myLabel);
-            revalidate();
-        }
-    }
     private class ProgressBarDialog extends JDialog {
         private JProgressBar myProgressBar;
         private JLabel myLabel;
@@ -367,13 +332,10 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     private class ProgressMonitorImpl implements IProgressMonitor {
         private int myWorked;
-        //private CancelableProgressPanel myProgressPanel;
-        //ProgressBarPanel myProgressPanel;
         ProgressBarDialog myProgressDialog;
         private boolean isCanceled;
 
         ProgressMonitorImpl() {
-            //myProgressPanel = new ProgressBarPanel();
             myProgressDialog = new ProgressBarDialog(this);
         }
         public void beginTask(final String name, final int totalWork)  {
@@ -381,12 +343,6 @@ public class GanttStatusBar extends JPanel implements Runnable {
             GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    // pbp.reset(name, totalWork);
-                    // pbp.setVisible(true);
-                    // myMainFrame.setGlassPane(myProgressPanel);
-                    // myProgressPanel.setVisible(true);
-                    // myMainFrame.getRootPane().revalidate();
-                    // myProgressPanel.start();
                     myProgressDialog.start(name, totalWork);
                 }
             });
@@ -396,11 +352,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
             GPLogger.log("[ProgressMonitorImpl] finished Task");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-            //myProgressPanel.stop();
-            //myProgressPanel.setVisible(false);
                     myProgressDialog.done();
-//                    pbp.reset();
-//                    pbp.setVisible(false);
                 }
             });
         }
