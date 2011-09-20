@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -79,7 +80,7 @@ public class ExporterToPDF extends ExporterBase {
 
     @Override
     public String[] getFileExtensions() {
-        return new String[]{"pdf"};
+        return new String[] { "pdf" };
     }
 
     @Override
@@ -89,33 +90,25 @@ public class ExporterToPDF extends ExporterBase {
         Job generateResourceChart = createGenerateResourcechartJob(state);
         Job initializeFOP = createFOPInitializationJob(state);
         Job runTransormation = createTransformationJob(state, resultFiles);
-        return new Job[]{generateGanttChart, generateResourceChart,
-                initializeFOP, runTransormation};
+        return new Job[] { generateGanttChart, generateResourceChart, initializeFOP, runTransormation };
     }
 
     private Job createGenerateGanttChartJob(final ExportState state) {
         Job result = new ExportJob("generate gantt chart") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-                    state.ganttChartImageFile = File.createTempFile(
-                            "ganttchart", ".jpg");
-                    ImageIO.write(ganttChartImage, JPG_FORMAT_NAME,
-                            state.ganttChartImageFile);
+                    state.ganttChartImageFile = File.createTempFile("ganttchart", ".jpg");
+                    ImageIO.write(ganttChartImage, JPG_FORMAT_NAME, state.ganttChartImageFile);
                 } catch (Exception e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
-
                 } catch (OutOfMemoryError e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -135,19 +128,16 @@ public class ExporterToPDF extends ExporterBase {
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-                    File outputFile = File.createTempFile("resourcechart",
-                            ".jpg");
+                    File outputFile = File.createTempFile("resourcechart", ".jpg");
                     state.resourceChartImageFile = outputFile;
-                    ImageIO.write(resourceChartImage, JPG_FORMAT_NAME,
-                            outputFile);
+                    ImageIO.write(resourceChartImage, JPG_FORMAT_NAME, outputFile);
                 } catch (Exception e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
-
                 } catch (OutOfMemoryError e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -160,19 +150,15 @@ public class ExporterToPDF extends ExporterBase {
         Job result = new ExportJob("Initializing FOP") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     Driver driver = new Driver();
                     driver.setRenderer(Driver.RENDER_PDF);
                     createOptions();
                     FopImageFactory.resetCache();
                     state.driver = driver;
-                } catch (Exception e) {
+                } catch (ExportException e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -185,44 +171,36 @@ public class ExporterToPDF extends ExporterBase {
         Job result = new ExportJob("Generating PDF") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
-                assert myStylesheet!=null;
+                assert myStylesheet != null;
                 OutputStream out = null;
                 try {
                     out = new FileOutputStream(state.outputFile);
                     state.driver.setOutputStream(out);
-                    TransformerHandler stylesheetHandler = createHandler(myStylesheet
-                            .getUrl().toString());
-//                    SAXTransformerFactory factory = getTransformerFactory();
-//                    TransformerHandler stylesheetHandler = factory
-//                            .newTransformerHandler();
-//                    Transformer transformer = stylesheetHandler
-//                            .getTransformer();
-//                    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-//                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//                    transformer.setOutputProperty(
-//                            "{http://xml.apache.org/xslt}indent-amount", "4");
+                    TransformerHandler stylesheetHandler = createHandler(myStylesheet.getUrl().toString());
 
-                    stylesheetHandler.setResult(new SAXResult(state.driver
-                            .getContentHandler()));
-//                     stylesheetHandler.setResult(new StreamResult(System.out));
+                    stylesheetHandler.setResult(new SAXResult(state.driver.getContentHandler()));
                     exportProject(state, stylesheetHandler);
                     resultFiles.add(state.outputFile);
-                } catch (Exception e) {
+                } catch (ExportException e) {
                     cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
-                }
-                finally {
-                    if (out!=null) {
+                } catch (SAXException e) {
+                    cancel();
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
+                } catch (FileNotFoundException e) {
+                    cancel();
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
+                } finally {
+                    if (out != null) {
                         try {
                             out.flush();
                             out.close();
                         } catch(IOException e) {
                             getUIFacade().showErrorDialog(e);
+                            return Status.CANCEL_STATUS;
                         }
                     }
                 }
@@ -232,8 +210,7 @@ public class ExporterToPDF extends ExporterBase {
         return result;
     }
 
-    protected void exportProject(ExportState state, TransformerHandler handler)
-            throws SAXException, ExportException {
+    protected void exportProject(ExportState state, TransformerHandler handler) throws SAXException, ExportException {
         DateFormat df = java.text.DateFormat.getDateTimeInstance(
                 DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault());
         handler.startDocument();
@@ -242,7 +219,6 @@ public class ExporterToPDF extends ExporterBase {
         addAttribute("xmlns:ganttproject", "http://ganttproject.sf.net/", attrs);
         addAttribute("version", "1.0", attrs);
         startElement("xsl:stylesheet", attrs, handler);
-        // handler.startPrefixMapping("ganttproject", "http://ganttproject.sf.net");
 
         writeViews(getUIFacade(), handler);
 
@@ -256,8 +232,7 @@ public class ExporterToPDF extends ExporterBase {
         addAttribute("organisationValue", getProject().getOrganization(), attrs);
         addAttribute("webLink", i18n("webLink"), attrs);
         addAttribute("webLinkValue", getProject().getWebLink(), attrs);
-        addAttribute("currentDateTimeValue", df.format(new java.util.Date()),
-                attrs);
+        addAttribute("currentDateTimeValue", df.format(new java.util.Date()), attrs);
         addAttribute("description", i18n("shortDescription"), attrs);
 
         addAttribute("begin", i18n("start"), attrs);
@@ -267,14 +242,12 @@ public class ExporterToPDF extends ExporterBase {
         addAttribute("endValue", new GanttCalendar(getProject().getTaskManager().getProjectEnd()).toString(), attrs);
 
         startPrefixedElement("project", attrs, handler);
-        textElement("descriptionValue", attrs, getProject().getDescription(),
-                handler);
+        textElement("descriptionValue", attrs, getProject().getDescription(), handler);
         endPrefixedElement("project", handler);
         writeCharts(state, handler);
         writeTasks(getProject().getTaskManager(), handler);
         writeResources(getProject().getHumanResourceManager(), handler);
         endPrefixedElement("report", handler);
-        // handler.endPrefixMapping("ganttproject");
         endElement("xsl:stylesheet", handler);
         handler.endDocument();
     }
@@ -284,8 +257,7 @@ public class ExporterToPDF extends ExporterBase {
       return "\n\r";
     }
 
-    private void writeCharts(ExportState state, TransformerHandler handler)
-            throws SAXException {
+    private void writeCharts(ExportState state, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("title", i18n("ganttChart"), attrs);
         addAttribute("src", state.ganttChartImageFile.getAbsolutePath(), attrs);
@@ -293,8 +265,7 @@ public class ExporterToPDF extends ExporterBase {
         endPrefixedElement("ganttchart", handler);
 
         addAttribute("title", i18n("resourcesChart"), attrs);
-        addAttribute("src", state.resourceChartImageFile.getAbsolutePath(),
-                attrs);
+        addAttribute("src", state.resourceChartImageFile.getAbsolutePath(), attrs);
         startPrefixedElement("resourceschart", attrs, handler);
         endPrefixedElement("resourceschart", handler);
     }
@@ -305,8 +276,7 @@ public class ExporterToPDF extends ExporterBase {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         StreamResult output = new StreamResult(outputStream);
         try {
-            TransformerHandler handler = getTransformerFactory()
-                    .newTransformerHandler();
+            TransformerHandler handler = getTransformerFactory().newTransformerHandler();
             handler.setResult(output);
             // just for nifty debugging :)
             // handler.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
@@ -320,16 +290,15 @@ public class ExporterToPDF extends ExporterBase {
         }
         Options result;
         try {
-            result = new Options(new ByteArrayInputStream(outputStream
-                    .toByteArray()));
+            result = new Options(new ByteArrayInputStream(outputStream.toByteArray()));
         } catch (FOPException e) {
             throw new ExportException("Failed to create FOP options", e);
         }
         return result;
     }
 
-    private void createConfiguration(TransformerHandler handler,
-            FontRecord[] fontRecords) throws SAXException, UnsupportedEncodingException {
+    private void createConfiguration(TransformerHandler handler, FontRecord[] fontRecords) throws SAXException,
+            UnsupportedEncodingException {
         AttributesImpl attrs = new AttributesImpl();
         handler.startDocument();
         handler.startElement("", "configuration", "configuration", attrs);
@@ -341,8 +310,7 @@ public class ExporterToPDF extends ExporterBase {
             String metricsFile = URLDecoder.decode(nextRecord.getMetricsLocation().toString(), "utf-8");
             attrs.addAttribute("", "metrics-file", "metrics-file", "CDATA", metricsFile);
             attrs.addAttribute("", "kerning", "kerning", "CDATA", "yes");
-            attrs.addAttribute("", "embed-file", "embed-file", "CDATA",
-                    nextRecord.getFontLocation().getPath());
+            attrs.addAttribute("", "embed-file", "embed-file", "CDATA", nextRecord.getFontLocation().getPath());
             handler.startElement("", "font", "font", attrs);
             writeTriplets(handler, nextRecord.getFontTriplets());
             handler.endElement("", "font", "font");
@@ -352,19 +320,14 @@ public class ExporterToPDF extends ExporterBase {
         handler.endDocument();
     }
 
-    private void writeTriplets(TransformerHandler handler,
-            FontTriplet[] fontTriplets) throws SAXException {
+    private void writeTriplets(TransformerHandler handler, FontTriplet[] fontTriplets) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         for (int i = 0; i < fontTriplets.length; i++) {
             FontTriplet next = fontTriplets[i];
             attrs.clear();
             attrs.addAttribute("", "name", "name", "CDATA", next.getName());
-            attrs.addAttribute("", "style", "style", "CDATA", next.isItalic()
-                    ? "italic"
-                    : "normal");
-            attrs.addAttribute("", "weight", "weight", "CDATA", next.isBold()
-                    ? "bold"
-                    : "normal");
+            attrs.addAttribute("", "style", "style", "CDATA", next.isItalic() ? "italic" : "normal");
+            attrs.addAttribute("", "weight", "weight", "CDATA", next.isBold() ? "bold" : "normal");
             handler.startElement("", "font-triplet", "font-triplet", attrs);
             handler.endElement("", "font-triplet", "font-triplet");
         }
@@ -394,8 +357,7 @@ public class ExporterToPDF extends ExporterBase {
     protected Stylesheet[] getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
-            protected Stylesheet newStylesheet(URL resolvedUrl,
-                    String localizedName) {
+            protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
                 return new PDFStylesheetImpl(resolvedUrl, localizedName);
             }
         };

@@ -54,7 +54,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -82,7 +81,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
-import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -97,7 +95,7 @@ import com.lowagie.text.pdf.PdfPageEvent;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
-public class ExporterToIText extends ExporterBase implements Exporter{
+public class ExporterToIText extends ExporterBase {
     private ITextStylesheet myStylesheet;
     private TTFontCache myFontCache;
     private FontSubstitutionModel mySubstitutionModel;
@@ -137,7 +135,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
     @Override
     public String[] getCommandLineKeys() {
-        return new String[] {"itext"};
+        return new String[] { "itext" };
     }
 
     private Component createFontPanel() {
@@ -146,7 +144,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
     @Override
     public String[] getFileExtensions() {
-        return new String[] {"pdf"};
+        return new String[] { "pdf" };
     }
 
     @Override
@@ -178,7 +176,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 return new ThemeImpl(resolvedUrl, localizedName);
             }
         };
-        return (Stylesheet[]) factory.createStylesheets(ITextStylesheet.class);
+        return factory.createStylesheets(ITextStylesheet.class);
     }
 
     private void registerFonts() {
@@ -225,26 +223,26 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     protected void registerFontDirectories() {
         myFontCache.registerDirectory(System.getProperty("java.home") + "/lib/fonts", false);
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        IConfigurationElement[] configElements =
-            extensionRegistry.getConfigurationElementsFor("org.ganttproject.impex.htmlpdf.FontDirectory");
-        for (int i=0; i<configElements.length; i++) {
+        IConfigurationElement[] configElements = extensionRegistry
+                .getConfigurationElementsFor("org.ganttproject.impex.htmlpdf.FontDirectory");
+        for (int i = 0; i < configElements.length; i++) {
             final String dirName = configElements[i].getAttribute("name");
             if (Boolean.TRUE.toString().equalsIgnoreCase(configElements[i].getAttribute("absolute"))) {
                 myFontCache.registerDirectory(dirName, true);
             } else {
                 String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
-                if (dirUrl==null) {
-                    GPLogger.getLogger(ExporterToIText.class)
-                        .warning("Failed to find directory " + dirName + " in plugin " + namespace);
+                if (dirUrl == null) {
+                    GPLogger.getLogger(ExporterToIText.class).warning(
+                            "Failed to find directory " + dirName + " in plugin " + namespace);
                     continue;
                 }
                 try {
                     URL resolvedDir = Platform.resolve(dirUrl);
                     myFontCache.registerDirectory(resolvedDir.getPath(), true);
                 } catch (IOException e) {
-                   GPLogger.getLogger(ExporterToIText.class).log(Level.WARNING, e.getMessage(), e);
-                   continue;
+                    GPLogger.getLogger(ExporterToIText.class).log(Level.WARNING, e.getMessage(), e);
+                    continue;
                 }
             }
         }
@@ -260,15 +258,11 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         Job result = new ExportJob("Generating PDF") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
-                assert myStylesheet!=null;
+                assert myStylesheet != null;
                 OutputStream out = null;
                 try {
                     out = new FileOutputStream(outputFile);
-                    ((ThemeImpl)myStylesheet).run(getProject(), getUIFacade(), out);
+                    ((ThemeImpl) myStylesheet).run(getProject(), getUIFacade(), out);
                 } catch (ExportException e) {
                     cancel();
                     e.printStackTrace();
@@ -279,7 +273,6 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     e.printStackTrace();
                     getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
-                } finally {
                 }
                 return Status.OK_STATUS;
             }
@@ -591,8 +584,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         }
 
 
-        protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader,
-                ArrayList<Column> orderedColumns) throws DocumentException {
+        protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader, ArrayList<Column> orderedColumns) {
             for (int i = 0; i < tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c.isVisible()) {
@@ -610,7 +602,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             float[] widths = new float[orderedColumns.size()];
             for (int i = 0; i < orderedColumns.size(); i++) {
                 Column column = orderedColumns.get(i);
-                widths[i] = (float) column.getWidth();
+                widths[i] = column.getWidth();
             }
 
             PdfPTable table = new PdfPTable(widths);
@@ -626,7 +618,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     cell.setBorderWidth(0);
                     cell.setBorder(PdfPCell.BOTTOM);
                     cell.setBorderWidthBottom(1);
-                    cell.setBorderColor(new Color(0x66, 0x99, 0x99));
+                    cell.setBorderColor(SORTAVALA_GREEN);
                     table.addCell(cell);
                 }
             }
@@ -642,8 +634,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             }
         }
 
-        protected void writeProperties(ArrayList<Column> orderedColumns,
-                Map<String, String> id2value, PdfPTable table,
+        protected void writeProperties(ArrayList<Column> orderedColumns, Map<String, String> id2value, PdfPTable table,
                 Map<String, PdfPCell> id2cell) {
             for (int i=0; i<orderedColumns.size(); i++) {
                 Column column = orderedColumns.get(i);
@@ -700,8 +691,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
 
                     PdfPCell nameCell;
-                    if (myShowNotesOption.isChecked() && t.getNotes() != null
-                            && !"".equals(t.getNotes())) {
+                    if (myShowNotesOption.isChecked() && t.getNotes() != null && !"".equals(t.getNotes())) {
                         nameCell = new PdfPCell(createNameCellContent(t));
                     } else {
                         nameCell = new PdfPCell(new Paragraph(t.getName(), getSansRegular(12)));
@@ -714,7 +704,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     return "";
                 }
 
-                private PdfPTable createNameCellContent(Task t) throws BadElementException {
+                private PdfPTable createNameCellContent(Task t) {
                     PdfPTable table = new PdfPTable(1);
                     Paragraph p = new Paragraph(t.getName(), getSansRegular(12));
                     PdfPCell cell1 = new PdfPCell();

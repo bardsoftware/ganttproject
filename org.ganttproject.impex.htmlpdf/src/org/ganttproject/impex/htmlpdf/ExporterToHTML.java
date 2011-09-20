@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -59,7 +59,6 @@ public class ExporterToHTML extends ExporterBase {
     }
 
     public GPOptionGroup[] getSecondaryOptions() {
-        //return getGanttChart().getOptionGroups();
         return null;
     }
 
@@ -73,19 +72,13 @@ public class ExporterToHTML extends ExporterBase {
         Job generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
         Job generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
         Job copyImagesJob = createCopyImagesJob(outputFile, resultFiles);
-        return new Job[] {
-                generateGanttChartJob, generateResourceChartJob, generatePagesJob, copyImagesJob
-        };
+        return new Job[] { generateGanttChartJob, generateResourceChartJob, generatePagesJob, copyImagesJob };
     }
 
     private Job createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
         Job result = new ExportJob("generate gantt chart") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     RenderedImage ganttChartImage = getGanttChart().getRenderedImage(new GanttExportSettings(true, true, true, true));
                     File ganttChartImageFile;
@@ -98,7 +91,7 @@ public class ExporterToHTML extends ExporterBase {
                     return Status.CANCEL_STATUS;
                 } catch (OutOfMemoryError e) {
                     cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -111,10 +104,6 @@ public class ExporterToHTML extends ExporterBase {
         Job result = new ExportJob("Generate resource chart") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(new GanttExportSettings(true, true, true, true));
                     File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
@@ -122,11 +111,11 @@ public class ExporterToHTML extends ExporterBase {
                     resultFiles.add(resourceChartImageFile);
                 } catch (IOException e) {
                     getUIFacade().showErrorDialog(e);
-                    this.cancel();
+                    cancel();
                     return Status.CANCEL_STATUS;
                 } catch (OutOfMemoryError e) {
                     cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -140,10 +129,6 @@ public class ExporterToHTML extends ExporterBase {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     {
                         TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
@@ -174,17 +159,17 @@ public class ExporterToHTML extends ExporterBase {
                     }
                 } catch (SAXException e) {
                     getUIFacade().showErrorDialog(e);
-                    this.cancel();
+                    cancel();
                 } catch (IOException e) {
-                    this.cancel();
+                    cancel();
                     getUIFacade().showErrorDialog(e);
                 } catch (OutOfMemoryError e) {
                     cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
                     return Status.CANCEL_STATUS;
                 } catch (ExportException e) {
                     cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(e);
+                    getUIFacade().showErrorDialog(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -196,10 +181,6 @@ public class ExporterToHTML extends ExporterBase {
         Job result = new ExportJob("Copying images") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
                 try {
                     File imagesDir = mySelectedStylesheet.getImagesDirectory();
                     if (imagesDir != null && imagesDir.isDirectory() && imagesDir.exists()) {
@@ -225,7 +206,7 @@ public class ExporterToHTML extends ExporterBase {
                     }
                 } catch (IOException e) {
                     getUIFacade().showErrorDialog(e);
-                    this.cancel();
+                    cancel();
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
