@@ -31,7 +31,9 @@ import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas Form that show informations about authors
+ * Form that shows author information
+ *
+ * @author athomas
  */
 public class AboutAuthorPanel extends GeneralOptionPanel {
 

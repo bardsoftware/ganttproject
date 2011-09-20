@@ -21,7 +21,6 @@ package biz.ganttproject.impex.msproject2;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -67,6 +66,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class ProjectFileExporter {
@@ -164,7 +164,6 @@ class ProjectFileExporter {
         if (nestedTasks.length > 0) {
             mpxjTask.setSummary(true);
 //            mpxjTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
-        } else {
         }
         mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
 
@@ -290,6 +289,7 @@ class ProjectFileExporter {
         }
         return maxID;
     }
+
     private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
         Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
         collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType, ResourceField.class);

@@ -145,7 +145,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     private GanttResourcePanel resp;
 
     private final EditMenu myEditMenu;
-
     private final ProjectMenu myProjectMenu;
 
     /** List containing the Most Recent Used documents */
@@ -203,7 +202,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     private RowHeightAligner myRowHeightAligner;
 
-    public GanttProject(boolean isOnlyViewer, boolean isApplet) {
+    public GanttProject(boolean isOnlyViewer) {
         System.err.println("Creating main frame...");
         ToolTipManager.sharedInstance().setInitialDelay(200);
         ToolTipManager.sharedInstance().setDismissDelay(60000);
@@ -338,6 +337,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         mHelp.add(miWebPage);
         miAbout = createNewMenuItem("about", "/icons/manual_16.gif");
         mHelp.add(miAbout);
+        // TODO Remove calendar menu (still contains code everywhere)?
         bar.add(mHelp);
 
 
@@ -407,7 +407,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             @Override
             public void windowOpened(WindowEvent e) {
                 myRowHeightAligner.optionsChanged();
-                ((NotificationManagerImpl)getNotificationManager()).showPending();
+                ((NotificationManagerImpl) getNotificationManager()).showPending();
                 getRssFeedChecker().run();
             }
         });
@@ -485,25 +485,24 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         myUIConfiguration = options.getUIConfiguration();
     }
 
-    private void addMouseListenerToAllContainer(Component[] cont) {
-        for (int i = 0; i < cont.length; i++) {
-            cont[i].addMouseListener(getStopEditingMouseListener());
-            if (cont[i] instanceof Container)
-                addMouseListenerToAllContainer(((Container) cont[i])
-                        .getComponents());
+    private void addMouseListenerToAllContainer(Component[] containers) {
+        for (Component container : containers) {
+            container.addMouseListener(getStopEditingMouseListener());
+            if (container instanceof Container) {
+                addMouseListenerToAllContainer(((Container) container).getComponents());
+            }
         }
     }
 
-    /**
-     * @return A mouseListener that stop the edition in the ganttTreeTable.
-     */
+    /** @return A mouseListener that stop the edition in the ganttTreeTable. */
     private MouseListener getStopEditingMouseListener() {
         if (myStopEditingMouseListener == null)
             myStopEditingMouseListener = new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (e.getSource() != bNewTask && e.getClickCount() == 1)
+                    if (e.getSource() != bNewTask && e.getClickCount() == 1) {
                         tree.stopEditing();
+                    }
                     if (e.getButton() == MouseEvent.BUTTON1
                             && !(e.getSource() instanceof JTable)
                             && !(e.getSource() instanceof AbstractButton)) {
@@ -518,10 +517,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return myStopEditingMouseListener;
     }
 
-    public GanttProject(boolean isOnlyViewer) {
-        this(isOnlyViewer, false);
-    }
-
+    /** Updates the last open file menu items. */
     public String getXslDir() {
         return options.getXslDir();
     }
@@ -591,9 +587,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         applyComponentOrientation(language.getComponentOrientation());
     }
 
-    /**
-     * Change the label for menu, in fact check in the label contains a mnemonic
-     */
+    /** Change the label for menu, in fact check in the label contains a mnemonic */
     public JMenu changeMenuLabel(JMenu menu, String label) {
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
@@ -602,15 +596,11 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
         } else {
             menu.setText(label);
-            // menu.setMnemonic('');
         }
         return menu;
     }
 
-    /**
-     * Change the label for menuItem, in fact check in the label contains a
-     * mnemonic
-     */
+    /** Change the label for menuItem, in fact check in the label contains a mnemonic */
     public JMenuItem changeMenuLabel(JMenuItem menu, String label) {
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
@@ -619,7 +609,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
         } else {
             menu.setText(label);
-            // menu.setMnemonic('');
         }
         return menu;
     }
@@ -640,6 +629,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskNewAction()
                         : myResourceActions.getResourceNewAction();
+                    // Gantt chart
             }
         }));
         bDelete = new TestGanttRolloverButton(new ArtefactDeleteAction(new ActiveActionProvider() {
@@ -692,21 +682,18 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** A menu has been activate */
     public void actionPerformed(ActionEvent evt) {
         Object source = evt.getSource();
-        if (source instanceof JMenuItem) {
             if (source == miPrjCal) {
-                System.out.println("Project calendar");
-            } else if (source == miWebPage) {
-                    openWebPage();
-            } else if (source == miAbout) {
-                aboutDialog();
-            }
+            System.out.println("Project calendar");
+        } else if (source == miWebPage) {
+            openWebPage();
+        } else if (source == miAbout) {
+            aboutDialog();
         }
     }
 
     /** Create a new task */
     @Override
     public Task newTask() {
-
         getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
 
         int index = -1;
@@ -720,7 +707,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             tree.getTreeTable().getTreeTable().editingStopped(
                     new ChangeEvent(tree.getTreeTable().getTreeTable()));
         }
-
         GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
         DefaultMutableTreeNode node = tree.getSelectedNode();
@@ -733,10 +719,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         task.setColor(area.getTaskColor());
         tree.addObject(task, node, index);
 
-        /*
-         * this will add new custom columns to the newly created task.
-         */
-
+        //this will add new custom columns to the newly created task.
         AdjustTaskBoundsAlgorithm alg = getTaskManager()
                 .getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
         alg.run(task);
@@ -787,11 +770,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** Print the project */
     public void printProject() {
         Chart chart = getUIFacade().getActiveChart();
-
         if (chart == null) {
-            getUIFacade()
-                    .showErrorDialog(
-                            "Failed to find active chart.\nPlease report this problem to GanttProject development team");
+            getUIFacade().showErrorDialog(
+                    "Failed to find active chart.\nPlease report this problem to GanttProject development team");
             return;
         }
         try {
@@ -826,8 +807,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     public void open(Document document) throws IOException, DocumentException {
         openDocument(document);
         if (document.getPortfolio() != null) {
-            Document defaultDocument = document.getPortfolio()
-                    .getDefaultDocument();
+            Document defaultDocument = document.getPortfolio().getDefaultDocument();
             openDocument(defaultDocument);
         }
     }
@@ -836,23 +816,20 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         if (document.getFileName().toLowerCase().endsWith(".xml") == false
                 && document.getFileName().toLowerCase().endsWith(".gan") == false) {
             // Unknown file extension
-            String errorMessage = language.getText("msg2") + "\n"
-                    + document.getFileName();
+            String errorMessage = language.getText("msg2") + "\n" + document.getFileName();
             throw new IOException(errorMessage);
         }
 
         boolean locked = document.acquireLock();
         if (!locked) {
-            getUIFacade().logErrorMessage(
-                    new Exception(language.getText("msg13")));
+            getUIFacade().logErrorMessage(new Exception(language.getText("msg13")));
         }
         document.read();
         myMRU.add(document);
         if (locked) {
             projectDocument = document;
         }
-        setTitle(language.getText("appliTitle") + " ["
-                + document.getFileName() + "]");
+        setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
         for (Chart chart : PluginManager.getCharts()) {
             chart.setTaskManager(myTaskManager);
             chart.reset();
@@ -874,8 +851,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             getUndoManager().undoableEdit("OpenFile", new Runnable() {
                 public void run() {
                     try {
-                        getProjectUIFacade()
-                                .openProject(document, getProject());
+                        getProjectUIFacade().openProject(document, getProject());
                     } catch (DocumentException e) {
                         if (!tryImportDocument(document)) {
                             getUIFacade().showErrorDialog(e);
@@ -940,8 +916,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     }
 
     public void changeWorkingDirectory(String newWorkDir) {
-        if (null != newWorkDir)
+        if (null != newWorkDir) {
             options.setWorkingDirectory(newWorkDir);
+        }
     }
 
     /** @return the UIConfiguration. */
@@ -970,27 +947,24 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     /** Open the web page */
     public void openWebPage() {
         if (!BrowserControl.displayURL("http://ganttproject.biz/")) {
-            GanttDialogInfo gdi = new GanttDialogInfo(this,
-                    GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
-                            .getText("msg4"), language.getText("error"));
+            GanttDialogInfo gdi = new GanttDialogInfo(this, GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
+                    .getText("msg4"), language.getText("error"));
             gdi.setVisible(true);
             return;
         }
-        getUIFacade().setStatusText(
-                GanttLanguage.getInstance().getText("opening")
-                        + " www.ganttproject.biz");
+        getUIFacade().setStatusText(GanttLanguage.getInstance().getText("opening") + " www.ganttproject.biz");
     }
 
     public void setAskForSave(boolean afs) {
-        if (isOnlyViewer)
+        if (isOnlyViewer) {
             return;
+        }
         fireProjectModified(afs);
         String title = getTitle();
         askForSave = afs;
         try {
             if (System.getProperty("mrj.version") != null) {
-                rootPane.putClientProperty("windowModified", Boolean
-                        .valueOf(afs));
+                rootPane.putClientProperty("windowModified", Boolean.valueOf(afs));
                 // see http://developer.apple.com/qa/qa2001/qa1146.html
             } else {
                 if (askForSave) {
@@ -998,7 +972,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
                         setTitle(title + " *");
                     }
                 }
-
             }
         } catch (AccessControlException e) {
             // This can happen when running in a sandbox (Java WebStart)
@@ -1093,7 +1066,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
         // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
-            // Export succeeded so exit applciation
+            // Export succeeded so exit application
             return false;
         }
 
@@ -1372,20 +1345,19 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     public void recalculateCriticalPath() {
         if (myUIConfiguration.isCriticalPathOn()) {
-            getTaskManager().processCriticalPath(
-                    (Task) ((TaskNode) tree.getRoot()).getUserObject());
+            getTaskManager().processCriticalPath((Task) ((TaskNode) tree.getRoot()).getUserObject());
             ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
             for (TaskNode projectTask : projectTasks) {
-                getTaskManager().processCriticalPath(
-                        (Task) projectTask.getUserObject());
+                getTaskManager().processCriticalPath((Task) projectTask.getUserObject());
             }
             repaint();
         }
     }
 
     public int getViewIndex() {
-        if (getTabs() == null)
+        if (getTabs() == null) {
             return -1;
+        }
         return getTabs().getSelectedIndex();
     }
 
@@ -1403,8 +1375,9 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         getTaskManager().processCriticalPath(getTaskManager().getRootTask());
         getResourcePanel().getResourceTreeTableModel().updateResources();
         getResourcePanel().getResourceTreeTable().setRowHeight(20);
-        if (myDelayManager != null)
+        if (myDelayManager != null) {
             myDelayManager.fireDelayObservation();
+        }
         super.repaint();
     }
 

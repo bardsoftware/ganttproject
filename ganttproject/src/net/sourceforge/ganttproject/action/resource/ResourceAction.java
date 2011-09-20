@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
  */
 abstract class ResourceAction extends GPAction {
     private final HumanResourceManager myManager;
+    
 
     public ResourceAction(String name, HumanResourceManager hrManager) {
         super(name);

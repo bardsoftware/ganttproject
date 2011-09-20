@@ -37,13 +37,12 @@ public class ResourceDeleteAction extends ResourceAction {
 
     private final ResourceContext myContext;
 
-    private GanttProject myProjectFrame;
+    private GanttProject myProject;
 
-    public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject projectFrame,
-            UIFacade uiFacade) {
+    public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
         super("resource.delete", hrManager);
         myUIFacade = uiFacade;
-        myProjectFrame = projectFrame;
+        myProject = project;
         myContext = context;
     }
 
@@ -58,7 +57,7 @@ public class ResourceDeleteAction extends ResourceAction {
                 myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                     public void run() {
                         deleteResources(selectedResources);
-                        myProjectFrame.repaint2();
+                        myProject.repaint2();
                     }
                 });
             }

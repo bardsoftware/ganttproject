@@ -43,8 +43,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
 
     private final JTextField tfTaskPrefix;
 
-    // private final JSpinner spUndoNumber;
-
     private final GanttProject appli;
 
     public ParametersSettingsPanel(GanttProject parent) {
@@ -60,15 +58,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
                 BorderLayout.CENTER);
         vb.add(autoPanel);
         vb.add(new JPanel());
-
-        // move on the graphic area with mouse option
-        // JPanel movePanel = new JPanel(new BorderLayout());
-        // movePanel.add(cbDrag = new JCheckBox(), BorderLayout.WEST);
-        // movePanel.add(new JLabel(language.getText("dragTime")),
-        // BorderLayout.CENTER);
-        // vb.add(movePanel);
-        // vb.add(new JPanel());
-
 
         // webdav time block
         JPanel webDavPanel = new JPanel(new BorderLayout());
@@ -88,15 +77,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
         vb.add(taskPrefixPanel);
         vb.add(new JPanel());
 
-        // number of undoes
-        // JPanel undoNumberPanel = new JPanel(new BorderLayout());
-        // undoNumberPanel.add(spUndoNumber = new JSpinner(new
-        // SpinnerNumberModel(50, 1, 200, 1)), BorderLayout.WEST);
-        // undoNumberPanel.add (new JLabel(language.getText("undoNumber")),
-        // BorderLayout.CENTER);
-        // vb.add(undoNumberPanel);
-        // vb.add(new JPanel());
-
         applyComponentOrientation(language.getComponentOrientation());
     }
 
@@ -104,7 +84,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     public boolean applyChanges(boolean askForApply) {
         boolean hasChange;
         if (getAutomatic() == appli.getGanttOptions().getAutomatic()
-                // && getDragTime() == appli.getOptions().getDragTime()
                 && getLockDAVMinutes() == appli.getGanttOptions().getLockDAVMinutes()) {
             hasChange = false;
         } else {
@@ -136,15 +115,6 @@ public class ParametersSettingsPanel extends GeneralOptionPanel {
     public int getLockDAVMinutes() {
         return ((Integer) spLockDAV.getValue()).intValue();
     }
-
-    // /** @return the undo number value. */
-    // public int getUndoNumber () {
-    // return ((Integer) spUndoNumber.getValue()).intValue();
-    // }
-    // public void changeUndoNumber () {
-    // appli.getOptions().setUndoNumber(getUndoNumber());
-    // appli.changeUndoNumber ();
-    // }
 
     /** @return the prefix task name. */
     public String getTaskNamePrefix() {

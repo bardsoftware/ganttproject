@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.security.AccessControlException;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -31,12 +30,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-
 import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * @author athomas About the java informations panel.
+ * About the java information panel.
+ *
+ * @author athomas
  */
 public class AboutJavaInfosPanel extends GeneralOptionPanel {
 
@@ -49,14 +49,12 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
         jTableProperties.setModel(modelproperties);
 
         try {
-            Enumeration props = System.getProperties().propertyNames();
+            Enumeration<?> props = System.getProperties().propertyNames();
             SortedSet<String> s = new TreeSet<String>();
             while (props.hasMoreElements()) {
                 s.add((String) props.nextElement());
             }
-            Iterator<String> i = s.iterator();
-            while (i.hasNext()) {
-                String prop = i.next();
+            for(String prop : s) {
                 modelproperties.addField(new SystemInfo(prop, System
                         .getProperty(prop)));
             }

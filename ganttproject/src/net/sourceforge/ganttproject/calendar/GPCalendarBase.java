@@ -34,9 +34,8 @@ abstract class GPCalendarBase {
     public Date shiftDate(Date input, TaskLength shift) {
         List<GPCalendarActivity> activities = getActivities(input, shift);
         if (activities.isEmpty()) {
-            throw new RuntimeException(
-                    "FIXME: Failed to compute calendar activities in time period="
-                            + shift + " starting from " + input);
+            throw new RuntimeException("FIXME: Failed to compute calendar activities in time period=" + shift
+                    + " starting from " + input);
         }
         Date result;
         if (shift.getValue() >= 0) {
@@ -50,9 +49,8 @@ abstract class GPCalendarBase {
     }
 
     public List<GPCalendarActivity> getActivities(Date startDate, TimeUnit timeUnit, long unitCount) {
-        return unitCount > 0 ? getActivitiesForward(startDate, timeUnit,
-                unitCount) : getActivitiesBackward(startDate, timeUnit,
-                -unitCount);
+        return unitCount > 0 ? getActivitiesForward(startDate, timeUnit, unitCount) : getActivitiesBackward(startDate,
+                timeUnit, -unitCount);
     }
 
     protected abstract List<GPCalendarActivity> getActivitiesBackward(Date startDate,
@@ -63,8 +61,7 @@ abstract class GPCalendarBase {
 
     public List<GPCalendarActivity> getActivities(Date startingFrom,
             TaskLength period) {
-        return getActivities(startingFrom, period.getTimeUnit(), period
-                .getLength());
+        return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
     }
 
     public Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType) {
