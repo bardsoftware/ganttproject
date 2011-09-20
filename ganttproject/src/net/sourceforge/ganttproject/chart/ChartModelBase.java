@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 Dmitry Barashev, GanttProject team
+Copyright (C) 2004-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Dimension;
@@ -121,6 +121,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
                   model.getBottomUnit(),
                   model.getTimeUnitStack().getDefaultTimeUnit(),
                   model.getOffsetAnchorDate(),
+                  model.getStartDate(),
                   model.getBottomUnitWidth(),
                   width,
                   model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ?
@@ -233,20 +234,25 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public OffsetBuilder.Factory createOffsetBuilderFactory() {
-        return new RegularFrameOffsetBuilder.FactoryImpl()
+        OffsetBuilder.Factory factory = new RegularFrameOffsetBuilder.FactoryImpl()
             .withAtomicUnitWidth(getBottomUnitWidth())
             .withBottomUnit(getBottomUnit())
             .withCalendar(myTaskManager.getCalendar())
-            .withEndOffset((int)getBounds().getWidth())
-            .withRightMargin(myScrollingSession==null ? 0 : 1)
+            .withRightMargin(myScrollingSession == null ? 0 : 1)
             .withStartDate(getOffsetAnchorDate())
+            .withViewportStartDate(getStartDate())
             .withTopUnit(myTopUnit)
             .withWeekendDecreaseFactor(getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+        if(getBounds() != null ) {
+            factory.withEndOffset((int) getBounds().getWidth());
+        }
+        return factory;
     }
 
     public void paint(Graphics g) {
-        if (myScrollingSession == null) {
+        if (myScrollingSession == null
+                && (myTopUnitOffsets.size() == 0 || myBottomUnitOffsets.size() == 0 || myDefaultUnitOffsets.size() == 0)) {
             constructOffsets();
         }
         int height = (int) getBounds().getHeight();
@@ -276,7 +282,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         }
     }
 
-    private List<ChartRendererBase> getRenderers() {
+    protected List<ChartRendererBase> getRenderers() {
         return myRenderers;
     }
 
@@ -301,8 +307,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myHorizontalOffset = 0;
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
-        }
-        if (myBounds!=null) {
             constructOffsets();
         }
     }

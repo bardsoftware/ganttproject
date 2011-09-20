@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,53 +15,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Action;
-import javax.swing.KeyStroke;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
 
-class SaveProjectAction extends GPAction {
+class SaveProjectAction extends GPAction implements ProjectEventListener {
     private final GanttProject myMainFrame;
 
     SaveProjectAction(GanttProject mainFrame) {
-        super("saveProject", "16");
+        super("project.save");
         myMainFrame = mainFrame;
-        mainFrame.addProjectEventListener(new ProjectEventListener.Stub() {
-            @Override
-            public void projectModified() {
-                setEnabled(true);
-            }
-
-            @Override
-            public void projectSaved() {
-                setEnabled(false);
-            }
-
-            @Override
-            public void projectClosed() {
-                setEnabled(false);
-            }
-        });
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, MENU_MASK));
+        mainFrame.addProjectEventListener(this);
         setEnabled(false);
-    }
-
-    @Override
-    protected String getLocalizedName() {
-        return getI18n("saveProject");
-    }
-
-    @Override
-    protected String getTooltipText() {
-        return getI18n("saveProject");
     }
 
     @Override
@@ -69,8 +39,31 @@ class SaveProjectAction extends GPAction {
         return "save_";
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         myMainFrame.saveProject();
     }
 
+    @Override
+    public void projectModified() {
+        setEnabled(true);
+    }
+
+    @Override
+    public void projectSaved() {
+        setEnabled(false);
+    }
+
+    @Override
+    public void projectClosed() {
+        setEnabled(false);
+    }
+
+    public void projectCreated() {
+        setEnabled(false);
+    }
+
+    public void projectOpened() {
+        setEnabled(false);
+    }
 }

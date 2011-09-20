@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -34,18 +33,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.DeleteAssignmentAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.ResourceActionSet;
-import net.sourceforge.ganttproject.action.resource.ResourcePropertiesAction;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
+import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -59,7 +50,6 @@ import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.util.BrowserControl;
 
 public class GanttResourcePanel extends JPanel implements ResourceView,
         ResourceContext, AssignmentContext, ResourceTreeUIFacade {
@@ -72,95 +62,32 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private GanttLanguage lang = GanttLanguage.getInstance();
 
-    private ResourceActionSet myResourceActionSet;
+    private final ResourceActionSet myResourceActionSet;
 
     public ResourceLoadGraphicArea area;
 
     private HumanResource [] clipboard = null;
     private boolean isCut = false;
 
-    private final GPAction myMoveUpAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "up_";
-        }
-        public void actionPerformed(ActionEvent e) {
-            upResource();
-        }
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("upTask");
-        }
-    };
-
-    private GPAction myMoveDownAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "down_";
-        }
-        public void actionPerformed(ActionEvent e) {
-            downResource();
-        }
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("downTask");
-        }
-    };
-
-    private GPAction myPropertiesAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "";
-        }
-        public void actionPerformed(ActionEvent e) {
-            DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
-            if (selectedNodes.length!=1) {
-                return;
-            }
-            if (selectedNodes[0] instanceof ResourceNode) {
-                getResourcePropertiesAction().actionPerformed(null);
-            }
-            else if (selectedNodes[0] instanceof AssignmentNode) {
-                AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
-                getTaskSelectionManager().clear();
-                getTaskSelectionManager().addTask(assignmentNode.getTask());
-                getTaskPropertiesAction().actionPerformed(null);
-            }
-        }
-        @Override
-        protected String getLocalizedName() {
-            return "";
-        }
-    };
-
-    private Action myNewArtifactAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            appli.newHumanResource();
-        }
-    };
-
-    private final ListSelectionListener myContextListener;
-
-    private final ResourcePropertiesAction myResourcePropertiesAction;
-
     private Action myTaskPropertiesAction;
 
     private final UIFacade myUIFacade;
 
-    private final DeleteAssignmentAction myDeleteAssignmentAction;
-
-    public GanttResourcePanel(final GanttProject prj, GanttTree2 tree, UIFacade uiFacade) {
+    public GanttResourcePanel(final GanttProject prj, final UIFacade uiFacade) {
         super(new BorderLayout());
-        myResourcePropertiesAction = new ResourcePropertiesAction(prj.getProject(), uiFacade);
+        appli = prj;
         myUIFacade = uiFacade;
-        myDeleteAssignmentAction = new DeleteAssignmentAction(this, prj);
 
         prj.addProjectEventListener(getProjectEventListener());
-        appli = prj;
         model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
-        table = new ResourceTreeTable((GanttProject) appli.getProject(), model, uiFacade);
-        table.setupActionMaps(myMoveUpAction, myMoveDownAction, null, null, myNewArtifactAction,
-            appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myPropertiesAction, myDeleteAssignmentAction);
+        table = new ResourceTreeTable(appli, model, uiFacade);
+        myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, table);
+
+        table.setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
+                .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
+                .getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myResourceActionSet
+                .getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
+        table.addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
         table.setRowHeight(20);
         table.setBackground(new Color(1.0f, 1.0f, 1.0f));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -183,7 +110,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
         //applyComponentOrientation(lang.getComponentOrientation());
 
-        table.addKeyListener(prj); // callback for keyboard pressed
         // Add listener for mouse click
         MouseListener ml = new MouseAdapter() {
             @Override
@@ -203,7 +129,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             public void mouseClicked(MouseEvent e) {
                 e.consume();
                 if (e.getClickCount()==2 && e.getButton()==MouseEvent.BUTTON1) {
-                    handleDoubleClick(e);
+                    handleDoubleClick();
                 }
                 else {
                     handlePopupTrigger(e);
@@ -214,18 +140,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             table.addMouseListener(ml);
             table.getTreeTable().getParent().addMouseListener(ml);
         }
-        myContextListener = new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                myResourcePropertiesAction.setContext(getContext());
-            }
-        };
-        table.getTree().getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                myMoveUpAction.setEnabled(table.canMoveSelectionUp());
-                myMoveDownAction.setEnabled(table.canMoveSelectionDown());
-            }
-        });
-        table.getTable().getSelectionModel().addListSelectionListener(myContextListener);
     }
 
     private ProjectEventListener getProjectEventListener() {
@@ -239,23 +153,27 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     private void handlePopupTrigger(MouseEvent e) {
-        if (e.isPopupTrigger() || e.getButton()==MouseEvent.BUTTON3) {
+        if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
             DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
+            // TODO Allow to have multiple assignments selected as well!
             if (selectedNodes.length == 1
                     && selectedNodes[0] instanceof AssignmentNode) {
+                // Clicked on an assignment node (ie a task assigned to a resource)
                 AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
                 getTaskSelectionManager().clear();
                 getTaskSelectionManager().addTask(assignmentNode.getTask());
                 Point popupPoint = getPopupMenuPoint(e);
-                getUIFacade().showPopupMenu(this, new Action[] {getTaskPropertiesAction(), myDeleteAssignmentAction}, popupPoint.x, popupPoint.y);
+                getUIFacade().showPopupMenu(this,
+                        new Action[] { myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete() },
+                        popupPoint.x, popupPoint.y);
             } else {
                 createPopupMenu(e);
             }
         }
     }
 
-    private void handleDoubleClick(MouseEvent e) {
-        myPropertiesAction.actionPerformed(null);
+    private void handleDoubleClick() {
+        myResourceActionSet.getResourcePropertiesAction().actionPerformed(null);
     }
 
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
@@ -270,16 +188,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         AbstractAction[] resourceActions = myResourceActionSet.getActions();
         menu.add(resourceActions[0]);
         if (table.getSelectedNodes().length == 1) {
-            menu.add(myResourcePropertiesAction);
             for (int i = 1; i < resourceActions.length; i++) {
                 menu.add(resourceActions[i]);
             }
-            menu.add(appli.createNewItem(GanttLanguage.getInstance()
-                    .correctLabel(lang.getText("sendMail")),
-                    "/icons/send_mail_16.gif"));
+            menu.add(myResourceActionSet.getResourceSendMailAction());
             menu.addSeparator();
-            menu.add(myMoveUpAction);
-            menu.add(myMoveDownAction);
+            menu.add(myResourceActionSet.getResourceMoveUpAction());
+            menu.add(myResourceActionSet.getResourceMoveDownAction());
             menu.addSeparator();
             menu.add(appli.getCutAction());
             menu.add(appli.getCopyAction());
@@ -353,41 +268,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
     }
 
-    /** Send an Email to the current resource */
-    public void sendMail(GanttProject parent) {
-        if(table != null && table.getSelectedNodes()!=null && table.getSelectedNodes().length>0)
-        {
-            HumanResource people = (HumanResource) table.getSelectedNodes()[0]
-                .getUserObject();
-            if (people != null) {
-                try {
-                    BrowserControl.displayURL("mailto:" + people.getMail());
-                } catch (Exception e) {
-                    System.err.println(e);
-                }
-            }
-        }
-        else
-        {
-            GanttDialogInfo gdi = new GanttDialogInfo(
-                    appli, GanttDialogInfo.INFO,
-                    GanttDialogInfo.YES_OPTION, GanttLanguage.getInstance()
-                            .getText("msg26"),
-                    GanttLanguage.getInstance().getText("sendMail"));
-            gdi.setVisible(true);
-        }
-    }
-
-    /** Move up the selected resource */
-    private void upResource() {
-        table.upResource();
-    }
-
-    /** Move down the selected resource */
-    private void downResource() {
-        table.downResource();
-    }
-
     /** Return the list of the person */
     public List<HumanResource> getPeople() {
         return model.getAllResouces();
@@ -409,10 +289,6 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     /** Reset all human... */
     public void reset() {
         model.reset();
-    }
-
-    public void setResourceActions(ResourceActionSet actionSet) {
-        myResourceActionSet = actionSet;
     }
 
     public ResourceContext getContext() {
@@ -502,28 +378,24 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
     }
 
-    public Action getMoveUpAction() {
-        return myMoveUpAction;
+    public AbstractAction getMoveUpAction() {
+        return myResourceActionSet.getResourceMoveUpAction();
     }
 
-    public Action getMoveDownAction() {
-        return myMoveDownAction;
+    public AbstractAction getMoveDownAction() {
+        return myResourceActionSet.getResourceMoveDownAction();
     }
 
     public Component getUIComponent() {
         return this;
     }
 
-    public Action getResourcePropertiesAction() {
-        return myResourcePropertiesAction;
+    public ResourceActionSet getResourceActionSet() {
+        return myResourceActionSet;
     }
 
     void setTaskPropertiesAction(Action action) {
         myTaskPropertiesAction = action;
-    }
-
-    private Action getTaskPropertiesAction() {
-        return myTaskPropertiesAction;
     }
 
     private UIFacade getUIFacade() {

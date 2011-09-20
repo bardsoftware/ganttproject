@@ -124,12 +124,10 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         }
     }
 
-    private void renderLine(Date date, Color color) {
+    private void renderLine(Date date, Color color, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        //boolean firstWeekendDay = true;
-//        Date now = new Date();
         OffsetLookup lookup = new OffsetLookup();
-        int todayOffsetIdx = lookup.lookupOffsetByEndDate(date, getChartModel().getDefaultUnitOffsets());
+        int todayOffsetIdx = lookup.lookupOffsetBy(date, getChartModel().getDefaultUnitOffsets(), dateComparator);
         if (todayOffsetIdx < 0) {
             todayOffsetIdx = -todayOffsetIdx - 1;
         }
@@ -139,8 +137,8 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         }
         int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
         Line line = getPrimitiveContainer().createLine(
-            yesterdayEndPixel + 2, topUnitHeight*2,
-            yesterdayEndPixel + 2, getHeight()+topUnitHeight*2);
+            yesterdayEndPixel + marginPx, topUnitHeight*2,
+            yesterdayEndPixel + marginPx, getHeight()+topUnitHeight*2);
         line.setForegroundColor(color);
 
     }
@@ -152,11 +150,11 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         bottomUnitLineRenderer.setHeight(getHeight());
         bottomUnitLineRenderer.render();
         if (myRedlineOption.isChecked()) {
-            renderLine(new Date(), Color.RED);
+            renderLine(new Date(), Color.RED, 2, OffsetLookup.BY_END_DATE);
         }
         if (isProjectBoundariesOptionOn()) {
-            renderLine(getChartModel().getTaskManager().getProjectStart(), Color.BLUE);
-            renderLine(getChartModel().getTaskManager().getProjectEnd(), Color.BLUE);
+            renderLine(getChartModel().getTaskManager().getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
+            renderLine(getChartModel().getTaskManager().getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
         }
    }
     private boolean isProjectBoundariesOptionOn() {

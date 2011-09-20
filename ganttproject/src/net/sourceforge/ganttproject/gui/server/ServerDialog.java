@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.gui.server;
 
 import javax.swing.event.TreeSelectionEvent;
@@ -23,7 +23,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.GeneralDialog;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Generic dialog for server I/O
@@ -32,13 +31,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ServerDialog extends GeneralDialog {
     public ServerDialog(GanttProject parent) {
-        super(parent, GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance()
-                .getText("webServer")), true, new ConnectionPanel());
+        super(parent, language.getCorrectedLabel("webServer"), true, new ConnectionPanel());
     }
 
     @Override
     public void constructSections() {
-        addObject(language.getCorrectedLabel("openFromServer"), null);
+        addObject(language.getCorrectedLabel("project.open.url"), null);
     }
 
     public void valueChanged(TreeSelectionEvent e) {
@@ -50,8 +48,7 @@ public class ServerDialog extends GeneralDialog {
         mainPanel2.remove(0);
 
         // - Create the new panel
-        if (sNode.equals(GanttLanguage.getInstance().correctLabel(
-                language.getText("openFromServer")))) {
+        if (sNode.equals(language.getCorrectedLabel("project.open.url"))) {
             settingPanel = new ConnectionPanel();
         }
 

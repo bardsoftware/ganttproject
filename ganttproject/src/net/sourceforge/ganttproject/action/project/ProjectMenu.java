@@ -1,93 +1,88 @@
 /*
- * Created on 26.09.2005
- */
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.Action;
-
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.export.ExportFileAction;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
-import net.sourceforge.ganttproject.importer.ImportFileAction;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class ProjectMenu {
-    private NewProjectAction myNewProjectAction;
-    private OpenProjectAction myOpenProjectAction;
-    private SaveProjectAction mySaveProjectAction;
-    private SaveProjectAsAction mySaveProjectAsAction;
-    private OpenURLAction myOpenURLAction;
-    private ExitAction myExitAction;
-    private GPAction mySaveURLAction;
-    private GPAction myPrintAction;
-    private ImportFileAction myImportFileAction;
-    private ExportFileAction myExportFileAction;
-    private Action myProjectSettingsAction;
+/**
+ * Collection of actions present in the project menu
+ */
+public class ProjectMenu extends JMenu {
 
-    public ProjectMenu(final GanttProject mainFrame) {
-        myProjectSettingsAction = new GPAction("projectProperties") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.getUIFacade().getUndoManager().undoableEdit(
-                    GanttLanguage.getInstance().getText("projectProperties"),
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            SettingsDialog2 settingsDialog = new SettingsDialog2(
-                                mainFrame.getProject(), mainFrame.getUIFacade(), "settings.project.pageOrder");
-                            settingsDialog.show();
-                        }
-                    });
-            }
-        };
-        myNewProjectAction = new NewProjectAction(mainFrame);
-        myOpenProjectAction = new OpenProjectAction(mainFrame);
-        mySaveProjectAction =new SaveProjectAction(mainFrame);
-        mySaveProjectAsAction =new SaveProjectAsAction(mainFrame);
-        myOpenURLAction = new OpenURLAction(mainFrame);
-        mySaveURLAction = new SaveURLAction(mainFrame);
-        myPrintAction = new PrintAction(mainFrame);
-        myExitAction = new ExitAction(mainFrame);
-        myImportFileAction = new ImportFileAction(mainFrame.getUIFacade(), mainFrame);
-        myExportFileAction = new ExportFileAction(
-                mainFrame.getUIFacade(), (IGanttProject)mainFrame, mainFrame.getGanttOptions());
+    private final NewProjectAction myNewProjectAction;
+    private final SaveProjectAction mySaveProjectAction;
+    private final PrintAction myPrintAction;
 
+    public ProjectMenu(final GanttProject project, JMenu mru) {
+        super();
+        myNewProjectAction = new NewProjectAction(project);
+        mySaveProjectAction = new SaveProjectAction(project);
+        myPrintAction = new PrintAction(project);
+
+        ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
+        OpenProjectAction openProjectAction = new OpenProjectAction(project);
+        SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
+        OpenURLAction openURLAction = new OpenURLAction(project);
+        SaveURLAction saveURLAction = new SaveURLAction(project);
+        ExitAction exitAction = new ExitAction(project);
+        ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
+        ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project, project
+                .getGanttOptions());
+        
+        add(projectSettingsAction);
+        add(myNewProjectAction);
+        add(openProjectAction);
+        add(mru);
+
+        addSeparator();
+        add(mySaveProjectAction);
+        add(saveProjectAsAction);
+        addSeparator();
+
+        add(projectImportAction);
+        add(projectExportAction);
+        addSeparator();
+
+        JMenu mServer = project.createNewMenu("webServer", "/icons/server_16.gif");
+        mServer.add(openURLAction);
+        mServer.add(saveURLAction);
+        add(mServer);
+
+        addSeparator();
+        add(myPrintAction);
+        add(new ProjectPreviewAction(project));
+        addSeparator();
+        add(exitAction);
     }
-    public GPAction getNewProjectAction() {
+
+    public AbstractAction getNewProjectAction() {
         return myNewProjectAction;
     }
-    public GPAction getOpenProjectAction() {
-        return myOpenProjectAction;
-    }
-    public GPAction getSaveProjectAction() {
+
+    public AbstractAction getSaveProjectAction() {
         return mySaveProjectAction;
     }
-    public GPAction getSaveProjectAsAction() {
-        return mySaveProjectAsAction;
-    }
-    public GPAction getOpenURLAction() {
-        return myOpenURLAction;
-    }
-    public GPAction getExitAction() {
-        return myExitAction;
-    }
-    public GPAction getSaveURLAction() {
-        return mySaveURLAction;
-    }
-    public GPAction getPrintAction() {
+
+    public AbstractAction getPrintAction() {
         return myPrintAction;
     }
-    public Action getImportFileAction() {
-        return myImportFileAction;
-    }
-    public Action getExportFileAction() {
-        return myExportFileAction;
-    }
-    public Action getProjectSettingsAction() {
-        return myProjectSettingsAction;
-    }
+
 }

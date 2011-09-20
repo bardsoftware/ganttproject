@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -27,13 +27,8 @@ class SaveProjectAsAction extends GPAction {
     private GanttProject myMainFrame;
 
     SaveProjectAsAction(GanttProject mainFrame) {
-        super("saveas");
+        super("project.saveas");
         myMainFrame = mainFrame;
-    }
-
-    @Override
-    protected String getLocalizedName() {
-        return getI18n("saveAsProject");
     }
 
     @Override

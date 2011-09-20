@@ -105,27 +105,25 @@ class TaskActivityRenderer {
         }
         java.awt.Rectangle nextBounds = getBoundingRectangle(rowNum, nextStarted, offsets);
         myLabelsRenderer.stripVerticalLabelSpace(nextBounds);
-        final int nextLength = (int) nextBounds.width;
+        final int nextLength = nextBounds.width;
         final int topy = nextBounds.y + myStyle.marginTop;
 
         GraphicPrimitiveContainer.Rectangle nextRectangle;
-        boolean nextHasNested = ((ChartModelImpl) getChartModel())
-                .getTaskContainment().hasNestedTasks(nextTask); // JA Switch to
+        boolean nextHasNested = getChartModel().getTaskContainment().hasNestedTasks(nextTask);
         GraphicPrimitiveContainer container = getContainerFor(nextTask);
-        nextRectangle = container.createRectangle(
-                nextBounds.x, topy, (int) nextLength, getRectangleHeight());
+        nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
         if (nextStarted.getTask().isMilestone()) {
             nextRectangle.setStyle("task.milestone");
         } else if (nextTask.isProjectTask()) {
             nextRectangle.setStyle("task.projectTask");
             if (nextStarted.isFirst()) {
                 GraphicPrimitiveContainer.Rectangle supertaskStart = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
+                        nextRectangle.myLeftX, topy, nextLength, getRectangleHeight());
                 supertaskStart.setStyle("task.projectTask.start");
             }
             if (nextStarted.isLast()) {
                 GraphicPrimitiveContainer.Rectangle supertaskEnd = container.createRectangle(
-                        nextRectangle.myLeftX - 1, topy, (int) nextLength, getRectangleHeight());
+                        nextRectangle.myLeftX - 1, topy, nextLength, getRectangleHeight());
                 supertaskEnd.setStyle("task.projectTask.end");
 
             }
@@ -133,12 +131,12 @@ class TaskActivityRenderer {
             nextRectangle.setStyle("task.supertask");
             if (nextStarted.isFirst()) {
                 GraphicPrimitiveContainer.Rectangle supertaskStart = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
+                        nextRectangle.myLeftX, topy, nextLength, getRectangleHeight());
                 supertaskStart.setStyle("task.supertask.start");
             }
             if (nextStarted.isLast()) {
                 GraphicPrimitiveContainer.Rectangle supertaskEnd = container.createRectangle(
-                        nextRectangle.myLeftX, topy, (int) nextLength, getRectangleHeight());
+                        nextRectangle.myLeftX, topy, nextLength, getRectangleHeight());
                 supertaskEnd.setStyle("task.supertask.end");
 
             }

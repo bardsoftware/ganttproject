@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Component;
@@ -59,25 +59,19 @@ public class PublicHolidayDialogAction extends AbstractAction {
     public void actionPerformed(ActionEvent arg0) {
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
-        myUIFacade.createDialog(dialogContent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        updateHolidays(dialog.getHolidays());
-                        myProject.setModified();
-                        try {
-                            myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                        } catch (TaskDependencyException e1) {
-                            GPLogger.getLogger(PublicHolidayDialogAction.class).log(
-                                    Level.SEVERE, "Exception after changing holidays", e1);
-                        }
-                        myUIFacade.getActiveChart().reset();
-                    }
-                },
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                    }
+        myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+            public void actionPerformed(ActionEvent e) {
+                updateHolidays(dialog.getHolidays());
+                myProject.setModified();
+                try {
+                    myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+                } catch (TaskDependencyException e1) {
+                    GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE,
+                            "Exception after changing holidays", e1);
                 }
-        }, "").show();
+                myUIFacade.getActiveChart().reset();
+            }
+        }, CancelAction.EMPTY }, "").show();
     }
 
     private void updateHolidays(List<GanttCalendar> holidays) {

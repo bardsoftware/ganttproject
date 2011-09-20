@@ -1,5 +1,5 @@
 /* LICENSE: GPL2
-Copyright (C) 2009 Dmitry Barashev
+Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -155,17 +155,15 @@ public class ColumnManagerPanel {
                 super(name);
                 this.isShow = isShow;
             }
+
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 mySelection = selection;
             }
+
             public void actionPerformed(ActionEvent e) {
                 for (CustomPropertyDefinition def: mySelection) {
                     myIsVisibleOption.setVisible(def, isShow);
                 }
-            }
-            @Override
-            protected String getIconFilePrefix() {
-                return null;
             }
         }
         props.getTableAndActions().addAction(new ShowHideSelectionAction(true, "$Show selected"));

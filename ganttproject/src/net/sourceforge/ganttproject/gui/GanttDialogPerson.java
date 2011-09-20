@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -53,8 +53,7 @@ public class GanttDialogPerson {
 
     private HumanResource person;
 
-    /** The used language */
-    private GanttLanguage language = GanttLanguage.getInstance();
+    private static final GanttLanguage language = GanttLanguage.getInstance();
 
     private JTabbedPane tabbedPane;
 
@@ -64,7 +63,7 @@ public class GanttDialogPerson {
     private final EnumerationOption myRoleField;
     private final GPOptionGroup myGroup;
     private final UIFacade myUIFacade;
-    
+
     public GanttDialogPerson(UIFacade uiFacade, HumanResource person) {
         myUIFacade = uiFacade;
         this.person = person;
@@ -93,6 +92,7 @@ public class GanttDialogPerson {
                 }
             };
             CancelAction cancelAction = new CancelAction(){
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     myGroup.rollback();
                     change = false;
@@ -171,7 +171,7 @@ public class GanttDialogPerson {
         }
         person.getDaysOff().clear();
         for (DateInterval interval : myDaysOffModel.getIntervals()) {
-            person.addDaysOff(new GanttDaysOff(interval.start, interval.end));
+            person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));
         }
         // FIXME change = false;? (after applying changed they are not changes anymore...)
     }

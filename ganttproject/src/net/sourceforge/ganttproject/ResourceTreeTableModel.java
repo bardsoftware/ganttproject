@@ -377,7 +377,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
             break;
         default: // custom column
             if (hasChild) {
-                res = rn.getCustomField(this.getColumnName(column));
+                res = rn.getCustomField(getCustomProperty(column));
             }
             else
                 res ="";
@@ -406,7 +406,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
                 ((AssignmentNode) node).setRoleForAssigment((Role) value);
                 break;
             default:
-                ((ResourceNode)node).setCustomField(this.getColumnName(column), value);
+                ((ResourceNode)node).setCustomField(getCustomProperty(column), value);
                 break;
             }
         Mediator.getGanttProjectSingleton().setAskForSave(true);

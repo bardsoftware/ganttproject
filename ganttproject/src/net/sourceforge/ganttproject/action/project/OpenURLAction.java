@@ -22,34 +22,19 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class OpenURLAction extends GPAction {
     private final GanttProject myMainFrame;
 
     OpenURLAction(GanttProject mainFrame) {
+        super("project.open.url");
         myMainFrame = mainFrame;
     }
-    @Override
-    protected String getIconFilePrefix() {
-        return null;
-    }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (myMainFrame.getProjectUIFacade().ensureProjectSaved(myMainFrame)) {
             myMainFrame.openURL();
         }
     }
-
-    @Override
-    protected String getLocalizedName() {
-        return GanttLanguage.getInstance().correctLabel(getI18n("openFromServer"));
-    }
-
-    @Override
-    protected String getTooltipText() {
-        return getLocalizedName();
-    }
-
-
 }

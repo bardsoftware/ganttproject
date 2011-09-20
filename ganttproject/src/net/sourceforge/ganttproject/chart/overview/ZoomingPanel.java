@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,25 +20,25 @@ package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
 
-import net.sourceforge.ganttproject.action.ZoomInAction;
-import net.sourceforge.ganttproject.action.ZoomOutAction;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
+/**
+ * Creates a panel containing buttons of the zoom actions
+ */
 public class ZoomingPanel {
-    private final ZoomInAction myZoomInAction;
-    private final ZoomOutAction myZoomOutAction;
     private final TimelineChart myChart;
+    private final UIFacade myUIFacade;
 
     public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
-        myZoomInAction = new ZoomInAction(uiFacade.getZoomManager(), "16");
-        myZoomOutAction = new ZoomOutAction(uiFacade.getZoomManager(), "16");
         myChart = chart;
+        myUIFacade = uiFacade;
     }
 
     public Component getComponent() {
-        return new ToolbarBuilder()
-            .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
-            .addButton(myZoomInAction).addButton(myZoomOutAction).build();
+        ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
+        return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
+                zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
     }
 }

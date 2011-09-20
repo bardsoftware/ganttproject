@@ -113,7 +113,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
             }
             try {
                 // System.out.println(task.getName());
-                task.getCustomValues().setValue(cc.getName(), value);
+                task.getCustomValues().setValue(cc, value);
             } catch (CustomColumnsException e) {
                 if (!GPLogger.log(e)) {
                     e.printStackTrace(System.err);

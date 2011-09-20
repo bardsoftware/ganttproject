@@ -1,3 +1,21 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
@@ -31,29 +49,26 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.ResourceColumn;
 
 /**
- * Dialog opened to create a new Resource CustomColumn.
+ * Dialog to create a new Resource CustomColumn.
  *
- * @author bbaranne Mar 2, 2005 (modified Nov 2005, nokiljevic)
- *
+ * @author bbaranne
  */
 public class ResourceDialogCustomColumn  {
-    private static GanttLanguage language = GanttLanguage.getInstance();
+    private static final GanttLanguage language = GanttLanguage.getInstance();
 
-    private static String cardInteger = language.getText("integer");
+    private static final String cardInteger = language.getText("integer");
 
-    private static String cardText = language.getText("text");
+    private static final String cardText = language.getText("text");
 
-    private static String cardDouble = language.getText("double");
+    private static final String cardDouble = language.getText("double");
 
-    private static String cardDate = language.getText("date");
+    private static final String cardDate = language.getText("date");
 
-    private static String cardBoolean = language.getText("boolean");
+    private static final String cardBoolean = language.getText("boolean");
 
-    public static String[] availableTypes = {cardText,cardInteger,cardDouble,cardDate,cardBoolean};
+    public static final String[] availableTypes = {cardText,cardInteger,cardDouble,cardDate,cardBoolean};
 
-    /**
-     * Created CustomColumn.
-     */
+    /** Created CustomColumn */
     private ResourceColumn resourceColumn = null;
 
     private JPanel panelDefaultValue = null;
@@ -154,20 +169,22 @@ public class ResourceDialogCustomColumn  {
     }
 
     public void setVisible(boolean visible) {
-        Component rootComponent = getComponent();
-        getUIFacade().createDialog(rootComponent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.commit();
-                        myDate.commit();
-                        ResourceDialogCustomColumn.this.ok();
-                    }},
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.rollback();
-                        myDate.rollback();
-                    }
-        }}, "").show();
+        if (visible) {
+            Component rootComponent = getComponent();
+            getUIFacade().createDialog(rootComponent, new Action[] { new OkAction() {
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.commit();
+                    myDate.commit();
+                    ResourceDialogCustomColumn.this.ok();
+                }
+            }, new CancelAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.rollback();
+                    myDate.rollback();
+                }
+            } }, "").show();
+        }
     }
 
     private UIFacade getUIFacade() {

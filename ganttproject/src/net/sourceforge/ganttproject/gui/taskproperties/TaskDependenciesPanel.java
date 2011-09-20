@@ -1,4 +1,5 @@
-/* LICENSE: GPL2
+/*
+GanttProject is an opensource project management tool. License: GPL2
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
@@ -37,6 +38,8 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 
 /**
+ * UI component in a task properties dialog: a table with task predecessors
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskDependenciesPanel {
@@ -95,6 +98,9 @@ public class TaskDependenciesPanel {
     }
 
     public void commit() {
+        if (myTable.isEditing()) {
+            myTable.getCellEditor().stopCellEditing();
+        }
         myModel.commit();
     }
 
@@ -112,6 +118,7 @@ public class TaskDependenciesPanel {
         }
 
         comboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (predecessorTable.getEditingRow() != -1) {
                     DependencyTableModel.TaskComboItem selectedItem =

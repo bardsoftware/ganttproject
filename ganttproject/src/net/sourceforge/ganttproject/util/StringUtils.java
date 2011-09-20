@@ -44,4 +44,19 @@ public class StringUtils {
         }
         return string;
     }
+    
+    /** @return a comma separated list showing the names of the given objects */
+    public static String getDisplayNames(Object[] objects) {
+        if (objects.length == 1) {
+            return objects[0].toString();
+        }
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < objects.length; i++) {
+            result.append(objects[i].toString());
+            if (i < objects.length - 1) {
+                result.append(", ");
+            }
+        }
+        return result.toString();
+    }
 }

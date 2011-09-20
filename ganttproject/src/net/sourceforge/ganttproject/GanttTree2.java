@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -90,10 +89,15 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.NewTaskAction;
-import net.sourceforge.ganttproject.action.task.DeleteTasksAction;
+import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
+import net.sourceforge.ganttproject.action.task.TaskIndentAction;
+import net.sourceforge.ganttproject.action.task.TaskLinkAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveDownAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
+import net.sourceforge.ganttproject.action.task.TaskNewAction;
 import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
+import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
+import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.delay.DelayObserver;
@@ -124,7 +128,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private TaskNode rootNode;
 
     /** The model for the JTableTree */
-    private GanttTreeTableModel treeModel;
+    private final GanttTreeTableModel treeModel;
 
     private UIFacade myUIFacade;
 
@@ -135,14 +139,10 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private ChartComponentBase area = null;
 
     /** Pointer on application */
-    private GanttProject appli;
-
-    private Action myLinkTasksAction;
-
-    private Action myUnlinkTasksAction;
+    private final GanttProject appli;
 
     /** The language use */
-    private GanttLanguage language = GanttLanguage.getInstance();
+    private static GanttLanguage language = GanttLanguage.getInstance();
 
     /** Number of tasks on the tree. */
     private int nbTasks = 0;
@@ -156,86 +156,23 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private final TaskManager myTaskManager;
     private final TaskSelectionManager mySelectionManager;
 
-    private final GPAction myIndentAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "indent_";
-        }
+    private final AbstractAction myIndentAction;
 
-        public void actionPerformed(ActionEvent e) {
-            indentCurrentNodes();
-        }
+    private final AbstractAction myUnindentAction;
 
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("indentTask");
-        }
-    };
+    private final AbstractAction myMoveUpAction;
 
-    private final GPAction myDedentAction = new GPAction() {
+    private final AbstractAction myMoveDownAction;
 
-        @Override
-        protected String getIconFilePrefix() {
-            return "unindent_";
-        }
+    private final AbstractAction myLinkTasksAction;
 
-        public void actionPerformed(ActionEvent e) {
-            dedentCurrentNodes();
-        }
+    private final AbstractAction myUnlinkTasksAction;
 
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("dedentTask");
-        }
-    };
+    private final AbstractAction myNewTaskAction;
 
-    private final GPAction myMoveUpAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "up_";
-        }
+    private final AbstractAction myDeleteAction;
 
-        public void actionPerformed(ActionEvent e) {
-            upCurrentNodes();
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("upTask");
-        }
-    };
-
-    private final GPAction myMoveDownAction = new GPAction() {
-        @Override
-        protected String getIconFilePrefix() {
-            return "down_";
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            downCurrentNodes();
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return getI18n("downTask");
-        }
-    };
-
-    private final Action myNewTaskAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            if (getSelectedTask() != null) {
-                setEditingTask(getSelectedTask());
-            }
-            getUiFacade().getUndoManager().undoableEdit("New Task", new Runnable() {
-                        public void run() {
-                            Task t = getAppFrame().newTask();
-                            setEditingTask(t);
-                        }
-                    });
-        }
-    };
-
-    private final Action myDeleteAction;
+    private final AbstractAction myTaskPropertiesAction;
 
     private boolean isOnTaskSelectionEventProcessing;
 
@@ -244,15 +181,16 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
         super(new BorderLayout());
         myUIFacade = uiFacade;
-
+        appli = app;
         myTaskManager = taskManager;
+        mySelectionManager = selectionManager;
+
         myTaskManager.addTaskListener(new TaskListenerAdapter() {
             @Override
             public void taskModelReset() {
                 clearTree();
             }
         });
-        mySelectionManager = selectionManager;
         mySelectionManager.addSelectionListener(new TaskSelectionManager.Listener() {
             @Override
             public void userInputConsumerChanged(Object newConsumer) {
@@ -262,9 +200,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 onTaskSelectionChanged(currentSelection);
             }
         });
-        this.appli = app;
-        myTaskPropertiesAction = new TaskPropertiesAction(app.getProject(), selectionManager, uiFacade);
-        myDeleteAction = new DeleteTasksAction(taskManager, selectionManager, uiFacade, this);
+
+
         // Create the root node
         initRootNode();
 
@@ -273,19 +210,21 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         // Create the JTree
         treetable = new GanttTreeTable(app.getProject(), uiFacade, treeModel);
 
-        treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myDedentAction, myNewTaskAction,
+        // Create Actions
+        myTaskPropertiesAction = new TaskPropertiesAction(app.getProject(), selectionManager, uiFacade);
+        myDeleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
+        myNewTaskAction = new TaskNewAction(app.getProject(), getUndoManager());
+        myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
+        myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
+        myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, this);
+        myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
+        myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
+        myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
+        treetable.setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, myNewTaskAction,
             getAppFrame().getCutAction(), getAppFrame().getCopyAction(), getAppFrame().getPasteAction(),
             getTaskPropertiesAction(), myDeleteAction);
 
         treetable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
-        treetable.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (false == treetable.getTable().isEditing()) {
-                    app.keyPressed(e);
-                }
-            }
-        }); // callback for keyboard pressed
         treetable.getTree().addTreeSelectionListener(
                 new TreeSelectionListener() {
                     public void valueChanged(TreeSelectionEvent e) {
@@ -430,18 +369,14 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new NewTaskAction(appli, appli.getUndoManager()));
+        actions.add(getTaskNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
-            actions.add(getDeleteTasksAction());
+            actions.add(getTaskDeleteAction());
             actions.add(null);
-            actions.add(myIndentAction);
-            actions.add(myDedentAction);
-            actions.add(getMoveUpAction());
-            actions.add(getMoveDownAction());
-            actions.add(null);
-            actions.add(getUnlinkTasksAction());
-            actions.add(getLinkTasksAction());
+            for(AbstractAction a : getTreeActions()) {
+                actions.add(a);
+            }
             actions.add(null);
             actions.add(appli.getCutAction());
             actions.add(appli.getCopyAction());
@@ -722,21 +657,15 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     /** @return the mother task. */
-    DefaultMutableTreeNode getFatherNode(Task node) {
+    DefaultMutableTreeNode getParentNode(Task node) {
         if (node == null) {
             return null;
         }
-        DefaultMutableTreeNode tmp = (DefaultMutableTreeNode) getNode(node
-                .getTaskID());
-        if (tmp == null) {
-            return null;
-        }
-
-        return (DefaultMutableTreeNode) tmp.getParent();
+        return(getParentNode(getNode(node.getTaskID())));
     }
 
     /** @return the mother task. */
-    private DefaultMutableTreeNode getFatherNode(DefaultMutableTreeNode node) {
+    public static DefaultMutableTreeNode getParentNode(DefaultMutableTreeNode node) {
         if (node == null) {
             return null;
         }
@@ -761,251 +690,8 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return rootNode;
     }
 
-    /** Function to move the selected tasks up */
-    private void upCurrentNodes() {
-        final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
-        if (cdmtn == null) {
-            myUIFacade.setStatusText(language.getText("msg21"));
-            return;
-        }
-        final GanttTree2 gt2 = this;
-        appli.getUndoManager().undoableEdit("Up", new Runnable() {
-            public void run() {
-                for (int i = 0; i < cdmtn.length; i++) {
-                    DefaultMutableTreeNode father = gt2.getFatherNode(cdmtn[i]);
-                    int index = father.getIndex((TreeNode) cdmtn[i]);
-
-                    index--;
-
-                    Task task = (Task) cdmtn[i].getUserObject();
-
-                    if (index >= 0) {
-                        DefaultMutableTreeNode[] child = new DefaultMutableTreeNode[cdmtn[i]
-                                .getChildCount()];
-
-                        if (task.getExpand()) {
-                            for (int j = 0; j < cdmtn[i].getChildCount(); j++) {
-                                child[j] = (DefaultMutableTreeNode) cdmtn[i]
-                                        .getChildAt(j);
-                            }
-
-                            for (int j = 0; j < child.length; j++) {
-                                child[j].removeFromParent();
-                                treeModel.nodesWereRemoved(cdmtn[i],
-                                        new int[] { 0 },
-                                        new Object[] { child });
-                            }
-                        }
-
-                        cdmtn[i].removeFromParent();
-                        treeModel.nodesWereRemoved(father,
-                                new int[] { index + 1 },
-                                new Object[] { cdmtn });
-
-                        father.insert(cdmtn[i], index);
-                        treeModel.nodesWereInserted(father, new int[] { index });
-
-                        if (task.getExpand()) {
-                            for (int j = 0; j < child.length; j++) {
-                                cdmtn[i].insert(child[j], j);
-                                treeModel.nodesWereInserted(cdmtn[i], new int[] { j });
-                            }
-                        }
-                        forwardScheduling();
-                    }
-                }
-            }
-        });
-
-        //treetable.getTree().setSelectionPaths(selectedPaths);
-
-        appli.setAskForSave(true);
-        area.repaint();
-    }
-
-    /** Function to move the selected tasks down */
-    private void downCurrentNodes() {
-
-        final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
-        if (cdmtn == null) {
-            myUIFacade.setStatusText(language.getText("msg21"));
-            return;
-        }
-
-        //final TreePath[] selectedPaths = new TreePath[cdmtn.length];
-
-        // Parse in reverse mode because tasks are sorted from top to bottom.
-        // appli.setQuickSave (false);
-        final GanttTree2 gt2 = this;
-        appli.getUndoManager().undoableEdit("Down", new Runnable() {
-            public void run() {
-                for (int i = cdmtn.length - 1; i >= 0; i--) {
-                    DefaultMutableTreeNode father = gt2.getFatherNode(cdmtn[i]);
-                    int index = father.getIndex((TreeNode) cdmtn[i]);
-                    index++;
-
-                    Task task = (Task) cdmtn[i].getUserObject();
-
-                    // New position
-                    if (index < father.getChildCount()) {
-                        DefaultMutableTreeNode[] child = new DefaultMutableTreeNode[cdmtn[i].getChildCount()];
-
-                        if (task.getExpand()) {
-                            for (int j = 0; j < cdmtn[i].getChildCount(); j++) {
-                                child[j] = (DefaultMutableTreeNode) cdmtn[i].getChildAt(j);
-                            }
-
-                            for (int j = 0; j < child.length; j++) {
-                                child[j].removeFromParent();
-                                treeModel.nodesWereRemoved(cdmtn[i],
-                                        new int[] { 0 },
-                                        new Object[] { child });
-                            }
-                        }
-
-                        cdmtn[i].removeFromParent();
-                        treeModel.nodesWereRemoved(father,
-                                new int[] { index - 1 },
-                                new Object[] { cdmtn });
-
-                        father.insert(cdmtn[i], index);
-                        treeModel.nodesWereInserted(father, new int[] {index});
-
-                        if (task.getExpand()) {
-                            for (int j = 0; j < child.length; j++) {
-                                cdmtn[i].insert(child[j], j);
-                                treeModel.nodesWereInserted(cdmtn[i], new int[] { j });
-                            }
-                        }
-
-                        forwardScheduling();
-                    }
-                }
-            }
-        });
-
-        appli.setAskForSave(true);
-        area.repaint();
-    }
-
-    /**
-     * Indent several nodes that are selected. Based on the IndentCurrentNode
-     * method.
-     */
-    private void indentCurrentNodes() {
-
-        final DefaultMutableTreeNode[] cdmtn = getSelectedTaskNodes();
-        if (cdmtn == null) {
-            myUIFacade.setStatusText(language.getText("msg21"));
-            return;
-        }
-        getUndoManager().undoableEdit("Indent", new Runnable() {
-            public void run() {
-                for (int i = 0; i < cdmtn.length; i++) {
-                    // Where is my nearest sibling in ascending order ?
-                    DefaultMutableTreeNode newFather = cdmtn[i].getPreviousSibling();
-                    // If there is no more indentation possible we must stop
-                    if (!(newFather instanceof TaskNode)) {
-                        continue;
-                    }
-                    if (cdmtn[i] instanceof TaskNode && newFather instanceof TaskNode) {
-                        Task nextTask = (Task) cdmtn[i].getUserObject();
-                        Task container = (Task) newFather.getUserObject();
-                        if (!getTaskManager().getDependencyCollection().canCreateDependency(container, nextTask)) {
-                            continue;
-                        }
-                        getTaskManager().getTaskHierarchy().move(nextTask, container);
-                    }
-                }
-                area.repaint();
-                appli.repaint2();
-            }
-        });
-    }
-
-    /**
-     * Method to dedent selected task this will change the parent child
-     * relationship. This Code is based on the UP/DOWN Coder I found in here
-     * barmeier
-     * <br/><br/>
-     * Unindent the selected nodes. */
-    private void dedentCurrentNodes() {
-        final DefaultMutableTreeNode[] cdmtn = getSelectedTaskNodes();
-        if (cdmtn == null) {
-            myUIFacade.setStatusText(language.getText("msg21"));
-            return;
-        }
-        final GanttTree2 gt2 = this;
-        getUndoManager().undoableEdit("Dedent", new Runnable() {
-            public void run() {
-                TreePath[] selectedPaths = new TreePath[cdmtn.length];
-
-                // Information about previous node is needed to determine if current node had sibling that was moved.
-                DefaultMutableTreeNode previousFather = new DefaultMutableTreeNode();
-                DefaultMutableTreeNode father = new DefaultMutableTreeNode();
-
-                HashSet<Task> targetContainers = new HashSet<Task>();
-                for (int i = 0; i < cdmtn.length; i++) {
-
-                    // We use information about previous father to determine new index of the node in the tree.
-                    if (i > 0) {
-                        previousFather = father;
-                    }
-                    father = gt2.getFatherNode(cdmtn[i]);
-
-                    // Getting the fathers father !? The grandpa I think  :)
-                    DefaultMutableTreeNode newFather = gt2.getFatherNode(father);
-                    // If no grandpa is available we must stop.
-                    if (newFather == null) {
-                        return;
-                    }
-
-                    int oldIndex = father.getIndex((TreeNode) cdmtn[i]);
-
-                    cdmtn[i].removeFromParent();
-                    treeModel.nodesWereRemoved(father, new int[] { oldIndex }, new Object[] { cdmtn });
-
-                    targetContainers.add((Task) father.getUserObject());
-                    // If node and previous node were siblings add current node after its previous sibling
-                    int newIndex;
-                    if (i > 0 && father.equals(previousFather) ) {
-                        newIndex = newFather.getIndex(cdmtn[i-1]) + 1;
-                    } else {
-                        newIndex = newFather.getIndex(father) + 1;
-                    }
-
-                    treeModel.insertNodeInto(cdmtn[i], newFather, newIndex);
-
-                    // Select again this node
-                    TreeNode[] treepath = cdmtn[i].getPath();
-                    TreePath path = new TreePath(treepath);
-                    // tree.setSelectionPath(path);
-                    selectedPaths[i] = path;
-
-                    // refresh the father date
-                    // Task current = (Task)(cdmtn[i].getUserObject());
-                    // refreshAllFather(current.toString());
-
-                    expandRefresh(cdmtn[i]);
-
-                    if (father.getChildCount() == 0)
-                        ((Task) father.getUserObject()).setProjectTask(false);
-                }
-                getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(
-                        targetContainers.toArray(new Task[0]));
-                forwardScheduling();
-                treetable.getTree().setSelectionPaths(selectedPaths);
-
-                area.repaint();
-
-                // appli.setQuickSave (true);
-                // appli.quickSave ("Dedent");
-            }
-        });
-    }
-
     /** Refresh the expansion (recursive function) */
-    private void expandRefresh(DefaultMutableTreeNode moved) {
+    public void expandRefresh(DefaultMutableTreeNode moved) {
         if (moved instanceof TaskNode) {
             Task movedTask = (Task) moved.getUserObject();
             // if (expand.contains(new Integer(movedTask.getTaskID()))) {
@@ -1384,27 +1070,27 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                     cpNodesArrayList = new ArrayList<DefaultMutableTreeNode>();
                     cpAllDependencies(cdmtn);
                     GanttTask taskFather = null;
-                    DefaultMutableTreeNode father = null;
+                    DefaultMutableTreeNode parent = null;
                     DefaultMutableTreeNode current = null;
                     for (int i = 0; i < cdmtn.length; i++) {
                         current = getSelectedTaskNode();
                         if (current != null) {
                             cpNodesArrayList.add(cdmtn[i]);
-                            father = getFatherNode(current/* task */);
-                            where = father.getIndex(current);
+                            parent = getParentNode(current/* task */);
+                            where = parent.getIndex(current);
                             removeCurrentNode(current);
-                            current.setParent(father);
-                            taskFather = (GanttTask) father.getUserObject();
+                            current.setParent(parent);
+                            taskFather = (GanttTask) parent.getUserObject();
                             AdjustTaskBoundsAlgorithm alg = getTaskManager()
                                     .getAlgorithmCollection()
                                     .getAdjustTaskBoundsAlgorithm();
                             alg.run(taskFather);
                             // taskFather.refreshDateAndAdvancement(this);
-                            father.setUserObject(taskFather);
+                            parent.setUserObject(taskFather);
                         }
                     }
-                    if (father.getChildCount() == 0) {
-                        ((Task) father.getUserObject()).setProjectTask(false);
+                    if (parent.getChildCount() == 0) {
+                        ((Task) parent.getUserObject()).setProjectTask(false);
                     }
                     if (taskFather != null) {
                         getTaskSelectionManager().addTask(taskFather);
@@ -1418,7 +1104,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     private int where = -1;
 
-    private final Action myTaskPropertiesAction;
+    private AbstractAction[] myTreeActions;
 
     /** Copy the current selected tree node */
     void copySelectedNode() {
@@ -1764,51 +1450,33 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myUIFacade.getUndoManager();
     }
 
+    public void setSelectionPaths(TreePath[] selectedPaths) {
+        treetable.getTree().setSelectionPaths(selectedPaths);
+    }
+
     ////////////////////////////////////////////////////////////////////////
     // TaskTreeUIFacade
     public Component getTreeComponent() {
         return this;
     }
 
-    public Action getIndentAction() {
-        return myIndentAction;
+    public AbstractAction[] getTreeActions() {
+        if(myTreeActions == null) {
+            myTreeActions = new AbstractAction[] { myUnindentAction, myIndentAction, myMoveUpAction, myMoveDownAction,
+                    myLinkTasksAction, myUnlinkTasksAction };
+        }
+        return myTreeActions;
     }
 
-    public Action getUnindentAction() {
-        return myDedentAction;
-    }
-
-    // FIXME naming of method and returned variable seems wrong!
-    public Action getMoveDownAction() {
-        return myMoveUpAction;
-    }
-
-    // FIXME naming of method and returned variable seems wrong!
-    public Action getMoveUpAction() {
-        return myMoveDownAction;
-    }
-
-    public void setLinkTasksAction(Action action) {
-        myLinkTasksAction = action;
-    }
-
-    public Action getLinkTasksAction() {
-        return myLinkTasksAction;
-    }
-
-    public void setUnlinkTasksAction(Action action) {
-        myUnlinkTasksAction = action;
-    }
-
-    public Action getUnlinkTasksAction() {
-        return myUnlinkTasksAction;
-    }
-
-    Action getTaskPropertiesAction() {
+    public AbstractAction getTaskPropertiesAction() {
         return myTaskPropertiesAction;
     }
 
-    Action getDeleteTasksAction() {
+    public AbstractAction getTaskNewAction() {
+        return myNewTaskAction;
+    }
+
+    public AbstractAction getTaskDeleteAction() {
         return myDeleteAction;
     }
 

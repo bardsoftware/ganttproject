@@ -18,24 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.Component;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
-import net.sourceforge.ganttproject.gui.ResourcesTableModel;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 /**
+ * UI component in a task properties dialog: a table with resources assigned to a task.
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
@@ -59,7 +53,6 @@ public class TaskAllocationsPanel {
         myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
         myTable = new JTable(myModel);
         CommonPanel.setupTableUI(getTable());
-        setUpCoordinatorBooleanColumn(getTable());
         CommonPanel.setupComboBoxEditor(
                 getTable().getColumnModel().getColumn(1),
                 myHRManager.getResources().toArray());
@@ -86,46 +79,10 @@ public class TaskAllocationsPanel {
         return CommonPanel.createTableAndActions(myTable, tableAndActions);
     }
 
-
-    private void setUpCoordinatorBooleanColumn(final JTable resourceTable) {
-        TableColumn resourcesColumn = resourceTable.getColumnModel().getColumn(3);
-        resourcesColumn.setCellRenderer(new BooleanRenderer());
-    }
-
-    static class BooleanRenderer extends JCheckBox implements TableCellRenderer {
-        private static JPanel EMPTY_LABEL = new JPanel();
-
-        public BooleanRenderer() {
-            super();
-            setHorizontalAlignment(JLabel.CENTER);
-        }
-
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
-            final JComponent result;
-            if (value == null || "".equals(value)) {
-                result = EMPTY_LABEL;
-            } else {
-                setSelected(((Boolean) value).booleanValue());
-                result = this;
-            }
-            setupRendererColors(isSelected, table, result);
-            return result;
-        }
-
-        private static void setupRendererColors(boolean isSelected, JTable table, JComponent component) {
-            if (isSelected) {
-                component.setForeground(table.getSelectionForeground());
-                component.setBackground(table.getSelectionBackground());
-            } else {
-                component.setForeground(table.getForeground());
-                component.setBackground(table.getBackground());
-            }
-        }
-    }
-
     public void commit() {
+        if (myTable.isEditing()) {
+            myTable.getCellEditor().stopCellEditing();
+        }
         myModel.commit();
     }
 }

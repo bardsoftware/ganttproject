@@ -51,6 +51,7 @@ import javax.swing.WindowConstants;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
@@ -127,6 +128,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return myFallbackDelegate.getUndoManager();
     }
 
+    public ZoomActionSet getZoomActionSet() {
+        return myFallbackDelegate.getZoomActionSet();
+    }
+
     public Choice showConfirmationDialog(String message, String title) {
         String yes = GanttLanguage.getInstance().getText("yes");
         String no = GanttLanguage.getInstance().getText("no");
@@ -181,6 +186,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 DialogAligner.center(dlg, myMainFrame);
                 dlg.setVisible(true);
             }
+            @Override
+            public void layout() {
+                dlg.pack();
+            }
+
         };
         dlg.setTitle(title);
         final Commiter commiter = new Commiter();

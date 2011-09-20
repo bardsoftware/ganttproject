@@ -44,14 +44,18 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class DateIntervalListEditor extends JPanel{
     public static class DateInterval {
         public final Date start;
-        public final Date end;
+        private final Date myVisibleEnd;
+        private final Date myModelEnd;
+
         public DateInterval(Date start, Date end) {
             this.start = start;
-            this.end = end;
+            myVisibleEnd = end;
+            myModelEnd = GPTimeUnitStack.DAY.adjustRight(end);
         }
         @Override
         public boolean equals(Object obj) {
@@ -59,11 +63,17 @@ public class DateIntervalListEditor extends JPanel{
                 return false;
             }
             DateInterval rvalue = (DateInterval) obj;
-            return this.start.equals(rvalue.start) && this.end.equals(rvalue.end);
+            return this.start.equals(rvalue.start) && this.getEnd().equals(rvalue.getEnd());
         }
         @Override
         public int hashCode() {
             return this.start.hashCode();
+        }
+        public Date getVisibleEnd() {
+            return myVisibleEnd;
+        }
+        public Date getEnd() {
+            return myModelEnd;
         }
 
     }
@@ -93,8 +103,9 @@ public class DateIntervalListEditor extends JPanel{
     private final DateIntervalModel myIntervalsModel;
     private final DateOption myStart;
     private final DateOption myFinish;
-    private GPAction myAddAction;
-    private GPAction myDeleteAction;
+    private final GPAction myAddAction;
+    private final GPAction myDeleteAction;
+
     private class MyListModel extends AbstractListModel {
         public int getSize() {
             return myIntervalsModel.getIntervals().length;
@@ -103,9 +114,9 @@ public class DateIntervalListEditor extends JPanel{
         public Object getElementAt(int index) {
             DateInterval interval = myIntervalsModel.getIntervals()[index];
             StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));
-            if (!interval.end.equals(interval.start)) {
+            if (!interval.getEnd().equals(interval.start)) {
                 result.append("...");
-                result.append(GanttLanguage.getInstance().getDateFormat().format(interval.end));
+                result.append(GanttLanguage.getInstance().getDateFormat().format(interval.getVisibleEnd()));
             }
             return result.toString();
         }
@@ -125,63 +136,28 @@ public class DateIntervalListEditor extends JPanel{
             @Override
             public void setValue(Date value) {
                 super.setValue(value);
-                commit();
                 if (intervalsModel.getMaxIntervalLength()==1) {
                     DateIntervalListEditor.this.myFinish.setValue(value);
                 }
                 DateIntervalListEditor.this.updateActions();
-                lock();
             }
         };
         myFinish = new DefaultDateOption("generic.endDate") {
             @Override
             public void setValue(Date value) {
                 super.setValue(value);
-                commit();
                 DateIntervalListEditor.this.updateActions();
-                lock();
             }
         };
-        myStart.lock();
-        myFinish.lock();
-        init();
-    }
-
-    private void updateActions() {
-        if (myStart.getValue()!=null && myFinish.getValue()!=null && false==myFinish.getValue().before(myStart.getValue())) {
-            myAddAction.setEnabled(true);
-        }
-        else {
-            myAddAction.setEnabled(false);
-        }
-        myDeleteAction.setEnabled(false==myListSelectionModel.isSelectionEmpty());
-    }
-    private void init() {
-        myAddAction = new GPAction(){
+        myAddAction = new GPAction("add") {
             @Override
-            protected String getIconFilePrefix() {
-                return null;
-            }
-            @Override
-            protected String getLocalizedName() {
-                return getI18n("add");
-            }
-
             public void actionPerformed(ActionEvent e) {
                 myIntervalsModel.add(new DateInterval(myStart.getValue(), myFinish.getValue()));
                 myListModel.update();
             }
         };
-        myDeleteAction = new GPAction() {
+        myDeleteAction = new GPAction("delete") {
             @Override
-            protected String getIconFilePrefix() {
-                return null;
-            }
-            @Override
-            protected String getLocalizedName() {
-                return getI18n("delete");
-            }
-
             public void actionPerformed(ActionEvent e) {
                 int selected = myListSelectionModel.getMinSelectionIndex();
                 myIntervalsModel.remove(myIntervalsModel.getIntervals()[selected]);
@@ -193,29 +169,19 @@ public class DateIntervalListEditor extends JPanel{
         JPanel topPanel = new JPanel(new BorderLayout());
         OptionsPageBuilder builder = new OptionsPageBuilder();
         builder.setOptionKeyPrefix("");
-//        Box datesBox = Box.createVerticalBox();
-//        Component startDatePanel = builder.createStandaloneOptionPanel(myStart);
-//        datesBox.add(startDatePanel);
-//        if (myIntervalsModel.getMaxIntervalLength()>1) {
-//            Component finishDatePanel = builder.createStandaloneOptionPanel(myFinish);
-//        //
-//            datesBox.add(finishDatePanel);
-//        }
-//        topPanel.add(datesBox, BorderLayout.CENTER);
-        GPOptionGroup group = myIntervalsModel.getMaxIntervalLength()==1 ?
-                new GPOptionGroup("", new GPOption[] {myStart}) :
-                new GPOptionGroup("", new GPOption[] {myStart, myFinish});
+        GPOptionGroup group = myIntervalsModel.getMaxIntervalLength() == 1 ? new GPOptionGroup("",
+                new GPOption[] { myStart }) : new GPOptionGroup("", new GPOption[] { myStart, myFinish });
         group.setTitled(false);
-        JComponent datesBox = builder.buildPlanePage(new GPOptionGroup[] {group});
+        JComponent datesBox = builder.buildPlanePage(new GPOptionGroup[] { group });
         topPanel.add(datesBox, BorderLayout.CENTER);
 
         Box buttonBox = Box.createHorizontalBox();
-        buttonBox.setBorder(BorderFactory.createEmptyBorder(3,0,3,0));
+        buttonBox.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
         buttonBox.add(new JButton(myAddAction));
         buttonBox.add(Box.createHorizontalStrut(5));
         buttonBox.add(new JButton(myDeleteAction));
         topPanel.add(buttonBox, BorderLayout.SOUTH);
-        topPanel.setBorder(BorderFactory.createEmptyBorder(5,5,0,5));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         add(topPanel, BorderLayout.NORTH);
 
         JList list = new JList(myListModel);
@@ -223,14 +189,25 @@ public class DateIntervalListEditor extends JPanel{
         list.setBorder(BorderFactory.createLoweredBevelBorder());
         myListSelectionModel = list.getSelectionModel();
         myListSelectionModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 updateActions();
             }
         });
         JScrollPane scrollPane = new JScrollPane(list);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         scrollPane.setPreferredSize(new Dimension(120, 200));
         add(scrollPane, BorderLayout.CENTER);
         updateActions();
+    }
+
+    private void updateActions() {
+        if (myStart.getValue()!=null && myFinish.getValue()!=null && false==myFinish.getValue().before(myStart.getValue())) {
+            myAddAction.setEnabled(true);
+        }
+        else {
+            myAddAction.setEnabled(false);
+        }
+        myDeleteAction.setEnabled(false==myListSelectionModel.isSelectionEmpty());
     }
 }

@@ -145,7 +145,7 @@ public class GanttCSVExport {
     /** Write all tasks. */
     private void writeTasks(OutputStreamWriter out) throws IOException {
         writeTaskHeaders(out);
-        List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
             // ID
@@ -186,7 +186,7 @@ public class GanttCSVExport {
             }
             CustomColumnsValues customValues = task.getCustomValues();
             for (int j = 0; j < customFields.size(); j++) {
-                Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
+                Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
                 writeCell(out, String.valueOf(nextCustomFieldValue));
             }
             out.write("\n");
@@ -258,7 +258,7 @@ public class GanttCSVExport {
 
     /** set the maximum size for all strings. */
     private void getMaxSize() {
-        List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
+        List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
         iMaxSize = 0;
         for (int i = 0; i < myTasks.length; i++) {
             Task task = myTasks[i];
@@ -328,7 +328,7 @@ public class GanttCSVExport {
 
             CustomColumnsValues customValues = task.getCustomValues();
             for (int j=0; j<customFields.size(); j++) {
-                Object nextCustomFieldValue = customValues.getValue(String.valueOf(customFields.get(j)));
+                Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
                 String nextValueAsString = String.valueOf(nextCustomFieldValue);
                 if (nextValueAsString.length() > iMaxSize) {
                     iMaxSize = nextValueAsString.length();

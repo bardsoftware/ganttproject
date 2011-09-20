@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
@@ -86,7 +86,7 @@ public class GanttOptions {
 
     private final RoleManager myRoleManager;
 
-    private DocumentsMRU documentsMRU;
+    private final DocumentsMRU documentsMRU;
 
     private UIConfiguration myUIConfig;
 
@@ -134,9 +134,10 @@ public class GanttOptions {
 
     private final PluginPreferencesImpl myPluginPreferencesRootNode;
 
-    public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
+    public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer, DocumentsMRU mru) {
         myDocumentManager = documentManager;
         myRoleManager = roleManager;
+        documentsMRU = mru;
         myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
         initDefault();
         try {
@@ -352,8 +353,7 @@ public class GanttOptions {
             // The last opened files
             {
                 startElement("files", attrs, handler);
-                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator
-                        .hasNext();) {
+                for (Iterator<Document> iterator = documentsMRU.iterator(); iterator.hasNext();) {
                     Document document = iterator.next();
                     addAttribute("path", document.getPath(), attrs);
                     emptyElement("file", attrs, handler);
@@ -615,8 +615,7 @@ public class GanttOptions {
                         }
                     } else if (qName.equals("file")) {
                         if (aName.equals("path")) {
-                            documentsMRU.append(myDocumentManager
-                                    .getDocument(value));
+                            documentsMRU.add(myDocumentManager.getDocument(value));
                         }
                     } else if (qName.equals("automatic-launch")) {
                         if (aName.equals("value")) {
@@ -1026,10 +1025,6 @@ public class GanttOptions {
     /** Set a new xsl-fo file for pdf export. */
     public void setXslFo(String xslFo) {
         this.xslFo = xslFo;
-    }
-
-    public void setDocumentsMRU(DocumentsMRU documentsMRU) {
-        this.documentsMRU = documentsMRU;
     }
 
     public void setUIConfiguration(UIConfiguration uiConfiguration) {

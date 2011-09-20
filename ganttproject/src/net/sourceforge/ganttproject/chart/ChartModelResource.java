@@ -165,7 +165,6 @@ public class ChartModelResource extends ChartModelBase {
         return result;
     }
 
-    @Override
     public Rectangle getBoundingRectangle(Task task) {
         // TODO Auto-generated method stub
         return null;

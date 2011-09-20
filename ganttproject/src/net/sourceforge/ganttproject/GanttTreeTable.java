@@ -10,6 +10,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -33,7 +34,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         this.ttModel = model;
         myUIfacade = uifacade;
         getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
-        init();
+        initTreeTable();
     }
 
     private UIFacade getUiFacade() {
@@ -75,6 +76,11 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
     @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
+    }
+
+    @Override
+    protected Chart getChart() {
+        return myUIfacade.getGanttChart();
     }
 
     @Override

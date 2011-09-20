@@ -232,7 +232,8 @@ public class GanttLanguage {
      * @see #correctLabel()
      */
     public String getCorrectedLabel(String key) {
-        return correctLabel(getText(key));
+        String label = getText(key);
+        return label == null ? null : correctLabel(label);
     }
 
     public ComponentOrientation getComponentOrientation() {
@@ -261,6 +262,10 @@ public class GanttLanguage {
 
     /** @return label with the $ removed from it (if it was included) */
     public String correctLabel(String label) {
+        if(label == null) {
+            return null;
+        }
+
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
             label = label.substring(0, index).concat(label.substring(++index));

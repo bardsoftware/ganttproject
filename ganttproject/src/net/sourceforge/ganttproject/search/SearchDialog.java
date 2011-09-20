@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,52 +51,51 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
-class SearchDialog {
+public class SearchDialog {
     private final UIFacade myUiFacade;
     private DefaultListModel myResultViewDataModel;
     private final IGanttProject myProject;
     private JList myResultView;
     private UIFacade.Dialog myDialog;
 
-    SearchDialog(IGanttProject project, UIFacade uiFacade) {
+    public SearchDialog(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
         myUiFacade = uiFacade;
         myResultViewDataModel = new DefaultListModel();
         myDialog = myUiFacade.createDialog(getComponent(), new Action[] {
-            new CancelAction("search.dialog.button.goto") {
+            new CancelAction("search.dialog.goto") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gotoSelection();
                 }
             },
-            new CancelAction("close") {
-                @Override
-                public void actionPerformed(ActionEvent arg0) {
-                }
-            }
+            new CancelAction("close")
         }, GanttLanguage.getInstance().getText("search.dialog.title"));
     }
 
-    void show() {
+    public void show() {
         myDialog.show();
     }
 
     protected void gotoSelection() {
         SearchResult selectedValue = (SearchResult) myResultView.getSelectedValue();
-        selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
+        if(selectedValue != null ) {
+            selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
+        }
     }
 
-    JComponent getComponent() {
+    private JComponent getComponent() {
         JPanel result = new JPanel(new BorderLayout());
         JPanel inputPanel = new JPanel(new BorderLayout());
         final JTextField inputField = new JTextField(30);
-        final GPAction searchAction = new GPAction("search.dialog.button.search") {
+        final GPAction searchAction = new GPAction("search.dialog.search") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 runSearch(inputField.getText());
             }
         };
         JButton searchButton = new JButton(searchAction);
+        // TODO Add keyboard shortcut to searchAction
         inputField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {

@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -15,25 +14,25 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.GraphicPrimitive;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
+import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -49,13 +48,12 @@ import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
-import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
@@ -63,7 +61,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
-import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -111,12 +108,15 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     private GanttPreviousState myBaseline;
 
+    private final PublicHolidayDialogAction myPublicHolidayDialogAction;
+
     public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
             GPUndoManager undoManager) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
         this.setBackground(Color.WHITE);
         myTaskManager = taskManager;
         myUndoManager = undoManager;
+        appli = app;
 
         myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
         myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
@@ -157,7 +157,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 }
             }
         });
-        appli = app;
+        myPublicHolidayDialogAction = new PublicHolidayDialogAction(getProject(), getUIFacade());
         getProject().getTaskCustomColumnManager().addListener(this);
     }
 
@@ -267,8 +267,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
 
     private Action[] getPopupMenuActions() {
-        return new Action[] { getOptionsDialogAction(),
-                new PublicHolidayDialogAction(getProject(), getUIFacade()) };
+        return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction };
     }
 
     @Override
@@ -348,6 +347,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             // TODO Auto-generated constructor stub
         }
 
+        @Override
         public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(getChartModel(),
                     getTaskManager()), getUIFacade(), getTaskManager().getAlgorithmCollection()
@@ -355,8 +355,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             setCursor(E_RESIZE_CURSOR);
         }
 
-        public void beginChangeTaskStartInteraction(MouseEvent e,
-                TaskBoundaryChartItem taskBoundary) {
+        @Override
+        public void beginChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary) {
             setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary,
                 new TimelineFacadeImpl(getChartModel(), getTaskManager()),
                 getUIFacade(),
@@ -364,14 +364,28 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             setCursor(W_RESIZE_CURSOR);
         }
 
+        @Override
         public void beginChangeTaskProgressInteraction(MouseEvent e,
                 TaskProgressChartItem taskProgress) {
             setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress,
                 new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+                new TaskChartModelFacade() {
+                    public List<Rectangle> getTaskRectangles(Task t) {
+                        List<Rectangle> result = new ArrayList<Rectangle>();
+                        for (TaskActivity activity : t.getActivities()) {
+                            GraphicPrimitive graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
+                            assert graphicPrimitive != null;
+                            assert graphicPrimitive instanceof Rectangle;
+                            result.add((Rectangle)graphicPrimitive);
+                        }
+                        return result;
+                    }
+                },
                 getUIFacade()));
             setCursor(CHANGE_PROGRESS_CURSOR);
         }
 
+        @Override
         public void beginDrawDependencyInteraction(MouseEvent initiatingEvent,
                 TaskRegularAreaChartItem taskArea,
                 GanttGraphicArea.MouseSupport mouseSupport) {
@@ -389,6 +403,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         }
 
+        @Override
         public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
             setActiveInteraction(new MoveTaskInteractions(e, tasks,
                 new TimelineFacadeImpl(getChartModel(), getTaskManager()),
@@ -488,92 +503,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return myChartComponentImpl;
     }
 
-    public Action getScrollCenterAction(ScrollingManager scrollMgr,
-            TaskSelectionManager taskSelMgr, String iconSize) {
-        if (myScrollCenterAction == null)
-            myScrollCenterAction = new ScrollGanttChartCenterAction(scrollMgr,
-                    taskSelMgr, iconSize);
-        return myScrollCenterAction;
-    }
-
     public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setBaseline(tasks);
         appli.getTree().getTable().setRowHeight(rowHeight);
     }
 
     private ChartImplementation myChartComponentImpl;
-
-    private ScrollGanttChartCenterAction myScrollCenterAction;
-
-    protected class ScrollGanttChartCenterAction extends GPAction {
-        private final ScrollingManager myScrollingManager;
-
-        private final TaskSelectionManager myTaskSelectionManager;
-
-        public ScrollGanttChartCenterAction(ScrollingManager scrollingManager,
-                TaskSelectionManager taskSelectionManager, String iconSize) {
-            super("ScrollCenter", iconSize);
-            myScrollingManager = scrollingManager;
-            myTaskSelectionManager = taskSelectionManager;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getUIFacade().setStatusText(GanttLanguage.getInstance().getText("centerOnSelectedTasks"));
-            scroll();
-        }
-
-        private void scroll() {
-            GanttCalendar min = null;
-            GanttCalendar max = null;
-            Date scrollDate = null;
-
-            Iterator<Task> it = null;
-            if (myTaskSelectionManager.getSelectedTasks().isEmpty()) {
-                // scrollDate = getTaskManager().getProjectStart();
-                it = Arrays.asList(getTaskManager().getTasks()).iterator();
-            } else {
-                it = myTaskSelectionManager.getSelectedTasks().iterator();
-            }
-            while (it.hasNext()) {
-                Task t = it.next();
-                GanttCalendar dStart = t.getStart();
-                GanttCalendar dEnd = t.getEnd();
-
-                min = min == null ? dStart.clone()
-                        : (min.compareTo(dStart) > 0 ? dStart.clone() : min);
-                max = max == null ? dEnd.clone()
-                        : (max.compareTo(dEnd) < 0 ? dEnd.clone() : max);
-            }
-
-            //no tasks defined, nothing to do
-            if(min == null || max == null)
-                return;
-
-            TimeUnit defaultUnit = getTimeUnitStack().getDefaultTimeUnit();
-            final TaskLength selectionLength = getTaskManager().createLength(
-                    defaultUnit, min.getTime(), max.getTime());
-            final TaskLength viewLength = getChartModel().getVisibleLength();
-            float viewLengthInDefaultUnits = viewLength.getLength(defaultUnit);
-            // if selection is shorter than view we'll scroll right,
-            // otherwise we'll scroll left
-            // delta is measured in the bottom line time units
-            final float delta = (selectionLength.getValue() - viewLengthInDefaultUnits) / 2;
-            scrollDate = GPCalendar.PLAIN.shiftDate(min.getTime(),
-                    getTaskManager().createLength(defaultUnit, delta));
-
-            myScrollingManager.scrollTo(scrollDate);
-        }
-
-        @Override
-        protected String getIconFilePrefix() {
-            return "scrollcenter_";
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            return super.getLocalizedName();
-        }
-    }
 
     private class OldChartMouseListenerImpl extends MouseListenerBase {
         private MouseSupport myMouseSupport = new MouseSupport();
@@ -699,11 +634,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         repaint();
     }
 
+    @Override
     public Icon getIcon() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public void customPropertyChange(CustomPropertyEvent event) {
         repaint();
     }
@@ -712,28 +649,35 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         myUIConfiguration = configuration;
     }
 
+    @Override
     public void projectModified() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void projectSaved() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void projectClosed() {
         repaint();
         setProjectLevelTaskColor(null);
         setPreviousStateTasks(null);
     }
-
-    public void projectWillBeOpened() {
-    }
+    @Override
 
     public void projectOpened() {
     }
 
     @Override
+    public void projectCreated() {
+        // TODO Auto-generated method stub
+
+    }
+    @Override
     public ChartViewState getViewState() {
         return myViewState;
     }
+
 }

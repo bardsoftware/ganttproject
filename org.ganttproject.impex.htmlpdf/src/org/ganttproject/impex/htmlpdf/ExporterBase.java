@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package org.ganttproject.impex.htmlpdf;
 
 import java.awt.Component;
@@ -162,6 +162,7 @@ abstract class ExporterBase extends AbstractExporter {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
+                    monitor.subTask(jobs[i].getName());
                     jobs[i].setProgressGroup(monitor, 1);
                     jobs[i].schedule();
                     try {
@@ -176,6 +177,13 @@ abstract class ExporterBase extends AbstractExporter {
                     if(state.isOK() == false) {
                         getUIFacade().showErrorDialog(state.getException());
                         monitor.setCanceled(true);
+                    } else {
+                        // Sub task for export is finished without problems
+                        // So, updated the total amount of work with the current work performed
+                        monitor.worked(1);
+                        // and remove the sub task description
+                        // (convenient for debugging to know the sub task is finished properly)
+                        monitor.subTask(null);
                     }
                 }
                 Job finishing = new Job("finishing") {
@@ -192,7 +200,9 @@ abstract class ExporterBase extends AbstractExporter {
                     finishing.join();
                 } catch (InterruptedException e) {
                     getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 }
+                monitor.done();
                 return Status.OK_STATUS;
             }
         };
@@ -420,7 +430,7 @@ abstract class ExporterBase extends AbstractExporter {
                     for (Iterator<CustomColumn> it = getCustomColumnStorage()
                             .getCustomColums().iterator(); it.hasNext();) {
                         CustomColumn nextColumn = it.next();
-                        Object value = customValues.getValue(nextColumn.getName());
+                        Object value = customValues.getValue(nextColumn);
                         String valueAsString = value==null ? "" : value.toString();
                         addAttribute("id", nextColumn.getId(), attrs);
                         textElement("custom-field", attrs, valueAsString, handler);

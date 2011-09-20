@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
@@ -160,20 +160,22 @@ public class GanttDialogCustomColumn  {
     }
 
     public void setVisible(boolean visible) {
-        Component rootComponent = getComponent();
-        getUIFacade().createDialog(rootComponent, new Action[] {
-                new OkAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.commit();
-                        myDate.commit();
-                        GanttDialogCustomColumn.this.ok();
-                    }},
-                new CancelAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        myOptionGroup.rollback();
-                        myDate.rollback();
-                    }
-        }}, "").show();
+        if(visible) {
+            Component rootComponent = getComponent();
+            getUIFacade().createDialog(rootComponent, new Action[] { new OkAction() {
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.commit();
+                    myDate.commit();
+                    GanttDialogCustomColumn.this.ok();
+                }
+            }, new CancelAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    myOptionGroup.rollback();
+                    myDate.rollback();
+                }
+            } }, "").show();
+        }
     }
 
     private UIFacade getUIFacade() {

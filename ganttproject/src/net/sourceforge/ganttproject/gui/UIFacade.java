@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import javax.swing.Action;
 
-import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -40,6 +40,7 @@ public interface UIFacade {
     public interface Dialog {
         void show();
         void hide();
+        void layout();
     }
 
     public enum Choice { YES, NO, CANCEL, OK };
@@ -51,6 +52,9 @@ public interface UIFacade {
     ScrollingManager getScrollingManager();
 
     ZoomManager getZoomManager();
+
+    /** @returns an object containing the zoom related actions */
+    ZoomActionSet getZoomActionSet();
 
     GPUndoManager getUndoManager();
 

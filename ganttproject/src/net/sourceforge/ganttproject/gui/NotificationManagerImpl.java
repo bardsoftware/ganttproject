@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -31,7 +30,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.ShowChannelAction;
 import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
 
 import org.pushingpixels.trident.Timeline;
@@ -89,6 +88,12 @@ public class NotificationManagerImpl implements NotificationManager {
             }
         });
         myNotificationSlider.show();
+
+        // Stop pulsing now, the notification is shown
+        if (channel.isPulsing()) {
+            channel.getButton().setBackground(channel.getNormalColor());
+            channel.setPulsing(false);
+        }
     }
 
     public void showPending() {
@@ -99,70 +104,19 @@ public class NotificationManagerImpl implements NotificationManager {
 
     JComponent getChannelButtons() {
         JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
-        TestGanttRolloverButton rssButton = new TestGanttRolloverButton(new ShowChannelAction(NotificationChannel.RSS));
+        TestGanttRolloverButton rssButton = new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.RSS));
 
         NotificationChannel.RSS.setButton(rssButton);
         result.add(rssButton);
 
         TestGanttRolloverButton errorButton =
-            new TestGanttRolloverButton(new ShowChannelAction(NotificationChannel.ERROR));
+            new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.ERROR));
         NotificationChannel.ERROR.setButton(errorButton);
         result.add(errorButton);
         return result;
     }
 
-    private class ShowChannelAction extends GPAction implements NotificationChannel.Listener {
-        private final NotificationChannel myChannel;
 
-        ShowChannelAction(NotificationChannel channel) {
-            super("notification.channel." + channel.toString().toLowerCase() + ".label");
-            myChannel = channel;
-            myChannel.addListener(this);
-            updateState();
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            showNotification(myChannel);
-            if (myChannel.isPulsing()) {
-                myChannel.getButton().setBackground(myChannel.getNormalColor());
-                myChannel.setPulsing(false);
-            }
-        }
-
-        @Override
-        protected String getLocalizedName() {
-            int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
-            String channelName = super.getLocalizedName();
-            return unreadCount == 0
-                ? channelName
-                : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
-        }
-
-        private void updateState() {
-            if (myChannel.getItems().isEmpty() && myChannel.getDefaultNotification() == null) {
-                setEnabled(false);
-            } else {
-                setEnabled(true);
-            }
-            updateName();
-        }
-
-        @Override
-        public void notificationAdded() {
-            updateState();
-        }
-
-        @Override
-        public void notificationRead(NotificationItem item) {
-            updateState();
-        }
-
-        @Override
-        public void channelCleared() {
-            updateState();
-        }
-    }
 
     @Override
     public void addNotification(final NotificationChannel channel, NotificationItem item) {

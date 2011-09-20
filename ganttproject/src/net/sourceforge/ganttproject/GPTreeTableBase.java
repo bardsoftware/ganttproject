@@ -58,7 +58,6 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -74,6 +73,7 @@ import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
@@ -92,7 +92,7 @@ import org.jdesktop.swing.table.TableColumnExt;
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 import org.jdesktop.swing.treetable.TreeTableModel;
 
-public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListener{
+public abstract class GPTreeTableBase extends JNTreeTable implements CustomPropertyListener{
     private final IGanttProject myProject;
     private final UIFacade myUiFacade;
     private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
@@ -114,6 +114,10 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         public void clear() {
             clearUiColumns();
             myColumns.clear();
+            for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
+                myDefaultColumnStubs.get(i).setVisible(false);
+                createColumn(i, myDefaultColumnStubs.get(i));
+            }
         }
 
         private void clearUiColumns() {
@@ -153,6 +157,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                     mine = createColumn(getModelIndex(foreign), foreign);
                 } else {
                     mine.getStub().setOrder(foreign.getOrder());
+                    mine.getStub().setVisible(foreign.isVisible());
                 }
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
@@ -190,7 +195,11 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
 
         protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
-            myDefaultColumnStubs.addAll(stubs);
+            myDefaultColumnStubs.clear();
+            for (Column stub : stubs) {
+                myDefaultColumnStubs.add(new TableHeaderUIFacade.ColumnStub(
+                        stub.getID(), stub.getName(), stub.isVisible(), stub.getOrder(), stub.getWidth()));
+            }
         }
 
         protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
@@ -204,17 +213,6 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
         protected void insertColumnIntoUi(ColumnImpl column) {
             getTable().addColumn(column.myTableColumn);
-            int align = getTable().getModel().getColumnClass(column.myTableColumn.getModelIndex()).equals(GregorianCalendar.class)
-                ? SwingConstants.RIGHT : SwingConstants.CENTER;
-            try {
-                setColumnHorizontalAlignment(column.getID(), align);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                System.err.println("Failed to insert column=" + column.getName());
-                for (int i = 0; i < getTable().getColumns().size(); i++) {
-                    System.err.println(getTable().getColumns().get(i));
-                }
-            }
         }
 
         protected void renameColumn(CustomPropertyDefinition definition) {
@@ -315,6 +313,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             return myTableColumn;
         }
 
+        @Override
         public void setOrder(int order) {
         }
     }
@@ -323,9 +322,8 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         return myProject;
     }
 
-    protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
-            DefaultTreeTableModel model) {
-        super(new JXTreeTable(model) {
+    private static JXTreeTable createTable(DefaultTreeTableModel model) {
+        JXTreeTable result = new JXTreeTable(model) {
             {
                 setTableHeader(new JTableHeader(getColumnModel()) {
                     @Override
@@ -347,7 +345,21 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             public void applyComponentOrientation(ComponentOrientation o) {
                 super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
             }
-        });
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                try {
+                    return super.getToolTipText(e);
+                } catch (NullPointerException ex) {
+                    return null;
+                }
+            }
+        };
+        return result;
+    }
+
+    protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
+            DefaultTreeTableModel model) {
+        super(createTable(model));
         myCustomPropertyManager = customPropertyManager;
         myUiFacade = uiFacade;
         myProject = project;
@@ -358,14 +370,21 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             }
             @Override
             public void projectOpened() {
-                if (getTableHeaderUiFacade().myColumns.isEmpty()) {
-                    getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
-                }
+                onProjectOpened();
+            }
+
+            @Override
+            public void projectCreated() {
+                getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
+                getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
             }
         });
     }
 
-    protected void init() {
+    protected void onProjectOpened() {
+    }
+
+    protected void initTreeTable() {
         doInit();
         isInitialized = true;
     }
@@ -382,34 +401,39 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
         getTable().getColumnModel().addColumnModelListener(
             new TableColumnModelListener() {
+                @Override
                 public void columnMoved(TableColumnModelEvent e) {
                     if (e.getFromIndex() != e.getToIndex()) {
                         myProject.setModified();
                     }
                 }
+                @Override
                 public void columnAdded(TableColumnModelEvent e) {
                     myProject.setModified();
                 }
+                @Override
                 public void columnRemoved(TableColumnModelEvent e) {
                     myProject.setModified();
                 }
+                @Override
                 public void columnMarginChanged(ChangeEvent e) {
                     myProject.setModified();
                 }
+                @Override
                 public void columnSelectionChanged(ListSelectionEvent e) {
                 }
             });
         getTable().setAutoCreateColumnsFromModel(false);
         getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         setShowHorizontalLines(true);
+        setHasColumnControl(true);
 
-        setOpenIcon(null);
-        setClosedIcon(null);
+        ImageIcon icon = new ImageIcon(getClass().getResource("/icons/simple_task.gif"));
+        setOpenIcon(icon);
+        setClosedIcon(icon);
         setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
         setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
-        setLeafIcon(null);
-
-        setHasColumnControl(false);
+        setLeafIcon(icon);
         getTreeTable().getParent().setBackground(Color.WHITE);
 
         InputMap inputMap = getInputMap();
@@ -424,22 +448,26 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                 new HierarchicalColumnHighlighter() }));
 
         getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 onCellSelectionChanged();
             }
         });
         getTable().getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 onCellSelectionChanged();
             }
         });
         getTreeTable().getTree().addTreeExpansionListener(
                 new TreeExpansionListener() {
+                    @Override
                     public void treeExpanded(TreeExpansionEvent arg0) {
-                        myUiFacade.refresh();
+                        getChart().reset();
                     }
+                    @Override
                     public void treeCollapsed(TreeExpansionEvent arg0) {
-                        myUiFacade.refresh();
+                        getChart().reset();
                     }
                 });
         getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
@@ -467,6 +495,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         getTableHeaderUiFacade().deleteColumn(column);
     }
 
+    @Override
     public void customPropertyChange(CustomPropertyEvent event) {
         switch(event.getType()) {
         case CustomPropertyEvent.EVENT_ADD:
@@ -494,14 +523,16 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         return Collections.emptyList();
     }
 
-    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
-        TableColumnExt result = new TableColumnExt(modelIndex);
-        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
-        if (defaultEditor!=null) {
-            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
-        }
-        return result;
-    }
+    protected abstract Chart getChart();
+
+//    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
+//        TableColumnExt result = new TableColumnExt(modelIndex);
+//        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
+//        if (defaultEditor!=null) {
+//            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
+//        }
+//        return result;
+//    }
 
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
@@ -563,7 +594,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         };
     }
 
-    JTree getTree() {
+    public JTree getTree() {
         return this.getTreeTable().getTree();
     }
 
@@ -646,6 +677,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
         protected abstract TimelineChart getChart();
 
+        @Override
         public void adjustmentValueChanged(AdjustmentEvent e) {
             if (!isInitialized) {
                 return;
@@ -668,6 +700,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
 
     }
 
+    /** Adds keyStroke to the given action (if action is null nothing happens) */
     void addAction(Action action, KeyStroke keyStroke) {
         if (action != null) {
             InputMap inputMap = getInputMap();
@@ -676,25 +709,25 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
         }
     }
 
-    void addActionWithKeyStroke(Action action) {
+    /** Adds an action to the object and makes it active */
+    public void addActionWithAccelleratorKey(Action action) {
         if (action != null) {
             addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
         }
     }
 
-    void setupActionMaps(Action up, Action down, Action indent, Action outdent, Action newArtifact,
+    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action _new,
             Action cut, Action copy, Action paste, Action properties, Action delete) {
-        addAction(up, GPAction.getKeyStroke("moveUp.shortcut"));
-        addAction(down, GPAction.getKeyStroke("moveDown.shortcut"));
-
-        addAction(indent, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-        addAction(outdent, KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK));
-        addAction(newArtifact, GPAction.getKeyStroke("newArtifact.shortcut"));
-        addAction(properties, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK));
-        addAction(delete, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        addActionWithKeyStroke(cut);
-        addActionWithKeyStroke(copy);
-        addActionWithKeyStroke(paste);
+        addActionWithAccelleratorKey(up);
+        addActionWithAccelleratorKey(down);
+        addActionWithAccelleratorKey(indent);
+        addActionWithAccelleratorKey(unindent);
+        addActionWithAccelleratorKey(_new);
+        addActionWithAccelleratorKey(properties);
+        addActionWithAccelleratorKey(delete);
+        addActionWithAccelleratorKey(cut);
+        addActionWithAccelleratorKey(copy);
+        addActionWithAccelleratorKey(paste);
     }
 
     private class HeaderMouseListener extends MouseAdapter {
@@ -744,10 +777,12 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
             }
             {
                 result.add(new GPAction("columns.pack.label") {
+                    @Override
                     public void actionPerformed(ActionEvent arg0) {
                     }
                 });
                 GPAction fitAction = new GPAction("columns.fit.label") {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         autoFitColumnWidth(column);
                     }
@@ -781,6 +816,7 @@ public class GPTreeTableBase extends JNTreeTable implements CustomPropertyListen
                      it.hasPrevious();) {
                     final Column hidden = it.previous();
                     GPAction action = new GPAction("columns.show.label") {
+                        @Override
                         public void actionPerformed(ActionEvent arg0) {
                             hidden.setVisible(true);
                             myRecentlyHiddenColumns.remove(hidden);

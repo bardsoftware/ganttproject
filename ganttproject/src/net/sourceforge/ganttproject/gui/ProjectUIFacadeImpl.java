@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
@@ -89,11 +89,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                     }
                 });
             }
-            actions.add(new CancelAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                }
-            });
+            actions.add(CancelAction.EMPTY);
             myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toArray(new Action[0]));
 
             return false;
@@ -276,14 +272,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         if (false == ensureProjectSaved(project)) {
             return;
         }
-        getUndoManager().undoableEdit("Init new Project", new Runnable() {
-            public void run() {
-                beforeClose();
-                project.close();
-                myWorkbenchFacade.setStatusText(i18n.getText("newProject2"));
-                showNewProjectWizard(project);
-            }
-        });
+        beforeClose();
+        project.close();
+        myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"));
+        showNewProjectWizard(project);
     }
 
     private void showNewProjectWizard(IGanttProject project) {

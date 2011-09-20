@@ -29,8 +29,8 @@ import org.xml.sax.Attributes;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.AllocationTagHandler;
@@ -293,8 +293,8 @@ class ProxyDocument implements Document {
                 new TaskDisplayColumnsTagHandler(myVisibleFields);
             opener.addTagHandler(taskDisplayHandler);
 
-            TaskDisplayColumnsTagHandler resourceViewHandler = new TaskDisplayColumnsTagHandler(
-                    getUIFacade().getResourceTree().getVisibleFields(), "field", "id", "order", "width");
+            TaskDisplayColumnsTagHandler resourceViewHandler = new TaskDisplayColumnsTagHandler(getUIFacade()
+                    .getResourceTree().getVisibleFields(), "field", "id", "order", "width", "visible");
             opener.addTagHandler(resourceViewHandler);
             opener.addParsingListener(resourceViewHandler);
 

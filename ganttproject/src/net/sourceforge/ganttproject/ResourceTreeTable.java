@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ import javax.swing.tree.TreePath;
 
 import org.jdesktop.swing.table.TableColumnExt;
 
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
@@ -96,7 +97,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         myResourceTreeModel = model;
         getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
         setTreeTableModel(model);
-        init();
+        initTreeTable();
         myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
     }
 
@@ -109,16 +110,30 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return DefaultColumn.getColumnStubs();
     }
 
-    /** Initialize the treetable. Addition of various listeners, tree's icons, */
+    @Override
+    protected Chart getChart() {
+        return myUiFacade.getResourceChart();
+    }
+
+    /**
+     * Initialize the treetable. Addition of various listeners, tree's icons,
+     */
     @Override
     protected void doInit() {
         super.doInit();
+        myResourceTreeModel.updateResources();
         getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
             @Override
             protected TimelineChart getChart() {
                 return (TimelineChart)myUiFacade.getResourceChart();
             }
         });
+    }
+
+    @Override
+    protected void onProjectOpened() {
+        super.onProjectOpened();
+        myResourceTreeModel.updateResources();
     }
 
     private RoleManager getRoleManager() {
@@ -172,7 +187,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         getTreeTable().getActionMap().put(action.getValue(Action.NAME), action);
     }
 
-    boolean canMoveSelectionUp() {
+    public boolean canMoveSelectionUp() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return false;
@@ -185,7 +200,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return true;
     }
 
-    void upResource() {
+    /** Move selected resource up */
+    public void upResource() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return;
@@ -204,7 +220,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         }
     }
 
-    boolean canMoveSelectionDown() {
+    public boolean canMoveSelectionDown() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if(selectedNodes.length!=1) {
             return false;
@@ -217,8 +233,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return true;
     }
 
-    /** Move down the selected resource */
-    void downResource() {
+    /** Move the selected resource down */
+    public void downResource() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if (selectedNodes.length == 0) {
             return;

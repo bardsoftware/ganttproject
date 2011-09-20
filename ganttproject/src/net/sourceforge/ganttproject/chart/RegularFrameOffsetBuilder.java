@@ -38,19 +38,21 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     private final Date myEndDate;
     private final TimeUnit baseUnit;
     private int myRightMarginBottomUnitCount;
+    private final Date myViewportStartDate;
 
     RegularFrameOffsetBuilder(
             GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-            int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor) {
-        this(calendar,  topUnit,  bottomUnit,  startDate,
+            Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
+        this(calendar,  topUnit,  bottomUnit,  startDate, viewportStartDate,
                  defaultUnitWidth,  chartWidth,  weekendDecreaseFactor, null, 0);
     }
 
     RegularFrameOffsetBuilder(
-            GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+            GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate, Date viewportStartDate,
             int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate, int rightMarginTimeUnits) {
         myCalendar = calendar;
         myStartDate = startDate;
+        myViewportStartDate = viewportStartDate;
         myTopUnit = topUnit;
         myBottomUnit = bottomUnit;
         myDefaultUnitWidth = defaultUnitWidth;
@@ -109,19 +111,19 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     void constructBottomOffsets(List<Offset> offsets, int initialEnd) {
         int marginUnitCount = myRightMarginBottomUnitCount;
         Date currentDate = myStartDate;
-        int offsetEnd = -1;
         int shift = 0;
         OffsetStep step = new OffsetStep();
         do {
             TimeUnit concreteTimeUnit = getConcreteUnit(getBottomUnit(), currentDate);
             calculateNextStep(step, concreteTimeUnit, currentDate);
             Date endDate = concreteTimeUnit.adjustRight(currentDate);
-            if (offsetEnd == -1) {
+            if (endDate.compareTo(myViewportStartDate) <= 0) {
                 shift = (int) (step.parrots * getDefaultUnitWidth());
             }
-            offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
-            offsets.add(new Offset(
-                concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType));
+            int offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
+            Offset offset = Offset.createFullyClosed(
+                    concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd+offsetEnd, step.dayType);
+            offsets.add(offset);
             currentDate = endDate;
 
             boolean hasNext = true;
@@ -160,7 +162,8 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
                     offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
                 }
             }
-            topOffsets.add(new Offset(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
+            topOffsets.add(Offset.createFullyClosed(
+                    concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd + offsetEnd, DayType.WORKING));
             currentDate = endDate;
 
         } while (offsetEnd <= lastBottomOffset && (myEndDate==null || currentDate.before(myEndDate)));
@@ -212,6 +215,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
                 myTopUnit,
                 myBottomUnit,
                 myStartDate,
+                myViewportStartDate,
                 myAtomicUnitWidth,
                 myEndOffset,
                 myWeekendDecreaseFactor,

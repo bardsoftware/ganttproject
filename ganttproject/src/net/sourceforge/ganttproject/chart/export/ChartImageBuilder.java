@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.export;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -39,22 +40,28 @@ public class ChartImageBuilder {
     }
 
     public RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        final int headerHeight = AbstractChartImplementation.LOGO.getIconHeight();
-        final int treeHeight = treeTable.getRowHeight() * (settings.getRowCount() + 1);
-        final int treeWidth = treeTable.getWidth();
-        final int wholeImageHeight = treeHeight + headerHeight;
+        final int logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
+        final int treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
+        final int tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
+        final int treeWidth = treeTable.getTable().getWidth();
+        final int wholeImageHeight = treeHeight + tableHeaderHeight + logoHeight;
 
         BufferedImage treeImage  = new BufferedImage(treeWidth, wholeImageHeight, BufferedImage.TYPE_INT_RGB);
         {
             Graphics2D g = treeImage.createGraphics();
             g.setBackground(Color.WHITE);
-            g.clearRect(0, 0, treeImage.getWidth(), headerHeight);
+            g.clearRect(0, 0, treeImage.getWidth(), logoHeight);
             g.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
         }
         {
             Graphics2D g = treeImage.createGraphics();
-            g.translate(0, headerHeight);
-            treeTable.printAll(g);
+            g.translate(0, logoHeight);
+            treeTable.getTable().getTableHeader().printAll(g);
+        }
+        {
+            Graphics2D g = treeImage.createGraphics();
+            g.translate(0, logoHeight + tableHeaderHeight);
+            treeTable.getTable().printAll(g);
         }
 
         ChartModelBase modelCopy = myChartModel.createCopy();
@@ -73,8 +80,9 @@ public class ChartImageBuilder {
         offsetBuilder.constructOffsets(null, bottomOffsets);
         int chartWidth = bottomOffsets.getEndPx();
         int chartHeight = wholeImageHeight;
+        modelCopy.setBounds(new Dimension(chartWidth, chartHeight));
 
-        modelCopy.setHeaderHeight(headerHeight + treeTable.getTable().getTableHeader().getHeight());
+        modelCopy.setHeaderHeight(logoHeight + tableHeaderHeight - 1);
         modelCopy.setVisibleTasks(settings.getVisibleTasks());
 
         RenderedChartImage result = new RenderedChartImage(

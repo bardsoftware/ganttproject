@@ -36,7 +36,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 /**
  * Controls painting of the Gantt chart
  */
-public class ChartModelImpl extends ChartModelBase implements ChartModel {
+public class ChartModelImpl extends ChartModelBase {
 
     private List<Task> myVisibleTasks;
 
@@ -198,13 +198,23 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return result;
     }
 
+    public GraphicPrimitiveContainer.GraphicPrimitive getGraphicPrimitive(Object modelObject) {
+        for (ChartRendererBase renderer : getRenderers()) {
+            GraphicPrimitiveContainer.GraphicPrimitive result =
+                renderer.getPrimitiveContainer().getPrimitive(modelObject);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
     private ChartItem findTaskBoundaryItem(int x, int y) {
         ChartItem result = null;
-        GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl
-                .getPrimitiveContainer().getPrimitive(x, y);
-                        //y - getChartUIConfiguration().getHeaderHeight());
+        GraphicPrimitiveContainer.GraphicPrimitive primitive =
+            myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
         if (primitive==null) {
-            primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y/*-getChartUIConfiguration().getHeaderHeight()*/);
+            primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y);
         }
         if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
             GraphicPrimitiveContainer.Rectangle rect = (Rectangle) primitive;
@@ -228,38 +238,38 @@ public class ChartModelImpl extends ChartModelBase implements ChartModel {
         return result;
     }
 
-    public java.awt.Rectangle getBoundingRectangle(Task task) {
-        java.awt.Rectangle result = null;
-        TaskActivity[] activities = task.getActivities();
-        for (int i = 0; i < activities.length; i++) {
-            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
-                    .getPrimitive(activities[i]);
-            if (nextRectangle != null) {
-                java.awt.Rectangle nextAwtRectangle = new java.awt.Rectangle(
-                        nextRectangle.myLeftX, nextRectangle.myTopY,
-                        nextRectangle.myWidth, nextRectangle.myHeight);
-                if (result == null) {
-                    result = nextAwtRectangle;
-                } else {
-                    result = result.union(nextAwtRectangle);
-                }
-            }
-        }
-        return result;
-    }
+//    public java.awt.Rectangle getBoundingRectangle(Task task) {
+//        java.awt.Rectangle result = null;
+//        TaskActivity[] activities = task.getActivities();
+//        for (int i = 0; i < activities.length; i++) {
+//            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
+//                    .getPrimitive(activities[i]);
+//            if (nextRectangle != null) {
+//                java.awt.Rectangle nextAwtRectangle = new java.awt.Rectangle(
+//                        nextRectangle.myLeftX, nextRectangle.myTopY,
+//                        nextRectangle.myWidth, nextRectangle.myHeight);
+//                if (result == null) {
+//                    result = nextAwtRectangle;
+//                } else {
+//                    result = result.union(nextAwtRectangle);
+//                }
+//            }
+//        }
+//        return result;
+//    }
 
-    GraphicPrimitiveContainer.Rectangle[] getTaskActivityRectangles(Task task) {
-        List<Rectangle> result = new ArrayList<Rectangle>();
-        TaskActivity[] activities = task.getActivities();
-        for (int i = 0; i < activities.length; i++) {
-            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
-                    .getPrimitive(activities[i]);
-            if (nextRectangle!=null) {
-                result.add(nextRectangle);
-            }
-        }
-        return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
-    }
+//    GraphicPrimitiveContainer.Rectangle[] getTaskActivityRectangles(Task task) {
+//        List<Rectangle> result = new ArrayList<Rectangle>();
+//        TaskActivity[] activities = task.getActivities();
+//        for (int i = 0; i < activities.length; i++) {
+//            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
+//                    .getPrimitive(activities[i]);
+//            if (nextRectangle!=null) {
+//                result.add(nextRectangle);
+//            }
+//        }
+//        return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
+//    }
 
     List<Task> getVisibleTasks() {
         return myVisibleTasks == null ? Collections.<Task>emptyList() : myVisibleTasks;

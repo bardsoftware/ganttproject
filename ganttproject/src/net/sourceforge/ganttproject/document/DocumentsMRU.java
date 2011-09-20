@@ -1,15 +1,31 @@
 /*
- * Created on 29.09.2003
- *
- */
+GanttProject is an opensource project management tool.
+Copyright (C) 2003-2011 Michael Haeusler, GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.document;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * List of Documents MRU (<b>m</b>ost <b>r</b>ecently <b>u</b>sed)
+ * List of Documents MRU (<b>M</b>ost <b>R</b>ecently <b>U</b>sed)
  *
  * @author Michael Haeusler (michael at akatose.de)
  */
@@ -19,10 +35,14 @@ public class DocumentsMRU {
 
     private List<Document> documents;
 
+    private final ArrayList<DocumentMRUListener> myListeners = new ArrayList<DocumentMRUListener>();
+
+    interface Listener {
+        void MRUChanged();
+    }
+
     public DocumentsMRU(int maxSize) {
-        if (maxSize <= 0)
-            throw new IllegalArgumentException(
-                    "maxSize must be larger than zero (" + maxSize + ")");
+        assert maxSize > 0: "maxSize must be larger than zero (" + maxSize + ")";
         this.maxSize = maxSize;
         documents = new ArrayList<Document>(maxSize);
     }
@@ -34,7 +54,7 @@ public class DocumentsMRU {
      *
      * @param document
      *            the Document that should be added
-     * @return wether the list has changed through the addition
+     * @return true when the list has changed through the addition
      */
     public boolean add(Document document) {
         // if the document is invalid, we don't add it
@@ -50,57 +70,39 @@ public class DocumentsMRU {
         if (0 < i) {
             documents.remove(i);
         } else {
-            while (documents.size() >= maxSize)
+            while (documents.size() >= maxSize) {
                 documents.remove(maxSize - 1);
+            }
         }
         documents.add(0, document);
+
+        fireMRUListChanged();
 
         return true;
     }
 
-    /**
-     * Appends a Document to the list of Documents MRU. If the list is already
-     * full, the document will <b>not</b> be appended.
-     *
-     * @param document
-     *            the Document that should be added
-     * @return wether the list has changed through the addition
-     */
-    public boolean append(Document document) {
-        // if the document is invalid, we don't add it
-        if (!document.isValidForMRU())
-            return false;
-
-        int i = documents.indexOf(document);
-        // if the document is already at the bottom,
-        // nothing needs to change.
-        if (i == maxSize - 1)
-            return false;
-
-        if (i != -1) {
-            documents.remove(i);
-        }
-
-        if (documents.size() < maxSize) {
-            documents.add(document);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * clears the list of Documents MRU
-     */
+    /** clears the list of Documents MRU */
     public void clear() {
         documents.clear();
+        fireMRUListChanged();
     }
 
-    /**
-     * returns an Iterator over the entries of the list of Documents MRU
-     */
+    /** @return an Iterator over the entries of the list of Documents MRU */
     public Iterator<Document> iterator() {
         return documents.iterator();
     }
 
+    public void addListener(DocumentMRUListener listener) {
+        myListeners.add(listener);
+        // Fire event for listener to give it a possibility on getting access to the current MRU list
+        listener.mruListChanged(Collections.unmodifiableCollection(documents));
+    }
+
+    private void fireMRUListChanged() {
+        Collection<Document> unmodifiableCollection = Collections.unmodifiableCollection(documents);
+        for (int i = 0; i < myListeners.size(); i++) {
+            DocumentMRUListener next = myListeners.get(i);
+            next.mruListChanged(unmodifiableCollection);
+        }
+    }
 }

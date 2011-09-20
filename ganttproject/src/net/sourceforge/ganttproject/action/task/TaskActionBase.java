@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Dmitry Barashev
+Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,46 +15,61 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.action.task;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-abstract class TaskActionBase extends GPAction implements Listener {
+abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener {
     private final TaskManager myTaskManager;
     private List<Task> mySelection;
     private final UIFacade myUIFacade;
-    private TaskSelectionManager mySelectionManager;
+    private final TaskSelectionManager mySelectionManager;
+    private final GanttTree2 myTree;
 
-    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+            UIFacade uiFacade, GanttTree2 tree) {
         super(name);
         myTaskManager = taskManager;
         mySelectionManager = selectionManager;
+        myUIFacade = uiFacade;
+        myTree = tree;
         selectionManager.addSelectionListener(this);
         selectionChanged(selectionManager.getSelectedTasks());
-        myUIFacade = uiFacade;
     }
 
     public void actionPerformed(ActionEvent e) {
         final List<Task> selection = new ArrayList<Task>(mySelection);
-        myUIFacade.getUndoManager().undoableEdit(getLocalizedName(), new Runnable() {
-            public void run() {
-                try {
-                    TaskActionBase.this.run(selection);
-                } catch (Exception e) {
-                    getUIFacade().showErrorDialog(e);
+        if(isEnabled() && askUserPermission(selection)) {
+            myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                public void run() {
+                    try {
+                        TaskActionBase.this.run(selection);
+                    } catch (Exception e) {
+                        getUIFacade().showErrorDialog(e);
+                    }
                 }
-            }
-        });
+            });
+        }
+    }
+
+    /**
+     * @param selection of tasks for which permission is required
+     * @return true if the operation is accepted by the user
+     */
+    protected boolean askUserPermission(List<Task> selection) {
+        // Accept operation by default
+        return true;
     }
 
     public void selectionChanged(List<Task> currentSelection) {
@@ -75,6 +90,19 @@ abstract class TaskActionBase extends GPAction implements Listener {
 
     protected UIFacade getUIFacade() {
         return myUIFacade;
+    }
+
+    protected GanttTree2 getTree() {
+        return myTree;
+    }
+
+    protected void forwardScheduling() throws TaskDependencyException {
+        // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if this indeed is the case
+//        // TODO Find out which chart is opened and only reset that one (maybe add a resetChart to UIFacade?)
+//        myUIFacade.getGanttChart().reset();
+//        myUIFacade.getResourceChart().reset();
+        myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        getUIFacade().getTaskTree().getTreeComponent().repaint();
     }
 
     protected abstract boolean isEnabled(List<Task> selection);

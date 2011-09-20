@@ -639,6 +639,18 @@ public class TaskManagerImpl implements TaskManager {
             return nestedTask.getSupertask();
         }
 
+        public Task getPreviousSibling(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Task getNextSibling(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getTaskIndex(Task nestedTask) {
+            throw new UnsupportedOperationException();
+        }
+
         public boolean areUnrelated(Task first, Task second) {
             myPathBuffer.clear();
             for (Task container = getContainer(first); container != null; container = getContainer(container)) {
@@ -659,6 +671,10 @@ public class TaskManagerImpl implements TaskManager {
 
         public void move(Task whatMove, Task whereMove) {
             whatMove.move(whereMove);
+        }
+
+        public void move(Task whatMove, Task whereMove, int index) {
+            throw new UnsupportedOperationException();
         }
 
         public int getDepth(Task task) {
@@ -806,10 +822,10 @@ public class TaskManagerImpl implements TaskManager {
             Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
             for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
                 CustomColumn nextColumn = it.next();
-                Object value = customValues.getValue(nextColumn.getName());
+                Object value = customValues.getValue(nextColumn);
                 if (value!=null) {
                     try {
-                        nextImported.getCustomValues().setValue(nextColumn.getName(), value);
+                        nextImported.getCustomValues().setValue(nextColumn, value);
                     } catch (CustomColumnsException e) {
                         if (!GPLogger.log(e)) {
                             e.printStackTrace(System.err);

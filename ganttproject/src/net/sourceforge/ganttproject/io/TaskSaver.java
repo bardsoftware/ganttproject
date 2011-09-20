@@ -120,10 +120,9 @@ class TaskSaver extends SaverBase {
         CustomColumnsValues ccv = task.getCustomValues();
         for (Iterator<CustomColumn> it = customColumns.getCustomColums().iterator(); it.hasNext();) {
             CustomColumn nextColumn = it.next();
-            final String name = nextColumn.getName();
             final String idc = nextColumn.getId();
-            if (ccv.hasOwnValue(name)) {
-                Object value = ccv.getValue(name);
+            if (ccv.hasOwnValue(nextColumn)) {
+                Object value = ccv.getValue(nextColumn);
                 if (GregorianCalendar.class.isAssignableFrom(nextColumn.getType()) && value!=null) {
                     value = DateParser.getIsoDate(((GanttCalendar)value).getTime());
                 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package org.ganttproject.impex.htmlpdf;
 
 import java.awt.image.RenderedImage;
@@ -92,7 +92,6 @@ public class ExporterToHTML extends ExporterBase {
                     ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
                     ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
                     resultFiles.add(ganttChartImageFile);
-                    monitor.worked(1);
                 } catch (IOException e) {
                     getUIFacade().showErrorDialog(e);
                     this.cancel();
@@ -121,7 +120,6 @@ public class ExporterToHTML extends ExporterBase {
                     File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
                     ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
                     resultFiles.add(resourceChartImageFile);
-                    monitor.worked(1);
                 } catch (IOException e) {
                     getUIFacade().showErrorDialog(e);
                     this.cancel();
@@ -174,7 +172,6 @@ public class ExporterToHTML extends ExporterBase {
                         serialize(handler, outputFile);
                         resultFiles.add(resourcesPageFile);
                     }
-                    monitor.worked(1);
                 } catch (SAXException e) {
                     getUIFacade().showErrorDialog(e);
                     this.cancel();
@@ -226,7 +223,6 @@ public class ExporterToHTML extends ExporterBase {
                             }
                         }
                     }
-                    monitor.worked(1);
                 } catch (IOException e) {
                     getUIFacade().showErrorDialog(e);
                     this.cancel();

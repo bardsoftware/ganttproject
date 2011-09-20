@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class GanttProjectImpl implements IGanttProject {
+    private static final GanttLanguage language = GanttLanguage.getInstance();
     private String myProjectName;
     private String myDescription;
     private String myOrganization;
@@ -105,8 +106,8 @@ public class GanttProjectImpl implements IGanttProject {
         return result;
     }
 
-    public GanttLanguage getI18n() {
-        return GanttLanguage.getInstance();
+    public GanttLanguage getLanguage() {
+        return language;
     }
 
     public UIConfiguration getUIConfiguration() {
@@ -190,7 +191,7 @@ public class GanttProjectImpl implements IGanttProject {
 
         private TaskManagerConfigImpl(HumanResourceManager resourceManager, GanttLanguage i18n) {
             myResourceManager = resourceManager;
-            myTimeUnitStack = new GPTimeUnitStack(i18n);
+            myTimeUnitStack = new GPTimeUnitStack();
             myCalendar = new WeekendCalendarImpl();
         }
 

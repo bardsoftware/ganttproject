@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
@@ -38,7 +37,7 @@ public class ImportFileWizardImpl extends WizardImpl {
     private static List<Importer> ourImporters;
 
     public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
-        super(uiFacade, ImportFileWizardImpl.i18n("importWizard.dialog.title"));
+        super(uiFacade, language.getText("importWizard.dialog.title"));
         myState = new State();
         if (ourImporters == null) {
             ourImporters = getImporters();
@@ -73,10 +72,6 @@ public class ImportFileWizardImpl extends WizardImpl {
         return myState.myImporter != null
             && myState.getUrl() != null
             && "file".equals(myState.getUrl().getProtocol());
-    }
-
-    private static String i18n(String key) {
-        return GanttLanguage.getInstance().getText(key);
     }
 
     static class State {

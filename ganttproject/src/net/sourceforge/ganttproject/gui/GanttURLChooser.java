@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL2
-Copyright (C) 2003-2011 Dmitry Barashev
+Copyright (C) 2003-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,7 +51,7 @@ class GanttURLChooser {
 
     private JPasswordField passwordField;
 
-    private final GanttLanguage language = GanttLanguage.getInstance();
+    private static final GanttLanguage language = GanttLanguage.getInstance();
 
     private final UIFacade myUiFacade;
 
@@ -102,7 +102,6 @@ class GanttURLChooser {
         panel.add(new JLabel(language.getText("webdav.lockResource.label")));
         lockCheckbox = new JCheckBox();
         lockCheckbox.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myLockTimeout.setEnabled(lockCheckbox.isSelected());
             }
@@ -123,7 +122,6 @@ class GanttURLChooser {
 
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         OkAction okAction = new OkAction() {
-            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myUrl = urlField.getText();
                 myUsername = userNameField.getText();
@@ -144,14 +142,8 @@ class GanttURLChooser {
                 }
             }
         };
-        CancelAction cancelAction = new CancelAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        };
-        myUiFacade.createDialog(panel, new Action[] {okAction, cancelAction},
-                GanttLanguage.getInstance().correctLabel(
-                        language.getText(isOpenUrl ? "openFromServer" : "saveToServer"))).show();
+        myUiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY },
+                language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     }
 
     UIFacade.Choice getChoice() {
