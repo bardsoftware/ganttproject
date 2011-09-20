@@ -108,7 +108,6 @@ public class ExporterToPDF extends ExporterBase {
                             "ganttchart", ".jpg");
                     ImageIO.write(ganttChartImage, JPG_FORMAT_NAME,
                             state.ganttChartImageFile);
-                    monitor.worked(1);
                 } catch (Exception e) {
                     cancel();
                     ExporterToPDF.this.getUIFacade().showErrorDialog(e);
@@ -141,7 +140,6 @@ public class ExporterToPDF extends ExporterBase {
                     state.resourceChartImageFile = outputFile;
                     ImageIO.write(resourceChartImage, JPG_FORMAT_NAME,
                             outputFile);
-                    monitor.worked(1);
                 } catch (Exception e) {
                     cancel();
                     ExporterToPDF.this.getUIFacade().showErrorDialog(e);
@@ -172,7 +170,6 @@ public class ExporterToPDF extends ExporterBase {
                     createOptions();
                     FopImageFactory.resetCache();
                     state.driver = driver;
-                    monitor.worked(1);
                 } catch (Exception e) {
                     cancel();
                     ExporterToPDF.this.getUIFacade().showErrorDialog(e);
@@ -220,7 +217,6 @@ public class ExporterToPDF extends ExporterBase {
                     return Status.CANCEL_STATUS;
                 }
                 finally {
-                    monitor.worked(1);
                     if (out!=null) {
                         try {
                             out.flush();
