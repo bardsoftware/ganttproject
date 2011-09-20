@@ -115,9 +115,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return myUiFacade.getResourceChart();
     }
 
-    /**
-     * Initialize the treetable. Addition of various listeners, tree's icons,
-     */
+    /** Initialize the treetable. Addition of various listeners, tree's icons. */
     @Override
     protected void doInit() {
         super.doInit();
@@ -259,85 +257,4 @@ public class ResourceTreeTable extends GPTreeTableBase {
         ResourceAssignment previousAssignment = ((AssignmentNode)sibling).getAssignment();
         selectedAssignment.getResource().swapAssignments(selectedAssignment, previousAssignment);
     }
-/*
-    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString) {
-        final ResourceColumn newColumn = new ResourceColumn(Integer.valueOf(id).intValue());
-        newColumn.setTitle(name);
-        final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        newColumn.setType(stubDefinition.getType());
-        newColumn.setDefaultVal(stubDefinition.getDefaultValue());
-        assert String.valueOf(newColumn.getIndex()).equals(id);
-        addCustomColumn(newColumn);
-        CustomPropertyDefinition result = myResourceManager.getCustomPropertyManager().getCustomPropertyDefinition(name);
-        assert result != null : "Where is custom property " + name + " I just've created?";
-        return result;
-    }
-
-    public List<CustomPropertyDefinition> getDefinitions() {
-        return myResourceManager.getDefinitions();
-    }
-
-    public void importData(CustomPropertyManager source) {
-        List<CustomPropertyDefinition> sourceDefs = source.getDefinitions();
-        for (int i=0; i<sourceDefs.size(); i++) {
-            CustomPropertyDefinition nextDefinition = sourceDefs.get(i);
-            createDefinition(nextDefinition.getID(),
-                             nextDefinition.getTypeAsString(),
-                             nextDefinition.getName(),
-                             nextDefinition.getDefaultValueAsString());
-        }
-    }
-*/
-/*
-    class TableHeaderImpl implements TableHeaderUIFacade {
-        public void add(String name, int order, int width) {
-            ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
-            for (int i =0; i < cols.size(); i++) {
-                ResourceColumn col = cols.get(i);
-                if (name.equals(col.getID()) && !col.isVisible()) {
-                    col.setWidth(width);
-                    col.setOrder(order);
-                    showColumn(col);
-                }
-            }
-        }
-
-        public void clear() {
-            deleteAllColumns();
-        }
-
-        public Column getField(int index) {
-            return myResourceTreeModel.getColumns().get(index);
-        }
-
-        public int getSize() {
-            return myResourceTreeModel.getColumns().size();
-        }
-
-        public void importData(TableHeaderUIFacade source) {
-            if (source.getSize() == 0) {
-              return;
-            }
-            ArrayList<ResourceColumn> cols = myResourceTreeModel.getColumns();
-            for (int i =0; i < cols.size(); i++) {
-                ResourceColumn col = cols.get(i);
-                hideColumn(col);
-            }
-            ArrayList<Column> sourceColumns = new ArrayList<Column>();
-            for (int i=0; i<source.getSize(); i++) {
-                Column nextField = source.getField(i);
-                sourceColumns.add(nextField);
-            }
-            Collections.sort(sourceColumns, new Comparator<Column>() {
-                public int compare(Column lhs, Column rhs) {
-                    return lhs.getOrder()-rhs.getOrder();
-                }
-            });
-            for (int i=0; i<sourceColumns.size(); i++) {
-                Column nextField = sourceColumns.get(i);
-                add(nextField.getID(), i, nextField.getWidth());
-            }
-        }
-    }
-*/
 }

@@ -334,8 +334,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 TaskRegularAreaChartItem taskArea,
                 GanttGraphicArea.MouseSupport mouseSupport);
 
-//        void beginMoveTaskInteraction(MouseEvent e, Task task);
-
         void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
 
         void beginScrollViewInteraction(MouseEvent e);
@@ -344,7 +342,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     private class NewChartComponentImpl extends AbstractChartImplementation implements ChartImplementation {
         public NewChartComponentImpl(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
             super(project, chartModel, chartComponent);
-            // TODO Auto-generated constructor stub
         }
 
         @Override

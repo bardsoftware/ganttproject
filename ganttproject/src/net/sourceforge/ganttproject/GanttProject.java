@@ -360,7 +360,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         toolBar.addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent arg0) {
-                setHiddens();
                 refresh();
             }
 
@@ -401,7 +400,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm();
+                quitApplication();
             }
 
             @Override
@@ -581,7 +580,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         getResourcePanel().area.repaint();
         getResourcePanel().refresh(language);
 
-        this.tree.changeLanguage(language);
         CustomColumnsStorage.changeLanguage(language);
 
         applyComponentOrientation(language.getComponentOrientation());
@@ -591,8 +589,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     public JMenu changeMenuLabel(JMenu menu, String label) {
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
-            menu.setText(label.substring(0, index).concat(
-                    label.substring(++index)));
+            menu.setText(label.substring(0, index).concat(label.substring(++index)));
             menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
         } else {
             menu.setText(label);
@@ -604,8 +601,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     public JMenuItem changeMenuLabel(JMenuItem menu, String label) {
         int index = label.indexOf('$');
         if (index != -1 && label.length() - index > 1) {
-            menu.setText(label.substring(0, index).concat(
-                    label.substring(++index)));
+            menu.setText(label.substring(0, index).concat(label.substring(++index)));
             menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
         } else {
             menu.setText(label);
@@ -613,7 +609,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return menu;
     }
 
-    /** Return the ToolTip in HTML (with gray bgcolor) */
+    /** @return the ToolTip in HTML (with gray bgcolor) */
     public static String getToolTip(String msg) {
         return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
     }
@@ -672,11 +668,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     private void aboutDialog() {
         AboutDialog agp = new AboutDialog(this);
         agp.setVisible(true);
-    }
-
-    /** Exit the Application */
-    private void exitForm() {
-        quitApplication();
     }
 
     /** A menu has been activate */
@@ -755,16 +746,15 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         getTree().getTaskPropertiesAction().actionPerformed(null);
     }
 
-    /** Refresh the informations of the project on the status bar. */
-    public void refreshProjectInfos() {
-        if (getTaskManager().getTaskCount() == 0 && resp.nbPeople() == 0)
+    /** Refresh the information of the project on the status bar. */
+    public void refreshProjectInformation() {
+        if (getTaskManager().getTaskCount() == 0 && resp.nbPeople() == 0) {
             getStatusBar().setSecondText("");
-        else
+        } else {
             getStatusBar().setSecondText(
-                    language.getCorrectedLabel("task") + " : "
-                            + getTaskManager().getTaskCount() + "  "
-                            + language.getCorrectedLabel("resources") + " : "
-                            + resp.nbPeople());
+                    language.getCorrectedLabel("task") + " : " + getTaskManager().getTaskCount() + "  "
+                            + language.getCorrectedLabel("resources") + " : " + resp.nbPeople());
+        }
     }
 
     /** Print the project */
@@ -886,16 +876,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             }
         }
         return success;
-    }
-
-    private void openStartupDocument(Document document) {
-        try {
-            getProjectUIFacade().openProject(document, getProject());
-        } catch (DocumentException e) {
-            getUIFacade().showErrorDialog(e);
-        } catch (IOException e) {
-            getUIFacade().showErrorDialog(e);
-        }
     }
 
     /** Save the project as (with a dialog file chooser) */
@@ -1112,8 +1092,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
 
-    // private GPCalendar myFakeCalendar = new AlwaysWorkingTimeCalendarImpl();
-
     private ParserFactory myParserFactory;
 
     private HumanResourceManager myHumanResourceManager;
@@ -1263,12 +1241,12 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             }
             getUIFacade().setStatusText(description);
             setAskForSave(true);
-            refreshProjectInfos();
+            refreshProjectInformation();
         }
     }
 
     public void resourcesRemoved(ResourceEvent event) {
-        refreshProjectInfos();
+        refreshProjectInformation();
         setAskForSave(true);
     }
 
@@ -1292,7 +1270,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
     }
 
     public int getGanttDividerLocation() {
-        // return mySplitPane.getDividerLocation();
         return myGanttChartTabContent.getDividerLocation();
     }
 
@@ -1302,7 +1279,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     public int getResourceDividerLocation() {
         return myResourceChartTabContent.getDividerLocation();
-        // return getResourcePanel().getDividerLocation();
     }
 
     public void setResourceDividerLocation(int location) {
@@ -1379,8 +1355,5 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             myDelayManager.fireDelayObservation();
         }
         super.repaint();
-    }
-
-    public void setHiddens() {
     }
 }
