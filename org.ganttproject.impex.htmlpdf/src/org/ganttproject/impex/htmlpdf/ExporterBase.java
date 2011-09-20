@@ -162,6 +162,7 @@ abstract class ExporterBase extends AbstractExporter {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
+                    monitor.subTask(jobs[i].getName());
                     jobs[i].setProgressGroup(monitor, 1);
                     jobs[i].schedule();
                     try {
@@ -176,6 +177,13 @@ abstract class ExporterBase extends AbstractExporter {
                     if(state.isOK() == false) {
                         getUIFacade().showErrorDialog(state.getException());
                         monitor.setCanceled(true);
+                    } else {
+                        // Sub task for export is finished without problems
+                        // So, updated the total amount of work with the current work performed
+                        monitor.worked(1);
+                        // and remove the sub task description
+                        // (convenient for debugging to know the sub task is finished properly)
+                        monitor.subTask(null);
                     }
                 }
                 Job finishing = new Job("finishing") {
@@ -192,7 +200,9 @@ abstract class ExporterBase extends AbstractExporter {
                     finishing.join();
                 } catch (InterruptedException e) {
                     getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 }
+                monitor.done();
                 return Status.OK_STATUS;
             }
         };
