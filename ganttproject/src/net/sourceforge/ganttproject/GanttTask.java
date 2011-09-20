@@ -56,11 +56,6 @@ public class GanttTask extends TaskImpl implements Serializable {
         enableEvents(true);
     }
 
-    /** @return a clone of the Task */
-    public GanttTask Clone() {
-        return new GanttTask(this);
-    }
-
     /** @deprecated Use TimeUnit class instead and method getDuration() */
     @Deprecated
     public int getLength() {
@@ -77,13 +72,5 @@ public class GanttTask extends TaskImpl implements Serializable {
         TaskMutator mutator = createMutator();
         mutator.setDuration(getManager().createLength(getDuration().getTimeUnit(), l));
         mutator.commit();
-    }
-
-    /**
-     * Sets the task ID. The uniqueness of ID needs to be checked before using
-     * this method
-     */
-    public void setTaskID(int taskID) {
-        setTaskIDHack(taskID);
     }
 }

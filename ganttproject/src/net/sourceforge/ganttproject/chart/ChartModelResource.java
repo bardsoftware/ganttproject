@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -165,11 +164,7 @@ public class ChartModelResource extends ChartModelBase {
         return result;
     }
 
-    public Rectangle getBoundingRectangle(Task task) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+    @Override
     public void setVisibleTasks(List<Task> visibleTasks) {
         // TODO Auto-generated method stub
     }

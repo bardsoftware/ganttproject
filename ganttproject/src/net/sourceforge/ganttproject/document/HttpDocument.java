@@ -142,19 +142,16 @@ public class HttpDocument extends AbstractURLDocument {
             parentURL.setPath(currentHierPath);
             WebdavResource parentRes = new WebdavResource(parentURL);
             if (!parentRes.isCollection()) {
-                return new Status(
-                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
-                    parentRes.getPath(),  null);
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY
+                        .ordinal(), parentRes.getPath(), null);
             }
             return Status.OK_STATUS;
         } catch (HttpException e) {
-            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-                    (e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
-                            : e.getReason()), e);
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), (e
+                    .getReason() == null ? "Code: " + getHTTPError(e.getReasonCode()) : e.getReason()), e);
         } catch (Exception e) {
-            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e
+                    .getMessage(), e);
         }
     }
 
