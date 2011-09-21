@@ -1,27 +1,25 @@
-/***************************************************************************
-PertChartAbstraction.java - description
-Copyright [2005 - ADAE]
-This file is part of GanttProject].
-***************************************************************************/
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
 
-/***************************************************************************
- * GanttProject is free software; you can redistribute it and/or modify    *
- * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
- * (at your option) any later version.                                     *
- *                                                                         *
- * GanttProject is distributed in the hope that it will be useful,         *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- * GNU General Public License for more details.                            *
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-***************************************************************************/
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package org.ganttproject.chart.pert;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -39,17 +37,10 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
  */
 public class PertChartAbstraction {
 
-    private TaskManager myTaskManager;
+    private final TaskManager myTaskManager;
 
-    private List<TaskGraphNode> myTaskGraph;
+    private final List<TaskGraphNode> myTaskGraph;
 
-    /**
-     * Creates a PertChartAbstraction, then load the data with data found in
-     * <code>taskManager</code>.
-     *
-     * @param taskManager
-     *            The task manager containing all data to build PERT chart.
-     */
     public PertChartAbstraction(TaskManager taskManager) {
         myTaskManager = taskManager;
         myTaskGraph = new ArrayList<TaskGraphNode>();
@@ -96,40 +87,29 @@ public class PertChartAbstraction {
         return res;
     }
 
-    /**
-     * @return The list of <code>TaskGraphNodes</code>.
-     */
+    /** @return The list of <code>TaskGraphNodes</code>. */
     public List<TaskGraphNode> getTaskGraphNodes() {
         return myTaskGraph;
     }
 
     /**
-     * Returns the <code>TaskGraphNode</code> corresponding to the given task
-     * ID.
-     *
-     * @param id
-     *            The task ID from which we want the <code>TaskGraphNode</code>
+     * @param id The task ID from which we want the <code>TaskGraphNode</code>
      * @return The <code>TaskGraphNode</code> corresponding to the given task
      *         ID.
      */
     public TaskGraphNode getTaskGraphNodeByID(int id) {
-        TaskGraphNode res = null;
-        Iterator<TaskGraphNode> it = myTaskGraph.iterator();
-        while (it.hasNext()) {
-            TaskGraphNode tgn = it.next();
+        for (TaskGraphNode tgn : myTaskGraph) {
             if (tgn.getID() == id) {
-                res = tgn;
-                break;
+                return tgn;
             }
         }
-        return res;
+        return null;
     }
 
     /**
      * PERT graph node abstraction
      *
      * @author bbaranne
-     *
      */
     static class TaskGraphNode {
 
