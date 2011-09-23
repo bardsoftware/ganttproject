@@ -84,6 +84,7 @@
       <calendar resource-url="calendar/i18n_pt_brazil.calendar"/>
       <calendar resource-url="calendar/i18n_pt_portugal.calendar"/>
       <calendar resource-url="calendar/i18n_en_canada.calendar"/>
+      <calendar resource-url="calendar/i18n_cn.calendar"/>
       <calendar resource-url="calendar/i18n_es_colombia.calendar"/>
       <calendar resource-url="calendar/i18n_de.calendar"/>
       <calendar resource-url="calendar/i18n_en_england.calendar"/>
