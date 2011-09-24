@@ -86,7 +86,7 @@ public interface UIFacade {
 
     NotificationManager getNotificationManager();
 
-    void logErrorMessage(Throwable e);
+    //void logErrorMessage(Throwable e);
 
     GanttChart getGanttChart();
 

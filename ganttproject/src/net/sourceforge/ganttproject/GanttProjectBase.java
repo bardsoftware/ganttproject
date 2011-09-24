@@ -247,10 +247,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.showErrorDialog(e);
     }
 
-    public void logErrorMessage(Throwable e) {
-        myUIFacade.logErrorMessage(e);
-    }
-
     public NotificationManager getNotificationManager() {
         return myUIFacade.getNotificationManager();
     }

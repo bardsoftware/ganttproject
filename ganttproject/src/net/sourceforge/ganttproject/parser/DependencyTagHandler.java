@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -88,7 +89,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
                     dep.setHardness(ds.myHardness);
                 }
             } catch (TaskDependencyException e) {
-                myUIFacade.logErrorMessage(e);
+                GPLogger.log(e);
             }
         }
     }
