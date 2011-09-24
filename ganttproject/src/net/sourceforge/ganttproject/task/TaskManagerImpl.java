@@ -799,7 +799,7 @@ public class TaskManagerImpl implements TaskManager {
         Task[] nested = importRoot.getManager().getTaskHierarchy()
                 .getNestedTasks(importRoot);
         for (int i = nested.length - 1; i >= 0; i--) {
-            Task nextImported = createTask(nested[i].getTaskID());
+            Task nextImported = getTask(nested[i].getTaskID()) == null ? createTask(nested[i].getTaskID()) : createTask();
             registerTask(nextImported);
             nextImported.setName(nested[i].getName());
             nextImported.setStart(nested[i].getStart().clone());
