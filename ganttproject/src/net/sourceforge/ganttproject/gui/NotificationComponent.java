@@ -21,6 +21,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class NotificationComponent implements NotificationChannel.Listener {
     private final JPanel myComponent;
@@ -74,7 +75,7 @@ class NotificationComponent implements NotificationChannel.Listener {
 
     void addNotification(String title, String body, HyperlinkListener hyperlinkListener, NotificationChannel channel) {
         JComponent htmlPane = createHtmlPane(
-            MessageFormat.format("<html><body><b>{0}</b><br><p>{1}</p>", title, body), hyperlinkListener);
+            GanttLanguage.getInstance().formatText("error.channel.text", title, body), hyperlinkListener);
         UIUtil.setBackgroundTree(htmlPane, channel.getColor());
         htmlPane.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(channel.getColor().darker()),

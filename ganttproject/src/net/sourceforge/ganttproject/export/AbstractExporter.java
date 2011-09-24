@@ -22,6 +22,7 @@ import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -96,7 +97,7 @@ public abstract class AbstractExporter implements Exporter {
                     result.setStartDate(DateParser.parse(rangeBounds[0]));
                     result.setEndDate(DateParser.parse(rangeBounds[1]));
                 } catch (InvalidDateException e) {
-                    myUIFacade.logErrorMessage(e);
+                    GPLogger.log(e);
                 }
                 result.setWidth(-1);
             }

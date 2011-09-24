@@ -843,8 +843,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
         boolean locked = document.acquireLock();
         if (!locked) {
-            getUIFacade().logErrorMessage(
-                    new Exception(language.getText("msg13")));
+            GPLogger.log(new Exception(language.getText("msg13")));
         }
         document.read();
         myMRU.add(document);
