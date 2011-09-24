@@ -73,6 +73,7 @@ import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -330,10 +331,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
 
     protected void onViewLog() {
-        JTextArea textArea = new JTextArea(GPLogger.readLog(), 20, 80);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        Dialog dlg = createDialog(scrollPane, new Action[] {CancelAction.CLOSE}, "");
-        dlg.show();
+        ViewLogDialog.show(this);
     }
 
     private static String i18n(String key) {
