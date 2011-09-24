@@ -24,8 +24,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -67,19 +65,18 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
-import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
+import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.edit.EditMenu;
+import net.sourceforge.ganttproject.action.help.HelpMenu;
+import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
-import net.sourceforge.ganttproject.action.edit.EditMenu;
-import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -99,7 +96,6 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.about.AboutDialog;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
@@ -127,10 +123,13 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPerc
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+
 /**
  * Main frame of the project
  */
-public class GanttProject extends GanttProjectBase implements ActionListener, ResourceView, GanttLanguage.Listener {
+public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
     /** The current version of ganttproject */
     public static final String version = GPVersion.V2_0_X;
@@ -150,9 +149,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     /** List containing the Most Recent Used documents */
     private final DocumentsMRU myMRU = new DocumentsMRU(5);
-
-    /** Menuitem */
-    private final JMenuItem miPrjCal, miWebPage, miAbout;
 
     /** Toolbar button */
     private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
@@ -203,7 +199,7 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
 
     private RowHeightAligner myRowHeightAligner;
 
-    public GanttProject(boolean isOnlyViewer, boolean isApplet) {
+    public GanttProject(boolean isOnlyViewer) {
         System.err.println("Creating main frame...");
         ToolTipManager.sharedInstance().setInitialDelay(200);
         ToolTipManager.sharedInstance().setDismissDelay(60000);
@@ -314,14 +310,14 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         GanttLanguageMenu.addListener(viewMenu, "view");
         bar.add(viewMenu);
 
-        JMenu mTask = createNewMenu("task");
+        JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
         mTask.add(getTree().getTaskNewAction());
         mTask.add(getTree().getTaskPropertiesAction());
         mTask.add(getTree().getTaskDeleteAction());
         getResourcePanel().setTaskPropertiesAction(getTree().getTaskPropertiesAction());
         bar.add(mTask);
 
-        JMenu mHuman = createNewMenu("human");
+        JMenu mHuman = new JMenu(GPAction.createVoidAction("human"));
         for (AbstractAction a : myResourceActions.getActions()) {
             mHuman.add(a);
         }
@@ -329,17 +325,8 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         mHuman.add(myResourceActions.getResourceImportAction());
         bar.add(mHuman);
 
-        JMenu mCalendar = createNewMenu("calendars");
-        miPrjCal = createNewMenuItem("projectCalendar", "/icons/default_calendar_16.gif");
-        mCalendar.add(miPrjCal);
-        miWebPage = createNewMenuItem("webPage", "/icons/home_16.gif");
-
-        JMenu mHelp = createNewMenu("help");
-        mHelp.add(miWebPage);
-        miAbout = createNewMenuItem("about", "/icons/manual_16.gif");
-        mHelp.add(miAbout);
-        bar.add(mHelp);
-
+        HelpMenu helpMenu = new HelpMenu(this);
+        bar.add(helpMenu.createMenu());
 
         System.err.println("4. creating views...");
         myGanttChartTabContent = new GanttChartTabContentPanel(
@@ -518,10 +505,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return myStopEditingMouseListener;
     }
 
-    public GanttProject(boolean isOnlyViewer) {
-        this(isOnlyViewer, false);
-    }
-
     public String getXslDir() {
         return options.getXslDir();
     }
@@ -541,40 +524,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         myUIConfiguration = options.getUIConfiguration();
         GanttGraphicArea.taskDefaultColor = new Color(140, 182, 206);
         area.repaint();
-    }
-
-    /**
-     * Create a menu with a label (which is kept up to date with language
-     * changes)
-     */
-    public JMenu createNewMenu(String key) {
-        JMenu item = new JMenu();
-        item.addActionListener(this);
-        GanttLanguageMenu.addListener(item, key);
-
-        return item;
-    }
-
-    /**
-     * Create a menu with a label (which is kept up to date with language
-     * changes) and an icon
-     */
-    public JMenu createNewMenu(String key, String icon) {
-        JMenu item = createNewMenu(key);
-        item.setIcon(new ImageIcon(getClass().getResource(icon)));
-        return item;
-    }
-
-    /**
-     * Create a menu item with a label (which is kept up to date with language
-     * changes) and an icon.
-     */
-    public JMenuItem createNewMenuItem(String key, String icon) {
-        JMenuItem item = new JMenuItem(new ImageIcon(getClass().getResource(icon)));
-        item.addActionListener(this);
-        GanttLanguageMenu.addListener(item, key);
-
-        return item;
     }
 
     // TODO Move language updating methods which do not belong to GanttProject to their own class with their own listener
@@ -679,28 +628,10 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
         return myPreviousStates;
     }
 
-    private void aboutDialog() {
-        AboutDialog agp = new AboutDialog(this);
-        agp.setVisible(true);
-    }
 
     /** Exit the Application */
     private void exitForm() {
         quitApplication();
-    }
-
-    /** A menu has been activate */
-    public void actionPerformed(ActionEvent evt) {
-        Object source = evt.getSource();
-        if (source instanceof JMenuItem) {
-            if (source == miPrjCal) {
-                System.out.println("Project calendar");
-            } else if (source == miWebPage) {
-                    openWebPage();
-            } else if (source == miAbout) {
-                aboutDialog();
-            }
-        }
     }
 
     /** Create a new task */
@@ -909,16 +840,6 @@ public class GanttProject extends GanttProjectBase implements ActionListener, Re
             }
         }
         return success;
-    }
-
-    private void openStartupDocument(Document document) {
-        try {
-            getProjectUIFacade().openProject(document, getProject());
-        } catch (DocumentException e) {
-            getUIFacade().showErrorDialog(e);
-        } catch (IOException e) {
-            getUIFacade().showErrorDialog(e);
-        }
     }
 
     /** Save the project as (with a dialog file chooser) */

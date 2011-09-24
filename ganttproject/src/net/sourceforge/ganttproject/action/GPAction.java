@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -222,5 +223,13 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             }
             return null;
         }
+    }
+
+    public static GPAction createVoidAction(String key) {
+        return new GPAction(key) {
+            public void actionPerformed(ActionEvent e) {
+                // No action
+            }
+        };
     }
 }
