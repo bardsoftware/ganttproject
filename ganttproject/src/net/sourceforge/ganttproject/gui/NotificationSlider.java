@@ -6,14 +6,20 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
 import javax.swing.JWindow;
-import javax.swing.Timer;
 
+import org.pushingpixels.trident.Timeline;
+import org.pushingpixels.trident.Timeline.TimelineState;
+import org.pushingpixels.trident.callback.TimelineCallback;
+
+/**
+ * Controls sliding animation of the notifier component.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class NotificationSlider {
 
     public static interface AnimationView {
@@ -21,21 +27,17 @@ public class NotificationSlider {
 
         void setImage(BufferedImage image);
 
-        void update(int height);
+        void setHeight(int height);
 
         void setComponent(JComponent component, Runnable onHide);
 
         void close();
     }
 
-    protected static final int ANIMATION_TIME = 500;
-    protected static final float ANIMATION_TIME_F = (float) ANIMATION_TIME;
-    protected static final int ANIMATION_DELAY = 50;
+    private static final int ANIMATION_TIME_MS = 1000;
 
-    JComponent contents;
-    Timer animationTimer;
-    long animationStart;
-    private AnimationView myHost;
+    private JComponent contents;
+    private final AnimationView myHost;
     private BufferedImage myOffscreenImage;
     private Runnable myOnHide;
 
@@ -56,26 +58,19 @@ public class NotificationSlider {
     }
 
     public void show() {
-        ActionListener animationLogic = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                long elapsed = System.currentTimeMillis() - animationStart;
-                if (elapsed > ANIMATION_TIME) {
+        Timeline timeline = new Timeline(myHost);
+        timeline.addPropertyToInterpolate("height", 0, myOffscreenImage.getHeight());
+        timeline.setDuration(ANIMATION_TIME_MS);
+        timeline.addCallback(new TimelineCallback() {
+            public void onTimelinePulse(float arg0, float arg1) {
+            }
+            public void onTimelineStateChanged(TimelineState from, TimelineState to, float arg2, float arg3) {
+                if (TimelineState.DONE == to) {
                     myHost.setComponent(contents, myOnHide);
-                    animationTimer.stop();
-                    animationTimer = null;
-                } else {
-                    // calculate % done
-                    float progress = (float) elapsed / ANIMATION_TIME_F;
-                    // get height to show
-                    int animatingHeight = (int) (progress * myOffscreenImage.getHeight());
-                    animatingHeight = Math.max(animatingHeight, 1);
-                    myHost.update(animatingHeight);
                 }
             }
-        };
-        animationTimer = new Timer(ANIMATION_DELAY, animationLogic);
-        animationStart = System.currentTimeMillis();
-        animationTimer.start();
+        });
+        timeline.play();
     }
 
     public void hide() {

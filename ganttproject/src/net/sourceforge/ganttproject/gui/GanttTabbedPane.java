@@ -60,7 +60,7 @@ public class GanttTabbedPane extends JTabbedPane {
 
     private AnimationHostImpl myAnimationHost;
 
-    private class AnimationHostImpl implements AnimationView {
+    public class AnimationHostImpl implements AnimationView {
         Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
         private BufferedImage myImage;
         private JPopupMenu popup;
@@ -75,7 +75,7 @@ public class GanttTabbedPane extends JTabbedPane {
         }
 
         @Override
-        public void update(int height) {
+        public void setHeight(int height) {
             GanttTabbedPane.this.repaint(new Rectangle(0, getHeight() - height, myImage.getWidth(), height));
         }
 
