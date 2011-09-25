@@ -29,7 +29,6 @@ import net.sourceforge.ganttproject.time.TimeUnitText;
  * @author dbarashev (Dmitry Barashev)
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
-    private final GraphicPrimitiveContainer myPrimitiveContainer;
     private GraphicPrimitiveContainer myTimelineContainer;
 
     public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
@@ -41,13 +40,12 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             GraphicPrimitiveContainer timelineContainer,
             GraphicPrimitiveContainer primitiveContainer) {
         super(model);
-        myPrimitiveContainer = primitiveContainer;
         myTimelineContainer = timelineContainer;
     }
 
     @Override
     public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myPrimitiveContainer;
+        return myTimelineContainer;
     }
 
     @Override

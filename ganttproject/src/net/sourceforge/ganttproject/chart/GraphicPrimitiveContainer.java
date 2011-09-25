@@ -332,6 +332,9 @@ public class GraphicPrimitiveContainer {
         myLines.clear();
         myTexts.clear();
         myModelObject2primitive.clear();
+        for (GraphicPrimitiveContainer layer : getLayers()) {
+            layer.clear();
+        }
     }
 
     public void bind(GraphicPrimitive primitive, Object modelObject) {

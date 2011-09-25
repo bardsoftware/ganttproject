@@ -43,6 +43,7 @@ public class ChartDayGridRenderer extends ChartRendererBase {
 
     public ChartDayGridRenderer(ChartModel model, final UIConfiguration projectConfig,
             GraphicPrimitiveContainer timelineContainer) {
+        super(model);
         myRedlineOption = projectConfig.getRedlineOption();
         myProjectDatesOption= projectConfig.getProjectBoundariesOption();
         myOptions = new ChartOptionGroup(

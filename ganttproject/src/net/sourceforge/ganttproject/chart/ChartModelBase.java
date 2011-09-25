@@ -189,6 +189,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myBackgroundRenderer = new BackgroundRendererImpl(this);
         addRenderer(myBackgroundRenderer);
         addRenderer(myChartHeader);
+        addRenderer(myChartGrid);
     }
 
     private List<Offset> myTopUnitOffsets = new ArrayList<Offset>();

@@ -23,22 +23,19 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
 
     private GraphicPrimitiveContainer myPrimitiveContainer;
     private GraphicPrimitiveContainer myTimelineContainer;
+    private GraphicPrimitiveContainer myBackgroundContainer;
 
     ChartHeaderImpl(ChartModelBase model) {
         super(model);
-        myPrimitiveContainer = new GraphicPrimitiveContainer();
-    }
-
-    @Override
-    public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myPrimitiveContainer;
-    }
-
-    public void beforeProcessingTimeFrames() {
-        myPrimitiveContainer = new GraphicPrimitiveContainer(0, 0);
+        myPrimitiveContainer = getPrimitiveContainer();
+        myBackgroundContainer = myPrimitiveContainer.newLayer();
         myPrimitiveContainer.newLayer();
         myPrimitiveContainer.newLayer();
         myTimelineContainer = myPrimitiveContainer.newLayer();
+    }
+
+    public void beforeProcessingTimeFrames() {
+        myPrimitiveContainer.clear();
         createGreyRectangleWithNiceBorders();
     }
 
@@ -52,7 +49,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
                 .getSpanningHeaderHeight();
         final int headerHeight =  getChartModel().getChartUIConfiguration().getHeaderHeight();
-        GraphicPrimitiveContainer container = getPrimitiveContainer().getLayer(0);
+        GraphicPrimitiveContainer container = myTimelineContainer;
         GraphicPrimitiveContainer.Rectangle headerRectangle = container
                 .createRectangle(0, 0, sizex, headerHeight);
         headerRectangle.setBackgroundColor(getChartModel()
@@ -116,7 +113,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
      */
     private void renderBottomUnits() {
         BottomUnitLineRendererImpl bottomUnitLineRenderer =
-            new BottomUnitLineRendererImpl(getChartModel(), getPrimitiveContainer().getLayer(1), getPrimitiveContainer());
+            new BottomUnitLineRendererImpl(getChartModel(), myTimelineContainer, getPrimitiveContainer());
         bottomUnitLineRenderer.setHeight(getHeight());
         bottomUnitLineRenderer.render();
    }
