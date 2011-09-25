@@ -44,14 +44,18 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class DateIntervalListEditor extends JPanel{
     public static class DateInterval {
         public final Date start;
-        public final Date end;
+        private final Date myVisibleEnd;
+        private final Date myModelEnd;
+
         public DateInterval(Date start, Date end) {
             this.start = start;
-            this.end = end;
+            myVisibleEnd = end;
+            myModelEnd = GPTimeUnitStack.DAY.adjustRight(end);
         }
         @Override
         public boolean equals(Object obj) {
@@ -59,11 +63,17 @@ public class DateIntervalListEditor extends JPanel{
                 return false;
             }
             DateInterval rvalue = (DateInterval) obj;
-            return this.start.equals(rvalue.start) && this.end.equals(rvalue.end);
+            return this.start.equals(rvalue.start) && this.getEnd().equals(rvalue.getEnd());
         }
         @Override
         public int hashCode() {
             return this.start.hashCode();
+        }
+        public Date getVisibleEnd() {
+            return myVisibleEnd;
+        }
+        public Date getEnd() {
+            return myModelEnd;
         }
 
     }
@@ -104,9 +114,9 @@ public class DateIntervalListEditor extends JPanel{
         public Object getElementAt(int index) {
             DateInterval interval = myIntervalsModel.getIntervals()[index];
             StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));
-            if (!interval.end.equals(interval.start)) {
+            if (!interval.getEnd().equals(interval.start)) {
                 result.append("...");
-                result.append(GanttLanguage.getInstance().getDateFormat().format(interval.end));
+                result.append(GanttLanguage.getInstance().getDateFormat().format(interval.getVisibleEnd()));
             }
             return result.toString();
         }
@@ -126,25 +136,19 @@ public class DateIntervalListEditor extends JPanel{
             @Override
             public void setValue(Date value) {
                 super.setValue(value);
-                commit();
                 if (intervalsModel.getMaxIntervalLength()==1) {
                     DateIntervalListEditor.this.myFinish.setValue(value);
                 }
                 DateIntervalListEditor.this.updateActions();
-                lock();
             }
         };
         myFinish = new DefaultDateOption("generic.endDate") {
             @Override
             public void setValue(Date value) {
                 super.setValue(value);
-                commit();
                 DateIntervalListEditor.this.updateActions();
-                lock();
             }
         };
-        myStart.lock();
-        myFinish.lock();
         myAddAction = new GPAction("add") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -185,6 +189,7 @@ public class DateIntervalListEditor extends JPanel{
         list.setBorder(BorderFactory.createLoweredBevelBorder());
         myListSelectionModel = list.getSelectionModel();
         myListSelectionModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 updateActions();
             }

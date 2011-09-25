@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -58,6 +59,8 @@ public abstract class WizardImpl {
     private final UIFacade myUIFacade;
 
     private final String myTitle;
+
+    private Dialog myDialog;
 
     public WizardImpl(UIFacade uiFacade, String title) {
         // super(frame, title, true);
@@ -125,8 +128,9 @@ public abstract class WizardImpl {
         myCardLayout.first(myPagesContainer);
         myPagesContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         adjustButtonState();
-        myUIFacade.createDialog(myPagesContainer,
-                new Action[] { myBackAction, myNextAction, myOkAction, myCancelAction }, myTitle).show();
+        myDialog = myUIFacade.createDialog(myPagesContainer,
+                new Action[] { myBackAction, myNextAction, myOkAction, myCancelAction }, myTitle);
+        myDialog.show();
     }
 
     public void adjustButtonState() {
@@ -157,5 +161,9 @@ public abstract class WizardImpl {
 
     public UIFacade getUIFacade() {
         return myUIFacade;
+    }
+
+    public Dialog getDialog() {
+        return myDialog;
     }
 }

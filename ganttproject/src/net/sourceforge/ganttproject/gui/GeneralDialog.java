@@ -60,7 +60,7 @@ public abstract class GeneralDialog extends JDialog implements ActionListener,
     /** Language of the application. */
     protected static final GanttLanguage language = GanttLanguage.getInstance();
 
-    protected final GanttProject appli;
+    private final GanttProject appli;
 
     /** The tree to set the menus. */
     protected final JTree treeSections;

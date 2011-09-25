@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.project;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 
 /**
  * Collection of actions present in the project menu
@@ -46,7 +47,7 @@ public class ProjectMenu extends JMenu {
         ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
         ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project, project
                 .getGanttOptions());
-        
+
         add(projectSettingsAction);
         add(myNewProjectAction);
         add(openProjectAction);
@@ -61,7 +62,7 @@ public class ProjectMenu extends JMenu {
         add(projectExportAction);
         addSeparator();
 
-        JMenu mServer = project.createNewMenu("webServer", "/icons/server_16.gif");
+        JMenu mServer = new JMenu(GPAction.createVoidAction("webServer"));
         mServer.add(openURLAction);
         mServer.add(saveURLAction);
         add(mServer);
