@@ -113,7 +113,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myTabPane = new GanttTabbedPane();
         myViewManager = new ViewManagerImpl(myTabPane);
         addProjectEventListener(myViewManager.getProjectEventListener());
-        myTimeUnitStack = new GPTimeUnitStack(language);
+        myTimeUnitStack = new GPTimeUnitStack();
         NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
@@ -245,10 +245,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     public void showErrorDialog(Throwable e) {
         myUIFacade.showErrorDialog(e);
-    }
-
-    public void logErrorMessage(Throwable e) {
-        myUIFacade.logErrorMessage(e);
     }
 
     public NotificationManager getNotificationManager() {

@@ -29,6 +29,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -44,10 +45,15 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -67,6 +73,7 @@ import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
@@ -186,6 +193,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 DialogAligner.center(dlg, myMainFrame);
                 dlg.setVisible(true);
             }
+            @Override
+            public void layout() {
+                dlg.pack();
+            }
+
         };
         dlg.setTitle(title);
         final Commiter commiter = new Commiter();
@@ -257,18 +269,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myStatusBar.setFirstText(text, 2000);
     }
 
-    public void showErrorDialog(String errorMessage) {
-        if (myMainFrame.isVisible()) {
-            showOptionDialog(JOptionPane.ERROR_MESSAGE, errorMessage, new Action[] {new OkAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                }
-            }});
-        } else {
-            System.err.println("[GanttProjectBase] showErrorDialog:\n "+errorMessage);
-        }
-    }
-
     public void showOptionDialog(int messageType, String message, Action[] actions) {
         JOptionPane optionPane = new JOptionPane(message, messageType);
         Object[] options = new Object[actions.length];
@@ -294,23 +294,44 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
-    /** Show and log the exception */
-    public void showErrorDialog(Throwable e) {
-        // TODO Improve the user friendliness of the dialog! (See issue 165)
-        showErrorDialog(getExceptionReport(e));
-        GPLogger.log(e);
-    }
-
     public NotificationManager getNotificationManager() {
         return myNotificationManager;
     }
 
-    public void logErrorMessage(Throwable e) {
+    /** Show and log the exception */
+    public void showErrorDialog(Throwable e) {
+        GPLogger.logToLogger(e);
+        showErrorNotification(e.getMessage());
+    }
+
+    public void showErrorDialog(String errorMessage) {
+        GPLogger.log(errorMessage);
+        showErrorNotification(errorMessage);
+    }
+
+    private void showErrorNotification(String message) {
         getNotificationManager().addNotification(
             NotificationChannel.ERROR,
             new NotificationItem(
-                i18n("error.channel.itemTitle"), e.getMessage(), NotificationManager.DEFAULT_HYPERLINK_LISTENER));
-        e.printStackTrace();
+                i18n("error.channel.itemTitle"),
+                GanttLanguage.getInstance().formatText("error.channel.itemBody", message),
+                new HyperlinkListener() {
+                    @Override
+                    public void hyperlinkUpdate(HyperlinkEvent e) {
+                        if (e.getEventType() != EventType.ACTIVATED) {
+                            return;
+                        }
+                        if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
+                            onViewLog();
+                        } else {
+                            NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+                        }
+                    }
+                }));
+    }
+
+    protected void onViewLog() {
+        ViewLogDialog.show(this);
     }
 
     private static String i18n(String key) {

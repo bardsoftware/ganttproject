@@ -26,11 +26,11 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SpringLayout;
 
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -68,7 +68,8 @@ public class GPOptionChoicePanel {
     public JComponent getComponent(Action[] choiceChangeActions, JComponent[] choiceComponents, int selectedGroupIndex) {
         myButtons = new AbstractButton[choiceChangeActions.length];
         myOptionComponents = new JComponent[choiceChangeActions.length];
-        Box result = Box.createVerticalBox();
+        //Box result = Box.createVerticalBox();
+        JPanel panelContainer = new JPanel(new SpringLayout());
         myExporterToggles = new ButtonGroup();
         for (int i = 0; i < choiceChangeActions.length; i++) {
             final int selectedIndex = i;
@@ -92,12 +93,16 @@ public class GPOptionChoicePanel {
                     0, 30, 20, 0));
             nextExporterPanel.add(nextOptionComponent, BorderLayout.CENTER);
             setEnabledTree(nextOptionComponent, false);
-            result.add(nextExporterPanel);
+            panelContainer.add(nextExporterPanel);
 //            if (i == 0) {
 //                nextButton.setSelected(true);
 //            }
         }
+        SpringUtilities.makeCompactGrid(panelContainer, myOptionComponents.length, 1, 0, 0, 5, 5);
         setSelected(selectedGroupIndex);
+
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(panelContainer, BorderLayout.NORTH);
         return result;
 
     }
@@ -119,6 +124,7 @@ public class GPOptionChoicePanel {
     }
 
     private void setEnabledTree(JComponent root, boolean isEnabled) {
-        UIUtil.setEnabledTree(root, isEnabled);
+    	UIUtil.setEnabledTree(root, isEnabled);
     }
+
 }

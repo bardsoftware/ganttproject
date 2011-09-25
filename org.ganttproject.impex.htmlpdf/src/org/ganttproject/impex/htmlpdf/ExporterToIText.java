@@ -186,6 +186,10 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         Thread fontReadingThread = new Thread(new Runnable() {
             public void run() {
                 try {
+                    // Random waiting seems silly, depending on the available
+                    // resources (CPU speed, number of processes running etc)
+                    // this might take longer or shorter...
+                    // FIXME Add some better way of determining whether the fonts can be read already
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -276,7 +280,6 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     getUIFacade().showErrorDialog(e);
                     return Status.CANCEL_STATUS;
                 } finally {
-                    monitor.worked(1);
                 }
                 return Status.OK_STATUS;
             }

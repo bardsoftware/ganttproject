@@ -40,6 +40,7 @@ public interface UIFacade {
     public interface Dialog {
         void show();
         void hide();
+        void layout();
     }
 
     public enum Choice { YES, NO, CANCEL, OK };
@@ -85,7 +86,7 @@ public interface UIFacade {
 
     NotificationManager getNotificationManager();
 
-    void logErrorMessage(Throwable e);
+    //void logErrorMessage(Throwable e);
 
     GanttChart getGanttChart();
 

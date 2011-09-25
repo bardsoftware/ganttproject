@@ -234,21 +234,25 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public OffsetBuilder.Factory createOffsetBuilderFactory() {
-        return new RegularFrameOffsetBuilder.FactoryImpl()
+        OffsetBuilder.Factory factory = new RegularFrameOffsetBuilder.FactoryImpl()
             .withAtomicUnitWidth(getBottomUnitWidth())
             .withBottomUnit(getBottomUnit())
             .withCalendar(myTaskManager.getCalendar())
-            .withEndOffset((int)getBounds().getWidth())
-            .withRightMargin(myScrollingSession==null ? 0 : 1)
+            .withRightMargin(myScrollingSession == null ? 0 : 1)
             .withStartDate(getOffsetAnchorDate())
             .withViewportStartDate(getStartDate())
             .withTopUnit(myTopUnit)
             .withWeekendDecreaseFactor(getTopUnit().isConstructedFrom(getBottomUnit()) ?
                 RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+        if(getBounds() != null ) {
+            factory.withEndOffset((int) getBounds().getWidth());
+        }
+        return factory;
     }
 
     public void paint(Graphics g) {
-        if (myScrollingSession == null) {
+        if (myScrollingSession == null
+                && (myTopUnitOffsets.size() == 0 || myBottomUnitOffsets.size() == 0 || myDefaultUnitOffsets.size() == 0)) {
             constructOffsets();
         }
         int height = (int) getBounds().getHeight();
@@ -303,8 +307,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myHorizontalOffset = 0;
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
-        }
-        if (myBounds!=null) {
             constructOffsets();
         }
     }

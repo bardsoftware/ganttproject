@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="China" type="country">
+	<date year="" month="01" date="01"/> 
+	<date year="" month="05" date="01"/> #Labour Day
+	<date year="" month="10" date="1"/> #National Day
+	<date year="2011" month="02" date="03"/> #Chinese New Year
+	<date year="2011" month="04" date="05"/> #Qingming Festival
+	<date year="2011" month="06" date="06"/> #Duanwu Festival
+	<date year="2011" month="09" date="12"/> #Mid Autumn Festival
+	<date year="2012" month="01" date="23"/> #Chinese New Year
+	<date year="2012" month="04" date="04"/> #Qingming Festival
+	<date year="2012" month="06" date="23"/> #Duanwu Festival
+	<date year="2012" month="09" date="31"/> #Mid Autumn Festival
+	<date year="2013" month="02" date="10"/> #Chinese New Year
+	<date year="2013" month="04" date="04"/> #Qingming Festival
+	<date year="2013" month="06" date="12"/> #Duanwu Festival
+	<date year="2013" month="09" date="19"/> #Mid Autumn Festival
+	<date year="2014" month="01" date="31"/> #Chinese New Year
+	<date year="2014" month="04" date="05"/> #Qingming Festival
+	<date year="2014" month="06" date="02"/> #Duanwu Festival
+	<date year="2014" month="09" date="08"/> #Mid Autumn Festival
+	<date year="2015" month="02" date="19"/> #Chinese New Year
+	<date year="2015" month="04" date="05"/> #Qingming Festival
+	<date year="2015" month="06" date="20"/> #Duanwu Festival
+	<date year="2015" month="09" date="27"/> #Mid Autumn Festival
+	<date year="2016" month="02" date="08"/> #Chinese New Year
+	<date year="2017" month="01" date="28"/> #Chinese New Year
+	<date year="2018" month="02" date="16"/> #Chinese New Year
+	<date year="2019" month="02" date="05"/> #Chinese New Year
+	<date year="2020" month="01" date="25"/> #Chinese New Year
+	<date year="2021" month="02" date="12"/> #Chinese New Year
+	<date year="2022" month="02" date="01"/> #Chinese New Year
+	<date year="2023" month="01" date="22"/> #Chinese New Year
+	<date year="2024" month="02" date="10"/> #Chinese New Year
+	<date year="2025" month="01" date="29"/> #Chinese New Year
+	<date year="2026" month="02" date="17"/> #Chinese New Year
+	<date year="2027" month="02" date="07"/> #Chinese New Year
+	<date year="2028" month="01" date="27"/> #Chinese New Year
+	<date year="2029" month="02" date="13"/> #Chinese New Year
+	<date year="2030" month="02" date="03"/> #Chinese New Year
+	<date year="2031" month="01" date="13"/> #Chinese New Year
+
+</calendar >
+
+
+ 
+

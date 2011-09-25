@@ -77,6 +77,8 @@ public class GanttStatusBar extends JPanel implements Runnable {
 
     private JPanel myErrorNotificationPanel;
 
+    private static IProgressMonitor ourMonitor;
+
     public GanttStatusBar(JFrame mainFrame) {
         super(new BorderLayout());
         myMainFrame = mainFrame;
@@ -104,7 +106,10 @@ public class GanttStatusBar extends JPanel implements Runnable {
     }
 
     public IProgressMonitor createProgressMonitor() {
-        return new ProgressMonitorImpl();
+        if(ourMonitor == null) {
+            ourMonitor = new ProgressMonitorImpl();
+        }
+        return ourMonitor;
     }
 
     public void setFirstText(String text) {
@@ -286,7 +291,10 @@ public class GanttStatusBar extends JPanel implements Runnable {
         private JProgressBar myProgressBar;
         private JLabel myLabel;
         private String myTask;
+        private String mySubTask;
         private IProgressMonitor myProgressMonitor;
+        private int myWorked;
+        private int myTotalWork;
 
         private ProgressBarDialog(IProgressMonitor progressMonitor) {
             super(myMainFrame, true);
@@ -318,30 +326,42 @@ public class GanttStatusBar extends JPanel implements Runnable {
             getContentPane().add(labelAndButton, BorderLayout.SOUTH);
             setResizable(false);
             this.setUndecorated(true);
-        }
-
-        void start(String task, int totalWork) {
-            myProgressBar.setMaximum(totalWork);
-            myProgressBar.setMinimum(0);
-            myTask = task;
-            myLabel.setText(getLabelText());
             pack();
             setSize(400, 60);
             DialogAligner.center(this, myMainFrame);
+        }
+
+        void start(String task, int totalWork) {
+            myTask = task;
+            myWorked = 0;
+            myTotalWork = totalWork;
+            myProgressBar.setMinimum(0);
+            myProgressBar.setMaximum(totalWork);
+            myLabel.setText(getLabelText());
             setVisible(true);
         }
 
+        void setSubTask(String subTask) {
+            mySubTask = subTask;
+            myLabel.setText(getLabelText());
+        }
+
         void setProgress(int work) {
+            assert myWorked <= myTotalWork;
+            myWorked = work;
             myProgressBar.setValue(work);
             myLabel.setText(getLabelText());
         }
 
         void done() {
+            // Reset bar to 0, otherwise it is briefly at 100% for a next job
+            myProgressBar.setValue(0);
             dispose();
         }
 
         private String getLabelText() {
-            return "<html><body><b>"+myTask+" ... "+myProgressBar.getValue()*100/myProgressBar.getMaximum()+"%</b></body></html>";
+            return "<html><body><b>" + (mySubTask == null ? myTask : mySubTask) + " ... " + myWorked * 100
+                    / myTotalWork + "%</b></body></html>";
         }
     }
 
@@ -357,6 +377,8 @@ public class GanttStatusBar extends JPanel implements Runnable {
             myProgressDialog = new ProgressBarDialog(this);
         }
         public void beginTask(final String name, final int totalWork)  {
+            myWorked = 0;
+            GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     // pbp.reset(name, totalWork);
@@ -366,13 +388,12 @@ public class GanttStatusBar extends JPanel implements Runnable {
                     // myMainFrame.getRootPane().revalidate();
                     // myProgressPanel.start();
                     myProgressDialog.start(name, totalWork);
-                    GPLogger.log("[ProgressMonitorImpl] beginTask: name="
-                            + name);
                 }
             });
         }
 
         public void done() {
+            GPLogger.log("[ProgressMonitorImpl] finished Task");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
             //myProgressPanel.stop();
@@ -399,8 +420,17 @@ public class GanttStatusBar extends JPanel implements Runnable {
         public void setTaskName(String name) {
         }
 
-        public void subTask(String name) {
-            throw new UnsupportedOperationException();
+        public void subTask(final String name) {
+            if (name == null) {
+                GPLogger.log("[ProgressMonitorImpl] finished subTask");
+            } else {
+                GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    myProgressDialog.setSubTask(name);
+                }
+            });
         }
 
         public void worked(final int work) {

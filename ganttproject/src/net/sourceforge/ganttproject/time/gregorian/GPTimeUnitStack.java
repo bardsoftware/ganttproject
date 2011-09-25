@@ -20,24 +20,26 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * @author bard
  */
 public class GPTimeUnitStack implements TimeUnitStack {
-    private TimeUnitGraph ourGraph = new TimeUnitGraph();
+    private static GanttLanguage i18n = GanttLanguage.getInstance();
 
-    private final TimeUnit HOUR = ourGraph.createAtomTimeUnit("hour");
-    public final TimeUnit DAY;
+    private static TimeUnitGraph ourGraph = new TimeUnitGraph();
 
-    public final TimeUnit WEEK;
+    private static final TimeUnit HOUR = ourGraph.createAtomTimeUnit("hour");
+    public static final TimeUnit DAY;
 
-    public final TimeUnit MONTH;
+    public static final TimeUnit WEEK;
 
-    public final TimeUnit QUARTER;
+    public static final TimeUnit MONTH;
 
-    public TimeUnit YEAR = null;
+    public static final TimeUnit QUARTER;
+
+    public static final TimeUnit YEAR;
 
     private final TimeUnitPair[] myPairs;
 
-    public final TimeUnit WEEK_AS_BOTTOM_UNIT;
+    public static final TimeUnit WEEK_AS_BOTTOM_UNIT;
 
-    public GPTimeUnitStack(GanttLanguage i18n) {
+    static {
         TimeUnit atom = ourGraph.createAtomTimeUnit("atom");
         DAY = ourGraph.createDateFrameableTimeUnit("day", atom, 1,
                 new FramerImpl(Calendar.DATE));
@@ -58,6 +60,9 @@ public class GPTimeUnitStack implements TimeUnitStack {
         YEAR = ourGraph.createTimeUnitFunctionOfDate("year", DAY,
                 new FramerImpl(Calendar.YEAR));
         YEAR.setTextFormatter(new YearTextFormatter());
+    }
+
+    public GPTimeUnitStack() {
         myPairs = new TimeUnitPair[] {
                 new TimeUnitPair(WEEK, DAY, this, 65),
                 new TimeUnitPair(WEEK, DAY, this, 55),
@@ -76,6 +81,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
                 /*new TimeUnitPair(YEAR, QUARTER, this, 1)*/ };
     }
 
+    @Override
     public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
             TimeUnit bottomUnit) {
         // if (topUnit instanceof TimeUnitFunctionOfDate) {
@@ -84,18 +90,22 @@ public class GPTimeUnitStack implements TimeUnitStack {
         return new TimeFrameImpl(baseDate, topUnit, bottomUnit);
     }
 
+    @Override
     public String getName() {
         return "default";
     }
 
+    @Override
     public TimeUnit getDefaultTimeUnit() {
         return DAY;
     }
 
+    @Override
     public TimeUnitPair[] getTimeUnitPairs() {
         return myPairs;
     }
 
+    @Override
     public DateFormat[] getDateFormats() {
         DateFormat[] result;
         if (HOUR.isConstructedFrom(getDefaultTimeUnit())) {
@@ -115,6 +125,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
         return result;
     }
 
+    @Override
     public DateFormat getTimeFormat() {
         if (HOUR.isConstructedFrom(getDefaultTimeUnit())) {
             return DateFormat.getTimeInstance(DateFormat.SHORT);
@@ -122,6 +133,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
         return null;
     }
 
+    @Override
     public TimeUnit findTimeUnit(String code) {
         assert code != null;
         code = code.trim();
@@ -149,6 +161,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
         return "h".equalsIgnoreCase(code);
     }
 
+    @Override
     public String encode(TimeUnit timeUnit) {
         if (timeUnit == HOUR) {
             return "h";

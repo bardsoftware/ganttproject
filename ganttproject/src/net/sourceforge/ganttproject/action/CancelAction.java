@@ -29,6 +29,8 @@ public class CancelAction extends GPAction {
     /** CancelAction which does not do anything */
     public final static CancelAction EMPTY = new CancelAction();
 
+    public static final CancelAction CLOSE = new CancelAction("close");
+
     public CancelAction() {
         this("cancel");
     }
