@@ -117,7 +117,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             List<TaskActivity> activities = t.isMilestone() ?
                     Collections.<TaskActivity>singletonList(new MilestoneTaskFakeActivity(t)) :
                     Arrays.asList(t.getActivities());
-            renderActivities(rowNum, t, activities, defaultUnitOffsets);
+            List<Rectangle> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
+            renderLabels(rectangles);
             renderBaseline(t, rowNum, defaultUnitOffsets);
             rowNum++;
             GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(
@@ -182,6 +183,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             myModel, getPrimitiveContainer(), myLabelsRenderer,
             new TaskActivityRenderer.Style(0, getRectangleHeight()));
         List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
+        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
+            renderProgressBar(rectangles);
+        }
+        return rectangles;
+    }
+
+    private void renderLabels(List<Rectangle> rectangles) {
         if (!rectangles.isEmpty()) {
             Rectangle lastRectangle = rectangles.get(rectangles.size()-1);
 
@@ -195,10 +203,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
                 myLabelsRenderer.createLeftSideText(firstRectangle);
             }
         }
-        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
-            renderProgressBar(rectangles);
-        }
-        return rectangles;
     }
 
     private void renderProgressBar(List<Rectangle> rectangles) {

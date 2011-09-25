@@ -22,23 +22,11 @@ import net.sourceforge.ganttproject.time.TimeUnitText;
 class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
 
     private GraphicPrimitiveContainer myPrimitiveContainer;
-    private final BooleanOption myRedlineOption;
-    private final BooleanOption myProjectDatesOption;
-    private GPOptionGroup myOptions;
     private GraphicPrimitiveContainer myTimelineContainer;
 
-    ChartHeaderImpl(ChartModel model, final UIConfiguration projectConfig) {
+    ChartHeaderImpl(ChartModelBase model) {
         super(model);
-        myRedlineOption = projectConfig.getRedlineOption();
-        myProjectDatesOption= projectConfig.getProjectBoundariesOption();
-        myOptions = new ChartOptionGroup(
-                "ganttChartGridDetails",
-                new GPOption[] {myRedlineOption, myProjectDatesOption, projectConfig.getWeekendAlphaRenderingOption()},
-                model.getOptionEventDispatcher());
         myPrimitiveContainer = new GraphicPrimitiveContainer();
-    }
-    GPOptionGroup getOptions() {
-        return myOptions;
     }
 
     @Override
@@ -54,7 +42,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         createGreyRectangleWithNiceBorders();
     }
 
-    private GraphicPrimitiveContainer getTimelineContainer() {
+    public GraphicPrimitiveContainer getTimelineContainer() {
         return myTimelineContainer;
     }
     /** Draws the timeline box
@@ -124,24 +112,6 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         }
     }
 
-    private void renderLine(Date date, Color color, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
-        final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        OffsetLookup lookup = new OffsetLookup();
-        int todayOffsetIdx = lookup.lookupOffsetBy(date, getChartModel().getDefaultUnitOffsets(), dateComparator);
-        if (todayOffsetIdx < 0) {
-            todayOffsetIdx = -todayOffsetIdx - 1;
-        }
-        Offset yesterdayOffset = todayOffsetIdx == 0 ? null : getChartModel().getDefaultUnitOffsets().get(todayOffsetIdx - 1);
-        if (yesterdayOffset == null) {
-            return;
-        }
-        int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
-        Line line = getPrimitiveContainer().createLine(
-            yesterdayEndPixel + marginPx, topUnitHeight*2,
-            yesterdayEndPixel + marginPx, getHeight()+topUnitHeight*2);
-        line.setForegroundColor(color);
-
-    }
     /** Draws cells of the bottom line in the time line
      */
     private void renderBottomUnits() {
@@ -149,15 +119,5 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             new BottomUnitLineRendererImpl(getChartModel(), getPrimitiveContainer().getLayer(1), getPrimitiveContainer());
         bottomUnitLineRenderer.setHeight(getHeight());
         bottomUnitLineRenderer.render();
-        if (myRedlineOption.isChecked()) {
-            renderLine(new Date(), Color.RED, 2, OffsetLookup.BY_END_DATE);
-        }
-        if (isProjectBoundariesOptionOn()) {
-            renderLine(getChartModel().getTaskManager().getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
-            renderLine(getChartModel().getTaskManager().getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
-        }
    }
-    private boolean isProjectBoundariesOptionOn() {
-        return myProjectDatesOption.isChecked();
-    }
 }

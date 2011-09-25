@@ -69,7 +69,7 @@ public class ChartModelImpl extends ChartModelBase {
         super(taskManager, timeUnitStack, projectConfig);
         this.taskManager = taskManager;
         myTaskRendererImpl = new TaskRendererImpl2(this);
-        addRenderer(myTaskRendererImpl);
+        getRenderers().add(1, myTaskRendererImpl);
 
         class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
             private NewTaskColorOption() {

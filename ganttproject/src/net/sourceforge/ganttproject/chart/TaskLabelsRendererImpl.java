@@ -129,7 +129,6 @@ class TaskLabelsRendererImpl /*implements CustomPropertyListener*/ {
     void createUpSideText(Rectangle rectangle) {
         TaskActivity activity = (TaskActivity) rectangle.getModelObject();
         String text = getTaskLabel(activity.getTask(), UP);
-
         if (text.length() > 0) {
             int xOrigin = rectangle.getRightX();
             int yOrigin = rectangle.myTopY - 3;

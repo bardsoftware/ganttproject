@@ -66,7 +66,6 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             prevOffset = offset;
             xpos = prevOffset.getOffsetPixels();
         }
-        renderNonWorkingDayColumns();
     }
 
     private void renderLabel(int curX, Date curDate, Offset curOffset) {
@@ -78,49 +77,6 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         myTimelineContainer.bind(text, timeUnitText);
         text.setMaxLength(curOffset.getOffsetPixels() - curX);
         text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-    }
-
-    private void renderNonWorkingDayColumns() {
-        List<Offset> defaultOffsets = getChartModel().getDefaultUnitOffsets();
-        int curX = defaultOffsets.get(0).getOffsetPixels();
-        if (curX > 0) {
-            curX = 0;
-        }
-        for (Offset offset : defaultOffsets) {
-            if (offset.getDayType() != GPCalendar.DayType.WORKING){
-                // Create a non-working day bar in the main area
-                renderNonWorkingDay(curX, offset);
-                // And expand it to the timeline area.
-                Rectangle r = myTimelineContainer.createRectangle(
-                    curX, getLineTopPosition() + 1,
-                    offset.getOffsetPixels() - curX,
-                    getLineBottomPosition() - getLineTopPosition() + 1);
-                //System.err.println(offset.getDayType()+": " + r);
-                applyRectangleStyle(r, offset.getDayType());
-            }
-            curX = offset.getOffsetPixels();
-        }
-    }
-
-    private void renderNonWorkingDay(int curX, Offset curOffset) {
-        GraphicPrimitiveContainer.Rectangle r =
-            getPrimitiveContainer().createRectangle(
-                    curX,
-                    getLineBottomPosition(),
-                    curOffset.getOffsetPixels() - curX,
-                    getHeight());
-        applyRectangleStyle(r, curOffset.getDayType());
-        getPrimitiveContainer().bind(r, curOffset.getDayType());
-    }
-
-    private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
-        if (dayType == GPCalendar.DayType.WEEKEND) {
-            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
-        }
-        else if (dayType == GPCalendar.DayType.HOLIDAY) {
-            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
-        }
-        r.setStyle("calendar.holiday");
     }
     private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
         if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {

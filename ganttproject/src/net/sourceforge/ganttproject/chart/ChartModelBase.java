@@ -151,8 +151,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private final OptionEventDispatcher myOptionEventDispatcher = new OptionEventDispatcher();
 
-    private final ChartHeaderImpl myChartHeader;
-
     private Dimension myBounds;
 
     private Date myStartDate;
@@ -165,6 +163,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     protected TimeUnit myBottomUnit;
 
+    private final ChartHeaderImpl myChartHeader;
     private final BackgroundRendererImpl myBackgroundRenderer;
 
     private final StyledPainterImpl myPainter;
@@ -176,6 +175,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
 
+    private final ChartDayGridRenderer myChartGrid;
+
     public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack,
             UIConfiguration projectConfig) {
         myTaskManager = taskManager;
@@ -183,7 +184,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
         myPainter = new StyledPainterImpl(myChartUIConfiguration);
         myTimeUnitStack = timeUnitStack;
-        myChartHeader = new ChartHeaderImpl(this, projectConfig);
+        myChartHeader = new ChartHeaderImpl(this);
+        myChartGrid = new ChartDayGridRenderer(this, projectConfig, myChartHeader.getTimelineContainer());
         myBackgroundRenderer = new BackgroundRendererImpl(this);
         addRenderer(myBackgroundRenderer);
         addRenderer(myChartHeader);
@@ -193,8 +195,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     private OffsetList myBottomUnitOffsets = new OffsetList();
 
     private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
-
-    //private int myShiftPixels;
 
     public List<Offset> getTopUnitOffsets() {
         return myTopUnitOffsets;
@@ -467,7 +467,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public GPOptionGroup[] getChartOptionGroups() {
-        return new GPOptionGroup[] {myChartHeader.getOptions()};
+        return new GPOptionGroup[] {myChartGrid.getOptions()};
     }
 
     public void addOptionChangeListener(GPOptionChangeListener listener) {
