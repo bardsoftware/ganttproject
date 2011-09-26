@@ -89,6 +89,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.action.task.TaskActionBase;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskIndentAction;
 import net.sourceforge.ganttproject.action.task.TaskLinkAction;
@@ -170,9 +171,9 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
 
     private final AbstractAction myNewTaskAction;
 
-    private final AbstractAction myDeleteAction;
+    private final TaskActionBase myDeleteAction;
 
-    private final AbstractAction myTaskPropertiesAction;
+    private final TaskActionBase myTaskPropertiesAction;
 
     private boolean isOnTaskSelectionEventProcessing;
 
@@ -1468,7 +1469,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myTreeActions;
     }
 
-    public AbstractAction getTaskPropertiesAction() {
+    public TaskActionBase getTaskPropertiesAction() {
         return myTaskPropertiesAction;
     }
 
@@ -1476,7 +1477,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         return myNewTaskAction;
     }
 
-    public AbstractAction getTaskDeleteAction() {
+    public TaskActionBase getTaskDeleteAction() {
         return myDeleteAction;
     }
 

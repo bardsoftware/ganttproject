@@ -21,19 +21,18 @@ package net.sourceforge.ganttproject.action.resource;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
-public class ResourcePropertiesAction extends GPAction {
+public class ResourcePropertiesAction extends ResourceAction {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
     private final ResourceContext myContext;
 
     public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
-        super("resource.properties");
+        super("resource.properties", null);
         myProject = project;
         myUIFacade = uiFacade;
         myContext = context;

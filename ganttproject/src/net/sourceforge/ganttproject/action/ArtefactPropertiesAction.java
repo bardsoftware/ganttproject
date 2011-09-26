@@ -19,8 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 public class ArtefactPropertiesAction extends ArtefactAction {
-    public ArtefactPropertiesAction(ActiveActionProvider provider) {
-        super("artefact.properties", provider);
+    public ArtefactPropertiesAction(ActiveActionProvider provider, ActionDelegate[] delegates) {
+        super("artefact.properties", provider, delegates);
     }
 
     @Override

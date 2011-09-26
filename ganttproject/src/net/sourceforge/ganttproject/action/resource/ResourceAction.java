@@ -18,6 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action.resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sourceforge.ganttproject.action.ActionDelegate;
+import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
@@ -25,15 +30,28 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 /**
  * Action base for resource related actions
  */
-abstract class ResourceAction extends GPAction {
+abstract class ResourceAction extends GPAction implements ActionDelegate {
     private final HumanResourceManager myManager;
+    private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
 
     public ResourceAction(String name, HumanResourceManager hrManager) {
         super(name);
         myManager = hrManager;
     }
 
+    public void addStateChangedListener(ActionStateChangedListener l) {
+        myListeners.add(l);
+    }
+
     protected HumanResourceManager getManager() {
         return myManager;
+    }
+
+    @Override
+    public void setEnabled(boolean newValue) {
+        super.setEnabled(newValue);
+        for(ActionStateChangedListener l: myListeners) {
+            l.actionStateChanged();
+        }
     }
 }

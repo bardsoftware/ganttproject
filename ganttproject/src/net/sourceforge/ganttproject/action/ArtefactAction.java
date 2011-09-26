@@ -26,12 +26,18 @@ import javax.swing.AbstractAction;
  * Abstract class which provides a base implementation for the artefact actions.
  * Depending on the visible chart, the name, description and action will change
  */
-public abstract class ArtefactAction extends GPAction {
+public abstract class ArtefactAction extends GPAction implements ActionStateChangedListener {
     private final ActiveActionProvider myProvider;
 
-    public ArtefactAction(String name, ActiveActionProvider provider) {
+    public ArtefactAction(String name, ActiveActionProvider provider, ActionDelegate[] delegates) {
         super(name);
         myProvider = provider;
+        for(ActionDelegate delegate : delegates) {
+            delegate.addStateChangedListener(this);
+        }
+
+        // Make action state equal to active delegate action state
+        actionStateChanged();
     }
 
     @Override
@@ -57,4 +63,10 @@ public abstract class ArtefactAction extends GPAction {
         GPAction activeAction = (GPAction) myProvider.getActiveAction();
         return activeAction.getLocalizedDescription();
     };
+
+    public void actionStateChanged() {
+        // State of a delegate action has been changed, so update out state as well
+        GPAction activeAction = (GPAction) myProvider.getActiveAction();
+        setEnabled(activeAction.isEnabled());
+    }
 }
