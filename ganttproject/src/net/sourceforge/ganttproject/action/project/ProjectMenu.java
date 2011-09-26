@@ -22,7 +22,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.MenuAction;
 
 /**
  * Collection of actions present in the project menu
@@ -34,7 +33,7 @@ public class ProjectMenu extends JMenu {
     private final PrintAction myPrintAction;
 
     public ProjectMenu(final GanttProject project, JMenu mru, String key) {
-        super(new MenuAction(key));
+        super(GPAction.createVoidAction(key));
         myNewProjectAction = new NewProjectAction(project);
         mySaveProjectAction = new SaveProjectAction(project);
         myPrintAction = new PrintAction(project);
