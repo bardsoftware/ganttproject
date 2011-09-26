@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -124,5 +125,48 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         } catch (TaskDependencyException e) {
         }
         assertNull("Created the dependency between the same tasks twice!", dep2);
+    }
+
+    public void testCreatingDependencyBetweenSuperAndSubTask() {
+        /*
+         * SuperTask
+         *  Task 1
+         *  Task 2
+         *
+         * Making a dependency between SuperTask and Task 1 should fail!
+         * Making a dependency between SuperTask and Task 2 should fail! (Currently it does not!)
+         */
+        TaskManager taskMgr = getTaskManager();
+        Task superTask = taskMgr.createTask(10);
+        Task task1 = taskMgr.createTask(1);
+        Task task2 = taskMgr.createTask(2);
+
+        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+        taskHierarchy.move(task1, superTask);
+        taskHierarchy.move(task2, superTask);
+
+        // Test whether it is possible to create a dependency between SuperTask and Task1
+        boolean canCreate1 = taskMgr.getDependencyCollection().canCreateDependency(superTask, task1);
+        assertFalse("Taskmanager thinks the dependency between SuperTask and Task1 can be created", canCreate1);
+        boolean canCreate1b = taskMgr.getDependencyCollection().canCreateDependency(task1, superTask);
+        assertFalse("Taskmanager thinks the dependency between Task1 and SuperTask can be created", canCreate1b);
+        TaskDependency dep1 = null;
+        try {
+            dep1 = taskMgr.getDependencyCollection().createDependency(superTask, task1);
+        } catch (TaskDependencyException e) {
+        }
+        assertNull("Created the dependency between the SuperTask and Task1!", dep1);
+
+        // Test whether it is possible to create a dependency between SuperTask and Task2
+        boolean canCreate2 = taskMgr.getDependencyCollection().canCreateDependency(superTask, task2);
+        assertFalse("Taskmanager thinks the dependency between SuperTask and Task2 can be created", canCreate2);
+        boolean canCreate2b = taskMgr.getDependencyCollection().canCreateDependency(task2, superTask);
+        assertFalse("Taskmanager thinks the dependency between Task2 and SuperTask can be created", canCreate2b);
+        TaskDependency dep2 = null;
+        try {
+            dep2 = taskMgr.getDependencyCollection().createDependency(superTask, task2);
+        } catch (TaskDependencyException e) {
+        }
+        assertNull("Created the dependency between the SuperTask and Task2!", dep2);
     }
 }
