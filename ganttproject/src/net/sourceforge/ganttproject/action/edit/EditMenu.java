@@ -23,6 +23,7 @@ import javax.swing.JMenu;
 
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.MenuAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -30,8 +31,8 @@ public class EditMenu extends JMenu {
     private final UndoAction myUndoAction;
     private final RedoAction myRedoAction;
 
-    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager) {
-        super();
+    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, String key) {
+        super(new MenuAction(key));
         final GPUndoManager undoManager = uiFacade.getUndoManager();
         myUndoAction = new UndoAction(undoManager);
         myRedoAction = new RedoAction(undoManager);

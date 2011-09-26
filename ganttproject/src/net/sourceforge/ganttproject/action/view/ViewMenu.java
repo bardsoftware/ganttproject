@@ -25,6 +25,7 @@ import javax.swing.JMenu;
 
 import net.sourceforge.ganttproject.GPView;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.MenuAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.plugins.PluginManager;
@@ -33,11 +34,11 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
  * Collection of actions present in the view menu
  */
 public class ViewMenu extends JMenu {
-    public ViewMenu(final GanttProject project) {
-        super();
-        
+    public ViewMenu(final GanttProject project, String key) {
+        super(new MenuAction(key));
+
         ViewCycleAction viewCycleAction = new ViewCycleAction(project.getTabs());
-        
+
         List<Chart> charts = PluginManager.getCharts();
         add(viewCycleAction);
         if (!charts.isEmpty()) {
