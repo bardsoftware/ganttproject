@@ -25,7 +25,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.MenuAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.project.OpenMRUDocumentAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentMRUListener;
@@ -44,7 +44,7 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
     private final ProjectUIFacade myProjectUIFacade;
 
     public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade, String key) {
-        super(new MenuAction(key));
+        super(GPAction.createVoidAction(key));
         myProject = project;
         myUIFacade = uiFacade;
         myProjectUIFacade = projectUIFacade;
