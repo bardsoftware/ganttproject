@@ -88,7 +88,6 @@ import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.GanttDialogInfo;
-import net.sourceforge.ganttproject.gui.GanttLanguageMenu;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -293,21 +292,17 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         // Allocation of the menus
 
         // Project menu related sub menus and items
-        ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade());
+        ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade(), "lastOpen");
         mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
-        GanttLanguageMenu.addListener(mruMenu, "lastOpen");
         myMRU.addListener(mruMenu);
 
-        myProjectMenu = new ProjectMenu(this, mruMenu);
-        GanttLanguageMenu.addListener(myProjectMenu, "project");
+        myProjectMenu = new ProjectMenu(this, mruMenu, "project");
         bar.add(myProjectMenu);
 
-        myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager());
-        GanttLanguageMenu.addListener(myEditMenu, "edit");
+        myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), "edit");
         bar.add(myEditMenu);
 
-        JMenu viewMenu = new ViewMenu(this);
-        GanttLanguageMenu.addListener(viewMenu, "view");
+        JMenu viewMenu = new ViewMenu(this, "view");
         bar.add(viewMenu);
 
         JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
