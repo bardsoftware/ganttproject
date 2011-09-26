@@ -163,14 +163,9 @@ public class TaskManagerImpl implements TaskManager {
             }
         };
         myDependencyCollection = new TaskDependencyCollectionImpl(containmentFacadeFactory, dispatcher) {
-            private TaskContainmentHierarchyFacade myTaskHierarchy;
-
             @Override
             protected TaskContainmentHierarchyFacade getTaskHierarchy() {
-                if (myTaskHierarchy == null) {
-                    myTaskHierarchy = TaskManagerImpl.this.getTaskHierarchy();
-                }
-                return myTaskHierarchy;
+                return TaskManagerImpl.this.getTaskHierarchy();
             }
         };
         myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl()
