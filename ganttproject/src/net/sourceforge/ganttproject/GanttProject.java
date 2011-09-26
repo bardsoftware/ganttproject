@@ -65,6 +65,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -362,10 +363,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         // Chart tabs
         getTabs().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                // Tell artefact actions that the active provider changed, so they
+                // are able to update their state according to the current delegate
                 for(JButton button: myArtefactButtons) {
-                    button.setEnabled(getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                            || getTabs().getSelectedIndex() == UIFacade.RESOURCES_INDEX);
-                    ((ArtefactAction) button.getAction()).updateAction();
+                    ((ArtefactAction) button.getAction()).actionStateChanged();
                 }
             }
         });
@@ -591,13 +592,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskDeleteAction()
                         : myResourceActions.getResourceDeleteAction();
             }
-        }));
+        }, new ActionDelegate[] { getTree().getTaskDeleteAction(), myResourceActions.getResourceDeleteAction()}));
         bProperties = new TestGanttRolloverButton(new ArtefactPropertiesAction(new ActiveActionProvider() {
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskPropertiesAction()
                         : myResourceActions.getResourcePropertiesAction();
             }
-        }));
+        }, new ActionDelegate[] { getTree().getTaskPropertiesAction(), myResourceActions.getResourcePropertiesAction()}));
         myArtefactButtons = new TestGanttRolloverButton[] {bNewTask, bDelete, bProperties};
 
         ScrollingManager scrollingManager = getScrollingManager();

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.ActionDelegate;
+import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -30,12 +32,13 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener {
+public abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener, ActionDelegate {
+    private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
     private final TaskManager myTaskManager;
-    private List<Task> mySelection;
     private final UIFacade myUIFacade;
     private final TaskSelectionManager mySelectionManager;
     private final GanttTree2 myTree;
+    private List<Task> mySelection;
 
     protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
             UIFacade uiFacade, GanttTree2 tree) {
@@ -46,6 +49,10 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
         myTree = tree;
         selectionManager.addSelectionListener(this);
         selectionChanged(selectionManager.getSelectedTasks());
+    }
+
+    public void addStateChangedListener(ActionStateChangedListener l) {
+        myListeners.add(l);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -75,6 +82,14 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
     public void selectionChanged(List<Task> currentSelection) {
         setEnabled(isEnabled(currentSelection));
         mySelection = currentSelection;
+    }
+
+    @Override
+    public void setEnabled(boolean newValue) {
+        super.setEnabled(newValue);
+        for(ActionStateChangedListener l: myListeners) {
+            l.actionStateChanged();
+        }
     }
 
     public void userInputConsumerChanged(Object newConsumer) {

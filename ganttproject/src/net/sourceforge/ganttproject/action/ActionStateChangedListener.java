@@ -1,5 +1,5 @@
 /*
-GanttProject is an opensource project management tool.
+GanttProject is an opensource project management tool. License: GPL2
 Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
@@ -18,13 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action;
 
-public class ArtefactDeleteAction extends ArtefactAction {
-    public ArtefactDeleteAction(ActiveActionProvider provider, ActionDelegate[] delegates) {
-        super("artefact.delete", provider, delegates);
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "delete_";
-    }
+/**
+ * Listen to state changes of delegate tasks
+ */
+public interface ActionStateChangedListener {
+    void actionStateChanged();
 }
