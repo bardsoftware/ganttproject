@@ -252,8 +252,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void paint(Graphics g) {
-        if (myScrollingSession == null
-                && (myTopUnitOffsets.size() == 0 || myBottomUnitOffsets.size() == 0 || myDefaultUnitOffsets.size() == 0)) {
+        if (myScrollingSession == null) {
             constructOffsets();
         }
         int height = (int) getBounds().getHeight();
@@ -322,6 +321,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
+        System.err.println("bottom unit width=" + pixelsWidth);
         myAtomUnitPixels = pixelsWidth;
     }
 
