@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf;
 
 import java.awt.Component;
@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -64,6 +66,21 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 abstract class ExporterBase extends AbstractExporter {
+
+    protected abstract static class ExporterJob {
+        private final String myName;
+
+        protected ExporterJob(String name) {
+            myName = name;
+        }
+
+        String getName() {
+            return myName;
+        }
+
+        protected abstract IStatus run();
+    }
+
     private GPOptionGroup myOptions;
     private SAXTransformerFactory myFactory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 
@@ -77,7 +94,7 @@ abstract class ExporterBase extends AbstractExporter {
             public void commit() {
                 super.commit();
                 String value = getValue();
-                for (int i=0; i<stylesheets.length; i++) {
+                for (int i = 0; i < stylesheets.length; i++) {
                     if (stylesheets[i].getLocalizedName().equals(value)) {
                         setSelectedStylesheet(stylesheets[i]);
                     }
@@ -88,18 +105,22 @@ abstract class ExporterBase extends AbstractExporter {
     }
 
     public abstract String[] getFileExtensions();
+
     protected abstract void setSelectedStylesheet(Stylesheet stylesheet);
+
     protected abstract Stylesheet[] getStylesheets();
+
     protected abstract String getStylesheetOptionID();
+
     static Object EXPORT_JOB_FAMILY = new String("Export job family");
 
     public ExporterBase() {
         final Stylesheet[] stylesheets = getStylesheets();
-        EnumerationOption stylesheetOption= createStylesheetOption(getStylesheetOptionID(), stylesheets);
+        EnumerationOption stylesheetOption = createStylesheetOption(getStylesheetOptionID(), stylesheets);
         stylesheetOption.lock();
         stylesheetOption.setValue(stylesheets[0].getLocalizedName());
         stylesheetOption.commit();
-        myOptions = new GPOptionGroup("exporter.html", new GPOption[] {stylesheetOption});
+        myOptions = new GPOptionGroup("exporter.html", new GPOption[] { stylesheetOption });
         myOptions.setTitled(false);
     }
 
@@ -111,106 +132,60 @@ abstract class ExporterBase extends AbstractExporter {
         return getFileExtensions();
     }
 
-    public void run(final File outputFile,
-            final ExportFinalizationJob finalizationJob) throws Exception {
+    public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
         final IJobManager jobManager = Job.getJobManager();
         final List<File> resultFiles = new ArrayList<File>();
-        final Job[] jobs = createJobs(outputFile, resultFiles);
+        final List<ExporterJob> jobs = new ArrayList<ExporterJob>(Arrays.asList(createJobs(outputFile, resultFiles)));
+        jobs.add(new ExporterJob("Finalizing") {
+            @Override
+            protected IStatus run() {
+                finalizationJob.run(resultFiles.toArray(new File[0]));
+                return Status.OK_STATUS;
+            }
+        });
         final IProgressMonitor monitor = jobManager.createProgressGroup();
-        final IProgressMonitor familyMonitor = new IProgressMonitor() {
-            public void beginTask(String name, int totalWork) {
-                monitor.beginTask(name, totalWork);
-            }
-
-            public void done() {
-                monitor.done();
-            }
-
-            public void internalWorked(double work) {
-                monitor.internalWorked(work);
-            }
-
-            public boolean isCanceled() {
-                return monitor.isCanceled();
-            }
-
-            public void setCanceled(boolean value) {
-                monitor.setCanceled(value);
-                if (value) {
-                    System.err.println("ExporterBase: canceling value="+EXPORT_JOB_FAMILY);
-                    jobManager.cancel(EXPORT_JOB_FAMILY);
-                }
-            }
-
-            public void setTaskName(String name) {
-                monitor.setTaskName(name);
-            }
-
-            public void subTask(String name) {
-                monitor.subTask(name);
-            }
-
-            public void worked(int work) {
-                monitor.worked(work);
-            }
-        };
-        Job starting = new Job("starting") {
+        Job driverJob = new Job("Running export") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                monitor.beginTask("Running export", jobs.length);
-                for (int i=0; i<jobs.length; i++) {
+                monitor.beginTask("Running export", jobs.size());
+                for (ExporterJob job : jobs) {
                     if (monitor.isCanceled()) {
+                        jobManager.cancel(EXPORT_JOB_FAMILY);
                         return Status.CANCEL_STATUS;
                     }
-                    monitor.subTask(jobs[i].getName());
-                    jobs[i].setProgressGroup(monitor, 1);
-                    jobs[i].schedule();
+                    monitor.subTask(job.getName());
+                    final IStatus state;
                     try {
-                        jobs[i].join();
-                    } catch (InterruptedException e) {
-                        getUIFacade().showErrorDialog(e);
+                        state = job.run();
+                    } catch (Throwable e) {
+                        GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), e));
                         monitor.setCanceled(true);
+                        continue;
                     }
 
-                    // Check if job got finished improperly
-                    IStatus state = jobs[i].getResult();
-                    if(state.isOK() == false) {
-                        getUIFacade().showErrorDialog(state.getException());
+                    if (state.isOK() == false) {
+                        GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), state.getException()));
                         monitor.setCanceled(true);
-                    } else {
-                        // Sub task for export is finished without problems
-                        // So, updated the total amount of work with the current work performed
-                        monitor.worked(1);
-                        // and remove the sub task description
-                        // (convenient for debugging to know the sub task is finished properly)
-                        monitor.subTask(null);
+                        continue;
                     }
-                }
-                Job finishing = new Job("finishing") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        monitor.done();
-                        finalizationJob.run(resultFiles.toArray(new File[0]));
-                        return Status.OK_STATUS;
-                    }
-                };
-                finishing.setProgressGroup(monitor, 0);
-                finishing.schedule();
-                try {
-                    finishing.join();
-                } catch (InterruptedException e) {
-                    getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    // Sub task for export is finished without problems
+                    // So, updated the total amount of work with the current
+                    // work performed
+                    monitor.worked(1);
+                    // and remove the sub task description
+                    // (convenient for debugging to know the sub task is
+                    // finished properly)
+                    monitor.subTask(null);
                 }
                 monitor.done();
                 return Status.OK_STATUS;
             }
         };
-        starting.setProgressGroup(familyMonitor, 0);
-        starting.schedule();
+        driverJob.setProgressGroup(monitor, 0);
+        driverJob.schedule();
     }
 
-    protected abstract Job[] createJobs(File outputFile, List<File> resultFiles);
+    protected abstract ExporterJob[] createJobs(File outputFile, List<File> resultFiles);
 
     protected CustomColumnsStorage getCustomColumnStorage() {
         return getProject().getCustomColumnsStorage();
@@ -220,28 +195,23 @@ abstract class ExporterBase extends AbstractExporter {
         return myOptions;
     }
 
-    protected void startElement(String name, AttributesImpl attrs,
-            TransformerHandler handler) throws SAXException {
+    protected void startElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {
         handler.startElement("", name, name, attrs);
         attrs.clear();
     }
 
-    protected void startPrefixedElement(String name, AttributesImpl attrs,
-            TransformerHandler handler) throws SAXException {
-        handler.startElement("http://ganttproject.sf.net/", name,
-                "ganttproject:" + name, attrs);
+    protected void startPrefixedElement(String name, AttributesImpl attrs, TransformerHandler handler)
+            throws SAXException {
+        handler.startElement("http://ganttproject.sf.net/", name, "ganttproject:" + name, attrs);
         attrs.clear();
     }
 
-    protected void endElement(String name, TransformerHandler handler)
-            throws SAXException {
+    protected void endElement(String name, TransformerHandler handler) throws SAXException {
         handler.endElement("", name, name);
     }
 
-    protected void endPrefixedElement(String name, TransformerHandler handler)
-            throws SAXException {
-        handler.endElement("http://ganttproject.sf.net/", name, "ganttproject:"
-                + name);
+    protected void endPrefixedElement(String name, TransformerHandler handler) throws SAXException {
+        handler.endElement("http://ganttproject.sf.net/", name, "ganttproject:" + name);
     }
 
     protected void addAttribute(String name, String value, AttributesImpl attrs) {
@@ -252,14 +222,14 @@ abstract class ExporterBase extends AbstractExporter {
         }
     }
 
-    protected void emptyElement(String name, AttributesImpl attrs,
-            TransformerHandler handler) throws SAXException {
+    protected void emptyElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {
         startElement(name, attrs, handler);
         endElement(name, handler);
         attrs.clear();
     }
 
-    protected void textElement(String name, AttributesImpl attrs, String text, TransformerHandler handler) throws SAXException {
+    protected void textElement(String name, AttributesImpl attrs, String text, TransformerHandler handler)
+            throws SAXException {
         if (text != null) {
             startElement(name, attrs, handler);
             handler.startCDATA();
@@ -280,8 +250,7 @@ abstract class ExporterBase extends AbstractExporter {
             Transformer transformer = result.getTransformer();
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(
-                    "{http://xml.apache.org/xslt}indent-amount", "4");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             return result;
         } catch (TransformerConfigurationException e) {
             getUIFacade().showErrorDialog(e);
@@ -311,11 +280,12 @@ abstract class ExporterBase extends AbstractExporter {
             if (field.isVisible()) {
                 addAttribute("id", field.getID(), attrs);
                 addAttribute("name", field.getName(), attrs);
-                addAttribute("width", field.getWidth()*100/totalWidth, attrs);
+                addAttribute("width", field.getWidth() * 100 / totalWidth, attrs);
                 emptyElement("field", attrs, handler);
             }
         }
     }
+
     protected void writeViews(UIFacade facade, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("id", "task-table", attrs);
@@ -330,9 +300,7 @@ abstract class ExporterBase extends AbstractExporter {
         endElement("view", handler);
     }
 
-
-    protected void writeTasks(TaskManager taskManager,
-            final TransformerHandler handler) throws ExportException,
+    protected void writeTasks(TaskManager taskManager, final TransformerHandler handler) throws ExportException,
             SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("xslfo-path", "", attrs);
@@ -348,6 +316,7 @@ abstract class ExporterBase extends AbstractExporter {
         startPrefixedElement("tasks", attrs, handler);
         TaskVisitor visitor = new TaskVisitor() {
             AttributesImpl myAttrs = new AttributesImpl();
+
             @Override
             protected String serializeTask(Task t, int depth) throws Exception {
                 addAttribute("depth", depth, myAttrs);
@@ -365,12 +334,10 @@ abstract class ExporterBase extends AbstractExporter {
 
                 addAttribute("id", "tpd5", myAttrs);
                 textElement("end", myAttrs, t.getEnd().toString(), handler);
-                textElement("milestone", myAttrs, Boolean.valueOf(
-                        t.isMilestone()).toString(), handler);
+                textElement("milestone", myAttrs, Boolean.valueOf(t.isMilestone()).toString(), handler);
 
                 addAttribute("id", "tpd7", myAttrs);
-                textElement("progress", myAttrs, String.valueOf(t
-                        .getCompletionPercentage()), handler);
+                textElement("progress", myAttrs, String.valueOf(t.getCompletionPercentage()), handler);
 
                 addAttribute("id", "tpd6", myAttrs);
                 textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
@@ -387,7 +354,7 @@ abstract class ExporterBase extends AbstractExporter {
                             }
                             int lastSlash = strUri.lastIndexOf('/');
                             if (lastSlash >= 0) {
-                                addAttribute("display-name", strUri.substring(lastSlash+1), myAttrs);
+                                addAttribute("display-name", strUri.substring(lastSlash + 1), myAttrs);
                             }
                         }
                         textElement("attachment", myAttrs, strUri, handler);
@@ -397,7 +364,7 @@ abstract class ExporterBase extends AbstractExporter {
                 }
                 {
                     HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
-                    if (coordinator!=null) {
+                    if (coordinator != null) {
                         addAttribute("id", "tpd8", myAttrs);
                         textElement("coordinator", myAttrs, coordinator.getName(), handler);
                     }
@@ -409,29 +376,28 @@ abstract class ExporterBase extends AbstractExporter {
                         addAttribute("resource-id", assignments[j].getResource().getId(), myAttrs);
                         emptyElement("assigned-resource", myAttrs, handler);
                         usersS.append(assignments[j].getResource().getName());
-                        if (j<assignments.length-1) {
-                          usersS.append(getAssignedResourcesDelimiter());
+                        if (j < assignments.length - 1) {
+                            usersS.append(getAssignedResourcesDelimiter());
                         }
                     }
                 }
 
                 addAttribute("id", "tpdResources", myAttrs);
                 textElement("assigned-to", myAttrs, usersS.toString(), handler);
-                if (t.getNotes()!=null && t.getNotes().length()>0) {
+                if (t.getNotes() != null && t.getNotes().length() > 0) {
                     textElement("notes", myAttrs, t.getNotes(), handler);
                 }
-                if (t.getColor()!=null) {
-                    textElement("color", myAttrs, getHexaColor(t.getColor()),
-                            handler);
+                if (t.getColor() != null) {
+                    textElement("color", myAttrs, getHexaColor(t.getColor()), handler);
                 }
                 {
                     AttributesImpl attrs = new AttributesImpl();
                     CustomColumnsValues customValues = t.getCustomValues();
-                    for (Iterator<CustomColumn> it = getCustomColumnStorage()
-                            .getCustomColums().iterator(); it.hasNext();) {
+                    for (Iterator<CustomColumn> it = getCustomColumnStorage().getCustomColums().iterator(); it
+                            .hasNext();) {
                         CustomColumn nextColumn = it.next();
                         Object value = customValues.getValue(nextColumn);
-                        String valueAsString = value==null ? "" : value.toString();
+                        String valueAsString = value == null ? "" : value.toString();
                         addAttribute("id", nextColumn.getId(), attrs);
                         textElement("custom-field", attrs, valueAsString, handler);
                     }
@@ -449,11 +415,10 @@ abstract class ExporterBase extends AbstractExporter {
     }
 
     protected String getAssignedResourcesDelimiter() {
-      return " ";
+        return " ";
     }
 
-    protected void writeResources(HumanResourceManager resourceManager,
-            TransformerHandler handler) throws SAXException {
+    protected void writeResources(HumanResourceManager resourceManager, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         addAttribute("title", i18n("resourcesList"), attrs);
         addAttribute("name", i18n("colName"), attrs);
@@ -464,7 +429,8 @@ abstract class ExporterBase extends AbstractExporter {
         {
             List<HumanResource> resources = resourceManager.getResources();
 
-//            String[] function = RoleManager.Access.getInstance().getRoleNames();
+            // String[] function =
+            // RoleManager.Access.getInstance().getRoleNames();
             for (int i = 0; i < resources.size(); i++) {
                 HumanResource p = resources.get(i);
                 addAttribute("id", p.getId(), attrs);
@@ -479,7 +445,7 @@ abstract class ExporterBase extends AbstractExporter {
                 textElement("phone", attrs, p.getPhone(), handler);
 
                 List<CustomProperty> customFields = p.getCustomProperties();
-                for (int j=0; j<customFields.size(); j++) {
+                for (int j = 0; j < customFields.size(); j++) {
                     CustomProperty nextProperty = customFields.get(j);
                     addAttribute("id", nextProperty.getDefinition().getID(), attrs);
                     String value = nextProperty.getValueAsString();

@@ -30,12 +30,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -45,6 +39,11 @@ import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.FileUtil;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 public class ExporterToHTML extends ExporterBase {
     private static final String PNG_FORMAT_NAME = "png";
@@ -68,24 +67,20 @@ public class ExporterToHTML extends ExporterBase {
     }
 
     @Override
-    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
-        Job generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
-        Job generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
-        Job generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
-        Job copyImagesJob = createCopyImagesJob(outputFile, resultFiles);
-        return new Job[] {
+    protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+        ExporterJob generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
+        ExporterJob generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
+        ExporterJob generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
+        ExporterJob copyImagesJob = createCopyImagesJob(outputFile, resultFiles);
+        return new ExporterJob[] {
                 generateGanttChartJob, generateResourceChartJob, generatePagesJob, copyImagesJob
         };
     }
 
-    private Job createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
-        Job result = new ExportJob("generate gantt chart") {
+    private ExporterJob createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
+        ExporterJob result = new ExporterJob("generate gantt chart") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     RenderedImage ganttChartImage = getGanttChart().getRenderedImage(new GanttExportSettings(true, true, true, true));
                     File ganttChartImageFile;
@@ -93,13 +88,9 @@ public class ExporterToHTML extends ExporterBase {
                     ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
                     resultFiles.add(ganttChartImageFile);
                 } catch (IOException e) {
-                    getUIFacade().showErrorDialog(e);
-                    this.cancel();
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 } catch (OutOfMemoryError e) {
-                    cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -107,27 +98,19 @@ public class ExporterToHTML extends ExporterBase {
         return result;
     }
 
-    private Job createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
-        Job result = new ExportJob("Generate resource chart") {
+    private ExporterJob createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
+        ExporterJob result = new ExporterJob("Generate resource chart") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(new GanttExportSettings(true, true, true, true));
                     File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
                     ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
                     resultFiles.add(resourceChartImageFile);
                 } catch (IOException e) {
-                    getUIFacade().showErrorDialog(e);
-                    this.cancel();
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 } catch (OutOfMemoryError e) {
-                    cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -135,15 +118,11 @@ public class ExporterToHTML extends ExporterBase {
         return result;
     }
 
-    private Job createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
-        Job result = new ExportJob("Generate HTML pages") {
+    private ExporterJob createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
+        ExporterJob result = new ExporterJob("Generate HTML pages") {
 
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     {
                         TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
@@ -173,18 +152,13 @@ public class ExporterToHTML extends ExporterBase {
                         resultFiles.add(resourcesPageFile);
                     }
                 } catch (SAXException e) {
-                    getUIFacade().showErrorDialog(e);
-                    this.cancel();
+                    throw new RuntimeException(e);
                 } catch (IOException e) {
-                    this.cancel();
-                    getUIFacade().showErrorDialog(e);
+                    throw new RuntimeException(e);
                 } catch (OutOfMemoryError e) {
-                    cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException("Out of memory when running XSL transformation", e);
                 } catch (ExportException e) {
-                    cancel();
-                    ExporterToHTML.this.getUIFacade().showErrorDialog(e);
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -192,14 +166,10 @@ public class ExporterToHTML extends ExporterBase {
         return result;
     }
 
-    private Job createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
-        Job result = new ExportJob("Copying images") {
+    private ExporterJob createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
+        ExporterJob result = new ExporterJob("Copying images") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     File imagesDir = mySelectedStylesheet.getImagesDirectory();
                     if (imagesDir != null && imagesDir.isDirectory() && imagesDir.exists()) {
@@ -224,9 +194,7 @@ public class ExporterToHTML extends ExporterBase {
                         }
                     }
                 } catch (IOException e) {
-                    getUIFacade().showErrorDialog(e);
-                    this.cancel();
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }

@@ -49,6 +49,7 @@ import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -74,11 +75,9 @@ import net.sourceforge.ganttproject.task.Task;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
@@ -251,34 +250,24 @@ public class ExporterToIText extends ExporterBase implements Exporter{
     }
 
     @Override
-    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
+    protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
         waitRegisterFonts();
-        return new Job[] {createTransformationJob(outputFile)};
+        return new ExporterJob[] {createTransformationJob(outputFile)};
     }
 
-    private Job createTransformationJob(final File outputFile) {
-        Job result = new ExportJob("Generating PDF") {
+    private ExporterJob createTransformationJob(final File outputFile) {
+        ExporterJob result = new ExporterJob("Generating PDF") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 assert myStylesheet!=null;
                 OutputStream out = null;
                 try {
                     out = new FileOutputStream(outputFile);
                     ((ThemeImpl)myStylesheet).run(getProject(), getUIFacade(), out);
                 } catch (ExportException e) {
-                    cancel();
-                    e.printStackTrace();
-                    getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 } catch (FileNotFoundException e) {
-                    cancel();
-                    e.printStackTrace();
-                    getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 } finally {
                 }
                 return Status.OK_STATUS;

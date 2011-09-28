@@ -38,19 +38,19 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.Options;
 import org.apache.fop.image.FopImageFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.ganttproject.impex.htmlpdf.fonts.FontRecord;
 import org.ganttproject.impex.htmlpdf.fonts.FontTriplet;
 import org.ganttproject.impex.htmlpdf.fonts.JDKFontLocator;
@@ -83,40 +83,29 @@ public class ExporterToPDF extends ExporterBase {
     }
 
     @Override
-    protected Job[] createJobs(File outputFile, List<File> resultFiles) {
+    protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
         ExportState state = new ExportState(outputFile);
-        Job generateGanttChart = createGenerateGanttChartJob(state);
-        Job generateResourceChart = createGenerateResourcechartJob(state);
-        Job initializeFOP = createFOPInitializationJob(state);
-        Job runTransormation = createTransformationJob(state, resultFiles);
-        return new Job[]{generateGanttChart, generateResourceChart,
+        ExporterJob generateGanttChart = createGenerateGanttChartJob(state);
+        ExporterJob generateResourceChart = createGenerateResourcechartJob(state);
+        ExporterJob initializeFOP = createFOPInitializationJob(state);
+        ExporterJob runTransormation = createTransformationJob(state, resultFiles);
+        return new ExporterJob[]{generateGanttChart, generateResourceChart,
                 initializeFOP, runTransormation};
     }
 
-    private Job createGenerateGanttChartJob(final ExportState state) {
-        Job result = new ExportJob("generate gantt chart") {
+    private ExporterJob createGenerateGanttChartJob(final ExportState state) {
+        ExporterJob result = new ExporterJob("generate gantt chart") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-                    state.ganttChartImageFile = File.createTempFile(
-                            "ganttchart", ".jpg");
-                    ImageIO.write(ganttChartImage, JPG_FORMAT_NAME,
-                            state.ganttChartImageFile);
+                    state.ganttChartImageFile = File.createTempFile("ganttchart", ".jpg");
+                    ImageIO.write(ganttChartImage, JPG_FORMAT_NAME, state.ganttChartImageFile);
                 } catch (Exception e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
-
+                    throw new RuntimeException(e);
                 } catch (OutOfMemoryError e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -124,31 +113,20 @@ public class ExporterToPDF extends ExporterBase {
         return result;
     }
 
-    private Job createGenerateResourcechartJob(final ExportState state) {
-        Job result = new ExportJob("Generate resource chart") {
+    private ExporterJob createGenerateResourcechartJob(final ExportState state) {
+        ExporterJob result = new ExporterJob("Generate resource chart") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
                             new GanttExportSettings(true, true, true, true));
-                    File outputFile = File.createTempFile("resourcechart",
-                            ".jpg");
+                    File outputFile = File.createTempFile("resourcechart", ".jpg");
                     state.resourceChartImageFile = outputFile;
-                    ImageIO.write(resourceChartImage, JPG_FORMAT_NAME,
-                            outputFile);
+                    ImageIO.write(resourceChartImage, JPG_FORMAT_NAME, outputFile);
                 } catch (Exception e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
-
+                    throw new RuntimeException(e);
                 } catch (OutOfMemoryError e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -156,14 +134,10 @@ public class ExporterToPDF extends ExporterBase {
         return result;
     }
 
-    private Job createFOPInitializationJob(final ExportState state) {
-        Job result = new ExportJob("Initializing FOP") {
+    private ExporterJob createFOPInitializationJob(final ExportState state) {
+        ExporterJob result = new ExporterJob("Initializing FOP") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 try {
                     Driver driver = new Driver();
                     driver.setRenderer(Driver.RENDER_PDF);
@@ -171,9 +145,7 @@ public class ExporterToPDF extends ExporterBase {
                     FopImageFactory.resetCache();
                     state.driver = driver;
                 } catch (Exception e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 return Status.OK_STATUS;
             }
@@ -181,14 +153,10 @@ public class ExporterToPDF extends ExporterBase {
         return result;
     }
 
-    private Job createTransformationJob(final ExportState state, final List<File> resultFiles) {
-        Job result = new ExportJob("Generating PDF") {
+    private ExporterJob createTransformationJob(final ExportState state, final List<File> resultFiles) {
+        ExporterJob result = new ExporterJob("Generating PDF") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    getJobManager().cancel(ExporterBase.EXPORT_JOB_FAMILY);
-                    return Status.CANCEL_STATUS;
-                }
+            protected IStatus run() {
                 assert myStylesheet!=null;
                 OutputStream out = null;
                 try {
@@ -196,25 +164,11 @@ public class ExporterToPDF extends ExporterBase {
                     state.driver.setOutputStream(out);
                     TransformerHandler stylesheetHandler = createHandler(myStylesheet
                             .getUrl().toString());
-//                    SAXTransformerFactory factory = getTransformerFactory();
-//                    TransformerHandler stylesheetHandler = factory
-//                            .newTransformerHandler();
-//                    Transformer transformer = stylesheetHandler
-//                            .getTransformer();
-//                    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-//                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//                    transformer.setOutputProperty(
-//                            "{http://xml.apache.org/xslt}indent-amount", "4");
-
-                    stylesheetHandler.setResult(new SAXResult(state.driver
-                            .getContentHandler()));
-//                     stylesheetHandler.setResult(new StreamResult(System.out));
+                    stylesheetHandler.setResult(new SAXResult(state.driver.getContentHandler()));
                     exportProject(state, stylesheetHandler);
                     resultFiles.add(state.outputFile);
                 } catch (Exception e) {
-                    cancel();
-                    ExporterToPDF.this.getUIFacade().showErrorDialog(e);
-                    return Status.CANCEL_STATUS;
+                    throw new RuntimeException(e);
                 }
                 finally {
                     if (out!=null) {
@@ -222,7 +176,8 @@ public class ExporterToPDF extends ExporterBase {
                             out.flush();
                             out.close();
                         } catch(IOException e) {
-                            getUIFacade().showErrorDialog(e);
+                            GPLogger.log(new RuntimeException(
+                                    "Export failure. Failed to flush FOP output to file=" + state.outputFile.getAbsolutePath(), e));
                         }
                     }
                 }
