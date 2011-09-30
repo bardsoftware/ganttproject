@@ -6,15 +6,9 @@ Name "GanttProject"
 XPStyle on
 Icon "ganttproject_16.ico"
 
-!define VERSION "praha-beta1"
-!define VM_ARGS "-Xmx512m -Xms16m"
+!define VERSION "praha-beta2"
 
-!ifdef VERSION
 OutFile ganttproject-${VERSION}.exe
-!else
-OutFile installer-ganttproject.exe
-!endif
-
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\GanttProjectPraha
@@ -170,14 +164,6 @@ Section "Uninstall"
   DeleteRegKey HKCR ".gan\shell\open\command"
 
   ; Remove files and uninstaller
-  ; Delete $INSTDIR\uninstall.exe
-
-  ; Delete $INSTDIR\eclipsito.jar
-  ; Delete $INSTDIR\ganttproject.bat
-  ; Delete $INSTDIR\ganttproject-eclipsito-config.xml
-  ; Delete $INSTDIR\ganttproject_16.ico
-  ; Delete $INSTDIR\ganttproject_32_2.ico
-  RMDir /r "$INSTDIR\plugins"  
   RMDir /r "$INSTDIR"
 
 
