@@ -6,6 +6,7 @@ Name "GanttProject"
 XPStyle on
 Icon "ganttproject_16.ico"
 
+!define MUI_ICON "ganttproject_16.ico"
 !define VERSION "praha-beta2"
 
 OutFile ganttproject-${VERSION}.exe
