@@ -776,11 +776,6 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                   });
             }
             {
-                result.add(new GPAction("columns.pack.label") {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                    }
-                });
                 GPAction fitAction = new GPAction("columns.fit.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -849,8 +844,9 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         int width = comp.getPreferredSize().width;
 
         // Get maximum width of column data
-        renderer = tableColumn.getCellRenderer();
+
         for (int r = 0; r < getTable().getRowCount(); r++) {
+            renderer = table.getCellRenderer(r, column.getOrder());
             comp = renderer.getTableCellRendererComponent(
                     table, table.getValueAt(r, column.getOrder()), false, false, r, column.getOrder());
             width = Math.max(width, comp.getPreferredSize().width);
