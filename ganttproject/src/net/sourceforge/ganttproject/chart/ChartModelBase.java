@@ -321,7 +321,6 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     }
 
     public void setBottomUnitWidth(int pixelsWidth) {
-        System.err.println("bottom unit width=" + pixelsWidth);
         myAtomUnitPixels = pixelsWidth;
     }
 
