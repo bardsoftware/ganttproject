@@ -28,6 +28,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +52,7 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
+import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
@@ -393,6 +395,22 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
                 settings.setWidth(getSize().width);
             }
         }
-        return new ChartImageBuilder(getChartModel()).getRenderedImage(settings, treeTable);
+        class ChartImageBuilderImpl extends ChartImageBuilder {
+            private RenderedChartImage myRenderedImage;
+            ChartImageBuilderImpl() {
+                super(getChartModel());
+            }
+            @Override
+            protected void process(ChartModelBase modelCopy, BufferedImage treeImage, ChartDimensions d) {
+                myRenderedImage = new RenderedChartImage(
+                        modelCopy,
+                        treeImage,
+                        d.getChartWidth(),
+                        d.getChartHeight());
+            }
+        }
+        ChartImageBuilderImpl builder = new ChartImageBuilderImpl();
+        builder.buildImage(settings, treeTable);
+        return builder.myRenderedImage;
     }
 }

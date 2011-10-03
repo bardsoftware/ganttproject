@@ -32,18 +32,19 @@ import net.sourceforge.ganttproject.chart.OffsetBuilder;
 import net.sourceforge.ganttproject.chart.OffsetBuilder.Factory;
 import net.sourceforge.ganttproject.chart.OffsetList;
 
-public class ChartImageBuilder {
+abstract public class ChartImageBuilder {
     private final ChartModelBase myChartModel;
 
     public ChartImageBuilder(ChartModelBase chartModel) {
         myChartModel = chartModel;
     }
 
-    private static class ChartDimensions {
-        int logoHeight;
-        int treeHeight;
-        int tableHeaderHeight;
-        int treeWidth;
+    protected static class ChartDimensions {
+        final int logoHeight;
+        final int treeHeight;
+        final int tableHeaderHeight;
+        final int treeWidth;
+        int chartWidth;
 
         ChartDimensions(GanttExportSettings settings, GPTreeTableBase treeTable) {
             logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
@@ -51,14 +52,22 @@ public class ChartImageBuilder {
             tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
             treeWidth = treeTable.getTable().getWidth();
         }
-    }
-    public RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        ChartDimensions d = new ChartDimensions(settings, treeTable);
-        final int wholeImageHeight = d.treeHeight + d.tableHeaderHeight + d.logoHeight;
 
-        BufferedImage treeImage  = new BufferedImage(d.treeWidth, wholeImageHeight, BufferedImage.TYPE_INT_RGB);
+        public int getChartHeight() {
+            return treeHeight + tableHeaderHeight + logoHeight;
+        }
+
+        public int getChartWidth() {
+            return chartWidth;
+        }
+    }
+
+    public void buildImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
+        ChartDimensions d = new ChartDimensions(settings, treeTable);
+
+        BufferedImage treeImage  = new BufferedImage(d.treeWidth, d.getChartHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = treeImage.createGraphics();
-        printTreeTable(g, treeTable, d);
+        printTreeTable(g, settings, treeTable);
 
         ChartModelBase modelCopy = myChartModel.createCopy();
         if (settings.getZoomLevel() != null) {
@@ -74,22 +83,19 @@ public class ChartImageBuilder {
         OffsetBuilder offsetBuilder = factory.build();
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
-        int chartWidth = bottomOffsets.getEndPx();
-        int chartHeight = wholeImageHeight;
-        modelCopy.setBounds(new Dimension(chartWidth, chartHeight));
+        d.chartWidth = bottomOffsets.getEndPx();
+        modelCopy.setBounds(new Dimension(d.chartWidth, d.getChartHeight()));
 
         modelCopy.setHeaderHeight(d.logoHeight + d.tableHeaderHeight - 1);
         modelCopy.setVisibleTasks(settings.getVisibleTasks());
 
-        RenderedChartImage result = new RenderedChartImage(
-            modelCopy,
-            treeImage,
-            chartWidth,
-            chartHeight);
-        return result;
+        process(modelCopy, treeImage, d);
     }
 
-    public static void printTreeTable(Graphics2D g, GPTreeTableBase treeTable, ChartDimensions d) {
+    protected abstract void process(ChartModelBase modelCopy, BufferedImage treeImage, ChartDimensions d);
+
+    public static void printTreeTable(Graphics2D g, GanttExportSettings settings, GPTreeTableBase treeTable) {
+        ChartDimensions d = new ChartDimensions(settings, treeTable);
         {
             g.setBackground(Color.WHITE);
             g.clearRect(0, 0, d.treeWidth, d.logoHeight);
@@ -100,7 +106,7 @@ public class ChartImageBuilder {
             treeTable.getTable().getTableHeader().printAll(g);
         }
         {
-            g.translate(0, d.logoHeight + d.tableHeaderHeight);
+            g.translate(0, d.tableHeaderHeight);
             treeTable.getTable().printAll(g);
         }
     }
