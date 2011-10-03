@@ -19,21 +19,19 @@ This file is part of GanttProject].
 
 package org.ganttproject.chart.pert;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.JPanel;
 
-import org.eclipse.core.runtime.IStatus;
-
-import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import org.eclipse.core.runtime.IStatus;
 
 /**
  * Abstract class that should implement all PERT chart implementation.
@@ -53,11 +51,6 @@ public abstract class PertChart extends JPanel implements Chart {
     public PertChart(TaskManager taskManager) {
         myTaskManager = taskManager;
     }
-
-    /**
-     * @inheritDoc
-     */
-    public abstract BufferedImage getChart(GanttExportSettings settings);
 
     /**
      * @inheritDoc

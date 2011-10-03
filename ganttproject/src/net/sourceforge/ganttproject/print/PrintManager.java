@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.print;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.print.PrinterJob;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 public class PrintManager {
 
     public static void printChart(Chart chart, GanttExportSettings settings) {
-        BufferedImage image = chart.getChart(settings);
+        RenderedImage image = chart.getRenderedImage(settings);
 
         PrinterJob printJob = PrinterJob.getPrinterJob();
 

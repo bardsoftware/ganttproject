@@ -686,12 +686,8 @@ public class ActivityOnNodePertChart extends PertChart {
         }
     }
 
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        return getChart(settings);
-    }
-
     @Override
-    public BufferedImage getChart(GanttExportSettings settings) {
+    public RenderedImage getRenderedImage(GanttExportSettings settings) {
         BufferedImage image = new BufferedImage(myMaxX, myMaxY,
                 BufferedImage.TYPE_INT_RGB);
         Graphics g = image.getGraphics();

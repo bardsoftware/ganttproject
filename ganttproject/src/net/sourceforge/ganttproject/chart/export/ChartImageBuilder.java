@@ -39,30 +39,26 @@ public class ChartImageBuilder {
         myChartModel = chartModel;
     }
 
-    public RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        final int logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
-        final int treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
-        final int tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
-        final int treeWidth = treeTable.getTable().getWidth();
-        final int wholeImageHeight = treeHeight + tableHeaderHeight + logoHeight;
+    private static class ChartDimensions {
+        int logoHeight;
+        int treeHeight;
+        int tableHeaderHeight;
+        int treeWidth;
 
-        BufferedImage treeImage  = new BufferedImage(treeWidth, wholeImageHeight, BufferedImage.TYPE_INT_RGB);
-        {
-            Graphics2D g = treeImage.createGraphics();
-            g.setBackground(Color.WHITE);
-            g.clearRect(0, 0, treeImage.getWidth(), logoHeight);
-            g.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        ChartDimensions(GanttExportSettings settings, GPTreeTableBase treeTable) {
+            logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
+            treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
+            tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
+            treeWidth = treeTable.getTable().getWidth();
         }
-        {
-            Graphics2D g = treeImage.createGraphics();
-            g.translate(0, logoHeight);
-            treeTable.getTable().getTableHeader().printAll(g);
-        }
-        {
-            Graphics2D g = treeImage.createGraphics();
-            g.translate(0, logoHeight + tableHeaderHeight);
-            treeTable.getTable().printAll(g);
-        }
+    }
+    public RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
+        ChartDimensions d = new ChartDimensions(settings, treeTable);
+        final int wholeImageHeight = d.treeHeight + d.tableHeaderHeight + d.logoHeight;
+
+        BufferedImage treeImage  = new BufferedImage(d.treeWidth, wholeImageHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = treeImage.createGraphics();
+        printTreeTable(g, treeTable, d);
 
         ChartModelBase modelCopy = myChartModel.createCopy();
         if (settings.getZoomLevel() != null) {
@@ -82,7 +78,7 @@ public class ChartImageBuilder {
         int chartHeight = wholeImageHeight;
         modelCopy.setBounds(new Dimension(chartWidth, chartHeight));
 
-        modelCopy.setHeaderHeight(logoHeight + tableHeaderHeight - 1);
+        modelCopy.setHeaderHeight(d.logoHeight + d.tableHeaderHeight - 1);
         modelCopy.setVisibleTasks(settings.getVisibleTasks());
 
         RenderedChartImage result = new RenderedChartImage(
@@ -93,4 +89,19 @@ public class ChartImageBuilder {
         return result;
     }
 
+    public static void printTreeTable(Graphics2D g, GPTreeTableBase treeTable, ChartDimensions d) {
+        {
+            g.setBackground(Color.WHITE);
+            g.clearRect(0, 0, d.treeWidth, d.logoHeight);
+            g.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+        }
+        {
+            g.translate(0, d.logoHeight);
+            treeTable.getTable().getTableHeader().printAll(g);
+        }
+        {
+            g.translate(0, d.logoHeight + d.tableHeaderHeight);
+            treeTable.getTable().printAll(g);
+        }
+    }
 }
