@@ -19,10 +19,6 @@ public interface Chart extends IAdaptable {
 
     public RenderedImage getRenderedImage(GanttExportSettings settings);
 
-    /** @deprecated Use getRenderedImage */
-    @Deprecated
-    public BufferedImage getChart(GanttExportSettings settings);
-
     public Date getStartDate();
     void setStartDate(Date startDate);
     public Date getEndDate();
