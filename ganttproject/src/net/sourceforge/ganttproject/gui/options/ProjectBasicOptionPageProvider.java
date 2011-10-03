@@ -38,6 +38,7 @@ public class ProjectBasicOptionPageProvider extends OptionPageProviderBase {
     @Override
     public Component buildPageComponent() {
         mySettingsPanel = new ProjectSettingsPanel(getProject());
+        mySettingsPanel.initialize();
         return OptionPageProviderBase.wrapContentComponent(
             mySettingsPanel, mySettingsPanel.getTitle(), mySettingsPanel.getComment());
     }
