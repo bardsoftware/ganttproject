@@ -37,4 +37,8 @@ public class ChartDimensions {
     public int getTableHeaderHeight() {
         return tableHeaderHeight;
     }
+
+    public int getFullWidth() {
+        return chartWidth + treeWidth;
+    }
 }
