@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,9 +52,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.export.ChartDimensions;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -276,45 +280,72 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return result;
     }
 
-    static class ChartWriter {
-        protected final ChartModel myModel;
+    static class ChartWriter implements ChartImageVisitor {
         private PdfWriter myWriter;
         private Document myDoc;
+        private Graphics2D myGraphics;
+        private TimelineChart myChart;
+        private PdfTemplate myTemplate;
+        private float myScale;
+        private float myYShift;
         ChartWriter(TimelineChart chart, PdfWriter writer, Document doc) {
-            myModel = chart.getModel();
+            myChart = chart;
             myWriter = writer;
             myDoc = doc;
         }
 
+        protected ChartModel getModel() {
+            return myChart.getModel();
+        }
         void write() {
-            setupChart();
-            Dimension d = myModel.getBounds();
-            d.height += myModel.getChartUIConfiguration().getHeaderHeight();
-
-            PdfTemplate template = myWriter.getDirectContent().createTemplate(d.width, d.height);
-
-            Rectangle page = myDoc.getPageSize();
-            final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
-            final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
-
-            final float xscale = width/d.width;
-            final float yscale = height/d.height;
-            final float minscale = Math.min(xscale, yscale);
-            Graphics2D g2 = template.createGraphics(d.width, d.height);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
-            try {
-                myModel.paint(g2);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-            g2.dispose();
-            float yshift = height - d.height * minscale + myDoc.bottomMargin();
-            myWriter.getDirectContent().addTemplate(template, minscale, 0, 0, minscale, myDoc.leftMargin(), yshift);
-
+            GanttExportSettings settings = new GanttExportSettings();
+            setupChart(settings);
+            myChart.buildImage(settings, this);
+            myGraphics.dispose();
+            myWriter.getDirectContent().addTemplate(myTemplate, myScale, 0, 0, myScale, myDoc.leftMargin(), myYShift);
         }
 
-        protected void setupChart() {
-            myModel.setBounds(myModel.getMaxBounds());
+        private Graphics2D getGraphics(ChartDimensions d) {
+            if (myGraphics == null) {
+                myTemplate = myWriter.getDirectContent().createTemplate(d.getChartWidth(), d.getChartHeight());
+
+                Rectangle page = myDoc.getPageSize();
+                final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
+                final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
+
+                final float xscale = width/d.getChartWidth();
+                final float yscale = height/d.getChartHeight();
+                myScale = Math.min(xscale, yscale);
+                myYShift = height - d.getChartHeight() * myScale + myDoc.bottomMargin();
+                myGraphics = myTemplate.createGraphics(d.getChartWidth(), d.getChartHeight());
+                myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
+            }
+            return myGraphics;
+        }
+
+        protected void setupChart(GanttExportSettings settings) {
+            //myChart.gmyModel.setBounds(myModel.getMaxBounds());
+        }
+
+        @Override
+        public void acceptLogo(ChartDimensions d, Image logo) {
+        }
+
+        @Override
+        public void acceptTable(ChartDimensions d, Component header, Component table) {
+            Graphics2D g = getGraphics(d);
+            g.translate(0, d.getLogoHeight());
+            header.paintAll(g);
+
+            g.translate(0, d.getTableHeaderHeight());
+            table.printAll(g);
+        }
+
+        @Override
+        public void acceptChart(ChartDimensions d, ChartModel model) {
+            Graphics2D g = getGraphics(d);
+            g.translate(d.getTreeWidth(), - d.getLogoHeight() - d.getTableHeaderHeight());
+            model.paint(g);
         }
     }
 
@@ -554,9 +585,8 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     String.valueOf(myWriter.getPageNumber()));
             ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc) {
                 @Override
-                protected void setupChart() {
-                    myModel.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
-                    super.setupChart();
+                protected void setupChart(GanttExportSettings settings) {
+                    settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
                     //myModel.setRowHeight(myModel.getBounds().height/getProject().getTaskManager().getTaskCount());
                 }
             };
@@ -569,13 +599,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                     GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
-            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
-                @Override
-                protected void setupChart() {
-                    super.setupChart();
-                    //myModel.setRowHeight(myModel.getBounds().height/getProject().getH);
-                }
-            };
+            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc);
             resourceChartWriter.write();
         }
 
@@ -723,6 +747,9 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             };
             taskVisitor.visit(getProject().getTaskManager());
             myDoc.add(table);
+            for (int i = 0; i < table.getRows().size(); i++) {
+                System.err.println("row#" + i + " height=" + table.getRowHeight(i));
+            }
         }
 
 

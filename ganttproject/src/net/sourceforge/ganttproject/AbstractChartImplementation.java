@@ -18,8 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -43,6 +47,10 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.export.ChartDimensions;
+import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
@@ -116,13 +124,67 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
     /////////////////////////////////////////////////////////////
     // interface Chart
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        // TODO Auto-generated method stub
-        return null;
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        if (settings.getStartDate() == null) {
+            settings.setStartDate(getStartDate());
+        }
+        if (settings.getEndDate() == null) {
+            settings.setEndDate(getEndDate());
+            if (getChartModel().getEndDate() == null) {
+                // We have never painted the chart yet
+                settings.setWidth(myChartComponent.getSize().width);
+            }
+        }
+        ChartImageBuilder builder = new ChartImageBuilder(settings, myChartModel, myChartComponent.getTreeTable());
+        builder.buildImage(imageVisitor);
     }
-    public BufferedImage getChart(GanttExportSettings settings) {
-        // TODO Auto-generated method stub
-        return null;
+
+    @Override
+    public RenderedImage getRenderedImage(GanttExportSettings settings) {
+        class ChartImageVisitorImpl implements ChartImageVisitor {
+            private RenderedChartImage myRenderedImage;
+            private Graphics2D myGraphics;
+            private BufferedImage myTreeImage;
+
+            @Override
+            public void acceptLogo(ChartDimensions d, Image logo) {
+                Graphics2D g = getGraphics(d);
+                g.setBackground(Color.WHITE);
+                g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
+                g.drawImage(logo, 0, 0, null);
+            }
+
+            @Override
+            public void acceptTable(ChartDimensions d, Component header, Component table) {
+                Graphics2D g = getGraphics(d);
+                g.translate(0, d.getLogoHeight());
+                header.paintAll(g);
+
+                g.translate(0, d.getTableHeaderHeight());
+                table.printAll(g);
+            }
+
+            @Override
+            public void acceptChart(ChartDimensions d, ChartModel model) {
+                myRenderedImage = new RenderedChartImage(
+                        model,
+                        myTreeImage,
+                        d.getChartWidth(),
+                        d.getChartHeight());
+            }
+
+            private Graphics2D getGraphics(ChartDimensions d) {
+                if (myGraphics == null) {
+                    myTreeImage  = new BufferedImage(d.getTreeWidth(), d.getChartHeight(), BufferedImage.TYPE_INT_RGB);
+                    myGraphics = myTreeImage.createGraphics();
+                }
+                return myGraphics;
+            }
+        };
+        ChartImageVisitorImpl visitor = new ChartImageVisitorImpl();
+        buildImage(settings, visitor);
+        return visitor.myRenderedImage;
     }
 
     public Date getStartDate() {

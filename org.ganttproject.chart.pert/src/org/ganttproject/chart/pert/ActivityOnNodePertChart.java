@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -684,6 +685,13 @@ public class ActivityOnNodePertChart extends PertChart {
                 this.nbCols--;
             }
         }
+    }
+
+
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
