@@ -51,7 +51,9 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
@@ -139,6 +141,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public void removeSelectionListener(ChartSelectionListener listener) {
         getImplementation().removeSelectionListener(listener);
     }
+
+    protected abstract GPTreeTableBase getTreeTable();
 
     protected UIFacade getUIFacade() {
         return myUIFacade;
@@ -384,33 +388,13 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
             getChartModel().getBottomUnit());
     }
 
-    protected RenderedImage getRenderedImage(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        if (settings.getStartDate() == null) {
-            settings.setStartDate(getStartDate());
-        }
-        if (settings.getEndDate() == null) {
-            settings.setEndDate(getEndDate());
-            if (getChartModel().getEndDate() == null) {
-                // We have never painted the chart yet
-                settings.setWidth(getSize().width);
-            }
-        }
-        class ChartImageBuilderImpl extends ChartImageBuilder {
-            private RenderedChartImage myRenderedImage;
-            ChartImageBuilderImpl() {
-                super(getChartModel());
-            }
-            @Override
-            protected void process(ChartModelBase modelCopy, BufferedImage treeImage, ChartDimensions d) {
-                myRenderedImage = new RenderedChartImage(
-                        modelCopy,
-                        treeImage,
-                        d.getChartWidth(),
-                        d.getChartHeight());
-            }
-        }
-        ChartImageBuilderImpl builder = new ChartImageBuilderImpl();
-        builder.buildImage(settings, treeTable);
-        return builder.myRenderedImage;
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        getImplementation().buildImage(settings, imageVisitor);
+    }
+
+    @Override
+    public RenderedImage getRenderedImage(GanttExportSettings settings) {
+        return getImplementation().getRenderedImage(settings);
     }
 }

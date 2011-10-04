@@ -214,6 +214,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         return result;
     }
 
+    @Override
+    protected GPTreeTableBase getTreeTable() {
+        return tree.getTreeTable();
+    }
+
+    @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         List<DefaultMutableTreeNode> visibleNodes = settings.isOnlySelectedItem() ?
             Arrays.asList(this.tree.getSelectedNodes()) :
@@ -226,7 +232,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             }
         }
         settings.setVisibleTasks(GanttTree2.convertNodesListToItemList(visibleNodes));
-        return getRenderedImage(settings, tree.getTreeTable());
+        return super.getRenderedImage(settings);
     }
 
     GPUndoManager getUndoManager() {

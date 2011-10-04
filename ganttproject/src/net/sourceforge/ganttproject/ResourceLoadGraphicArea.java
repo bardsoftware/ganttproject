@@ -93,31 +93,21 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 getHeight() - 8);
     }
 
-    public BufferedImage getChart(GanttExportSettings settings) {
-        RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
-        BufferedImage result = renderedImage.getWholeImage();
-        repaint();
-        return result;
+    @Override
+    protected GPTreeTableBase getTreeTable() {
+        return appli.getResourcePanel().getResourceTreeTable();
     }
 
+    @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         settings.setRowCount(getResourceManager().getResources().size());
-        return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
+        return super.getRenderedImage(settings);
     }
 
     @Override
     public String getName() {
         return GanttLanguage.getInstance().getText("resourcesChart");
     }
-//
-//    public Date getStartDate() {
-//        // return this.beg.getTime();
-//        return getTaskManager().getProjectStart();
-//    }
-//
-//    public Date getEndDate() {
-//        return getTaskManager().getProjectEnd();
-//    }
 
     @Override
     protected ChartModelBase getChartModel() {
