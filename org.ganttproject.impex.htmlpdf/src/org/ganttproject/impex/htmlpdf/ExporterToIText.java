@@ -307,17 +307,17 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         private Graphics2D getGraphics(ChartDimensions d) {
             if (myGraphics == null) {
-                myTemplate = myWriter.getDirectContent().createTemplate(d.getChartWidth(), d.getChartHeight());
+                myTemplate = myWriter.getDirectContent().createTemplate(d.getFullWidth(), d.getChartHeight());
 
                 Rectangle page = myDoc.getPageSize();
                 final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
                 final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
 
-                final float xscale = width/d.getChartWidth();
+                final float xscale = width/d.getFullWidth();
                 final float yscale = height/d.getChartHeight();
                 myScale = Math.min(xscale, yscale);
                 myYShift = height - d.getChartHeight() * myScale + myDoc.bottomMargin();
-                myGraphics = myTemplate.createGraphics(d.getChartWidth(), d.getChartHeight());
+                myGraphics = myTemplate.createGraphics(d.getFullWidth(), d.getChartHeight());
                 myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             }
             return myGraphics;
@@ -747,9 +747,6 @@ public class ExporterToIText extends ExporterBase implements Exporter{
             };
             taskVisitor.visit(getProject().getTaskManager());
             myDoc.add(table);
-            for (int i = 0; i < table.getRows().size(); i++) {
-                System.err.println("row#" + i + " height=" + table.getRowHeight(i));
-            }
         }
 
 
