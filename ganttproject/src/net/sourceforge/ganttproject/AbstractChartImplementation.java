@@ -134,6 +134,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         if (settings.getEndDate() == null) {
             settings.setEndDate(modelCopy.getEndDate());
         }
+        if (settings.isCommandLineMode()) {
+            myChartComponent.getTreeTable().getTable().getTableHeader().setVisible(true);
+            myChartComponent.getTreeTable().doLayout();
+            myChartComponent.getTreeTable().getTable().setRowHeight(modelCopy.calculateRowHeight());
+            myChartComponent.getTreeTable().autoFitColumns();
+        }
         ChartImageBuilder builder = new ChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
         builder.buildImage(imageVisitor);
     }
@@ -157,10 +163,10 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
             public void acceptTable(ChartDimensions d, Component header, Component table) {
                 Graphics2D g = getGraphics(d);
                 g.translate(0, d.getLogoHeight());
-                header.paintAll(g);
+                header.print(g);
 
                 g.translate(0, d.getTableHeaderHeight());
-                table.printAll(g);
+                table.print(g);
             }
 
             @Override

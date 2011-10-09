@@ -101,6 +101,7 @@ public abstract class AbstractExporter implements Exporter {
                 }
                 result.setWidth(-1);
             }
+            result.setCommandLineMode(myRootPreferences.getBoolean("commandLine", false));
         }
         return result;
     }

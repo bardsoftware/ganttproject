@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
@@ -102,6 +103,11 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
         private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
         private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+
+        private List<ColumnImpl> getColumns() {
+            return Collections.unmodifiableList(myColumns);
+        }
+
         @Override
         public int getSize() {
             return myColumns.size();
@@ -315,6 +321,16 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
         @Override
         public void setOrder(int order) {
+        }
+
+        Dimension getHeaderFitDimension() {
+            TableCellRenderer renderer = myTableColumn.getHeaderRenderer();
+            if (renderer == null) {
+                renderer = myTable.getTableHeader().getDefaultRenderer();
+            }
+            Component comp = renderer.getTableCellRendererComponent(
+                    myTable, myTableColumn.getHeaderValue(), false, false, 0, 0);
+            return comp.getPreferredSize();
         }
     }
 
@@ -830,30 +846,52 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         }
     }
 
-    private void autoFitColumnWidth(ColumnImpl column) {
+    public void autoFitColumns() {
+        int visibleWidth = 0;
+        int headerHeight = 0;
+        for (ColumnImpl column : getTableHeaderUiFacade().getColumns()) {
+            if (column.isVisible()) {
+                Dimension columnDimension = autoFitColumnWidth(column);
+                visibleWidth += columnDimension.width;
+                headerHeight = Math.max(headerHeight, column.getHeaderFitDimension().height);
+            }
+        }
+//        {
+//            Rectangle bounds = getBounds();
+//            setBounds(bounds.x, bounds.y, visibleWidth, bounds.height);
+//        }
+        if (headerHeight > 0) {
+            Rectangle bounds = getTable().getTableHeader().getBounds();
+            getTable().getTableHeader().setBounds(bounds.x, bounds.y, visibleWidth, headerHeight);
+        }
+        {
+            Rectangle bounds = getTable().getBounds();
+            getTable().setBounds(bounds.x, bounds.y, visibleWidth, getTable().getRowCount() * getTable().getRowHeight());
+        }
+    }
+
+    private Dimension autoFitColumnWidth(ColumnImpl column) {
         final int margin = 5;
         final JTable table = getTable();
         final TableColumnExt tableColumn = column.myTableColumn;
 
-        TableCellRenderer renderer = tableColumn.getHeaderRenderer();
-        if (renderer == null) {
-            renderer = getTable().getTableHeader().getDefaultRenderer();
-        }
-        Component comp = renderer.getTableCellRendererComponent(
-                getTable(), tableColumn.getHeaderValue(), false, false, 0, 0);
-        int width = comp.getPreferredSize().width;
+        Dimension headerFit = column.getHeaderFitDimension();
+        int width = headerFit.width;
+        int height = 0;
 
         // Get maximum width of column data
-
         for (int r = 0; r < getTable().getRowCount(); r++) {
-            renderer = table.getCellRenderer(r, column.getOrder());
-            comp = renderer.getTableCellRendererComponent(
+            TableCellRenderer renderer = table.getCellRenderer(r, column.getOrder());
+            Component comp = renderer.getTableCellRendererComponent(
                     table, table.getValueAt(r, column.getOrder()), false, false, r, column.getOrder());
             width = Math.max(width, comp.getPreferredSize().width);
+            height += comp.getPreferredSize().height;
         }
         // Add margin
         width += 2 * margin;
         // Set the width
+        tableColumn.setWidth(width);
         tableColumn.setPreferredWidth(width);
+        return new Dimension(width, height);
     }
 }

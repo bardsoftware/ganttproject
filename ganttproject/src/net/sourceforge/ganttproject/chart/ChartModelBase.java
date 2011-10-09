@@ -204,7 +204,9 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         @Override
         public OffsetBuilderImpl createAtomUnitBuilder() {
             OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
-                    ChartModelBase.this, (int)getBounds().getWidth(), null);
+                    ChartModelBase.this,
+                    getBounds() == null ? 0 : (int)getBounds().getWidth(),
+                            null);
             int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
                 getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
             offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit*2);

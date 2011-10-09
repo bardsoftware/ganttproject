@@ -24,6 +24,8 @@ public class GanttExportSettings {
 
     private ZoomState myZoomLevel;
 
+    private boolean isCommandLineMode;
+
     public GanttExportSettings() {
         name = percent = depend = ok = true;
         onlySelectedItems = false;
@@ -96,5 +98,13 @@ public class GanttExportSettings {
 
     public ZoomState getZoomLevel() {
         return myZoomLevel;
+    }
+
+    public void setCommandLineMode(boolean value) {
+        isCommandLineMode = value;
+    }
+
+    public boolean isCommandLineMode() {
+        return isCommandLineMode;
     }
 }
