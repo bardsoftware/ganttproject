@@ -77,4 +77,20 @@ public class TimeUnitImpl implements TimeUnit {
         throw new UnsupportedOperationException("Time unit=" + this
                 + " doesnt support this operation");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (false == obj instanceof TimeUnitImpl) {
+            return false;
+        }
+        TimeUnitImpl that = (TimeUnitImpl) obj;
+        return this.myName.equals(that.myName);
+    }
+
+    @Override
+    public int hashCode() {
+        return myName.hashCode();
+    }
+
+
 }
