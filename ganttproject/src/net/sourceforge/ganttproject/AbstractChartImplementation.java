@@ -126,17 +126,15 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     // interface Chart
     @Override
     public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        ChartModelBase modelCopy = getChartModel().createCopy();
+        modelCopy.setBounds(myChartComponent.getSize());
         if (settings.getStartDate() == null) {
-            settings.setStartDate(getStartDate());
+            settings.setStartDate(modelCopy.getStartDate());
         }
         if (settings.getEndDate() == null) {
-            settings.setEndDate(getEndDate());
-            if (getChartModel().getEndDate() == null) {
-                // We have never painted the chart yet
-                settings.setWidth(myChartComponent.getSize().width);
-            }
+            settings.setEndDate(modelCopy.getEndDate());
         }
-        ChartImageBuilder builder = new ChartImageBuilder(settings, myChartModel, myChartComponent.getTreeTable());
+        ChartImageBuilder builder = new ChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
         builder.buildImage(imageVisitor);
     }
 

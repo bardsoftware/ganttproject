@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.chart.OffsetManager.OffsetBuilderFactory;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -56,7 +57,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
             //System.err.println("start xpos=" + startXpos);
             myPrevXpos = startXpos;
             ChartModelBase.this.myScrollingSession = this;
-            ChartModelBase.this.constructOffsets();
+            ChartModelBase.this.myOffsetManager.reset();
             myTopOffsets = getTopUnitOffsets();
             myBottomOffsets = getBottomUnitOffsets();
             myDefaultOffsets = getDefaultUnitOffsets();
@@ -67,16 +68,18 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         @Override
         public void setXpos(int xpos) {
             int shift = xpos - myPrevXpos;
-            //System.err.println("xpos="+xpos+" shift=" + shift);
+            // System.err.println("xpos="+xpos+" shift=" + shift);
             shiftOffsets(shift);
             if (myBottomOffsets.get(0).getOffsetPixels() > 0) {
                 int currentExceed = myBottomOffsets.get(0).getOffsetPixels();
                 ChartModelBase.this.setStartDate(getBottomUnit().jumpLeft(getStartDate()));
+                ChartModelBase.this.myOffsetManager.constructOffsets();
                 shiftOffsets(-myBottomOffsets.get(1).getOffsetPixels() + currentExceed);
-                //System.err.println("one time unit to the left. start date=" + ChartModelBase.this.getStartDate());
+                // System.err.println("one time unit to the left. start date=" + ChartModelBase.this.getStartDate());
                 //System.err.println(myBottomOffsets.subList(0, 3));
             } else if (myBottomOffsets.get(1).getOffsetPixels() <= 0) {
                 ChartModelBase.this.setStartDate(myBottomOffsets.get(2).getOffsetStart());
+                ChartModelBase.this.myOffsetManager.constructOffsets();
                 shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
                 //System.err.println("one time unit to the right. start date=" + ChartModelBase.this.getStartDate());
                 //System.err.println(myBottomOffsets.subList(0, 3));
@@ -192,46 +195,44 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         addRenderer(myChartGrid);
     }
 
-    private List<Offset> myTopUnitOffsets = new ArrayList<Offset>();
-    private OffsetList myBottomUnitOffsets = new OffsetList();
+    private OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
+        @Override
+        public OffsetBuilder createTopAndBottomUnitBuilder() {
+            return createOffsetBuilderFactory().build();
+        }
 
-    private List<Offset> myDefaultUnitOffsets = new ArrayList<Offset>();
+        @Override
+        public OffsetBuilderImpl createAtomUnitBuilder() {
+            OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
+                    ChartModelBase.this, (int)getBounds().getWidth(), null);
+            int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
+                getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
+            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit*2);
+            return offsetBuilder;
+        }
+    });
 
+    @Override
     public List<Offset> getTopUnitOffsets() {
-        return myTopUnitOffsets;
+        return myOffsetManager.getTopUnitOffsets();
     }
 
+    @Override
     public OffsetList getBottomUnitOffsets() {
-        return myBottomUnitOffsets;
+        return myOffsetManager.getBottomUnitOffsets();
     }
 
+    @Override
     public List<Offset> getDefaultUnitOffsets() {
         if (getBottomUnit().equals(getTimeUnitStack().getDefaultTimeUnit())) {
             return getBottomUnitOffsets();
         }
-        if (myDefaultUnitOffsets.isEmpty()) {
-            OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(this, (int)getBounds().getWidth(), null);
-            int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
-                getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
-            offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession==null ? 0 : defaultUnitCountPerLastBottomUnit*2);
-            offsetBuilder.constructBottomOffsets(myDefaultUnitOffsets, 0);
-        }
-        return myDefaultUnitOffsets;
+        return myOffsetManager.getAtomUnitOffsets();
     }
 
     Date getOffsetAnchorDate() {
         return /*myScrollingSession == null ?
             myStartDate :*/ getBottomUnit().jumpLeft(myStartDate);
-    }
-
-    private void constructOffsets() {
-        myTopUnitOffsets.clear();
-        myBottomUnitOffsets.clear();
-        myDefaultUnitOffsets.clear();
-
-        //System.err.println("offsets start date=" + startDate);
-        OffsetBuilder offsetBuilder = createOffsetBuilderFactory().build();
-        offsetBuilder.constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
     }
 
     public OffsetBuilder.Factory createOffsetBuilderFactory() {
@@ -251,10 +252,8 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return factory;
     }
 
+    @Override
     public void paint(Graphics g) {
-        if (myScrollingSession == null) {
-            constructOffsets();
-        }
         int height = (int) getBounds().getHeight();
         for (ChartRendererBase renderer: getRenderers()) {
             renderer.clear();
@@ -286,6 +285,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myRenderers;
     }
 
+    @Override
     public void addRenderer(ChartRendererBase renderer) {
         myRenderers.add(renderer);
     }
@@ -298,52 +298,73 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         myRenderers.clear();
     }
 
+    @Override
     public void setBounds(Dimension bounds) {
+        if (bounds != null && bounds.equals(myBounds)) {
+            return;
+        }
         myBounds = bounds;
+        myOffsetManager.reset();
     }
 
+    @Override
     public void setStartDate(Date startDate) {
-        //System.err.println("ChartModelBase.setStartDate: " + startDate);
         myHorizontalOffset = 0;
         if (!startDate.equals(myStartDate)) {
             myStartDate = startDate;
-            constructOffsets();
+            myOffsetManager.reset();
         }
     }
 
+    @Override
     public Date getStartDate() {
         return myStartDate;
     }
 
+    @Override
     public Date getEndDate() {
         List<Offset> offsets = getBottomUnitOffsets();
         return offsets.isEmpty() ? null : offsets.get(offsets.size()-1).getOffsetEnd();
     }
 
+    @Override
     public void setBottomUnitWidth(int pixelsWidth) {
+        if (pixelsWidth == myAtomUnitPixels) {
+            return;
+        }
         myAtomUnitPixels = pixelsWidth;
+        myOffsetManager.reset();
     }
 
+    @Override
     public void setRowHeight(int rowHeight) {
         getChartUIConfiguration().setRowHeight(rowHeight);
     }
 
+    @Override
     public void setTopTimeUnit(TimeUnit topTimeUnit) {
         setTopUnit(topTimeUnit);
     }
 
+    @Override
     public void setBottomTimeUnit(TimeUnit bottomTimeUnit) {
+        if (bottomTimeUnit.equals(myBottomUnit)) {
+            return;
+        }
         myBottomUnit = bottomTimeUnit;
+        myOffsetManager.reset();
     }
 
     protected UIConfiguration getProjectConfig() {
         return myProjectConfig;
     }
 
+    @Override
     public Dimension getBounds() {
         return myBounds;
     }
 
+    @Override
     public Dimension getMaxBounds() {
         OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
                 this, Integer.MAX_VALUE, getTaskManager().getProjectEnd());
@@ -359,14 +380,17 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
     protected abstract int getRowCount();
 
 
+    @Override
     public int getBottomUnitWidth() {
         return myAtomUnitPixels;
     }
 
+    @Override
     public TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
 
+    @Override
     public ChartUIConfiguration getChartUIConfiguration() {
         return myChartUIConfiguration;
     }
@@ -383,21 +407,18 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
 
     private ScrollingSessionImpl myScrollingSession;
 
+    @Override
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
 
+    @Override
     public ChartHeader getChartHeader() {
         return myChartHeader;
     }
 
+    @Override
     public Offset getOffsetAt(int x) {
-        //x = x + myHorizontalOffset;
-       // System.err.println("x=" + x + " horoffset=" + myHorizontalOffset+ " offsets:\n" + getDefaultUnitOffsets());
-//        OffsetLookup lookup = new OffsetLookup();
-//        Date result = lookup.lookupDateByPixels(x, getDefaultUnitOffsets());
-//        System.err.println("result=" + result);
-//        return result;
         for (Offset offset : getDefaultUnitOffsets()) {
             if (offset.getOffsetPixels()>=x) {
                 //System.err.println("result=" + offset);
@@ -424,6 +445,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         getChartUIConfiguration().setHeaderHeight(i);
     }
 
+    @Override
     public void setVerticalOffset(int offset) {
         myVerticalOffset = offset;
     }
@@ -440,6 +462,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myHorizontalOffset;
     }
 
+    @Override
     public TimeUnit getBottomUnit() {
         return myBottomUnit;
     }
@@ -448,8 +471,12 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return getTimeUnitStack().getDefaultTimeUnit();
     }
 
-    private void setTopUnit(TimeUnit myTopUnit) {
-        this.myTopUnit = myTopUnit;
+    private void setTopUnit(TimeUnit topUnit) {
+        if (topUnit.equals(myTopUnit)) {
+            return;
+        }
+        this.myTopUnit = topUnit;
+        myOffsetManager.reset();
     }
 
     public TimeUnit getTopUnit() {
@@ -500,6 +527,7 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         copy.calculateRowHeight();
     }
 
+    @Override
     public OptionEventDispatcher getOptionEventDispatcher() {
         return myOptionEventDispatcher;
     }
