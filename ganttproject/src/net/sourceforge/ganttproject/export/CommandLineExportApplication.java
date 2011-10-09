@@ -101,6 +101,7 @@ public class CommandLineExportApplication {
         prefs.put("exportRange",
             DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
+        prefs.putBoolean("commandLine", true);
         exporter.setContext(project, consoleUI, prefs);
         if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
             ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());

@@ -86,7 +86,16 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public boolean getBoolean(String key, boolean def) {
-        return false;
+        String value = get(key, null);
+        if (value == null) {
+            return def;
+        }
+        try {
+            return Boolean.parseBoolean(value);
+        } catch (Exception e) {
+            GPLogger.log(new RuntimeException("Failed to parse value=" + value + " as boolean", e));
+            return false;
+        }
     }
 
     public byte[] getByteArray(String key, byte[] def) {
@@ -142,7 +151,7 @@ public class PluginPreferencesImpl implements Preferences {
     }
 
     public void putBoolean(String key, boolean value) {
-        // TODO Auto-generated method stub
+        myProps.put(key, Boolean.toString(value));
     }
 
     public void putByteArray(String key, byte[] value) {
