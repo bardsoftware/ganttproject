@@ -587,7 +587,6 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 @Override
                 protected void setupChart(GanttExportSettings settings) {
                     settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
-                    //myModel.setRowHeight(myModel.getBounds().height/getProject().getTaskManager().getTaskCount());
                 }
             };
             ganttChartWriter.write();
@@ -599,7 +598,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                     GanttLanguage.getInstance().getText("resourcesChart"),
                     String.valueOf(myWriter.getPageNumber()));
-            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc);
+            ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
+                @Override
+                protected void setupChart(GanttExportSettings settings) {
+                    settings.setRowCount(myProject.getHumanResourceManager().getResources().size());
+                }
+            };
             resourceChartWriter.write();
         }
 

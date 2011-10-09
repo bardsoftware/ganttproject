@@ -41,13 +41,12 @@ public class ChartImageBuilder {
     }
 
     public void buildImage(ChartImageVisitor visitor) {
-        ChartModelBase modelCopy = myChartModel.createCopy();
         if (mySettings.getZoomLevel() != null) {
-            modelCopy.setBottomTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getBottomTimeUnit());
-            modelCopy.setTopTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
-            modelCopy.setBottomUnitWidth(mySettings.getZoomLevel().getBottomUnitWidth());
+            myChartModel.setBottomTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getBottomTimeUnit());
+            myChartModel.setTopTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
+            myChartModel.setBottomUnitWidth(mySettings.getZoomLevel().getBottomUnitWidth());
         }
-        OffsetBuilder.Factory factory = modelCopy.createOffsetBuilderFactory()
+        OffsetBuilder.Factory factory = myChartModel.createOffsetBuilderFactory()
             .withStartDate(mySettings.getStartDate())
             .withEndDate(mySettings.getEndDate())
             .withEndOffset(mySettings.getWidth() < 0 ? Integer.MAX_VALUE : mySettings.getWidth());
@@ -56,14 +55,14 @@ public class ChartImageBuilder {
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
         myDimensions.chartWidth = bottomOffsets.getEndPx();
-        modelCopy.setBounds(new Dimension(myDimensions.chartWidth, myDimensions.getChartHeight()));
+        myChartModel.setBounds(new Dimension(myDimensions.chartWidth, myDimensions.getChartHeight()));
 
-        modelCopy.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1);
-        modelCopy.setVisibleTasks(mySettings.getVisibleTasks());
+        myChartModel.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1);
+        myChartModel.setVisibleTasks(mySettings.getVisibleTasks());
 
         visitor.acceptLogo(myDimensions, AbstractChartImplementation.LOGO.getImage());
         visitor.acceptTable(myDimensions, myTreeTable.getTable().getTableHeader(), myTreeTable.getTable());
 
-        visitor.acceptChart(myDimensions, modelCopy);
+        visitor.acceptChart(myDimensions, myChartModel);
     }
 }
