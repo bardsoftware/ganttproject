@@ -329,16 +329,20 @@ public class ExporterToIText extends ExporterBase implements Exporter{
 
         @Override
         public void acceptLogo(ChartDimensions d, Image logo) {
+            Graphics2D g = getGraphics(d);
+            g.setBackground(Color.WHITE);
+            g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
+            g.drawImage(logo, 0, 0, null);
         }
 
         @Override
         public void acceptTable(ChartDimensions d, Component header, Component table) {
             Graphics2D g = getGraphics(d);
             g.translate(0, d.getLogoHeight());
-            header.paintAll(g);
+            header.print(g);
 
             g.translate(0, d.getTableHeaderHeight());
-            table.printAll(g);
+            table.print(g);
         }
 
         @Override
