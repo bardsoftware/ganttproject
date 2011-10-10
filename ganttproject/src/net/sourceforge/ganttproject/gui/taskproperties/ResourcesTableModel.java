@@ -180,8 +180,8 @@ class ResourcesTableModel extends AbstractTableModel {
                 float load = updateTarget.getLoad();
                 boolean coord = updateTarget.isCoordinator();
                 updateTarget.delete();
-                ResourceAssignment newAssignment = myMutator
-                        .addAssignment((HumanResource) value);
+                myMutator.deleteAssignment(updateTarget.getResource());
+                ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
                 newAssignment.setLoad(load);
                 newAssignment.setCoordinator(coord);
                 myAssignments.set(row, newAssignment);
