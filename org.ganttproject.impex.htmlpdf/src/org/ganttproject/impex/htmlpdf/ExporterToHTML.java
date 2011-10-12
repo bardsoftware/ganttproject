@@ -28,13 +28,12 @@ import java.net.URL;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -43,11 +42,15 @@ import net.sourceforge.ganttproject.util.FileUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 public class ExporterToHTML extends ExporterBase {
+    static final String GANTT_CHART_FILE_EXTENSION = "png";
+    static final String RESOURCE_CHART_FILE_EXTENSION = "res.png";
     private static final String PNG_FORMAT_NAME = "png";
     private HTMLStylesheet mySelectedStylesheet;
+    private final HtmlSerializer mySerializer = new HtmlSerializer(this);
+
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.html.description");
     }
@@ -57,11 +60,13 @@ public class ExporterToHTML extends ExporterBase {
         mySelectedStylesheet = (HTMLStylesheet) stylesheet;
     }
 
+    @Override
     public GPOptionGroup[] getSecondaryOptions() {
         //return getGanttChart().getOptionGroups();
         return null;
     }
 
+    @Override
     public String getFileNamePattern() {
         return "html";
     }
@@ -127,28 +132,28 @@ public class ExporterToHTML extends ExporterBase {
                     {
                         TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
                         handler.setResult(new StreamResult(outputFile));
-                        serialize(handler, outputFile);
+                        mySerializer.serialize(handler, outputFile);
                         resultFiles.add(outputFile);
                     }
                     {
                         TransformerHandler handler = mySelectedStylesheet.createTasksPageHandler();
                         File tasksPageFile = appendSuffixBeforeExtension(outputFile, "-tasks");
                         handler.setResult(new StreamResult(tasksPageFile));
-                        serialize(handler, outputFile);
+                        mySerializer.serialize(handler, outputFile);
                         resultFiles.add(tasksPageFile);
                     }
                     {
                         TransformerHandler handler = mySelectedStylesheet.createGanttChartPageHandler();
                         File chartPageFile = appendSuffixBeforeExtension(outputFile, "-chart");
                         handler.setResult(new StreamResult(chartPageFile));
-                        serialize(handler, outputFile);
+                        mySerializer.serialize(handler, outputFile);
                         resultFiles.add(chartPageFile);
                     }
                     {
                         TransformerHandler handler = mySelectedStylesheet.createResourcesPageHandler();
                         File resourcesPageFile = appendSuffixBeforeExtension(outputFile, "-resources");
                         handler.setResult(new StreamResult(resourcesPageFile));
-                        serialize(handler, outputFile);
+                        mySerializer.serialize(handler, outputFile);
                         resultFiles.add(resourcesPageFile);
                     }
                 } catch (SAXException e) {
@@ -202,74 +207,7 @@ public class ExporterToHTML extends ExporterBase {
         return result;
     }
 
-    private void serialize(TransformerHandler handler, File outputFile) throws SAXException, IOException, ExportException {
-        String filenameWithoutExtension = getFilenameWithoutExtension(outputFile);
-        handler.startDocument();
-        AttributesImpl attrs = new AttributesImpl();
-
-        writeViews(getUIFacade(), handler);
-        startElement("ganttproject",attrs, handler);
-        textElement("title", attrs, "GanttProject - " + filenameWithoutExtension, handler);
-
-        addAttribute("prefix", filenameWithoutExtension, attrs);
-        startElement("links", attrs, handler);
-        textElement("home", attrs, i18n("home"), handler);
-        textElement("chart", attrs, i18n("gantt"), handler);
-        textElement("tasks", attrs, i18n("task"), handler);
-        textElement("resources", attrs, i18n("human"), handler);
-        endElement("links", handler);
-
-        startElement("project", attrs, handler);
-        addAttribute("title", i18n("project"), attrs);
-        textElement("name", attrs, getProject().getProjectName(), handler);
-        addAttribute("title", i18n("organization"), attrs);
-        textElement("organization", attrs, getProject().getOrganization(), handler);
-        addAttribute("title", i18n("webLink"), attrs);
-        textElement("webLink", attrs, getProject().getWebLink(), handler);
-        addAttribute("title", i18n("shortDescription"), attrs);
-        textElement("description", attrs, getProject().getDescription(), handler);
-        endElement("project", handler);
-
-        //TODO: [dbarashev, 10.09.2005] introduce output files grouping structure
-        String ganttChartFileName = replaceExtension(outputFile,GANTT_CHART_FILE_EXTENSION).getName();
-        textElement("chart", attrs, ganttChartFileName, handler);
-        addAttribute("name", i18n("colName"), attrs);
-        addAttribute("role", i18n("colRole"), attrs);
-        addAttribute("mail", i18n("colMail"), attrs);
-        addAttribute("phone", i18n("colPhone"), attrs);
-        startElement("resources", attrs, handler);
-        writeResources(getProject().getHumanResourceManager(), handler);
-
-        String resourceChartFileName = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION).getName();
-        addAttribute("path", resourceChartFileName, attrs);
-        emptyElement("chart", attrs, handler);
-        endElement("resources", handler);
-
-        addAttribute("name", i18n("name"), attrs);
-        addAttribute("begin", i18n("start"), attrs);
-        addAttribute("end", i18n("end"), attrs);
-        addAttribute("milestone", i18n("meetingPoint"), attrs);
-        addAttribute("progress", i18n("advancement"), attrs);
-        addAttribute("assigned-to", i18n("assignTo"), attrs);
-        addAttribute("notes", i18n("notesTask"), attrs);
-        try {
-            writeTasks(getProject().getTaskManager(), handler);
-        } catch (Exception e) {
-            throw new ExportException("Failed to write tasks", e);
-        }
-
-        addAttribute("version", "Ganttproject ("+GanttProject.version + ")", attrs);
-        addAttribute("date", GanttCalendar.getDateAndTime(), attrs);
-        emptyElement("footer", attrs, handler);
-        endElement("ganttproject", handler);
-        handler.endDocument();
-    }
-
     @Override
-    protected String getAssignedResourcesDelimiter() {
-      return ", ";
-    }
-
     public String proposeFileExtension() {
         return "html";
     }
@@ -286,7 +224,7 @@ public class ExporterToHTML extends ExporterBase {
     }
 
     @Override
-    protected Stylesheet[] getStylesheets() {
+    protected List<Stylesheet> getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
             protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
@@ -308,12 +246,11 @@ public class ExporterToHTML extends ExporterBase {
         public TransformerHandler createTitlePageHandler() {
             try {
                 URL titleUrl = new URL(getUrl(), "gantt.xsl");
-                TransformerHandler result = createHandler(titleUrl.toString());
+                TransformerHandler result = mySerializer.createHandler(titleUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
+                throw new RuntimeException(e);
+            } catch (TransformerConfigurationException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -321,12 +258,11 @@ public class ExporterToHTML extends ExporterBase {
         public TransformerHandler createTasksPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-tasks.xsl");
-                TransformerHandler result = createHandler(tasksUrl.toString());
+                TransformerHandler result = mySerializer.createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
+                throw new RuntimeException(e);
+            } catch (TransformerConfigurationException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -334,12 +270,11 @@ public class ExporterToHTML extends ExporterBase {
         public TransformerHandler createGanttChartPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-chart.xsl");
-                TransformerHandler result = createHandler(tasksUrl.toString());
+                TransformerHandler result = mySerializer.createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
+                throw new RuntimeException(e);
+            } catch (TransformerConfigurationException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -347,12 +282,11 @@ public class ExporterToHTML extends ExporterBase {
         public TransformerHandler createResourcesPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-resources.xsl");
-                TransformerHandler result = createHandler(tasksUrl.toString());
+                TransformerHandler result = mySerializer.createHandler(tasksUrl.toString());
                 return result;
             } catch (MalformedURLException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
+                throw new RuntimeException(e);
+            } catch (TransformerConfigurationException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -371,7 +305,11 @@ public class ExporterToHTML extends ExporterBase {
         }
     }
 
-    private static File replaceExtension(File f, String newExtension) throws IOException {
+    private static File appendSuffixBeforeExtension(File f, String suffix) throws IOException {
+        return FileUtil.appendSuffixBeforeExtension(f, suffix);
+    }
+
+    static File replaceExtension(File f, String newExtension) throws IOException {
         File result = FileUtil.replaceExtension(f, newExtension);
         if (!result.exists()) {
             result.createNewFile();
@@ -379,14 +317,4 @@ public class ExporterToHTML extends ExporterBase {
         return result;
     }
 
-    private static File appendSuffixBeforeExtension(File f, String suffix) throws IOException {
-        return FileUtil.appendSuffixBeforeExtension(f, suffix);
-    }
-
-    private static String getFilenameWithoutExtension(File f) {
-        return FileUtil.getFilenameWithoutExtension(f);
-    }
-
-    private static final String GANTT_CHART_FILE_EXTENSION = "png";
-    private static final String RESOURCE_CHART_FILE_EXTENSION = "res.png";
 }

@@ -35,7 +35,7 @@ public class PluginManager {
                 assert nextExtension!=null && extensionPointInterface.isAssignableFrom(nextExtension.getClass());
                 extensions.add((T)nextExtension);
             } catch (CoreException e) {
-                if (!GPLogger.log(e)) {
+                if (!GPLogger.logToLogger(e)) {
                     e.printStackTrace(System.err);
                 }
             }
