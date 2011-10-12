@@ -58,11 +58,11 @@ public abstract class AbstractExporter implements Exporter {
         return myExportRangeEnd;
     }
 
-    protected UIFacade getUIFacade() {
+    public UIFacade getUIFacade() {
         return myUIFacade;
     }
 
-    protected IGanttProject getProject() {
+    public IGanttProject getProject() {
         return myProject;
     }
 

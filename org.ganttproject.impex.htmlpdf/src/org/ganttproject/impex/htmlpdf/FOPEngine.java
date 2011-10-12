@@ -28,9 +28,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.DateFormat;
 import java.util.List;
-import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerConfigurationException;
@@ -39,11 +37,11 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttExportSettings;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
@@ -51,38 +49,32 @@ import org.apache.fop.apps.Options;
 import org.apache.fop.image.FopImageFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.ganttproject.impex.htmlpdf.ExporterBase.ExporterJob;
 import org.ganttproject.impex.htmlpdf.fonts.FontRecord;
 import org.ganttproject.impex.htmlpdf.fonts.FontTriplet;
 import org.ganttproject.impex.htmlpdf.fonts.JDKFontLocator;
+import org.osgi.service.prefs.Preferences;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-public class ExporterToPDF extends ExporterBase {
+public class FOPEngine extends AbstractEngine {
     private static final String JPG_FORMAT_NAME = "jpg";
     private PDFStylesheet myStylesheet;
+    private final FopXmlSerializer myXmlSerializer;
 
-    public String getFileTypeDescription() {
-        return GanttLanguage.getInstance().getText("impex.pdf.description");
+    public FOPEngine() {
+        myXmlSerializer = new FopXmlSerializer(this);
     }
 
     public GPOptionGroup[] getSecondaryOptions() {
         return null;
     }
 
-    public String getFileNamePattern() {
-        return "pdf";
+    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences, Stylesheet stylesheet) {
+        super.setContext(project, uiFacade, preferences);
+        setSelectedStylesheet(stylesheet);
     }
 
-    public String proposeFileExtension() {
-        return "pdf";
-    }
-
-    @Override
-    public String[] getFileExtensions() {
-        return new String[]{"pdf"};
-    }
-
-    @Override
     protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
         ExportState state = new ExportState(outputFile);
         ExporterJob generateGanttChart = createGenerateGanttChartJob(state);
@@ -162,10 +154,9 @@ public class ExporterToPDF extends ExporterBase {
                 try {
                     out = new FileOutputStream(state.outputFile);
                     state.driver.setOutputStream(out);
-                    TransformerHandler stylesheetHandler = createHandler(myStylesheet
-                            .getUrl().toString());
+                    TransformerHandler stylesheetHandler = myXmlSerializer.createHandler(myStylesheet.getUrl().toString());
                     stylesheetHandler.setResult(new SAXResult(state.driver.getContentHandler()));
-                    exportProject(state, stylesheetHandler);
+                    myXmlSerializer.exportProject(state, stylesheetHandler);
                     resultFiles.add(state.outputFile);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -187,81 +178,13 @@ public class ExporterToPDF extends ExporterBase {
         return result;
     }
 
-    protected void exportProject(ExportState state, TransformerHandler handler)
-            throws SAXException, ExportException {
-        DateFormat df = java.text.DateFormat.getDateTimeInstance(
-                DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault());
-        handler.startDocument();
-        AttributesImpl attrs = new AttributesImpl();
-        addAttribute("xmlns:xsl", "http://www.w3.org/1999/XSL/Transform", attrs);
-        addAttribute("xmlns:ganttproject", "http://ganttproject.sf.net/", attrs);
-        addAttribute("version", "1.0", attrs);
-        startElement("xsl:stylesheet", attrs, handler);
-        // handler.startPrefixMapping("ganttproject", "http://ganttproject.sf.net");
-
-        writeViews(getUIFacade(), handler);
-
-        addAttribute("xslfo-path", myStylesheet.getUrl().getPath(), attrs);
-        startPrefixedElement("report", attrs, handler);
-        addAttribute("xslfo-path", myStylesheet.getUrl().getPath(), attrs);
-        addAttribute("title", i18n("ganttReport"), attrs);
-        addAttribute("name", i18n("project"), attrs);
-        addAttribute("nameValue", getProject().getProjectName(), attrs);
-        addAttribute("organisation", i18n("organization"), attrs);
-        addAttribute("organisationValue", getProject().getOrganization(), attrs);
-        addAttribute("webLink", i18n("webLink"), attrs);
-        addAttribute("webLinkValue", getProject().getWebLink(), attrs);
-        addAttribute("currentDateTimeValue", df.format(new java.util.Date()),
-                attrs);
-        addAttribute("description", i18n("shortDescription"), attrs);
-
-        addAttribute("begin", i18n("start"), attrs);
-        addAttribute("beginValue", new GanttCalendar(getProject().getTaskManager().getProjectStart()).toString(), attrs);
-
-        addAttribute("end", i18n("end"), attrs);
-        addAttribute("endValue", new GanttCalendar(getProject().getTaskManager().getProjectEnd()).toString(), attrs);
-
-        startPrefixedElement("project", attrs, handler);
-        textElement("descriptionValue", attrs, getProject().getDescription(),
-                handler);
-        endPrefixedElement("project", handler);
-        writeCharts(state, handler);
-        writeTasks(getProject().getTaskManager(), handler);
-        writeResources(getProject().getHumanResourceManager(), handler);
-        endPrefixedElement("report", handler);
-        // handler.endPrefixMapping("ganttproject");
-        endElement("xsl:stylesheet", handler);
-        handler.endDocument();
-    }
-
-    @Override
-    protected String getAssignedResourcesDelimiter() {
-      return "\n\r";
-    }
-
-    private void writeCharts(ExportState state, TransformerHandler handler)
-            throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        addAttribute("title", i18n("ganttChart"), attrs);
-        addAttribute("src", state.ganttChartImageFile.getAbsolutePath(), attrs);
-        startPrefixedElement("ganttchart", attrs, handler);
-        endPrefixedElement("ganttchart", handler);
-
-        addAttribute("title", i18n("resourcesChart"), attrs);
-        addAttribute("src", state.resourceChartImageFile.getAbsolutePath(),
-                attrs);
-        startPrefixedElement("resourceschart", attrs, handler);
-        endPrefixedElement("resourceschart", handler);
-    }
-
     private Options createOptions() throws ExportException {
         JDKFontLocator locator = new JDKFontLocator();
         FontRecord[] fontRecords = locator.getFontRecords();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         StreamResult output = new StreamResult(outputStream);
         try {
-            TransformerHandler handler = getTransformerFactory()
-                    .newTransformerHandler();
+            TransformerHandler handler = myXmlSerializer.getTransformerFactory().newTransformerHandler();
             handler.setResult(output);
             // just for nifty debugging :)
             // handler.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
@@ -325,7 +248,7 @@ public class ExporterToPDF extends ExporterBase {
         }
     }
 
-    private static class ExportState {
+    public static class ExportState {
         final File outputFile;
         public ExportState(File outputFile) {
             this.outputFile = outputFile;
@@ -335,18 +258,15 @@ public class ExporterToPDF extends ExporterBase {
         File resourceChartImageFile;
     }
 
-    @Override
+    PDFStylesheet getSelectedStylesheet() {
+        return myStylesheet;
+    }
+
     protected void setSelectedStylesheet(Stylesheet stylesheet) {
         myStylesheet = (PDFStylesheet) stylesheet;
     }
 
-    @Override
-    protected String getStylesheetOptionID() {
-        return "impex.pdf.stylesheet";
-    }
-
-    @Override
-    protected Stylesheet[] getStylesheets() {
+    protected List<Stylesheet> getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
             protected Stylesheet newStylesheet(URL resolvedUrl,
@@ -359,7 +279,7 @@ public class ExporterToPDF extends ExporterBase {
 
     private class PDFStylesheetImpl extends StylesheetImpl implements PDFStylesheet {
         PDFStylesheetImpl(URL stylesheetURL, String localizedName) {
-            super(stylesheetURL, localizedName);
+            super(stylesheetURL, localizedName + " (FOP)");
         }
     }
 }

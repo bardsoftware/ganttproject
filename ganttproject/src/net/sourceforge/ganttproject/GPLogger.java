@@ -38,7 +38,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 
 public class GPLogger {
-    private static Logger ourLogger = Logger.getLogger("org.ganttproject");
+    private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
     private static Handler ourHandler;
     private static UIFacade ourUIFacade;
     private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();

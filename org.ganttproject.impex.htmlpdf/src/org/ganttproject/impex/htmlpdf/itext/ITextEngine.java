@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package org.ganttproject.impex.htmlpdf;
+package org.ganttproject.impex.htmlpdf.itext;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -82,6 +82,13 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.ganttproject.impex.htmlpdf.AbstractEngine;
+import org.ganttproject.impex.htmlpdf.ExporterBase;
+import org.ganttproject.impex.htmlpdf.PropertyFetcher;
+import org.ganttproject.impex.htmlpdf.Stylesheet;
+import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
+import org.ganttproject.impex.htmlpdf.StylesheetImpl;
+import org.ganttproject.impex.htmlpdf.ExporterBase.ExporterJob;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
@@ -100,34 +107,21 @@ import com.lowagie.text.pdf.PdfPageEvent;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
-public class ExporterToIText extends ExporterBase implements Exporter{
+public class ITextEngine extends AbstractEngine {
     private ITextStylesheet myStylesheet;
     private TTFontCache myFontCache;
     private FontSubstitutionModel mySubstitutionModel;
     private Object myFontsMutex = new Object();
     private boolean myFontsReady = false;
 
-    public ExporterToIText() {
+    public ITextEngine() {
         registerFonts();
-    }
-
-    public String getFileTypeDescription() {
-        return GanttLanguage.getInstance().getText("impex.pdf.description")+" (iText beta)";
     }
 
     public GPOptionGroup[] getSecondaryOptions() {
         return ((ThemeImpl)myStylesheet).getOptions();
     }
 
-    public String getFileNamePattern() {
-        return "pdf";
-    }
-
-    public String proposeFileExtension() {
-        return "pdf";
-    }
-
-    @Override
     public Component getCustomOptionsUI() {
         waitRegisterFonts();
         JPanel result = new JPanel(new BorderLayout());
@@ -138,7 +132,6 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return result;
     }
 
-    @Override
     public String[] getCommandLineKeys() {
         return new String[] {"itext"};
     }
@@ -147,13 +140,12 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         return new FontSubstitutionPanel(mySubstitutionModel).getComponent();
     }
 
-    @Override
-    public String[] getFileExtensions() {
-        return new String[] {"pdf"};
+    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences, Stylesheet stylesheet) {
+        super.setContext(project, uiFacade, preferences);
+        setSelectedStylesheet(stylesheet);
     }
 
-    @Override
-    protected void setSelectedStylesheet(Stylesheet stylesheet) {
+    public void setSelectedStylesheet(Stylesheet stylesheet) {
         waitRegisterFonts();
         myStylesheet = (ITextStylesheet) stylesheet;
         if (getPreferences()!=null) {
@@ -167,13 +159,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         myStylesheet = (ITextStylesheet) stylesheet;
     }
 
-    @Override
-    protected String getStylesheetOptionID() {
-        return "impex.pdf.stylesheet";
-    }
-
-    @Override
-    protected Stylesheet[] getStylesheets() {
+    public List<Stylesheet> getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
             protected Stylesheet newStylesheet(URL resolvedUrl,
@@ -181,7 +167,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 return new ThemeImpl(resolvedUrl, localizedName);
             }
         };
-        return (Stylesheet[]) factory.createStylesheets(ITextStylesheet.class);
+        return factory.createStylesheets(ITextStylesheet.class);
     }
 
     private void registerFonts() {
@@ -199,7 +185,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     e.printStackTrace();
                 }
                 registerFontDirectories();
-                synchronized (ExporterToIText.this.myFontsMutex) {
+                synchronized (ITextEngine.this.myFontsMutex) {
                     myFontsReady = true;
                     myFontsMutex.notifyAll();
                 }
@@ -238,7 +224,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
                 if (dirUrl==null) {
-                    GPLogger.getLogger(ExporterToIText.class)
+                    GPLogger.getLogger(ITextEngine.class)
                         .warning("Failed to find directory " + dirName + " in plugin " + namespace);
                     continue;
                 }
@@ -246,15 +232,14 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                     URL resolvedDir = Platform.resolve(dirUrl);
                     myFontCache.registerDirectory(resolvedDir.getPath(), true);
                 } catch (IOException e) {
-                   GPLogger.getLogger(ExporterToIText.class).log(Level.WARNING, e.getMessage(), e);
+                   GPLogger.getLogger(ITextEngine.class).log(Level.WARNING, e.getMessage(), e);
                    continue;
                 }
             }
         }
     }
 
-    @Override
-    protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+    public ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
         waitRegisterFonts();
         return new ExporterJob[] {createTransformationJob(outputFile)};
     }
@@ -267,7 +252,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
                 OutputStream out = null;
                 try {
                     out = new FileOutputStream(outputFile);
-                    ((ThemeImpl)myStylesheet).run(getProject(), getUIFacade(), out);
+                    ((ThemeImpl)myStylesheet).run(getProject(), getUiFacade(), out);
                 } catch (ExportException e) {
                     throw new RuntimeException(e);
                 } catch (FileNotFoundException e) {
@@ -381,7 +366,7 @@ public class ExporterToIText extends ExporterBase implements Exporter{
         private FontSubstitutionModel mySubstitutionModel;
 
         ThemeImpl(URL url, String localizedName) {
-            super(url, localizedName);
+            super(url, localizedName + " (iText)");
             myProperties = new Properties();
             try {
                 myProperties.load(url.openStream());

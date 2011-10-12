@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package org.ganttproject.impex.htmlpdf;
+package org.ganttproject.impex.htmlpdf.itext;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -32,7 +32,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.ganttproject.impex.htmlpdf.FontSubstitutionModel.FontSubstitution;
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
 
 public class FontSubstitutionPanel {
 

@@ -14,9 +14,9 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 
-class PropertyFetcher {
+public class PropertyFetcher {
     private final IGanttProject myProject;
-    PropertyFetcher(IGanttProject project) {
+    public PropertyFetcher(IGanttProject project) {
         myProject = project;
     }
     String i18n(String key) {
@@ -26,7 +26,7 @@ class PropertyFetcher {
     CustomColumnsStorage getCustomColumnStorage() {
         return myProject.getCustomColumnsStorage();
     }
-    void getTaskAttributes(Task t, Map<String, String> id2value) {
+    public void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
 
         DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
@@ -51,7 +51,7 @@ class PropertyFetcher {
         }
     }
 
-    void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
+    public void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
         id2value.put("0", hr.getName());
         id2value.put("1", hr.getRole().getName());
         id2value.put("2", hr.getMail());

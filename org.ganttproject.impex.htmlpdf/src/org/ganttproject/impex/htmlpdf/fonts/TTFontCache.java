@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
-import org.ganttproject.impex.htmlpdf.ExporterToIText;
+import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 
 import net.sourceforge.ganttproject.GPLogger;
 
@@ -83,7 +83,7 @@ public class TTFontCache {
             try {
                 registerFontFile(f, runningUnderJava6);
             } catch (Throwable e) {
-                GPLogger.getLogger(ExporterToIText.class).log(
+                GPLogger.getLogger(ITextEngine.class).log(
                     Level.INFO, "Failed to register font from " + f.getAbsolutePath(), e);
             }
        }
