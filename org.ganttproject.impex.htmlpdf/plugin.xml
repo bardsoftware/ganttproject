@@ -48,10 +48,10 @@
        <theme name="Striped Blue" url="html-export-themes/striped_blue/"/>
    </extension>
    <extension point="org.ganttproject.impex.htmlpdf.PDFStylesheet">
-       <theme name="Default theme" url="pdf-export-themes/ganttproject.xsl"/>
-       <theme name="Samara" url="pdf-export-themes/samara/samara-portrait.xsl"/>
        <theme name="Samara Landscape" url="pdf-export-themes/samara/samara-landscape.xsl"/>
-       <theme name="Landscape theme" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
+       <theme name="Samara" url="pdf-export-themes/samara/samara-portrait.xsl"/>
+       <theme name="Legacy" url="pdf-export-themes/ganttproject.xsl"/>
+       <theme name="Legacy Landscape" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
    </extension>
    <extension point="org.ganttproject.impex.htmlpdf.itext.ITextStylesheet">
        <theme name="Sortavala" url="itext-export-themes/sortavala.txt"/>
