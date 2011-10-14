@@ -55,6 +55,7 @@ public class ChartImageBuilder {
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
         myDimensions.chartWidth = bottomOffsets.getEndPx();
+        myChartModel.setStartDate(mySettings.getStartDate());
         myChartModel.setBounds(new Dimension(myDimensions.chartWidth, myDimensions.getChartHeight()));
 
         myChartModel.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1);
