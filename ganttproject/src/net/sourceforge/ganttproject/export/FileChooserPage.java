@@ -165,7 +165,7 @@ class FileChooserPage extends FileChooserPageBase {
     protected GPOptionGroup[] getOptionGroups() {
         GPOptionGroup[] exporterOptions = null;
         if (myState.getExporter()!=null) {
-            exporterOptions = myState.getExporter().getSecondaryOptions();
+            exporterOptions = myState.getExporter().getSecondaryOptions().toArray(new GPOptionGroup[0]);
         }
         if (exporterOptions==null) {
             return new GPOptionGroup[] {myWebPublishingGroup};

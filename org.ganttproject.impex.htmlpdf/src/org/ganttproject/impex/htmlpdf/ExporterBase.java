@@ -115,7 +115,7 @@ public abstract class ExporterBase extends AbstractExporter {
         return null;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
+    public List<GPOptionGroup> getSecondaryOptions() {
         // TODO Auto-generated method stub
         return null;
     }

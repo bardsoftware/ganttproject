@@ -21,7 +21,6 @@ package org.ganttproject.impex.htmlpdf.itext;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -59,7 +58,6 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.Exporter;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -83,7 +81,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.ganttproject.impex.htmlpdf.AbstractEngine;
-import org.ganttproject.impex.htmlpdf.ExporterBase;
+import org.ganttproject.impex.htmlpdf.ExporterToPDF;
 import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.Stylesheet;
 import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
@@ -113,12 +111,18 @@ public class ITextEngine extends AbstractEngine {
     private FontSubstitutionModel mySubstitutionModel;
     private Object myFontsMutex = new Object();
     private boolean myFontsReady = false;
+    private ExporterToPDF myExporter;
 
-    public ITextEngine() {
+    public ITextEngine(ExporterToPDF exporter) {
+        myExporter = exporter;
         registerFonts();
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
+    public List<GPOptionGroup> getSecondaryOptions() {
+        return Arrays.asList(getSecondaryOptionsArray());
+    }
+
+    private GPOptionGroup[] getSecondaryOptionsArray() {
         return ((ThemeImpl)myStylesheet).getOptions();
     }
 
@@ -127,7 +131,10 @@ public class ITextEngine extends AbstractEngine {
         JPanel result = new JPanel(new BorderLayout());
         result.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         OptionsPageBuilder builder = new OptionsPageBuilder();
-        result.add(builder.buildPlanePage(getSecondaryOptions()), BorderLayout.NORTH);
+
+        List<GPOptionGroup> options = new ArrayList<GPOptionGroup>();
+        options.addAll(myExporter.getSecondaryOptions());
+        result.add(builder.buildPlanePage(options.toArray(new GPOptionGroup[0])), BorderLayout.NORTH);
         result.add(createFontPanel(), BorderLayout.CENTER);
         return result;
     }
