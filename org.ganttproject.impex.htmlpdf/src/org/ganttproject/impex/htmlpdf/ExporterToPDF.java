@@ -13,8 +13,8 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ExporterToPDF extends ExporterBase {
 
-    private final FOPEngine myFopEngine = new FOPEngine();
-    private final ITextEngine myITextEngine = new ITextEngine();
+    private final FOPEngine myFopEngine = new FOPEngine(this);
+    private final ITextEngine myITextEngine = new ITextEngine(this);
     private Stylesheet mySelectedStylesheet;
 
     @Override
@@ -72,14 +72,16 @@ public class ExporterToPDF extends ExporterBase {
     }
 
     @Override
-    public GPOptionGroup[] getSecondaryOptions() {
+    public List<GPOptionGroup> getSecondaryOptions() {
+        List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
+        result.add(createExportRangeOptionGroup());
         if (mySelectedStylesheet instanceof PDFStylesheet) {
-            return myFopEngine.getSecondaryOptions();
+            result.addAll(myFopEngine.getSecondaryOptions());
         }
         if (mySelectedStylesheet instanceof ITextStylesheet) {
-            return myITextEngine.getSecondaryOptions();
+            result.addAll(myITextEngine.getSecondaryOptions());
         }
-        return null;
+        return result;
     }
 
     @Override

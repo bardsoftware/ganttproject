@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -61,13 +62,15 @@ public class FOPEngine extends AbstractEngine {
     private static final String JPG_FORMAT_NAME = "jpg";
     private PDFStylesheet myStylesheet;
     private final FopXmlSerializer myXmlSerializer;
+    private ExporterToPDF myExporter;
 
-    public FOPEngine() {
+    public FOPEngine(ExporterToPDF exporter) {
+        myExporter = exporter;
         myXmlSerializer = new FopXmlSerializer(this);
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
-        return null;
+    public List<GPOptionGroup> getSecondaryOptions() {
+        return Collections.emptyList();
     }
 
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences, Stylesheet stylesheet) {

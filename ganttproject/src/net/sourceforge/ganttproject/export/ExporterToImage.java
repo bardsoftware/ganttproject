@@ -8,6 +8,8 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -94,12 +96,8 @@ public class ExporterToImage extends AbstractExporter {
         return myOptions;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
-        GPOptionGroup[] optionGroup =  {new GPOptionGroup("", new GPOption[] {
-                getExportRangeStartOption(), getExportRangeEndOption()
-             })};
-        optionGroup[0].setTitled(false);
-        return optionGroup;
+    public List<GPOptionGroup> getSecondaryOptions() {
+        return Collections.singletonList(createExportRangeOptionGroup());
     }
 
     public Component getCustomOptionsUI() {

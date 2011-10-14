@@ -28,6 +28,8 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 
 public abstract class AbstractExporter implements Exporter {
@@ -56,6 +58,11 @@ public abstract class AbstractExporter implements Exporter {
 
     protected DefaultDateOption getExportRangeEndOption() {
         return myExportRangeEnd;
+    }
+
+    protected GPOptionGroup createExportRangeOptionGroup() {
+        return new GPOptionGroup("export.range",
+                new GPOption[] {getExportRangeStartOption(), getExportRangeEndOption()});
     }
 
     public UIFacade getUIFacade() {

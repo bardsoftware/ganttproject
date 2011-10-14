@@ -61,7 +61,7 @@ public class ExporterToHTML extends ExporterBase {
     }
 
     @Override
-    public GPOptionGroup[] getSecondaryOptions() {
+    public List<GPOptionGroup> getSecondaryOptions() {
         //return getGanttChart().getOptionGroups();
         return null;
     }

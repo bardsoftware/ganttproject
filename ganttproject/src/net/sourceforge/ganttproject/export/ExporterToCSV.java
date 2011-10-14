@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.export;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -46,7 +47,7 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
         return null;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
+    public List<GPOptionGroup> getSecondaryOptions() {
         // TODO Auto-generated method stub
         return null;
     }

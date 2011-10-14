@@ -21,6 +21,9 @@ package biz.ganttproject.impex.msproject2;
 import java.awt.Component;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.osgi.service.prefs.Preferences;
 
 import net.sf.mpxj.ProjectFile;
@@ -83,8 +86,8 @@ public class ExporterToMsProjectFile implements Exporter {
         return myOptions;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
-        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? new GPOptionGroup[] {myMPXOptions} : null;
+    public List<GPOptionGroup> getSecondaryOptions() {
+        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : null;
     }
 
     public Component getCustomOptionsUI() {
