@@ -49,6 +49,7 @@ import java.util.ListIterator;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -84,11 +85,13 @@ import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
 import org.jdesktop.jdnc.JNTreeTable;
+import org.jdesktop.swing.JXTable;
 import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.decorator.AlternateRowHighlighter;
 import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
 import org.jdesktop.swing.decorator.Highlighter;
 import org.jdesktop.swing.decorator.HighlighterPipeline;
+import org.jdesktop.swing.table.TableCellRenderers;
 import org.jdesktop.swing.table.TableColumnExt;
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 import org.jdesktop.swing.treetable.TreeTableModel;
@@ -541,20 +544,17 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
     protected abstract Chart getChart();
 
-//    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
-//        TableColumnExt result = new TableColumnExt(modelIndex);
-//        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
-//        if (defaultEditor!=null) {
-//            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
-//        }
-//        return result;
-//    }
-
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         Class<?> columnClass = getTreeTableModel().getColumnClass(modelIndex);
         TableCellEditor editor = columnClass.equals(GregorianCalendar.class)
             ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+        TableCellRenderer renderer = columnClass.equals(Icon.class) ?
+                TableCellRenderers.getNewDefaultRenderer(Icon.class)
+                : getTreeTable().getDefaultRenderer(columnClass);
+        if (renderer != null) {
+            result.setCellRenderer(renderer);
+        }
         if (editor!=null) {
             result.setCellEditor(new TreeTableCellEditorImpl(editor));
         }
