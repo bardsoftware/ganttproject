@@ -76,7 +76,10 @@ public class ExporterToPDF extends ExporterBase {
         List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
         result.add(createExportRangeOptionGroup());
         if (mySelectedStylesheet instanceof PDFStylesheet) {
-            result.addAll(myFopEngine.getSecondaryOptions());
+            List<GPOptionGroup> secondaryOptions = myFopEngine.getSecondaryOptions();
+            if (secondaryOptions != null) {
+                result.addAll(secondaryOptions);
+            }
         }
         if (mySelectedStylesheet instanceof ITextStylesheet) {
             result.addAll(myITextEngine.getSecondaryOptions());

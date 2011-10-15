@@ -85,7 +85,7 @@ public abstract class AbstractExporter implements Exporter {
         return myResourceChart;
     }
 
-    protected GanttExportSettings createExportSettings() {
+    public GanttExportSettings createExportSettings() {
         GanttExportSettings result = new GanttExportSettings();
         if (myRootPreferences != null) {
             int zoomLevel = myRootPreferences.getInt("zoom", -1);

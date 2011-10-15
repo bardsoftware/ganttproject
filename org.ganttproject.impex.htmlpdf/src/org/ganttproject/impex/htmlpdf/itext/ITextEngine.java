@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -119,12 +120,15 @@ public class ITextEngine extends AbstractEngine {
     public List<Stylesheet> getStylesheets() {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
-            protected Stylesheet newStylesheet(URL resolvedUrl,
-                    String localizedName) {
-                return new ThemeImpl(resolvedUrl, localizedName);
+            protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
+                return new ThemeImpl(resolvedUrl, localizedName, getExporter());
             }
         };
         return factory.createStylesheets(ITextStylesheet.class);
+    }
+
+    private AbstractExporter getExporter() {
+        return myExporter;
     }
 
     private void registerFonts() {
