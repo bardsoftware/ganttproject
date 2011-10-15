@@ -41,6 +41,7 @@ import java.util.Map.Entry;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -76,6 +77,11 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEvent;
 import com.lowagie.text.pdf.PdfWriter;
 
+/**
+ * Implements Sortavala iText theme.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
     static List<String> ourSizes = new ArrayList<String>();
     static {
@@ -102,9 +108,11 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     private boolean isColontitleEnabled = false;
     private final Properties myProperties;
     private FontSubstitutionModel mySubstitutionModel;
+    private final AbstractExporter myExporter;
 
-    ThemeImpl(URL url, String localizedName) {
+    ThemeImpl(URL url, String localizedName, AbstractExporter exporter) {
         super(url, localizedName + " (iText)");
+        myExporter = exporter;
         myProperties = new Properties();
         try {
             myProperties.load(url.openStream());
@@ -310,7 +318,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                 GanttLanguage.getInstance().getText("ganttChart"),
                 String.valueOf(myWriter.getPageNumber()));
-        ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc) {
+        ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
@@ -325,7 +333,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                 GanttLanguage.getInstance().getText("resourcesChart"),
                 String.valueOf(myWriter.getPageNumber()));
-        ChartWriter resourceChartWriter = new ChartWriter((TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc) {
+        ChartWriter resourceChartWriter = new ChartWriter(
+                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setRowCount(myProject.getHumanResourceManager().getResources().size());

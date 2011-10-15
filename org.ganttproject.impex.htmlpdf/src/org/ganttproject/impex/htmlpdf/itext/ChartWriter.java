@@ -35,27 +35,35 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
+/**
+ * Provides functions for writing charts to PDF writer.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 class ChartWriter implements ChartImageVisitor {
-    private PdfWriter myWriter;
-    private Document myDoc;
-    private Graphics2D myGraphics;
-    private TimelineChart myChart;
-    private PdfTemplate myTemplate;
+    private final Document myDoc;
+    private final TimelineChart myChart;
+    private final GanttExportSettings myExportSettings;
+    private final PdfWriter myWriter;
+
     private float myScale;
     private float myYShift;
-    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc) {
+    private PdfTemplate myTemplate;
+    private Graphics2D myGraphics;
+
+    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings) {
         myChart = chart;
         myWriter = writer;
         myDoc = doc;
+        myExportSettings = exportSettings;
     }
 
     protected ChartModel getModel() {
         return myChart.getModel();
     }
     void write() {
-        GanttExportSettings settings = new GanttExportSettings();
-        setupChart(settings);
-        myChart.buildImage(settings, this);
+        setupChart(myExportSettings);
+        myChart.buildImage(myExportSettings, this);
         myGraphics.dispose();
         myWriter.getDirectContent().addTemplate(myTemplate, myScale, 0, 0, myScale, myDoc.leftMargin(), myYShift);
     }

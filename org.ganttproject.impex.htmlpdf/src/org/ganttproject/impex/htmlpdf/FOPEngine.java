@@ -93,8 +93,7 @@ public class FOPEngine extends AbstractEngine {
             @Override
             protected IStatus run() {
                 try {
-                    RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
-                            new GanttExportSettings(true, true, true, true));
+                    RenderedImage ganttChartImage = getGanttChart().getRenderedImage(myExporter.createExportSettings());
                     state.ganttChartImageFile = File.createTempFile("ganttchart", ".jpg");
                     ImageIO.write(ganttChartImage, JPG_FORMAT_NAME, state.ganttChartImageFile);
                 } catch (Exception e) {
