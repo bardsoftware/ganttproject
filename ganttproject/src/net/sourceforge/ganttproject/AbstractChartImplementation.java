@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -52,6 +53,7 @@ import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
@@ -71,12 +73,24 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     private final IGanttProject myProject;
     private Set<ChartSelectionListener> mySelectionListeners= new LinkedHashSet<ChartSelectionListener>();
     private final ChartComponentBase myChartComponent;
+    private MouseInteraction myActiveInteraction;
+    private TimeFrame myFirstTimeFrame;
+    private final UIFacade myUiFacade;
 
-    public AbstractChartImplementation(IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
+    public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel, ChartComponentBase chartComponent) {
         assert chartModel != null;
+        myUiFacade = uiFacade;
         myChartModel = chartModel;
         myProject = project;
         myChartComponent = chartComponent;
+    }
+
+    protected void setCursor(Cursor cursor) {
+        myChartComponent.setCursor(cursor);
+    }
+
+    protected UIFacade getUIFacade() {
+        return myUiFacade;
     }
 
     public IGanttProject getProject() {
@@ -115,10 +129,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     public void paintChart(Graphics g) {
         getChartModel().paint(g);
     }
-    private MouseInteraction myActiveInteraction;
-    private TimeFrame myFirstTimeFrame;
 
-    private ChartModelBase getChartModel() {
+    protected ChartModelBase getChartModel() {
         return myChartModel;
     }
 
@@ -277,7 +289,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public Chart createCopy() {
-        return new AbstractChartImplementation(myProject, getChartModel().createCopy(), myChartComponent);
+        return new AbstractChartImplementation(myProject, myUiFacade, getChartModel().createCopy(), myChartComponent);
     }
 
     public Object getAdapter(Class arg0) {

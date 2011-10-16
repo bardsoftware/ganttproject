@@ -442,8 +442,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                     if (e.getButton() == MouseEvent.BUTTON1
                             && !(e.getSource() instanceof JTable)
                             && !(e.getSource() instanceof AbstractButton)) {
-                        Task taskUnderPointer = area.new MouseSupport()
-                                .findTaskUnderMousePointer(e.getX(), e.getY());
+                        Task taskUnderPointer = area.getChartImplementation().findTaskUnderPointer(e.getX(), e.getY());
                         if (taskUnderPointer == null) {
                             getTaskSelectionManager().clear();
                         }
