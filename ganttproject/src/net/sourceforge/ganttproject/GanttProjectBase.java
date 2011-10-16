@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +31,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFrame;
+import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
@@ -59,6 +62,7 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -97,7 +101,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final ProjectUIFacadeImpl myProjectUIFacade;
     private final DocumentManager myDocumentManager;
     /** The tabbed pane with the different parts of the project */
-    private GanttTabbedPane myTabPane;
+    private final GanttTabbedPane myTabPane;
+    private final JToolBar myToolBar = new JToolBar();
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
     private final CustomColumnsStorage myTaskCustomColumnStorage;
@@ -106,15 +111,18 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         new CustomColumnsManager(new CustomColumnsStorage());
 
     private final RssFeedChecker myRssChecker;
+    private ContentPaneBuilder myContentPaneBuilder;
 
     protected GanttProjectBase() {
         super("Gantt Chart");
         statusBar = new GanttStatusBar(this);
         myTabPane = new GanttTabbedPane();
+        myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
         myViewManager = new ViewManagerImpl(myTabPane);
+
         addProjectEventListener(myViewManager.getProjectEventListener());
         myTimeUnitStack = new GPTimeUnitStack();
-        NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
+        NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
@@ -452,8 +460,24 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
     }
 
+    protected void createContentPane() {
+        myContentPaneBuilder.build(getContentPane(), getLayeredPane());
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension windowSize = getPreferredSize();
+        // Put the frame at the middle of the screen
+        setLocation(screenSize.width / 2 - (windowSize.width / 2),
+                screenSize.height / 2 - (windowSize.height / 2));
+        pack();
+    }
+
     public GanttTabbedPane getTabs() {
         return myTabPane;
+    }
+
+    protected JToolBar getToolBar() {
+        return myToolBar;
     }
 
     public IGanttProject getProject() {
