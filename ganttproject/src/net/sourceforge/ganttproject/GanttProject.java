@@ -18,14 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -181,10 +176,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     private final GanttOptions options;
 
-    private JMenuBar bar;
-
-    private JToolBar toolBar;
-
     private TaskContainmentHierarchyFacadeImpl myCachedFacade;
 
     private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
@@ -288,7 +279,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         System.err.println("3. creating menus...");
         myResourceActions = getResourcePanel().getResourceActionSet();
         myZoomActions = new ZoomActionSet(getZoomManager());
-        bar = new JMenuBar();
+        JMenuBar bar = new JMenuBar();
         setJMenuBar(bar);
         // Allocation of the menus
 
@@ -338,27 +329,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                 new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         resourceView.setVisible(true);
 
-        // Add toolbar
-        toolBar = new JToolBar();
-        toolBar.addComponentListener(new ComponentListener() {
-
-            public void componentResized(ComponentEvent arg0) {
-                setHiddens();
-                refresh();
-            }
-
-            public void componentMoved(ComponentEvent arg0) {
-            }
-
-            public void componentShown(ComponentEvent arg0) {
-            }
-
-            public void componentHidden(ComponentEvent arg0) {
-            }
-        });
-        this.addButtons(toolBar);
-        getContentPane().add(toolBar,
-                (toolBar.getOrientation() == JToolBar.HORIZONTAL) ? BorderLayout.NORTH : BorderLayout.WEST);
+        this.addButtons(getToolBar());
 
         // Chart tabs
         getTabs().addChangeListener(new ChangeListener() {
@@ -371,15 +342,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             }
         });
         getTabs().setSelectedIndex(0);
-
-        // Add tab pane on the content pane
-        getContentPane().add(getTabs(), BorderLayout.CENTER);
-
-        // add the status bar
-        if (!isOnlyViewer) {
-            getContentPane().add(getStatusBar(), BorderLayout.SOUTH);
-        }
-        getStatusBar().setVisible(options.getShowStatusBar());
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -397,14 +359,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
 
         System.err.println("5. calculating size and packing...");
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension windowSize = getPreferredSize();
-        // Put the frame at the middle of the screen
-        setLocation(screenSize.width / 2 - (windowSize.width / 2),
-                screenSize.height / 2 - (windowSize.height / 2));
-        this.pack();
-
+        createContentPane();
 
         System.err.println("6. changing language ...");
         languageChanged(null);
@@ -871,7 +826,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         options.setWindowPosition(getX(), getY());
         options.setWindowSize(getWidth(), getHeight());
         options.setUIConfiguration(myUIConfiguration);
-        options.setToolBarPosition(toolBar.getOrientation());
         options.save();
         if (getProjectUIFacade().ensureProjectSaved(getProject())) {
             getProject().close();
@@ -1322,8 +1276,5 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         if (myDelayManager != null)
             myDelayManager.fireDelayObservation();
         super.repaint();
-    }
-
-    public void setHiddens() {
     }
 }
