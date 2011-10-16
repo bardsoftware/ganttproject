@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -69,11 +70,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         myChartModel = new ChartModelResource(getTaskManager(),
                 (HumanResourceManager) app.getHumanResourceManager(),
                 getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
-        myChartImplementation = new ResourcechartImplementation(app.getProject(), myChartModel, this);
+        myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
         myViewState = new ChartViewState(this, app.getUIFacade());
-        super.setStartDate(GregorianCalendar.getInstance().getTime());
+        app.getUIFacade().getZoomManager().addZoomListener(myViewState);
         appli = app;
-        //myTableHeader = app.getResourcePanel().table.getTableHeader();
+        initMouseListeners();
     }
 
     /** @return the preferred size of the panel. */
@@ -117,7 +118,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     protected MouseListener getMouseListener() {
         if (myMouseListener == null) {
-            myMouseListener = new MouseListenerBase() {
+            myMouseListener = new MouseListenerBase(getUIFacade(), this, getImplementation()) {
                 @Override
                 protected Action[] getPopupMenuActions() {
                     return new Action[] { getOptionsDialogAction()};
@@ -131,13 +132,16 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     protected MouseMotionListener getMouseMotionListener() {
         if (myMouseMotionListener == null) {
-            myMouseMotionListener = new MouseMotionListenerBase();
+            myMouseMotionListener = new MouseMotionListenerBase(getUIFacade(), getImplementation());
         }
         return myMouseMotionListener;
     }
 
     @Override
     protected AbstractChartImplementation getImplementation() {
+        if (myChartImplementation == null) {
+            myChartImplementation = new ResourcechartImplementation(getProject(), getUIFacade(), myChartModel, this);
+        }
         return myChartImplementation;
     }
 
@@ -149,7 +153,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private MouseListener myMouseListener;
 
-    private final AbstractChartImplementation myChartImplementation;
+    private AbstractChartImplementation myChartImplementation;
 
     public void setTaskManager(TaskManager taskManager) {
         // TODO Auto-generated method stub
@@ -167,9 +171,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     private class ResourcechartImplementation extends AbstractChartImplementation {
 
         public ResourcechartImplementation(
-                IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
-            super(project, chartModel, chartComponent);
-            // TODO Auto-generated constructor stub
+                IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel, ChartComponentBase chartComponent) {
+            super(project, uiFacade, chartModel, chartComponent);
         }
         @Override
         public void paintChart(Graphics g) {

@@ -25,7 +25,6 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
     public ChartViewState(TimelineChart chart, UIFacade uiFacade) {
         myChart = chart;
         myUIFacade = uiFacade;
-        uiFacade.getZoomManager().addZoomListener(this);
     }
 
     public void scrollBy(TaskLength duration) {

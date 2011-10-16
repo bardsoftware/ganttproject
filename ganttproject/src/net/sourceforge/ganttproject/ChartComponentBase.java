@@ -93,6 +93,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
 
         myMouseWheelListener = new MouseWheelListenerBase();
+    }
+
+    protected void initMouseListeners() {
         addMouseListener(getMouseListener());
         addMouseMotionListener(getMouseMotionListener());
         addMouseWheelListener(myMouseWheelListener);
@@ -120,7 +123,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     public Chart createCopy() {
-        return new AbstractChartImplementation(myProject, getChartModel().createCopy(), this);
+        return new AbstractChartImplementation(myProject, getUIFacade(), getChartModel().createCopy(), this);
     }
 
     public ChartSelection getSelection() {
@@ -184,15 +187,29 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     // protected abstract MouseWheelListener getMouseWheelListener();
 
-    protected class MouseListenerBase extends MouseAdapter {
+    protected static class MouseListenerBase extends MouseAdapter {
+        private UIFacade myUiFacade;
+        private ChartComponentBase myChartComponent;
+        private AbstractChartImplementation myChartImplementation;
+
+        protected MouseListenerBase(
+                UIFacade uiFacade, ChartComponentBase chartComponent, AbstractChartImplementation chartImplementation) {
+            assert uiFacade != null && chartComponent != null && chartImplementation != null;
+            myUiFacade = uiFacade;
+            myChartComponent = chartComponent;
+            myChartImplementation = chartImplementation;
+        }
+
+        protected UIFacade getUIFacade() {
+            return myUiFacade;
+        }
         @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
             if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
                 Action[] actions = getPopupMenuActions();
                 if (actions.length>0) {
-                    getUIFacade().showPopupMenu(ChartComponentBase.this, actions,
-                            e.getX(), e.getY());
+                    getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
                 }
                 return;
             }
@@ -204,26 +221,26 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         }
 
         protected void processLeftButton(MouseEvent e) {
-            getImplementation().beginScrollViewInteraction(e);
-            ChartComponentBase.this.requestFocus();
+            myChartImplementation.beginScrollViewInteraction(e);
+            myChartComponent.requestFocus();
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
-            getImplementation().finishInteraction();
-            ChartComponentBase.this.reset();
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            myChartImplementation.finishInteraction();
+            myChartComponent.reset();
+            myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            setDefaultCursor();
+            myChartComponent.setDefaultCursor();
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
         protected Action[] getPopupMenuActions() {
@@ -231,18 +248,24 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         }
     }
 
-    protected class MouseMotionListenerBase extends MouseMotionAdapter {
+    static class MouseMotionListenerBase extends MouseMotionAdapter {
+        private UIFacade myUiFacade;
+        private AbstractChartImplementation myChartImplementation;
+        MouseMotionListenerBase(UIFacade uiFacade, AbstractChartImplementation chartImplementation) {
+            myUiFacade = uiFacade;
+            myChartImplementation = chartImplementation;
+        }
+
+        protected UIFacade getUIFacade() {
+            return myUiFacade;
+        }
         @Override
         public void mouseDragged(MouseEvent e) {
             super.mouseDragged(e);
-            MouseInteraction activeInteraction = getImplementation()
-                    .getActiveInteraction();
+            MouseInteraction activeInteraction = myChartImplementation.getActiveInteraction();
             if (activeInteraction != null) {
                 activeInteraction.apply(e);
-                reset();
-                // myUIFacade.repaint2();
-                // e.consume();
-                // return;
+                myUiFacade.refresh();
             }
         }
     }
@@ -319,9 +342,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     public void setBottomUnitWidth(int width) {
         getImplementation().setBottomUnitWidth(width);
     }
-    public void paintChart(Graphics g) {
-        getImplementation().paintChart(g);
-    }
+//    public void paintChart(Graphics g) {
+//        getImplementation().paintChart(g);
+//    }
     public void addRenderer(ChartRendererBase renderer) {
         getImplementation().addRenderer(renderer);
     }
@@ -396,5 +419,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         return getImplementation().getRenderedImage(settings);
+    }
+
+    public Action[] getPopupMenuActions() {
+        return new Action[0];
     }
 }
