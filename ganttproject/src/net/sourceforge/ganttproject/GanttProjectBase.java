@@ -115,6 +115,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected GanttProjectBase() {
         super("Gantt Chart");
+        myToolBar.setFloatable(false);
+        myToolBar.setBorderPainted(false);
+        myToolBar.setRollover(true);
+
         statusBar = new GanttStatusBar(this);
         myTabPane = new GanttTabbedPane();
         myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());

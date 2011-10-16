@@ -21,23 +21,30 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 /**
  * Abstract class which provides a base implementation for the artefact actions.
  * Depending on the visible chart, the name, description and action will change
  */
-public abstract class ArtefactAction extends GPAction implements ActionStateChangedListener {
+public class ArtefactAction extends GPAction implements ActionStateChangedListener {
     private final ActiveActionProvider myProvider;
+    private final ActionDelegate[] myDelegates;
 
-    public ArtefactAction(String name, ActiveActionProvider provider, ActionDelegate[] delegates) {
-        super(name);
+    public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, ActionDelegate[] delegates) {
+        super(name, iconSize.asString());
         myProvider = provider;
         for(ActionDelegate delegate : delegates) {
             delegate.addStateChangedListener(this);
         }
-
+        myDelegates = delegates;
         // Make action state equal to active delegate action state
         actionStateChanged();
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ArtefactAction(getID(), size, myProvider, myDelegates);
     }
 
     @Override
@@ -64,9 +71,11 @@ public abstract class ArtefactAction extends GPAction implements ActionStateChan
         return activeAction.getLocalizedDescription();
     };
 
+    @Override
     public void actionStateChanged() {
         // State of a delegate action has been changed, so update out state as well
         GPAction activeAction = (GPAction) myProvider.getActiveAction();
         setEnabled(activeAction.isEnabled());
+        putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
     }
 }

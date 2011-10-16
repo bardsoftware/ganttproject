@@ -42,7 +42,11 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
 
     protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
             UIFacade uiFacade, GanttTree2 tree) {
-        super(name);
+        this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);
+    }
+    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+            UIFacade uiFacade, GanttTree2 tree, IconSize size) {
+        super(name, size.asString());
         myTaskManager = taskManager;
         mySelectionManager = selectionManager;
         myUIFacade = uiFacade;

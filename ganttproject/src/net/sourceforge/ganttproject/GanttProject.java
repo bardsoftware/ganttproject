@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -46,6 +47,7 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTable;
@@ -66,6 +68,7 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.ArtefactNewAction;
 import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -142,9 +145,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     /** List containing the Most Recent Used documents */
     private final DocumentsMRU myMRU = new DocumentsMRU(5);
 
-    /** Toolbar button */
-    private TestGanttRolloverButton bSave, bCopy, bCut, bPaste, bNewTask, bDelete,
-            bProperties, bUndo, bRedo;
+    private TestGanttRolloverButton bNew;
 
     /** List of buttons that have changing actions depending on the visible tab (ie Task or Resource) */
     private JButton[] myArtefactButtons;
@@ -272,6 +273,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
         getZoomManager().addZoomListener(area.getZoomListener());
 
+        ScrollingManager scrollingManager = getScrollingManager();
+        scrollingManager.addScrollingListener(area.getViewState());
+        scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
 
         System.err.println("3. creating menus...");
         myResourceActions = getResourcePanel().getResourceActionSet();
@@ -437,7 +441,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             myStopEditingMouseListener = new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (e.getSource() != bNewTask && e.getClickCount() == 1)
+                    if (e.getSource() != bNew && e.getClickCount() == 1)
                         tree.stopEditing();
                     if (e.getButton() == MouseEvent.BUTTON1
                             && !(e.getSource() instanceof JTable)
@@ -490,38 +494,67 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     /** Create the button on toolbar */
     private void addButtons(JToolBar toolBar) {
-        bSave = new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction());
-        bCut = new TestGanttRolloverButton(getCutAction());
-        bCopy = new TestGanttRolloverButton(getCopyAction());
-        bPaste = new TestGanttRolloverButton(getPasteAction());
+        List<JButton> buttons = new ArrayList<JButton>();
+        buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_BIG)));
+        buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction()));
+        buttons.add(null);
 
-        bNewTask = new TestGanttRolloverButton(new ArtefactNewAction(new ActiveActionProvider() {
+        GPAction newAction = new ArtefactNewAction(new ActiveActionProvider() {
             public AbstractAction getActiveAction() {
-                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskNewAction()
-                        : myResourceActions.getResourceNewAction();
+                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                        ? getTree().getTaskNewAction().withIcon(IconSize.TOOLBAR_BIG)
+                        : myResourceActions.getResourceNewAction().withIcon(IconSize.TOOLBAR_BIG);
             }
-        }));
-        bDelete = new TestGanttRolloverButton(new ArtefactDeleteAction(new ActiveActionProvider() {
-            public AbstractAction getActiveAction() {
-                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskDeleteAction()
-                        : myResourceActions.getResourceDeleteAction();
-            }
-        }, new ActionDelegate[] { getTree().getTaskDeleteAction(), myResourceActions.getResourceDeleteAction()}));
-        bProperties = new TestGanttRolloverButton(new ArtefactPropertiesAction(new ActiveActionProvider() {
-            public AbstractAction getActiveAction() {
-                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskPropertiesAction()
-                        : myResourceActions.getResourcePropertiesAction();
-            }
-        }, new ActionDelegate[] { getTree().getTaskPropertiesAction(), myResourceActions.getResourcePropertiesAction()}));
-        myArtefactButtons = new TestGanttRolloverButton[] {bNewTask, bDelete, bProperties};
+        });
+        bNew = new TestGanttRolloverButton(newAction);
+        bNew.setTextHidden(true);
 
-        ScrollingManager scrollingManager = getScrollingManager();
-        scrollingManager.addScrollingListener(area.getViewState());
-        scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
-        bUndo = new TestGanttRolloverButton(myEditMenu.getUndoAction());
-        bRedo = new TestGanttRolloverButton(myEditMenu.getRedoAction());
+        GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
+                public AbstractAction getActiveAction() {
+                    return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTree().getTaskDeleteAction()
+                            : myResourceActions.getResourceDeleteAction();
+                }
+            },
+            new ActionDelegate[] { getTree().getTaskDeleteAction(), myResourceActions.getResourceDeleteAction()}
+        );
+        TestGanttRolloverButton bDelete = new TestGanttRolloverButton(deleteAction);
+        buttons.add(bNew);
+        buttons.add(bDelete);
+        buttons.add(null);
 
-        toolBar.add(bSave);
+        GPAction propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
+                @Override
+                public AbstractAction getActiveAction() {
+                    return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                            ? getTree().getTaskPropertiesAction().withIcon(IconSize.TOOLBAR_BIG)
+                            : myResourceActions.getResourcePropertiesAction().withIcon(IconSize.TOOLBAR_BIG);
+                }
+            },
+            new ActionDelegate[] { getTree().getTaskPropertiesAction(), myResourceActions.getResourcePropertiesAction()}
+         ).withIcon(IconSize.TOOLBAR_BIG);
+        TestGanttRolloverButton bProperties = new TestGanttRolloverButton(propertiesAction);
+
+        buttons.add(bProperties);
+        buttons.add(new TestGanttRolloverButton(getCutAction()));
+        buttons.add(new TestGanttRolloverButton(getCopyAction()));
+        buttons.add(new TestGanttRolloverButton(getPasteAction()));
+        buttons.add(null);
+
+        buttons.add(new TestGanttRolloverButton(myEditMenu.getUndoAction().withIcon(IconSize.TOOLBAR_BIG)));
+        buttons.add(new TestGanttRolloverButton(myEditMenu.getRedoAction()));
+
+        for (JButton b : buttons) {
+            if (b == null) {
+                toolBar.addSeparator(new Dimension(24, 24));
+            } else {
+                b.setAlignmentY(TOP_ALIGNMENT);
+                toolBar.add(b);
+            }
+        }
+        myArtefactButtons = new TestGanttRolloverButton[] {bNew, bDelete, bProperties};
+
+/*
+        //toolBar.add(bSave);
         toolBar.add(bUndo);
         toolBar.add(bRedo);
         toolBar.addSeparator();
@@ -532,6 +565,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         toolBar.add(bNewTask);
         toolBar.add(bDelete);
         toolBar.add(bProperties);
+        */
     }
 
     public List<GanttPreviousState> getBaselines() {

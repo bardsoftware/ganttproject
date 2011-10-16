@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -34,11 +36,22 @@ public class ResourceNewAction extends ResourceAction {
 
     private final RoleManager myRoleManager;
 
-    public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager,
-            UIFacade uiFacade) {
+    public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade) {
         super("resource.new", hrManager);
         myUIFacade = uiFacade;
         myRoleManager = roleManager;
+    }
+
+    private ResourceNewAction(
+            HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
+        super("resource.new", hrManager, size);
+        myUIFacade = uiFacade;
+        myRoleManager = roleManager;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ResourceNewAction(getManager(), myRoleManager, myUIFacade, size);
     }
 
     @Override
@@ -54,10 +67,5 @@ public class ResourceNewAction extends ResourceAction {
                 }
             });
         }
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "insert_";
     }
 }

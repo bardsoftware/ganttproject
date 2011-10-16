@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.action;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Properties;
@@ -40,6 +42,19 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+    public enum IconSize {
+        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("16"), TOOLBAR_BIG("32");
+
+        private final String mySize;
+
+        IconSize(String size) {
+            mySize = size;
+        }
+
+        public String asString() {
+            return mySize;
+        }
+    }
     public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     /** Location of the icon files */
@@ -69,13 +84,41 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     protected GPAction(String name, String iconSize) {
         super(name);
         myName = name;
-        updateIcon(iconSize);
+        if (iconSize != null) {
+            updateIcon(iconSize);
+        }
         updateName();
         updateTooltip();
         language.addListener(this);
         if(name != null) {
             putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
         }
+    }
+
+    public GPAction withIcon(IconSize size) {
+        try {
+            Constructor<? extends GPAction> constructor = getClass().getConstructor(String.class, String.class);
+            return constructor.newInstance(myName, size.asString());
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return this;
     }
 
     public Icon getIconOnMouseOver() {

@@ -39,6 +39,11 @@ abstract class ResourceAction extends GPAction implements ActionDelegate {
         myManager = hrManager;
     }
 
+    protected ResourceAction(String name, HumanResourceManager hrManager, IconSize size) {
+        super(name, size.asString());
+        myManager = hrManager;
+    }
+
     public void addStateChangedListener(ActionStateChangedListener l) {
         myListeners.add(l);
     }
