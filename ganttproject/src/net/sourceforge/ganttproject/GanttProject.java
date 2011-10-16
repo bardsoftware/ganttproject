@@ -48,7 +48,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -83,7 +82,6 @@ import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.GanttDialogInfo;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -116,7 +114,6 @@ import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
-import net.sourceforge.ganttproject.util.BrowserControl;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -456,10 +453,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return myStopEditingMouseListener;
     }
 
-    public String getXslDir() {
-        return options.getXslDir();
-    }
-
     /** @return the options of ganttproject. */
     public GanttOptions getGanttOptions() {
         return options;
@@ -489,39 +482,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         CustomColumnsStorage.changeLanguage(language);
 
         applyComponentOrientation(language.getComponentOrientation());
-    }
-
-    /**
-     * Change the label for menu, in fact check in the label contains a mnemonic
-     */
-    public JMenu changeMenuLabel(JMenu menu, String label) {
-        int index = label.indexOf('$');
-        if (index != -1 && label.length() - index > 1) {
-            menu.setText(label.substring(0, index).concat(
-                    label.substring(++index)));
-            menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
-        } else {
-            menu.setText(label);
-            // menu.setMnemonic('');
-        }
-        return menu;
-    }
-
-    /**
-     * Change the label for menuItem, in fact check in the label contains a
-     * mnemonic
-     */
-    public JMenuItem changeMenuLabel(JMenuItem menu, String label) {
-        int index = label.indexOf('$');
-        if (index != -1 && label.length() - index > 1) {
-            menu.setText(label.substring(0, index).concat(
-                    label.substring(++index)));
-            menu.setMnemonic(Character.toLowerCase(label.charAt(index)));
-        } else {
-            menu.setText(label);
-            // menu.setMnemonic('');
-        }
-        return menu;
     }
 
     /** Return the ToolTip in HTML (with gray bgcolor) */
@@ -835,20 +795,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         } else {
             setVisible(true);
         }
-    }
-
-    /** Open the web page */
-    public void openWebPage() {
-        if (!BrowserControl.displayURL("http://ganttproject.biz/")) {
-            GanttDialogInfo gdi = new GanttDialogInfo(this,
-                    GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION, language
-                            .getText("msg4"), language.getText("error"));
-            gdi.setVisible(true);
-            return;
-        }
-        getUIFacade().setStatusText(
-                GanttLanguage.getInstance().getText("opening")
-                        + " www.ganttproject.biz");
     }
 
     public void setAskForSave(boolean afs) {
