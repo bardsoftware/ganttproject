@@ -33,10 +33,19 @@ public class UndoAction extends GPAction implements GPUndoListener {
     private final GPUndoManager myUndoManager;
 
     public UndoAction(GPUndoManager undoManager) {
-        super("undo");
+        this(undoManager, IconSize.MENU);
+    }
+
+    private UndoAction(GPUndoManager undoManager, IconSize size) {
+        super("undo", size.asString());
         myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
         setEnabled(myUndoManager.canUndo());
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new UndoAction(myUndoManager, size);
     }
 
     public void actionPerformed(ActionEvent e) {

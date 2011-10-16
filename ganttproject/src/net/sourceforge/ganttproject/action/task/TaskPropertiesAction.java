@@ -24,6 +24,8 @@ import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.GanttDialogProperties;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -34,8 +36,17 @@ public class TaskPropertiesAction extends TaskActionBase {
     private final IGanttProject myProject;
 
     public TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-        super("task.properties", project.getTaskManager(), selectionManager, uiFacade, null);
+        this(project, selectionManager, uiFacade, IconSize.MENU);
+    }
+
+    private TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade, IconSize size) {
+        super("task.properties", project.getTaskManager(), selectionManager, uiFacade, null, size);
         myProject = project;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new TaskPropertiesAction(myProject, getSelectionManager(), getUIFacade(), size);
     }
 
     @Override

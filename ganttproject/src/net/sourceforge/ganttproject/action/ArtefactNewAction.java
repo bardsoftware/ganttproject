@@ -21,11 +21,6 @@ package net.sourceforge.ganttproject.action;
 public class ArtefactNewAction extends ArtefactAction {
 
     public ArtefactNewAction(ActiveActionProvider provider) {
-        super("artefact.new", provider, new ActionDelegate[0]);
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "insert_";
+        super("artefact.new", IconSize.NO_ICON, provider, new ActionDelegate[0]);
     }
 }

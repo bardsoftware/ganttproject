@@ -20,11 +20,6 @@ package net.sourceforge.ganttproject.action;
 
 public class ArtefactPropertiesAction extends ArtefactAction {
     public ArtefactPropertiesAction(ActiveActionProvider provider, ActionDelegate[] delegates) {
-        super("artefact.properties", provider, delegates);
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "properties_";
+        super("artefact.properties", IconSize.NO_ICON, provider, delegates);
     }
 }

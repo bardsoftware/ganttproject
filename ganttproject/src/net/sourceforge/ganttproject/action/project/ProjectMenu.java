@@ -31,6 +31,7 @@ public class ProjectMenu extends JMenu {
     private final NewProjectAction myNewProjectAction;
     private final SaveProjectAction mySaveProjectAction;
     private final PrintAction myPrintAction;
+    private OpenProjectAction myOpenProjectAction;
 
     public ProjectMenu(final GanttProject project, JMenu mru, String key) {
         super(GPAction.createVoidAction(key));
@@ -39,7 +40,7 @@ public class ProjectMenu extends JMenu {
         myPrintAction = new PrintAction(project);
 
         ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
-        OpenProjectAction openProjectAction = new OpenProjectAction(project);
+        myOpenProjectAction = new OpenProjectAction(project);
         SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
         OpenURLAction openURLAction = new OpenURLAction(project);
         SaveURLAction saveURLAction = new SaveURLAction(project);
@@ -50,7 +51,7 @@ public class ProjectMenu extends JMenu {
 
         add(projectSettingsAction);
         add(myNewProjectAction);
-        add(openProjectAction);
+        add(myOpenProjectAction);
         add(mru);
 
         addSeparator();
@@ -84,6 +85,10 @@ public class ProjectMenu extends JMenu {
 
     public AbstractAction getPrintAction() {
         return myPrintAction;
+    }
+
+    public OpenProjectAction getOpenProjectAction() {
+        return myOpenProjectAction;
     }
 
 }

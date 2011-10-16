@@ -23,7 +23,7 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 
-class OpenProjectAction extends GPAction {
+public class OpenProjectAction extends GPAction {
     private GanttProject myMainFrame;
 
     OpenProjectAction(GanttProject mainFrame) {
@@ -31,6 +31,15 @@ class OpenProjectAction extends GPAction {
         myMainFrame = mainFrame;
     }
 
+    private OpenProjectAction(GanttProject mainFrame, IconSize iconSize) {
+        super("project.open", iconSize.asString());
+        myMainFrame = mainFrame;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize iconSize) {
+        return new OpenProjectAction(myMainFrame, iconSize);
+    }
     @Override
     protected String getIconFilePrefix() {
         return "open_";

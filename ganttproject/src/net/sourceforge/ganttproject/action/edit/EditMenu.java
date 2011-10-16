@@ -50,7 +50,7 @@ public class EditMenu extends JMenu {
         add(new SettingsDialogAction(project, uiFacade));
     }
 
-    public Action getUndoAction() {
+    public GPAction getUndoAction() {
         return myUndoAction;
     }
 

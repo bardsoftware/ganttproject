@@ -20,11 +20,6 @@ package net.sourceforge.ganttproject.action;
 
 public class ArtefactDeleteAction extends ArtefactAction {
     public ArtefactDeleteAction(ActiveActionProvider provider, ActionDelegate[] delegates) {
-        super("artefact.delete", provider, delegates);
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "delete_";
+        super("artefact.delete", IconSize.TOOLBAR_SMALL, provider, delegates);
     }
 }

@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.resource;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -32,17 +33,22 @@ public class ResourcePropertiesAction extends ResourceAction {
     private final ResourceContext myContext;
 
     public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
-        super("resource.properties", null);
+        this(project, context, uiFacade, IconSize.MENU);
+    }
+
+    private ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade, IconSize size) {
+        super("resource.properties", null, size);
         myProject = project;
         myUIFacade = uiFacade;
         myContext = context;
     }
 
     @Override
-    protected String getIconFilePrefix() {
-        return "properties_";
+    public GPAction withIcon(IconSize size) {
+        return new ResourcePropertiesAction(myProject, myContext, myUIFacade, size);
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         HumanResource[] selectedResources = myContext.getResources();
         if (selectedResources != null) {

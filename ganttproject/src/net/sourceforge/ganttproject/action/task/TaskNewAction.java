@@ -30,9 +30,18 @@ public class TaskNewAction extends GPAction {
     private final GPUndoManager myUndoManager;
 
     public TaskNewAction(IGanttProject project, GPUndoManager undoManager) {
-        super("task.new");
+        this(project, undoManager, IconSize.MENU);
+    }
+
+    private TaskNewAction(IGanttProject project, GPUndoManager undoManager, IconSize size) {
+        super("task.new", size.asString());
         myProject = project;
         myUndoManager = undoManager;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new TaskNewAction(myProject, myUndoManager, size);
     }
 
     @Override
@@ -43,10 +52,5 @@ public class TaskNewAction extends GPAction {
                 myProject.newTask();
             }
         });
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "insert_";
     }
 }
