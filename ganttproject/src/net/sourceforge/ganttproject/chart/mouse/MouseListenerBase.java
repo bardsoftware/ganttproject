@@ -26,7 +26,9 @@ import javax.swing.Action;
 
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
 
 public class MouseListenerBase extends MouseAdapter {
     private UIFacade myUiFacade;
@@ -44,26 +46,27 @@ public class MouseListenerBase extends MouseAdapter {
     protected UIFacade getUIFacade() {
         return myUiFacade;
     }
-    @Override
-    public void mousePressed(MouseEvent e) {
-        super.mousePressed(e);
-        if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-            Action[] actions = getPopupMenuActions();
-            if (actions.length>0) {
-                getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
-            }
-            return;
-        }
-        switch (e.getButton()) {
-        case MouseEvent.BUTTON1:
-            processLeftButton(e);
-            break;
+
+    protected void showPopupMenu(MouseEvent e) {
+        Action[] actions = getPopupMenuActions();
+        if (actions.length > 0) {
+            getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
         }
     }
 
-    protected void processLeftButton(MouseEvent e) {
+    protected void startScrollView(MouseEvent e) {
         myChartImplementation.beginScrollViewInteraction(e);
         myChartComponent.requestFocus();
+    }
+
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+        if (e.isPopupTrigger() || text.equals(GPAction.getKeyStrokeText("mouse.contextMenu"))) {
+            showPopupMenu(e);
+            return;
+        }
     }
 
     @Override

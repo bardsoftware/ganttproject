@@ -42,7 +42,7 @@ public class MouseMotionListenerBase extends MouseMotionAdapter {
         MouseInteraction activeInteraction = myChartImplementation.getActiveInteraction();
         if (activeInteraction != null) {
             activeInteraction.apply(e);
-            myUiFacade.refresh();
+            myChartImplementation.reset();
         }
     }
 }

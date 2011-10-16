@@ -189,7 +189,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             return null;
         }
         if (ourIconProperties == null) {
-            ourIconProperties = loadProperties("/icons.properties");
+            ourIconProperties = new Properties();
+            loadProperties(ourIconProperties, "/icons.properties");
         }
         return (String) ourIconProperties.get(getID());
     }
@@ -199,29 +200,28 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
     }
 
-    private static String getKeyStrokeText(String keystrokeID) {
+    public static String getKeyStrokeText(String keystrokeID) {
         if (ourKeyboardProperties == null) {
-            ourKeyboardProperties = loadProperties("/keyboard.properties");
+            ourKeyboardProperties = new Properties();
+            loadProperties(ourKeyboardProperties, "/keyboard.properties");
+            loadProperties(ourKeyboardProperties, "/mouse.properties");
         }
         return (String) ourKeyboardProperties.get(keystrokeID);
     }
 
-    private static Properties loadProperties(String resource) {
-        Properties result = new Properties();
+    private static void loadProperties(Properties result, String resource) {
         URL url = GPAction.class.getResource(resource);
         if (url == null) {
-            return null;
+            return;
         }
         URL resolvedUrl;
         try {
             resolvedUrl = Platform.resolve(url);
             result.load(resolvedUrl.openStream());
-            return result;
         } catch (IOException e) {
             if (!GPLogger.log(e)) {
                 e.printStackTrace(System.err);
             }
-            return null;
         }
     }
 
