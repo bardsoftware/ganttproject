@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.chart.gantt;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -25,9 +25,12 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.ChartComponentBase.ChartSelectionImpl;
-import net.sourceforge.ganttproject.GanttGraphicArea.OldChartMouseListenerImpl;
-import net.sourceforge.ganttproject.GanttGraphicArea.OldMouseMotionListenerImpl;
+import net.sourceforge.ganttproject.AbstractChartImplementation;
+import net.sourceforge.ganttproject.ChartComponentBase;
+import net.sourceforge.ganttproject.ChartImplementation;
+import net.sourceforge.ganttproject.GanttGraphicArea;
+import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -55,15 +58,15 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-public class NewChartComponentImpl extends AbstractChartImplementation implements ChartImplementation {
+public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
     private final TaskManager myTaskManager;
     private final ChartModelImpl myChartModel;
     private final ChartViewState myChartViewState;
     private final GanttTree2 myTree;
-    private OldChartMouseListenerImpl myMouseListener;
-    private OldMouseMotionListenerImpl myMouseMotionListener;
+    private MouseListenerImpl myMouseListener;
+    private MouseMotionListenerImpl myMouseMotionListener;
 
-    public NewChartComponentImpl(
+    public GanttChartController(
             IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel, ChartComponentBase chartComponent,
             GanttTree2 tree, ChartViewState chartViewState) {
         super(project, uiFacade, chartModel, chartComponent);
@@ -71,8 +74,8 @@ public class NewChartComponentImpl extends AbstractChartImplementation implement
         myChartViewState = chartViewState;
         myTaskManager = project.getTaskManager();
         myChartModel = chartModel;
-        myMouseListener = new OldChartMouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
-        myMouseMotionListener = new OldMouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
+        myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
+        myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
     }
 
     private TaskManager getTaskManager() {
@@ -150,23 +153,6 @@ public class NewChartComponentImpl extends AbstractChartImplementation implement
             getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
     }
 
-//        public void paintComponent(Graphics g, List<Task> visibleTasks) {
-//            synchronized(ChartModelBase.STATIC_MUTEX) {
-//                GanttGraphicArea.super.paintComponent(g);
-//                ChartModel model = myChartModel;
-//                model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-//                model.setRowHeight(((GanttTree2) tree).getTreeTable()
-//                        .getRowHeight());
-//                model.setTopTimeUnit(getViewState().getTopTimeUnit());
-//                model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-//                model.setVisibleTasks(visibleTasks);
-//                model.paint(g);
-//                if (getActiveInteraction() != null) {
-//                    getActiveInteraction().paint(g);
-//                }
-//            }
-//        }
-
     @Override
     public void paintChart(Graphics g) {
         synchronized(ChartModelBase.STATIC_MUTEX) {
@@ -230,7 +216,7 @@ public class NewChartComponentImpl extends AbstractChartImplementation implement
         return chartItem == null ? null : chartItem.getTask();
     }
 
-    protected ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
+    public ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
         ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
         return result;
     }

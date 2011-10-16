@@ -29,12 +29,8 @@ public interface Chart extends IAdaptable {
 
     public String getName();
 
-    public void setTaskManager(TaskManager taskManager);
-
     /** Repaints the chart */
     public void reset();
-
-    public Icon getIcon();
 
     public GPOptionGroup[] getOptionGroups();
 

@@ -7,8 +7,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
@@ -18,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -27,20 +24,16 @@ import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
@@ -65,19 +58,18 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 10, 5), "CursorPercent");
     }
 
-    static final Cursor W_RESIZE_CURSOR = new Cursor(
+    public static final Cursor W_RESIZE_CURSOR = new Cursor(
             Cursor.W_RESIZE_CURSOR);
 
-    static final Cursor E_RESIZE_CURSOR = new Cursor(
+    public static final Cursor E_RESIZE_CURSOR = new Cursor(
             Cursor.E_RESIZE_CURSOR);
 
-    static final Cursor CHANGE_PROGRESS_CURSOR;
+    public static final Cursor CHANGE_PROGRESS_CURSOR;
 
-    public GanttTree2 tree;
+    private final GanttTree2 tree;
 
     public static Color taskDefaultColor = new Color(140, 182, 206);
 
-    private GanttProject appli;
 
     private UIConfiguration myUIConfiguration;
 
@@ -99,7 +91,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         this.setBackground(Color.WHITE);
         myTaskManager = taskManager;
         myUndoManager = undoManager;
-        appli = app;
 
         myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
         myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
@@ -232,35 +223,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     @Override
     protected MouseListener getMouseListener() {
-        return new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                getChartImplementation().getMouseListener().mouseClicked(e);
-            }
-            public void mouseEntered(MouseEvent e) {
-                getChartImplementation().getMouseListener().mouseEntered(e);
-            }
-            public void mouseExited(MouseEvent e) {
-                getChartImplementation().getMouseListener().mouseExited(e);
-            }
-            public void mousePressed(MouseEvent e) {
-                getChartImplementation().getMouseListener().mousePressed(e);
-            }
-            public void mouseReleased(MouseEvent e) {
-                getChartImplementation().getMouseListener().mouseReleased(e);
-            }
-        };
+        return getChartImplementation().getMouseListener();
     }
 
     @Override
     protected MouseMotionListener getMouseMotionListener() {
-        return new MouseMotionListener() {
-            public void mouseDragged(MouseEvent e) {
-                getChartImplementation().getMouseMotionListener().mouseDragged(e);
-            }
-            public void mouseMoved(MouseEvent e) {
-                getChartImplementation().getMouseMotionListener().mouseMoved(e);
-            }
-        };
+        return getChartImplementation().getMouseMotionListener();
     }
 
     @Override
@@ -311,12 +279,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     }
     @Override
     protected AbstractChartImplementation getImplementation() {
-        return (AbstractChartImplementation) getChartImplementation();
+        return getChartImplementation();
     }
 
-    NewChartComponentImpl getChartImplementation() {
+    GanttChartController getChartImplementation() {
         if (myChartComponentImpl == null) {
-            myChartComponentImpl = new NewChartComponentImpl(
+            myChartComponentImpl = new GanttChartController(
                     getProject(), getUIFacade(), myChartModel, this, tree, getViewState());
         }
         return myChartComponentImpl;
@@ -324,165 +292,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
     public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
         int rowHeight = myChartModel.setBaseline(tasks);
-        appli.getTree().getTable().setRowHeight(rowHeight);
+        tree.getTable().setRowHeight(rowHeight);
     }
 
-    private NewChartComponentImpl myChartComponentImpl;
-
-    static class OldChartMouseListenerImpl extends MouseListenerBase {
-        private final GanttTree2 myTree;
-        private final NewChartComponentImpl myChartImplementation;
-        private final UIFacade myUiFacade;
-        private final ChartComponentBase myChartComponent;
-
-        public OldChartMouseListenerImpl(
-                NewChartComponentImpl chartImplementation, ChartModelImpl chartModel, UIFacade uiFacade, ChartComponentBase chartComponent, GanttTree2 tree) {
-            super(uiFacade, chartComponent, chartImplementation);
-            myUiFacade = uiFacade;
-            myTree = tree;
-            myChartImplementation = chartImplementation;
-            myChartComponent = chartComponent;
-        }
-        private TaskSelectionManager getTaskSelectionManager() {
-            return myUiFacade.getTaskSelectionManager();
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON1) {
-                Task taskUnderPointer = myChartImplementation.findTaskUnderPointer(e.getX(), e.getY());
-                if (taskUnderPointer == null) {
-                    getTaskSelectionManager().clear();
-                }
-            }
-            if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                myTree.getTaskPropertiesAction().actionPerformed(null);
-            }
-        }
-
-        @Override
-        protected Action[] getPopupMenuActions() {
-            Action[] treeActions = myTree.getPopupMenuActions();
-            int sep = 0;
-            if (treeActions.length != 0) {
-                sep = 1;
-            }
-
-            Action[] chartActions = myChartComponent.getPopupMenuActions();
-            Action[] result = new Action[treeActions.length + sep
-                    + chartActions.length];
-            System.arraycopy(treeActions, 0, result, 0, treeActions.length);
-            System.arraycopy(chartActions, 0, result, treeActions.length
-                    + sep, chartActions.length);
-            return result;
-        }
-
-        @Override
-        protected void processLeftButton(MouseEvent e) {
-            boolean isMineEvent = true;
-            ChartItem itemUnderPoint = myChartImplementation.getChartItemUnderMousePoint(e.getX(), e.getY());
-            if (itemUnderPoint instanceof TaskBoundaryChartItem) {
-                TaskBoundaryChartItem taskBoundary = (TaskBoundaryChartItem) itemUnderPoint;
-                if (taskBoundary.isStartBoundary()) {
-                    myChartImplementation.beginChangeTaskStartInteraction(e, taskBoundary);
-                }
-                else {
-                    myChartImplementation.beginChangeTaskEndInteraction(e, taskBoundary);
-                }
-            }
-            else if (itemUnderPoint instanceof TaskProgressChartItem) {
-                myChartImplementation.beginChangeTaskProgressInteraction(
-                        e, (TaskProgressChartItem) itemUnderPoint);
-            }
-            else if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
-                myChartImplementation.beginDrawDependencyInteraction(
-                        e, (TaskRegularAreaChartItem) itemUnderPoint);
-            }
-            else {
-                isMineEvent = false;
-                super.processLeftButton(e);
-            }
-            if (isMineEvent) {
-                myUiFacade.refresh();
-            }
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            myTree.stopEditing();
-            super.mousePressed(e);
-            Task taskUnderPointer = myChartImplementation.findTaskUnderPointer(e.getX(), e.getY());
-            if (taskUnderPointer == null) {
-                return;
-            }
-            if (taskUnderPointer!=null && !getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
-                boolean ctrl = (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK;
-                if (!ctrl) {
-                    getTaskSelectionManager().clear();
-                }
-                getTaskSelectionManager().addTask(taskUnderPointer);
-            }
-            if (e.getButton() == MouseEvent.BUTTON2) {
-                if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
-                    getTaskSelectionManager().clear();
-                    getTaskSelectionManager().addTask(taskUnderPointer);
-                }
-                List<Task> l = getTaskSelectionManager().getSelectedTasks();
-                myChartImplementation.beginMoveTaskInteractions(e, l);
-            }
-        }
-    }
-
-    static class OldMouseMotionListenerImpl extends MouseMotionListenerBase {
-        private final MouseSupport myMouseSupport;
-        private final ChartComponentBase myChartComponent;
-
-        public OldMouseMotionListenerImpl(NewChartComponentImpl chartImplementation, ChartModelImpl chartModel, UIFacade uiFacade, ChartComponentBase chartComponent) {
-            super(uiFacade, chartImplementation);
-            myMouseSupport = new MouseSupport(chartModel);
-            myChartComponent = chartComponent;
-        }
-        // Move the move on the area
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            ChartItem itemUnderPoint = myMouseSupport
-                    .getChartItemUnderMousePoint(e.getX(), e.getY());
-            Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();
-            // System.err.println("[OldMouseMotionListenerImpl] mouseMoved:
-            // taskUnderPoint="+taskUnderPoint);
-            if (taskUnderPoint == null) {
-                myChartComponent.setDefaultCursor();
-            } else {
-                if (itemUnderPoint instanceof TaskBoundaryChartItem) {
-                    Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint)
-                            .isStartBoundary() ? W_RESIZE_CURSOR
-                            : E_RESIZE_CURSOR;
-                    myChartComponent.setCursor(cursor);
-                }
-                // special cursor
-                else if (itemUnderPoint instanceof TaskProgressChartItem) {
-                    myChartComponent.setCursor(CHANGE_PROGRESS_CURSOR);
-                } else {
-                    myChartComponent.setDefaultCursor();
-                }
-                getUIFacade().refresh();
-            }
-        }
-    }
-
-    public void setTaskManager(TaskManager taskManager) {
-        // TODO Auto-generated method stub
-    }
-
-    public void reset() {
-        repaint();
-    }
-
-    @Override
-    public Icon getIcon() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    private GanttChartController myChartComponentImpl;
 
     @Override
     public void customPropertyChange(CustomPropertyEvent event) {

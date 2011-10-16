@@ -368,7 +368,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
         rootNode = new TaskNode(getTaskManager().getRootTask());
     }
 
-    Action[] getPopupMenuActions() {
+    public Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
         actions.add(getTaskNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
@@ -1061,7 +1061,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private Map<Integer, Integer> mapOriginalIDCopyID;
 
     /** Cut the current selected tree node */
-    void cutSelectedNode() {
+    public void cutSelectedNode() {
         final TreePath currentSelection = treetable.getTree()
                 .getSelectionPath();
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
@@ -1108,7 +1108,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     private AbstractAction[] myTreeActions;
 
     /** Copy the current selected tree node */
-    void copySelectedNode() {
+    public void copySelectedNode() {
         DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
         if (selectedNodes != null) {
             DefaultMutableTreeNode[] selectedRoots = findSelectedSubtreeRoots(selectedNodes);
@@ -1137,7 +1137,7 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
     }
 
     /** Paste the node and its child node to current selected position */
-    void pasteNode() {
+    public void pasteNode() {
         if (cpNodesArrayList != null) {
             getUndoManager().undoableEdit("Paste", new Runnable() {
                 public void run() {

@@ -45,7 +45,7 @@ public class ViewMenu extends JMenu {
             addSeparator();
         }
         for (Chart chart : charts) {
-            GPView view = project.getViewManager().createView(chart, chart.getIcon());
+            GPView view = project.getViewManager().createView(chart, null);
             add(new JCheckBoxMenuItem(new ViewToggleAction(chart, view)));
         }
     }

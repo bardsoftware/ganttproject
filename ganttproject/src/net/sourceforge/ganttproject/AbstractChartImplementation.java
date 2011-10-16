@@ -29,9 +29,12 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.Icon;
@@ -57,6 +60,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeFrame;
@@ -64,6 +69,7 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
     public static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));
@@ -345,6 +351,50 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         Point headerLocation = tableHeader.getLocationOnScreen();
         Point treeLocation = tableContainer.getLocationOnScreen();
         return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
+
+    }
+
+    protected static class ChartSelectionImpl implements ChartSelection {
+        private List<Task> myTasks = new ArrayList<Task>();
+        private List<Task> myTasksRO = Collections.unmodifiableList(myTasks);
+        private List<HumanResource> myHumanResources = new ArrayList<HumanResource>();
+        private List<HumanResource> myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
+        private boolean isTransactionRunning;
+
+        public boolean isEmpty() {
+            return myTasks.isEmpty() && myHumanResources.isEmpty();
+        }
+
+        public List<Task> getTasks() {
+            return myTasksRO;
+        }
+
+        public List<HumanResource> getHumanResources() {
+            return myHumanResourceRO;
+        }
+
+        public IStatus isDeletable() {
+            return Status.OK_STATUS;
+        }
+
+        public void startCopyClipboardTransaction() {
+            if (isTransactionRunning) {
+                throw new IllegalStateException("Transaction is already running");
+            }
+            isTransactionRunning = true;
+        }
+        public void startMoveClipboardTransaction() {
+            if (isTransactionRunning) {
+                throw new IllegalStateException("Transaction is already running");
+            }
+            isTransactionRunning = true;
+        }
+        public void cancelClipboardTransaction() {
+            isTransactionRunning = false;
+        }
+        public void commitClipboardTransaction() {
+            isTransactionRunning = false;
+        }
 
     }
 }
