@@ -1,0 +1,90 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.chart.mouse;
+
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.Action;
+
+import net.sourceforge.ganttproject.AbstractChartImplementation;
+import net.sourceforge.ganttproject.ChartComponentBase;
+import net.sourceforge.ganttproject.gui.UIFacade;
+
+public class MouseListenerBase extends MouseAdapter {
+    private UIFacade myUiFacade;
+    private ChartComponentBase myChartComponent;
+    private AbstractChartImplementation myChartImplementation;
+
+    protected MouseListenerBase(
+            UIFacade uiFacade, ChartComponentBase chartComponent, AbstractChartImplementation chartImplementation) {
+        assert uiFacade != null && chartComponent != null && chartImplementation != null;
+        myUiFacade = uiFacade;
+        myChartComponent = chartComponent;
+        myChartImplementation = chartImplementation;
+    }
+
+    protected UIFacade getUIFacade() {
+        return myUiFacade;
+    }
+    @Override
+    public void mousePressed(MouseEvent e) {
+        super.mousePressed(e);
+        if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
+            Action[] actions = getPopupMenuActions();
+            if (actions.length>0) {
+                getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
+            }
+            return;
+        }
+        switch (e.getButton()) {
+        case MouseEvent.BUTTON1:
+            processLeftButton(e);
+            break;
+        }
+    }
+
+    protected void processLeftButton(MouseEvent e) {
+        myChartImplementation.beginScrollViewInteraction(e);
+        myChartComponent.requestFocus();
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        super.mouseReleased(e);
+        myChartImplementation.finishInteraction();
+        myChartComponent.reset();
+        myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        myChartComponent.setDefaultCursor();
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    protected Action[] getPopupMenuActions() {
+        return new Action[0];
+    }
+}

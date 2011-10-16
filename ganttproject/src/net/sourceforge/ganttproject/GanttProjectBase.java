@@ -409,7 +409,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
         public void setVisible(boolean isVisible) {
             if (isVisible) {
-                myChart.setTaskManager(GanttProjectBase.this.getTaskManager());
                 String tabName = myChart.getName();
                 myTabs.addTab(tabName, myIcon, myComponent, tabName, this);
                 myTabs.setSelectedComponent(myComponent);

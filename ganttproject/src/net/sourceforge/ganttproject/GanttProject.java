@@ -694,7 +694,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         setTitle(language.getText("appliTitle") + " ["
                 + document.getFileName() + "]");
         for (Chart chart : PluginManager.getCharts()) {
-            chart.setTaskManager(myTaskManager);
             chart.reset();
         }
 

@@ -35,6 +35,8 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
+import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -154,19 +156,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     private MouseListener myMouseListener;
 
     private AbstractChartImplementation myChartImplementation;
-
-    public void setTaskManager(TaskManager taskManager) {
-        // TODO Auto-generated method stub
-    }
-
-    public void reset() {
-        repaint();
-    }
-
-    public Icon getIcon() {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     private class ResourcechartImplementation extends AbstractChartImplementation {
 

@@ -21,25 +21,14 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JPanel;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -51,28 +40,25 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.export.ChartDimensions;
-import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
-import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
+import net.sourceforge.ganttproject.chart.mouse.MouseWheelListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
+import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
+import org.eclipse.core.runtime.IStatus;
+
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
-    private static final Cursor DEFAULT_CURSOR = Cursor
-            .getPredefinedCursor(Cursor.HAND_CURSOR);
+    private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 
     private final IGanttProject myProject;
 
@@ -92,7 +78,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
         myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
 
-        myMouseWheelListener = new MouseWheelListenerBase();
+        myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
     }
 
     protected void initMouseListeners() {
@@ -163,7 +149,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return myProject.getUIConfiguration();
     }
 
-    protected void setDefaultCursor() {
+    public void setDefaultCursor() {
         setCursor(DEFAULT_CURSOR);
     }
 
@@ -186,117 +172,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     protected abstract MouseMotionListener getMouseMotionListener();
 
     // protected abstract MouseWheelListener getMouseWheelListener();
-
-    protected static class MouseListenerBase extends MouseAdapter {
-        private UIFacade myUiFacade;
-        private ChartComponentBase myChartComponent;
-        private AbstractChartImplementation myChartImplementation;
-
-        protected MouseListenerBase(
-                UIFacade uiFacade, ChartComponentBase chartComponent, AbstractChartImplementation chartImplementation) {
-            assert uiFacade != null && chartComponent != null && chartImplementation != null;
-            myUiFacade = uiFacade;
-            myChartComponent = chartComponent;
-            myChartImplementation = chartImplementation;
-        }
-
-        protected UIFacade getUIFacade() {
-            return myUiFacade;
-        }
-        @Override
-        public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-                Action[] actions = getPopupMenuActions();
-                if (actions.length>0) {
-                    getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
-                }
-                return;
-            }
-            switch (e.getButton()) {
-            case MouseEvent.BUTTON1:
-                processLeftButton(e);
-                break;
-            }
-        }
-
-        protected void processLeftButton(MouseEvent e) {
-            myChartImplementation.beginScrollViewInteraction(e);
-            myChartComponent.requestFocus();
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            super.mouseReleased(e);
-            myChartImplementation.finishInteraction();
-            myChartComponent.reset();
-            myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            myChartComponent.setDefaultCursor();
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-
-        protected Action[] getPopupMenuActions() {
-            return new Action[0];
-        }
-    }
-
-    static class MouseMotionListenerBase extends MouseMotionAdapter {
-        private UIFacade myUiFacade;
-        private AbstractChartImplementation myChartImplementation;
-        MouseMotionListenerBase(UIFacade uiFacade, AbstractChartImplementation chartImplementation) {
-            myUiFacade = uiFacade;
-            myChartImplementation = chartImplementation;
-        }
-
-        protected UIFacade getUIFacade() {
-            return myUiFacade;
-        }
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            super.mouseDragged(e);
-            MouseInteraction activeInteraction = myChartImplementation.getActiveInteraction();
-            if (activeInteraction != null) {
-                activeInteraction.apply(e);
-                myUiFacade.refresh();
-            }
-        }
-    }
-
-    protected class MouseWheelListenerBase implements MouseWheelListener {
-        public void mouseWheelMoved(MouseWheelEvent e) {
-            if (isRotationUp(e)) {
-                fireZoomIn();
-            } else {
-                fireZoomOut();
-            }
-        }
-
-        private void fireZoomIn() {
-            if (myZoomManager.canZoomIn()) {
-                myZoomManager.zoomIn();
-//              reset the block size of the chart scrollbar
-            }
-        }
-
-        private void fireZoomOut() {
-            if (myZoomManager.canZoomOut()) {
-                myZoomManager.zoomOut();
-//              reset the block size of the chart scrollbar
-            }
-        }
-
-        private boolean isRotationUp(MouseWheelEvent e) {
-            return e.getWheelRotation() < 0;
-        }
-    }
 
     protected abstract AbstractChartImplementation getImplementation();
 
@@ -361,50 +236,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         getImplementation().paintChart(g);
     }
 
-    protected static class ChartSelectionImpl implements ChartSelection {
-        private List<Task> myTasks = new ArrayList<Task>();
-        private List<Task> myTasksRO = Collections.unmodifiableList(myTasks);
-        private List<HumanResource> myHumanResources = new ArrayList<HumanResource>();
-        private List<HumanResource> myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
-        private boolean isTransactionRunning;
-
-        public boolean isEmpty() {
-            return myTasks.isEmpty() && myHumanResources.isEmpty();
-        }
-
-        public List<Task> getTasks() {
-            return myTasksRO;
-        }
-
-        public List<HumanResource> getHumanResources() {
-            return myHumanResourceRO;
-        }
-
-        public IStatus isDeletable() {
-            return Status.OK_STATUS;
-        }
-
-        public void startCopyClipboardTransaction() {
-            if (isTransactionRunning) {
-                throw new IllegalStateException("Transaction is already running");
-            }
-            isTransactionRunning = true;
-        }
-        public void startMoveClipboardTransaction() {
-            if (isTransactionRunning) {
-                throw new IllegalStateException("Transaction is already running");
-            }
-            isTransactionRunning = true;
-        }
-        public void cancelClipboardTransaction() {
-            isTransactionRunning = false;
-        }
-        public void commitClipboardTransaction() {
-            isTransactionRunning = false;
-        }
-
-    }
-
     public MouseInteraction newScrollViewInteraction(MouseEvent e) {
         return new ScrollViewInteraction(
             e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(),
@@ -419,6 +250,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
         return getImplementation().getRenderedImage(settings);
+    }
+
+    @Override
+    public void reset() {
+        repaint();
     }
 
     public Action[] getPopupMenuActions() {
