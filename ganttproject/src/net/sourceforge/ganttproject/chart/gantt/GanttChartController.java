@@ -63,8 +63,8 @@ public class GanttChartController extends AbstractChartImplementation implements
     private final ChartModelImpl myChartModel;
     private final ChartViewState myChartViewState;
     private final GanttTree2 myTree;
-    private MouseListenerImpl myMouseListener;
-    private MouseMotionListenerImpl myMouseMotionListener;
+    private final MouseListenerImpl myMouseListener;
+    private final MouseMotionListenerImpl myMouseMotionListener;
 
     public GanttChartController(
             IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel, ChartComponentBase chartComponent,
@@ -113,6 +113,7 @@ public class GanttChartController extends AbstractChartImplementation implements
         setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress,
             new TimelineFacadeImpl(getChartModel(), getTaskManager()),
             new TaskChartModelFacade() {
+                @Override
                 public List<Rectangle> getTaskRectangles(Task t) {
                     List<Rectangle> result = new ArrayList<Rectangle>();
                     for (TaskActivity activity : t.getActivities()) {
@@ -172,10 +173,12 @@ public class GanttChartController extends AbstractChartImplementation implements
         }
     }
 
+    @Override
     public MouseListener getMouseListener() {
         return myMouseListener;
     }
 
+    @Override
     public MouseMotionListener getMouseMotionListener() {
         return myMouseMotionListener;
     }

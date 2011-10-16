@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
@@ -26,6 +25,7 @@ import javax.swing.Action;
 
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -85,9 +85,62 @@ class MouseListenerImpl extends MouseListenerBase {
     }
 
     @Override
-    protected void processLeftButton(MouseEvent e) {
-        boolean isMineEvent = true;
+    public void mousePressed(MouseEvent e) {
+        myTree.stopEditing();
+        String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+        super.mousePressed(e);
+
+        // If there is no task under the mouse pointer, we consider dragging the chart
+        Task taskUnderPointer = myChartImplementation.findTaskUnderPointer(e.getX(), e.getY());
+        if (taskUnderPointer == null) {
+            if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
+                startScrollView(e);
+                return;
+            }
+        }
+
+        // Process selection change before doing other interactions
+        if (text.equals(GPAction.getKeyStrokeText("mouse.select.single"))) {
+            getTaskSelectionManager().clear();
+        }
+        if (text.equals(GPAction.getKeyStrokeText("mouse.select.single")) ||
+                text.equals(GPAction.getKeyStrokeText("mouse.select.multiple"))) {
+            getTaskSelectionManager().addTask(taskUnderPointer);
+        }
+
+        // Now examine what exactly is under the pointer
         ChartItem itemUnderPoint = myChartImplementation.getChartItemUnderMousePoint(e.getX(), e.getY());
+        if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
+            // If it is a plain task area then either drag the task or create a dependency,
+            // depending on the settings.
+            if (text.equals(GPAction.getKeyStrokeText("mouse.drag.task"))) {
+                startDragTasks(e, taskUnderPointer);
+                return;
+            }
+            if (text.equals(GPAction.getKeyStrokeText("mouse.dependency"))) {
+                startDrawDependency(e, itemUnderPoint);
+                return;
+            }
+        } else {
+            // Otherwise process boundary change or progress change
+            handleEvent(itemUnderPoint, e);
+        }
+    }
+
+    private void startDrawDependency(MouseEvent e, ChartItem itemUnderPoint) {
+        myChartImplementation.beginDrawDependencyInteraction(e, (TaskRegularAreaChartItem) itemUnderPoint);
+    }
+
+    private void startDragTasks(MouseEvent e, Task taskUnderPointer) {
+        if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
+            getTaskSelectionManager().clear();
+            getTaskSelectionManager().addTask(taskUnderPointer);
+        }
+        List<Task> l = getTaskSelectionManager().getSelectedTasks();
+        myChartImplementation.beginMoveTaskInteractions(e, l);
+    }
+
+    private void handleEvent(ChartItem itemUnderPoint, MouseEvent e) {
         if (itemUnderPoint instanceof TaskBoundaryChartItem) {
             TaskBoundaryChartItem taskBoundary = (TaskBoundaryChartItem) itemUnderPoint;
             if (taskBoundary.isStartBoundary()) {
@@ -98,44 +151,7 @@ class MouseListenerImpl extends MouseListenerBase {
             }
         }
         else if (itemUnderPoint instanceof TaskProgressChartItem) {
-            myChartImplementation.beginChangeTaskProgressInteraction(
-                    e, (TaskProgressChartItem) itemUnderPoint);
-        }
-        else if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
-            myChartImplementation.beginDrawDependencyInteraction(
-                    e, (TaskRegularAreaChartItem) itemUnderPoint);
-        }
-        else {
-            isMineEvent = false;
-            super.processLeftButton(e);
-        }
-        if (isMineEvent) {
-            myUiFacade.refresh();
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        myTree.stopEditing();
-        super.mousePressed(e);
-        Task taskUnderPointer = myChartImplementation.findTaskUnderPointer(e.getX(), e.getY());
-        if (taskUnderPointer == null) {
-            return;
-        }
-        if (taskUnderPointer!=null && !getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
-            boolean ctrl = (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK;
-            if (!ctrl) {
-                getTaskSelectionManager().clear();
-            }
-            getTaskSelectionManager().addTask(taskUnderPointer);
-        }
-        if (e.getButton() == MouseEvent.BUTTON2) {
-            if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
-                getTaskSelectionManager().clear();
-                getTaskSelectionManager().addTask(taskUnderPointer);
-            }
-            List<Task> l = getTaskSelectionManager().getSelectedTasks();
-            myChartImplementation.beginMoveTaskInteractions(e, l);
+            myChartImplementation.beginChangeTaskProgressInteraction(e, (TaskProgressChartItem) itemUnderPoint);
         }
     }
 }

@@ -283,7 +283,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public void reset() {
-        throw new UnsupportedOperationException();
+        myChartComponent.reset();
     }
 
     public Icon getIcon() {

@@ -94,6 +94,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
 
         myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
         myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
+            @Override
             public void optionsChanged() {
                 repaint();
 
