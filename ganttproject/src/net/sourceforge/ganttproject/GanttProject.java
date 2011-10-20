@@ -574,11 +574,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         JTextField searchBox = getSearchUi().getSearchField();
         searchBox.setMaximumSize(new Dimension(
                 searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        searchPanel.add(searchBox, BorderLayout.EAST);
-        searchPanel.setAlignmentY(TOP_ALIGNMENT);
-        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        toolBar.add(searchPanel);
+        JPanel tailPanel = new JPanel(new BorderLayout());
+
+        JPanel searchPanel = new JPanel();
+        searchPanel.add(searchBox);
+        tailPanel.add(searchPanel, BorderLayout.EAST);
+        tailPanel.setAlignmentY(TOP_ALIGNMENT);
+        tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        toolBar.add(tailPanel);
     }
 
     public List<GanttPreviousState> getBaselines() {
