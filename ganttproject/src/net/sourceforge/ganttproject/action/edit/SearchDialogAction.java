@@ -24,19 +24,17 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.search.SearchDialog;
+import net.sourceforge.ganttproject.search.SearchUi;
 
 public class SearchDialogAction extends GPAction {
-    private final IGanttProject myProject;
-    private final UIFacade myUiFacade;
+    private final SearchUi mySearchUi;
 
-    public SearchDialogAction(IGanttProject project, UIFacade uiFacade) {
+    public SearchDialogAction(SearchUi searchUi) {
         super("search.dialog.open");
-        myProject = project;
-        myUiFacade = uiFacade;
+        mySearchUi = searchUi;
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        SearchDialog dlg = new SearchDialog(myProject, myUiFacade);
-        dlg.show();
+        mySearchUi.requestFocus();
     }
 }
