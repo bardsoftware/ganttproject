@@ -43,7 +43,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
     public enum IconSize {
-        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("16"), TOOLBAR_BIG("32");
+        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
 
         private final String mySize;
 
@@ -93,6 +93,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         if(name != null) {
             putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
         }
+    }
+
+    protected GPAction(String name, IconSize size) {
+        this(name, size.asString());
     }
 
     public GPAction withIcon(IconSize size) {
