@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 
 //TODO Enable/Disable action depending on clipboard contents
@@ -33,9 +34,14 @@ public class PasteAction extends GPAction {
         myViewmanager = viewManager;
     }
 
+    private PasteAction(GPViewManager viewmanager, IconSize size) {
+        super("paste", size);
+        myViewmanager = viewmanager;
+    }
+
     @Override
-    protected String getIconFilePrefix() {
-        return "paste_";
+    public GPAction withIcon(IconSize size) {
+        return new PasteAction(myViewmanager, size);
     }
 
     @Override

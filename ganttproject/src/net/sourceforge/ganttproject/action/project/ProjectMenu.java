@@ -79,7 +79,7 @@ public class ProjectMenu extends JMenu {
         return myNewProjectAction;
     }
 
-    public AbstractAction getSaveProjectAction() {
+    public GPAction getSaveProjectAction() {
         return mySaveProjectAction;
     }
 
