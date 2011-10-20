@@ -48,9 +48,11 @@ public class SimpleSearchService implements SearchService {
 
     @Override
     public void select(List<SearchResult> results) {
+        myUiFacade.getTaskSelectionManager().clear();
         for (SearchResult r : results) {
             MySearchResult result = (MySearchResult) r;
             myUiFacade.getTaskSelectionManager().addTask(result.getTask());
+            myUiFacade.getTaskTree().getTreeComponent().requestFocusInWindow();
         }
     }
 
