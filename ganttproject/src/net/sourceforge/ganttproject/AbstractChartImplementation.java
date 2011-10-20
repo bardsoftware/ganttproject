@@ -64,6 +64,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -89,6 +90,15 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         myChartModel = chartModel;
         myProject = project;
         myChartComponent = chartComponent;
+        uiFacade.getTaskSelectionManager().addSelectionListener(new TaskSelectionManager.Listener() {
+            public void userInputConsumerChanged(Object newConsumer) {
+                fireSelectionChanged();
+            }
+
+            public void selectionChanged(List<Task> currentSelection) {
+                fireSelectionChanged();
+            }
+        });
     }
 
     protected void setCursor(Cursor cursor) {
