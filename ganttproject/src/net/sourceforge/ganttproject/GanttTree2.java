@@ -270,6 +270,17 @@ public class GanttTree2 extends JPanel implements DragSourceListener,
                 mySelectionManager.setUserInputConsumer(this);
             }
         });
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        treetable.getTable().requestFocusInWindow();
+                    }
+                });
+            }
+        });
         // A listener on mouse click (menu)
         MouseListener ml = new MouseAdapter() {
 

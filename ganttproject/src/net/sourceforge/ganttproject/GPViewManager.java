@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 
@@ -31,9 +32,9 @@ import org.eclipse.core.runtime.IAdaptable;
  */
 public interface GPViewManager {
     public GPView createView(IAdaptable adaptable, Icon icon);
-    public AbstractAction getCopyAction();
-    public AbstractAction getCutAction();
-    public AbstractAction getPasteAction();
+    public GPAction getCopyAction();
+    public GPAction getCutAction();
+    public GPAction getPasteAction();
     public ChartSelection getSelectedArtefacts();
     public Chart getActiveChart();
 }

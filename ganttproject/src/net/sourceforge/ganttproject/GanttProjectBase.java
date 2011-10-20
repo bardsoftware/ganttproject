@@ -36,6 +36,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.edit.CopyAction;
 import net.sourceforge.ganttproject.action.edit.CutAction;
 import net.sourceforge.ganttproject.action.edit.PasteAction;
@@ -69,6 +70,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.search.SearchUiImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
@@ -111,7 +113,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         new CustomColumnsManager(new CustomColumnsStorage());
 
     private final RssFeedChecker myRssChecker;
-    private ContentPaneBuilder myContentPaneBuilder;
+    private final ContentPaneBuilder myContentPaneBuilder;
+    private final SearchUiImpl mySearchUi;
 
     protected GanttProjectBase() {
         super("Gantt Chart");
@@ -151,6 +154,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
+
+        mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
     }
 
     public void addProjectEventListener(ProjectEventListener listener) {
@@ -299,9 +304,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         private final List<GPView> myViews = new ArrayList<GPView>();
         private GPView mySelectedView;
 
-        private final AbstractAction myCopyAction;
-        private final AbstractAction myCutAction;
-        private final AbstractAction myPasteAction;
+        private final CopyAction myCopyAction;
+        private final CutAction myCutAction;
+        private final PasteAction myPasteAction;
 
         ViewManagerImpl(GanttTabbedPane tabs) {
             myTabs = tabs;
@@ -334,15 +339,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             return view;
         }
 
-        public AbstractAction getCopyAction() {
+        public GPAction getCopyAction() {
             return myCopyAction;
         }
 
-        public AbstractAction getCutAction() {
+        public GPAction getCutAction() {
             return myCutAction;
         }
 
-        public AbstractAction getPasteAction() {
+        public GPAction getPasteAction() {
             return myPasteAction;
         }
 
@@ -505,6 +510,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     protected RssFeedChecker getRssFeedChecker() {
         return myRssChecker;
+    }
+
+    protected SearchUiImpl getSearchUi() {
+        return mySearchUi;
     }
 
     public abstract String getProjectName();
