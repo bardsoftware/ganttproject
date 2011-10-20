@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.search;
 
+import java.awt.Color;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -21,12 +22,16 @@ public class SearchUiImpl implements SearchUi {
     private final IGanttProject project;
     private final UIFacade uiFacade;
     private JTextField searchBox;
+    private Color myInitialForeground;
 
     public SearchUiImpl(IGanttProject project, UIFacade uiFacade) {
         this.project = project;
         this.uiFacade = uiFacade;
         PopupSearchCallback callback = new PopupSearchCallback();
         searchBox = new JTextField(30);
+        myInitialForeground = searchBox.getForeground();
+        searchBox.setForeground(Color.GRAY);
+        searchBox.setText("Search <Ctrl+F>");
         callback.setSearchBox(searchBox);
     }
 
@@ -94,6 +99,7 @@ public class SearchUiImpl implements SearchUi {
                 @Override
                 public void focusGained(FocusEvent e) {
                     PopupSearchCallback.this.searchBox.selectAll();
+                    PopupSearchCallback.this.searchBox.setForeground(myInitialForeground);
                 }
             });
 
