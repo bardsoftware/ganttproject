@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 
 //TODO Enable/Disable action on selection changes
 public class CutAction extends GPAction {
@@ -32,10 +33,17 @@ public class CutAction extends GPAction {
         myViewmanager = viewManager;
     }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "cut_";
+    private CutAction(GPViewManager viewmanager, IconSize size) {
+        super("cut", size);
+        myViewmanager = viewmanager;
     }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new CutAction(myViewmanager, size);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
     }

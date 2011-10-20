@@ -23,15 +23,25 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 
 class SaveProjectAction extends GPAction implements ProjectEventListener {
     private final GanttProject myMainFrame;
 
     SaveProjectAction(GanttProject mainFrame) {
-        super("project.save");
+        this(mainFrame, IconSize.MENU);
+    }
+
+    private SaveProjectAction(GanttProject mainFrame, IconSize size) {
+        super("project.save", size);
         myMainFrame = mainFrame;
         mainFrame.addProjectEventListener(this);
         setEnabled(false);
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new SaveProjectAction(myMainFrame, size);
     }
 
     @Override

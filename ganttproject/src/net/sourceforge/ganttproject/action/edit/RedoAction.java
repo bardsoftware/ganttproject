@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -33,21 +34,33 @@ public class RedoAction extends GPAction implements GPUndoListener {
     private final GPUndoManager myUndoManager;
 
     public RedoAction(GPUndoManager undoManager) {
-        super("redo");
+        this(undoManager, IconSize.MENU);
+    }
+
+    private RedoAction(GPUndoManager undoManager, IconSize size) {
+        super("redo", size);
         myUndoManager = undoManager;
         myUndoManager.addUndoableEditListener(this);
         setEnabled(myUndoManager.canRedo());
     }
 
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new RedoAction(myUndoManager, size);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         myUndoManager.redo();
     }
 
+    @Override
     public void undoableEditHappened(UndoableEditEvent e) {
         setEnabled(myUndoManager.canRedo());
         updateAction();
     }
 
+    @Override
     public void undoOrRedoHappened() {
         setEnabled(myUndoManager.canRedo());
         updateAction();

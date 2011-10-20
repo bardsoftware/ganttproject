@@ -25,13 +25,14 @@ import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.search.SearchUi;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu extends JMenu {
     private final UndoAction myUndoAction;
     private final RedoAction myRedoAction;
 
-    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, String key) {
+    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, SearchUi searchUi, String key) {
         super(GPAction.createVoidAction(key));
         final GPUndoManager undoManager = uiFacade.getUndoManager();
         myUndoAction = new UndoAction(undoManager);
@@ -41,7 +42,7 @@ public class EditMenu extends JMenu {
         add(getRedoAction());
         addSeparator();
         add(new RefreshViewAction(uiFacade));
-        add(new SearchDialogAction(project,uiFacade));
+        add(new SearchDialogAction(searchUi));
         addSeparator();
         add(viewManager.getCutAction());
         add(viewManager.getCopyAction());
@@ -54,7 +55,7 @@ public class EditMenu extends JMenu {
         return myUndoAction;
     }
 
-    public Action getRedoAction() {
+    public GPAction getRedoAction() {
         return myRedoAction;
     }
 }

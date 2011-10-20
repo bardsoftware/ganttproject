@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -32,10 +34,23 @@ public class CopyAction extends GPAction {
         myViewmanager = viewManager;
     }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "copy_";
+    private CopyAction(final CopyAction copy, IconSize size) {
+        super("copy", size.asString());
+        myViewmanager = copy.myViewmanager;
+        copy.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                setEnabled(copy.isEnabled());
+            }
+        });
     }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new CopyAction(this, size);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
     }

@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -41,10 +43,20 @@ public class ResourceDeleteAction extends ResourceAction {
 
     public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject projectFrame,
             UIFacade uiFacade) {
-        super("resource.delete", hrManager);
+        this(hrManager, context, projectFrame, uiFacade, IconSize.MENU);
+    }
+
+    private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject projectFrame,
+            UIFacade uiFacade, IconSize size) {
+        super("resource.delete", hrManager, size);
         myUIFacade = uiFacade;
         myProjectFrame = projectFrame;
         myContext = context;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ResourceDeleteAction(getManager(), myContext, myProjectFrame, myUIFacade, size);
     }
 
     @Override
