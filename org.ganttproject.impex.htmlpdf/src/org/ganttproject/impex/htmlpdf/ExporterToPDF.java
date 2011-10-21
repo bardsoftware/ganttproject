@@ -51,11 +51,11 @@ public class ExporterToPDF extends ExporterBase {
     private void initEngine() {
         if (mySelectedStylesheet instanceof PDFStylesheet) {
             myFopEngine.setContext(getProject(), getUIFacade(), getPreferences(), mySelectedStylesheet);
-        }
-        if (mySelectedStylesheet instanceof ITextStylesheet) {
+        } else if (mySelectedStylesheet instanceof ITextStylesheet) {
             myITextEngine.setContext(getProject(), getUIFacade(), getPreferences(), mySelectedStylesheet);
+        } else {
+            assert false : "Unknown stylesheet is selected: " + mySelectedStylesheet;
         }
-        assert false : "Unknown stylesheet is selected: " + mySelectedStylesheet;
     }
 
     @Override
