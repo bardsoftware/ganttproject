@@ -41,6 +41,9 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
+import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swing.calendar.JXMonthView;
+
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 
@@ -62,6 +65,14 @@ public class GanttLanguage {
         public void languageChanged(Event event);
     }
 
+    public static Comparator<Locale> LEXICOGRAPHICAL_LOCALE_COMPARATOR = new Comparator<Locale>() {
+        @Override
+        public int compare(Locale o1, Locale o2) {
+            return (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
+                o2.getDisplayLanguage(Locale.US)+o2.getDisplayCountry(Locale.US));
+        }
+    };
+
     private static final GanttLanguage ganttLanguage = new GanttLanguage();
 
     private ArrayList<Listener> myListeners = new ArrayList<Listener>();
@@ -79,6 +90,10 @@ public class GanttLanguage {
     private SimpleDateFormat myLongFormat;
 
     private DateFormat currentTimeFormat = null;
+
+    private List<String> myDayShortNames;
+
+    private Locale myDateFormatLocale;
 
     private GanttLanguage() {
         myCharSetMap = new CharSetMap();
@@ -101,6 +116,26 @@ public class GanttLanguage {
         return myLongFormat;
     }
 
+    public Locale getDateFormatLocale() {
+        return myDateFormatLocale;
+    }
+
+    public void setDateFormatLocale(Locale locale) {
+        myDateFormatLocale = locale;
+        currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(
+                DateFormat.MEDIUM, locale);
+        shortCurrentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(
+                DateFormat.SHORT, locale);
+        currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+        myLongFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
+        UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
+        UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
+        UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
+        UIManager.put("JXDatePicker.numColumns", new Integer(10));
+        myDayShortNames = getShortDayNames(locale);
+        UIManager.put("JXMonthView.daysOfTheWeek", myDayShortNames.toArray(new String[7]));
+    }
+
     public void setLocale(Locale locale) {
         currentLocale = locale;
         Locale.setDefault(locale);
@@ -110,22 +145,7 @@ public class GanttLanguage {
         utc.setRawOffset(defaultTimezoneOffset);
         TimeZone.setDefault(utc);
 
-        currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM,
-                currentLocale);
-        shortCurrentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT,
-                currentLocale);
-        currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM,
-                currentLocale);
-        myLongFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
-        UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
-        UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
-        UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
-        UIManager.put("JXDatePicker.numColumns", new Integer(10));
-        String[] dayShortNames = new String[7];
-        for (int i = 0; i < 7; i++) {
-            dayShortNames[i] = getDay(i).substring(0, 1);
-        }
-        UIManager.put("JXMonthView.daysOfTheWeek", dayShortNames);
+        setDateFormatLocale(locale);
         String resourceBase = System.getProperty(
                 "org.ganttproject.resourcebase", "language/i18n");
         i18n = ResourceBundle.getBundle(resourceBase, currentLocale);
@@ -148,13 +168,7 @@ public class GanttLanguage {
         result.add(Locale.ENGLISH);
 
         List<Locale> result1 = new ArrayList<Locale>(result);
-        Collections.sort(result1, new Comparator<Locale>() {
-            @Override
-            public int compare(Locale o1, Locale o2) {
-                return (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
-                    o2.getDisplayLanguage(Locale.US)+o2.getDisplayCountry(Locale.US));
-            }
-        });
+        Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR);
         return result1;
     }
 
@@ -167,6 +181,9 @@ public class GanttLanguage {
         return myCharSetMap.getCharSet(getLocale());
     }
 
+    public String getDay(int day) {
+        return myDayShortNames.get(day);
+    }
     /** @return The current DateFormat */
     public DateFormat getDateFormat() {
         return currentDateFormat;
@@ -193,27 +210,29 @@ public class GanttLanguage {
 
     public String getMonth(int m) {
         GregorianCalendar month = new GregorianCalendar(2000, m, 1);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM",
-                this.currentLocale);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM", myDateFormatLocale);
         StringBuffer result = new StringBuffer();
         result = dateFormat.format(month.getTime(), result, new FieldPosition(
                 DateFormat.MONTH_FIELD));
         return result.toString();
     }
 
-    public String getDay(int d) {
-        GregorianCalendar day = new GregorianCalendar(2000, 1, 1);
-        while (day.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-            day.add(Calendar.DATE, 1);
-        }
-        day.add(Calendar.DATE, d);
+    private static List<String> getShortDayNames(Locale locale) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE", locale);
+        List<String> result = new ArrayList<String>();
+        for (int i = 0; i < 7; i++) {
+            GregorianCalendar day = new GregorianCalendar(2000, 1, 1);
+            while (day.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                day.add(Calendar.DATE, 1);
+            }
+            day.add(Calendar.DATE, i);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE",
-                this.currentLocale);
-        StringBuffer result = new StringBuffer();
-        result = dateFormat.format(day.getTime(), result, new FieldPosition(
-                DateFormat.DAY_OF_WEEK_FIELD));
-        return result.toString();
+            StringBuffer formattedDay = new StringBuffer();
+            formattedDay = dateFormat.format(day.getTime(), formattedDay, new FieldPosition(
+                    DateFormat.DAY_OF_WEEK_FIELD));
+            result.add(formattedDay.toString());
+        }
+        return result;
     }
 
     /** @return the text in the current language for the given key */
@@ -257,7 +276,7 @@ public class GanttLanguage {
     }
 
     public SimpleDateFormat createDateFormat(String string) {
-        return new SimpleDateFormat(string, currentLocale);
+        return new SimpleDateFormat(string, myDateFormatLocale);
     }
 
     /** @return label with the $ removed from it (if it was included) */
