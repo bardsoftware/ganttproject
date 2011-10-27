@@ -258,6 +258,17 @@ public class OptionsPageBuilder {
         if (result == null) {
             result = new JLabel("Unknown option class=" + option.getClass());
         }
+        result.setEnabled(option.isWritable());
+        final Component finalResult = result;
+        option.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("isWritable".equals(evt.getPropertyName())) {
+                    assert evt.getNewValue() instanceof Boolean : "Unexpected value of property isWritable: " + evt.getNewValue();
+                    finalResult.setEnabled((Boolean)evt.getNewValue());
+                }
+            }
+        });
         return result;
     }
 
@@ -445,6 +456,7 @@ public class OptionsPageBuilder {
 
     public JComponent createDateComponent(final DateOption option) {
         final JXDatePicker result = new JXDatePicker();
+        result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
         result.setDate(option.getValue());
         class OptionValueUpdater implements ActionListener, PropertyChangeListener {
             @Override

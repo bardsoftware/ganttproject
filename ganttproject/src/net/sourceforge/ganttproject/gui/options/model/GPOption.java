@@ -3,6 +3,8 @@
  */
 package net.sourceforge.ganttproject.gui.options.model;
 
+import java.beans.PropertyChangeListener;
+
 /**
  * @author bard
  */
@@ -25,4 +27,10 @@ public interface GPOption<T> {
     boolean isChanged();
 
     void addChangeValueListener(ChangeValueListener listener);
+
+    boolean isWritable();
+
+    void addPropertyChangeListener(PropertyChangeListener listener);
+    void removePropertyChangeListener(PropertyChangeListener listener);
+
 }
