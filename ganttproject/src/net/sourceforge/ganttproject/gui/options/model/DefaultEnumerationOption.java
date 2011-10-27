@@ -78,4 +78,11 @@ implements EnumerationOption {
     public void loadPersistentValue(String value) {
         setValue(value);
     }
+
+    public T getSelectedValue() {
+        return stringToObject(getValue());
+    }
+    public void setSelectedValue(T value) {
+        setValue(objectToString(value));
+    }
 }

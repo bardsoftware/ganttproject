@@ -29,9 +29,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -76,7 +78,11 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
+import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
+import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -114,8 +120,46 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myNotificationManager = notificationManager;
 
         myLafOption = new LafOption(this);
-        LanguageOption languageOption = new LanguageOption();
-        GPOption[] options = new GPOption[] {myLafOption, languageOption};
+        Locale[] availableLocales = Locale.getAvailableLocales();
+        Arrays.sort(availableLocales, GanttLanguage.LEXICOGRAPHICAL_LOCALE_COMPARATOR);
+        final LanguageOption dateFormatChoiceOption = new LanguageOption("ui.dateFormat.choice", availableLocales) {
+            @Override
+            protected void applyLocale(Locale locale) {
+                GanttLanguage.getInstance().setDateFormatLocale(locale);
+            }
+        };
+        final DefaultStringOption dateSampleOption = new DefaultStringOption("ui.dateFormat.sample");
+        dateSampleOption.setWritable(false);
+        final DefaultBooleanOption dateFormatSwitchOption = new DefaultBooleanOption("ui.dateFormat.switch", true);
+
+        final LanguageOption languageOption = new LanguageOption();
+        languageOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+                if (dateFormatSwitchOption.isChecked()) {
+                    Locale selected = languageOption.getSelectedValue();
+                    dateFormatChoiceOption.setSelectedValue(selected);
+                }
+            }
+        });
+        dateFormatSwitchOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+                 dateFormatChoiceOption.setWritable(!dateFormatSwitchOption.isChecked());
+                 if (dateFormatSwitchOption.isChecked()) {
+                     dateFormatChoiceOption.setSelectedValue(languageOption.getSelectedValue());
+                 }
+            }
+        });
+        dateFormatChoiceOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+                dateSampleOption.setValue(
+                        DateFormat.getDateInstance(DateFormat.SHORT, dateFormatChoiceOption.getSelectedValue()).format(new Date()));
+            }
+        });
+        GPOption[] options = new GPOption[] {
+                myLafOption, languageOption, dateFormatSwitchOption, dateFormatChoiceOption, dateSampleOption};
         myOptions = new GPOptionGroup("ui", options);
         I18N i18n = new OptionsPageBuilder.I18N();
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
@@ -522,8 +566,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     static class LanguageOption extends DefaultEnumerationOption<Locale> implements GP1XOptionConverter {
         public LanguageOption() {
-            super("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
+            this("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
         }
+
+        private LanguageOption(String id, Locale[] locales) {
+            super(id, locales);
+        }
+
         @Override
         protected String objectToString(Locale locale) {
             String englishName = locale.getDisplayLanguage(Locale.US);
@@ -543,16 +592,15 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         @Override
         public void commit() {
             super.commit();
-            applyLocale();
+            applyLocale(stringToObject(getValue()));
         }
 
-        private void applyLocale() {
-            Locale l = stringToObject(getValue());
-            if(l == null) {
+        protected void applyLocale(Locale locale) {
+            if (locale == null) {
                 // Selected Locale was not available, so use default Locale
-                l = Locale.getDefault();
+                locale = Locale.getDefault();
             }
-            GanttLanguage.getInstance().setLocale(l);
+            GanttLanguage.getInstance().setLocale(locale);
         }
         @Override
         public String getTagName() {
@@ -591,7 +639,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             value = objectToString(l);
             if (value != null) {
                 setValue(value, true);
-                applyLocale();
+                applyLocale(l);
             }
         }
     }
