@@ -83,6 +83,9 @@ implements EnumerationOption {
         return stringToObject(getValue());
     }
     public void setSelectedValue(T value) {
-        setValue(objectToString(value));
+        String stringValue = objectToString(value);
+        if (myStringValue_ObjectValue.containsKey(stringValue)) {
+            setValue(stringValue);
+        }
     }
 }
