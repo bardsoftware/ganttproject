@@ -29,8 +29,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -47,15 +45,13 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -89,6 +85,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.language.DateFormatLocaleOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -120,14 +117,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myNotificationManager = notificationManager;
 
         myLafOption = new LafOption(this);
-        Locale[] availableLocales = Locale.getAvailableLocales();
-        Arrays.sort(availableLocales, GanttLanguage.LEXICOGRAPHICAL_LOCALE_COMPARATOR);
-        final LanguageOption dateFormatChoiceOption = new LanguageOption("ui.dateFormat.choice", availableLocales) {
-            @Override
-            protected void applyLocale(Locale locale) {
-                GanttLanguage.getInstance().setDateFormatLocale(locale);
-            }
-        };
+        final DateFormatLocaleOption dateFormatChoiceOption = new DateFormatLocaleOption();
         final DefaultStringOption dateSampleOption = new DefaultStringOption("ui.dateFormat.sample");
         dateSampleOption.setWritable(false);
         final DefaultBooleanOption dateFormatSwitchOption = new DefaultBooleanOption("ui.dateFormat.switch", true);
@@ -138,7 +128,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             public void changeValue(ChangeValueEvent event) {
                 if (dateFormatSwitchOption.isChecked()) {
                     Locale selected = languageOption.getSelectedValue();
-                    dateFormatChoiceOption.setSelectedValue(selected);
+                    dateFormatChoiceOption.setSelectedLocale(selected);
                 }
             }
         });
@@ -147,7 +137,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             public void changeValue(ChangeValueEvent event) {
                  dateFormatChoiceOption.setWritable(!dateFormatSwitchOption.isChecked());
                  if (dateFormatSwitchOption.isChecked()) {
-                     dateFormatChoiceOption.setSelectedValue(languageOption.getSelectedValue());
+                     dateFormatChoiceOption.setSelectedLocale(languageOption.getSelectedValue());
                  }
             }
         });
@@ -155,7 +145,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             @Override
             public void changeValue(ChangeValueEvent event) {
                 dateSampleOption.setValue(
-                        DateFormat.getDateInstance(DateFormat.SHORT, dateFormatChoiceOption.getSelectedValue()).format(new Date()));
+                        dateFormatChoiceOption.getSelectedValue().formatDate(new Date()));
             }
         });
         GPOption[] options = new GPOption[] {
@@ -167,22 +157,27 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myOptions.setTitled(false);
     }
 
+    @Override
     public ScrollingManager getScrollingManager() {
         return myScrollingManager;
     }
 
+    @Override
     public ZoomManager getZoomManager() {
         return myZoomManager;
     }
 
+    @Override
     public GPUndoManager getUndoManager() {
         return myFallbackDelegate.getUndoManager();
     }
 
+    @Override
     public ZoomActionSet getZoomActionSet() {
         return myFallbackDelegate.getZoomActionSet();
     }
 
+    @Override
     public Choice showConfirmationDialog(String message, String title) {
         String yes = GanttLanguage.getInstance().getText("yes");
         String no = GanttLanguage.getInstance().getText("no");
@@ -309,10 +304,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return result;
     }
 
+    @Override
     public void setStatusText(String text) {
         myStatusBar.setFirstText(text, 2000);
     }
 
+    @Override
     public void showOptionDialog(int messageType, String message, Action[] actions) {
         JOptionPane optionPane = new JOptionPane(message, messageType);
         Object[] options = new Object[actions.length];
@@ -338,16 +335,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
     }
 
+    @Override
     public NotificationManager getNotificationManager() {
         return myNotificationManager;
     }
 
     /** Show and log the exception */
+    @Override
     public void showErrorDialog(Throwable e) {
         GPLogger.logToLogger(e);
         showErrorNotification(e.getMessage());
     }
 
+    @Override
     public void showErrorDialog(String errorMessage) {
         GPLogger.log(errorMessage);
         showErrorNotification(errorMessage);
@@ -386,46 +386,57 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myStatusBar.setErrorNotifier(null);
     }
 
+    @Override
     public GanttChart getGanttChart() {
         return myFallbackDelegate.getGanttChart();
     }
 
+    @Override
     public Chart getResourceChart() {
         return myFallbackDelegate.getResourceChart();
     }
 
+    @Override
     public Chart getActiveChart() {
         return myFallbackDelegate.getActiveChart();
     }
 
+    @Override
     public int getViewIndex() {
         return myFallbackDelegate.getViewIndex();
     }
 
+    @Override
     public void setViewIndex(int viewIndex) {
         myFallbackDelegate.setViewIndex(viewIndex);
     }
 
+    @Override
     public int getGanttDividerLocation() {
         return myFallbackDelegate.getGanttDividerLocation();
     }
 
+    @Override
     public void setGanttDividerLocation(int location) {
         myFallbackDelegate.setGanttDividerLocation(location);
     }
 
+    @Override
     public int getResourceDividerLocation() {
         return myFallbackDelegate.getResourceDividerLocation();
     }
 
+    @Override
     public void setResourceDividerLocation(int location) {
         myFallbackDelegate.setResourceDividerLocation(location);
     }
 
+    @Override
     public void refresh() {
         myFallbackDelegate.refresh();
     }
 
+    @Override
     public Frame getMainFrame() {
         return myMainFrame;
     }
@@ -460,6 +471,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return result.toString();
     }
 
+    @Override
     public void setWorkbenchTitle(String title) {
         myMainFrame.setTitle(title);
     }
@@ -484,22 +496,27 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return null;
     }
 
+    @Override
     public TaskTreeUIFacade getTaskTree() {
         return myFallbackDelegate.getTaskTree();
     }
 
+    @Override
     public ResourceTreeUIFacade getResourceTree() {
         return myFallbackDelegate.getResourceTree();
     }
 
+    @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myTaskSelectionManager;
     }
 
+    @Override
     public TaskSelectionManager getTaskSelectionManager() {
         return myTaskSelectionManager;
     }
 
+    @Override
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myLafOption.getLookAndFeel();
     }
