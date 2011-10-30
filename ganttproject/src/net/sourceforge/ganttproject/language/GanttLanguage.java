@@ -120,22 +120,25 @@ public class GanttLanguage {
         return myDateFormatLocale;
     }
 
-    public void setDateFormatLocale(Locale locale) {
+    private void setDateFormatLocale(Locale locale) {
         myDateFormatLocale = locale;
+        setShortDateFormat((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale));
         currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(
                 DateFormat.MEDIUM, locale);
-        shortCurrentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(
-                DateFormat.SHORT, locale);
         currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
         myLongFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
         UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
         UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
-        UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
         UIManager.put("JXDatePicker.numColumns", new Integer(10));
         myDayShortNames = getShortDayNames(locale);
         UIManager.put("JXMonthView.daysOfTheWeek", myDayShortNames.toArray(new String[7]));
     }
 
+    public void setShortDateFormat(SimpleDateFormat dateFormat) {
+        shortCurrentDateFormat = dateFormat;
+        UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
+
+    }
     public void setLocale(Locale locale) {
         currentLocale = locale;
         Locale.setDefault(locale);
