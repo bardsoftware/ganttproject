@@ -292,20 +292,30 @@ public class OptionsPageBuilder {
 
     private Component createStringComponent(final StringOption option) {
         final JTextField result = new JTextField(option.getValue());
+
         final DocumentListener documentListener = new DocumentListener() {
+            private void saveValue() {
+                try {
+                    option.setValue(result.getText());
+                    result.setBackground(getValidFieldColor());
+                }
+                catch(ValidationException ex) {
+                    result.setBackground(INVALID_FIELD_COLOR);
+                }
+            }
             @Override
             public void insertUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
         };
         result.getDocument().addDocumentListener(documentListener);
