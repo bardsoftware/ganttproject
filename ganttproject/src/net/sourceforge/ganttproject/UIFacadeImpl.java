@@ -85,8 +85,8 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
-import net.sourceforge.ganttproject.language.DateFormatLocaleOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -117,7 +117,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         myNotificationManager = notificationManager;
 
         myLafOption = new LafOption(this);
-        final DateFormatLocaleOption dateFormatChoiceOption = new DateFormatLocaleOption();
+        final ShortDateFormatOption shortDateFormatOption = new ShortDateFormatOption();
         final DefaultStringOption dateSampleOption = new DefaultStringOption("ui.dateFormat.sample");
         dateSampleOption.setWritable(false);
         final DefaultBooleanOption dateFormatSwitchOption = new DefaultBooleanOption("ui.dateFormat.switch", true);
@@ -128,28 +128,28 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             public void changeValue(ChangeValueEvent event) {
                 if (dateFormatSwitchOption.isChecked()) {
                     Locale selected = languageOption.getSelectedValue();
-                    dateFormatChoiceOption.setSelectedLocale(selected);
+                    shortDateFormatOption.setSelectedLocale(selected);
                 }
             }
         });
         dateFormatSwitchOption.addChangeValueListener(new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
-                 dateFormatChoiceOption.setWritable(!dateFormatSwitchOption.isChecked());
+                 shortDateFormatOption.setWritable(!dateFormatSwitchOption.isChecked());
                  if (dateFormatSwitchOption.isChecked()) {
-                     dateFormatChoiceOption.setSelectedLocale(languageOption.getSelectedValue());
+                     shortDateFormatOption.setSelectedLocale(languageOption.getSelectedValue());
                  }
             }
         });
-        dateFormatChoiceOption.addChangeValueListener(new ChangeValueListener() {
+        shortDateFormatOption.addChangeValueListener(new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
                 dateSampleOption.setValue(
-                        dateFormatChoiceOption.getSelectedValue().formatDate(new Date()));
+                        shortDateFormatOption.formatDate(new Date()));
             }
         });
         GPOption[] options = new GPOption[] {
-                myLafOption, languageOption, dateFormatSwitchOption, dateFormatChoiceOption, dateSampleOption};
+                myLafOption, languageOption, dateFormatSwitchOption, shortDateFormatOption, dateSampleOption};
         myOptions = new GPOptionGroup("ui", options);
         I18N i18n = new OptionsPageBuilder.I18N();
         myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
