@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.undo;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.swing.undo.AbstractUndoableEdit;
@@ -51,13 +50,8 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     }
 
     private Document saveFile() throws IOException {
-        File tempFile = createTemporaryFile();
-        tempFile.deleteOnExit();
-        Document doc = myManager.getDocumentManager().getDocument(
-                tempFile.getAbsolutePath());
+        Document doc = myManager.getDocumentManager().newAutosaveDocument();
         doc.write();
-        //GPSaver saver = myManager.getParserFactory().newSaver();
-        //saver.save(doc.getOutputStream());
         return doc;
     }
 
@@ -104,10 +98,6 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     @Override
     public String getPresentationName() {
         return myPresentationName;
-    }
-
-    File createTemporaryFile() throws IOException {
-        return File.createTempFile("_GanttProject_qSave", ".gan");
     }
 
     private void undoRedoExceptionHandler(Exception e) {

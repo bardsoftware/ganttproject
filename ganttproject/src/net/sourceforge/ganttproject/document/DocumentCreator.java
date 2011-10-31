@@ -5,7 +5,10 @@
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -94,6 +97,47 @@ public class DocumentCreator implements DocumentManager {
         Document physicalDocument = createDocument(path, userName, password);
         Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(), getParserFactory());
         return proxyDocument;
+    }
+
+    @Override
+    public Document newAutosaveDocument() throws IOException {
+        File tempFile = createAutosaveFile();
+        //tempFile.deleteOnExit();
+        return getDocument(tempFile.getAbsolutePath());
+    }
+
+    private File createAutosaveFile() throws IOException {
+        return File.createTempFile("_ganttproject_autosave", ".gan");
+    }
+
+    @Override
+    public Document getLastAutosaveDocument(Document priorTo) throws IOException {
+        File f = File.createTempFile("tmp", "");
+        File directory = f.getParentFile();
+        File files[] = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File f, String arg1) {
+                return arg1.startsWith("_ganttproject_autosave");
+            }
+        });
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File left, File right) {
+                return Long.compare(left.lastModified(), right.lastModified());
+            }
+        });
+        if (files.length == 0) {
+            return null;
+        }
+        if (priorTo == null) {
+            return getDocument(files[files.length - 1].getAbsolutePath());
+        }
+        for (int i = files.length - 1; i >= 0; i--) {
+            if (files[i].getName().equals(priorTo.getFileName())) {
+                return i > 0 ? getDocument(files[i - 1].getAbsolutePath()) : null;
+            }
+        }
+        return null;
     }
 
     protected TableHeaderUIFacade getVisibleFields() {
