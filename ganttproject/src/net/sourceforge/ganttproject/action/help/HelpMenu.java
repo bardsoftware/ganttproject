@@ -19,11 +19,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.help;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
+import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
@@ -38,15 +45,18 @@ public class HelpMenu {
 
     private final AboutAction myAboutAction;
     private final ViewLogAction myViewLogAction;
+    private final RecoverLastProjectAction myRecoverAction;
 
     public HelpMenu(GanttProject mainFrame) {
         myAboutAction = new AboutAction(mainFrame.getUIFacade());
         myViewLogAction = new ViewLogAction(mainFrame.getUIFacade());
+        myRecoverAction = new RecoverLastProjectAction(mainFrame.getUIFacade(), mainFrame.getDocumentManager());
     }
     public JMenu createMenu() {
         JMenu result = new JMenu(GPAction.createVoidAction("help"));
         result.add(myAboutAction);
         result.add(myViewLogAction);
+        result.add(myRecoverAction);
         return result;
     }
 
@@ -74,6 +84,32 @@ public class HelpMenu {
 
         public void actionPerformed(ActionEvent e) {
             ViewLogDialog.show(myUiFacade);
+        }
+    }
+
+    private static class RecoverLastProjectAction extends GPAction {
+        private UIFacade myUiFacade;
+        private DocumentManager myDocumentManager;
+
+        RecoverLastProjectAction(UIFacade uiFacade, DocumentManager documentManager) {
+            super("help.recover");
+            myUiFacade = uiFacade;
+            myDocumentManager = documentManager;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            Document lastAutosaveDocument;
+            try {
+                lastAutosaveDocument = myDocumentManager.getLastAutosaveDocument(null);
+                if (lastAutosaveDocument != null) {
+                    myUiFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE,
+                            "Will recover from doc=" + lastAutosaveDocument.getFileName(),
+                            new Action[] {CancelAction.CLOSE});
+                }
+            } catch (IOException e) {
+                GPLogger.log(new RuntimeException("Failed to read autosave documents", e));
+            }
         }
     }
 }

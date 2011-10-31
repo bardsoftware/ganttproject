@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
+import java.io.IOException;
 
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -29,6 +30,9 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
  * @author bard
  */
 public interface DocumentManager {
+    Document newAutosaveDocument() throws IOException;
+    Document getLastAutosaveDocument(Document priorTo) throws IOException;
+
     Document getDocument(String path);
 
     void addToRecentDocuments(Document document);
