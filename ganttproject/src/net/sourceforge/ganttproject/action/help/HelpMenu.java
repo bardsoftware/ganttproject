@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.about.AboutDialog;
+import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 
 /**
  * Collection of actions from Help menu.
@@ -39,7 +40,7 @@ public class HelpMenu {
     private final ViewLogAction myViewLogAction;
 
     public HelpMenu(GanttProject mainFrame) {
-        myAboutAction = new AboutAction(mainFrame);
+        myAboutAction = new AboutAction(mainFrame.getUIFacade());
         myViewLogAction = new ViewLogAction(mainFrame.getUIFacade());
     }
     public JMenu createMenu() {
@@ -50,16 +51,16 @@ public class HelpMenu {
     }
 
     private static class AboutAction extends GPAction {
-        private final GanttProject myMainFrame;
+        private final UIFacade myUiFacade;
 
-        AboutAction(GanttProject mainFrame) {
+        AboutAction(UIFacade uifacade) {
             super("about");
-            myMainFrame = mainFrame;
+            myUiFacade = uifacade;
         }
 
         public void actionPerformed(ActionEvent e) {
-            AboutDialog agp = new AboutDialog(myMainFrame);
-            agp.setVisible(true);
+            AboutDialog2 agp = new AboutDialog2(myUiFacade);
+            agp.show();
         }
     }
 
