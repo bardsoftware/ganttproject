@@ -23,10 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.text.html.HTMLEditorKit;
 
 import net.sourceforge.ganttproject.gui.AbstractPagesDialog;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -48,7 +51,16 @@ public class AboutDialog2 extends AbstractPagesDialog {
     private static ListItem createHtmlPage(String key) {
         JPanel result = new JPanel(new BorderLayout());
         JPanel authors = new JPanel(new BorderLayout());
-        authors.add(new JLabel(i18n("about." + key)), BorderLayout.NORTH);
+        authors.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+        JEditorPane htmlPane = new JEditorPane();
+        htmlPane.setEditorKit(new HTMLEditorKit());
+        htmlPane.setEditable(false);
+        htmlPane.setText(i18n("about." + key));
+        htmlPane.setBackground(authors.getBackground());
+        htmlPane.addHyperlinkListener(NotificationManager.DEFAULT_HYPERLINK_LISTENER);
+        authors.add(htmlPane, BorderLayout.NORTH);
+
         result.add(TopPanel.create(i18n(key), null), BorderLayout.NORTH);
         result.add(authors, BorderLayout.CENTER);
         result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
