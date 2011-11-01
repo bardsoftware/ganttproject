@@ -327,7 +327,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         mHuman.add(myResourceActions.getResourceImportAction());
         bar.add(mHuman);
 
-        HelpMenu helpMenu = new HelpMenu(this);
+        HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade());
         bar.add(helpMenu.createMenu());
 
         System.err.println("4. creating views...");
