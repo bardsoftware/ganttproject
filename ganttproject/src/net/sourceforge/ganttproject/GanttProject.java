@@ -218,22 +218,27 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                 isOnlyViewer, myMRU);
         myUIConfiguration = options.getUIConfiguration();
         class TaskManagerConfigImpl implements TaskManagerConfig {
+            @Override
             public Color getDefaultColor() {
                 return myUIConfiguration.getTaskColor();
             }
 
+            @Override
             public GPCalendar getCalendar() {
                 return GanttProject.this.getActiveCalendar();
             }
 
+            @Override
             public TimeUnitStack getTimeUnitStack() {
                 return GanttProject.this.getTimeUnitStack();
             }
 
+            @Override
             public HumanResourceManager getResourceManager() {
                 return GanttProject.this.getHumanResourceManager();
             }
 
+            @Override
             public URL getProjectDocumentURL() {
                 try {
                     return getDocument().getURI().toURL();
@@ -247,6 +252,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         TaskManagerConfig taskConfig = new TaskManagerConfigImpl();
         myTaskManager = TaskManager.Access.newInstance(
                 new TaskContainmentHierarchyFacade.Factory() {
+                    @Override
                     public TaskContainmentHierarchyFacade createFacede() {
                         return GanttProject.this.getTaskContainment();
                     }
@@ -339,6 +345,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
         // Chart tabs
         getTabs().addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 // Tell artefact actions that the active provider changed, so they
                 // are able to update their state according to the current delegate
@@ -480,6 +487,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     // TODO Move language updating methods which do not belong to GanttProject to their own class with their own listener
     /** Function to change language of the project */
+    @Override
     public void languageChanged(Event event) {
         applyComponentOrientation(language.getComponentOrientation());
         area.repaint();
@@ -505,6 +513,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         buttons.add(null);
 
         GPAction newAction = new ArtefactNewAction(new ActiveActionProvider() {
+            @Override
             public AbstractAction getActiveAction() {
                 return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
                         ? getTree().getTaskNewAction().withIcon(IconSize.TOOLBAR_SMALL)
@@ -575,6 +584,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         toolBar.add(tailPanel);
     }
 
+    @Override
     public List<GanttPreviousState> getBaselines() {
         return myPreviousStates;
     }
@@ -713,6 +723,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             final Document document = getDocumentManager().getDocument(path);
             // openStartupDocument(document);
             getUndoManager().undoableEdit("OpenFile", new Runnable() {
+                @Override
                 public void run() {
                     try {
                         getProjectUIFacade()
@@ -847,6 +858,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return getViewManager().getPasteAction();
     }
 
+    @Override
     public ZoomActionSet getZoomActionSet() {
         return myZoomActions;
     }
@@ -1032,6 +1044,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return projectDocument;
     }
 
+    @Override
     public void setDocument(Document document) {
         projectDocument = document;
     }
@@ -1047,6 +1060,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         setAskForSave(true);
     }
 
+    @Override
     public void setModified(boolean modified) {
         setAskForSave(modified);
 
@@ -1057,6 +1071,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
     }
 
+    @Override
     public boolean isModified() {
         return askForSave;
     }
@@ -1091,6 +1106,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     /////////////////////////////////////////////////////////////////
     // ResourceView implementation
+    @Override
     public void resourceAdded(ResourceEvent event) {
         if (getStatusBar() != null) {
             // tabpane.setSelectedIndex(1);
@@ -1104,15 +1120,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
     }
 
+    @Override
     public void resourcesRemoved(ResourceEvent event) {
         refreshProjectInfos();
         setAskForSave(true);
     }
 
+    @Override
     public void resourceChanged(ResourceEvent e) {
         setAskForSave(true);
     }
 
+    @Override
     public void resourceAssignmentsChanged(ResourceEvent e) {
         setAskForSave(true);
     }
@@ -1120,46 +1139,56 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     /////////////////////////////////////////////////////////////////
     // UIFacade
 
+    @Override
     public GanttChart getGanttChart() {
         return getArea();
     }
 
+    @Override
     public Chart getResourceChart() {
         return getResourcePanel().area;
     }
 
+    @Override
     public int getGanttDividerLocation() {
         // return mySplitPane.getDividerLocation();
         return myGanttChartTabContent.getDividerLocation();
     }
 
+    @Override
     public void setGanttDividerLocation(int location) {
         myGanttChartTabContent.setDividerLocation(location);
     }
 
+    @Override
     public int getResourceDividerLocation() {
         return myResourceChartTabContent.getDividerLocation();
         // return getResourcePanel().getDividerLocation();
     }
 
+    @Override
     public void setResourceDividerLocation(int location) {
         myResourceChartTabContent.setDividerLocation(location);
     }
 
+    @Override
     public TaskTreeUIFacade getTaskTree() {
         return getTree();
     }
 
+    @Override
     public ResourceTreeUIFacade getResourceTree() {
         return getResourcePanel();
     }
 
     private class ParserFactoryImpl implements ParserFactory {
+        @Override
         public GPParser newParser() {
             return new GanttXMLOpen(prjInfos, getUIConfiguration(),
                     getTaskManager(), getUIFacade());
         }
 
+        @Override
         public GPSaver newSaver() {
             return new GanttXMLSaver(GanttProject.this, getTree(),
                     getResourcePanel(), getArea(), getUIFacade());
@@ -1193,12 +1222,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
     }
 
+    @Override
     public int getViewIndex() {
         if (getTabs() == null)
             return -1;
         return getTabs().getSelectedIndex();
     }
 
+    @Override
     public void setViewIndex(int viewIndex) {
         if (getTabs().getTabCount() > viewIndex) {
             getTabs().setSelectedIndex(viewIndex);
@@ -1209,6 +1240,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         ourWindowListener = windowListener;
     }
 
+    @Override
     public void refresh() {
         getTaskManager().processCriticalPath(getTaskManager().getRootTask());
         getResourcePanel().getResourceTreeTableModel().updateResources();
