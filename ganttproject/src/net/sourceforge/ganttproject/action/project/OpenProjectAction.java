@@ -20,25 +20,30 @@ package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 
 public class OpenProjectAction extends GPAction {
-    private GanttProject myMainFrame;
+    private ProjectUIFacade myProjectUiFacade;
+    private IGanttProject myProject;
 
-    OpenProjectAction(GanttProject mainFrame) {
+    OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade) {
         super("project.open");
-        myMainFrame = mainFrame;
+        myProject = project;
+        myProjectUiFacade = projectUiFacade;
     }
 
-    private OpenProjectAction(GanttProject mainFrame, IconSize iconSize) {
+    private OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade, IconSize iconSize) {
         super("project.open", iconSize.asString());
-        myMainFrame = mainFrame;
+        myProject = project;
+        myProjectUiFacade = projectUiFacade;
     }
 
     @Override
     public GPAction withIcon(IconSize iconSize) {
-        return new OpenProjectAction(myMainFrame, iconSize);
+        return new OpenProjectAction(myProject, myProjectUiFacade, iconSize);
     }
     @Override
     protected String getIconFilePrefix() {
@@ -48,9 +53,9 @@ public class OpenProjectAction extends GPAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            myMainFrame.openFile();
+            myProjectUiFacade.openProject(myProject);
         } catch (Exception ex) {
-            myMainFrame.getUIFacade().showErrorDialog(ex);
+            GPLogger.log(ex);
         }
     }
 }

@@ -44,7 +44,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author Dmitry Barashev (major rewrite).
  * @author Alexandre Thomas (initial version).
  */
-class GanttURLChooser {
+public class GanttURLChooser {
     private JTextField urlField;
 
     private JTextField userNameField;
@@ -71,7 +71,7 @@ class GanttURLChooser {
 
     protected boolean isTimeoutEnabled;
 
-    GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
+    public GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
         myUiFacade = uiFacade;
         myUrl = url;
         myUsername = username;
@@ -80,7 +80,7 @@ class GanttURLChooser {
         myChoice = UIFacade.Choice.CANCEL;
     }
 
-    void show(boolean isOpenUrl) {
+    public void show(boolean isOpenUrl) {
         JPanel panel = new JPanel(new SpringLayout());
 
         panel.add(new JLabel(language.getText("fileFromServer")));
@@ -146,27 +146,27 @@ class GanttURLChooser {
                 language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     }
 
-    UIFacade.Choice getChoice() {
+    public UIFacade.Choice getChoice() {
         return myChoice;
     }
 
-    String getUsername() {
+    public String getUsername() {
         return myUsername;
     }
 
-    String getUrl() {
+    public String getUrl() {
         return myUrl;
     }
 
-    String getPassword() {
+    public String getPassword() {
         return myPassword;
     }
 
-    int getTimeout() {
+    public int getTimeout() {
         return myTimeout;
     }
 
-    boolean isTimeoutEnabled() {
+    public boolean isTimeoutEnabled() {
         return isTimeoutEnabled;
     }
 }

@@ -40,10 +40,12 @@ public class ProjectMenu extends JMenu {
         myPrintAction = new PrintAction(project);
 
         ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
-        myOpenProjectAction = new OpenProjectAction(project);
+        myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());
         SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
-        OpenURLAction openURLAction = new OpenURLAction(project);
-        SaveURLAction saveURLAction = new SaveURLAction(project);
+        OpenURLAction openURLAction = new OpenURLAction(
+                project.getProject(), project.getUIFacade(), project.getProjectUIFacade());
+        SaveURLAction saveURLAction = new SaveURLAction(
+                project.getProject(), project.getUIFacade(), project.getProjectUIFacade());
         ExitAction exitAction = new ExitAction(project);
         ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
         ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project, project

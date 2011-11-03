@@ -35,6 +35,8 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.about.AboutDialog2;
@@ -51,10 +53,10 @@ public class HelpMenu {
     private final ViewLogAction myViewLogAction;
     private final RecoverLastProjectAction myRecoverAction;
 
-    public HelpMenu(IGanttProject project, UIFacade uiFacade) {
+    public HelpMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
         myAboutAction = new AboutAction(uiFacade);
         myViewLogAction = new ViewLogAction(uiFacade);
-        myRecoverAction = new RecoverLastProjectAction(project, uiFacade);
+        myRecoverAction = new RecoverLastProjectAction(project, uiFacade, projectUiFacade);
     }
     public JMenu createMenu() {
         JMenu result = new JMenu(GPAction.createVoidAction("help"));
@@ -92,15 +94,17 @@ public class HelpMenu {
     }
 
     private static class RecoverLastProjectAction extends GPAction {
-        private UIFacade myUiFacade;
-        private DocumentManager myDocumentManager;
-        private IGanttProject myProject;
+        private final UIFacade myUiFacade;
+        private final DocumentManager myDocumentManager;
+        private final IGanttProject myProject;
+        private final ProjectUIFacade myProjectUiFacade;
 
-        RecoverLastProjectAction(IGanttProject project, UIFacade uiFacade) {
+        RecoverLastProjectAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
             super("help.recover");
             myProject = project;
             myUiFacade = uiFacade;
             myDocumentManager = project.getDocumentManager();
+            myProjectUiFacade = projectUiFacade;
         }
 
         @Override
@@ -150,7 +154,7 @@ public class HelpMenu {
         }
         protected void recover(Document recoverDocument) {
             try {
-                myProject.open(recoverDocument);
+                myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject);
             } catch (Throwable e) {
                 GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
             }
