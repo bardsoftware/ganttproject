@@ -20,23 +20,40 @@ package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
-class SaveURLAction extends GPAction {
-    private final GanttProject myMainFrame;
+class SaveURLAction extends CloudProjectActionBase {
 
-    SaveURLAction(GanttProject mainFrame){
-        super("project.save.url");
-        myMainFrame = mainFrame;
+    private ProjectUIFacade myProjectUiFacade;
+    private IGanttProject myProject;
+
+    SaveURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade){
+        super("project.save.url", uiFacade, project.getDocumentManager());
+        myProjectUiFacade = projectUiFacade;
+        myProject = project;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            myMainFrame.saveAsURLProject();
+            saveProjectRemotely(myProject);
         } catch (Exception ex) {
-            myMainFrame.getUIFacade().showErrorDialog(ex);
+            GPLogger.log(ex);
         }
     }
+
+    private void saveProjectRemotely(IGanttProject project) {
+        Document document = showURLDialog(project, false);
+        if (document != null) {
+            project.setDocument(document);
+            myProjectUiFacade.saveProject(project);
+        }
+    }
+
 }

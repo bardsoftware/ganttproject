@@ -45,18 +45,13 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -91,9 +86,9 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
@@ -118,10 +113,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.search.SearchDialog;
-import net.sourceforge.ganttproject.search.SearchUiImpl;
-import net.sourceforge.ganttproject.search.SearchDialog.SearchCallback;
-import net.sourceforge.ganttproject.search.SearchResult;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -327,7 +318,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         mHuman.add(myResourceActions.getResourceImportAction());
         bar.add(mHuman);
 
-        HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade());
+        HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
         bar.add(helpMenu.createMenu());
 
         System.err.println("4. creating views...");
@@ -698,51 +689,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         fireProjectCreated();
     }
 
-    /** Open a local project file with dialog box (JFileChooser) */
-    public void openFile() throws IOException, DocumentException {
-        getProjectUIFacade().openProject(this);
-    }
-
-    /** Open a remote project file with dialog box (GanttURLChooser) */
-    public void openURL() {
-        try {
-            getProjectUIFacade().openRemoteProject(getProject());
-        } catch (DocumentException e) {
-            getUIFacade().showErrorDialog(e);
-        } catch (IOException e) {
-            getUIFacade().showErrorDialog(e);
-        }
-    }
-
+    @Override
     public void open(Document document) throws IOException, DocumentException {
-        openDocument(document);
-        if (document.getPortfolio() != null) {
-            Document defaultDocument = document.getPortfolio()
-                    .getDefaultDocument();
-            openDocument(defaultDocument);
-        }
-    }
-
-    private void openDocument(Document document) throws IOException, DocumentException {
-        if (document.getFileName().toLowerCase().endsWith(".xml") == false
-                && document.getFileName().toLowerCase().endsWith(".gan") == false) {
-            // Unknown file extension
-            String errorMessage = language.getText("msg2") + "\n"
-                    + document.getFileName();
-            throw new IOException(errorMessage);
-        }
-
-        boolean locked = document.acquireLock();
-        if (!locked) {
-            GPLogger.log(new Exception(language.getText("msg13")));
-        }
         document.read();
         myMRU.add(document);
-        if (locked) {
-            projectDocument = document;
-        }
-        setTitle(language.getText("appliTitle") + " ["
-                + document.getFileName() + "]");
+        projectDocument = document;
+        setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
         for (Chart chart : PluginManager.getCharts()) {
             chart.reset();
         }
@@ -804,12 +756,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     /** Save the project as (with a dialog file chooser) */
     public boolean saveAsProject() {
         getProjectUIFacade().saveProjectAs(getProject());
-        return true;
-    }
-
-    /** Save the project on a server (with a GanttURLChooser) */
-    public boolean saveAsURLProject() {
-        getProjectUIFacade().saveProjectRemotely(getProject());
         return true;
     }
 

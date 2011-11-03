@@ -60,7 +60,7 @@ public class OpenMRUDocumentAction extends GPAction {
     public void actionPerformed(ActionEvent e) {
         if (myProjectUIFacade.ensureProjectSaved(myProject)) {
             try {
-                myProject.open(myDocument);
+                myProjectUIFacade.openProject(myDocument, myProject);
             } catch (DocumentException exception) {
                 myUIFacade.showErrorDialog(exception);
             } catch (IOException exception) {

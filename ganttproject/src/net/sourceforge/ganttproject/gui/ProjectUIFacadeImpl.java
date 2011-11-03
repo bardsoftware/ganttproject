@@ -40,9 +40,9 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
+import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -60,6 +60,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         myUndoManager = undoManager;
     }
 
+    @Override
     public void saveProject(IGanttProject project) {
         if (project.getDocument() == null) {
             saveProjectAs(project);
@@ -145,6 +146,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
                     + " " + document.getPath());
         document.write();
     }
+    @Override
     public void saveProjectAs(IGanttProject project) {
         /*
         if (project.getDocument() instanceof AbstractURLDocument) {
@@ -194,20 +196,13 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
     }
 
-    public void saveProjectRemotely(IGanttProject project) {
-        Document document = showURLDialog(project, false);
-        if (document != null) {
-            project.setDocument(document);
-            saveProject(project);
-        }
-    }
-
     /**
      * Check if the project has been modified, before creating or opening
      * another project
      *
      * @return true when the project is <b>not</b> modified or is allowed to be discarded
      */
+    @Override
     public boolean ensureProjectSaved(IGanttProject project) {
         if (project.isModified()) {
             UIFacade.Choice saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"), i18n.getText("warning"));
@@ -228,6 +223,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         return true;
     }
 
+    @Override
     public void openProject(final IGanttProject project) throws IOException, DocumentException {
         if (false == ensureProjectSaved(project)) {
             return;
@@ -250,17 +246,30 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
     }
 
-    public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {
-        final Document document = showURLDialog(project, true);
-        if (document != null) {
-            openProject(document, project);
-        }
-    }
-
+    @Override
     public void openProject(final Document document, final IGanttProject project) throws IOException, DocumentException {
         beforeClose();
         project.close();
+
+        if (document.getFileName().toLowerCase().endsWith(".xml") == false
+                && document.getFileName().toLowerCase().endsWith(".gan") == false) {
+            // Unknown file extension
+            String errorMessage = GanttLanguage.getInstance().getText("msg2") + "\n" + document.getFileName();
+            GPLogger.log(new RuntimeException(errorMessage));
+            return;
+        }
+
+        boolean locked = document.acquireLock();
+        if (!locked && Choice.NO == myWorkbenchFacade.showConfirmationDialog(GanttLanguage.getInstance().getText("msg13"), "")) {
+            return;
+        }
+
         project.open(document);
+        if (document.getPortfolio() != null) {
+            Document defaultDocument = document.getPortfolio().getDefaultDocument();
+            project.open(defaultDocument);
+        }
+
     }
 
     private void beforeClose() {
@@ -268,6 +277,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         getUndoManager().die();
     }
 
+    @Override
     public void createProject(final IGanttProject project) {
         if (false == ensureProjectSaved(project)) {
             return;
@@ -283,6 +293,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         wizard.createNewProject(project, myWorkbenchFacade);
     }
 
+    @Override
     public GPOptionGroup getOptionGroup() {
         return myDocumentManager.getOptionGroup();
     }
@@ -293,39 +304,5 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
     private DocumentManager getDocumentManager() {
         return myDocumentManager;
-    }
-
-    private Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
-        Document document = project.getDocument();
-        GanttURLChooser uc = new GanttURLChooser(myWorkbenchFacade,
-            (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
-            (null != document) ? document.getUsername() : null,
-            (null != document) ? document.getPassword() : null,
-            myDocumentManager.getWebDavLockTimeoutOption().getValue());
-        uc.show(isOpenUrl);
-        if (uc.getChoice() == UIFacade.Choice.OK) {
-            if (!sameDocument(document, uc)) {
-                document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
-            }
-            myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
-            if (uc.isTimeoutEnabled()) {
-                HttpDocument.setLockDAVMinutes(uc.getTimeout());
-                myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-            } else {
-                HttpDocument.setLockDAVMinutes(-1);
-            }
-        }
-        else {
-            document = null;
-        }
-        return document;
-    }
-
-    private boolean sameDocument(Document document, GanttURLChooser uc) {
-        if (document == null) {
-            return false;
-        }
-        return document.getURLPath().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
-            && document.getPassword().equals(uc.getPassword());
     }
 }
