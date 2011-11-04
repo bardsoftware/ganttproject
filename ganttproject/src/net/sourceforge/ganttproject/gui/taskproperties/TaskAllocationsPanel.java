@@ -76,7 +76,7 @@ public class TaskAllocationsPanel {
                 protected void onSelectionChanged() {
                 }
         };
-        return CommonPanel.createTableAndActions(myTable, tableAndActions);
+        return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
     }
 
     public void commit() {
