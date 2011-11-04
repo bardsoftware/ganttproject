@@ -51,7 +51,7 @@ public class ReadOnlyProxyDocument implements Document {
 
     @Override
     public IStatus canWrite() {
-        return new Status(IStatus.ERROR, "net.sourceforge.ganttproject", "You can't write a read-only document");
+        return new Status(IStatus.ERROR, "net.sourceforge.ganttproject", 0, "You can't write a read-only document", null);
     }
 
     @Override
