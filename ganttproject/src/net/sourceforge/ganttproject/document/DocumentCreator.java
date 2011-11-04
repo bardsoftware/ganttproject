@@ -123,7 +123,7 @@ public class DocumentCreator implements DocumentManager {
         Arrays.sort(files, new Comparator<File>() {
             @Override
             public int compare(File left, File right) {
-                return Long.compare(left.lastModified(), right.lastModified());
+                return Long.valueOf(left.lastModified()).compareTo(Long.valueOf(right.lastModified()));
             }
         });
         if (files.length == 0) {
