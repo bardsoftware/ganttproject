@@ -18,100 +18,73 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
-import net.sourceforge.ganttproject.gui.GanttDialogCustomColumn;
+import net.sourceforge.ganttproject.ShowHideColumnsDialog;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.jdesktop.jdnc.JNTable;
-import org.jdesktop.swing.decorator.AlternateRowHighlighter;
-import org.jdesktop.swing.decorator.Highlighter;
-import org.jdesktop.swing.decorator.HighlighterPipeline;
 
 /**
  * This class implements a UI component for editing custom properties.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class CustomColumnsPanel extends JPanel {
+public class CustomColumnsPanel {
     private static GanttLanguage language = GanttLanguage.getInstance();
 
     private final CustomPropertyManager myCustomPropertyManager;
 
-    private final UIFacade myUIfacade;
+    private final UIFacade myUiFacade;
 
     private CustomColumnTableModel model;
 
-    private JNTable table;
+    private JTable table;
 
-    public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade) {
+    private CustomPropertyHolder myHolder;
+
+    private TableHeaderUIFacade myTableHeaderFacade;
+
+    public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade, CustomPropertyHolder customPropertyHolder, TableHeaderUIFacade tableHeaderFacade) {
         assert manager != null;
         myCustomPropertyManager = manager;
-        myUIfacade = uifacade;
-        this.initComponents();
+        myUiFacade = uifacade;
+        myHolder = customPropertyHolder;
+        myTableHeaderFacade = tableHeaderFacade;
     }
 
-    private void initComponents() {
-        setLayout(new BorderLayout());
+    public JComponent geComponent() {
         model = new CustomColumnTableModel();
-        table = new JNTable(model);
-        table.setPreferredVisibleRowCount(10);
-        table.setHighlighters(new HighlighterPipeline(new Highlighter[] {
-                AlternateRowHighlighter.floralWhite,
-                AlternateRowHighlighter.quickSilver }));
-        table.getTable().setSortable(false);
-        AbstractTableAndActionsComponent<CustomPropertyDefinition> tableAndActions =
-            new AbstractTableAndActionsComponent<CustomPropertyDefinition>(table.getTable()) {
-                @Override
-                protected void onAddEvent() {
-                    myUIfacade.getUndoManager().undoableEdit(
-                            "TaskPropertyNewColumn",
-                            new Runnable() {
-                                public void run() {
-                                    CustomColumnsPanel.this.onAddEvent();
-                                }
-                            });
-                }
+        table = new JTable(model);
 
-                @Override
-                protected void onDeleteEvent() {
-                    CustomColumnsPanel.this.onDeleteEvent();
-                }
-
-                @Override
-                protected void onSelectionChanged() {
-                }
-        };
-        this.add(CommonPanel.createTableAndActions(table, tableAndActions), BorderLayout.CENTER);
-    }
-
-    private void onAddEvent() {
-        GanttDialogCustomColumn d = new GanttDialogCustomColumn(myUIfacade, myCustomPropertyManager);
-        d.setVisible(true);
-        if (d.isOk()) {
-            model.reload();
-        }
-    }
-
-    private void onDeleteEvent() {
-        int selectedRowsIndexes[] = table.getTable().getSelectedRows();
-        for (int i = 0; i < selectedRowsIndexes.length; i++) {
-            CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(selectedRowsIndexes[i]);
-            myCustomPropertyManager.deleteDefinition(def);
-        }
-        model.reload();
+        CommonPanel.setupTableUI(table);
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(
+                        myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
+                dialog.show();
+            }
+          }), BorderLayout.WEST);
+        return CommonPanel.createTableAndActions(table, buttonPanel);
     }
 
     private static final String[] COLUMN_NAMES = new String[] {
         CustomColumnsPanel.language.getText("name"),
         CustomColumnsPanel.language.getText("typeClass"),
-        CustomColumnsPanel.language.getText("default")
+        CustomColumnsPanel.language.getText("value")
     };
 
     class CustomColumnTableModel extends DefaultTableModel {
@@ -134,7 +107,7 @@ public class CustomColumnsPanel extends JPanel {
 
         @Override
         public boolean isCellEditable(int row, int col) {
-            return col != 1;
+            return col == 2;
         }
 
         @Override
@@ -159,7 +132,12 @@ public class CustomColumnsPanel extends JPanel {
             case 1:
                 return def.getPropertyClass().getDisplayName();
             case 2:
-                return def.getDefaultValueAsString();
+                for (CustomProperty cp : myHolder.getCustomProperties()) {
+                    if (cp.getDefinition() == def) {
+                        return cp.getValueAsString();
+                    }
+                }
+                return def.getDefaultValue() + " (default)";
             default:
                 throw new IllegalStateException();
             }
@@ -170,31 +148,11 @@ public class CustomColumnsPanel extends JPanel {
             if (row < 0 || row >= myCustomPropertyManager.getDefinitions().size()) {
                 return;
             }
+            if (col != 2) {
+                throw new IllegalArgumentException();
+            }
             CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(row);
-            switch (col) {
-            case 0:
-                String newName = (String)o;
-                if (columnExists(newName)) {
-                    return;
-                }
-                def.setName(newName);
-                break;
-            case 2:
-                String newValue = (String)o;
-                def.setDefaultValueAsString(newValue);
-                break;
-            default:
-                throw new IllegalStateException();
-            }
-        }
-
-        private boolean columnExists(String columnName) {
-            for (CustomPropertyDefinition def : myCustomPropertyManager.getDefinitions()) {
-                if (def.getName().equals(columnName)) {
-                    return true;
-                }
-            }
-            return false;
+            myHolder.addCustomProperty(def, String.valueOf(o));
         }
     }
 }
