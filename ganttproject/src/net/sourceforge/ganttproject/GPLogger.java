@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -137,5 +138,39 @@ public class GPLogger {
             }
         }
         return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
+    }
+
+    private static String[] SYSTEM_PROPERTIES = new String[] {
+        "java.class.path",
+        "java.home",
+        "java.io.tmpdir",
+        "java.runtime.version",
+        "java.vendor",
+        "java.vm.name",
+        "java.vm.vendor",
+        "java.vm.version",
+        "os.arch",
+        "os.name",
+        "os.version",
+        "sun.java.command",
+        "user.country",
+        "user.dir",
+        "user.home",
+        "user.language",
+        "user.timezone"
+    };
+    public static void logSystemInformation() {
+        try {
+            StringBuilder result = new StringBuilder();
+            for (String name : SYSTEM_PROPERTIES) {
+                result.append(name).append(": ").append(System.getProperty(name)).append("\n");
+            }
+
+            System.err.println(result.toString());
+        } catch (AccessControlException e) {
+            // This can happen when running in a sandbox (Java WebStart)
+            System.err.println(e + ": " + e.getMessage());
+        }
+
     }
 }
