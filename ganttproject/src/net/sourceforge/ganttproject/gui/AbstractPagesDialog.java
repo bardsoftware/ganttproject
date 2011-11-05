@@ -108,6 +108,7 @@ public abstract class AbstractPagesDialog {
                 return myItems.size();
             }
         });
+        pagesList.setVisibleRowCount(myItems.size());
         pagesList.setCellRenderer(new DefaultListCellRenderer() {
             private final JButton EMPTY_BUTTON = new JButton();
 
@@ -170,7 +171,9 @@ public abstract class AbstractPagesDialog {
 
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(pagesList, BorderLayout.WEST);
-        rootPanel.add(contentPanel, BorderLayout.CENTER);
+        JPanel contentPanelWrapper = new JPanel(new BorderLayout());
+        contentPanelWrapper.add(contentPanel, BorderLayout.NORTH);
+        rootPanel.add(contentPanelWrapper, BorderLayout.CENTER);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         return rootPanel;
     }
