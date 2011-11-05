@@ -35,7 +35,7 @@ public class DialogAligner {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         component.setLocation(
-                screenSize.width / 2 - (component.getWidth() / 2),
-                screenSize.height / 2 - (component.getHeight() / 2));
+                screenSize.width / 2 - (component.getPreferredSize().width / 2),
+                screenSize.height / 2 - (component.getPreferredSize().height / 2));
     }
 }
