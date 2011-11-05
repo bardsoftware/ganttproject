@@ -90,7 +90,7 @@ public class TaskDependenciesPanel {
                 }
         };
 
-        return CommonPanel.createTableAndActions(myTable, tableAndActions);
+        return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
     }
 
     public void init(Task task) {

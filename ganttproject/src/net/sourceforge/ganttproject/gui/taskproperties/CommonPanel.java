@@ -66,9 +66,8 @@ abstract class CommonPanel {
                 table.getRowHeight() * 10));
     }
 
-    static <T> JPanel createTableAndActions(JComponent table, AbstractTableAndActionsComponent<T> tableAndActions) {
+    static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
         JPanel result = new JPanel(new BorderLayout());
-        JComponent actionsComponent = tableAndActions.getActionsComponent();
         actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
         JPanel actionsWrapper = new JPanel(new BorderLayout());
         actionsWrapper.add(actionsComponent, BorderLayout.WEST);

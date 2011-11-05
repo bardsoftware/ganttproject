@@ -98,9 +98,9 @@ public abstract class AbstractPagesDialog {
                 contentPanel.add(li.component, li.id);
             }
         }
-        final JList<ListItem> pagesList = new JList<ListItem>(new AbstractListModel<ListItem>() {
+        final JList pagesList = new JList(new AbstractListModel() {
             @Override
-            public ListItem getElementAt(int idx) {
+            public Object getElementAt(int idx) {
                 return myItems.get(idx);
             }
             @Override
@@ -149,7 +149,7 @@ public abstract class AbstractPagesDialog {
         pagesList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                ListItem listItem = pagesList.getSelectedValue();
+                ListItem listItem = (ListItem)pagesList.getSelectedValue();
                 if(listItem.isGroupHeader) {
                     // Assumes that the list does not end with a GroupHeader!
                     pagesList.setSelectedIndex(pagesList.getSelectedIndex() + 1);

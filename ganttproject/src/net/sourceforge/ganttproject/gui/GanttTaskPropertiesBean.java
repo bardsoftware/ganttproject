@@ -374,7 +374,11 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
 
     private void constructCustomColumnPanel() {
-        myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myUIfacade);
+        myCustomColumnPanel = new CustomColumnsPanel(
+                myProject.getTaskCustomColumnManager(),
+                myUIfacade,
+                selectedTasks[0].getCustomValues(),
+                myUIfacade.getTaskTree().getVisibleFields());
     }
 
     /** Construct the predecessors tabbed pane */
@@ -455,7 +459,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         constructCustomColumnPanel();
         tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(
                 getClass().getResource("/icons/custom.gif")),
-                myCustomColumnPanel);
+                myCustomColumnPanel.geComponent());
         tabbedPane.addFocusListener(new FocusAdapter() {
             private boolean isFirstFocusGain = true;
             @Override
