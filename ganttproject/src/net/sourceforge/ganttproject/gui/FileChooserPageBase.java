@@ -106,10 +106,11 @@ public abstract class FileChooserPageBase implements WizardPage {
         return JFileChooser.FILES_AND_DIRECTORIES;
     }
 
+    @Override
     public Component getComponent() {
         myComponent = new JPanel(new BorderLayout());
         myChooser = new TextFieldAndFileChooserComponent(
-                myWizard, GanttLanguage.getInstance().getText("file")+":", getFileChooserTitle()) {
+                myWizard.getUIFacade(), GanttLanguage.getInstance().getText("file")+":", getFileChooserTitle()) {
             @Override
             protected void onFileChosen(File file) {
                 IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
@@ -138,12 +139,15 @@ public abstract class FileChooserPageBase implements WizardPage {
             urlBox.add(myUrlField);
             urlBox.add(myUrlLabel);
             myUrlField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     onChange();
                 }
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     onChange();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     onChange();
                 }
@@ -157,12 +161,14 @@ public abstract class FileChooserPageBase implements WizardPage {
             fileBox.add(myFileLabel);
 
             Action fileSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("file")) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
                     myChooser.tryFile();
                 }
             };
             Action urlSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("url")) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ourSelectedSource = FileChooserPageBase.URL_SOURCE;
                     urlFetcher.setStatusLabel(myUrlLabel);
@@ -200,6 +206,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         }
     }
 
+    @Override
     public void setActive(boolean b) {
         GPOptionGroup[] optionGroups = getOptionGroups();
         if (b == false) {

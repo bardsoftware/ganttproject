@@ -18,9 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -30,10 +27,7 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -45,10 +39,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
 
 import org.eclipse.core.runtime.IStatus;
-import org.pushingpixels.trident.Timeline;
 
 /**
  * @author bard
@@ -70,30 +65,18 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
     private final SpringLayout myLayout = new SpringLayout();
 
-    private JPanel myChooserPanel;
+    private final UIFacade myUiFacade;
 
-    private WizardImpl myWizard;
-
-    private JFileChooser myFileChooser;
-
-    private static final Icon COLLAPSE_ICON = new ImageIcon(TextFieldAndFileChooserComponent.class.getResource("/icons/up_16.gif"));
-    private static final Icon EXPAND_ICON = new ImageIcon(TextFieldAndFileChooserComponent.class.getResource("/icons/down_16.gif"));
-
-    public TextFieldAndFileChooserComponent(WizardImpl wizard, String label, String dialogCaption) {
-        myWizard = wizard;
+    public TextFieldAndFileChooserComponent(UIFacade uiFacade, String label, String dialogCaption) {
+        myUiFacade = uiFacade;
         myDialogCaption = dialogCaption;
 
         setLayout(myLayout);
 
-        myChooserButton = new JButton(new AbstractAction("", EXPAND_ICON) {
+        myChooserButton = new JButton(new GPAction("fileChooser.browse") {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if (myFileChooser == null) {
-                    showFileChooser();
-                    putValue(Action.SMALL_ICON, COLLAPSE_ICON);
-                } else {
-                    hideFileChooser();
-                    putValue(Action.SMALL_ICON, EXPAND_ICON);
-                }
+                showFileChooser();
             }
         });
 
@@ -103,12 +86,15 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
             private final Timer myTimer = new Timer();
             private TimerTask myTimerTask = null;
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 onChange();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 onChange();
             }
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 onChange();
             }
@@ -118,6 +104,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
                         @Override
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     tryFile();
                                 }
@@ -130,19 +117,19 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
             }
         });
 
-        myChooserPanel = new JPanel(new BorderLayout());
+        //myChooserPanel = new JPanel(new BorderLayout());
         add(myTextField);
         add(myChooserButton);
-        add(myChooserPanel);
+        //add(myChooserPanel);
         myLayout.putConstraint(SpringLayout.WEST, myTextField, 0, SpringLayout.WEST, this);
         myLayout.putConstraint(SpringLayout.NORTH, myTextField, 0, SpringLayout.NORTH, this);
         myLayout.putConstraint(SpringLayout.WEST, myChooserButton, 3, SpringLayout.EAST, myTextField);
         myLayout.putConstraint(SpringLayout.NORTH, myChooserButton, 0, SpringLayout.NORTH, this);
         myLayout.putConstraint(SpringLayout.EAST, this, 0, SpringLayout.EAST, myChooserButton);
-        myLayout.putConstraint(SpringLayout.NORTH, myChooserPanel, 3, SpringLayout.SOUTH, myChooserButton);
-        myLayout.putConstraint(SpringLayout.WEST, myChooserPanel, 0, SpringLayout.WEST, myTextField);
-        myLayout.putConstraint(SpringLayout.EAST, myChooserPanel, 0, SpringLayout.EAST, myChooserButton);
-        myLayout.putConstraint(SpringLayout.SOUTH, this, 0, SpringLayout.SOUTH, myChooserPanel);
+//        myLayout.putConstraint(SpringLayout.NORTH, myChooserPanel, 3, SpringLayout.SOUTH, myChooserButton);
+//        myLayout.putConstraint(SpringLayout.WEST, myChooserPanel, 0, SpringLayout.WEST, myTextField);
+//        myLayout.putConstraint(SpringLayout.EAST, myChooserPanel, 0, SpringLayout.EAST, myChooserButton);
+        myLayout.putConstraint(SpringLayout.SOUTH, this, 0, SpringLayout.SOUTH, myChooserButton);
     }
 
     public File getFile() {
@@ -175,27 +162,27 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
         myFileFilter = filter;
     }
 
-    public void setChooserHeight(int height) {
-        Rectangle bounds = myChooserPanel.getBounds();
-        myChooserPanel.setMinimumSize(new Dimension(bounds.width, height));
-        myChooserPanel.setMaximumSize(new Dimension(bounds.width, height));
-        myChooserPanel.setPreferredSize(new Dimension(bounds.width, height));
-        this.doLayout();
-        myChooserPanel.doLayout();
-        myWizard.getDialog().layout();
-    }
+//    public void setChooserHeight(int height) {
+//        Rectangle bounds = myChooserPanel.getBounds();
+//        myChooserPanel.setMinimumSize(new Dimension(bounds.width, height));
+//        myChooserPanel.setMaximumSize(new Dimension(bounds.width, height));
+//        myChooserPanel.setPreferredSize(new Dimension(bounds.width, height));
+//        this.doLayout();
+//        myChooserPanel.doLayout();
+//        myWizard.getDialog().layout();
+//    }
 
-    public int getChooserHeight() {
-        return getHeight();
-    }
+//    public int getChooserHeight() {
+//        return getHeight();
+//    }
 
-    protected void hideFileChooser() {
-        Timeline t = new Timeline(this);
-        t.addPropertyToInterpolate("chooserHeight", 0, myChooserPanel.getHeight());
-        t.playReverse();
-        myChooserPanel.removeAll();
-        myFileChooser = null;
-    }
+//    protected void hideFileChooser() {
+//        Timeline t = new Timeline(this);
+//        t.addPropertyToInterpolate("chooserHeight", 0, myChooserPanel.getHeight());
+//        t.playReverse();
+//        myChooserPanel.removeAll();
+//        myFileChooser = null;
+//    }
 
 
     public void showFileChooser() {
@@ -216,6 +203,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
         fc.doLayout();
 
         fc.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 File f = (File) evt.getNewValue();
                 if (f != null) {
@@ -223,19 +211,19 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
                 }
             }
         });
-        myChooserPanel.add(fc, BorderLayout.CENTER);
-        Timeline t = new Timeline(this);
-        t.addPropertyToInterpolate("chooserHeight", 0, fc.getPreferredSize().height);
-        t.play();
-        myFileChooser = fc;
-//        Action[] dialogActions = new Action[] { new OkAction() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                setFile(fc.getSelectedFile());
-//                onFileChosen(myFile);
-//            }
-//        }, CancelAction.EMPTY };
-//        myUiFacade.createDialog(fc, dialogActions, "").show();
+//        myChooserPanel.add(fc, BorderLayout.CENTER);
+//        Timeline t = new Timeline(this);
+//        t.addPropertyToInterpolate("chooserHeight", 0, fc.getPreferredSize().height);
+//        t.play();
+//        myFileChooser = fc;
+        Action[] dialogActions = new Action[] { new OkAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setFile(fc.getSelectedFile());
+                onFileChosen(myFile);
+            }
+        }, CancelAction.EMPTY };
+        myUiFacade.createDialog(fc, dialogActions, "").show();
     }
 
     public void tryFile() {
