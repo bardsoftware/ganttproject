@@ -913,6 +913,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             }
         }
 
+        GPLogger.logSystemInformation();
         // Check if an export was requested from the command line
         if (cmdlineApplication.export(mainArgs)) {
             // Export succeeded so exit applciation
