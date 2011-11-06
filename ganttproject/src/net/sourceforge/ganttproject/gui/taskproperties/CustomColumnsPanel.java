@@ -76,6 +76,7 @@ public class CustomColumnsPanel {
                 ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(
                         myUiFacade, myTableHeaderFacade, myCustomPropertyManager);
                 dialog.show();
+                model.fireTableStructureChanged();
             }
           }), BorderLayout.WEST);
         return CommonPanel.createTableAndActions(table, buttonPanel);
