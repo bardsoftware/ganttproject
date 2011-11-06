@@ -32,11 +32,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.text.AttributedCharacterIterator;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -74,7 +71,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -85,7 +81,6 @@ import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
 import org.jdesktop.jdnc.JNTreeTable;
-import org.jdesktop.swing.JXTable;
 import org.jdesktop.swing.JXTreeTable;
 import org.jdesktop.swing.decorator.AlternateRowHighlighter;
 import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
@@ -562,52 +557,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     protected TableCellEditor newDateCellEditor() {
-        return new DateCellEditor() {
-            @Override
-            protected Date parseDate(String dateString) {
-                DateFormat[] formats = new DateFormat[] {
-                        GanttLanguage.getInstance().getLongDateFormat(),
-                        GanttLanguage.getInstance().getMediumDateFormat(),
-                        GanttLanguage.getInstance().getShortDateFormat(),
-                };
-                for (int i=0; i<formats.length; i++) {
-                    try {
-                        Date typedDate = formats[i].parse(dateString);
-                        Calendar typedCal = CalendarFactory.newCalendar();
-                        typedCal.setTime(typedDate);
-                        Calendar projectStartCal = CalendarFactory.newCalendar();
-                        projectStartCal.setTime(myProject.getTaskManager().getProjectStart());
-                        int yearDiff = Math.abs(typedCal.get(Calendar.YEAR) - projectStartCal.get(Calendar.YEAR));
-                        if (yearDiff > 1500) {
-                            AttributedCharacterIterator iter = formats[i].formatToCharacterIterator(typedDate);
-                            int additionalZeroes = -1;
-                            StringBuffer result = new StringBuffer();
-                            for (char c = iter.first(); c!=AttributedCharacterIterator.DONE; c = iter.next()) {
-                                if (iter.getAttribute(DateFormat.Field.YEAR)!=null && additionalZeroes==-1) {
-                                    additionalZeroes = iter.getRunLimit(DateFormat.Field.YEAR) - iter.getIndex();
-                                    for (int j=0; j<additionalZeroes; j++) {
-                                        result.append('0');
-                                    }
-                                }
-                                result.append(c);
-                            }
-                            if (!result.toString().equals(dateString)) {
-                                typedCal.add(Calendar.YEAR, 2000);
-                                return typedCal.getTime();
-                            }
-                        }
-                        return typedDate;
-                    }
-                    catch (ParseException e) {
-                        if (i+1 == formats.length) {
-                            return null;
-                        }
-                    }
-                }
-                return null;
-
-            }
-        };
+        return new DateCellEditor();
     }
 
     public JTree getTree() {
@@ -641,7 +591,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
 
-    private static abstract class DateCellEditor extends DefaultCellEditor {
+    private static class DateCellEditor extends DefaultCellEditor {
         // normal textfield background color
         private final Color colorNormal = null;
 
@@ -666,7 +616,18 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             return new GanttCalendar(myDate == null ? new Date() : myDate);
         }
 
-        protected abstract Date parseDate(String dateString);
+        private Date parseDate(String dateString) {
+            try {
+                Date parsed = GanttLanguage.getInstance().getShortDateFormat().parse(dateString);
+                if (GanttLanguage.getInstance().getShortDateFormat().format(parsed).equals(dateString)) {
+                    return parsed;
+                }
+            } catch (ParseException e) {
+                GPLogger.logToLogger(e);
+            }
+            return null;
+
+        }
 
         @Override
         public boolean stopCellEditing() {
@@ -676,12 +637,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                 getComponent().setBackground(colorError);
                 return false;
             }
-            else {
-                myDate = parsedDate;
-                getComponent().setBackground(colorNormal);
-                super.fireEditingStopped();
-                return true;
-            }
+            myDate = parsedDate;
+            getComponent().setBackground(colorNormal);
+            super.fireEditingStopped();
+            return true;
         }
     }
 
