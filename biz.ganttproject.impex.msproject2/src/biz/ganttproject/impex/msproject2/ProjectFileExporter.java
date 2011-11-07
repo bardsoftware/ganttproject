@@ -134,7 +134,7 @@ class ProjectFileExporter {
         rootTask.setDuration(convertDuration(getTaskManager().createLength(
                 getTaskManager().getRootTask().getDuration().getTimeUnit(),
                 getTaskManager().getProjectStart(), getTaskManager().getProjectEnd())));
-        rootTask.setDurationFormat(TimeUnit.DAYS);
+        //rootTask.setDurationFormat(TimeUnit.DAYS);
         rootTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
 
         int i = 0;
@@ -171,7 +171,7 @@ class ProjectFileExporter {
         mpxjTask.setStart(convertStartTime(t.getStart().getTime()));
         mpxjTask.setFinish(convertFinishTime(t.getEnd().getTime()));
         mpxjTask.setDuration(convertDuration(t.getDuration()));
-        mpxjTask.setDurationFormat(TimeUnit.DAYS);
+        //mpxjTask.setDurationFormat(TimeUnit.DAYS);
         Duration[] durations = getActualAndRemainingDuration(mpxjTask);
         mpxjTask.setActualDuration(durations[0]);
         mpxjTask.setRemainingDuration(durations[1]);
