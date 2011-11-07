@@ -60,6 +60,14 @@ public class GPLogger {
         return logToLogger(e);
     }
 
+    public static boolean logToLogger(String message) {
+        if (ourHandler == null) {
+            return false;
+        }
+        ourLogger.log(Level.WARNING, message);
+        return true;
+    }
+
     public static boolean logToLogger(Throwable e) {
         if (ourHandler == null) {
             return false;
