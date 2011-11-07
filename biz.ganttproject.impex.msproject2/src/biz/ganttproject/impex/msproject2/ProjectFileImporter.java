@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -78,6 +80,7 @@ class ProjectFileImporter {
     private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
     private Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<String, Object>();
     private TableHeaderUIFacade myTaskFields;
+    private List<String> myErrors = new ArrayList<String>();
 
     private static ProjectReader createReader(File file) {
         int lastDot = file.getName().lastIndexOf('.');
@@ -110,7 +113,7 @@ class ProjectFileImporter {
         return myNativeProject.getTaskManager();
     }
 
-    public void run() throws MPXJException {
+    public List<String> run() throws MPXJException {
         ProjectFile pf = myReader.read(myForeignFile);
         Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
         Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
@@ -124,6 +127,7 @@ class ProjectFileImporter {
             e.printStackTrace();
         }
         importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
+        return myErrors;
     }
 
     private void hideCustomProperties() {
@@ -264,27 +268,34 @@ class ProjectFileImporter {
             return;
         }
 
-        GanttTask nativeTask = getTaskManager().createTask();
-        myNativeProject.getTaskContainment().move(nativeTask, supertask);
-        nativeTask.setName(t.getName());
-        nativeTask.setStart(convertStartTime(t.getStart()));
-        nativeTask.setNotes(t.getNotes());
-        nativeTask.setWebLink(t.getHyperlink());
-        nativeTask.setPriority(convertPriority(t.getPriority()));
-        if (t.getChildTasks().isEmpty()) {
-            if (t.getPercentageComplete() != null) {
-                nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
+        TaskLength duration = convertDuration(t);
+        if (duration.getLength() <= 0 && !t.getMilestone()) {
+            myErrors.add("Skipped task with id=" + t.getID() + " and name=" + t.getName() + " because its duration=" + duration + " and it is not a milestone");
+        } else {
+            GanttTask nativeTask = getTaskManager().createTask();
+            myNativeProject.getTaskContainment().move(nativeTask, supertask);
+            nativeTask.setName(t.getName());
+            nativeTask.setStart(convertStartTime(t.getStart()));
+            nativeTask.setNotes(t.getNotes());
+            nativeTask.setWebLink(t.getHyperlink());
+            nativeTask.setPriority(convertPriority(t.getPriority()));
+            if (t.getChildTasks().isEmpty()) {
+                if (t.getPercentageComplete() != null) {
+                    nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
+                }
+                nativeTask.setMilestone(t.getMilestone());
+                if (duration.getLength() > 0) {
+                    nativeTask.setDuration(duration);
+                }
             }
-            nativeTask.setMilestone(t.getMilestone());
-            nativeTask.setDuration(convertDuration(t));
-        }
-        else {
-            for (Task child: t.getChildTasks()) {
-                importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
+            else {
+                for (Task child: t.getChildTasks()) {
+                    importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
+                }
             }
+            importCustomFields(t, nativeTask);
+            foreignId2nativeTask.put(t.getID(), nativeTask);
         }
-        importCustomFields(t, nativeTask);
-        foreignId2nativeTask.put(t.getID(), nativeTask);
     }
 
     private GanttCalendar convertStartTime(Date start) {
@@ -425,6 +436,14 @@ class ProjectFileImporter {
             for (Relation r: t.getPredecessors()) {
                 GanttTask dependant = foreignId2nativeTask.get(r.getSourceTask().getID());
                 GanttTask dependee = foreignId2nativeTask.get(r.getTargetTask().getID());
+                if (dependant == null) {
+                    myErrors.add("Failed to import relation=" + t + " because task=" + r.getSourceTask().getID() + " was not found");
+                    continue;
+                }
+                if (dependee == null) {
+                    myErrors.add("Failed to import relation=" + t + " because task=" + r.getTargetTask().getID() + " was not found");
+                    continue;
+                }
                 TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(
                         dependant, dependee);
                 dependency.setConstraint(convertConstraint(r));
@@ -456,7 +475,28 @@ class ProjectFileImporter {
             Map<Integer, GanttTask> foreignId2nativeTask, Map<Integer, HumanResource> foreignId2nativeResource) {
         for (ResourceAssignment ra: pf.getAllResourceAssignments()) {
             GanttTask nativeTask = foreignId2nativeTask.get(ra.getTask().getID());
-            HumanResource nativeResource = foreignId2nativeResource.get(ra.getResource().getUniqueID());
+            if (nativeTask == null) {
+                myErrors.add("Failed to import resource assignment=" + ra
+                        + " because its task with ID=" + ra.getTask().getID()
+                        + " and name=" + ra.getTask().getName()
+                        + " was not found or not imported");
+                continue;
+            }
+            Resource resource = ra.getResource();
+            if (resource == null) {
+                myErrors.add("Failed to import resource assignment=" + ra
+                        + " because its resource field was NULL");
+                continue;
+            }
+            HumanResource nativeResource = foreignId2nativeResource.get(resource.getUniqueID());
+            if (nativeResource == null) {
+                myErrors.add("Failed to import resource assignment=" + ra
+                        + " because its resource with ID=" + resource.getUniqueID()
+                        + " and name=" + resource.getName()
+                        + " was not found or not imported");
+                continue;
+
+            }
             net.sourceforge.ganttproject.task.ResourceAssignment nativeAssignment =
                 nativeTask.getAssignmentCollection().addAssignment(nativeResource);
             nativeAssignment.setLoad(ra.getUnits().floatValue());
