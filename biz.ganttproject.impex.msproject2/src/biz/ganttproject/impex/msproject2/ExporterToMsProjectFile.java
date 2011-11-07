@@ -87,7 +87,7 @@ public class ExporterToMsProjectFile implements Exporter {
     }
 
     public List<GPOptionGroup> getSecondaryOptions() {
-        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : null;
+        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : Collections.<GPOptionGroup>emptyList();
     }
 
     public Component getCustomOptionsUI() {

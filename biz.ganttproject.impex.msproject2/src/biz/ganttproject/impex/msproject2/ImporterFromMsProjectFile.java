@@ -19,10 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
+import java.util.List;
 
 import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.importer.ImporterBase;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
     public ImporterFromMsProjectFile() {
@@ -36,7 +38,14 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
     public void run(File selectedFile) {
         try {
-            new ProjectFileImporter(getProject(), getUiFacade().getTaskTree(), selectedFile).run();
+            List<String> errors = new ProjectFileImporter(getProject(), getUiFacade().getTaskTree(), selectedFile).run();
+            if (!errors.isEmpty()) {
+                StringBuilder builder = new StringBuilder();
+                for (String message : errors) {
+                    builder.append("<li>").append(message);
+                }
+                getUiFacade().showErrorDialog(GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
+            }
         } catch (MPXJException e) {
             getUiFacade().showErrorDialog(e);
         }
