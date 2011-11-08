@@ -146,7 +146,6 @@ public class ActivityOnNodePertChart extends PertChart {
     private final static Color ARROW_COLOR = Color.GRAY;
 
     public ActivityOnNodePertChart() {
-        super(null);
         // pressedGraphicalNodes = new ArrayList();
         // xClickedOffsets = new ArrayList();
         // yClickedOffsets = new ArrayList();

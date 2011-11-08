@@ -101,6 +101,10 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         });
     }
 
+    public void init(IGanttProject project) {
+        // Skip as we already have a project instance.
+    }
+
     protected void setCursor(Cursor cursor) {
         myChartComponent.setCursor(cursor);
     }

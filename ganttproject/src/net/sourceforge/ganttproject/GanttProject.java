@@ -868,7 +868,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         public boolean log = true;
 
         @Parameter(names = "-log_file", description = "Log file name")
-        public String logFile = "";
+        public String logFile = "auto";
 
         @Parameter(names = {"-h", "-help"}, description = "Print usage")
         public boolean help = false;
@@ -900,6 +900,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         } catch (Throwable e) {
             e.printStackTrace();
             return false;
+        }
+        if (mainArgs.log && "auto".equals(mainArgs.logFile)) {
+            mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log";
         }
         if (mainArgs.log && !mainArgs.logFile.isEmpty()) {
             try {
@@ -1248,6 +1251,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getResourcePanel().getResourceTreeTable().setRowHeight(20);
         if (myDelayManager != null)
             myDelayManager.fireDelayObservation();
+        for (Chart chart : PluginManager.getCharts()) {
+            chart.reset();
+        }
         super.repaint();
     }
 }

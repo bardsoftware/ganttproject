@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IStatus;
 public interface Chart extends IAdaptable {
     IGanttProject getProject();
 
+    void init(IGanttProject project);
     public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor);
     public RenderedImage getRenderedImage(GanttExportSettings settings);
 

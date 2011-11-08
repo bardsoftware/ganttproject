@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
@@ -48,10 +49,12 @@ public abstract class PertChart extends JPanel implements Chart {
      */
     protected TaskManager myTaskManager;
 
-    public PertChart(TaskManager taskManager) {
-        myTaskManager = taskManager;
+    public PertChart() {
     }
 
+    public void init(IGanttProject project) {
+        myTaskManager = project.getTaskManager();
+    }
     /**
      * @inheritDoc
      */
@@ -76,13 +79,6 @@ public abstract class PertChart extends JPanel implements Chart {
      */
     public Date getEndDate() {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Sets the task manager and build chart afterwards.
-     */
-    public void setTaskManager(TaskManager taskManager) {
-        myTaskManager = taskManager;
     }
 
     public GPOptionGroup[] getOptionGroups() {

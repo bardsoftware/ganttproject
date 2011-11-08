@@ -81,6 +81,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
     }
 
+    @Override
+    public void init(IGanttProject project) {
+        // Skip as we already have a project instance.
+    }
+
     protected void initMouseListeners() {
         addMouseListener(getMouseListener());
         addMouseMotionListener(getMouseMotionListener());
