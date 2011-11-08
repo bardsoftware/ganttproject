@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.List;
 
 import net.sf.mpxj.MPXJException;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -36,6 +37,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
         return "mpp|mpx|xml";
     }
 
+    @Override
     public void run(File selectedFile) {
         try {
             List<String> errors = new ProjectFileImporter(getProject(), getUiFacade().getTaskTree(), selectedFile).run();
@@ -44,7 +46,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
                 for (String message : errors) {
                     builder.append("<li>").append(message);
                 }
-                getUiFacade().showErrorDialog(GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
+                GPLogger.log(GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
             }
         } catch (MPXJException e) {
             getUiFacade().showErrorDialog(e);
