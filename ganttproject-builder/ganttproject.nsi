@@ -7,7 +7,7 @@ XPStyle on
 Icon "ganttproject_16.ico"
 
 !define MUI_ICON "ganttproject_16.ico"
-!define VERSION "praha-beta2"
+!define VERSION "praha-beta3-r803"
 
 OutFile ganttproject-${VERSION}.exe
 
