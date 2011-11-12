@@ -1,0 +1,282 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+package net.sourceforge.ganttproject.action;
+
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Properties;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
+
+import org.eclipse.core.runtime.Platform;
+
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+
+/**
+ * @author bard
+ */
+public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+    public enum IconSize {
+        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
+
+        private final String mySize;
+
+        IconSize(String size) {
+            mySize = size;
+        }
+
+        public String asString() {
+            return mySize;
+        }
+    }
+    public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
+    /** Location of the icon files */
+    public static final String ICON_FILE_DIRECTORY = "/icons";
+
+    protected boolean iconVisible = true;
+
+    private Icon myIcon = null;
+
+    private final String myName;
+
+    private static Properties ourKeyboardProperties;
+
+    private static Properties ourIconProperties;
+
+    private static GanttLanguage language = GanttLanguage.getInstance();
+
+    protected GPAction() {
+        this(null);
+    }
+
+    public GPAction(String name) {
+        // TODO use icon size given in options as default size
+        this(name, "16");
+    }
+
+    protected GPAction(String name, String iconSize) {
+        super(name);
+        myName = name;
+        if (iconSize != null) {
+            updateIcon(iconSize);
+        }
+        updateName();
+        updateTooltip();
+        language.addListener(this);
+        if(name != null) {
+            putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
+        }
+    }
+
+    protected GPAction(String name, IconSize size) {
+        this(name, size.asString());
+    }
+
+    public GPAction withIcon(IconSize size) {
+        try {
+            Constructor<? extends GPAction> constructor = getClass().getConstructor(String.class, String.class);
+            return constructor.newInstance(myName, size.asString());
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public Icon getIconOnMouseOver() {
+        return (Icon) getValue(Action.SMALL_ICON);
+    }
+
+    private void updateIcon(String iconSize) {
+        Icon icon = createIcon(iconSize);
+        if (icon != null) {
+            putValue(Action.SMALL_ICON, icon);
+            myIcon = icon;
+        }
+    }
+
+    protected final Icon createIcon(String iconSize) {
+        if (iconSize == null || false == iconVisible) {
+            return null;
+        }
+        String customIcon = getCustomIconPath();
+        String resourcePath;
+        if (customIcon == null) {
+            resourcePath = MessageFormat.format("{0}/{1}{2}.gif", ICON_FILE_DIRECTORY, getIconFilePrefix(), iconSize);
+        } else {
+            resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, customIcon);
+        }
+        URL resource = getClass().getResource(resourcePath);
+        return resource == null ? null : new ImageIcon(resource);
+    }
+
+    /** @return translation of "ID.description" if available, otherwise translation of "ID" */
+    protected String getLocalizedDescription() {
+        if(getID() == null) {
+            return null;
+        }
+        String description = getI18n(getID() + ".description");
+        if(description == null) {
+            description = language.correctLabel(getLocalizedName());
+        }
+        return description == null ? "" : description;
+    }
+
+    /** @return translation of ID */
+    protected String getLocalizedName() {
+        return getID() == null ? null : getI18n(getID());
+    }
+
+    protected String getID() {
+        return myName;
+    }
+
+    protected String getActionName() {
+        String name = getLocalizedDescription();
+        return name == null ? "" : language.correctLabel(name);
+    }
+
+    protected static String getI18n(String key) {
+        return language.getText(key);
+    }
+
+    protected String getIconFilePrefix() {
+        return null;
+    }
+
+    protected final void setIconVisible(boolean isVisible) {
+        iconVisible = isVisible;
+        putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
+    }
+
+    protected final void updateName() {
+        String localizedName = getLocalizedName();
+        if (localizedName == null) {
+            localizedName = String.valueOf(getValue(Action.NAME));
+        }
+        if (localizedName != null) {
+            int bucksPos = localizedName.indexOf('$');
+            if (bucksPos >= 0) {
+                // Get name without the $ in it
+                localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();
+            }
+            putValue(Action.NAME, localizedName);
+            if (bucksPos >= 0) {
+                // Activate mnemonic key
+                putValue(Action.MNEMONIC_KEY, new Integer(Character.toLowerCase(localizedName.charAt(bucksPos))));
+            }
+        }
+    }
+
+    /**
+     * Updates the action. Can be called when external influences resulted in
+     * changed action name and/or description
+     */
+    public void updateAction() {
+        updateName();
+        updateTooltip();
+    }
+
+    protected void updateTooltip() {
+        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
+    }
+
+    public void isIconVisible(boolean isNull) {
+        setIconVisible(isNull);
+    }
+
+    public void languageChanged(Event event) {
+        updateAction();
+    }
+
+    private String getCustomIconPath() {
+        if (getID() == null) {
+            return null;
+        }
+        if (ourIconProperties == null) {
+            ourIconProperties = new Properties();
+            loadProperties(ourIconProperties, "/icons.properties");
+        }
+        return (String) ourIconProperties.get(getID());
+    }
+
+    public static KeyStroke getKeyStroke(String keystrokeID) {
+        String keystrokeText = getKeyStrokeText(keystrokeID);
+        return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
+    }
+
+    public static String getKeyStrokeText(String keystrokeID) {
+        if (ourKeyboardProperties == null) {
+            ourKeyboardProperties = new Properties();
+            loadProperties(ourKeyboardProperties, "/keyboard.properties");
+            loadProperties(ourKeyboardProperties, "/mouse.properties");
+        }
+        return (String) ourKeyboardProperties.get(keystrokeID);
+    }
+
+    private static void loadProperties(Properties result, String resource) {
+        URL url = GPAction.class.getResource(resource);
+        if (url == null) {
+            return;
+        }
+        URL resolvedUrl;
+        try {
+            resolvedUrl = Platform.resolve(url);
+            result.load(resolvedUrl.openStream());
+        } catch (IOException e) {
+            if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+            }
+        }
+    }
+
+    public static GPAction createVoidAction(String key) {
+        return new GPAction(key) {
+            public void actionPerformed(ActionEvent e) {
+                // No action
+            }
+        };
+    }
+}
