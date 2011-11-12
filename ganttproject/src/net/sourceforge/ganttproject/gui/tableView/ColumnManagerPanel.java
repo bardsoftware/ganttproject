@@ -63,7 +63,6 @@ public class ColumnManagerPanel {
     private IsVisibleOption myIsVisibleOption = new IsVisibleOption();
     private NameOption myNameOption = new NameOption();
     private DefaultValueOption myEnableDefaultValueOption = new DefaultValueOption();
-    private DateOption myDate = new DefaultDateOption("taskProperties.customColumn.defaultDate");
     private PropertyClassOption myType = new PropertyClassOption();
     private GPOption myDefaultValueOption;
 
