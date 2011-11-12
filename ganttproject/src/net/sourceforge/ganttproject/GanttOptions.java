@@ -335,8 +335,6 @@ public class GanttOptions {
             // automatic popup launch
             addAttribute("value", "" + automatic, attrs);
             emptyElement("automatic-launch", attrs, handler);
-            // automaticdrag time on the chart
-            emptyElement("dragTime", attrs, handler);
             // automatic tips of the day launch
             // Should WebDAV resources be locked, when opening them?
             addAttribute("value", "" + lockDAVMinutes, attrs);
