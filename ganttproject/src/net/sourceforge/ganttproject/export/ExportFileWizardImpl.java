@@ -95,7 +95,7 @@ public class ExportFileWizardImpl extends WizardImpl {
                 try {
                     ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
                     if ("file".equals(myState.getUrl().getProtocol())) {
-                        String path = myState.getUrl().getPath();
+                        String path = myState.getUrl().toString().substring("file://".length());
                         myState.getExporter().run(new File(path), finalizationJob);
                     }
                 } catch (Exception e) {
