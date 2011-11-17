@@ -377,6 +377,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
             myProgressDialog = new ProgressBarDialog(this);
         }
         public void beginTask(final String name, final int totalWork)  {
+            isCanceled = false;
             myWorked = 0;
             GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
             SwingUtilities.invokeLater(new Runnable() {
