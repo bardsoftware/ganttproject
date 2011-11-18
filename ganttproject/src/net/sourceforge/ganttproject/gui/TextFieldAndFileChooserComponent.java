@@ -144,18 +144,18 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
      */
     public void setFile(File file) {
         if(file == null) {
-            // Empty the files
-            myFile = null;
-            myTextField.setText("");
+            return;
         }
 
         if(file.isDirectory()) {
             // Add previously used file name because we need/like to select files
-            myFile = new File(file, myFile.getName());
+            myFile = new File(file, (myFile == null ? "out" : myFile.getName()));
         } else {
             myFile = file;
         }
-        myTextField.setText(file.getAbsolutePath());
+        if (myProcessTextEventEnabled) {
+            myTextField.setText(file.getAbsolutePath());
+        }
     }
 
     public void setFileFilter(FileFilter filter) {

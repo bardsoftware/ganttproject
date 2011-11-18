@@ -561,9 +561,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         buttons.add(new TestGanttRolloverButton(myEditMenu.getUndoAction().withIcon(IconSize.TOOLBAR_SMALL)));
         buttons.add(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
 
+        JPanel paddingLeft = new JPanel();
+        paddingLeft.setPreferredSize(new Dimension(12, 24));
+        toolBar.add(paddingLeft);
         for (JButton b : buttons) {
             if (b == null) {
-                toolBar.addSeparator(new Dimension(24, 24));
+                JPanel separator = new JPanel();
+                separator.setPreferredSize(new Dimension(24, 24));
+                toolBar.add(separator);
             } else {
                 b.setAlignmentY(TOP_ALIGNMENT);
                 toolBar.add(b);
