@@ -7,7 +7,7 @@ XPStyle on
 Icon "ganttproject_16.ico"
 
 !define MUI_ICON "ganttproject_16.ico"
-!define VERSION "praha-beta3-r803"
+!define VERSION "praha-beta3-r811"
 
 OutFile ganttproject-${VERSION}.exe
 
@@ -46,6 +46,7 @@ InstallDir $PROGRAMFILES\GanttProjectPraha
 !insertmacro MUI_LANGUAGE "Slovenian"
 !insertmacro MUI_LANGUAGE "Croatian"
 !insertmacro MUI_LANGUAGE "Portuguese"
+!insertmacro MUI_LANGUAGE "Catalan"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 

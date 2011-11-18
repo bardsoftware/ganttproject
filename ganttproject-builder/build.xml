@@ -87,6 +87,13 @@
 	</target>
 
 	<target name="dist-bin" depends="build">
+		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
+		<input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
+			addproperty="package.name.suffix"
+		    defaultvalue="2.5"/>
+		<move file="${install.dir}" tofile="${package.name.prefix}-${package.name.suffix}"></move>
+		<zip destfile="${package.name.prefix}-${package.name.suffix}.zip" basedir="${package.name.prefix}-${package.name.suffix}">
+		</zip>
 	</target>
 	
 	<target name="dist-src">
