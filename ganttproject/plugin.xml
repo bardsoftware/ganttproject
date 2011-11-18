@@ -96,6 +96,7 @@
       <calendar resource-url="calendar/i18n_no.calendar"/>
       <calendar resource-url="calendar/i18n_pl.calendar"/>
       <calendar resource-url="calendar/i18n_sk.calendar"/>
+      <calendar resource-url="calendar/i18n_us.calendar"/>
    </extension>
    <extension
          point="net.sourceforge.ganttproject.search">
