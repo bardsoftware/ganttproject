@@ -240,7 +240,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
     public URL getSelectedURL() {
         try {
-            return new URL("file://" + myTextField.getText());
+            return myFile == null ? new URL("file://" + myTextField.getText()) : myFile.toURI().toURL();
         } catch (MalformedURLException e) {
             GPLogger.log(e);
             return null;

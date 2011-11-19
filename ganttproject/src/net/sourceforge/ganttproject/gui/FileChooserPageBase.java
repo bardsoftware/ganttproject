@@ -287,7 +287,7 @@ public abstract class FileChooserPageBase implements WizardPage {
 
     protected IStatus setSelectedFile(File file) {
         try {
-            onSelectedUrlChange(new URL("file://" + file.getAbsolutePath()));
+            onSelectedUrlChange(file.toURI().toURL());
             return new Status(IStatus.OK, "foo", IStatus.OK, "  ", null);
         } catch (MalformedURLException e) {
             e.printStackTrace();
