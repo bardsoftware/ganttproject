@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.export;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -95,7 +96,7 @@ public class ExportFileWizardImpl extends WizardImpl {
                 try {
                     ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
                     if ("file".equals(myState.getUrl().getProtocol())) {
-                        String path = myState.getUrl().toString().substring("file://".length());
+                        String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
                         myState.getExporter().run(new File(path), finalizationJob);
                     }
                 } catch (Exception e) {
