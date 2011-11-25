@@ -73,6 +73,6 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
 
     @Override
     protected Component getTreeComponent() {
-        return myTreeFacade.getUIComponent();
+        return myTreeFacade.getTreeComponent();
     }
 }

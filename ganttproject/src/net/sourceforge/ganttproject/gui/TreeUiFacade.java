@@ -1,6 +1,6 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+GanttProject is an opensource project management tool. License: GPL2
+Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,11 +20,12 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 
-import javax.swing.AbstractAction;
-
-import net.sourceforge.ganttproject.resource.HumanResource;
-
-public interface ResourceTreeUIFacade extends TreeUiFacade<HumanResource> {
-    AbstractAction getMoveUpAction();
-    AbstractAction getMoveDownAction();
+/**
+ * @author dbarashev (Dmitry Barashev)
+ */
+public interface TreeUiFacade<T> {
+    Component getTreeComponent();
+    TableHeaderUIFacade getVisibleFields();
+    boolean isExpanded(T modelElement);
+    void setExpanded(T modelElement);
 }

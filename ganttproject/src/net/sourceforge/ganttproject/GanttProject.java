@@ -118,7 +118,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -1216,19 +1215,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             myDelayManager.fireDelayObservation();
         }
         super.repaint();
-    }
-
-    public void recalculateCriticalPath() {
-        if (myUIConfiguration.isCriticalPathOn()) {
-            getTaskManager().processCriticalPath(
-                    (Task) ((TaskNode) tree.getRoot()).getUserObject());
-            ArrayList<TaskNode> projectTasks = tree.getProjectTasks();
-            for (TaskNode projectTask : projectTasks) {
-                getTaskManager().processCriticalPath(
-                        (Task) projectTask.getUserObject());
-            }
-            repaint();
-        }
     }
 
     @Override

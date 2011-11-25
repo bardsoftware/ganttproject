@@ -117,7 +117,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     }
 
     private void saveGanttChartView(TransformerHandler handler) throws SAXException {
-        new GanttChartViewSaver().save(tree.getTreeTable(), handler);
+        new GanttChartViewSaver().save(tree.getVisibleFields(), handler);
     }
 
     private void saveVacations(TransformerHandler handler) throws SAXException {

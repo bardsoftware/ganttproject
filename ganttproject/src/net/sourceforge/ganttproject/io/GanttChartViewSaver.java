@@ -29,10 +29,9 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 
 class GanttChartViewSaver extends SaverBase {
 
-    void save(GanttTreeTable treeTable, TransformerHandler handler) throws SAXException {
+    void save(TableHeaderUIFacade tableHeader, TransformerHandler handler) throws SAXException {
         AttributesImpl attrs = new AttributesImpl();
         startElement("taskdisplaycolumns", handler);
-        final TableHeaderUIFacade tableHeader = treeTable.getVisibleFields();
         for (int i=0; i<tableHeader.getSize(); i++) {
             Column column = tableHeader.getField(i);
             addAttribute("property-id", column.getID(), attrs);
