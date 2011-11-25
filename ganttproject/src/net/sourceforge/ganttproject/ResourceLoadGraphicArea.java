@@ -86,7 +86,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     protected int getRowHeight() {
-        return appli.getResourcePanel().table.getRowHeight();
+        return appli.getResourcePanel().getRowHeight();
     }
 
     public void drawGPVersion(Graphics g) {
@@ -170,7 +170,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 // ResourceLoadGraphicArea.super.paintComponent(g);
                 if (isShowing()) {
                     myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(
-                        appli.getResourcePanel(), appli.getResourcePanel().table.getTable()));
+                        appli.getResourcePanel(), appli.getResourcePanel().getTreeTable().getTable()));
                 }
                 myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());

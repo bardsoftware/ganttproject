@@ -22,8 +22,8 @@ import java.awt.Component;
 
 import javax.swing.AbstractAction;
 
-public interface TaskTreeUIFacade {
+import net.sourceforge.ganttproject.task.Task;
+
+public interface TaskTreeUIFacade extends TreeUiFacade<Task> {
     AbstractAction[] getTreeActions();
-    Component getTreeComponent();
-    TableHeaderUIFacade getVisibleFields();
 }

@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.delay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -63,7 +64,7 @@ public class DelayManager implements GPUndoListener {
     public DelayManager(TaskManager taskManager, GPUndoManager undoManager, GanttTree2 tree) {
         myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
-        myRootTask = (Task) ((TaskNode) tree.getRoot()).getUserObject();
+        myRootTask = taskManager.getRootTask();
         myTree = tree;
         myTaskManager.addTaskListener(new TaskListenerImpl());
         undoManager.addUndoableEditListener(this);
@@ -83,14 +84,16 @@ public class DelayManager implements GPUndoListener {
         if (ourCriticProcess) {
             ourCriticProcess = false;
             myTaskManager.processCriticalPath(myRootTask);
-            ArrayList<TaskNode> projectTasks = myTree.getProjectTasks();
-            if (projectTasks.size() != 0) {
-                for (DefaultMutableTreeNode projectTask: projectTasks) {
-                    myTaskManager.processCriticalPath((Task) ((TaskNode) projectTask).getUserObject());
+
+            ArrayList<Task> projectTasks = new ArrayList<Task>();
+            for (Task t : myTaskManager.getTasks()) {
+                if (t.isProjectTask()) {
+                    projectTasks.add(t);
                 }
             }
-
-//            System.out.println("critical path processed");
+            for (Task t : projectTasks) {
+                myTaskManager.processCriticalPath(t);
+            }
         }
         Iterator<Task> itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
         while (itTasks.hasNext()) {

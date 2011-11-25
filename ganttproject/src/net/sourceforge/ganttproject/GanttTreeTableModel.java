@@ -32,6 +32,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
@@ -44,6 +45,7 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
@@ -93,8 +95,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      *            The root.
      * @param customColumnsManager
      */
-    public GanttTreeTableModel(TreeNode root, CustomPropertyManager customColumnsManager) {
-        super(root);
+    public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager) {
+        super(new TaskNode(taskManager.getRootTask()));
         changeLanguage(language);
         myCustomColumnsManager = customColumnsManager;
     }
@@ -501,5 +503,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     public boolean contains(Task task) {
         throw new UnsupportedOperationException();
+    }
+
+
+    public DefaultMutableTreeNode getRootNode() {
+        return (DefaultMutableTreeNode) getRoot();
     }
 }

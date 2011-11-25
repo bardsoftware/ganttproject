@@ -160,7 +160,7 @@ public class GanttChartController extends AbstractChartImplementation implements
             //GanttGraphicArea.super.paintComponent(g);
             ChartModel model = myChartModel;
             model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-            model.setRowHeight(myTree.getTreeTable().getRowHeight());
+            model.setRowHeight(myTree.getRowHeight());
             model.setTopTimeUnit(getViewState().getTopTimeUnit());
             model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
             VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
