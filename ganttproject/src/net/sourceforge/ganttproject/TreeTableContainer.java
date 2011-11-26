@@ -20,9 +20,12 @@ package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 
+import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -31,6 +34,7 @@ import javax.swing.tree.TreePath;
 
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
@@ -48,11 +52,38 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         extends JPanel implements TreeUiFacade<ModelObject> {
     private final TreeTableClass myTreeTable;
     private final TreeTableModelClass myTreeTableModel;
+
+    private class ExpandCollapseAction extends GPAction {
+        ExpandCollapseAction() {
+            super("tree.expand");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            TreePath currentSelection = getTree().getSelectionPath();
+            if (currentSelection != null) {
+                if (getTree().isCollapsed(currentSelection)) {
+                    getTree().expandPath(currentSelection);
+                } else {
+                    getTree().collapsePath(currentSelection);
+                }
+            }
+        }
+    }
     public TreeTableContainer(Pair<TreeTableClass, TreeTableModelClass> tableAndModel) {
         super(new BorderLayout());
         myTreeTableModel = tableAndModel.second();
         myTreeTable = tableAndModel.first();
         myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
+
+        ExpandCollapseAction expandAction = new ExpandCollapseAction();
+        String key = (String) expandAction.getValue(Action.NAME);
+        getActionMap().put(key, expandAction);
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(GPAction.getKeyStroke(key), key);
+    }
+
+    protected JTree getTree() {
+        return getTreeTable().getTree();
     }
 
     protected TreeTableClass getTreeTable() {
@@ -100,6 +131,12 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
             }
         }
         return null;
+    }
+
+    protected DefaultMutableTreeNode getSelectedNode() {
+        TreePath currentSelection = getTreeTable().getTree().getSelectionPath();
+        return (currentSelection == null) ? null :
+            (DefaultMutableTreeNode) currentSelection.getLastPathComponent();
     }
 
     protected abstract DefaultMutableTreeNode getRootNode();

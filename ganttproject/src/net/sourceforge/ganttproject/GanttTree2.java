@@ -453,35 +453,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         return childNode;
     }
 
-    /** @return the selected task */
-    private GanttTask getSelectedTask() {
-        DefaultMutableTreeNode node = getSelectedTaskNode();
-        if (node == null)
-            return null;
-        return (GanttTask) (node.getUserObject());
-    }
-
-    /** @return the selected node */
-    DefaultMutableTreeNode getSelectedNode() {
-        TreePath currentSelection = getTreeTable().getTree().getSelectionPath();
-        if (currentSelection == null) {
-            return null;
-        }
-        DefaultMutableTreeNode dmtnselected = (DefaultMutableTreeNode) currentSelection
-                .getLastPathComponent();
-        return dmtnselected;
-    }
-
     /** @return the selected node */
     private DefaultMutableTreeNode getSelectedTaskNode() {
-        TreePath currentSelection = getTreeTable().getTree().getSelectionPath();
-        if (currentSelection == null
-                || !(currentSelection.getLastPathComponent() instanceof TaskNode)) {
-            return null;
-        }
-        DefaultMutableTreeNode dmtnselected = (DefaultMutableTreeNode) currentSelection
-                .getLastPathComponent();
-        return dmtnselected;
+        DefaultMutableTreeNode selectedNode = getSelectedNode();
+        return selectedNode instanceof TaskNode ? selectedNode : null;
     }
 
     private TaskNode[] getSelectedTaskNodes() {
