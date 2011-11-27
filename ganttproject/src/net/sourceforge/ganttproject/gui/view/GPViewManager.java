@@ -31,11 +31,12 @@ import org.eclipse.core.runtime.IAdaptable;
  * @author bard
  */
 public interface GPViewManager {
-    public GPView createView(IAdaptable adaptable, Icon icon);
+    public void createView(GPView view, Icon icon);
     public GPAction getCopyAction();
     public GPAction getCutAction();
     public GPAction getPasteAction();
     public ChartSelection getSelectedArtefacts();
     public Chart getActiveChart();
     public void activateNextView();
+    public void toggleVisible(GPView view);
 }
