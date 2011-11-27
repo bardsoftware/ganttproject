@@ -20,10 +20,10 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {

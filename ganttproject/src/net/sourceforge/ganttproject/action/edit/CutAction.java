@@ -20,9 +20,9 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.GPAction.IconSize;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action on selection changes
 public class CutAction extends GPAction {

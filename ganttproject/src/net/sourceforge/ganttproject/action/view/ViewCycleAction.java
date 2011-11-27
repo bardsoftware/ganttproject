@@ -23,17 +23,18 @@ import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 public class ViewCycleAction extends GPAction {
-    private final JTabbedPane myTabbedPane;
+    private GPViewManager myViewManager;
 
-    public ViewCycleAction(JTabbedPane tabbedPane) {
+    public ViewCycleAction(GPViewManager viewManager) {
         super("view.cycle");
-        myTabbedPane = tabbedPane;
+        myViewManager = viewManager;
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1) % myTabbedPane.getTabCount());
+        myViewManager.activateNextView();
     }
 }
