@@ -16,19 +16,26 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject.gui.view;
 
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartSelection;
+
+import org.eclipse.core.runtime.IAdaptable;
 
 /**
  * @author bard
  */
-public interface GPView {
-    public void setVisible(boolean isVisible);
-
-    public void setActive(boolean active);
-
-    public boolean isVisible();
-    
-    public Chart getChart();
+public interface GPViewManager {
+    public GPView createView(IAdaptable adaptable, Icon icon);
+    public GPAction getCopyAction();
+    public GPAction getCutAction();
+    public GPAction getPasteAction();
+    public ChartSelection getSelectedArtefacts();
+    public Chart getActiveChart();
+    public void activateNextView();
 }

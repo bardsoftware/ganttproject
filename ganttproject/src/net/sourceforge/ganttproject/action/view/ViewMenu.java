@@ -23,11 +23,11 @@ import java.util.List;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
-import net.sourceforge.ganttproject.GPView;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.gui.view.GPView;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
@@ -37,7 +37,7 @@ public class ViewMenu extends JMenu {
     public ViewMenu(final GanttProject project, String key) {
         super(GPAction.createVoidAction(key));
 
-        ViewCycleAction viewCycleAction = new ViewCycleAction(project.getTabs());
+        ViewCycleAction viewCycleAction = new ViewCycleAction(project.getViewManager());
 
         List<Chart> charts = PluginManager.getCharts();
         add(viewCycleAction);

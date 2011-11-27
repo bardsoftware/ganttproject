@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Toolkit;
@@ -27,24 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JToolBar;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.edit.CopyAction;
-import net.sourceforge.ganttproject.action.edit.CutAction;
-import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
-import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
@@ -56,17 +45,18 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
 import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -82,7 +72,6 @@ import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 
-import org.eclipse.core.runtime.IAdaptable;
 
 /**
  * This class is designed to be a GanttProject-after-refactorings. I am going to
@@ -125,9 +114,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         statusBar = new GanttStatusBar(this);
         myTabPane = new GanttTabbedPane();
         myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
-        myViewManager = new ViewManagerImpl(myTabPane);
+        myViewManager = new ViewManagerImpl(getProject(), myTabPane);
 
-        addProjectEventListener(myViewManager.getProjectEventListener());
         myTimeUnitStack = new GPTimeUnitStack();
         NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
@@ -295,157 +283,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     public Chart getActiveChart() {
-        GPView activeView = myViewManager.mySelectedView;
-        return activeView.getChart();
-    }
-
-    private class ViewManagerImpl implements GPViewManager {
-        private final GanttTabbedPane myTabs;
-        private final List<GPView> myViews = new ArrayList<GPView>();
-        private GPView mySelectedView;
-
-        private final CopyAction myCopyAction;
-        private final CutAction myCutAction;
-        private final PasteAction myPasteAction;
-
-        ViewManagerImpl(GanttTabbedPane tabs) {
-            myTabs = tabs;
-
-            // Create actions
-            myCopyAction = new CopyAction(this);
-            myCutAction = new CutAction(this);
-            myPasteAction = new PasteAction(this);
-
-            myTabs.addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    GPView selectedView = (GPView) myTabs.getSelectedUserObject();
-                    if (mySelectedView == selectedView) {
-                        return;
-                    }
-                    if (mySelectedView != null) {
-                        mySelectedView.setActive(false);
-                    }
-                    mySelectedView = selectedView;
-                    mySelectedView.setActive(true);
-                }
-            });
-        }
-
-        public GPView createView(IAdaptable adaptable, Icon icon) {
-            GPView view = new GPViewImpl(this, myTabs, (Container) adaptable
-                    .getAdapter(Container.class), (Chart)adaptable.getAdapter(Chart.class), icon);
-            myViews.add(view);
-            return view;
-        }
-
-        public GPAction getCopyAction() {
-            return myCopyAction;
-        }
-
-        public GPAction getCutAction() {
-            return myCutAction;
-        }
-
-        public GPAction getPasteAction() {
-            return myPasteAction;
-        }
-
-        public ChartSelection getSelectedArtefacts() {
-            return mySelectedView.getChart().getSelection();
-        }
-
-        ProjectEventListener getProjectEventListener() {
-            return new ProjectEventListener.Stub() {
-                @Override
-                public void projectClosed() {
-                    for (int i=0; i<myViews.size(); i++) {
-                        GPViewImpl nextView = (GPViewImpl) myViews.get(i);
-                        nextView.reset();
-                    }
-                }
-            };
-        }
-
-        private void updateActions() {
-            ChartSelection selection = mySelectedView.getChart().getSelection();
-            myCopyAction.setEnabled(false==selection.isEmpty());
-            myCutAction.setEnabled(false==selection.isEmpty() && selection.isDeletable().isOK());
-        }
-
-        public Chart getActiveChart() {
-            return mySelectedView.getChart();
-        }
-    }
-
-    private class GPViewImpl implements GPView, ChartSelectionListener, GanttLanguage.Listener {
-        private final GanttTabbedPane myTabs;
-
-        private int myIndex;
-
-        private Container myComponent;
-
-        private boolean isVisible;
-
-        private final Icon myIcon;
-
-        private final Chart myChart;
-
-        private final ViewManagerImpl myManager;
-
-        GPViewImpl(ViewManagerImpl manager, GanttTabbedPane tabs, Container component, Chart chart, Icon icon) {
-            myManager = manager;
-            myTabs = tabs;
-            myComponent = component;
-            myIcon = icon;
-            myChart = chart;
-            language.addListener(this);
-            assert myChart!=null;
-        }
-
-        public void setActive(boolean active) {
-            if (active) {
-                myChart.addSelectionListener(this);
-            }
-            else {
-                myChart.removeSelectionListener(this);
-            }
-        }
-
-        public void reset() {
-            myChart.reset();
-        }
-
-        public void setVisible(boolean isVisible) {
-            if (isVisible) {
-                String tabName = myChart.getName();
-                myTabs.addTab(tabName, myIcon, myComponent, tabName, this);
-                myTabs.setSelectedComponent(myComponent);
-                myIndex = myTabs.getSelectedIndex();
-
-            } else {
-                myTabs.remove(myIndex);
-            }
-            this.isVisible = isVisible;
-        }
-
-        public boolean isVisible() {
-            return isVisible;
-        }
-
-        public void selectionChanged() {
-            myManager.updateActions();
-        }
-
-        public Chart getChart() {
-            return myChart;
-        }
-
-        public void languageChanged(Event event) {
-            if(isVisible()) {
-                myTabs.setTitleAt(myIndex, myChart.getName());
-            }
-        }
+        return myViewManager.getSelectedView().getChart();
     }
 
     protected static class RowHeightAligner implements GPOptionChangeListener {

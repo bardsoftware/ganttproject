@@ -21,10 +21,10 @@ package net.sourceforge.ganttproject.action.edit;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.search.SearchUi;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
