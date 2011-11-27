@@ -35,16 +35,16 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.GPView;
 
-import org.eclipse.core.runtime.IAdaptable;
-
-class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptable {
+class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     private final Container myTaskTree;
     private final JComponent myGanttChart;
     private final TaskTreeUIFacade myTreeFacade;
     private final UIFacade myWorkbenchFacade;
     private final CalculateCriticalPathAction myCriticalPathAction;
     private final BaselineDialogAction myBaselineAction;
+    private JComponent myComponent;
 
     GanttChartTabContentPanel(
             IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
@@ -70,7 +70,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     }
 
     Component getComponent() {
-        return createContentComponent();
+        if (myComponent == null) {
+            myComponent = createContentComponent();
+        }
+        return myComponent;
     }
 
     @Override
@@ -78,23 +81,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         JToolBar buttonBar = new JToolBar();
         buttonBar.setFloatable(false);
         buttonBar.setBorderPainted(false);
-        //
-//        TestGanttRolloverButton expandAllButton = new TestGanttRolloverButton(myTreeFacade.getExpandAllAction()) {
-//            public String getText() {
-//                return null;
-//            }
-//        };
-//        buttonBar.add(expandAllButton);
-//        //
-//        TestGanttRolloverButton collapseAllButton = new TestGanttRolloverButton(myTreeFacade.getCollapseAllAction()) {
-//            public String getText() {
-//                return null;
-//            }
-//        };
-//        buttonBar.add(collapseAllButton);
-//        //
-//        buttonBar.add(Box.createHorizontalStrut(8));
-        //
         for(AbstractAction a : myTreeFacade.getTreeActions()) {
             buttonBar.add(new TestGanttRolloverButton(a));
         }
@@ -102,16 +88,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(buttonBar, BorderLayout.WEST);
         return buttonPanel;
-    }
-
-    public Object getAdapter(Class adapter) {
-        if (Container.class.equals(adapter)) {
-            return getComponent();
-        }
-        if (Chart.class.equals(adapter)) {
-            return myGanttChart;
-        }
-        return null;
     }
 
     @Override
@@ -122,6 +98,25 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements IAdaptab
     @Override
     protected Component getTreeComponent() {
         return myTaskTree;
+    }
+
+    ////////////////////////////////////////////////
+    // GPView
+    @Override
+    public void setActive(boolean active) {
+        if (active) {
+            myTaskTree.requestFocus();
+        }
+    }
+
+    @Override
+    public Chart getChart() {
+        return myWorkbenchFacade.getGanttChart();
+    }
+
+    @Override
+    public Component getViewComponent() {
+        return getComponent();
     }
 }
 

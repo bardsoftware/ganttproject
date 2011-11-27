@@ -42,12 +42,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 abstract class ChartTabContentPanel {
     private JSplitPane mySplitPane;
     private final List<Component> myPanels = new ArrayList<Component>();
+    private final UIFacade myUiFacade;
 
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
         ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
         addChartPanel(zoomingPanel.getComponent());
         addChartPanel(navigationPanel.getComponent());
+        myUiFacade = workbenchFacade;
     }
 
     protected JComponent createContentComponent() {
@@ -118,5 +120,9 @@ abstract class ChartTabContentPanel {
 
     protected void addChartPanel(Component panel) {
         myPanels.add(panel);
+    }
+
+    protected UIFacade getUiFacade() {
+        return myUiFacade;
     }
 }

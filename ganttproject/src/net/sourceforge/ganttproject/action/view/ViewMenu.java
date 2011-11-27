@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action.view;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.util.List;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -46,8 +48,31 @@ public class ViewMenu extends JMenu {
         }
         for (Chart chart : charts) {
             chart.init(project.getProject());
-            GPView view = project.getViewManager().createView(chart, null);
-            add(new JCheckBoxMenuItem(new ViewToggleAction(chart, view)));
+            GPView view = new GPViewImpl(chart);
+            project.getViewManager().createView(view, null);
+            add(new JCheckBoxMenuItem(new ViewToggleAction(chart, project.getViewManager(), view)));
         }
+    }
+
+    private static class GPViewImpl implements GPView {
+        private final Chart myChart;
+        private Component myComponent;
+
+        GPViewImpl(Chart chart) {
+            myChart = chart;
+            myComponent = (Component) chart.getAdapter(Container.class);
+        }
+        @Override
+        public void setActive(boolean active) {
+        }
+
+        @Override
+        public Chart getChart() {
+            return myChart;
+        }
+        public Component getViewComponent() {
+            return myComponent;
+        }
+
     }
 }

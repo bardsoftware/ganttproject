@@ -99,7 +99,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.gui.view.GPView;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
@@ -330,16 +329,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         System.err.println("4. creating views...");
         myGanttChartTabContent = new GanttChartTabContentPanel(
             getProject(), getUIFacade(), getTaskTree(), area, getUIConfiguration());
-        GPView ganttView = getViewManager().createView(myGanttChartTabContent,
-                new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
-        ganttView.setVisible(true);
+        getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
+        getViewManager().toggleVisible(myGanttChartTabContent);
+
         myResourceChartTabContent = new ResourceChartTabContentPanel(
                 getProject(), getUIFacade(), getResourcePanel(),
                 getResourcePanel().area);
-        GPView resourceView = getViewManager().createView(
-                myResourceChartTabContent,
-                new ImageIcon(getClass().getResource("/icons/res_16.gif")));
-        resourceView.setVisible(true);
+        getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
+        getViewManager().toggleVisible(myResourceChartTabContent);
 
         this.addButtons(getToolBar());
 

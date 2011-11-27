@@ -18,17 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.view;
 
+import java.awt.Component;
+
 import net.sourceforge.ganttproject.chart.Chart;
 
 /**
- * @author bard
+ * @author dbarashev (Dmitry Barashev)
  */
 public interface GPView {
-    public void setVisible(boolean isVisible);
-
     public void setActive(boolean active);
-
-    public boolean isVisible();
-    
     public Chart getChart();
+    public Component getViewComponent();
 }

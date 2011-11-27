@@ -1,8 +1,25 @@
+/*
+GanttProject is an opensource project management tool.
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui.view;
 
-import java.awt.Container;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -10,7 +27,6 @@ import javax.swing.event.ChangeListener;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
-import net.sourceforge.ganttproject.ProjectEventListener.Stub;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.edit.CopyAction;
 import net.sourceforge.ganttproject.action.edit.CutAction;
@@ -19,11 +35,14 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 
-import org.eclipse.core.runtime.IAdaptable;
-
+/**
+ * View manager implementation based on the tab pane.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class ViewManagerImpl implements GPViewManager {
     private final GanttTabbedPane myTabs;
-    private final List<GPView> myViews = new ArrayList<GPView>();
+    private final Map<GPView, ViewHolder> myViews = new LinkedHashMap<GPView, ViewHolder>();
     GPView mySelectedView;
 
     private final CopyAction myCopyAction;
@@ -40,6 +59,7 @@ public class ViewManagerImpl implements GPViewManager {
 
         myTabs.addChangeListener(new ChangeListener() {
 
+            @Override
             public void stateChanged(ChangeEvent e) {
                 GPView selectedView = (GPView) myTabs.getSelectedUserObject();
                 if (mySelectedView == selectedView) {
@@ -54,25 +74,22 @@ public class ViewManagerImpl implements GPViewManager {
         });
     }
 
-    public GPView createView(IAdaptable adaptable, Icon icon) {
-        GPView view = new GPViewImpl(this, myTabs, (Container) adaptable
-                .getAdapter(Container.class), (Chart)adaptable.getAdapter(Chart.class), icon);
-        myViews.add(view);
-        return view;
-    }
-
+    @Override
     public GPAction getCopyAction() {
         return myCopyAction;
     }
 
+    @Override
     public GPAction getCutAction() {
         return myCutAction;
     }
 
+    @Override
     public GPAction getPasteAction() {
         return myPasteAction;
     }
 
+    @Override
     public ChartSelection getSelectedArtefacts() {
         return mySelectedView.getChart().getSelection();
     }
@@ -81,9 +98,8 @@ public class ViewManagerImpl implements GPViewManager {
         return new ProjectEventListener.Stub() {
             @Override
             public void projectClosed() {
-                for (int i=0; i<myViews.size(); i++) {
-                    GPViewImpl nextView = (GPViewImpl) myViews.get(i);
-                    nextView.reset();
+                for (GPView view : myViews.keySet()) {
+                    view.getChart().reset();
                 }
             }
         };
@@ -95,15 +111,30 @@ public class ViewManagerImpl implements GPViewManager {
         myCutAction.setEnabled(false==selection.isEmpty() && selection.isDeletable().isOK());
     }
 
+    @Override
     public Chart getActiveChart() {
         return mySelectedView.getChart();
     }
 
+    @Override
     public void activateNextView() {
         myTabs.setSelectedIndex((myTabs.getSelectedIndex() + 1) % myTabs.getTabCount());
     }
 
     public GPView getSelectedView() {
         return mySelectedView;
+    }
+
+    @Override
+    public void createView(GPView view, Icon icon) {
+        ViewHolder viewHolder = new ViewHolder(this, myTabs, view, icon);
+        myViews.put(view, viewHolder);
+    }
+
+    @Override
+    public void toggleVisible(GPView view) {
+        ViewHolder viewHolder = myViews.get(view);
+        assert viewHolder != null;
+        viewHolder.setVisible(!viewHolder.isVisible());
     }
 }

@@ -255,17 +255,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                 mySelectionManager.setUserInputConsumer(this);
             }
         });
-        this.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        getTreeTable().getTable().requestFocusInWindow();
-                    }
-                });
-            }
-        });
         // A listener on mouse click (menu)
         MouseListener ml = new MouseAdapter() {
 

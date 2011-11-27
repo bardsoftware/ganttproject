@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 /**
  * @author bard
@@ -33,12 +34,15 @@ public class ViewToggleAction extends GPAction {
 
     private final GPView myView;
 
-    public ViewToggleAction(Chart chart, GPView view) {
+    private final GPViewManager myViewManager;
+
+    public ViewToggleAction(Chart chart, GPViewManager viewManager, GPView view) {
         myChart = chart;
         myView = view;
+        myViewManager = viewManager;
         updateAction();
     }
-    
+
     @Override
     protected String getLocalizedDescription() {
         return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
@@ -47,10 +51,10 @@ public class ViewToggleAction extends GPAction {
     @Override
     protected String getLocalizedName() {
         return myChart == null ? null : myChart.getName();
-    }    
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        myView.setVisible(!myView.isVisible());
+        myViewManager.toggleVisible(myView);
     }
 }

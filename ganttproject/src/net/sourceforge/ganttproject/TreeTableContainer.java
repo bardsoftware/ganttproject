@@ -21,11 +21,14 @@ package net.sourceforge.ganttproject;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.Enumeration;
 
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -80,6 +83,18 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         String key = (String) expandAction.getValue(Action.NAME);
         getActionMap().put(key, expandAction);
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(GPAction.getKeyStroke(key), key);
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getTreeTable().getTable().requestFocusInWindow();
+                    }
+                });
+            }
+        });
+
     }
 
     protected JTree getTree() {
