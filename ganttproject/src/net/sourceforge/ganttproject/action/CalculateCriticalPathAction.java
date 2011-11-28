@@ -66,7 +66,7 @@ public class CalculateCriticalPathAction extends GPAction {
     }
 
     @Override
-    protected String getID() {
+    public String getID() {
         // Override ID, so the text will change depending on the state
         return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
     }

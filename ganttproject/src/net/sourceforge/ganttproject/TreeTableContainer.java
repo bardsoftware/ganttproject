@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -41,6 +42,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
@@ -78,11 +80,10 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         myTreeTableModel = tableAndModel.second();
         myTreeTable = tableAndModel.first();
         myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
-
         ExpandCollapseAction expandAction = new ExpandCollapseAction();
-        String key = (String) expandAction.getValue(Action.NAME);
-        getActionMap().put(key, expandAction);
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(GPAction.getKeyStroke(key), key);
+        for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
+            UIUtil.pushAction(myTreeTable, ks, expandAction);
+        }
         this.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {

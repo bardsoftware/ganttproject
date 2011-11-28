@@ -685,24 +685,18 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     /** Adds an action to the object and makes it active */
-    public void addActionWithAccelleratorKey(Action action) {
+    public void addActionWithAccelleratorKey(GPAction action) {
         if (action != null) {
-            addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
+            for (KeyStroke ks : GPAction.getAllKeyStrokes(action.getID())) {
+                addAction(action, ks);
+            }
         }
     }
 
-    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action _new,
-            Action cut, Action copy, Action paste, Action properties, Action delete) {
-        addActionWithAccelleratorKey(up);
-        addActionWithAccelleratorKey(down);
-        addActionWithAccelleratorKey(indent);
-        addActionWithAccelleratorKey(unindent);
-        addActionWithAccelleratorKey(_new);
-        addActionWithAccelleratorKey(properties);
-        addActionWithAccelleratorKey(delete);
-        addActionWithAccelleratorKey(cut);
-        addActionWithAccelleratorKey(copy);
-        addActionWithAccelleratorKey(paste);
+    void setupActionMaps(GPAction... actions) {
+        for (GPAction action : actions) {
+            addActionWithAccelleratorKey(action);
+        }
     }
 
     private class HeaderMouseListener extends MouseAdapter {

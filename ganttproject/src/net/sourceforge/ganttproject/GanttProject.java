@@ -78,6 +78,7 @@ import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskActionBase;
+import net.sourceforge.ganttproject.action.view.ViewCycleAction;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -97,8 +98,10 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
@@ -305,7 +308,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), getSearchUi(), "edit");
         bar.add(myEditMenu);
 
-        JMenu viewMenu = new ViewMenu(this, "view");
+        ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), "view");
         bar.add(viewMenu);
 
         JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
@@ -406,6 +409,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             inputMap.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), actionName);
             actionMap.put(actionName, action);
         }
+        GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
+        UIUtil.pushAction(getTabs(), viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
+
+        GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
+        UIUtil.pushAction(getTabs(), viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
     }
 
     @Override
