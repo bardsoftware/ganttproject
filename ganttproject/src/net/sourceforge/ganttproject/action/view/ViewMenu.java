@@ -25,32 +25,30 @@ import java.util.List;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
  * Collection of actions present in the view menu
  */
 public class ViewMenu extends JMenu {
-    public ViewMenu(final GanttProject project, String key) {
+    public ViewMenu(final IGanttProject project, GPViewManager viewManager, String key) {
         super(GPAction.createVoidAction(key));
 
-        ViewCycleAction viewCycleAction = new ViewCycleAction(project.getViewManager());
-
         List<Chart> charts = PluginManager.getCharts();
-        add(viewCycleAction);
-        if (!charts.isEmpty()) {
-            addSeparator();
+        if (charts.isEmpty()) {
+            setEnabled(false);
         }
         for (Chart chart : charts) {
-            chart.init(project.getProject());
+            chart.init(project);
             GPView view = new GPViewImpl(chart);
-            project.getViewManager().createView(view, null);
-            add(new JCheckBoxMenuItem(new ViewToggleAction(chart, project.getViewManager(), view)));
+            viewManager.createView(view, null);
+            add(new JCheckBoxMenuItem(new ViewToggleAction(chart, viewManager, view)));
         }
     }
 
@@ -70,6 +68,7 @@ public class ViewMenu extends JMenu {
         public Chart getChart() {
             return myChart;
         }
+        @Override
         public Component getViewComponent() {
             return myComponent;
         }

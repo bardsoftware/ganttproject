@@ -38,5 +38,6 @@ public interface GPViewManager {
     public ChartSelection getSelectedArtefacts();
     public Chart getActiveChart();
     public void activateNextView();
+    public void activatePrevView();
     public void toggleVisible(GPView view);
 }

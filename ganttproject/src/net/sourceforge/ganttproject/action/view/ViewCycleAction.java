@@ -27,14 +27,20 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 public class ViewCycleAction extends GPAction {
     private GPViewManager myViewManager;
+    private boolean isNextNotPrev;
 
-    public ViewCycleAction(GPViewManager viewManager) {
-        super("view.cycle");
+    public ViewCycleAction(GPViewManager viewManager, boolean nextNotPrev) {
+        super("view.cycle" + ((nextNotPrev) ? ".forward" : ".backward"));
         myViewManager = viewManager;
+        isNextNotPrev = nextNotPrev;
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        myViewManager.activateNextView();
+        if (isNextNotPrev) {
+            myViewManager.activateNextView();
+        } else {
+            myViewManager.activatePrevView();
+        }
     }
 }

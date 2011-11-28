@@ -144,17 +144,17 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     private final TaskManager myTaskManager;
     private final TaskSelectionManager mySelectionManager;
 
-    private final AbstractAction myIndentAction;
+    private final GPAction myIndentAction;
 
-    private final AbstractAction myUnindentAction;
+    private final GPAction myUnindentAction;
 
-    private final AbstractAction myMoveUpAction;
+    private final GPAction myMoveUpAction;
 
-    private final AbstractAction myMoveDownAction;
+    private final GPAction myMoveDownAction;
 
-    private final AbstractAction myLinkTasksAction;
+    private final GPAction myLinkTasksAction;
 
-    private final AbstractAction myUnlinkTasksAction;
+    private final GPAction myUnlinkTasksAction;
 
     private final GPAction myNewTaskAction;
 

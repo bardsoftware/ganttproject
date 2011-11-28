@@ -121,6 +121,11 @@ public class ViewManagerImpl implements GPViewManager {
         myTabs.setSelectedIndex((myTabs.getSelectedIndex() + 1) % myTabs.getTabCount());
     }
 
+    @Override
+    public void activatePrevView() {
+        myTabs.setSelectedIndex((myTabs.getSelectedIndex() - 1 + myTabs.getTabCount()) % myTabs.getTabCount());
+    }
+
     public GPView getSelectedView() {
         return mySelectedView;
     }

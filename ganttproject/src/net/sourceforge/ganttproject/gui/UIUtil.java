@@ -6,8 +6,11 @@ import java.awt.Window;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+
+import net.sourceforge.ganttproject.action.GPAction;
 
 public abstract class UIUtil {
     public static void repackWindow(JComponent component) {
@@ -45,4 +48,13 @@ public abstract class UIUtil {
         component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));
     }
 
+    public static void pushAction(JComponent root, KeyStroke keyStroke, GPAction action) {
+        root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, action.getID());
+        root.getActionMap().put(action.getID(), action);
+        for (Component child : root.getComponents()) {
+            if (child instanceof JComponent) {
+                pushAction((JComponent)child, keyStroke, action);
+            }
+        }
+    }
 }

@@ -25,6 +25,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,6 +69,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
     private final String myName;
 
+    private KeyStroke myKeyStroke;
+
     private static Properties ourKeyboardProperties;
 
     private static Properties ourIconProperties;
@@ -91,7 +96,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         updateTooltip();
         language.addListener(this);
         if(name != null) {
-            putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
+            myKeyStroke = getKeyStroke(name);
+            putValue(Action.ACCELERATOR_KEY, myKeyStroke);
         }
     }
 
@@ -123,6 +129,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             e.printStackTrace();
         }
         return this;
+    }
+
+    public KeyStroke getKeyStroke() {
+        return myKeyStroke;
     }
 
     public Icon getIconOnMouseOver() {
@@ -169,7 +179,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return getID() == null ? null : getI18n(getID());
     }
 
-    protected String getID() {
+    public String getID() {
         return myName;
     }
 
@@ -240,6 +250,18 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             loadProperties(ourIconProperties, "/icons.properties");
         }
         return (String) ourIconProperties.get(getID());
+    }
+
+    public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {
+        String text = getKeyStrokeText(keystrokeID);
+        if (text == null) {
+            return Collections.emptyList();
+        }
+        List<KeyStroke> result = new ArrayList<KeyStroke>();
+        for (String ksText : text.split(",")) {
+            result.add(KeyStroke.getKeyStroke(ksText));
+        }
+        return result;
     }
 
     public static KeyStroke getKeyStroke(String keystrokeID) {
