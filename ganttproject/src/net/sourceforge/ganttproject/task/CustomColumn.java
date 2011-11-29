@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.Status;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 
 public class CustomColumn implements CustomPropertyDefinition {
     private String id = null;
@@ -91,12 +92,14 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
 
     public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+        CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);
         myPropertyClass = propertyClass;
         String defaultValue = getDefaultValueAsString();
         if (defaultValue == null) {
             defaultValue = propertyClass.getDefaultValueAsString();
         }
         setDefaultValueAsString(defaultValue);
+        myManager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue);
         return Status.OK_STATUS;
     }
 }

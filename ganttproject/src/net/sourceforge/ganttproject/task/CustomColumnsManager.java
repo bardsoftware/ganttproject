@@ -78,6 +78,10 @@ public class CustomColumnsManager implements CustomPropertyManager {
         myStorage.removeCustomColumn(def);
     }
 
+    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+        myStorage.fireDefinitionChanged(event, def, oldDef);
+    }
+
     void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
         myStorage.fireDefinitionChanged(def, oldName);
     }

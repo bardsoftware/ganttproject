@@ -10,31 +10,38 @@ public class CustomPropertyEvent {
 
     public static final int EVENT_REBUILD = 2;
 
-    public static final int EVENT_PROPERTY_CHANGE = 3;
+    public static final int EVENT_NAME_CHANGE = 3;
+
+    public static final int EVENT_TYPE_CHANGE = 4;
+
     private final int myType;
 
 
     private CustomPropertyDefinition myDefinition;
 
-    private String myOldName;
+    private CustomPropertyDefinition myOldDef;
 
     public CustomPropertyEvent(int type, CustomPropertyDefinition definition) {
         myType = type;
         myDefinition = definition;
     }
 
-    public CustomPropertyEvent(int type, CustomPropertyDefinition def, String oldName) {
+    public CustomPropertyEvent(int type, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
         myType = type;
         myDefinition = def;
-        myOldName = oldName;
+        myOldDef = oldDef;
     }
 
     public CustomPropertyDefinition getDefinition() {
         return myDefinition;
     }
 
+    public CustomPropertyDefinition getOldValue() {
+        return myOldDef;
+    }
+
     public String getOldName() {
-        return myOldName;
+        return myOldDef.getName();
     }
 
     public String getColName() {
