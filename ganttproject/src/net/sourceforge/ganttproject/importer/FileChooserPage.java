@@ -40,7 +40,7 @@ class FileChooserPage extends FileChooserPageBase {
     private final State myState;
 
     public FileChooserPage(WizardImpl wizardImpl, Preferences prefs, State state) {
-        super(wizardImpl, prefs);
+        super(wizardImpl, prefs, false);
         myState = state;
     }
 

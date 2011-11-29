@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -100,7 +101,7 @@ public class ExportFileWizardImpl extends WizardImpl {
                         myState.getExporter().run(new File(path), finalizationJob);
                     }
                 } catch (Exception e) {
-                    getUIFacade().showErrorDialog(e);
+                    GPLogger.log(e);
                 }
             }
         });
