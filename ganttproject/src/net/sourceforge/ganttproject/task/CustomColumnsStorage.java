@@ -28,6 +28,7 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.DateUtils;
@@ -307,8 +308,14 @@ public class CustomColumnsStorage {
         }
     }
 
+    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+        CustomPropertyEvent e = new CustomPropertyEvent(event, def, oldDef);
+        fireCustomColumnsChange(e);
+    }
+
     void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
-        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_PROPERTY_CHANGE, def, oldName);
+        CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);
+        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);
         fireCustomColumnsChange(e);
     }
 

@@ -227,6 +227,15 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             c.setName(definition.getName());
         }
 
+        protected void updateType(CustomPropertyDefinition def) {
+            ColumnImpl c = findColumnByID(def.getID());
+            if (c == null) {
+                return;
+            }
+            c.getTableColumnExt().setCellRenderer(createCellRenderer(def.getType()));
+            c.getTableColumnExt().setCellEditor(createCellEditor(def.getType()));
+        }
+
         protected void deleteColumn(CustomPropertyDefinition definition) {
             ColumnImpl c = findColumnByID(definition.getID());
             if (c == null) {
@@ -330,6 +339,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                     myTable, myTableColumn.getHeaderValue(), false, false, 0, 0);
             return comp.getPreferredSize();
         }
+
     }
 
     protected IGanttProject getProject() {
@@ -518,10 +528,13 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         case CustomPropertyEvent.EVENT_REMOVE:
             deleteCustomColumn((CustomColumn) event.getDefinition());
             break;
-        case CustomPropertyEvent.EVENT_PROPERTY_CHANGE:
+        case CustomPropertyEvent.EVENT_NAME_CHANGE:
             getTableHeaderUiFacade().renameColumn(event.getDefinition());
             getTable().getTableHeader().repaint();
             break;
+        case CustomPropertyEvent.EVENT_TYPE_CHANGE:
+            getTableHeaderUiFacade().updateType(event.getDefinition());
+            getTable().repaint();
         }
     }
 
@@ -542,20 +555,29 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         Class<?> columnClass = getTreeTableModel().getColumnClass(modelIndex);
-        TableCellEditor editor = columnClass.equals(GregorianCalendar.class)
-            ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
-        TableCellRenderer renderer = columnClass.equals(Icon.class) ?
-                TableCellRenderers.getNewDefaultRenderer(Icon.class)
-                : getTreeTable().getDefaultRenderer(columnClass);
+        TableCellRenderer renderer = createCellRenderer(columnClass);
         if (renderer != null) {
             result.setCellRenderer(renderer);
         }
+        TableCellEditor editor = createCellEditor(columnClass);
         if (editor!=null) {
             result.setCellEditor(new TreeTableCellEditorImpl(editor));
         }
         return result;
     }
 
+    TableCellRenderer createCellRenderer(Class<?> columnClass) {
+        TableCellRenderer renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+        if (renderer == null) {
+            renderer = getTreeTable().getDefaultRenderer(columnClass);
+        }
+        return renderer;
+    }
+
+    TableCellEditor createCellEditor(Class<?> columnClass) {
+        return columnClass.equals(GregorianCalendar.class)
+                ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+    }
     protected TableCellEditor newDateCellEditor() {
         return new DateCellEditor();
     }

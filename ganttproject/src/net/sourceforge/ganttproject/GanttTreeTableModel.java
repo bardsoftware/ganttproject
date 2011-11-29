@@ -181,7 +181,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     @Override
-    public Class getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         if (column < 0) {
             return null;
         }
@@ -206,7 +206,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             return Integer.class;
         default: {
             CustomPropertyDefinition customColumn = getCustomProperty(column);
-            return customColumn == null ? String.class : customColumn.getType();
+            Class<?> result =  customColumn == null ? String.class : customColumn.getType();
+            return result;
         }
         }
     }
