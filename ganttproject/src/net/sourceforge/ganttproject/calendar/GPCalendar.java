@@ -65,13 +65,15 @@ public interface GPCalendar {
 
     public DayType getDayTypeDate(Date curDayStart);
 
-    public void setPublicHolidays(URL calendar, IGanttProject gp);
+    public void setPublicHolidays(URL calendar);
 
     /** Clears all defined public holidays */
     public void clearPublicHolidays();
 
     /** @return an unmodifiable collection of (public) holidays */
     public Collection<Date> getPublicHolidays();
+
+    public GPCalendar copy();
 
     public enum DayType {
         WORKING, NON_WORKING, WEEKEND, HOLIDAY
@@ -92,5 +94,6 @@ public interface GPCalendar {
 
     GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
     String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
+    URL getPublicHolidaysUrl();
 
 }

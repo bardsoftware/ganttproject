@@ -318,7 +318,7 @@ class ProxyDocument implements Document {
             opener.addParsingListener(dependencyHandler);
             opener.addParsingListener(resourceHandler);
 
-            HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject);
+            HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());
             opener.addTagHandler(holidayHandler);
             opener.addParsingListener(holidayHandler);
 
