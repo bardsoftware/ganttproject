@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.parser;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 import org.xml.sax.Attributes;
 
@@ -27,11 +28,11 @@ import org.xml.sax.Attributes;
  * @author nbohn
  */
 public class HolidayTagHandler implements TagHandler, ParsingListener {
-    private IGanttProject project;
+    private final GPCalendar myCalendar;
 
-    public HolidayTagHandler(IGanttProject project) {
-        this.project = project;
-        project.getActiveCalendar().clearPublicHolidays();
+    public HolidayTagHandler(GPCalendar calendar) {
+        myCalendar = calendar;
+        myCalendar.clearPublicHolidays();
     }
 
     /**
@@ -60,10 +61,10 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
             int month = Integer.parseInt(monthAsString);
             int date = Integer.parseInt(dateAsString);
             if (yearAsString.equals("")) {
-                project.getActiveCalendar().setPublicHoliDayType(month, date);
+                myCalendar.setPublicHoliDayType(month, date);
             } else {
                 int year = Integer.parseInt(yearAsString);
-                project.getActiveCalendar().setPublicHoliDayType(
+                myCalendar.setPublicHoliDayType(
                         new GanttCalendar(year, month - 1, date).getTime());
             }
         } catch (NumberFormatException e) {

@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  */
 public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         GPCalendar {
+    @Override
     public List<GPCalendarActivity> getActivities(Date startDate, Date endDate) {
         return Collections.singletonList((GPCalendarActivity) new CalendarActivityImpl(startDate,
                 endDate, true));
@@ -62,6 +63,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
                 activityStart, activityEnd, true));
     }
 
+    @Override
     public void setWeekDayType(int day, DayType type) {
         if (type == GPCalendar.DayType.WEEKEND) {
             throw new IllegalArgumentException(
@@ -69,20 +71,24 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         }
     }
 
+    @Override
     public DayType getWeekDayType(int day) {
         // Every day is a working day...
         return GPCalendar.DayType.WORKING;
     }
 
+    @Override
     public Date findClosestWorkingTime(Date date) {
         // No days off, so given date is good
         return date;
     }
 
+    @Override
     public void setPublicHoliDayType(int month, int date) {
         // Nothing to do, as this calendar does not support holidays
     }
 
+    @Override
     public boolean isPublicHoliDay(Date curDayStart) {
         // Always return false, as this calendar does not support holidays
         return false;
@@ -94,33 +100,40 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         return false;
     }
 
+    @Override
     public DayType getDayTypeDate(Date curDayStart) {
         return GPCalendar.DayType.WORKING;
     }
 
+    @Override
     public boolean getOnlyShowWeekends() {
         // Weekends are always working days for this calendar
         return true;
     }
 
+    @Override
     public void setOnlyShowWeekends(boolean onlyShowWeekends) {
         // Ignore onlyShowWeekends, since weekends are always
         // working days for this calendar
     }
 
+    @Override
     public void setPublicHoliDayType(Date curDayStart) {
         // Nothing to do, as this calendar does not support holidays
     }
 
-    public void setPublicHolidays(URL calendar, IGanttProject gp) {
+    @Override
+    public void setPublicHolidays(URL calendar) {
         // Nothing to do, as this calendar does not support holidays
     }
 
+    @Override
     public Collection<Date> getPublicHolidays() {
         // Return an empty collection, as there are no holidays in this calendar
         return Collections.emptyList();
     }
 
+    @Override
     public void clearPublicHolidays() {
         // Nothing needs to be done
     }
@@ -129,5 +142,14 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
         return getActivities(startingFrom, period.getTimeUnit(), period
                 .getLength());
+    }
+
+    @Override
+    public GPCalendar copy() {
+        return new AlwaysWorkingTimeCalendarImpl();
+    }
+
+    public URL getPublicHolidaysUrl() {
+        return null;
     }
 }
