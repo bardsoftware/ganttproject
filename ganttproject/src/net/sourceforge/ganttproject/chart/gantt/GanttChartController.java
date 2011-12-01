@@ -54,6 +54,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -139,6 +141,11 @@ public class GanttChartController extends AbstractChartImplementation implements
                 public Task findTaskUnderMousePointer(int xpos, int ypos) {
                     ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
                     return chartItem == null ? null : chartItem.getTask();
+                }
+
+                @Override
+                public Hardness getDefaultHardness() {
+                    return TaskDependency.Hardness.parse(myChartModel.getDependencyHardnessOption().getValue());
                 }
             },
             getUIFacade(),

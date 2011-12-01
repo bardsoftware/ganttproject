@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.chart.DependencyInteractionRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -51,6 +52,7 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
 
     public static interface ChartModelFacade {
         Task findTaskUnderMousePointer(int xpos, int ypos);
+        TaskDependency.Hardness getDefaultHardness();
     }
 
     public DrawDependencyInteraction(MouseEvent initiatingEvent,
@@ -82,8 +84,9 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
                             new Runnable() {
                                 public void run() {
                                     try {
-                                        myDependencyCollection.createDependency(
+                                        TaskDependency dep = myDependencyCollection.createDependency(
                                             myDependant, dependee, new FinishStartConstraintImpl());
+                                        dep.setHardness(myChartModelFacade.getDefaultHardness());
 
                                     } catch (TaskDependencyException e) {
                                         myUiFacade.showErrorDialog(e);
