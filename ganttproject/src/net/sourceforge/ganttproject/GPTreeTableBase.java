@@ -567,7 +567,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     TableCellRenderer createCellRenderer(Class<?> columnClass) {
-        TableCellRenderer renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+        TableCellRenderer renderer = null;
+        if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass)) {
+            renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+        }
         if (renderer == null) {
             renderer = getTreeTable().getDefaultRenderer(columnClass);
         }
