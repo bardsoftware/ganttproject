@@ -62,7 +62,6 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
             } else {
                 myChartComponent.setDefaultCursor();
             }
-            getUIFacade().refresh();
         }
     }
 }
