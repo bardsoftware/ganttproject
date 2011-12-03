@@ -154,10 +154,12 @@ public class TaskManagerImpl implements TaskManager {
         myConfig = config;
         myHierarchyManager = new TaskHierarchyManagerImpl();
         EventDispatcher dispatcher = new EventDispatcher() {
+            @Override
             public void fireDependencyAdded(TaskDependency dep) {
                 TaskManagerImpl.this.fireDependencyAdded(dep);
             }
 
+            @Override
             public void fireDependencyRemoved(TaskDependency dep) {
                 TaskManagerImpl.this.fireDependencyRemoved(dep);
             }
@@ -217,19 +219,23 @@ public class TaskManagerImpl implements TaskManager {
         return myCustomPropertyListener;
     }
 
+    @Override
     public GanttTask getTask(int taskId) {
         return (GanttTask) myTaskMap.getTask(taskId);
     }
 
+    @Override
     public Task getRootTask() {
         return myRoot;
     }
 
+    @Override
     public Task[] getTasks() {
         return myTaskMap.getTasks();
         //return (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
     }
 
+    @Override
     public void projectClosed() {
         myTaskMap.clear();
         setMaxID(-1);
@@ -247,20 +253,24 @@ public class TaskManagerImpl implements TaskManager {
     }
 
 
+    @Override
     public void projectOpened() {
         processCriticalPath(getRootTask());
         myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
     }
 
+    @Override
     public void deleteTask(Task tasktoRemove) {
         myTaskMap.removeTask(tasktoRemove);
     }
 
+    @Override
     public GanttTask createTask() {
         GanttTask result = createTask(-1);
         return result;
     }
 
+    @Override
     public GanttTask createTask(int taskID) {
         GanttTask result = new GanttTask("", new GanttCalendar(), 1, this,
                 taskID);
@@ -274,6 +284,7 @@ public class TaskManagerImpl implements TaskManager {
         return result;
     }
 
+    @Override
     public void registerTask(Task task) {
         int taskID = task.getTaskID();
         if (myTaskMap.getTask(taskID) == null) { // if the taskID is
@@ -292,10 +303,12 @@ public class TaskManagerImpl implements TaskManager {
         return myTaskMap.getTask(task.getTaskID())!=null;
     }
 
+    @Override
     public int getTaskCount() {
         return myTaskMap.size();
     }
 
+    @Override
     public TaskLength getProjectLength() {
         if (myTaskMap.isEmpty()) {
             return createLength(getConfig().getTimeUnitStack()
@@ -308,6 +321,7 @@ public class TaskManagerImpl implements TaskManager {
                 result.lowerBound, result.upperBound);
     }
 
+    @Override
     public Date getProjectStart() {
         if (myTaskMap.isEmpty()) {
             return myRoot.getStart().getTime();
@@ -317,6 +331,7 @@ public class TaskManagerImpl implements TaskManager {
         return result.lowerBound;
     }
 
+    @Override
     public Date getProjectEnd(){
         if (myTaskMap.isEmpty()) {
             return myRoot.getStart().getTime();
@@ -326,16 +341,19 @@ public class TaskManagerImpl implements TaskManager {
         return result.upperBound;
     }
 
+    @Override
     public int getProjectCompletion() {
         return myRoot.getCompletionPercentage();
     }
 
+    @Override
     public String encode(TaskLength taskLength) {
         StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
         result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
         return result.toString();
     }
 
+    @Override
     public TaskLength createLength(String lengthAsString) throws DurationParsingException {
         int state = 0;
         StringBuffer valueBuffer = new StringBuffer();
@@ -441,28 +459,34 @@ public class TaskManagerImpl implements TaskManager {
         return myConfig.getTimeUnitStack().findTimeUnit(code);
     }
 
+    @Override
     public TaskLength createLength(TimeUnit unit, float length) {
         return new TaskLengthImpl(unit, length);
     }
 
+    @Override
     public TaskLength createLength(long count) {
         return new TaskLengthImpl(getConfig().getTimeUnitStack()
                 .getDefaultTimeUnit(), count);
     }
 
+    @Override
     public TaskLength createLength(TimeUnit timeUnit, Date startDate, Date endDate) {
         return getConfig().getTimeUnitStack().createDuration(timeUnit, startDate, endDate);
     }
 
+    @Override
     public Date shift(Date original, TaskLength duration) {
         GPCalendar calendar = RESTLESS_CALENDAR;
         return calendar.shiftDate(original, duration);
     }
 
+    @Override
     public TaskDependencyCollection getDependencyCollection() {
         return myDependencyCollection;
     }
 
+    @Override
     public AlgorithmCollection getAlgorithmCollection() {
         return myAlgorithmCollection;
     }
@@ -471,10 +495,12 @@ public class TaskManagerImpl implements TaskManager {
         return myHierarchyManager;
     }
 
+    @Override
     public TaskDependencyConstraint createConstraint(final int constraintID) {
         return createConstraint(TaskDependencyConstraint.Type.getType(constraintID));
     }
 
+    @Override
     public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
         TaskDependencyConstraint result;
         switch (type) {
@@ -508,10 +534,12 @@ public class TaskManagerImpl implements TaskManager {
         myMaxID++;
     }
 
+    @Override
     public void addTaskListener(TaskListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public GPCalendar getCalendar() {
         return getConfig().getCalendar();
     }
@@ -604,10 +632,12 @@ public class TaskManagerImpl implements TaskManager {
 //            myRoot = root;
 //        }
 
+        @Override
         public Task[] getNestedTasks(Task container) {
             return container.getNestedTasks();
         }
 
+        @Override
         public Task[] getDeepNestedTasks(Task container) {
             ArrayList<Task> result = new ArrayList<Task>();
             addDeepNestedTasks(container, result);
@@ -622,30 +652,37 @@ public class TaskManagerImpl implements TaskManager {
             }
         }
 
+        @Override
         public boolean hasNestedTasks(Task container) {
             return container.getNestedTasks().length > 0;
         }
 
+        @Override
         public Task getRootTask() {
             return TaskManagerImpl.this.getRootTask();
         }
 
+        @Override
         public Task getContainer(Task nestedTask) {
             return nestedTask.getSupertask();
         }
 
+        @Override
         public Task getPreviousSibling(Task nestedTask) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Task getNextSibling(Task nestedTask) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public int getTaskIndex(Task nestedTask) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public boolean areUnrelated(Task first, Task second) {
             myPathBuffer.clear();
             for (Task container = getContainer(first); container != null; container = getContainer(container)) {
@@ -664,14 +701,17 @@ public class TaskManagerImpl implements TaskManager {
             return true;
         }
 
+        @Override
         public void move(Task whatMove, Task whereMove) {
             whatMove.move(whereMove);
         }
 
+        @Override
         public void move(Task whatMove, Task whereMove, int index) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public int getDepth(Task task) {
             int depth = 0;
             while (task != myRoot) {
@@ -681,6 +721,7 @@ public class TaskManagerImpl implements TaskManager {
             return depth;
         }
 
+        @Override
         public int compareDocumentOrder(Task task1, Task task2) {
             if (task1==task2) {
                 return 0;
@@ -729,10 +770,12 @@ public class TaskManagerImpl implements TaskManager {
             }
         }
 
+        @Override
         public boolean contains(Task task) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public List<Task> getTasksInDocumentOrder() {
             throw new UnsupportedOperationException();
         }
@@ -746,11 +789,13 @@ public class TaskManagerImpl implements TaskManager {
 //            myRoot = root;
 //        }
 
+        @Override
         public TaskContainmentHierarchyFacade createFacede() {
             return new FacadeImpl();
         }
     }
 
+    @Override
     public TaskContainmentHierarchyFacade getTaskHierarchy() {
         // if (myTaskContainment==null) {
         return myFacadeFactory.createFacede();
@@ -758,10 +803,12 @@ public class TaskManagerImpl implements TaskManager {
         // return myTaskContainment;
     }
 
+    @Override
     public TaskManager emptyClone() {
         return new TaskManagerImpl(null, myConfig, null);
     }
 
+    @Override
     public Map<Task, Task> importData(TaskManager taskManager) {
         Task importRoot = taskManager.getRootTask();
         Map<Task, Task> original2imported = new HashMap<Task, Task>();
@@ -841,6 +888,7 @@ public class TaskManagerImpl implements TaskManager {
         return getCalendar().findClosestWorkingTime(time);
     }
 
+    @Override
     public void processCriticalPath(Task root) {
         try {
             myAlgorithmCollection.getRecalculateTaskScheduleAlgorithm().run();
@@ -863,6 +911,7 @@ public class TaskManagerImpl implements TaskManager {
         }
     }
 
+    @Override
     public void importAssignments(TaskManager importedTaskManager,
             HumanResourceManager hrManager, Map<Task, Task> original2importedTask,
             Map<HumanResource, HumanResource> original2importedResource) {
@@ -892,10 +941,12 @@ public class TaskManagerImpl implements TaskManager {
         areEventsEnabled = enabled;
     }
 
+    @Override
     public CustomColumnsStorage getCustomColumnStorage() {
         return myCustomColumnStorage;
     }
 
+    @Override
     public CustomPropertyManager getCustomPropertyManager() {
         return new CustomColumnsManager(getCustomColumnStorage());
     }
