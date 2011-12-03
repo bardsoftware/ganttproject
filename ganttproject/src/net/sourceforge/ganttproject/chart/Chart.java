@@ -1,17 +1,12 @@
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.Date;
-
-import javax.swing.Icon;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.task.TaskManager;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 

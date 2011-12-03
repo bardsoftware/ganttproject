@@ -50,7 +50,6 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
-import net.sourceforge.ganttproject.search.SearchDialog.SearchCallback;
 
 public class SearchDialog {
     public interface SearchCallback {

@@ -31,8 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
-
 import org.jdesktop.jdnc.JNTable;
 import org.jdesktop.swing.decorator.AlternateRowHighlighter;
 import org.jdesktop.swing.decorator.Highlighter;

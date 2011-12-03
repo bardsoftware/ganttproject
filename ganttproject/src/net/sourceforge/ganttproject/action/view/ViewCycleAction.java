@@ -20,8 +20,6 @@ package net.sourceforge.ganttproject.action.view;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JTabbedPane;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 

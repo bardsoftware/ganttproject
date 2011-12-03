@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.Task;
 
 public class MouseListenerBase extends MouseAdapter {
     private UIFacade myUiFacade;

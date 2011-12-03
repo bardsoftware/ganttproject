@@ -25,7 +25,6 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
-import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
