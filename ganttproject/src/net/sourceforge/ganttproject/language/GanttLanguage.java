@@ -41,9 +41,6 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
-import org.jdesktop.swing.JXDatePicker;
-import org.jdesktop.swing.calendar.JXMonthView;
-
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 

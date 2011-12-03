@@ -47,8 +47,9 @@ public class TaskNewAction extends GPAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         myUndoManager.undoableEdit(getLocalizedDescription(), new Runnable() {
+            @Override
             public void run() {
-                // TODO all actions have their actual action inside, so move netTask code to here
+                // TODO all actions have their actual action inside, so move newTask code to here
                 myProject.newTask();
             }
         });
