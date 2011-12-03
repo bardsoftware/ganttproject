@@ -907,7 +907,7 @@ public class TaskManagerImpl implements TaskManager {
     private static class TaskNamePrefixOption extends DefaultStringOption implements GP1XOptionConverter {
         public TaskNamePrefixOption() {
             super("taskNamePrefix");
-            setValue(GanttLanguage.getInstance().getText("newTask"), true);
+            setValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
         }
         @Override
         public String getTagName() {
