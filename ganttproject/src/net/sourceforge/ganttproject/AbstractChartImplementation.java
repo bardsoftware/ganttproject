@@ -65,9 +65,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -81,7 +79,6 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     private Set<ChartSelectionListener> mySelectionListeners= new LinkedHashSet<ChartSelectionListener>();
     private final ChartComponentBase myChartComponent;
     private MouseInteraction myActiveInteraction;
-    private TimeFrame myFirstTimeFrame;
     private final UIFacade myUiFacade;
 
     public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel, ChartComponentBase chartComponent) {
@@ -228,9 +225,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     }
 
     public void setStartDate(Date startDate) {
-        getChartModel().setStartDate(startDate);
-        myFirstTimeFrame = scrollTimeFrame(startDate);
-        startDate = myFirstTimeFrame.getStartDate();
+        startDate = getBottomTimeUnit().adjustLeft(startDate);
         getChartModel().setStartDate(startDate);
     }
 
@@ -243,28 +238,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         getChartModel().setHorizontalOffset(pixels);
     }
 
-    private TimeFrame scrollTimeFrame(Date scrolledDate) {
-        TimeFrame result = null;
-        if (getTopTimeUnit().isConstructedFrom(getBottomTimeUnit())) {
-            result = getTimeUnitStack().createTimeFrame(scrolledDate,
-                    getTopTimeUnit(), getBottomTimeUnit());
-        } else {
-            result = getTimeUnitStack().createTimeFrame(scrolledDate,
-                    getBottomTimeUnit(), getBottomTimeUnit());
-        }
-        return result;
-    }
-
-    private TimeUnit getTopTimeUnit() {
-        return getChartModel().getTopUnit();
-    }
-
     private TimeUnit getBottomTimeUnit() {
         return getChartModel().getBottomUnit();
-    }
-
-    private TimeUnitStack getTimeUnitStack() {
-        return myProject.getTimeUnitStack();
     }
 
     public Date getEndDate() {

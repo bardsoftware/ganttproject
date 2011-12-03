@@ -10,7 +10,6 @@ import java.util.Date;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskLengthImpl;
-import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
 import net.sourceforge.ganttproject.time.TimeUnitPair;
@@ -79,15 +78,6 @@ public class GPTimeUnitStack implements TimeUnitStack {
                  * so it is needed only once.
                  */
                 /*new TimeUnitPair(YEAR, QUARTER, this, 1)*/ };
-    }
-
-    @Override
-    public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
-            TimeUnit bottomUnit) {
-        // if (topUnit instanceof TimeUnitFunctionOfDate) {
-        //     topUnit = ((TimeUnitFunctionOfDate)topUnit).createTimeUnit(baseDate);
-        // }
-        return new TimeFrameImpl(baseDate, topUnit, bottomUnit);
     }
 
     @Override

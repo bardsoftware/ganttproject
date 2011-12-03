@@ -72,7 +72,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         int posY = getTextBaselinePosition();
         GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
                 curX + 2, posY, unitText);
-        myTimelineContainer.bind(text, timeUnitText);
+        //myTimelineContainer.bind(text, timeUnitText);
         text.setMaxLength(curOffset.getOffsetPixels() - curX);
         text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
     }
