@@ -22,14 +22,9 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.GanttURLChooser;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 

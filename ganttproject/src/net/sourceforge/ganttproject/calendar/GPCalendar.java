@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 

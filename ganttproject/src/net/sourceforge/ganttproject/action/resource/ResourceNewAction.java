@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.action.resource;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;

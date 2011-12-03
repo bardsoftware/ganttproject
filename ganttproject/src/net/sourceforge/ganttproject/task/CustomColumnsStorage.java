@@ -29,7 +29,6 @@ import java.util.Map;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.DateUtils;
 

@@ -5,15 +5,9 @@
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**

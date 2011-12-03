@@ -21,9 +21,7 @@ package net.sourceforge.ganttproject.action.project;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;

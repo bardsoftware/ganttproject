@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Graphics;
-
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 

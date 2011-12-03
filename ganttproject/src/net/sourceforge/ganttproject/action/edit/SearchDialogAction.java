@@ -20,10 +20,7 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.search.SearchDialog;
 import net.sourceforge.ganttproject.search.SearchUi;
 
 public class SearchDialogAction extends GPAction {

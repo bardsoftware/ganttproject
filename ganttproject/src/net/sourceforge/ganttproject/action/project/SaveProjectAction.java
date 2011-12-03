@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
 
 class SaveProjectAction extends GPAction implements ProjectEventListener {
     private final GanttProject myMainFrame;

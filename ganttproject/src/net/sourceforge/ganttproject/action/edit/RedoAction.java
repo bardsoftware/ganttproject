@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.UndoableEditEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 

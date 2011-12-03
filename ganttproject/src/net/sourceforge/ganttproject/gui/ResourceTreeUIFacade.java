@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-
 import javax.swing.AbstractAction;
 
 import net.sourceforge.ganttproject.resource.HumanResource;

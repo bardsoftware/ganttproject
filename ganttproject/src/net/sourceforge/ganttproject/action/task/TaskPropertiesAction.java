@@ -25,7 +25,6 @@ import javax.swing.SwingUtilities;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.GanttDialogProperties;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;

@@ -20,18 +20,14 @@ package net.sourceforge.ganttproject.delay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.event.UndoableEditEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;

@@ -21,7 +21,6 @@ package biz.ganttproject.impex.msproject2;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 

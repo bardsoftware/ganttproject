@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**

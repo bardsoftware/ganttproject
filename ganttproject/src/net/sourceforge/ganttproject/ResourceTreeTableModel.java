@@ -1,13 +1,8 @@
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -18,7 +13,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceColumn;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;

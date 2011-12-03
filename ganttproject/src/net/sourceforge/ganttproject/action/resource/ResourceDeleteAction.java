@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
