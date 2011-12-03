@@ -21,6 +21,7 @@ public class RoleImpl implements Role {
         myRoleSet = roleSet;
 
         GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+            @Override
             public void languageChanged(Event event) {
                 Role role = myRoleSet.findRole(myID);
                 if (role != null) {
@@ -30,18 +31,22 @@ public class RoleImpl implements Role {
         });
     }
 
+    @Override
     public int getID() {
         return myID;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public void setName(String name) {
         myName = name;
     }
 
+    @Override
     public String getPersistentID() {
         return (myRoleSet.getName() == null ? "" : myRoleSet.getName() + ":")
                 + getID();

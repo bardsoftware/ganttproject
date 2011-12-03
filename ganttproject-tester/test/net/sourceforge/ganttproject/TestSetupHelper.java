@@ -30,22 +30,27 @@ public class TestSetupHelper {
                     .getDefaultRole(), null);
         }
 
+        @Override
         public Color getDefaultColor() {
             return null;
         }
 
+        @Override
         public GPCalendar getCalendar() {
             return myGPCalendar;
         }
 
+        @Override
         public TimeUnitStack getTimeUnitStack() {
             return myTimeUnitStack;
         }
 
+        @Override
         public HumanResourceManager getResourceManager() {
             return myResourceManager;
         }
 
+        @Override
         public URL getProjectDocumentURL() {
             return null;
         }

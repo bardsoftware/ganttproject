@@ -78,6 +78,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
         addAction(getDeleteResourceAction());
         myTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         myTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 onSelectionChanged();
             }

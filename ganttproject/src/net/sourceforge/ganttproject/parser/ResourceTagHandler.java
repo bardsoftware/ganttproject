@@ -59,6 +59,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
 
     }
@@ -67,6 +68,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
 
@@ -167,9 +169,11 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
         return result;
     }
 
+    @Override
     public void parsingStarted() {
     }
 
+    @Override
     public void parsingFinished() {
         // System.err.println("[ResourceTagHandler] parsingFinished():");
         for (Iterator<Entry<HumanResource, String>> lateBindingEntries = myLateResource2roleBinding

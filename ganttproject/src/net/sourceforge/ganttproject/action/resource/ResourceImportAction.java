@@ -57,6 +57,7 @@ public class ResourceImportAction extends ResourceAction {
         final File file = getResourcesFile();
         if (file != null) {
             myProject.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                @Override
                 public void run() {
                     GanttXMLOpen loader = new GanttXMLOpen(myTaskManager);
                     ResourceTagHandler tagHandler = new ResourceTagHandler(getManager(), myRoleManager, myProject

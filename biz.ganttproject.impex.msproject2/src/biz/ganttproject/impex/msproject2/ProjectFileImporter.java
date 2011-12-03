@@ -156,6 +156,7 @@ class ProjectFileImporter {
         for (ProjectCalendarException e: exceptions) {
             if (!e.getWorking()) {
                 importHolidays(e, new HolidayAdder() {
+                    @Override
                     public void addHoliday(Date date) {
                         getNativeCalendar().setPublicHoliDayType(date);
                     }
@@ -243,6 +244,7 @@ class ProjectFileImporter {
         }
         for (ProjectCalendarException e: c.getCalendarExceptions()) {
             importHolidays(e, new HolidayAdder() {
+                @Override
                 public void addHoliday(Date date) {
                     nativeResource.addDaysOff(new GanttDaysOff(
                             date, GregorianTimeUnitStack.DAY.adjustRight(date)));

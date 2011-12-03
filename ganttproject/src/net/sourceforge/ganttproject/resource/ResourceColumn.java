@@ -50,10 +50,12 @@ import org.jdesktop.swing.table.TableColumnExt;
             return column.getTitle();
         }
 
+        @Override
         public boolean isVisible() {
             return visible;
         }
 
+        @Override
         public void setVisible(boolean vis) {
             visible = vis;
         }
@@ -74,6 +76,7 @@ import org.jdesktop.swing.table.TableColumnExt;
             this.defaultVal = defaultVal;
         }
 
+        @Override
         public Class<?> getType() {
             return type;
         }
@@ -82,29 +85,36 @@ import org.jdesktop.swing.table.TableColumnExt;
             this.type = type;
         }
 
+        @Override
         public Object getDefaultValue() {
             return defaultVal;
         }
 
+        @Override
         public String getDefaultValueAsString() {
             return HumanResourceManager.getValueAsString(defaultVal);
         }
+        @Override
         public String getID() {
             return String.valueOf(defaultIndex);
         }
 
+        @Override
         public String getName() {
             return getTitle();
         }
 
+        @Override
         public String getTypeAsString() {
             return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(type);
         }
 
+        @Override
         public int getOrder() {
             return myOrder;
         }
 
+        @Override
         public int getWidth() {
             return column.getWidth();
         }
@@ -113,6 +123,7 @@ import org.jdesktop.swing.table.TableColumnExt;
             column.setWidth(width);
         }
 
+        @Override
         public void setOrder(int order) {
             myOrder = order;
         }

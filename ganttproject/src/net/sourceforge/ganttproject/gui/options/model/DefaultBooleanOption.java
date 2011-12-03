@@ -10,6 +10,7 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
         super(id, initialValue);
     }
 
+    @Override
     public boolean isChecked() {
         return getValue();
     }
@@ -19,14 +20,17 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
         return super.getValue() == null ? Boolean.FALSE : super.getValue();
     }
 
+    @Override
     public void toggle() {
         setValue(!getValue());
     }
 
+    @Override
     public String getPersistentValue() {
         return Boolean.toString(isChecked());
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         setValue(Boolean.valueOf(value).booleanValue(), true);
     }

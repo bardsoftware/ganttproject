@@ -36,6 +36,7 @@ class SaveProjectAsAction extends GPAction {
         return "saveas_";
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         myMainFrame.saveAsProject();
     }

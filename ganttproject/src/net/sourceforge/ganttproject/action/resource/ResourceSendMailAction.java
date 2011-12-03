@@ -38,6 +38,7 @@ public class ResourceSendMailAction extends GPAction implements TreeSelectionLis
         table.getTree().getSelectionModel().addTreeSelectionListener(this);
     }
 
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         setEnabled(myTable.getSelectedNodes() != null && myTable.getSelectedNodes().length > 0);
     }

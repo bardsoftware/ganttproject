@@ -68,6 +68,7 @@ public class ResourceDeleteAction extends ResourceAction {
             Choice choice = myUIFacade.showConfirmationDialog(message, title);
             if (choice == Choice.YES) {
                 myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                    @Override
                     public void run() {
                         deleteResources(selectedResources);
                         myProjectFrame.repaint2();

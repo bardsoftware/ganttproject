@@ -105,6 +105,7 @@ public class GanttXMLOpen implements GPParser {
         return load(new File(filename));
     }
 
+    @Override
     public boolean load(InputStream inStream) throws IOException {
         // Use an instance of ourselves as the SAX event handler
         myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm()
@@ -165,23 +166,28 @@ public class GanttXMLOpen implements GPParser {
         return true;
     }
 
+    @Override
     public void addTagHandler(TagHandler handler) {
         myTagHandlers.add(handler);
     }
 
+    @Override
     public void addParsingListener(ParsingListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public ParsingContext getContext() {
         return myContext;
     }
 
+    @Override
     public TagHandler getDefaultTagHandler() {
         return new DefaultTagHandler();
     }
 
     private class DefaultTagHandler implements TagHandler {
+        @Override
         public void startElement(String namespaceURI, String sName,
                 String qName, Attributes attrs) {
             indent += "    ";
@@ -240,6 +246,7 @@ public class GanttXMLOpen implements GPParser {
             }
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
             indent = indent.substring(0, indent.length() - 4);
             if ("description".equals(qName)) {

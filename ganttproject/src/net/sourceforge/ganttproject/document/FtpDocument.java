@@ -55,43 +55,53 @@ public class FtpDocument extends AbstractURLDocument implements Document {
         }
     }
 
+    @Override
     public String getFileName() {
         //TODO return filename instead of complete URI?
         return myURI.toString();
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
 
+    @Override
     public IStatus canWrite() {
         return Status.OK_STATUS;
     }
 
+    @Override
     public boolean isValidForMRU() {
         return true;
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return myURI.toURL().openConnection().getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return myURI.toURL().openConnection().getOutputStream();
     }
 
+    @Override
     public String getPath() {
         return myURI.toString();
     }
 
+    @Override
     public void write() throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public URI getURI() {
         return myURI;
     }
 
+    @Override
     public boolean isLocal() {
         return false;
     }

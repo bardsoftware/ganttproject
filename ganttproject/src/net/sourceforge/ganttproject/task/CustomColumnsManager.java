@@ -44,14 +44,17 @@ public class CustomColumnsManager implements CustomPropertyManager {
         myStorage.changeDefaultValue(colName, newDefaultValue);
     }
 
+    @Override
     public void addListener(CustomPropertyListener listener) {
         myStorage.addCustomColumnsListener(listener);
     }
 
+    @Override
     public List<CustomPropertyDefinition> getDefinitions() {
         return new ArrayList<CustomPropertyDefinition>(myStorage.getCustomColums());
     }
 
+    @Override
     public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
             String defaultValueAsString) {
         CustomPropertyDefinition stub =
@@ -62,18 +65,22 @@ public class CustomColumnsManager implements CustomPropertyManager {
         return result;
     }
 
+    @Override
     public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
         return createDefinition("tpc"+getDefinitions().size(),typeAsString, colName, defValue);
     }
 
+    @Override
     public void importData(CustomPropertyManager source) {
     }
 
 
+    @Override
     public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
         return myStorage.getCustomColumnByID(id);
     }
 
+    @Override
     public void deleteDefinition(CustomPropertyDefinition def) {
         myStorage.removeCustomColumn(def);
     }

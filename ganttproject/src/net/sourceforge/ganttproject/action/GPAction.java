@@ -237,6 +237,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         setIconVisible(isNull);
     }
 
+    @Override
     public void languageChanged(Event event) {
         updateAction();
     }
@@ -296,6 +297,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
     public static GPAction createVoidAction(String key) {
         return new GPAction(key) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // No action
             }

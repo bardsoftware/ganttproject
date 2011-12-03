@@ -209,21 +209,25 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         getTreeModel().changeLanguage(lang);
     }
 
+    @Override
     public void resourceAdded(ResourceEvent event) {
         newHuman(event.getResource());
     }
 
+    @Override
     public void resourcesRemoved(ResourceEvent event) {
         getTreeTable().getTreeTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
         getTreeModel().deleteResources(event.getResources());
     }
 
+    @Override
     public void resourceChanged(ResourceEvent e) {
         getTreeModel().resourceChanged(e.getResource());
         e.getResource().resetLoads();
         repaint();
     }
 
+    @Override
     public void resourceAssignmentsChanged(ResourceEvent e) {
         getTreeModel().resourceAssignmentsChanged(e.getResources());
         repaint();
@@ -231,6 +235,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
     ////////////////////////////////////////////////////////////////////////////
     // ResourceContext interface
+    @Override
     public HumanResource[] getResources() {
         // ProjectResource[] res;
         // List allRes = model.getAllResouces();
@@ -293,6 +298,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         return this;
     }
 
+    @Override
     public ResourceAssignment[] getResourceAssignments() {
         ResourceAssignment[] res = null;
         DefaultMutableTreeNode[] tNodes = getTreeTable().getSelectedNodes();
@@ -376,10 +382,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         }
     }
 
+    @Override
     public AbstractAction getMoveUpAction() {
         return myResourceActionSet.getResourceMoveUpAction();
     }
 
+    @Override
     public AbstractAction getMoveDownAction() {
         return myResourceActionSet.getResourceMoveDownAction();
     }

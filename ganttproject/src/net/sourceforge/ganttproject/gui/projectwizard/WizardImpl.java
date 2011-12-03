@@ -69,16 +69,19 @@ public abstract class WizardImpl {
         myCardLayout = new CardLayout();
         myPagesContainer = new JPanel(myCardLayout);
         myNextAction = new GPAction("next") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 WizardImpl.this.nextPage();
             }
         };
         myBackAction = new GPAction("back") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 WizardImpl.this.backPage();
             }
         };
         myOkAction = new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onOkPressed();
             }

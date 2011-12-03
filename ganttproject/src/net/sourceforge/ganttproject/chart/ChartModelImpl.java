@@ -75,14 +75,17 @@ public class ChartModelImpl extends ChartModelBase {
             private NewTaskColorOption() {
                 super("taskDefaultColor");
             }
+            @Override
             public String getTagName() {
                 return "colors";
             }
 
+            @Override
             public String getAttributeName() {
                 return "tasks";
             }
 
+            @Override
             public void loadValue(String legacyValue) {
                 lock();
                 loadPersistentValue(legacyValue);
@@ -164,6 +167,7 @@ public class ChartModelImpl extends ChartModelBase {
 
     }
 
+    @Override
     public void setVisibleTasks(List<Task> visibleTasks) {
         myVisibleTasks = visibleTasks;
     }

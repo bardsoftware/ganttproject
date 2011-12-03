@@ -76,22 +76,27 @@ public interface TableHeaderUIFacade {
     class Immutable {
         public static TableHeaderUIFacade fromList(final List<Column> columns) {
             return new TableHeaderUIFacade() {
+                @Override
                 public int getSize() {
                     return columns.size();
                 }
 
+                @Override
                 public Column getField(int index) {
                     return columns.get(index);
                 }
 
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException();
                 }
 
+                @Override
                 public void add(String name, int order, int width) {
                     throw new UnsupportedOperationException();
                 }
 
+                @Override
                 public void importData(TableHeaderUIFacade source) {
                     throw new UnsupportedOperationException();
                 }

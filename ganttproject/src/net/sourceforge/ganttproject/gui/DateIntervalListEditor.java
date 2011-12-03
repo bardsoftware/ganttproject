@@ -86,15 +86,19 @@ public class DateIntervalListEditor extends JPanel{
 
     public static class DefaultDateIntervalModel implements DateIntervalModel {
         List/*<DatInterval>*/<DateInterval> myIntervals = new ArrayList<DateInterval>();
+        @Override
         public DateInterval[] getIntervals() {
             return myIntervals.toArray(new DateInterval[myIntervals.size()]);
         }
+        @Override
         public void remove(DateInterval interval) {
             myIntervals.remove(interval);
         }
+        @Override
         public void add(DateInterval interval) {
             myIntervals.add(interval);
         }
+        @Override
         public int getMaxIntervalLength() {
             return 1;
         }
@@ -107,10 +111,12 @@ public class DateIntervalListEditor extends JPanel{
     private final GPAction myDeleteAction;
 
     private class MyListModel extends AbstractListModel {
+        @Override
         public int getSize() {
             return myIntervalsModel.getIntervals().length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             DateInterval interval = myIntervalsModel.getIntervals()[index];
             StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));

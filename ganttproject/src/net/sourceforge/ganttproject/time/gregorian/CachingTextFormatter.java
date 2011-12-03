@@ -39,6 +39,7 @@ public abstract class CachingTextFormatter implements Listener {
         return myTextCache.get(startDate);
     }
 
+    @Override
     public void languageChanged(Event event) {
         myTextCache.clear();
     }

@@ -147,6 +147,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         return myChartImplementation;
     }
 
+    @Override
     public boolean isExpanded(HumanResource resource) {
         return true;
     }

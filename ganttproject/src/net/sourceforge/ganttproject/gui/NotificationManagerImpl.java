@@ -65,6 +65,7 @@ public class NotificationManagerImpl implements NotificationManager {
         for (final Action a : actions) {
             JButton button = new TestGanttRolloverButton(a);
             button.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     myNotificationSlider.hide();
                     channel.setVisible(false);

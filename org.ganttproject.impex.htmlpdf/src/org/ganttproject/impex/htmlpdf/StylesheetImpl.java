@@ -29,6 +29,7 @@ public class StylesheetImpl implements Stylesheet {
         myLocalizedName = localizedName;
     }
 
+    @Override
     public String getLocalizedName() {
         return myLocalizedName;
     }
@@ -38,6 +39,7 @@ public class StylesheetImpl implements Stylesheet {
         return getLocalizedName();
     }
 
+    @Override
     public URL getUrl() {
         return myURL;
     }

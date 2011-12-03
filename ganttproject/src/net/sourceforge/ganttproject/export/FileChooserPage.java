@@ -61,6 +61,7 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
 
+    @Override
     public String getTitle() {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }

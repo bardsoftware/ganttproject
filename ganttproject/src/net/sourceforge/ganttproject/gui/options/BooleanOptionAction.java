@@ -14,6 +14,7 @@ class BooleanOptionAction extends AbstractAction {
         myOption = option;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         myOption.toggle();
     }

@@ -344,6 +344,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 //            System.out.println("undoable column: " + column);
             Mediator.getGanttProjectSingleton().getUndoManager().undoableEdit(
                     "Change properties column", new Runnable() {
+                        @Override
                         public void run() {
                             setValue(value, node, column);
                         }
@@ -407,20 +408,25 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     }
 
+    @Override
     public void columnAdded(TableColumnModelEvent arg0) {
     }
 
+    @Override
     public void columnRemoved(TableColumnModelEvent arg0) {
     }
 
+    @Override
     public void columnMoved(TableColumnModelEvent arg0) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void columnMarginChanged(ChangeEvent arg0) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void columnSelectionChanged(ListSelectionEvent arg0) {
         // TODO Auto-generated method stub
     }
@@ -494,6 +500,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return 0;
     }
 
+    @Override
     public void languageChanged(Event event) {
         changeLanguage(event.getLanguage());
     }

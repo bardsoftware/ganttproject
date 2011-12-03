@@ -41,6 +41,7 @@ public class AssignmentDeleteAction extends GPAction {
         myUIFacade = uiFadade;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         final ResourceAssignment[] context = myContext.getResourceAssignments();
         if (context != null && context.length > 0) {
@@ -48,6 +49,7 @@ public class AssignmentDeleteAction extends GPAction {
                     + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
             if (choice == Choice.YES) {
                 myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                    @Override
                     public void run() {
                         deleteAssignments(context);
                         myUIFacade.refresh();

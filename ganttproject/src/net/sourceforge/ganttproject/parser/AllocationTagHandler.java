@@ -54,6 +54,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         myRoleManager = roleMgr;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("allocation")) {
@@ -61,6 +62,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         }
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 
@@ -164,9 +166,11 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
         return result;
     }
 
+    @Override
     public void parsingStarted() {
     }
 
+    @Override
     public void parsingFinished() {
         for (Iterator<Entry<ResourceAssignment, String>> lateBindingEntries = myLateAssigmnent2roleBinding
                 .entrySet().iterator(); lateBindingEntries.hasNext();) {

@@ -155,10 +155,12 @@ public class ColumnManagerPanel {
                 this.isShow = isShow;
             }
 
+            @Override
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 mySelection = selection;
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (CustomPropertyDefinition def: mySelection) {
                     myIsVisibleOption.setVisible(def, isShow);
@@ -169,6 +171,7 @@ public class ColumnManagerPanel {
         props.getTableAndActions().addAction(new ShowHideSelectionAction(false, "$Hide selected"));
         myIsVisibleOption.setVisibleFields(myVisibleFields);
         ChangeValueListener defaultValuePanelEnabler = new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 setDefaultValuePanelEnabled(myEnableDefaultValueOption.isChecked());
             }
@@ -179,6 +182,7 @@ public class ColumnManagerPanel {
         ListAndFieldsPanel<CustomPropertyDefinition> listAndFields =
             new ListAndFieldsPanel<CustomPropertyDefinition>(props, fields);
         props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
+            @Override
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 if (selection.size()!=1) {
                     UIUtil.setEnabledTree(fields, false);

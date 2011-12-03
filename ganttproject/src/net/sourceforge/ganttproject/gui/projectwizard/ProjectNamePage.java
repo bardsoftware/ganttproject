@@ -34,14 +34,17 @@ public class ProjectNamePage implements WizardPage {
         myI18N = i18n;
     }
 
+    @Override
     public String getTitle() {
         return myI18N.getNewProjectWizardWindowTitle();
     }
 
+    @Override
     public Component getComponent() {
         return myProjectSettingsPanel;
     }
 
+    @Override
     public void setActive(boolean active) {
         if (!active) {
             myProjectSettingsPanel.applyChanges(false);

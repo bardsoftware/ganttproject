@@ -83,6 +83,7 @@ public class StartStartConstraintImpl extends ConstraintImpl implements
                 isActive);
     }
 
+    @Override
     public ActivityBinding getActivityBinding() {
         TaskActivity[] dependantActivities = getDependency().getDependant()
                 .getActivities();

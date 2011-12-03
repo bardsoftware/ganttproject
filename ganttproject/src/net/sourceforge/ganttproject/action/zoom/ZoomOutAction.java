@@ -37,6 +37,7 @@ public class ZoomOutAction extends GPAction implements ZoomListener {
         myZoomManager.addZoomListener(this);
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         if (myZoomManager.canZoomOut()) {
             myZoomManager.zoomOut();

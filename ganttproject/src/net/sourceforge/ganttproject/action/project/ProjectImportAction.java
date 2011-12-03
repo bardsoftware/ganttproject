@@ -41,6 +41,7 @@ public class ProjectImportAction extends GPAction {
         myProject = project;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         WizardImpl wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
         wizard.show();

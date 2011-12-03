@@ -37,6 +37,7 @@ public class CustomColumn implements CustomPropertyDefinition {
         id = newId;
     }
 
+    @Override
     public Object getDefaultValue() {
         return defaultValue;
     }
@@ -46,26 +47,31 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
 
 
+    @Override
     public void setDefaultValueAsString(String value) {
         CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
                 getTypeAsString(), value);
         defaultValue = stub.getDefaultValue();
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         String oldName = this.name;
         this.name = name;
         myManager.fireDefinitionChanged(this, oldName);
     }
 
+    @Override
     public CustomPropertyClass getPropertyClass() {
         return myPropertyClass;
     }
 
+    @Override
     public Class<?> getType() {
         return myPropertyClass.getJavaClass();
     }
@@ -75,22 +81,27 @@ public class CustomColumn implements CustomPropertyDefinition {
         return this.name + " [" + getType() + "] <" + this.defaultValue + ">";
     }
 
+    @Override
     public String getDefaultValueAsString() {
         return this.defaultValue==null ? null : this.defaultValue.toString();
     }
 
+    @Override
     public String getID() {
         return getId();
     }
 
+    @Override
     public String getTypeAsString() {
         return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(getType());
     }
 
+    @Override
     public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
         return Status.OK_STATUS;
     }
 
+    @Override
     public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
         CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);
         myPropertyClass = propertyClass;

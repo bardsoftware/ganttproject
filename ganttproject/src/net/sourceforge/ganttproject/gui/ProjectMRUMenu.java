@@ -50,6 +50,7 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
         myProjectUIFacade = projectUIFacade;
     }
 
+    @Override
     public void mruListChanged(Collection<Document> newMRUList) {
         removeAll();
         int index = 0;

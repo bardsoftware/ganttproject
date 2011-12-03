@@ -54,6 +54,7 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
         myVisiblePropertyName = visiblePropertyName;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
             throws FileFormatException {
         if (qName.equals(myTagName)) {
@@ -62,14 +63,17 @@ public class TaskDisplayColumnsTagHandler implements TagHandler,
 
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void parsingStarted() {
         myVisibleFields.clear();
     }
 
+    @Override
     public void parsingFinished() {
         myVisibleFields.importData(TableHeaderUIFacade.Immutable.fromList(myBuffer));
     }

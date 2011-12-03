@@ -62,14 +62,17 @@ public class ChartModelResource extends ChartModelBase {
             myAttributeName = attributeName;
         }
 
+        @Override
         public String getTagName() {
             return myTagName;
         }
 
+        @Override
         public String getAttributeName() {
             return myAttributeName;
         }
 
+        @Override
         public void loadValue(String legacyValue) {
             loadPersistentValue(legacyValue);
         }
@@ -180,6 +183,7 @@ public class ChartModelResource extends ChartModelBase {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void setVisibleTasks(List<Task> visibleTasks) {
         // TODO Auto-generated method stub
     }

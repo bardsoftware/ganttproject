@@ -94,6 +94,7 @@ public class XMLCalendarOpen {
     private class DefaultTagHandler implements TagHandler {
         private String name;
 
+        @Override
         public void startElement(String namespaceURI, String sName,
                 String qName, Attributes attrs) {
             String eName = qName; // element name
@@ -115,6 +116,7 @@ public class XMLCalendarOpen {
             }
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
         }
 

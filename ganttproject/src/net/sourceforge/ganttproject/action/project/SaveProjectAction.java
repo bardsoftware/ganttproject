@@ -69,10 +69,12 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
         setEnabled(false);
     }
 
+    @Override
     public void projectCreated() {
         setEnabled(false);
     }
 
+    @Override
     public void projectOpened() {
         setEnabled(false);
     }

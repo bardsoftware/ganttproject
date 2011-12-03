@@ -107,6 +107,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
         }
     }
 
+    @Override
     public Task[] getCriticalTasks() {
         Date projectEnd = myTaskManager.getProjectEnd();
         Node fakeFinalNode = new Node(null, projectEnd, projectEnd, projectEnd, projectEnd, 0, null);

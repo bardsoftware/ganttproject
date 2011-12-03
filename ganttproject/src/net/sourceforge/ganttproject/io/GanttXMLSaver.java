@@ -65,6 +65,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
         myUIFacade = uiFacade;
     }
 
+    @Override
     public void save(OutputStream stream) throws IOException {
         try {
             AttributesImpl attrs = new AttributesImpl();

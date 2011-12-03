@@ -54,6 +54,7 @@ class FileChooserPage extends FileChooserPageBase {
         return JFileChooser.FILES_ONLY;
     }
 
+    @Override
     public String getTitle() {
         return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
     }

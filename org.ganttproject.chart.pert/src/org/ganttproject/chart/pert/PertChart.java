@@ -52,6 +52,7 @@ public abstract class PertChart extends JPanel implements Chart {
     public PertChart() {
     }
 
+    @Override
     public void init(IGanttProject project) {
         myTaskManager = project.getTaskManager();
     }
@@ -70,6 +71,7 @@ public abstract class PertChart extends JPanel implements Chart {
     /**
      * This method in not supported by this Chart.
      */
+    @Override
     public Date getStartDate() {
         throw new UnsupportedOperationException();
     }
@@ -77,34 +79,42 @@ public abstract class PertChart extends JPanel implements Chart {
     /**
      * This method in not supported by this Chart.
      */
+    @Override
     public Date getEndDate() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return null;
     }
 
+    @Override
     public Chart createCopy() {
         return null;
     }
 
+    @Override
     public ChartSelection getSelection() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public IStatus canPaste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void paste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void addSelectionListener(ChartSelectionListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public void removeSelectionListener(ChartSelectionListener listener) {
         myListeners.remove(listener);
     }

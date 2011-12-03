@@ -46,12 +46,15 @@ public class FontSubstitutionPanel {
 
     public Component getComponent() {
         TableModel tableModel = new AbstractTableModel() {
+            @Override
             public int getColumnCount() {
                 return 2;
             }
+            @Override
             public int getRowCount() {
                 return myModel.getSubstitutions().size();
             }
+            @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
                 FontSubstitution substitution = getSubstitution(rowIndex);
                 switch (columnIndex) {
@@ -94,6 +97,7 @@ public class FontSubstitutionPanel {
 
         class CellRendererImpl implements TableCellRenderer {
             private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+            @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected, boolean hasFocus,
                     int row, int column) {

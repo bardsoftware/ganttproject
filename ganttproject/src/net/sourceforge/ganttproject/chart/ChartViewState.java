@@ -27,6 +27,7 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
         myUIFacade = uiFacade;
     }
 
+    @Override
     public void scrollBy(TaskLength duration) {
         myChart.scrollBy(duration);
         myOffsetPixels = 0;
@@ -39,10 +40,12 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
         myChart.setStartOffset(myOffsetPixels);
     }
 
+    @Override
     public void scrollTo(Date date) {
         myChart.setStartDate(date);
     }
 
+    @Override
     public void zoomChanged(ZoomEvent e) {
         myCurrentZoomState = e.getNewZoomState();
         Date date;

@@ -46,10 +46,12 @@ public class RoleSetPage implements WizardPage {
         myListModel = new RoleSetListModel(roleSets, i18n);
     }
 
+    @Override
     public String getTitle() {
         return myI18N.getProjectDomainPageTitle();
     }
 
+    @Override
     public Component getComponent() {
         Box domainBox = new Box(BoxLayout.PAGE_AXIS);
         JLabel label = new JLabel(GanttLanguage.getInstance().getText(
@@ -96,10 +98,12 @@ public class RoleSetPage implements WizardPage {
             }
         }
 
+        @Override
         public int getSize() {
             return myRoleSets.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return myRoleSets[index];
         }
@@ -108,6 +112,7 @@ public class RoleSetPage implements WizardPage {
             return this;
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             final RoleSet roleSet = (RoleSet) value;
@@ -145,6 +150,7 @@ public class RoleSetPage implements WizardPage {
         }
     }
 
+    @Override
     public void setActive(boolean active) {
     }
 }

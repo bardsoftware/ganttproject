@@ -42,6 +42,7 @@ public abstract class AbstractExporter implements Exporter {
     private DefaultDateOption myExportRangeEnd;
 
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myGanttChart= uiFacade.getGanttChart();
         myResourceChart = uiFacade.getResourceChart();

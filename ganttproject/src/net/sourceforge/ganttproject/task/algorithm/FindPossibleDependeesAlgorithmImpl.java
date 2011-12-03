@@ -15,6 +15,7 @@ public abstract class FindPossibleDependeesAlgorithmImpl implements
     public FindPossibleDependeesAlgorithmImpl() {
     }
 
+    @Override
     public Task[] run(Task dependant) {
         myContainmentFacade = createContainmentFacade();
         ArrayList<Task> result = new ArrayList<Task>();

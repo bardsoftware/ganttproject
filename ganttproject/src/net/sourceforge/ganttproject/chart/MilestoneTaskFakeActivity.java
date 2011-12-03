@@ -22,30 +22,37 @@ class MilestoneTaskFakeActivity implements TaskActivity {
         myEndTime = endTime;
     }
 
+    @Override
     public TaskLength getDuration() {
         return myTask.getManager().createLength(1);
     }
 
+    @Override
     public Date getEnd() {
         return myEndTime;
     }
 
+    @Override
     public float getIntensity() {
         return 1;
     }
 
+    @Override
     public Date getStart() {
         return myStartTime;
     }
 
+    @Override
     public Task getTask() {
         return myTask;
     }
 
+    @Override
     public boolean isFirst() {
         return true;
     }
 
+    @Override
     public boolean isLast() {
         return true;
     }

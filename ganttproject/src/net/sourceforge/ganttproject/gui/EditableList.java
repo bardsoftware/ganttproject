@@ -171,14 +171,17 @@ public abstract class EditableList<T>  {
         return selIndex >= 0 && selIndex < myValues.size() ? myValues.get(selIndex) : null;
     }
     class TableModelImpl extends AbstractTableModel {
+        @Override
         public int getColumnCount() {
             return 1;
         }
 
+        @Override
         public int getRowCount() {
             return myValues.size()+1;
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             if (row >= 0 && row < myValues.size()) {
                 return new ComboItem(myValues.get(row));

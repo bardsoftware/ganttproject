@@ -62,8 +62,10 @@ public class NotificationSlider {
         timeline.addPropertyToInterpolate("height", 0, myOffscreenImage.getHeight());
         timeline.setDuration(ANIMATION_TIME_MS);
         timeline.addCallback(new TimelineCallback() {
+            @Override
             public void onTimelinePulse(float arg0, float arg1) {
             }
+            @Override
             public void onTimelineStateChanged(TimelineState from, TimelineState to, float arg2, float arg3) {
                 if (TimelineState.DONE == to) {
                     myHost.setComponent(contents, myOnHide);

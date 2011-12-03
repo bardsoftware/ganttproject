@@ -42,8 +42,10 @@ public class GanttDialogProperties {
         final GanttLanguage language = GanttLanguage.getInstance();
         final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
         final Action[] actions = new Action[] { new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), new Runnable() {
+                    @Override
                     public void run() {
                         taskPropertiesBean.getReturnTask();
                         try {

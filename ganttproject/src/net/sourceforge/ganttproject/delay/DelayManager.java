@@ -161,6 +161,7 @@ public class DelayManager implements GPUndoListener {
             fireDelayObservation();
         }
     }
+    @Override
     public void undoOrRedoHappened() {
 //        System.out.println("undoOrRedoHappened");
         ourCriticProcess = true;
@@ -168,6 +169,7 @@ public class DelayManager implements GPUndoListener {
 
     }
 
+    @Override
     public void undoableEditHappened(UndoableEditEvent arg0) {
         // TODO Auto-generated method stub
     }

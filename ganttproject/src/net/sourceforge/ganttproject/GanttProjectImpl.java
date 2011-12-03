@@ -68,38 +68,47 @@ public class GanttProjectImpl implements IGanttProject {
         myTaskCustomColumnStorage = new CustomColumnsStorage();
         myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
     }
+    @Override
     public String getProjectName() {
         return myProjectName;
     }
 
+    @Override
     public void setProjectName(String projectName) {
         myProjectName = projectName;
     }
 
+    @Override
     public String getDescription() {
         return myDescription;
     }
 
+    @Override
     public void setDescription(String description) {
         myDescription = description;
     }
 
+    @Override
     public String getOrganization() {
         return myOrganization;
     }
 
+    @Override
     public void setOrganization(String organization) {
         myOrganization = organization;
     }
 
+    @Override
     public String getWebLink() {
         return myWebLink;
     }
 
+    @Override
     public void setWebLink(String webLink) {
         myWebLink = webLink;
     }
 
+    @Override
     public Task newTask() {
         Task result = getTaskManager().createTask();
         getTaskManager().getTaskHierarchy().move(result,getTaskManager().getRootTask());
@@ -110,76 +119,94 @@ public class GanttProjectImpl implements IGanttProject {
         return language;
     }
 
+    @Override
     public UIConfiguration getUIConfiguration() {
         return myUIConfiguration;
     }
 
+    @Override
     public HumanResourceManager getHumanResourceManager() {
         return myResourceManager;
     }
 
+    @Override
     public RoleManager getRoleManager() {
         return RoleManager.Access.getInstance();
     }
 
+    @Override
     public TaskManager getTaskManager() {
         return myTaskManager;
     }
 
+    @Override
     public TaskContainmentHierarchyFacade getTaskContainment() {
         return getTaskManager().getTaskHierarchy();
     }
 
+    @Override
     public GPCalendar getActiveCalendar() {
         return myTaskManagerConfig.getCalendar();
     }
 
+    @Override
     public TimeUnitStack getTimeUnitStack() {
         return myTaskManagerConfig.getTimeUnitStack();
     }
 
+    @Override
     public void setModified() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void setModified(boolean modified) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void close() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public Document getDocument() {
         return myDocument;
     }
 
+    @Override
     public void setDocument(Document document) {
         myDocument = document;
     }
 
+    @Override
     public void addProjectEventListener(ProjectEventListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public void removeProjectEventListener(ProjectEventListener listener) {
         myListeners.remove(listener);
     }
 
+    @Override
     public boolean isModified() {
         // TODO Auto-generated method stub
         return false;
     }
 
+    @Override
     public void open(Document document) throws IOException {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public DocumentManager getDocumentManager() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public CustomPropertyManager getResourceCustomPropertyManager() {
         return myResourceManager.getCustomPropertyManager();
     };
@@ -195,34 +222,42 @@ public class GanttProjectImpl implements IGanttProject {
             myCalendar = new WeekendCalendarImpl();
         }
 
+        @Override
         public Color getDefaultColor() {
             return Color.BLUE;
         }
 
+        @Override
         public GPCalendar getCalendar() {
             return myCalendar;
         }
 
+        @Override
         public TimeUnitStack getTimeUnitStack() {
             return myTimeUnitStack;
         }
 
+        @Override
         public HumanResourceManager getResourceManager() {
             return myResourceManager;
         }
+        @Override
         public URL getProjectDocumentURL() {
             return null;
         }
     }
 
+    @Override
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
     }
 
+    @Override
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
 
+    @Override
     public List<GanttPreviousState> getBaselines() {
         return myBaselines;
     }

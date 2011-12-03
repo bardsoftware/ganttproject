@@ -44,6 +44,7 @@ public class GanttPrintable implements Printable {
     }
 
     /** Print the page */
+    @Override
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) {
         System.err.println("[GanttPrintable] print(): reduceFactor="
                 + reduceFactor);

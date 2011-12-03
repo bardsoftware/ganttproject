@@ -47,14 +47,17 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
         myTypeAsString = stub.getTypeAsString();
     }
 
+    @Override
     public Object getDefaultValue() {
         return myDefaultValue;
     }
 
+    @Override
     public String getDefaultValueAsString() {
         return myDefaultValueAsString;
     }
 
+    @Override
     public void setDefaultValueAsString(String value) {
         CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
                 getTypeAsString(), value);
@@ -62,34 +65,42 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
         myDefaultValueAsString = stub.getDefaultValueAsString();
     }
 
+    @Override
     public String getID() {
         return myID;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public void setName(String name) {
         myName = name;
     }
 
+    @Override
     public Class<?> getType() {
         return myPropertyClass.getJavaClass();
     }
 
+    @Override
     public CustomPropertyClass getPropertyClass() {
         return myPropertyClass;
     }
 
+    @Override
     public String getTypeAsString() {
         return myTypeAsString;
     }
 
+    @Override
     public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
         return Status.OK_STATUS;
     }
 
+    @Override
     public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
         myPropertyClass = propertyClass;
         myTypeAsString = propertyClass.getID();

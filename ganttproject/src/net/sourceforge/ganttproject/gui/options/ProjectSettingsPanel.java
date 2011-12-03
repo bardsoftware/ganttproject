@@ -80,6 +80,7 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
         bWeb.setToolTipText(GanttProject.getToolTip(language
                 .getText("openWebLink")));
         bWeb.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // link to open the web link
                 if (!BrowserControl.displayURL(tfWebLink.getText())) {

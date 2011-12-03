@@ -34,10 +34,12 @@ public class ScrollViewInteraction extends MouseInteractionBase
         myScrollingSession = timelineFacade.createScrollingSession(e.getX());
     }
 
+    @Override
     public void apply(MouseEvent event) {
         myScrollingSession.setXpos(event.getX());
     }
 
+    @Override
     public void finish() {
         myScrollingSession.finish();
     }

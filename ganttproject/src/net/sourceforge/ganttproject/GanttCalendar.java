@@ -205,6 +205,7 @@ public class GanttCalendar extends GregorianCalendar {
     }
 
     public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
+        @Override
         public int compare(GanttCalendar o1, GanttCalendar o2) {
             return o1.compareTo(o2);
         }

@@ -55,14 +55,17 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
         selectionChanged(selectionManager.getSelectedTasks());
     }
 
+    @Override
     public void addStateChangedListener(ActionStateChangedListener l) {
         myListeners.add(l);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         final List<Task> selection = new ArrayList<Task>(mySelection);
         if(isEnabled() && askUserPermission(selection)) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                @Override
                 public void run() {
                     try {
                         TaskActionBase.this.run(selection);
@@ -83,6 +86,7 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
         return true;
     }
 
+    @Override
     public void selectionChanged(List<Task> currentSelection) {
         setEnabled(isEnabled(currentSelection));
         mySelection = currentSelection;
@@ -96,6 +100,7 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
         }
     }
 
+    @Override
     public void userInputConsumerChanged(Object newConsumer) {
     }
 

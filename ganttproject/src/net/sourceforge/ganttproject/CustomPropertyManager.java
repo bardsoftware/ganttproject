@@ -87,36 +87,47 @@ public interface CustomPropertyManager {
                 defaultValue = "";
             }
             return new CustomPropertyDefinition() {
+                @Override
                 public Object getDefaultValue() {
                     return defaultValue;
                 }
+                @Override
                 public String getDefaultValueAsString() {
                     return valueAsString;
                 }
+                @Override
                 public void setDefaultValueAsString(String value) {
                     throw new UnsupportedOperationException();
                 }
+                @Override
                 public String getID() {
                     return null;
                 }
+                @Override
                 public String getName() {
                     return null;
                 }
+                @Override
                 public void setName(String name) {
                     throw new UnsupportedOperationException();
                 }
+                @Override
                 public Class<?> getType() {
                     return propertyClass.getJavaClass();
                 }
+                @Override
                 public String getTypeAsString() {
                     return typeAsString;
                 }
+                @Override
                 public CustomPropertyClass getPropertyClass() {
                     return propertyClass;
                 }
+                @Override
                 public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
                     return Status.CANCEL_STATUS;
                 }
+                @Override
                 public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
                     throw new UnsupportedOperationException();
                 }

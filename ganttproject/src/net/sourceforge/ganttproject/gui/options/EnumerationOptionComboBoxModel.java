@@ -44,6 +44,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
         }
     }
 
+    @Override
     public void setSelectedItem(Object item) {
         if (item != null) {
             mySelectedItem = (Item) item;
@@ -51,14 +52,17 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements
         }
     }
 
+    @Override
     public Object getSelectedItem() {
         return mySelectedItem;
     }
 
+    @Override
     public int getSize() {
         return myValues.size();
     }
 
+    @Override
     public Object getElementAt(int index) {
         return myValues.get(index);
     }

@@ -25,6 +25,7 @@ public class DefaultWeekTagHandler implements TagHandler {
         }
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if ("default-week".equals(qName)) {
@@ -48,6 +49,7 @@ public class DefaultWeekTagHandler implements TagHandler {
         return myShortFormat.format(myCalendar.getTime()).toLowerCase();
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 

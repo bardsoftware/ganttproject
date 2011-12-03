@@ -78,27 +78,33 @@ public class ExporterToMsProjectFile implements Exporter {
         myFileFormatOption.commit();
     }
 
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.msproject.description");
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
 
+    @Override
     public List<GPOptionGroup> getSecondaryOptions() {
         return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : Collections.<GPOptionGroup>emptyList();
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
 
+    @Override
     public String getFileNamePattern() {
         return myFileFormat;
     }
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myProject = project;
         myLanguageOption = new LocaleOption();
@@ -106,6 +112,7 @@ public class ExporterToMsProjectFile implements Exporter {
         myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
     }
 
+    @Override
     public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
         ProjectFile outProject = new ProjectFileExporter(myProject).run();
         ProjectWriter writer = createProjectWriter();
@@ -128,6 +135,7 @@ public class ExporterToMsProjectFile implements Exporter {
         return null;
     }
 
+    @Override
     public String proposeFileExtension() {
         return getSelectedFormatExtension();
     }
@@ -143,10 +151,12 @@ public class ExporterToMsProjectFile implements Exporter {
                 + Arrays.asList(FILE_FORMAT_IDS));
     }
 
+    @Override
     public String[] getFileExtensions() {
         return FILE_EXTENSIONS;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return getFileExtensions();
     }

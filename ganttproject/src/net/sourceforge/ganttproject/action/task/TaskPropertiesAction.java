@@ -65,6 +65,7 @@ public class TaskPropertiesAction extends TaskActionBase {
         getSelectionManager().setUserInputConsumer(pd);
         pd.show(myProject, getUIFacade());
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 getSelectionManager().clear();
                 getSelectionManager().addTask(tasks[0]);

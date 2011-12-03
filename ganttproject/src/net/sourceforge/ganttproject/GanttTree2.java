@@ -214,6 +214,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         getTreeTable().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
         getTreeTable().getTree().addTreeSelectionListener(
                 new TreeSelectionListener() {
+                    @Override
                     public void valueChanged(TreeSelectionEvent e) {
                         if (isOnTaskSelectionEventProcessing) {
                             return;
@@ -240,8 +241,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
         getTreeTable().insertWithLeftyScrollBar(this);
         mySelectionManager.addSelectionListener(new Listener() {
+            @Override
             public void selectionChanged(List<Task> currentSelection) {
             }
+            @Override
             public void userInputConsumerChanged(Object newConsumer) {
                 if (getTreeTable().getTable().isEditing()) {
                     getTreeTable().getTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
@@ -648,6 +651,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
      * Class for expansion and collapse of node
      */
     private class GanttTreeExpansionListener implements TreeExpansionListener {
+        @Override
         public void treeExpanded(TreeExpansionEvent e) {
             if (area != null) {
                 area.repaint();
@@ -659,6 +663,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             appli.setAskForSave(true);
         }
 
+        @Override
         public void treeCollapsed(TreeExpansionEvent e) {
             if (area != null) {
                 area.repaint();
@@ -698,6 +703,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             // expanded or collapsed
             // if the user lingers on it for more than a short time
             hoverTimer = new Timer(1000, new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     if (!getTreeTable().getTree().isExpanded(lastPath)) {
                         getTreeTable().getTree().expandPath(lastPath);
@@ -709,6 +715,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             hoverTimer.setRepeats(false);
         }
 
+        @Override
         public void dragEnter(DropTargetDragEvent dtde) {
             if (ghostImage == null) {
                 // In case if you drag a file from out and it's not an
@@ -723,6 +730,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             }
         }
 
+        @Override
         public void dragOver(DropTargetDragEvent dtde) {
             if (!isDragAcceptable(dtde)) {
                 dtde.rejectDrag();
@@ -780,6 +788,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
         }
 
+        @Override
         public void dropActionChanged(DropTargetDragEvent dtde) {
             if (!isDragAcceptable(dtde)) {
                 dtde.rejectDrag();
@@ -788,6 +797,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             }
         }
 
+        @Override
         public void drop(DropTargetDropEvent dtde) {
             if (!isDropAcceptable(dtde)) {
                 dtde.rejectDrop();
@@ -858,6 +868,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             dtde.dropComplete(true);
         }
 
+        @Override
         public void dragExit(DropTargetEvent dte) {
             if (!DragSource.isDragImageSupported()) {
                 repaint(ghostImageRect.getBounds());
@@ -937,14 +948,17 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         }
 
         // Transferable interface methods...
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             return _flavors;
         }
 
+        @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             return java.util.Arrays.asList(_flavors).contains(flavor);
         }
 
+        @Override
         public synchronized Object getTransferData(DataFlavor flavor)
                 throws UnsupportedFlavorException {
             if (flavor.isMimeTypeEqual(TREEPATH_FLAVOR.getMimeType())) {
@@ -973,6 +987,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
         if (currentSelection != null) {
             getUndoManager().undoableEdit("Cut", new Runnable() {
+                @Override
                 public void run() {
                     cpNodesArrayList = new ArrayList<DefaultMutableTreeNode>();
                     cpAllDependencies(cdmtn);
@@ -1046,6 +1061,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     public void pasteNode() {
         if (cpNodesArrayList != null) {
             getUndoManager().undoableEdit("Paste", new Runnable() {
+                @Override
                 public void run() {
                     DefaultMutableTreeNode current = (DefaultMutableTreeNode)
                             getTreeTable().getTree().getLastSelectedPathComponent();
@@ -1201,21 +1217,27 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         return myTaskManager;
     }
 
+    @Override
     public void dragEnter(DragSourceDragEvent dsde) {
     }
 
+    @Override
     public void dragOver(DragSourceDragEvent dsde) {
     }
 
+    @Override
     public void dropActionChanged(DragSourceDragEvent dsde) {
     }
 
+    @Override
     public void dragDropEnd(DragSourceDropEvent dsde) {
     }
 
+    @Override
     public void dragExit(DragSourceEvent dse) {
     }
 
+    @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
 
         Point ptDragOrigin = dge.getDragOrigin();
@@ -1320,8 +1342,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         }
     }
 
+    @Override
     public void setDelay(final Task task, final Delay delay) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TaskNode taskNode = (TaskNode) getNode(task.getTaskID());
                 if (taskNode != null) {
@@ -1345,6 +1369,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     ////////////////////////////////////////////////////////////////////////
     // TaskTreeUIFacade
+    @Override
     public AbstractAction[] getTreeActions() {
         if(myTreeActions == null) {
             myTreeActions = new AbstractAction[] { myUnindentAction, myIndentAction, myMoveUpAction, myMoveDownAction,

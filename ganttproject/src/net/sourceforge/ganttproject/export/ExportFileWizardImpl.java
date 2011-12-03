@@ -93,6 +93,7 @@ public class ExportFileWizardImpl extends WizardImpl {
     protected void onOkPressed() {
         super.onOkPressed();
         SwingUtilities.invokeLater(new Runnable(){
+            @Override
             public void run() {
                 try {
                     ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
@@ -108,6 +109,7 @@ public class ExportFileWizardImpl extends WizardImpl {
     }
 
     private class ExportFinalizationJobImpl implements ExportFinalizationJob {
+        @Override
         public void run(File[] exportedFiles) {
             if (myState.getPublishInWebOption().isChecked() && exportedFiles.length>0) {
                 WebPublisher publisher = new WebPublisher();

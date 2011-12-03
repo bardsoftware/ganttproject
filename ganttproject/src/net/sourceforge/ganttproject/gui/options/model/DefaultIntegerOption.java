@@ -9,11 +9,13 @@ public class DefaultIntegerOption extends GPAbstractOption<Integer> implements I
         super(id, initialValue);
     }
 
+    @Override
     public String getPersistentValue() {
         int value = getValue();
         return String.valueOf(value);
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         int intValue = Integer.parseInt(value);
         setValue(intValue, true);

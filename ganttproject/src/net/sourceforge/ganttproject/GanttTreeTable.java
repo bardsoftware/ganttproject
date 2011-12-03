@@ -142,6 +142,7 @@ public class GanttTreeTable extends GPTreeTableBase {
      * @author Benoit Baranne
      */
     private class ModelListener implements TableModelListener {
+        @Override
         public void tableChanged(TableModelEvent e) {
             getUiFacade().getGanttChart().reset();
         }

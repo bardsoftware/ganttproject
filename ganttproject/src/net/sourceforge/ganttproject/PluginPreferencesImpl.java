@@ -36,6 +36,7 @@ public class PluginPreferencesImpl implements Preferences {
         myParent = parent;
     }
 
+    @Override
     public Preferences node(String path) {
         if (path.endsWith("/")) {
             if (!"/".equals(path)) {
@@ -61,30 +62,37 @@ public class PluginPreferencesImpl implements Preferences {
         return child.node(suffix);
     }
 
+    @Override
     public void removeNode() throws BackingStoreException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String absolutePath() {
         return myParent==null ? "/" : myParent.absolutePath() + "/" + myName;
     }
 
+    @Override
     public String[] childrenNames() throws BackingStoreException {
         return myChildren.keySet().toArray(new String[0]);
     }
 
+    @Override
     public void clear() throws BackingStoreException {
         myProps.clear();
     }
 
+    @Override
     public void flush() throws BackingStoreException {
     }
 
+    @Override
     public String get(String key, String def) {
         String value = myProps.get(key);
         return value==null ? def : value;
     }
 
+    @Override
     public boolean getBoolean(String key, boolean def) {
         String value = get(key, null);
         if (value == null) {
@@ -98,21 +106,25 @@ public class PluginPreferencesImpl implements Preferences {
         }
     }
 
+    @Override
     public byte[] getByteArray(String key, byte[] def) {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public double getDouble(String key, double def) {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public float getFloat(String key, float def) {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public int getInt(String key, int def) {
         String value = get(key, null);
         if (value == null) {
@@ -125,59 +137,73 @@ public class PluginPreferencesImpl implements Preferences {
         }
     }
 
+    @Override
     public long getLong(String key, long def) {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public String[] keys() throws BackingStoreException {
         return myProps.keySet().toArray(new String[0]);
     }
 
+    @Override
     public String name() {
         return myName;
     }
 
+    @Override
     public boolean nodeExists(String pathName) throws BackingStoreException {
         return node(pathName)!=null;
     }
 
+    @Override
     public Preferences parent() {
         return myParent;
     }
 
+    @Override
     public void put(String key, String value) {
         myProps.put(key, value);
     }
 
+    @Override
     public void putBoolean(String key, boolean value) {
         myProps.put(key, Boolean.toString(value));
     }
 
+    @Override
     public void putByteArray(String key, byte[] value) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void putDouble(String key, double value) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void putFloat(String key, float value) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void putInt(String key, int value) {
         put(key, String.valueOf(value));
     }
 
+    @Override
     public void putLong(String key, long value) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void remove(String key) {
         myProps.remove(key);
     }
 
+    @Override
     public void sync() throws BackingStoreException {
         throw new UnsupportedOperationException();
     }

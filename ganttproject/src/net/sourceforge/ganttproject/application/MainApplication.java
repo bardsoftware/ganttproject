@@ -22,6 +22,7 @@ public class MainApplication implements IPlatformRunnable {
     // GanttProject.main() method exits
     // without Eclipse, Swing thread continues execution. So we wait until main
     // window closes
+    @Override
     public Object run(Object args) throws Exception {
         Thread.currentThread().setContextClassLoader(
                 getClass().getClassLoader());

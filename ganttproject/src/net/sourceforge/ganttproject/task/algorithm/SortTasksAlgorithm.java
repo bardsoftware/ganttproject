@@ -13,6 +13,7 @@ import net.sourceforge.ganttproject.task.TaskLength;
  */
 public class SortTasksAlgorithm {
     private Comparator<TaskActivity> mySortActivitiesByStartDateComparator = new Comparator<TaskActivity>() {
+        @Override
         public int compare(TaskActivity leftTask, TaskActivity rightTask) {
             int result = 0;
             if (!leftTask.equals(rightTask)) {
@@ -47,6 +48,7 @@ public class SortTasksAlgorithm {
     };
 
     private Comparator<Task> mySortTasksByStartDateComparator = new Comparator<Task>() {
+        @Override
         public int compare(Task leftTask, Task rightTask) {
             int result = 0;
             if (!leftTask.equals(rightTask)) {

@@ -39,6 +39,7 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 
@@ -46,6 +47,7 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("date")) {
@@ -76,10 +78,12 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
 
     }
 
+    @Override
     public void parsingStarted() {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void parsingFinished() {
         // TODO Auto-generated method stub
     }

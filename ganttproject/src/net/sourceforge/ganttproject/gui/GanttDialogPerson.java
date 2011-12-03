@@ -89,6 +89,7 @@ public class GanttDialogPerson {
             loadFields();
             Component contentPane = getComponent();
             OkAction okAction = new OkAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     myGroup.commit();
                     okButtonActionPerformed(e);
@@ -181,6 +182,7 @@ public class GanttDialogPerson {
             // closed
             myUIFacade.getUndoManager().undoableEdit(
                     "Resource properties changed", new Runnable() {
+                        @Override
                         public void run() {
                             applyChanges();
                         }

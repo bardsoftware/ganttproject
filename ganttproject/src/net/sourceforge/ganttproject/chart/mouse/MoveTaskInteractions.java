@@ -50,6 +50,7 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
         }
     }
 
+    @Override
     public void apply(MouseEvent event) {
         TaskLength currentInterval = getLengthDiff(event);
         if (currentInterval.getLength() != 0) {
@@ -60,11 +61,13 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
         }
     }
 
+    @Override
     public void finish() {
         for (TaskMutator mutator : myMutators) {
             mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
         }
         myUiFacade.getUndoManager().undoableEdit("Task moved", new Runnable() {
+            @Override
             public void run() {
                 doFinish();
             }

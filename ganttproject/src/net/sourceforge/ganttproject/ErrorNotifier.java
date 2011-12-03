@@ -33,6 +33,7 @@ class ErrorNotifier implements Runnable {
         myErrors.add(e.getMessage());
     }
 
+    @Override
     public void run() {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < myErrors.size(); i++) {

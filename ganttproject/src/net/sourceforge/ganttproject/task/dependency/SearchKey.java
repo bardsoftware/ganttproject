@@ -41,6 +41,7 @@ public class SearchKey implements Comparable<SearchKey> {
         mySecondTaskID = secondTaskID;
     }
 
+    @Override
     public int compareTo(SearchKey rvalue) {
         int result = myFirstTaskID - rvalue.myFirstTaskID;
         if (result == 0) {

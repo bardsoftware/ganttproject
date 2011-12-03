@@ -74,6 +74,7 @@ public class HelpMenu {
             myUiFacade = uifacade;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             AboutDialog2 agp = new AboutDialog2(myUiFacade);
             agp.show();
@@ -88,6 +89,7 @@ public class HelpMenu {
             myUiFacade = uiFacade;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ViewLogDialog.show(myUiFacade);
         }

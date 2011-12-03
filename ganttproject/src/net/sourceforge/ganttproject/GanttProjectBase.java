@@ -146,10 +146,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
     }
 
+    @Override
     public void addProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.add(listener);
     }
 
+    @Override
     public void removeProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.remove(listener);
     }
@@ -199,6 +201,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade;
     }
 
+    @Override
     public Frame getMainFrame() {
         return myUIFacade.getMainFrame();
     }
@@ -208,50 +211,62 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setLookAndFeel(laf);
     }
 
+    @Override
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myUIFacade.getLookAndFeel();
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         return myUIFacade.getOptions();
     }
 
+    @Override
     public ScrollingManager getScrollingManager() {
         return myUIFacade.getScrollingManager();
     }
 
+    @Override
     public ZoomManager getZoomManager() {
         return myUIFacade.getZoomManager();
     }
 
+    @Override
     public GPUndoManager getUndoManager() {
         return myUndoManager;
     }
+    @Override
     public void setStatusText(String text) {
         myUIFacade.setStatusText(text);
     }
 
+    @Override
     public Dialog createDialog(Component content, Action[] buttonActions, String title) {
         return myUIFacade.createDialog(content, buttonActions, title);
     }
 
 
+    @Override
     public UIFacade.Choice showConfirmationDialog(String message, String title) {
         return myUIFacade.showConfirmationDialog(message, title);
     }
 
+    @Override
     public void showOptionDialog(int messageType, String message, Action[] actions) {
         myUIFacade.showOptionDialog(messageType, message, actions);
     }
 
+    @Override
     public void showErrorDialog(String message) {
         myUIFacade.showErrorDialog(message);
     }
 
+    @Override
     public void showErrorDialog(Throwable e) {
         myUIFacade.showErrorDialog(e);
     }
 
+    @Override
     public NotificationManager getNotificationManager() {
         return myUIFacade.getNotificationManager();
     }
@@ -266,14 +281,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
 
+    @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myUIFacade.getTaskSelectionContext();
     }
 
+    @Override
     public TaskSelectionManager getTaskSelectionManager() {
         return myUIFacade.getTaskSelectionManager();
     }
 
+    @Override
     public void setWorkbenchTitle(String title) {
         myUIFacade.setWorkbenchTitle(title);
     }
@@ -282,6 +300,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myViewManager;
     }
 
+    @Override
     public Chart getActiveChart() {
         return myViewManager.getSelectedView().getChart();
     }
@@ -298,6 +317,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             myTreeView = treeView;
         }
 
+        @Override
         public void optionsChanged() {
             myTreeView.getTable().setRowHeight(myGanttViewModel.calculateRowHeight());
             AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
@@ -330,18 +350,22 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return this;
     }
 
+    @Override
     public TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
 
+    @Override
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
     }
 
+    @Override
     public CustomPropertyManager getResourceCustomPropertyManager() {
         return myResourceCustomPropertyManager;
     }
 
+    @Override
     public CustomColumnsStorage getCustomColumnsStorage() {
         return myTaskCustomColumnStorage;
     }
@@ -354,46 +378,65 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return mySearchUi;
     }
 
+    @Override
     public abstract String getProjectName();
 
+    @Override
     public abstract void setProjectName(String projectName);
 
+    @Override
     public abstract String getDescription();
 
+    @Override
     public abstract void setDescription(String description);
 
+    @Override
     public abstract String getOrganization();
 
+    @Override
     public abstract void setOrganization(String organization);
 
+    @Override
     public abstract String getWebLink();
 
+    @Override
     public abstract void setWebLink(String webLink);
 
+    @Override
     public abstract Task newTask();
 
+    @Override
     public abstract UIConfiguration getUIConfiguration();
 
+    @Override
     public abstract HumanResourceManager getHumanResourceManager();
 
+    @Override
     public abstract RoleManager getRoleManager();
 
+    @Override
     public abstract TaskManager getTaskManager();
 
+    @Override
     public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
+    @Override
     public abstract GPCalendar getActiveCalendar();
 
+    @Override
     public abstract void setModified();
 
+    @Override
     public abstract void close();
 
+    @Override
     public abstract Document getDocument();
 
     protected GanttStatusBar getStatusBar() {
         return statusBar;
     }
 
+    @Override
     public DocumentManager getDocumentManager() {
         return myDocumentManager;
     }

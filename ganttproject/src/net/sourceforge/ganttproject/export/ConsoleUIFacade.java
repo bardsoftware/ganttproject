@@ -46,19 +46,23 @@ public class ConsoleUIFacade implements UIFacade {
     ConsoleUIFacade(UIFacade realFacade) {
         myRealFacade = realFacade;
     }
+    @Override
     public ScrollingManager getScrollingManager() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public ZoomManager getZoomManager() {
         return myRealFacade.getZoomManager();
     }
 
+    @Override
     public ZoomActionSet getZoomActionSet() {
         return myRealFacade.getZoomActionSet();
     }
 
+    @Override
     public Choice showConfirmationDialog(String message, String title) {
         // TODO Auto-generated method stub
         return null;
@@ -76,17 +80,21 @@ public class ConsoleUIFacade implements UIFacade {
         return null;
     }
 
+    @Override
     public void setStatusText(String text) {
     }
 
+    @Override
     public void showOptionDialog(int messageType, String message, Action[] actions) {
         System.err.println("[ConsoleUIFacade]: " + message);
     }
 
+    @Override
     public void showErrorDialog(String errorMessage) {
         System.err.println("[ConsoleUIFacade] ERROR: "+errorMessage);
     }
 
+    @Override
     public void showErrorDialog(Throwable e) {
         System.err.println("[ConsoleUIFacade] ERROR: "+e.getMessage());
            e.printStackTrace();
@@ -96,59 +104,71 @@ public class ConsoleUIFacade implements UIFacade {
         System.err.println("[ConsoleUIFacade] ERROR:"+e.getMessage());
         e.printStackTrace();
     }
+    @Override
     public GanttChart getGanttChart() {
         return myRealFacade.getGanttChart();
     }
 
+    @Override
     public Chart getResourceChart() {
         return myRealFacade.getResourceChart();
     }
 
+    @Override
     public Chart getActiveChart() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public int getViewIndex() {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public void setViewIndex(int viewIndex) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public int getGanttDividerLocation() {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public void setGanttDividerLocation(int location) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public int getResourceDividerLocation() {
         // TODO Auto-generated method stub
         return 0;
     }
 
+    @Override
     public void setResourceDividerLocation(int location) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public void refresh() {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public Frame getMainFrame() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public void setWorkbenchTitle(String title) {
         // TODO Auto-generated method stub
 
@@ -158,16 +178,20 @@ public class ConsoleUIFacade implements UIFacade {
         // TODO Auto-generated method stub
 
     }
+    @Override
     public GPUndoManager getUndoManager() {
         // TODO Auto-generated method stub
         return null;
     }
+    @Override
     public TaskTreeUIFacade getTaskTree() {
         return myRealFacade.getTaskTree();
     }
+    @Override
     public ResourceTreeUIFacade getResourceTree() {
         return myRealFacade.getResourceTree();
     }
+    @Override
     public TaskSelectionContext getTaskSelectionContext() {
         // TODO Auto-generated method stub
         return null;

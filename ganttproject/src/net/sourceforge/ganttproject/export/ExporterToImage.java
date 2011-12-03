@@ -39,6 +39,7 @@ public class ExporterToImage extends AbstractExporter {
             super("impex.image.fileformat");
         }
 
+        @Override
         public String[] getAvailableValues() {
             return FileTypeOption.FILE_FORMAT_ID;
         }
@@ -64,10 +65,12 @@ public class ExporterToImage extends AbstractExporter {
                     + Arrays.asList(FileTypeOption.FILE_FORMAT_ID));
         }
 
+        @Override
         public String getPersistentValue() {
             return null;
         }
 
+        @Override
         public void loadPersistentValue(String value) {
         }
 
@@ -86,28 +89,34 @@ public class ExporterToImage extends AbstractExporter {
         myOptions.setTitled(false);
     }
 
+    @Override
     public String getFileTypeDescription() {
         return MessageFormat.format(GanttLanguage.getInstance().getText(
                 "impex.image.description"),
                 new Object[] { proposeFileExtension() });
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
 
+    @Override
     public List<GPOptionGroup> getSecondaryOptions() {
         return Collections.singletonList(createExportRangeOptionGroup());
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
+    @Override
     public String getFileNamePattern() {
         return proposeFileExtension();
     }
 
+    @Override
     public void run(File outputFile,ExportFinalizationJob finalizationJob) throws Exception {
         Chart chart = getUIFacade().getActiveChart();
         if (chart==null) {
@@ -119,14 +128,17 @@ public class ExporterToImage extends AbstractExporter {
         finalizationJob.run(new File[] { outputFile });
     }
 
+    @Override
     public String proposeFileExtension() {
         return myFileTypeOption.proposeFileExtension();
     }
 
+    @Override
     public String[] getFileExtensions() {
         return FileTypeOption.FILE_EXTENSION;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return getFileExtensions();
     }

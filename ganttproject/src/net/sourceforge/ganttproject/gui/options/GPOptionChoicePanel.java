@@ -76,6 +76,7 @@ public class GPOptionChoicePanel {
             final Action nextRealAction = choiceChangeActions[i];
             Action nextWrapperAction = new AbstractAction(String
                     .valueOf(nextRealAction.getValue(Action.NAME))) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     nextRealAction.actionPerformed(e);
                     updateSelectionUI(selectedIndex);

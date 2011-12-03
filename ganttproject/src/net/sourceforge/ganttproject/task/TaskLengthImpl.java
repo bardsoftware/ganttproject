@@ -42,14 +42,17 @@ public class TaskLengthImpl implements TaskLength {
         myCount = length;
     }
 
+    @Override
     public float getValue() {
         return myCount;
     }
 
+    @Override
     public int getLength() {
         return (int) myCount;
     }
 
+    @Override
     public TimeUnit getTimeUnit() {
         return myUnit;
     }
@@ -62,6 +65,7 @@ public class TaskLengthImpl implements TaskLength {
         myCount = length;
     }
 
+    @Override
     public float getLength(TimeUnit unit) {
         if (myUnit.isConstructedFrom(unit)) {
             return (float) myCount * myUnit.getAtomCount(unit);
@@ -74,10 +78,12 @@ public class TaskLengthImpl implements TaskLength {
         return myCount;
     }
 
+    @Override
     public TaskLength reverse() {
         return new TaskLengthImpl(getTimeUnit(), -getLength());
     }
 
+    @Override
     public TaskLength translate(TimeUnit toUnit) {
         float translatedLength = getLength(toUnit);
         return new TaskLengthImpl(toUnit, translatedLength);

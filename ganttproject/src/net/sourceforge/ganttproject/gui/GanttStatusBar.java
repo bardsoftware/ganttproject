@@ -164,6 +164,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
         return new Dimension(getWidth(), 24);
     }
 
+    @Override
     public void run() {
         try {
             switch (mode) {
@@ -376,11 +377,13 @@ public class GanttStatusBar extends JPanel implements Runnable {
             //myProgressPanel = new ProgressBarPanel();
             myProgressDialog = new ProgressBarDialog(this);
         }
+        @Override
         public void beginTask(final String name, final int totalWork)  {
             isCanceled = false;
             myWorked = 0;
             GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     // pbp.reset(name, totalWork);
                     // pbp.setVisible(true);
@@ -393,9 +396,11 @@ public class GanttStatusBar extends JPanel implements Runnable {
             });
         }
 
+        @Override
         public void done() {
             GPLogger.log("[ProgressMonitorImpl] finished Task");
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
             //myProgressPanel.stop();
             //myProgressPanel.setVisible(false);
@@ -406,21 +411,26 @@ public class GanttStatusBar extends JPanel implements Runnable {
             });
         }
 
+        @Override
         public void internalWorked(double work) {
         }
 
+        @Override
         public boolean isCanceled() {
             return isCanceled;
         }
 
+        @Override
         public void setCanceled(boolean value) {
             myProgressDialog.done();
             isCanceled = value;
         }
 
+        @Override
         public void setTaskName(String name) {
         }
 
+        @Override
         public void subTask(final String name) {
             if (name == null) {
                 GPLogger.log("[ProgressMonitorImpl] finished subTask");
@@ -428,14 +438,17 @@ public class GanttStatusBar extends JPanel implements Runnable {
                 GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myProgressDialog.setSubTask(name);
                 }
             });
         }
 
+        @Override
         public void worked(final int work) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myWorked += work;
                     myProgressDialog.setProgress(myWorked);
