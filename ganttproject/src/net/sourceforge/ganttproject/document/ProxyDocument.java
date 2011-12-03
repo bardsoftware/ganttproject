@@ -83,42 +83,52 @@ class ProxyDocument implements Document {
         myVisibleFields = visibleFields;
     }
 
+    @Override
     public String getFileName() {
         return myPhysicalDocument.getFileName();
     }
 
+    @Override
     public boolean canRead() {
         return myPhysicalDocument.canRead();
     }
 
+    @Override
     public IStatus canWrite() {
         return myPhysicalDocument.canWrite();
     }
 
+    @Override
     public boolean isValidForMRU() {
         return myPhysicalDocument.isValidForMRU();
     }
 
+    @Override
     public boolean acquireLock() {
         return myPhysicalDocument.acquireLock();
     }
 
+    @Override
     public void releaseLock() {
         myPhysicalDocument.releaseLock();
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return myPhysicalDocument.getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return myPhysicalDocument.getOutputStream();
     }
 
+    @Override
     public String getPath() {
         return myPhysicalDocument.getPath();
     }
 
+    @Override
     public String getFilePath() {
         String result = myPhysicalDocument.getFilePath();
         if (result==null) {
@@ -131,22 +141,27 @@ class ProxyDocument implements Document {
         return result;
     }
 
+    @Override
     public String getURLPath() {
         return myPhysicalDocument.getURLPath();
     }
 
+    @Override
     public String getUsername() {
         return myPhysicalDocument.getUsername();
     }
 
+    @Override
     public String getPassword() {
         return myPhysicalDocument.getPassword();
     }
 
+    @Override
     public String getLastError() {
         return myPhysicalDocument.getLastError();
     }
 
+    @Override
     public void read() throws IOException, DocumentException {
         FailureState failure = new FailureState();
         SuccessState success = new SuccessState();
@@ -164,6 +179,7 @@ class ProxyDocument implements Document {
         //lock.enter();
     }
 
+    @Override
     public void write() throws IOException {
         GPSaver saver = myParserFactory.newSaver();
         byte[] buffer;
@@ -350,10 +366,12 @@ class ProxyDocument implements Document {
         }
     }
 
+    @Override
     public URI getURI() {
         return myPhysicalDocument.getURI();
     }
 
+    @Override
     public boolean isLocal() {
         return myPhysicalDocument.isLocal();
     }
@@ -366,6 +384,7 @@ class ProxyDocument implements Document {
         return getPath().equals(((Document)doc).getPath());
     }
 
+    @Override
     public Portfolio getPortfolio() {
         return myPortfolio;
     }
@@ -380,6 +399,7 @@ class ProxyDocument implements Document {
     private class PortfolioImpl implements Portfolio {
         private Document myDefaultDocument;
 
+        @Override
         public Document getDefaultDocument() {
             return myDefaultDocument;
         }
@@ -397,6 +417,7 @@ class ProxyDocument implements Document {
         private static final String PROJECT_TAG = "project";
         private static final String LOCATION_ATTR = "location";
         private boolean isReadingPortfolio = false;
+        @Override
         public void startElement(String namespaceURI, String sName, String qName,
                 Attributes attrs) throws FileFormatException {
             if (PORTFOLIO_TAG.equals(qName)) {
@@ -413,6 +434,7 @@ class ProxyDocument implements Document {
             }
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
             if (PORTFOLIO_TAG.equals(qName)) {
                 isReadingPortfolio = false;
@@ -428,12 +450,14 @@ class ProxyDocument implements Document {
             this.calendar = calendar;
         }
 
+        @Override
         public void startElement(String namespaceURI, String sName,
                 String qName, Attributes attrs) {
             if ("only-show-weekends".equals(qName))
                 calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
         }
     }

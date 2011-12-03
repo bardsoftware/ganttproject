@@ -132,14 +132,17 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
             myValue = value;
         }
 
+        @Override
         public CustomPropertyDefinition getDefinition() {
             return myDefinition;
         }
 
+        @Override
         public Object getValue() {
             return myValue;
         }
 
+        @Override
         public String getValueAsString() {
             return CustomColumnsValues.getValueAsString(myValue);
         }

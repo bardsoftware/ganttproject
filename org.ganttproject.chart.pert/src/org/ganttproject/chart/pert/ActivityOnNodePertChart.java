@@ -152,6 +152,7 @@ public class ActivityOnNodePertChart extends PertChart {
         this.setBackground(Color.WHITE.brighter());
 
         this.addMouseMotionListener(new MouseMotionListener() {
+            @Override
             public void mouseDragged(final MouseEvent e) {
                 if (myPressedGraphicalNode != null) {
                     myPressedGraphicalNode.x = e.getX() - myXClickedOffset;
@@ -176,24 +177,29 @@ public class ActivityOnNodePertChart extends PertChart {
                 }
             }
 
+            @Override
             public void mouseMoved(MouseEvent e) {
                 // nothing to do...
             }
         });
 
         this.addMouseListener(new MouseListener() {
+            @Override
             public void mouseClicked(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mouseEntered(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mouseExited(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 myPressedGraphicalNode = getGraphicalNode(e.getX(), e.getY());
                 if (myPressedGraphicalNode != null) {
@@ -207,6 +213,7 @@ public class ActivityOnNodePertChart extends PertChart {
                 repaint();
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (myPressedGraphicalNode != null) {
                     if (myPressedGraphicalNode.node.isCritical())
@@ -708,6 +715,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return ourLanguage.getText("pertChartLongName");
     }
 
+    @Override
     public void reset() {
         this.myPertAbstraction = null;
     }
@@ -763,6 +771,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return iconUrl==null ? null : new ImageIcon(iconUrl);
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter.equals(Container.class) || adapter.equals(Chart.class)) {
             return this;
@@ -1006,6 +1015,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return null;
     }
 
+    @Override
     public IGanttProject getProject() {
         // TODO Auto-generated method stub
         return null;
@@ -1032,10 +1042,12 @@ public class ActivityOnNodePertChart extends PertChart {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void setDimensions(int height, int width) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void setStartDate(Date startDate) {
         // TODO Auto-generated method stub
     }

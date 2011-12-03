@@ -115,11 +115,13 @@ public class StyledPainterImpl implements Painter {
         myTextLengthCalculator.setGraphics(myGraphics);
     }
 
+    @Override
     public void prePaint() {
         myGraphics.setStroke(defaultStroke);
         myGraphics.setFont(myConfig.getChartFont());
     }
 
+    @Override
     public void paint(GraphicPrimitiveContainer.Rectangle next) {
         assert myGraphics != null;
         RectanglePainter painter = myStyle2painter.get(next.getStyle());
@@ -150,6 +152,7 @@ public class StyledPainterImpl implements Painter {
     }
 
     private final RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
             myGraphics.setColor(c);
@@ -158,6 +161,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private class TaskRectanglePainter implements RectanglePainter {
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Object modelObject = next.getModelObject();
             if (modelObject instanceof TaskActivity == false) {
@@ -226,6 +230,7 @@ public class StyledPainterImpl implements Painter {
         float myAlphaValue = 0;
         Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
 
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
                 myAlphaValue = myConfig.getWeekendAlphaValue();
@@ -250,6 +255,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
             if (c == null) {
@@ -271,6 +277,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             myXPoints[0] = next.myLeftX;
@@ -285,6 +292,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             int rightx = next.getRightX();
@@ -300,6 +308,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = getDefaultColor();
             if (myConfig.isCriticalPathOn()
@@ -318,6 +327,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myProjectTaskStartPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             myXPoints[0] = next.myLeftX;
@@ -332,6 +342,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myProjectTaskEndPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             int rightx = next.getRightX();
@@ -347,6 +358,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myMilestonePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Object modelObject = next.getModelObject();
             if (modelObject instanceof TaskActivity == false) {
@@ -377,6 +389,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowDownPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -390,6 +403,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowUpPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -403,6 +417,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowLeftPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Graphics g = myGraphics;
             g.setColor(Color.BLACK);
@@ -417,6 +432,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowRightPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -430,6 +446,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myDayOffPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int margin = StyledPainterImpl.this.margin - 3;
             Color c = myConfig.getDayOffColor();
@@ -450,6 +467,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myResourceLoadPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             String style = next.getStyle();
             Color c;
@@ -501,6 +519,7 @@ public class StyledPainterImpl implements Painter {
         private int[] myXPoints = new int[4];
         private int[] myYPoints = new int[4];
 
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Graphics g = myGraphics;
             final Color c;
@@ -558,12 +577,14 @@ public class StyledPainterImpl implements Painter {
             myColor = color;
         }
 
+        @Override
         public void paint(Rectangle next) {
             myGraphics.setColor(myColor);
             myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
         }
     }
 
+    @Override
     public void paint(Line line) {
         Color foreColor = line.getForegroundColor();
         if (foreColor == null) {
@@ -582,6 +603,7 @@ public class StyledPainterImpl implements Painter {
         }
     }
 
+    @Override
     public void paint(Text next) {
         Font graphicFont = null;
         Color foreColor = next.getForegroundColor();

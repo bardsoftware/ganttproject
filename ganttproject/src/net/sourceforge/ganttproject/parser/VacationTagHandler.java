@@ -57,6 +57,7 @@ public class VacationTagHandler implements TagHandler, ParsingListener {
         }
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("vacation")) {
@@ -64,12 +65,15 @@ public class VacationTagHandler implements TagHandler, ParsingListener {
         }
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 
+    @Override
     public void parsingStarted() {
     }
 
+    @Override
     public void parsingFinished() {
     }
 

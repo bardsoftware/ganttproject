@@ -153,10 +153,12 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
     ///////////////////////////////////////
     // ITextStylesheet
+    @Override
     public List<String> getFontFamilies() {
         return Collections.singletonList(getOriginalFontName());
     }
 
+    @Override
     public void setFontSubstitutionModel(FontSubstitutionModel model) {
         mySubstitutionModel = model;
     }
@@ -353,6 +355,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
             }
         }
         Collections.sort(orderedColumns, new Comparator<Column>() {
+            @Override
             public int compare(Column lhs, Column rhs) {
                 if (lhs == null || rhs == null) {
                     return 0;
@@ -587,16 +590,20 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
     }
 
+    @Override
     public void onChapter(PdfWriter arg0, Document arg1, float arg2,
             Paragraph arg3) {
     }
 
+    @Override
     public void onChapterEnd(PdfWriter arg0, Document arg1, float arg2) {
     }
 
+    @Override
     public void onCloseDocument(PdfWriter arg0, Document arg1) {
     }
 
+    @Override
     public void onEndPage(PdfWriter writer, Document document) {
         if (isColontitleEnabled) {
             writeColontitle(
@@ -607,24 +614,31 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         }
     }
 
+    @Override
     public void onGenericTag(PdfWriter arg0, Document arg1, Rectangle arg2, String arg3) {
     }
 
+    @Override
     public void onOpenDocument(PdfWriter arg0, Document arg1) {
     }
 
+    @Override
     public void onParagraph(PdfWriter arg0, Document arg1, float arg2) {
     }
 
+    @Override
     public void onParagraphEnd(PdfWriter arg0, Document arg1, float arg2) {
     }
 
+    @Override
     public void onSection(PdfWriter arg0, Document arg1, float arg2, int arg3, Paragraph arg4) {
     }
 
+    @Override
     public void onSectionEnd(PdfWriter arg0, Document arg1, float arg2) {
     }
 
+    @Override
     public void onStartPage(PdfWriter writer, Document document) {
     }
 }

@@ -17,6 +17,7 @@ public class ImporterFromTxtFile extends ImporterBase implements Importer {
         return GanttLanguage.getInstance().getText("textFiles");
     }
 
+    @Override
     public void run(File selectedFile) {
         GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
         opener.load(selectedFile);

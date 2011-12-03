@@ -92,6 +92,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
     }
 
     /** @return The selected tasks list. */
+    @Override
     public List<Task> getSelectedTasks() {
         return Collections.unmodifiableList(selectedTasks);
     }

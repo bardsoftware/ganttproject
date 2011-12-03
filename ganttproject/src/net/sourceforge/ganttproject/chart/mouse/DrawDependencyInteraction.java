@@ -68,11 +68,13 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
             myStartPoint.x, myStartPoint.y, myStartPoint.x, myStartPoint.y);
     }
 
+    @Override
     public void apply(MouseEvent event) {
         myArrow.changePoint2(event.getX(), event.getY());
         myLastMouseEvent = event;
     }
 
+    @Override
     public void finish() {
         if (myLastMouseEvent != null) {
             myDependant = myChartModelFacade.findTaskUnderMousePointer(
@@ -82,6 +84,7 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
                 if (myDependencyCollection.canCreateDependency(myDependant, dependee)) {
                     myUiFacade.getUndoManager().undoableEdit("Draw dependency",
                             new Runnable() {
+                                @Override
                                 public void run() {
                                     try {
                                         TaskDependency dep = myDependencyCollection.createDependency(

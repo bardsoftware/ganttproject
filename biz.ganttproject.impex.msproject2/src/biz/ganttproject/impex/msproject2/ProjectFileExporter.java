@@ -178,6 +178,7 @@ class ProjectFileExporter {
         mpxjTask.setPriority(convertPriority(t));
 
         exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
+            @Override
             public void set(FieldType ft, Object value) {
                 mpxjTask.set(ft, value);
             }
@@ -312,6 +313,7 @@ class ProjectFileExporter {
 
         exportDaysOff(hr, mpxjResource);
         exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
+            @Override
             public void set(FieldType ft, Object value) {
                 mpxjResource.set(ft, value);
             }

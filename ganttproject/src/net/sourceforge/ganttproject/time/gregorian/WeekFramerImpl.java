@@ -47,6 +47,7 @@ public class WeekFramerImpl implements DateFrameable {
         myCalendarFactory = calendarFactory;
     }
 
+    @Override
     public Date adjustRight(Date baseDate) {
         Calendar c = myCalendarFactory.newCalendar();
         do {
@@ -56,6 +57,7 @@ public class WeekFramerImpl implements DateFrameable {
         return c.getTime();
     }
 
+    @Override
     public Date adjustLeft(Date baseDate) {
         Calendar c = myCalendarFactory.newCalendar();
         c.setTime(myDayFramer.adjustLeft(baseDate));
@@ -65,6 +67,7 @@ public class WeekFramerImpl implements DateFrameable {
         return c.getTime();
     }
 
+    @Override
     public Date jumpLeft(Date baseDate) {
         Calendar c = myCalendarFactory.newCalendar();
         c.setTime(myDayFramer.adjustLeft(baseDate));

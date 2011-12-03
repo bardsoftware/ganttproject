@@ -15,10 +15,12 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
         myDependencyCollection = dependencyCollection;
     }
 
+    @Override
     public TaskDependency[] toArray() {
         return myDependencyCollection.getDependencies(myTask);
     }
 
+    @Override
     public void clear() {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {
@@ -27,6 +29,7 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
     }
 
     /** Unlinks only tasks that are selected and leaves links to not selected tasks. */
+    @Override
     public void clear(List<Task> selection) {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {
@@ -36,6 +39,7 @@ public class TaskDependencySliceImpl implements TaskDependencySlice {
         }
     }
 
+    @Override
     public boolean hasLinks(List<Task> selection) {
         TaskDependency[] deps = toArray();
         for (int i = 0; i < deps.length; i++) {

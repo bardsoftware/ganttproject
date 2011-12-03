@@ -68,6 +68,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
         return result;
     }
 
+    @Override
     public Raster getTile(int tileX, int tileY) {
         if (myCurrentTile!=tileY) {
             int offsety = tileY*getTileHeight();

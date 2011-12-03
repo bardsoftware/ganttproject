@@ -31,10 +31,12 @@ class ExporterChooserPage implements WizardPage {
 
     }
 
+    @Override
     public String getTitle() {
         return language.getText("option.exporter.title");
     }
 
+    @Override
     public Component getComponent() {
         int selectedGroupIndex = 0;
         Action[] choiceChangeActions = new Action[myExporters.size()];
@@ -46,6 +48,7 @@ class ExporterChooserPage implements WizardPage {
             }
             Action nextAction = new AbstractAction(nextExporter
                     .getFileTypeDescription()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ExporterChooserPage.this.myState.setExporter(nextExporter);
                 }
@@ -61,6 +64,7 @@ class ExporterChooserPage implements WizardPage {
         return choicePanel.getComponent(choiceChangeActions, choiceOptions, selectedGroupIndex);
     }
 
+    @Override
     public void setActive(boolean b) {
         if (false==b) {
             for (Exporter e : myExporters) {

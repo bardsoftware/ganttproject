@@ -210,14 +210,17 @@ public class UIConfiguration {
             super("showTodayLine");
         }
 
+        @Override
         public String getTagName() {
             return "redline";
         }
 
+        @Override
         public String getAttributeName() {
             return "value";
         }
 
+        @Override
         public void loadValue(String legacyValue) {
             lock();
             loadPersistentValue(legacyValue);

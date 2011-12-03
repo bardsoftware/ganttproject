@@ -78,6 +78,7 @@ public abstract class ExporterBase extends AbstractExporter {
         return stylesheetOption;
     }
 
+    @Override
     public abstract String[] getFileExtensions();
 
     protected abstract List<Stylesheet> getStylesheets();
@@ -91,10 +92,12 @@ public abstract class ExporterBase extends AbstractExporter {
     public ExporterBase() {
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return getFileExtensions();
     }
@@ -105,21 +108,25 @@ public abstract class ExporterBase extends AbstractExporter {
         createStylesheetOption(getStylesheets());
     }
 
+    @Override
     public String getFileNamePattern() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public String getFileTypeDescription() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public List<GPOptionGroup> getSecondaryOptions() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public String proposeFileExtension() {
         // TODO Auto-generated method stub
         return null;
@@ -132,6 +139,7 @@ public abstract class ExporterBase extends AbstractExporter {
         myOptions.setTitled(false);
     }
 
+    @Override
     public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
         final IJobManager jobManager = Job.getJobManager();
         final List<File> resultFiles = new ArrayList<File>();
@@ -187,6 +195,7 @@ public abstract class ExporterBase extends AbstractExporter {
 
     protected abstract ExporterJob[] createJobs(File outputFile, List<File> resultFiles);
 
+    @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }

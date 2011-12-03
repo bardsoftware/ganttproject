@@ -23,14 +23,17 @@ public class CalendarActivityImpl implements GPCalendarActivity {
         this.isWorkingTime = isWorkingTime;
     }
 
+    @Override
     public Date getStart() {
         return myStartDate;
     }
 
+    @Override
     public Date getEnd() {
         return myEndDate;
     }
 
+    @Override
     public boolean isWorkingTime() {
         return isWorkingTime;
     }

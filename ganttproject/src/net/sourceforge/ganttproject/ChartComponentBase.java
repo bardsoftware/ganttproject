@@ -92,6 +92,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         addMouseWheelListener(myMouseWheelListener);
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (Component.class.isAssignableFrom(adapter)) {
             return this;
@@ -109,29 +110,36 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return myZoomManager;
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return getChartModel().getChartOptionGroups();
     }
 
+    @Override
     public Chart createCopy() {
         return new AbstractChartImplementation(myProject, getUIFacade(), getChartModel().createCopy(), this);
     }
 
+    @Override
     public ChartSelection getSelection() {
         return getImplementation().getSelection();
     }
 
+    @Override
     public IStatus canPaste(ChartSelection selection) {
         return getImplementation().canPaste(selection);
     }
 
+    @Override
     public void paste(ChartSelection selection) {
         getImplementation().paste(selection);
     }
 
+    @Override
     public void addSelectionListener(ChartSelectionListener listener) {
         getImplementation().addSelectionListener(listener);
     }
+    @Override
     public void removeSelectionListener(ChartSelectionListener listener) {
         getImplementation().removeSelectionListener(listener);
     }
@@ -162,10 +170,12 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         return myOptionsDialogAction;
     }
 
+    @Override
     public ChartModel getModel() {
         return getChartModel();
     }
 
+    @Override
     public ChartUIConfiguration getStyle() {
         return getChartModel().getChartUIConfiguration();
     }
@@ -180,23 +190,28 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     protected abstract AbstractChartImplementation getImplementation();
 
+    @Override
     public Date getStartDate() {
         return getImplementation().getStartDate();
     }
 
+    @Override
     public void setStartDate(Date startDate) {
         getImplementation().setStartDate(startDate);
         repaint();
     }
 
+    @Override
     public IGanttProject getProject() {
         return myProject;
     }
 
+    @Override
     public Date getEndDate() {
         return getImplementation().getEndDate();
     }
 
+    @Override
     public void scrollBy(TaskLength duration) {
         getImplementation().scrollBy(duration);
         repaint();
@@ -208,27 +223,33 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         repaint();
     }
 
+    @Override
     public void setDimensions(int height, int width) {
         getImplementation().setDimensions(height, width);
     }
 
+    @Override
     public void setBottomUnit(TimeUnit bottomUnit) {
         getImplementation().setBottomUnit(bottomUnit);
     }
+    @Override
     public void setTopUnit(TimeUnit topUnit) {
         getImplementation().setTopUnit(topUnit);
     }
 
+    @Override
     public void setBottomUnitWidth(int width) {
         getImplementation().setBottomUnitWidth(width);
     }
 //    public void paintChart(Graphics g) {
 //        getImplementation().paintChart(g);
 //    }
+    @Override
     public void addRenderer(ChartRendererBase renderer) {
         getImplementation().addRenderer(renderer);
     }
 
+    @Override
     public void resetRenderers() {
         getImplementation().resetRenderers();
     }

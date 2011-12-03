@@ -25,6 +25,7 @@ public class TaskTagHandler implements TagHandler {
         myContext = context;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("task")) {
@@ -33,6 +34,7 @@ public class TaskTagHandler implements TagHandler {
     }
 
     /** Method when finish to parse an attribute */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("task")) {
             myStack.pop();

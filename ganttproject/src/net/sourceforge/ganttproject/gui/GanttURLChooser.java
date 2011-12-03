@@ -102,6 +102,7 @@ public class GanttURLChooser {
         panel.add(new JLabel(language.getText("webdav.lockResource.label")));
         lockCheckbox = new JCheckBox();
         lockCheckbox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myLockTimeout.setEnabled(lockCheckbox.isSelected());
             }
@@ -122,6 +123,7 @@ public class GanttURLChooser {
 
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         OkAction okAction = new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myUrl = urlField.getText();
                 myUsername = userNameField.getText();

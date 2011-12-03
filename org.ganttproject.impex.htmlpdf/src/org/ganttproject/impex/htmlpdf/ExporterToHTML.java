@@ -239,10 +239,12 @@ public class ExporterToHTML extends ExporterBase {
             super(stylesheetURL, localizedName);
         }
 
+        @Override
         public String getInputVersion() {
             return HTMLStylesheet.InputVersion.GP1X;
         }
 
+        @Override
         public TransformerHandler createTitlePageHandler() {
             try {
                 URL titleUrl = new URL(getUrl(), "gantt.xsl");
@@ -255,6 +257,7 @@ public class ExporterToHTML extends ExporterBase {
             }
         }
 
+        @Override
         public TransformerHandler createTasksPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-tasks.xsl");
@@ -267,6 +270,7 @@ public class ExporterToHTML extends ExporterBase {
             }
         }
 
+        @Override
         public TransformerHandler createGanttChartPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-chart.xsl");
@@ -279,6 +283,7 @@ public class ExporterToHTML extends ExporterBase {
             }
         }
 
+        @Override
         public TransformerHandler createResourcesPageHandler() {
             try {
                 URL tasksUrl = new URL(getUrl(), "gantt-resources.xsl");
@@ -291,6 +296,7 @@ public class ExporterToHTML extends ExporterBase {
             }
         }
 
+        @Override
         public File getImagesDirectory() {
             try {
                 URL imagesUrl = new URL(getUrl(), "images");

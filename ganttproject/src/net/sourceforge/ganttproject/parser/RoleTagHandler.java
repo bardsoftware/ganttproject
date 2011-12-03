@@ -36,6 +36,7 @@ public class RoleTagHandler implements TagHandler {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("roles")) {
             clearRoleSet();
@@ -50,6 +51,7 @@ public class RoleTagHandler implements TagHandler {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
 

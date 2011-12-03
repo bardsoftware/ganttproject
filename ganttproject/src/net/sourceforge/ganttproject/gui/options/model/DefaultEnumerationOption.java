@@ -67,14 +67,17 @@ implements EnumerationOption {
         return myStringValue_ObjectValue.get(value);
     }
 
+    @Override
     public String[] getAvailableValues() {
         return myValues;
     }
 
+    @Override
     public String getPersistentValue() {
         return getValue();
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         setValue(value);
     }

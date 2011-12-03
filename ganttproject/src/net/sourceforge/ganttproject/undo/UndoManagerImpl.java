@@ -58,6 +58,7 @@ public class UndoManagerImpl implements GPUndoManager {
         myUndoEventDispatcher = new UndoableEditSupport();
     }
 
+    @Override
     public void undoableEdit(String localizedName, Runnable editImpl) {
 
         try {
@@ -95,40 +96,49 @@ public class UndoManagerImpl implements GPUndoManager {
         return myProject;
     }
 
+    @Override
     public boolean canUndo() {
         return mySwingUndoManager.canUndo();
     }
 
+    @Override
     public boolean canRedo() {
         return mySwingUndoManager.canRedo();
     }
 
+    @Override
     public void undo() throws CannotUndoException {
         mySwingUndoManager.undo();
         fireUndoOrRedoHappened();
     }
 
+    @Override
     public void redo() throws CannotRedoException {
         mySwingUndoManager.redo();
         fireUndoOrRedoHappened();
     }
 
+    @Override
     public String getUndoPresentationName() {
         return mySwingUndoManager.getUndoPresentationName();
     }
 
+    @Override
     public String getRedoPresentationName() {
         return mySwingUndoManager.getRedoPresentationName();
     }
 
+    @Override
     public void addUndoableEditListener(GPUndoListener listener) {
         myUndoEventDispatcher.addUndoableEditListener(listener);
     }
 
+    @Override
     public void removeUndoableEditListener(GPUndoListener listener) {
         myUndoEventDispatcher.removeUndoableEditListener(listener);
     }
 
+    @Override
     public void die() {
         if (swingEditImpl != null) {
             swingEditImpl.die();

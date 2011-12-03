@@ -50,11 +50,13 @@ public class RolesTableModel extends AbstractTableModel {
     }
 
     /** @return the number of columns */
+    @Override
     public int getColumnCount() {
         return columnNames.length;
     }
 
     /** @return the number of rows */
+    @Override
     public int getRowCount() {
         return data.length;
     }
@@ -66,6 +68,7 @@ public class RolesTableModel extends AbstractTableModel {
     }
 
     /** @return the object a specify cell */
+    @Override
     public Object getValueAt(int row, int col) {
         return data[row][col];
     }

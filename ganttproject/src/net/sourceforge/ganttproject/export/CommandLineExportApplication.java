@@ -108,6 +108,7 @@ public class CommandLineExportApplication {
         }
         try {
             ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
+                @Override
                 public void run(File[] exportedFiles) {
                     System.exit(0);
                 }

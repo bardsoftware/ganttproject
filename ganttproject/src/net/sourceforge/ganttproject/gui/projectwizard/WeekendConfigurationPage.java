@@ -189,14 +189,17 @@ public class WeekendConfigurationPage implements WizardPage {
         myPanel.add(projectPanel);
     }
 
+    @Override
     public String getTitle() {
         return myI18N.getProjectWeekendPageTitle();
     }
 
+    @Override
     public Component getComponent() {
         return myPanel;
     }
 
+    @Override
     public void setActive(boolean active) {
         if (!active) {
             myCalendarOption.commit();
@@ -222,6 +225,7 @@ public class WeekendConfigurationPage implements WizardPage {
             myCheckBoxes = allCheckBoxes;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             // Counting number of selected days of the week.
             int count = 0;

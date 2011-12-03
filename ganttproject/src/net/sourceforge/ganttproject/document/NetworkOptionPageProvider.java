@@ -67,6 +67,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
                 putValue(Action.NAME, GanttLanguage.getInstance().getText("testFTPConnection"));
                 setEnabled(canEnableTestAction(ftpGroup));
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 StringBuffer urlString = new StringBuffer();
                 urlString.append("ftp://");
@@ -97,6 +98,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
             }
         };
         ChangeValueListener listener = new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 testConnectionAction.setEnabled(canEnableTestAction(ftpGroup));
             }

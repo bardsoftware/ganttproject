@@ -42,6 +42,7 @@ public class ProjectPreviewAction extends GPAction {
         myProject = project;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Date startDate, endDate;
         Chart chart = myUIFacade.getActiveChart();

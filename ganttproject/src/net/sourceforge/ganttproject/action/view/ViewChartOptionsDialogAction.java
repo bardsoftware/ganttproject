@@ -46,11 +46,13 @@ public class ViewChartOptionsDialogAction extends GPAction {
         myChart = chart;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         for (GPOptionGroup group : myChart.getOptionGroups()) {
             group.lock();
         }
         final OkAction okAction = new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 commit();
             }

@@ -45,6 +45,7 @@ public class PaintCellRenderer extends JPanel implements ListCellRenderer {
         g.fill(rect);
     }
 
+    @Override
     public Component getListCellRendererComponent(JList list, Object value,
             int index, boolean isSelected, boolean hasFocus) {
         Border border = isSelected ? selectBorder : normalBorder;

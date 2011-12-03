@@ -55,6 +55,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
         myColumnStorage = columnStorage;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("customproperty"))
@@ -66,6 +67,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(java.lang.String,
      *      java.lang.String, java.lang.String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         // nothing to do.
     }
@@ -73,6 +75,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
     /**
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingStarted()
      */
+    @Override
     public void parsingStarted() {
         // nothing to do.
     }
@@ -80,6 +83,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
     /**
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
      */
+    @Override
     public void parsingFinished() {
         Iterator<CustomPropertiesStructure> it = this.listStructure.iterator();
 

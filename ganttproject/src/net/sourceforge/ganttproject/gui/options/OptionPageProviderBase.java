@@ -41,29 +41,35 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         myPageID = pageID;
     }
 
+    @Override
     public String getPageID() {
         return myPageID;
     }
 
+    @Override
     public boolean hasCustomComponent() {
         return false;
     }
 
+    @Override
     public Component buildPageComponent() {
         return null;
     }
 
+    @Override
     public void init(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
         myUiFacade = uiFacade;
     }
 
+    @Override
     public void commit() {
         for (GPOptionGroup optionGroup : getOptionGroups()) {
             optionGroup.commit();
         }
     }
 
+    @Override
     public abstract GPOptionGroup[] getOptionGroups();
 
     protected IGanttProject getProject() {

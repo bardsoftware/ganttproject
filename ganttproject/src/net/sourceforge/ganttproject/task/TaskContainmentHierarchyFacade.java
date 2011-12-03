@@ -62,44 +62,58 @@ public interface TaskContainmentHierarchyFacade {
     }
 
     TaskContainmentHierarchyFacade STUB = new TaskContainmentHierarchyFacade() {
+        @Override
         public Task[] getNestedTasks(Task container) {
             return new Task[0];
         }
+        @Override
         public Task[] getDeepNestedTasks(Task container) {
             // TODO Auto-generated method stub
             return null;
         }
+        @Override
         public boolean hasNestedTasks(Task container) {
             return false;
         }
+        @Override
         public Task getRootTask() {
             return null;
         }
+        @Override
         public Task getContainer(Task nestedTask) {
             return null;
         }
+        @Override
         public Task getPreviousSibling(Task nestedTask) {
             return null;
         }
+        @Override
         public Task getNextSibling(Task nestedTask) {
             return null;
         }
+        @Override
         public int getTaskIndex(Task nestedTask) {
             return 0;
         }
+        @Override
         public void move(Task whatMove, Task whereMove) {
         }
+        @Override
         public void move(Task whatMove, Task whereMove, int index) {
         }
+        @Override
         public boolean areUnrelated(Task dependant, Task dependee) {
             return false;
         }
+        @Override
         public int getDepth(Task task) {
             return 0;
         }
+        @Override
         public int compareDocumentOrder(Task next, Task dependeeTask) {
             throw new UnsupportedOperationException();
         }
+        @Override
         public boolean contains(Task task) {
             throw new UnsupportedOperationException();
         }

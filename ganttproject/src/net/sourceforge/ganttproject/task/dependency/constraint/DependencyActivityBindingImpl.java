@@ -27,14 +27,17 @@ class DependencyActivityBindingImpl implements TaskDependency.ActivityBinding {
 
     }
 
+    @Override
     public TaskActivity getDependantActivity() {
         return myDependantActivity;
     }
 
+    @Override
     public TaskActivity getDependeeActivity() {
         return myDependeeActivity;
     }
 
+    @Override
     public Date[] getAlignedBounds() {
         return myAlignedBounds;
     }

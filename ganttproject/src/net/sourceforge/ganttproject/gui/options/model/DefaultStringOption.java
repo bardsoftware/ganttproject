@@ -8,10 +8,12 @@ public class DefaultStringOption extends GPAbstractOption<String> implements Str
         super(id, initialValue);
     }
 
+    @Override
     public String getPersistentValue() {
         return getValue();
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         setValue(value);
     }

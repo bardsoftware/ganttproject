@@ -20,6 +20,7 @@ public class IconPositionTagHandler implements TagHandler {
     public IconPositionTagHandler() {
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("positions")) {
@@ -28,6 +29,7 @@ public class IconPositionTagHandler implements TagHandler {
         }
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 

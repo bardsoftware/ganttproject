@@ -48,15 +48,18 @@ public class UndoAction extends GPAction implements GPUndoListener {
         return new UndoAction(myUndoManager, size);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         myUndoManager.undo();
     }
 
+    @Override
     public void undoableEditHappened(UndoableEditEvent e) {
         setEnabled(myUndoManager.canUndo());
         updateAction();
     }
 
+    @Override
     public void undoOrRedoHappened() {
         setEnabled(myUndoManager.canUndo());
         updateAction();

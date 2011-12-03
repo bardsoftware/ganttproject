@@ -88,16 +88,19 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         myProject = project;
         myChartComponent = chartComponent;
         uiFacade.getTaskSelectionManager().addSelectionListener(new TaskSelectionManager.Listener() {
+            @Override
             public void userInputConsumerChanged(Object newConsumer) {
                 fireSelectionChanged();
             }
 
+            @Override
             public void selectionChanged(List<Task> currentSelection) {
                 fireSelectionChanged();
             }
         });
     }
 
+    @Override
     public void init(IGanttProject project) {
         // Skip as we already have a project instance.
     }
@@ -110,6 +113,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return myUiFacade;
     }
 
+    @Override
     public IGanttProject getProject() {
         return myProject;
     }
@@ -137,6 +141,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return myActiveInteraction;
     }
 
+    @Override
     public void zoomChanged(ZoomEvent e) {
         myChartComponent.invalidate();
         myChartComponent.repaint();
@@ -220,15 +225,18 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return visitor.myRenderedImage;
     }
 
+    @Override
     public Date getStartDate() {
         return getChartModel().getStartDate();
     }
 
+    @Override
     public void setStartDate(Date startDate) {
         startDate = getBottomTimeUnit().adjustLeft(startDate);
         getChartModel().setStartDate(startDate);
     }
 
+    @Override
     public void scrollBy(TaskLength duration) {
         setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
     }
@@ -242,27 +250,33 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return getChartModel().getBottomUnit();
     }
 
+    @Override
     public Date getEndDate() {
         return getChartModel().getEndDate();
     }
 
+    @Override
     public void setDimensions(int height, int width) {
         Dimension bounds = new Dimension(width, height);
         getChartModel().setBounds(bounds);
     }
 
+    @Override
     public void setBottomUnit(TimeUnit bottomUnit) {
         getChartModel().setBottomTimeUnit(bottomUnit);
     }
 
+    @Override
     public void setTopUnit(TimeUnit topUnit) {
         getChartModel().setTopTimeUnit(topUnit);
     }
 
+    @Override
     public void setBottomUnitWidth(int width) {
         getChartModel().setBottomUnitWidth(width);
     }
 
+    @Override
     public String getName() {
         return myChartComponent.getName();
     }
@@ -271,6 +285,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void reset() {
         myChartComponent.reset();
     }
@@ -279,34 +294,42 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return null;
     }
 
+    @Override
     public GPOptionGroup[] getOptionGroups() {
         return getChartModel().getChartOptionGroups();
     }
 
+    @Override
     public Chart createCopy() {
         return new AbstractChartImplementation(myProject, myUiFacade, getChartModel().createCopy(), myChartComponent);
     }
 
+    @Override
     public Object getAdapter(Class arg0) {
         return null;
     }
 
+    @Override
     public ChartSelection getSelection() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public IStatus canPaste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void paste(ChartSelection selection) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void addSelectionListener(ChartSelectionListener listener) {
         mySelectionListeners.add(listener);
     }
 
+    @Override
     public void removeSelectionListener(ChartSelectionListener listener) {
         mySelectionListeners.remove(listener);
     }
@@ -318,14 +341,17 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         }
     }
 
+    @Override
     public void addRenderer(ChartRendererBase renderer) {
         myChartModel.addRenderer(renderer);
     }
 
+    @Override
     public void resetRenderers() {
         myChartModel.resetRenderers();
     }
 
+    @Override
     public ChartModel getModel() {
         return myChartModel;
     }
@@ -350,37 +376,45 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         private List<HumanResource> myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
         private boolean isTransactionRunning;
 
+        @Override
         public boolean isEmpty() {
             return myTasks.isEmpty() && myHumanResources.isEmpty();
         }
 
+        @Override
         public List<Task> getTasks() {
             return myTasksRO;
         }
 
+        @Override
         public List<HumanResource> getHumanResources() {
             return myHumanResourceRO;
         }
 
+        @Override
         public IStatus isDeletable() {
             return Status.OK_STATUS;
         }
 
+        @Override
         public void startCopyClipboardTransaction() {
             if (isTransactionRunning) {
                 throw new IllegalStateException("Transaction is already running");
             }
             isTransactionRunning = true;
         }
+        @Override
         public void startMoveClipboardTransaction() {
             if (isTransactionRunning) {
                 throw new IllegalStateException("Transaction is already running");
             }
             isTransactionRunning = true;
         }
+        @Override
         public void cancelClipboardTransaction() {
             isTransactionRunning = false;
         }
+        @Override
         public void commitClipboardTransaction() {
             isTransactionRunning = false;
         }

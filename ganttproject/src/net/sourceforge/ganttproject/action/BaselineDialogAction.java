@@ -107,6 +107,7 @@ public class BaselineDialogAction extends GPAction {
         list.getTableAndActions().addSelectionListener(
                 new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
 
+            @Override
             public void selectionChanged(List<GanttPreviousState> selection) {
                 if (selection.isEmpty()) {
                     myUiFacade.getGanttChart().setBaseline(null);
@@ -130,6 +131,7 @@ public class BaselineDialogAction extends GPAction {
         result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         Action[] actions = new Action[] { new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 myProject.getBaselines().clear();
                 myProject.getBaselines().addAll(myBaselines);

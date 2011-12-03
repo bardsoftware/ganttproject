@@ -37,14 +37,17 @@ public class RoleSetImpl implements RoleSet {
         myRoleManager = roleManager;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public Role[] getRoles() {
         return myRoles.toArray(new Role[0]);
     }
 
+    @Override
     public Role createRole(String name, int persistentID) {
         RoleImpl result = new RoleImpl(persistentID, name, this);
         myRoles.add(result);
@@ -52,11 +55,13 @@ public class RoleSetImpl implements RoleSet {
         return result;
     }
 
+    @Override
     public void deleteRole(Role role) {
         myRoles.remove(role);
         myRoleManager.fireRolesChanged(this);
     }
 
+    @Override
     public void changeRole(String name, int roleID) {
         Role role = findRole(roleID);
         if (role != null) {
@@ -64,6 +69,7 @@ public class RoleSetImpl implements RoleSet {
         }
     }
 
+    @Override
     public Role findRole(int roleID) {
         Role result = null;
         for (int i = 0; i < myRoles.size(); i++) {
@@ -76,6 +82,7 @@ public class RoleSetImpl implements RoleSet {
         return result;
     }
 
+    @Override
     public boolean isEnabled() {
         return isEnabled;
     }
@@ -85,15 +92,18 @@ public class RoleSetImpl implements RoleSet {
         return getName();
     }
 
+    @Override
     public void setEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
         myRoleManager.fireRolesChanged(this);
     }
 
+    @Override
     public boolean isEmpty() {
         return myRoles.isEmpty();
     }
 
+    @Override
     public void clear() {
         myRoles.clear();
     }

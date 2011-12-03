@@ -56,10 +56,12 @@ public class PublicHolidayDialogAction extends AbstractAction {
                 "/icons/holidays_16.gif")));
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
         myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateHolidays(dialog.getHolidays());
                 myProject.setModified();

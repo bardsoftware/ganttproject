@@ -149,6 +149,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements
         return new AlwaysWorkingTimeCalendarImpl();
     }
 
+    @Override
     public URL getPublicHolidaysUrl() {
         return null;
     }

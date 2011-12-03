@@ -67,14 +67,17 @@ public interface TaskDependencyConstraint extends Cloneable {
             this.isActive = isActive;
         }
 
+        @Override
         public GanttCalendar getAcceptableStart() {
             return myAcceptableStart;
         }
 
+        @Override
         public int getVariation() {
             return myVariation;
         }
 
+        @Override
         public boolean isActive() {
             return isActive;
         }

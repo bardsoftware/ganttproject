@@ -36,6 +36,7 @@ public class ResourceMoveDownAction extends GPAction implements TreeSelectionLis
         table.getTree().getSelectionModel().addTreeSelectionListener(this);
     }
 
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         setEnabled(myTable.canMoveSelectionDown());
     }

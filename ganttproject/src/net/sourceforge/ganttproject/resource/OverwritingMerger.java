@@ -36,6 +36,7 @@ public class OverwritingMerger implements HumanResourceMerger {
         myMergeOption = mergeOption;
     }
 
+    @Override
     public void merge(Map<HumanResource, HumanResource> foreign2native) {
         for (Iterator<Entry<HumanResource, HumanResource>> entries = foreign2native
                 .entrySet().iterator(); entries.hasNext();) {

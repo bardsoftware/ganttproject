@@ -85,6 +85,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         myProject = project;
         myRoleManager = project.getRoleManager();
         myRoleManager.addRoleListener(new RoleManager.Listener() {
+            @Override
             public void rolesChanged(RoleEvent e) {
                 setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE.getStub().getID()));
                 setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID()));

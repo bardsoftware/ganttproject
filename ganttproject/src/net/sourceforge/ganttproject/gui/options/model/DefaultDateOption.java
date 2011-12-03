@@ -15,10 +15,12 @@ public class DefaultDateOption extends GPAbstractOption<Date> implements DateOpt
         super(id, initialValue);
     }
 
+    @Override
     public String getPersistentValue() {
         return DateParser.getIsoDateNoHours(getValue());
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         try {
             setValue(DateParser.parse(value), true);

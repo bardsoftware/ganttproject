@@ -62,6 +62,7 @@ public class ResourceNewAction extends ResourceAction {
         dp.setVisible(true);
         if (dp.result()) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                @Override
                 public void run() {
                     getManager().add(resource);
                 }

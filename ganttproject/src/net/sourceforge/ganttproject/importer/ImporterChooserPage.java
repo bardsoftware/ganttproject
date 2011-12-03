@@ -29,10 +29,12 @@ class ImporterChooserPage implements WizardPage {
         myState = state;
     }
 
+    @Override
     public String getTitle() {
         return GanttLanguage.getInstance().getText("importerChooserPageTitle");
     }
 
+    @Override
     public Component getComponent() {
         Action[] choiceChangeActions = new Action[myImporters.size()];
         GPOptionGroup[] choiceOptions = new GPOptionGroup[myImporters.size()];
@@ -40,6 +42,7 @@ class ImporterChooserPage implements WizardPage {
             final Importer nextImporter = myImporters.get(i);
             Action nextAction = new AbstractAction(nextImporter
                     .getFileTypeDescription()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ImporterChooserPage.this.myState.myImporter = nextImporter;
                 }
@@ -54,6 +57,7 @@ class ImporterChooserPage implements WizardPage {
         return panel.getComponent(choiceChangeActions, choiceOptions, 0);
     }
 
+    @Override
     public void setActive(boolean b) {
     }
 

@@ -36,6 +36,7 @@ class TreeTableCellEditorImpl  implements TableCellEditor {
     TreeTableCellEditorImpl(TableCellEditor proxiedEditor){
         myProxiedEditor = proxiedEditor;
     }
+    @Override
     public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
         final Component result = myProxiedEditor.getTableCellEditorComponent(arg0, arg1,arg2, arg3, arg4);
         if (result instanceof JTextComponent) {
@@ -66,29 +67,36 @@ class TreeTableCellEditorImpl  implements TableCellEditor {
         return result;
     }
 
+    @Override
     public Object getCellEditorValue() {
         return myProxiedEditor.getCellEditorValue();
     }
 
+    @Override
     public boolean isCellEditable(EventObject arg0) {
         return myProxiedEditor.isCellEditable(arg0);
     }
 
+    @Override
     public boolean shouldSelectCell(EventObject arg0) {
         return myProxiedEditor.shouldSelectCell(arg0);
     }
 
+    @Override
     public boolean stopCellEditing() {
         return myProxiedEditor.stopCellEditing();
     }
 
+    @Override
     public void cancelCellEditing() {
         myProxiedEditor.cancelCellEditing();
     }
 
+    @Override
     public void addCellEditorListener(CellEditorListener arg0) {
         myProxiedEditor.addCellEditorListener(arg0);
     }
+    @Override
     public void removeCellEditorListener(CellEditorListener arg0) {
         myProxiedEditor.removeCellEditorListener(arg0);
     }

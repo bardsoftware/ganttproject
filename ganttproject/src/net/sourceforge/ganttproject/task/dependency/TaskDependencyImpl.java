@@ -49,28 +49,34 @@ public class TaskDependencyImpl implements TaskDependency {
         myHardness = Hardness.STRONG;
     }
 
+    @Override
     public Task getDependant() {
         return myDependant;
     }
 
+    @Override
     public Task getDependee() {
         return myDependee;
     }
 
+    @Override
     public void setConstraint(TaskDependencyConstraint constraint) {
         myConstraint = constraint;
         constraint.setTaskDependency(this);
         myCollection.fireChanged(this);
     }
 
+    @Override
     public TaskDependencyConstraint getConstraint() {
         return myConstraint;
     }
 
+    @Override
     public ActivityBinding getActivityBinding() {
         return getConstraint().getActivityBinding();
     }
 
+    @Override
     public void delete() {
         myCollection.delete(this);
     }
@@ -91,18 +97,22 @@ public class TaskDependencyImpl implements TaskDependency {
         return 7 * myDependant.hashCode() + 9 * myDependee.hashCode();
     }
 
+    @Override
     public void setDifference(int difference) {
         myDifference = difference;
     }
 
+    @Override
     public int getDifference() {
         return myDifference;
     }
 
+    @Override
     public Hardness getHardness() {
         return myHardness;
     }
 
+    @Override
     public void setHardness(Hardness hardness) {
         myHardness = hardness;
     }

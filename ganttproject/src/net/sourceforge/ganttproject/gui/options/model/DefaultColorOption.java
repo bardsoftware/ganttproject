@@ -30,10 +30,12 @@ public class DefaultColorOption extends GPAbstractOption<Color> implements Color
         myValue = myLockedValue;
     }
 
+    @Override
     public String getPersistentValue() {
         return getValue()==null ? null : ColorConvertion.getColor(getValue());
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         if (value!=null) {
             myLockedValue = ColorConvertion.determineColor(value);

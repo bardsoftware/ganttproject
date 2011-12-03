@@ -38,28 +38,34 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
     private IGanttProject myProject;
     private GanttOptions myOptions;
 
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.csv.description");
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public List<GPOptionGroup> getSecondaryOptions() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
+    @Override
     public String getFileNamePattern() {
         return ExporterToCSV.FILE_EXTENSIONS[0];
     }
 
+    @Override
     public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
         outputFile.createNewFile();
         GanttCSVExport legacyExporter = new GanttCSVExport(myProject, myOptions.getCSVOptions());
@@ -67,22 +73,27 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
         finalizationJob.run(new File[] {outputFile});
     }
 
+    @Override
     public String proposeFileExtension() {
         return ExporterToCSV.FILE_EXTENSIONS[0];
     }
 
+    @Override
     public String[] getFileExtensions() {
         return ExporterToCSV.FILE_EXTENSIONS;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return ExporterToCSV.FILE_EXTENSIONS;
     }
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myProject = project;
     }
 
+    @Override
     public void setOptions(GanttOptions options) {
         myOptions = options;
     }

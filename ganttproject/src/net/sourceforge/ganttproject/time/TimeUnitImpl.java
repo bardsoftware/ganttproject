@@ -23,14 +23,17 @@ public class TimeUnitImpl implements TimeUnit {
         myDirectAtomUnit = directAtomUnit;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public boolean isConstructedFrom(TimeUnit atomUnit) {
         return myGraph.getComposition(this, atomUnit) != null;
     }
 
+    @Override
     public int getAtomCount(TimeUnit atomUnit) {
         Composition composition = myGraph.getComposition(this, atomUnit);
         if (composition == null) {
@@ -41,6 +44,7 @@ public class TimeUnitImpl implements TimeUnit {
         return composition.getAtomCount();
     }
 
+    @Override
     public TimeUnit getDirectAtomUnit() {
         return myDirectAtomUnit;
     }
@@ -50,10 +54,12 @@ public class TimeUnitImpl implements TimeUnit {
         return getName() + " hash=" + hashCode();
     }
 
+    @Override
     public void setTextFormatter(TextFormatter formatter) {
         myTextFormatter = formatter;
     }
 
+    @Override
     public TimeUnitText format(Date baseDate) {
         return myTextFormatter == null ? new TimeUnitText("") : myTextFormatter
                 .format(this, baseDate);
@@ -63,16 +69,19 @@ public class TimeUnitImpl implements TimeUnit {
         return myTextFormatter;
     }
 
+    @Override
     public Date adjustRight(Date baseDate) {
         throw new UnsupportedOperationException("Time unit=" + this
                 + " doesnt support this operation");
     }
 
+    @Override
     public Date adjustLeft(Date baseDate) {
         throw new UnsupportedOperationException("Time unit=" + this
                 + " doesnt support this operation");
     }
 
+    @Override
     public Date jumpLeft(Date baseDate) {
         throw new UnsupportedOperationException("Time unit=" + this
                 + " doesnt support this operation");

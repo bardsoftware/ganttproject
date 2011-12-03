@@ -27,6 +27,7 @@ public class FramerImpl implements DateFrameable {
         myCalendarField = calendarField;
     }
 
+    @Override
     public Date adjustRight(Date baseDate) {
         Calendar c = CalendarFactory.newCalendar();
         c.setTime(baseDate);
@@ -41,6 +42,7 @@ public class FramerImpl implements DateFrameable {
         }
     }
 
+    @Override
     public Date adjustLeft(Date baseDate) {
         Calendar c = CalendarFactory.newCalendar();
         c.setTime(baseDate);
@@ -52,6 +54,7 @@ public class FramerImpl implements DateFrameable {
         return c.getTime();
     }
 
+    @Override
     public Date jumpLeft(Date baseDate) {
         Calendar c = CalendarFactory.newCalendar();
         c.setTime(baseDate);

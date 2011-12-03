@@ -44,6 +44,7 @@ abstract class ResourceAction extends GPAction implements ActionDelegate {
         myManager = hrManager;
     }
 
+    @Override
     public void addStateChangedListener(ActionStateChangedListener l) {
         myListeners.add(l);
     }

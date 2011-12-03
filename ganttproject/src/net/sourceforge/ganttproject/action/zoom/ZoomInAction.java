@@ -44,6 +44,7 @@ public class ZoomInAction extends GPAction implements ZoomListener {
         }
     }
 
+    @Override
     public void zoomChanged(ZoomEvent e) {
         setEnabled(myZoomManager.canZoomIn());
     }

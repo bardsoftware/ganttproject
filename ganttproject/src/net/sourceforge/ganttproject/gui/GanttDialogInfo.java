@@ -113,6 +113,7 @@ public class GanttDialogInfo extends JDialog {
         getRootPane().setDefaultButton(yes);
         p.add(yes);
         yes.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 setVisible(false);
                 dispose();
@@ -125,6 +126,7 @@ public class GanttDialogInfo extends JDialog {
             JButton no = new JButton(language.getText("no"));
             p.add(no);
             no.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     setVisible(false);
                     dispose();
@@ -137,6 +139,7 @@ public class GanttDialogInfo extends JDialog {
                 JButton cancel = new JButton(language.getText("cancel"));
                 p.add(cancel);
                 cancel.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         setVisible(false);
                         dispose();

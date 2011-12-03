@@ -65,6 +65,7 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
         mutator.setIsolationLevel(TaskMutator.READ_UNCOMMITED);
         myUiFacade.getUndoManager().undoableEdit("Task boundary changed",
                 new Runnable() {
+                    @Override
                     public void run() {
                         doFinish(mutator);
                     }

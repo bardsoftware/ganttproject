@@ -87,10 +87,12 @@ public class DependencyTableModel extends AbstractTableModel {
         myMutator.commit();
     }
 
+    @Override
     public int getColumnCount() {
         return MyColumn.values().length;
     }
 
+    @Override
     public int getRowCount() {
         return myDependencies.size() + 1;
     }
@@ -100,6 +102,7 @@ public class DependencyTableModel extends AbstractTableModel {
         return MyColumn.values()[col].getCaption();
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
         assert row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount();
         if (row == myDependencies.size()) {

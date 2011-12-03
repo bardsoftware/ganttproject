@@ -59,6 +59,7 @@ class NotificationComponent implements NotificationChannel.Listener {
         }
         if (!myNotifications.isEmpty()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateEnabled();
                 }

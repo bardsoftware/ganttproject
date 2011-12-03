@@ -18,27 +18,32 @@ public class ScrollingManagerImpl implements ScrollingManager {
     public ScrollingManagerImpl() {
     }
 
+    @Override
     public void scrollBy(TaskLength duration) {
         for (ScrollingListener l : myListeners) {
             l.scrollBy(duration);
         }
     }
+    @Override
     public void scrollBy(int pixels) {
         for (ScrollingListener l : myListeners) {
             l.scrollBy(pixels);
         }
     }
 
+    @Override
     public void scrollTo(Date date) {
         for (ScrollingListener l : myListeners) {
             l.scrollTo(date);
         }
     }
 
+    @Override
     public void addScrollingListener(ScrollingListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public void removeScrollingListener(ScrollingListener listener) {
         myListeners.remove(listener);
     }

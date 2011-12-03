@@ -47,14 +47,17 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
         myValue = initialValue;
     }
 
+    @Override
     public String getID() {
         return myID;
     }
 
+    @Override
     public T getValue() {
         return myValue;
     }
 
+    @Override
     public void setValue(T value) {
         setValue(value, false);
     }
@@ -72,6 +75,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
         fireChangeValueEvent(event);
     }
 
+    @Override
     public boolean isChanged() {
         if (myInitialValue == null) {
             return myValue != null;
@@ -79,15 +83,19 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
         return !myInitialValue.equals(myValue);
     }
 
+    @Override
     public void lock() {
     }
 
+    @Override
     public void commit() {
     }
 
+    @Override
     public void rollback() {
     }
 
+    @Override
     public void addChangeValueListener(ChangeValueListener listener) {
         myListeners.add(listener);
     }
@@ -98,13 +106,16 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
         }
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         myPropertyChangeSupport.addPropertyChangeListener(listener);
     }
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         myPropertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    @Override
     public boolean isWritable() {
         return isWritable;
     }

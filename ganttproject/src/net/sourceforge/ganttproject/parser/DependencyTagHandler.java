@@ -48,6 +48,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 
@@ -55,6 +56,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
 
@@ -63,9 +65,11 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
         }
     }
 
+    @Override
     public void parsingStarted() {
     }
 
+    @Override
     public void parsingFinished() {
         for (int i = 0; i < getDependencies().size(); i++) {
             GanttDependStructure ds = getDependencies().get(i);

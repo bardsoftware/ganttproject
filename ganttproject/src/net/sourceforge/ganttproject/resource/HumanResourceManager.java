@@ -105,6 +105,7 @@ public class HumanResourceManager {
     public void remove(HumanResource resource, GPUndoManager myUndoManager) {
         final HumanResource res = resource;
         myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
+            @Override
             public void run() {
                 fireResourcesRemoved(new HumanResource[] { res });
                 resources.remove(res);

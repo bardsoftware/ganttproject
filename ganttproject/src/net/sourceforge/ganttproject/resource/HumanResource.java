@@ -219,10 +219,12 @@ public class HumanResource implements CustomPropertyHolder {
         }
     }
 
+    @Override
     public List<CustomProperty> getCustomProperties() {
         return myCustomProperties.getCustomProperties();
     }
 
+    @Override
     public CustomProperty addCustomProperty(
             CustomPropertyDefinition definition, String valueAsString) {
         final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder
@@ -243,14 +245,17 @@ public class HumanResource implements CustomPropertyHolder {
             myValue = value;
         }
 
+        @Override
         public CustomPropertyDefinition getDefinition() {
             return myDefinition;
         }
 
+        @Override
         public Object getValue() {
             return myValue;
         }
 
+        @Override
         public String getValueAsString() {
             return HumanResourceManager.getValueAsString(myValue);
         }
@@ -309,42 +314,51 @@ public class HumanResource implements CustomPropertyHolder {
             myAssignmentToTask = assignmentToTask;
         }
 
+        @Override
         public Task getTask() {
             return myAssignmentToTask.getTask();
         }
 
+        @Override
         public HumanResource getResource() {
             return HumanResource.this;
         }
 
+        @Override
         public float getLoad() {
             return myLoad;
         }
 
+        @Override
         public void setLoad(float load) {
             myLoad = load;
             HumanResource.this.fireAssignmentChanged(this);
         }
 
         /** Removes all related assignments */
+        @Override
         public void delete() {
             HumanResource.this.myAssignments.remove(this);
             HumanResource.this.fireAssignmentChanged(this);
         }
 
+        @Override
         public void setCoordinator(boolean responsible) {
             myCoordinator = responsible;
         }
 
+        @Override
         public boolean isCoordinator() {
             return myCoordinator;
         }
 
+        @Override
         public Role getRoleForAssignment() {
 
             return myRoleForAssignment;
         }
 
+        @Override
         public void setRoleForAssignment(Role role) {
             myRoleForAssignment = role;
         }

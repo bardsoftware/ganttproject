@@ -81,7 +81,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  public SimpleRenderedImage() {}
 
  /** Returns the X coordinate of the leftmost column of the image. */
- public int getMinX() {
+ @Override
+public int getMinX() {
      return minX;
  }
 
@@ -96,7 +97,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  }
 
  /** Returns the X coordinate of the uppermost row of the image. */
- public int getMinY() {
+ @Override
+public int getMinY() {
      return minY;
  }
 
@@ -111,12 +113,14 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  }
 
  /** Returns the width of the image. */
- public int getWidth() {
+ @Override
+public int getWidth() {
      return width;
  }
 
  /** Returns the height of the image. */
- public int getHeight() {
+ @Override
+public int getHeight() {
      return height;
  }
 
@@ -127,26 +131,30 @@ public abstract class SimpleRenderedImage implements RenderedImage {
  }
 
  /** Returns the width of a tile. */
- public int getTileWidth() {
+ @Override
+public int getTileWidth() {
      return tileWidth;
  }
 
  /** Returns the height of a tile. */
- public int getTileHeight() {
+ @Override
+public int getTileHeight() {
      return tileHeight;
  }
 
  /**
   * Returns the X coordinate of the upper-left pixel of tile (0, 0).
   */
- public int getTileGridXOffset() {
+ @Override
+public int getTileGridXOffset() {
      return tileGridXOffset;
  }
 
  /**
   * Returns the Y coordinate of the upper-left pixel of tile (0, 0).
   */
- public int getTileGridYOffset() {
+ @Override
+public int getTileGridYOffset() {
      return tileGridYOffset;
  }
 
@@ -155,7 +163,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * getMinTileX() is implemented in terms of getMinX()
   * and so does not need to be implemented by subclasses.
   */
- public int getMinTileX() {
+ @Override
+public int getMinTileX() {
      return XToTileX(getMinX());
  }
 
@@ -174,7 +183,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * of getMinTileX() and getMaxTileX() and so does not need to be
   * implemented by subclasses.
   */
- public int getNumXTiles() {
+ @Override
+public int getNumXTiles() {
      return getMaxTileX() - getMinTileX() + 1;
  }
 
@@ -183,7 +193,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * is implemented in terms of getMinY() and so does not need to be
   * implemented by subclasses.
   */
- public int getMinTileY() {
+ @Override
+public int getMinTileY() {
      return YToTileY(getMinY());
  }
 
@@ -202,17 +213,20 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * of getMinTileY() and getMaxTileY() and so does not need to be
   * implemented by subclasses.
   */
- public int getNumYTiles() {
+ @Override
+public int getNumYTiles() {
      return getMaxTileY() - getMinTileY() + 1;
  }
 
  /** Returns the SampleModel of the image. */
- public SampleModel getSampleModel() {
+ @Override
+public SampleModel getSampleModel() {
      return sampleModel;
  }
 
  /** Returns the ColorModel of the image. */
- public ColorModel getColorModel() {
+ @Override
+public ColorModel getColorModel() {
      return colorModel;
  }
 
@@ -226,7 +240,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * <code>Object</code>, or the value
   * <code>java.awt.Image.UndefinedProperty.</code>
   */
- public Object getProperty(String name) {
+ @Override
+public Object getProperty(String name) {
      name = name.toLowerCase();
      return properties.get(name);
  }
@@ -239,7 +254,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * @return an array of <code>String</code>s representing valid
   *         property names.
   */
- public String[] getPropertyNames() {
+ @Override
+public String[] getPropertyNames() {
      String[] names = new String[properties.size()];
      int index = 0;
 
@@ -387,7 +403,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
      return ty*tileHeight + tileGridYOffset;
  }
 
- public Vector<RenderedImage> getSources() {
+ @Override
+public Vector<RenderedImage> getSources() {
      return null;
  }
 
@@ -407,7 +424,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   *
   * @return a Raster containing a copy of this image's data.
   */
- public Raster getData() {
+ @Override
+public Raster getData() {
      Rectangle rect = new Rectangle(getMinX(), getMinY(),
                                     getWidth(), getHeight());
      return getData(rect);
@@ -430,7 +448,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   *
   * @param bounds the region of the RenderedImage to be returned.
   */
- public Raster getData(Rectangle bounds) {
+ @Override
+public Raster getData(Rectangle bounds) {
      int startX = XToTileX(bounds.x);
      int startY = YToTileY(bounds.y);
      int endX = XToTileX(bounds.x + bounds.width - 1);
@@ -488,7 +507,8 @@ public abstract class SimpleRenderedImage implements RenderedImage {
   * @return a reference to the supplied WritableRaster, or to a
   *         new WritableRaster if the supplied one was null.
   */
- public WritableRaster copyData(WritableRaster dest) {
+ @Override
+public WritableRaster copyData(WritableRaster dest) {
      Rectangle bounds;
      Raster tile;
 

@@ -134,6 +134,7 @@ public class ITextEngine extends AbstractEngine {
     private void registerFonts() {
         myFontCache = new TTFontCache();
         Thread fontReadingThread = new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     // Random waiting seems silly, depending on the available

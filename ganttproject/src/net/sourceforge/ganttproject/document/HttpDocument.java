@@ -93,17 +93,20 @@ public class HttpDocument extends AbstractURLDocument {
         return webdavResource;
     }
 
+    @Override
     public String getFileName() {
         // TODO return filename instead of URL?
         String filenName = httpURL.toString();
         return (filenName != null) ? filenName : url;
     }
 
+    @Override
     public boolean canRead() {
         WebdavResource res = getWebdavResource();
         return (null == res) ? false : (res.exists() && !res.isCollection());
     }
 
+    @Override
     public IStatus canWrite() {
         WebdavResource res = getWebdavResource();
         if (null == res) {
@@ -160,6 +163,7 @@ public class HttpDocument extends AbstractURLDocument {
         }
     }
 
+    @Override
     public boolean isValidForMRU() {
         return (!malformedURL);
     }
@@ -209,6 +213,7 @@ public class HttpDocument extends AbstractURLDocument {
         }
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         if (null == getWebdavResource())
             throw new IOException(lastError);
@@ -223,6 +228,7 @@ public class HttpDocument extends AbstractURLDocument {
         }
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         if (null == getWebdavResource()) {
             throw new IOException(lastError);
@@ -230,6 +236,7 @@ public class HttpDocument extends AbstractURLDocument {
         return new HttpDocumentOutputStream(this);
     }
 
+    @Override
     public String getPath() {
         return getFileName();
     }
@@ -259,10 +266,12 @@ public class HttpDocument extends AbstractURLDocument {
         lockDAVMinutes = i;
     }
 
+    @Override
     public void write() throws IOException {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public URI getURI() {
         try {
             return new URI(url);
@@ -271,6 +280,7 @@ public class HttpDocument extends AbstractURLDocument {
         }
     }
 
+    @Override
     public boolean isLocal() {
         return false;
     }
