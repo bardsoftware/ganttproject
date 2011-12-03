@@ -571,11 +571,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return myOptionGroups;
     }
 
-    public Rectangle getPrimitive(TaskActivity activity) {
-        return (Rectangle) getContainerFor(activity.getTask()).getPrimitive(
-                activity);
-    }
-
     private GraphicPrimitiveContainer getContainerFor(Task task) {
         return getPrimitiveContainer();
     }

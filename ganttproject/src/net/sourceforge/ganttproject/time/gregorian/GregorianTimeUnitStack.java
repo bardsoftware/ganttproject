@@ -7,7 +7,6 @@ import java.util.HashMap;
 
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
-import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
@@ -65,15 +64,6 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     public GregorianTimeUnitStack() {
 
-    }
-
-    public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
-            TimeUnit bottomUnit) {
-        if (topUnit instanceof TimeUnitFunctionOfDate) {
-            topUnit = ((TimeUnitFunctionOfDate) topUnit)
-                    .createTimeUnit(baseDate);
-        }
-        return new TimeFrameImpl(baseDate, topUnit, bottomUnit);
     }
 
     public TimeUnit getDefaultTimeUnit() {
