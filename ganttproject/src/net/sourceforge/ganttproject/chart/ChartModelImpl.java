@@ -191,8 +191,7 @@ public class ChartModelImpl extends ChartModelBase {
             GraphicPrimitiveContainer.Rectangle rect = (GraphicPrimitiveContainer.Rectangle) primitive;
             if ("task.progress.end".equals(primitive.getStyle())
                     && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-                result = new TaskProgressChartItem(x, getBottomUnitWidth(),
-                        getBottomUnit(), (Task) primitive.getModelObject());
+                result = new TaskProgressChartItem((Task) primitive.getModelObject());
             }
         }
         return result;

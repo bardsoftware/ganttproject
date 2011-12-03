@@ -10,18 +10,7 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public class TaskProgressChartItem extends ChartItem {
-
-    private int myPosX;
-
-    private int myUnitWidth;
-
-    private float myTaskLength;
-
-    public TaskProgressChartItem(int posX, int unitWidth, TimeUnit bottomUnit,
-            Task task) {
+    public TaskProgressChartItem(Task task) {
         super(task);
-        myPosX = posX;
-        myUnitWidth = unitWidth;
-        myTaskLength = task.getDuration().getLength(bottomUnit);
     }
 }
