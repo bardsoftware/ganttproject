@@ -43,8 +43,10 @@ public class RenderedChartImage extends SimpleRenderedImage {
     private int myCurrentTile = -1;
     private Raster myCurrentRaster;
     private final ChartModel myChartModel;
+    private final int headerYOffset;
 
-    public RenderedChartImage(ChartModel chartModel, BufferedImage taskImage, int chartWidth, int chartHeight) {
+    public RenderedChartImage(ChartModel chartModel, BufferedImage taskImage, int chartWidth, int chartHeight,
+            int headerYOffset) {
         myChartModel = chartModel;
         myTaskImage = taskImage;
         sampleModel = myColorModel.createCompatibleSampleModel(chartWidth,chartHeight);
@@ -55,7 +57,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
         height = chartHeight;
         tileWidth = width;
         tileHeight = 32;
-
+        this.headerYOffset = headerYOffset;
     }
 
     public BufferedImage getWholeImage() {
@@ -71,7 +73,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
     @Override
     public Raster getTile(int tileX, int tileY) {
         if (myCurrentTile!=tileY) {
-            int offsety = tileY*getTileHeight();
+            int offsety = tileY*getTileHeight() - headerYOffset;
             BufferedImage tile = getChart(myTaskImage.getWidth(), offsety, getTileWidth(),getTileHeight(),  getWidth(), getHeight());
             Graphics g = tile.getGraphics();
             g.translate(0, -offsety);
