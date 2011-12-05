@@ -190,7 +190,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
                 Graphics2D g = getGraphics(d);
                 g.setBackground(Color.WHITE);
                 g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
-                g.drawImage(logo, 0, 0, null);
+                // Hack: by adding 35, the left part of the logo becomes visible, otherwise it gets chopped off
+                g.drawImage(logo, 35, 0, null);
             }
 
             @Override
@@ -205,16 +206,13 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
             @Override
             public void acceptChart(ChartDimensions d, ChartModel model) {
-                myRenderedImage = new RenderedChartImage(
-                        model,
-                        myTreeImage,
-                        d.getChartWidth(),
-                        d.getChartHeight());
+                myRenderedImage = new RenderedChartImage(model, myTreeImage, d.getChartWidth(), d.getChartHeight()
+                        + d.getLogoHeight(), d.getLogoHeight());
             }
 
             private Graphics2D getGraphics(ChartDimensions d) {
                 if (myGraphics == null) {
-                    myTreeImage  = new BufferedImage(d.getTreeWidth(), d.getChartHeight(), BufferedImage.TYPE_INT_RGB);
+                    myTreeImage  = new BufferedImage(d.getTreeWidth(), d.getChartHeight() + d.getLogoHeight(), BufferedImage.TYPE_INT_RGB);
                     myGraphics = myTreeImage.createGraphics();
                 }
                 return myGraphics;
