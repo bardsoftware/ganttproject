@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,7 +37,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -63,7 +62,6 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -146,7 +144,6 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         myChartComponent.invalidate();
         myChartComponent.repaint();
     }
-
 
     public void paintChart(Graphics g) {
         getChartModel().paint(g);
@@ -279,17 +276,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return myChartComponent.getName();
     }
 
-    public void setTaskManager(TaskManager taskManager) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public void reset() {
         myChartComponent.reset();
-    }
-
-    public Icon getIcon() {
-        return null;
     }
 
     @Override
