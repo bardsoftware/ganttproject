@@ -54,11 +54,11 @@ public class ChartImageBuilder {
         OffsetBuilder offsetBuilder = factory.build();
         OffsetList bottomOffsets = new OffsetList();
         offsetBuilder.constructOffsets(null, bottomOffsets);
-        myDimensions.chartWidth = bottomOffsets.getEndPx();
+        myDimensions.setChartWidth(bottomOffsets.getEndPx());
         myChartModel.setStartDate(mySettings.getStartDate());
-        myChartModel.setBounds(new Dimension(myDimensions.chartWidth, myDimensions.getChartHeight()));
+        myChartModel.setBounds(new Dimension(myDimensions.getChartWidth(), myDimensions.getChartHeight()));
 
-        myChartModel.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1);
+        myChartModel.setHeaderHeight(myDimensions.getLogoHeight() + myDimensions.getTableHeaderHeight() - 1);
         myChartModel.setVisibleTasks(mySettings.getVisibleTasks());
 
         visitor.acceptLogo(myDimensions, AbstractChartImplementation.LOGO.getImage());
