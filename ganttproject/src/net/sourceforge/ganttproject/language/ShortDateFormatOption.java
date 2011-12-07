@@ -31,6 +31,9 @@ public class ShortDateFormatOption extends DefaultStringOption {
 
     public ShortDateFormatOption() {
         super("ui.dateFormat.short");
+
+        // Set initial locale
+        setSelectedLocale(null);
     }
 
     @Override
@@ -50,6 +53,10 @@ public class ShortDateFormatOption extends DefaultStringOption {
     }
 
     public void setSelectedLocale(Locale locale) {
+        if(locale == null) {
+            // Find default locale
+            locale = GanttLanguage.getInstance().getLocale();
+        }
         myDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
         super.setValue(myDateFormat.toPattern(), true);
     }
