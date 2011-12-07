@@ -126,26 +126,35 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         languageOption.addChangeValueListener(new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
+                // Language changed...
                 if (dateFormatSwitchOption.isChecked()) {
+                    // ... update default date format option
                     Locale selected = languageOption.getSelectedValue();
                     shortDateFormatOption.setSelectedLocale(selected);
                 }
             }
         });
         dateFormatSwitchOption.addChangeValueListener(new ChangeValueListener() {
+            private String customFormat;
             @Override
             public void changeValue(ChangeValueEvent event) {
-                 shortDateFormatOption.setWritable(!dateFormatSwitchOption.isChecked());
-                 if (dateFormatSwitchOption.isChecked()) {
-                     shortDateFormatOption.setSelectedLocale(languageOption.getSelectedValue());
-                 }
+                shortDateFormatOption.setWritable(!dateFormatSwitchOption.isChecked());
+                if (dateFormatSwitchOption.isChecked()) {
+                    customFormat = shortDateFormatOption.getValue();
+                    // Update to default date format
+                    Locale selected = languageOption.getSelectedValue();
+                    shortDateFormatOption.setSelectedLocale(selected);
+                    dateSampleOption.setValue(shortDateFormatOption.formatDate(new Date()));
+                } else {
+                    shortDateFormatOption.setValue(customFormat);
+                }
             }
         });
         shortDateFormatOption.addChangeValueListener(new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
-                dateSampleOption.setValue(
-                        shortDateFormatOption.formatDate(new Date()));
+                // Update date sample
+                dateSampleOption.setValue(shortDateFormatOption.formatDate(new Date()));
             }
         });
         GPOption[] options = new GPOption[] {
