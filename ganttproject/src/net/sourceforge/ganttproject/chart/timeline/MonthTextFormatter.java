@@ -1,4 +1,4 @@
-package net.sourceforge.ganttproject.time.gregorian;
+package net.sourceforge.ganttproject.chart.timeline;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -6,11 +6,10 @@ import java.util.Date;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.time.TextFormatter;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class MonthTextFormatter extends CachingTextFormatter implements
-        TextFormatter {
+        TimeFormatter {
     public MonthTextFormatter() {
         initFormats();
     }

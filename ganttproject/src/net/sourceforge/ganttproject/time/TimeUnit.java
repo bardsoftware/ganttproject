@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.time;
 
-import java.util.Date;
-
 /**
  * Created by IntelliJ IDEA.
  *
@@ -23,8 +21,4 @@ public interface TimeUnit extends DateFrameable {
     public TimeUnit getDirectAtomUnit();
 
     public int DAY = 0;
-
-    public void setTextFormatter(TextFormatter formatter);
-
-    public TimeUnitText format(Date baseDate);
 }
