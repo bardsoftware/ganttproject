@@ -1,12 +1,11 @@
-package net.sourceforge.ganttproject.time.gregorian;
+package net.sourceforge.ganttproject.chart.timeline;
 
 import java.text.MessageFormat;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.time.TextFormatter;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
-public class DayTextFormatter extends CachingTextFormatter implements TextFormatter {
+public class DayTextFormatter extends CachingTextFormatter implements TimeFormatter {
 //    /** cache for holding formatted day names * */
 //    private final HashMap<Date, String> textCache = new HashMap<Date, String>();
 

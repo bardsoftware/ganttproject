@@ -1,21 +1,20 @@
 /*
  * Created on 06.03.2005
  */
-package net.sourceforge.ganttproject.time.gregorian;
+package net.sourceforge.ganttproject.chart.timeline;
 
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.time.TextFormatter;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**
  * @author bard
  */
 public class YearTextFormatter extends CachingTextFormatter implements
-        TextFormatter {
+        TimeFormatter {
 
     private Calendar myCalendar;
 

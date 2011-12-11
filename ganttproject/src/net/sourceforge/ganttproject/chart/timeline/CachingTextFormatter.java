@@ -1,7 +1,7 @@
 /*
  * Created on 06.03.2005
  */
-package net.sourceforge.ganttproject.time.gregorian;
+package net.sourceforge.ganttproject.chart.timeline;
 
 import java.util.Date;
 import java.util.HashMap;
