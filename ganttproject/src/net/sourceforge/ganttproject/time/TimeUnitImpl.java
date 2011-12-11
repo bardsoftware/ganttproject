@@ -14,8 +14,6 @@ public class TimeUnitImpl implements TimeUnit {
 
     private final TimeUnit myDirectAtomUnit;
 
-    private TextFormatter myTextFormatter;
-
     public TimeUnitImpl(String name, TimeUnitGraph graph,
             TimeUnit directAtomUnit) {
         myName = name;
@@ -52,21 +50,6 @@ public class TimeUnitImpl implements TimeUnit {
     @Override
     public String toString() {
         return getName() + " hash=" + hashCode();
-    }
-
-    @Override
-    public void setTextFormatter(TextFormatter formatter) {
-        myTextFormatter = formatter;
-    }
-
-    @Override
-    public TimeUnitText format(Date baseDate) {
-        return myTextFormatter == null ? new TimeUnitText("") : myTextFormatter
-                .format(this, baseDate);
-    }
-
-    protected TextFormatter getTextFormatter() {
-        return myTextFormatter;
     }
 
     @Override

@@ -8,6 +8,8 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**
@@ -89,7 +91,8 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
-                TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
+                TimeUnitText timeUnitText = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
+                        .format(nextOffset.getOffsetUnit(), curDate);
                 String unitText = timeUnitText.getText(-1);
                 int posY = topUnitHeight - 5;
                 GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);

@@ -112,19 +112,6 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
         }
 
         @Override
-        public void setTextFormatter(TextFormatter formatter) {
-            TimeUnitFunctionOfDateImpl.this.setTextFormatter(formatter);
-        }
-
-        @Override
-        public TimeUnitText format(Date baseDate) {
-            TextFormatter formatter = TimeUnitFunctionOfDateImpl.this
-                    .getTextFormatter();
-            return formatter == null ? new TimeUnitText("") : formatter.format(
-                    this, baseDate);
-        }
-
-        @Override
         public boolean equals(Object o) {
             return TimeUnitFunctionOfDateImpl.this.equals(o);
         }

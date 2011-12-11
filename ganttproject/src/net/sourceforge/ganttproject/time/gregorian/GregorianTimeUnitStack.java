@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+import net.sourceforge.ganttproject.chart.timeline.DayTextFormatter;
+import net.sourceforge.ganttproject.chart.timeline.MonthTextFormatter;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -52,10 +54,8 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
                 HOUR_FRAMER);
 
         DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER);
-        DAY.setTextFormatter(new DayTextFormatter());
         MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY,
                 MONTH_FRAMER);
-        MONTH.setTextFormatter(new MonthTextFormatter());
         ourUnit2field.put(DAY, new Integer(Calendar.DAY_OF_MONTH));
         ourUnit2field.put(HOUR, new Integer(Calendar.HOUR_OF_DAY));
         ourUnit2field.put(MINUTE, new Integer(Calendar.MINUTE));
