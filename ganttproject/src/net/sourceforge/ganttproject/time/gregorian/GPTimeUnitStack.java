@@ -7,7 +7,6 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskLengthImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -19,8 +18,6 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * @author bard
  */
 public class GPTimeUnitStack implements TimeUnitStack {
-    private static GanttLanguage i18n = GanttLanguage.getInstance();
-
     private static TimeUnitGraph ourGraph = new TimeUnitGraph();
 
     private static final TimeUnit HOUR = ourGraph.createAtomTimeUnit("hour");
@@ -36,29 +33,19 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
     private final TimeUnitPair[] myPairs;
 
-    public static final TimeUnit WEEK_AS_BOTTOM_UNIT;
 
     static {
         TimeUnit atom = ourGraph.createAtomTimeUnit("atom");
         DAY = ourGraph.createDateFrameableTimeUnit("day", atom, 1,
                 new FramerImpl(Calendar.DATE));
-        DAY.setTextFormatter(new DayTextFormatter());
         MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY,
                 new FramerImpl(Calendar.MONTH));
-        MONTH.setTextFormatter(new MonthTextFormatter());
         WEEK = ourGraph.createDateFrameableTimeUnit("week", DAY, 7,
                 new WeekFramerImpl());
-        WEEK.setTextFormatter(new WeekTextFormatter(i18n.getText("week")
-                + " {0}"));
-        WEEK_AS_BOTTOM_UNIT = ourGraph.createDateFrameableTimeUnit("week", DAY,
-                7, new WeekFramerImpl());
-        WEEK_AS_BOTTOM_UNIT.setTextFormatter(new WeekTextFormatter("{0}"));
         QUARTER = ourGraph.createTimeUnitFunctionOfDate("quarter", MONTH,
                 new FramerImpl(Calendar.MONTH));
-        QUARTER.setTextFormatter(new QuarterTextFormatter());
         YEAR = ourGraph.createTimeUnitFunctionOfDate("year", DAY,
                 new FramerImpl(Calendar.YEAR));
-        YEAR.setTextFormatter(new YearTextFormatter());
     }
 
     public GPTimeUnitStack() {
@@ -67,10 +54,10 @@ public class GPTimeUnitStack implements TimeUnitStack {
                 new TimeUnitPair(WEEK, DAY, this, 55),
                 new TimeUnitPair(MONTH, DAY, this, 44),
                 new TimeUnitPair(MONTH, DAY, this, 34),
-                new TimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, this, 24),
-                new TimeUnitPair(MONTH, WEEK_AS_BOTTOM_UNIT, this, 21),
-                new TimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, this, 13),
-                new TimeUnitPair(YEAR, WEEK_AS_BOTTOM_UNIT, this, 8),
+                new TimeUnitPair(MONTH, WEEK, this, 24),
+                new TimeUnitPair(MONTH, WEEK, this, 21),
+                new TimeUnitPair(YEAR, WEEK, this, 13),
+                new TimeUnitPair(YEAR, WEEK, this, 8),
                 new TimeUnitPair(YEAR, MONTH, this, 5),
                 new TimeUnitPair(YEAR, MONTH, this, 3),
                 /*
@@ -134,7 +121,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
             return DAY;
         }
         if (isWeek(code)) {
-            return WEEK_AS_BOTTOM_UNIT;
+            return WEEK;
         }
         return null;
     }
@@ -159,7 +146,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
         if (timeUnit == DAY) {
             return "d";
         }
-        if (timeUnit == WEEK_AS_BOTTOM_UNIT) {
+        if (timeUnit == WEEK) {
             return "w";
         }
         throw new IllegalArgumentException();

@@ -1,4 +1,4 @@
-package net.sourceforge.ganttproject.time.gregorian;
+package net.sourceforge.ganttproject.chart.timeline;
 
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -7,11 +7,10 @@ import java.util.Date;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.time.TextFormatter;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class WeekTextFormatter extends CachingTextFormatter implements
-        TextFormatter {
+        TimeFormatter {
     private Calendar myCalendar;
 
     WeekTextFormatter(String formatString) {

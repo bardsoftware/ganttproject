@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 /**
@@ -66,7 +68,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     private void renderLabel(int curX, Date curDate, Offset curOffset) {
-        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
+        TimeUnitText timeUnitText = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE).format(curOffset.getOffsetUnit(), curDate);
         String unitText = timeUnitText.getText(-1);
         int posY = getTextBaselinePosition();
         GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
