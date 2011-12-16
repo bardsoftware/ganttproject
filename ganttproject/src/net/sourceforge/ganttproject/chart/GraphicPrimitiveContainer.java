@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
+import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
+
 /**
  * Stores the available primitives and their information (used for painting) and
  * provides methods to retrieve them
@@ -203,12 +206,10 @@ public class GraphicPrimitiveContainer {
         }
     }
 
-    public static class Text extends GraphicPrimitive {
+    public static class Text extends GraphicPrimitive implements TextSelector {
         private final int myLeftX;
 
         private final int myBottomY;
-
-        private final String myText;
 
         private Font myFont;
 
@@ -218,13 +219,22 @@ public class GraphicPrimitiveContainer {
 
         private VAlignment myVAlignment = VAlignment.BOTTOM;
 
+        private final TextSelector mySelector;
+
+        private int myWidth;
+
+        private int myHeight;
+
         Text(int leftX, int bottomY, String text) {
-            myLeftX = leftX;
-            myBottomY = bottomY;
-            myText = text;
-            myMaxLength = -1;
+            this(leftX, bottomY, TextSelector.Default.singleChoice(text));
         }
 
+        Text(int leftX, int bottomY, TextSelector delegateSelector) {
+            myLeftX = leftX;
+            myBottomY = bottomY;
+            mySelector = delegateSelector;
+            myMaxLength = -1;
+        }
         public void setFont(Font font) {
             myFont = font;
         }
@@ -241,8 +251,9 @@ public class GraphicPrimitiveContainer {
             return myFont;
         }
 
-        public String getText() {
-            return myText;
+        @Override
+        public String getText(TextLengthCalculator textLengthCalculator) {
+            return mySelector.getText(textLengthCalculator);
         }
 
         public int getLeftX() {
@@ -265,6 +276,36 @@ public class GraphicPrimitiveContainer {
         public VAlignment getVAlignment() {
             return myVAlignment;
         }
+
+//        public void setDimension(int width, int height) {
+//            myWidth = width;
+//            myHeight = height;
+//        }
+
+//        public int getWidth() {
+//            return myWidth;
+//        }
+//
+//        public int getHeight() {
+//            return myHeight;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return String.format("%s [%d, %d]", mySelector.getText(new TextLengthCalculator() {
+//                public int getTextLength(String text) {
+//                    return myWidth;
+//                }
+//
+//                public int getTextHeight(String text) {
+//                    return myHeight;
+//                }
+//
+//                public Object getState() {
+//                    return null;
+//                }
+//            }), myWidth, myHeight);
+//        }
     }
 
     public GraphicPrimitiveContainer() {
@@ -301,6 +342,12 @@ public class GraphicPrimitiveContainer {
 
     public Text createText(int leftx, int bottomy, String text) {
         Text result = new Text(leftx+myDeltaX, bottomy+myDeltaY, text);
+        myTexts.add(result);
+        return result;
+    }
+
+    public Text createText(int leftx, int bottomy, TextSelector textSelector) {
+        Text result = new Text(leftx+myDeltaX, bottomy+myDeltaY, textSelector);
         myTexts.add(result);
         return result;
     }

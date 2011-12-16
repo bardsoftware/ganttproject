@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -68,13 +69,16 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     private void renderLabel(int curX, Date curDate, Offset curOffset) {
-        TimeUnitText timeUnitText = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE).format(curOffset.getOffsetUnit(), curDate);
-        String unitText = timeUnitText.getText(-1);
+        final TimeUnitText timeUnitText = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE)
+                .format(curOffset.getOffsetUnit(), curDate);
+        final int maxWidth = curOffset.getOffsetPixels() - curX;
         int posY = getTextBaselinePosition();
-        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
-                curX + 2, posY, unitText);
-        //myTimelineContainer.bind(text, timeUnitText);
-        text.setMaxLength(curOffset.getOffsetPixels() - curX);
+        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(curX + 2, posY, new TextSelector() {
+            @Override
+            public String getText(TextLengthCalculator textLengthCalculator) {
+                return timeUnitText.getText(maxWidth, textLengthCalculator);
+            }
+        });
         text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
     }
     private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {

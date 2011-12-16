@@ -11,6 +11,7 @@ import java.util.List;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders chart timeline.
@@ -91,13 +92,16 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
-                TimeUnitText timeUnitText = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
+                final TimeUnitText timeUnitText = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
                         .format(nextOffset.getOffsetUnit(), curDate);
-                String unitText = timeUnitText.getText(-1);
+                final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
                 int posY = topUnitHeight - 5;
-                GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);
-                getTimelineContainer().bind(text, timeUnitText);
-                text.setMaxLength(nextOffset.getOffsetPixels() - curX -5 );
+                GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, new TextSelector() {
+                    @Override
+                    public String getText(TextLengthCalculator textLengthCalculator) {
+                        return timeUnitText.getText(maxWidth, textLengthCalculator);
+                    }
+                });
                 text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
                 getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
             }
