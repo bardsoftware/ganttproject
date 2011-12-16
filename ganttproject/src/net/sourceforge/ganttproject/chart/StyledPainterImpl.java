@@ -27,6 +27,8 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JLabel;
+
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
@@ -617,21 +619,14 @@ public class StyledPainterImpl implements Painter {
             myGraphics.setFont(next.getFont());
         }
 
-        String nextTextString = next.getText();
-
-        int requestedMaxLength = next.getMaxLength();
-        if (next.getModelObject() != null) {
-            // TODO Maybe add this functionality to GraphicsPrimitiveContainer.Text?? (And make it more safe, as modelObject could be something else than TimeUnitText...)
-            // Get TimeUnit text
-            TimeUnitText nextText = (TimeUnitText) next.getModelObject();
-            nextTextString = nextText.getText(requestedMaxLength,
-                    myTextLengthCalculator);
+        String nextTextString = next.getText(myTextLengthCalculator);
+        if (nextTextString == null) {
+            return;
         }
-
         int actualLength = myTextLengthCalculator.getTextLength(nextTextString);
-        if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
-            return; // Text is too large
-        }
+//        if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
+//            return; // Text is too large
+//        }
         //FIXME This check if not 100% working (when scrolling to the right the text seems to disappear too soon...)
         if (next.getLeftX() + actualLength < 0) {
             return; // Text is not visible: too far to the left for current view
@@ -658,7 +653,6 @@ public class StyledPainterImpl implements Painter {
         default:
             ybottom = next.getBottomY();
         }
-
         myGraphics.drawString(nextTextString, xleft, ybottom);
         if (graphicFont != null) {
             // Set Font back to original font

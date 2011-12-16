@@ -6,5 +6,5 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public interface TimeFormatter {
-    public TimeUnitText format(TimeUnit timeUnit, Date baseDate);
+    TimeUnitText format(TimeUnit timeUnit, Date baseDate);
 }
