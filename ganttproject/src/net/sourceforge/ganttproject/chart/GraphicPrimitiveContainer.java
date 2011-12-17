@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,6 +50,8 @@ public class GraphicPrimitiveContainer {
     private int myDeltaX;
 
     private int myDeltaY;
+
+    private List<TextGroup> myTextGroups = new ArrayList<TextGroup>();
 
     /** Horizontal alignments for texts */
     public enum HAlignment { CENTER, LEFT, RIGHT };
@@ -206,7 +209,7 @@ public class GraphicPrimitiveContainer {
         }
     }
 
-    public static class Text extends GraphicPrimitive implements TextSelector {
+    public static class Text extends GraphicPrimitive {
         private final int myLeftX;
 
         private final int myBottomY;
@@ -221,10 +224,6 @@ public class GraphicPrimitiveContainer {
 
         private final TextSelector mySelector;
 
-        private int myWidth;
-
-        private int myHeight;
-
         Text(int leftX, int bottomY, String text) {
             this(leftX, bottomY, TextSelector.Default.singleChoice(text));
         }
@@ -235,6 +234,7 @@ public class GraphicPrimitiveContainer {
             mySelector = delegateSelector;
             myMaxLength = -1;
         }
+
         public void setFont(Font font) {
             myFont = font;
         }
@@ -251,7 +251,6 @@ public class GraphicPrimitiveContainer {
             return myFont;
         }
 
-        @Override
         public String getText(TextLengthCalculator textLengthCalculator) {
             return mySelector.getText(textLengthCalculator);
         }
@@ -277,35 +276,83 @@ public class GraphicPrimitiveContainer {
             return myVAlignment;
         }
 
-//        public void setDimension(int width, int height) {
-//            myWidth = width;
-//            myHeight = height;
-//        }
+        public TextSelector getTextSelector() {
+            return mySelector;
+        }
+    }
 
-//        public int getWidth() {
-//            return myWidth;
-//        }
-//
-//        public int getHeight() {
-//            return myHeight;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return String.format("%s [%d, %d]", mySelector.getText(new TextLengthCalculator() {
-//                public int getTextLength(String text) {
-//                    return myWidth;
-//                }
-//
-//                public int getTextHeight(String text) {
-//                    return myHeight;
-//                }
-//
-//                public Object getState() {
-//                    return null;
-//                }
-//            }), myWidth, myHeight);
-//        }
+    public static class TextGroup {
+        private final List<TextSelector> mySelectors = new ArrayList<TextSelector>();
+        private List<String> myLineStyles;
+        private int myHeight;
+        private FontChooser myFontChooser;
+        private List<Font> myFonts;
+        private List<List<Text>> myLines = new ArrayList<List<Text>>();
+        private int myBottomY;
+        private int myLeftX;
+        private List<Integer> myBaselines = new ArrayList<Integer>();
+
+        public TextGroup(int leftX, int bottomY, int height, String... lineStyles) {
+            myLeftX = leftX;
+            myBottomY = bottomY;
+            myHeight = height;
+            myLineStyles = new ArrayList<String>(Arrays.asList(lineStyles));
+            for (int i = 0; i < myLineStyles.size(); i++) {
+                myLines.add(new ArrayList<Text>());
+            }
+            myFonts = new ArrayList<Font>();
+        }
+
+        public void setFonts(FontChooser fontChooser) {
+
+            while (getTotalHeight(fontChooser, myBaselines) > myHeight) {
+                fontChooser.decreaseBaseFontSize();
+            }
+            for (String style : myLineStyles) {
+                myFonts.add(fontChooser.getFont(style));
+            }
+        }
+
+        private int getTotalHeight(FontChooser fontChooser, List<Integer> lineBaselines) {
+            lineBaselines.clear();
+            int totalHeight = 0;
+            for (String style : myLineStyles) {
+                totalHeight += fontChooser.getMarginTop(style);
+                totalHeight += fontChooser.getTextHeight(style);
+                totalHeight += fontChooser.getMarginBottom(style);
+                lineBaselines.add(totalHeight);
+            }
+            return totalHeight;
+        }
+
+        public void addText(Text text) {
+            int line = text.getBottomY();
+            myLines.get(line).add(text);
+        }
+
+        public int getLineCount() {
+            return myLines.size();
+        }
+
+        public List<Text> getLine(int i) {
+            return myLines.get(i);
+        }
+
+        public Font getFont(int i) {
+            return myFonts.get(i);
+        }
+
+        public int getLeftX() {
+            return myLeftX;
+        }
+
+        public int getBottomY() {
+            return myBottomY;
+        }
+
+        public int getBottomY(int line) {
+            return myBottomY + myBaselines.get(line);
+        }
     }
 
     public GraphicPrimitiveContainer() {
@@ -352,6 +399,12 @@ public class GraphicPrimitiveContainer {
         return result;
     }
 
+    public TextGroup createTextGroup(int leftX, int bottomY, int height, String... styles) {
+        TextGroup result = new TextGroup(leftX, bottomY, height, styles);
+        myTextGroups.add(result);
+        return result;
+    }
+
     void paint(Painter painter) {
         painter.prePaint();
         for (int i = 0; i < myRectangles.size(); i++) {
@@ -372,12 +425,16 @@ public class GraphicPrimitiveContainer {
                 painter.paint(next);
             }
         }
+        for (TextGroup textGroup : myTextGroups) {
+            painter.paint(textGroup);
+        }
     }
 
     public void clear() {
         myRectangles.clear();
         myLines.clear();
         myTexts.clear();
+        myTextGroups.clear();
         myModelObject2primitive.clear();
         for (GraphicPrimitiveContainer layer : getLayers()) {
             layer.clear();

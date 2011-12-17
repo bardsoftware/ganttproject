@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
@@ -58,29 +60,30 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         if (xpos > 0) {
             xpos = 0;
         }
+        TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom");
         for (Offset offset : bottomOffsets) {
             if (offset.getDayType() == GPCalendar.DayType.WORKING) {
                 renderWorkingDay(xpos, offset, prevOffset);
             }
-            renderLabel(xpos, offset.getOffsetStart(), offset);
+            renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
             prevOffset = offset;
             xpos = prevOffset.getOffsetPixels();
         }
     }
 
-    private void renderLabel(int curX, Date curDate, Offset curOffset) {
+    private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
         final TimeUnitText timeUnitText = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE)
                 .format(curOffset.getOffsetUnit(), curDate);
         final int maxWidth = curOffset.getOffsetPixels() - curX;
-        int posY = getTextBaselinePosition();
-        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(curX + 2, posY, new TextSelector() {
+        GraphicPrimitiveContainer.Text text = new Text(curX + 2, 0, new TextSelector() {
             @Override
             public String getText(TextLengthCalculator textLengthCalculator) {
                 return timeUnitText.getText(maxWidth, textLengthCalculator);
             }
         });
-        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+        textGroup.addText(text);
     }
+
     private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
         if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {
             myTimelineContainer.createLine(

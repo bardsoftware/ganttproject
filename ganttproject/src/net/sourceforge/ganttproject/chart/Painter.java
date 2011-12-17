@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 
 /**
  * Interface providing paint methods
@@ -36,4 +37,6 @@ public interface Painter {
     void paint(Line line);
 
     void paint(Text next);
+
+    void paint(TextGroup textGroup);
 }
