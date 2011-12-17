@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.Platform;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * @author bard
@@ -248,7 +249,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         }
         if (ourIconProperties == null) {
             ourIconProperties = new Properties();
-            loadProperties(ourIconProperties, "/icons.properties");
+            PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
         }
         return (String) ourIconProperties.get(getID());
     }
@@ -273,27 +274,12 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     public static String getKeyStrokeText(String keystrokeID) {
         if (ourKeyboardProperties == null) {
             ourKeyboardProperties = new Properties();
-            loadProperties(ourKeyboardProperties, "/keyboard.properties");
-            loadProperties(ourKeyboardProperties, "/mouse.properties");
+            PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
+            PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
         }
         return (String) ourKeyboardProperties.get(keystrokeID);
     }
 
-    private static void loadProperties(Properties result, String resource) {
-        URL url = GPAction.class.getResource(resource);
-        if (url == null) {
-            return;
-        }
-        URL resolvedUrl;
-        try {
-            resolvedUrl = Platform.resolve(url);
-            result.load(resolvedUrl.openStream());
-        } catch (IOException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-        }
-    }
 
     public static GPAction createVoidAction(String key) {
         return new GPAction(key) {
