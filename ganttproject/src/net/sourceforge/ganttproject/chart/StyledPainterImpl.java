@@ -25,18 +25,22 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.JLabel;
 
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**
@@ -60,6 +64,8 @@ public class StyledPainterImpl implements Painter {
 
     /** List Y coordinates used to draw polygons */
     private int[] myYPoints = new int[4];
+
+    private Properties myProperties;
 
     /** Default stroke used for the primitives */
     private final static BasicStroke defaultStroke = new BasicStroke();
@@ -110,6 +116,9 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("load.underload.last", myResourceLoadPainter);
         myStyle2painter.put("load.underload.first.last", myResourceLoadPainter);
         myStyle2painter.put("previousStateTask", myPreviousStateTaskRectanglePainter);
+
+        myProperties = new Properties();
+        PropertiesUtil.loadProperties(myProperties, "/chart.properties");
     }
 
     public void setGraphics(Graphics g) {
@@ -657,6 +666,21 @@ public class StyledPainterImpl implements Painter {
         if (graphicFont != null) {
             // Set Font back to original font
             myGraphics.setFont(graphicFont);
+        }
+    }
+
+    @Override
+    public void paint(TextGroup textGroup) {
+        TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl((Graphics2D)myGraphics.create());
+        FontChooser fontChooser = new FontChooser(myProperties, calculator);
+        textGroup.setFonts(fontChooser);
+        for (int i = 0; i < textGroup.getLineCount(); i++) {
+            List<Text> line = textGroup.getLine(i);
+            for (Text t : line) {
+                Text copy = new Text(textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(i), t.getTextSelector());
+                copy.setFont(textGroup.getFont(i));
+                paint(copy);
+            }
         }
     }
 }
