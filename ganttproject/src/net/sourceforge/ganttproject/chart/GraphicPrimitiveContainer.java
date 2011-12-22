@@ -311,6 +311,7 @@ public class GraphicPrimitiveContainer {
             for (String style : myLineStyles) {
                 myFonts.add(fontChooser.getFont(style));
             }
+            myFontChooser = fontChooser;
         }
 
         private int getTotalHeight(FontChooser fontChooser, List<Integer> lineBaselines) {
@@ -340,6 +341,10 @@ public class GraphicPrimitiveContainer {
 
         public Font getFont(int i) {
             return myFonts.get(i);
+        }
+
+        public Color getColor(int i) {
+            return myFontChooser.getColor(myLineStyles.get(i));
         }
 
         public int getLeftX() {

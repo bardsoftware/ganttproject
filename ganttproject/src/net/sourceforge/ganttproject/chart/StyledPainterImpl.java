@@ -679,6 +679,7 @@ public class StyledPainterImpl implements Painter {
             for (Text t : line) {
                 Text copy = new Text(textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(i), t.getTextSelector());
                 copy.setFont(textGroup.getFont(i));
+                copy.setForegroundColor(textGroup.getColor(i));
                 paint(copy);
             }
         }
