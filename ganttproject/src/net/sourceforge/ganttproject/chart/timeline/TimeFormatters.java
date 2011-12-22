@@ -20,8 +20,10 @@ package net.sourceforge.ganttproject.chart.timeline;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitText;
@@ -39,10 +41,10 @@ public class TimeFormatters {
     }
     private static final Map<String, TimeFormatter> ourUpperFormatters = new HashMap<String, TimeFormatter>();
     private static final Map<String, TimeFormatter> ourLowerFormatters = new HashMap<String, TimeFormatter>();
-    protected static final TimeUnitText EMPTY_TEXT = new TimeUnitText("");
+    protected static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] {new TimeUnitText("")};
     private static final TimeFormatter DEFAULT_TIME_FORMATTER = new TimeFormatter() {
         @Override
-        public TimeUnitText format(TimeUnit timeUnit, Date baseDate) {
+        public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
             return EMPTY_TEXT;
         }
     };
@@ -55,10 +57,10 @@ public class TimeFormatters {
         commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());
 
         ourUpperFormatters.putAll(commonFormatters);
-        ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter(i18n.getText("week") + " {0}"));
+        ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
 
         ourLowerFormatters.putAll(commonFormatters);
-        ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter("{0}"));
+        ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
     }
 
     public static TimeFormatter getFormatter(TimeUnit timeUnit, Position position) {

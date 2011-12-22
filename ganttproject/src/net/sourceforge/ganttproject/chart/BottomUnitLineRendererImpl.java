@@ -24,6 +24,7 @@ import java.util.List;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
@@ -60,7 +61,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         if (xpos > 0) {
             xpos = 0;
         }
-        TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom");
+        TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom", "timeline.top");
         for (Offset offset : bottomOffsets) {
             if (offset.getDayType() == GPCalendar.DayType.WORKING) {
                 renderWorkingDay(xpos, offset, prevOffset);
@@ -72,16 +73,19 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     }
 
     private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
-        final TimeUnitText timeUnitText = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE)
-                .format(curOffset.getOffsetUnit(), curDate);
         final int maxWidth = curOffset.getOffsetPixels() - curX;
-        GraphicPrimitiveContainer.Text text = new Text(curX + 2, 0, new TextSelector() {
-            @Override
-            public String getText(TextLengthCalculator textLengthCalculator) {
-                return timeUnitText.getText(maxWidth, textLengthCalculator);
-            }
-        });
-        textGroup.addText(text);
+        TimeFormatter formatter = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE);
+        TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
+        for (int i = 0; i < texts.length; i++) {
+            final TimeUnitText timeUnitText = texts[i];
+            GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
+                @Override
+                public String getText(TextLengthCalculator textLengthCalculator) {
+                    return timeUnitText.getText(maxWidth, textLengthCalculator);
+                }
+            });
+            textGroup.addText(text);
+        }
     }
 
     private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {

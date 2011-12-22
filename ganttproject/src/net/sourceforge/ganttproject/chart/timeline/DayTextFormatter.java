@@ -10,9 +10,10 @@ public class DayTextFormatter extends CachingTextFormatter implements TimeFormat
 //    private final HashMap<Date, String> textCache = new HashMap<Date, String>();
 
     @Override
-    protected TimeUnitText createTimeUnitText(Date adjustedLeft) {
-        return new TimeUnitText(MessageFormat.format("{0}", new Object[] { ""
-              + adjustedLeft.getDate() }));
+    protected TimeUnitText[] createTimeUnitText(Date adjustedLeft) {
+        return new TimeUnitText[] {
+                new TimeUnitText(MessageFormat.format("{0}", new Object[] { "" + adjustedLeft.getDate() }))
+        };
     }
 
 //    public TimeUnitText format(TimeUnit timeUnit, Date baseDate) {

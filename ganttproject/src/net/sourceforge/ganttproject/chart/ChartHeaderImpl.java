@@ -92,9 +92,10 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
-                final TimeUnitText timeUnitText = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
+                TimeUnitText[] texts = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
                         .format(nextOffset.getOffsetUnit(), curDate);
                 final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
+                final TimeUnitText timeUnitText = texts[0];
                 int posY = topUnitHeight - 5;
                 GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, new TextSelector() {
                     @Override

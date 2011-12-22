@@ -33,11 +33,11 @@ public class QuarterTextFormatter extends CachingTextFormatter implements
     }
 
     @Override
-    protected TimeUnitText createTimeUnitText(Date startDate) {
+    protected TimeUnitText[] createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         int month = myCalendar.get(Calendar.MONTH);
         int quarter = month / 4 + 1;
         String shortText = "Q" + quarter;
-        return new TimeUnitText(shortText);
+        return new TimeUnitText[] {new TimeUnitText(shortText)};
     }
 }
