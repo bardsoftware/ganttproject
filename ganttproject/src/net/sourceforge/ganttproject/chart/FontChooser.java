@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,5 +49,9 @@ public class FontChooser {
             myFonts.put(style, f);
         }
         return f;
+    }
+
+    public Color getColor(String style) {
+        return Color.decode(myProperties.getProperty(style + ".color", "#000"));
     }
 }
