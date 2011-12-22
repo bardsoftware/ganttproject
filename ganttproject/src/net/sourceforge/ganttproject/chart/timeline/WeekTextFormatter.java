@@ -13,22 +13,30 @@ public class WeekTextFormatter extends CachingTextFormatter implements
         TimeFormatter {
     private Calendar myCalendar;
 
-    WeekTextFormatter(String formatString) {
+    WeekTextFormatter() {
         myCalendar = CalendarFactory.newCalendar();
     }
 
     @Override
-    protected TimeUnitText createTimeUnitText(Date startDate) {
+    protected TimeUnitText[] createTimeUnitText(Date startDate) {
         myCalendar.setTime(startDate);
         myCalendar.setMinimalDaysInFirstWeek(4);
-        Integer weekNo = new Integer(myCalendar.get(Calendar.WEEK_OF_YEAR));
-        String shortText = MessageFormat.format("{0}", new Object[] { weekNo });
-        String middleText = MessageFormat.format(GanttLanguage.getInstance()
-                .getText("week")
-                + " {0}", new Object[] { weekNo });
-        return new TimeUnitText(middleText, middleText, shortText);
+        return new TimeUnitText[] {
+                createTopText(), createBottomText()
+        };
     }
 
+    private TimeUnitText createTopText() {
+        Integer weekNo = new Integer(myCalendar.get(Calendar.WEEK_OF_YEAR));
+        String shortText = weekNo.toString();
+        String middleText = MessageFormat.format("{0} {1}", GanttLanguage.getInstance().getText("week"), weekNo);
+        String longText = middleText;
+        return new TimeUnitText(longText, middleText, shortText);
+    }
+
+    private TimeUnitText createBottomText() {
+        return new TimeUnitText(GanttLanguage.getInstance().getShortDateFormat().format(myCalendar.getTime()));
+    }
     @Override
     public void languageChanged(Event event) {
         super.languageChanged(event);

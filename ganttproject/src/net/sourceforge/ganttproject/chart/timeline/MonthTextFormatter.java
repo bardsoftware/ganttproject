@@ -15,24 +15,21 @@ public class MonthTextFormatter extends CachingTextFormatter implements
     }
 
     @Override
-    protected TimeUnitText createTimeUnitText(Date adjustedLeft) {
+    protected TimeUnitText[] createTimeUnitText(Date adjustedLeft) {
         TimeUnitText result;
-        String longText = MessageFormat.format("{0}",
-                new Object[] { myLongFormat.format(adjustedLeft) });
-        String mediumText = MessageFormat.format("{0}",
-                new Object[] { myMediumFormat.format(adjustedLeft) });
-        String shortText = MessageFormat.format("{0}",
-                new Object[] { myShortFormat.format(adjustedLeft) });
+        String longText = myLongFormat.format(adjustedLeft);
+        String mediumText = myMediumFormat.format(adjustedLeft);
+        String shortText = myShortFormat.format(adjustedLeft);
         result = new TimeUnitText(longText, mediumText, shortText);
-        return result;
+        return new TimeUnitText[] {result};
     }
 
     private void initFormats() {
         myLongFormat = GanttLanguage.getInstance()
                 .createDateFormat("MMMM yyyy");
         myMediumFormat = GanttLanguage.getInstance().createDateFormat(
-                "MMM - yy");
-        myShortFormat = GanttLanguage.getInstance().createDateFormat("MM - yy");
+                "MMM''yy");
+        myShortFormat = GanttLanguage.getInstance().createDateFormat("MM''yy");
     }
 
     @Override
