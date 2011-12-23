@@ -80,8 +80,8 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             final TimeUnitText timeUnitText = texts[i];
             GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
                 @Override
-                public String getText(TextLengthCalculator textLengthCalculator) {
-                    return timeUnitText.getText(maxWidth, textLengthCalculator);
+                public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+                    return timeUnitText.getLabels(maxWidth, textLengthCalculator);
                 }
             });
             textGroup.addText(text);
