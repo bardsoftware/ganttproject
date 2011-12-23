@@ -52,14 +52,15 @@ public class TimeFormatters {
         Map<String, TimeFormatter> commonFormatters = new HashMap<String, TimeFormatter>();
 
         commonFormatters.put(GPTimeUnitStack.DAY.getName(), new DayTextFormatter());
-        commonFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter());
         commonFormatters.put(GPTimeUnitStack.QUARTER.getName(), new QuarterTextFormatter());
         commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());
 
         ourUpperFormatters.putAll(commonFormatters);
+        ourUpperFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter("MMMM yyyy", "MMM''yyyy", "MM''yy"));
         ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
 
         ourLowerFormatters.putAll(commonFormatters);
+        ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter("MMMM", "MMM", "MM"));
         ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
     }
 

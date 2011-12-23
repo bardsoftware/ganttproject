@@ -1,21 +1,22 @@
 package net.sourceforge.ganttproject.time;
 
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 public class TimeUnitText {
+    private static final Label[] EMPTY_LABELS = new Label[] {
+        new Label("", 0), new Label("", 0), new Label("", 0)
+    };
+
     private String myLongText;
 
     private String myMediumText;
 
     private String myShortText;
 
-    private int myMinimaxLong = -1;
-
-    private int myMinimaxMedium = -1;
-
-    private int myMinimaxShort = -1;
-
     private Object myCalculatorState;
+
+    private Label[] myLabels;
 
     public TimeUnitText(String longText, String mediumText, String shortText) {
         myLongText = longText;
@@ -29,34 +30,32 @@ public class TimeUnitText {
         myShortText = mediumText;
     }
 
-    public String getText(int maxLength) {
-        return myMediumText;
-    }
-
-    public String getText(int requestedMaxLength,
-            TextLengthCalculator calculator) {
-        String result = null;
+    public Label[] getLabels(int requestedMaxLength, TextLengthCalculator calculator) {
         if (!calculator.getState().equals(myCalculatorState)) {
             myCalculatorState = calculator.getState();
-            myMinimaxLong = calculator.getTextLength(myLongText);
-            myMinimaxMedium = calculator.getTextLength(myMediumText);
-            myMinimaxShort = calculator.getTextLength(myShortText);
+            myLabels = new Label[] {
+                    new Label(myShortText, calculator.getTextLength(myShortText)),
+                    new Label(myMediumText, calculator.getTextLength(myMediumText)),
+                    new Label(myLongText, calculator.getTextLength(myLongText))
+            };
         }
-        result = getCachedText(requestedMaxLength);
-        return result == null ? "" : result;
+        int fitCount = getFitCount(myLabels, requestedMaxLength);
+        if (fitCount == 0) {
+            return EMPTY_LABELS;
+        }
+        Label[] result = new Label[fitCount];
+        System.arraycopy(myLabels, 0, result, 0, fitCount);
+        return result;
     }
 
-    private String getCachedText(int maxLength) {
-        if (myMinimaxLong >= 0 && myMinimaxLong <= maxLength) {
-            return myLongText;
+    private int getFitCount(Label[] allLabels, int maxLength) {
+        int count = 0;
+        for (; count < allLabels.length; count++) {
+            if (allLabels[count].lengthPx > maxLength) {
+                break;
+            }
         }
-        if (myMinimaxMedium >= 0 && myMinimaxMedium <= maxLength) {
-            return myMediumText;
-        }
-        if (myMinimaxShort >= 0 && myMinimaxShort <= maxLength) {
-            return myShortText;
-        }
-        return null;
+        return count;
     }
 
     @Override

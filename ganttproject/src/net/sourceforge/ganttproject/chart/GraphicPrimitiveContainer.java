@@ -209,6 +209,16 @@ public class GraphicPrimitiveContainer {
         }
     }
 
+    public static class Label {
+        public final String text;
+        public final int lengthPx;
+
+        public Label(String text, int lengthPx) {
+            this.text = text;
+            this.lengthPx = lengthPx;
+        }
+    }
+
     public static class Text extends GraphicPrimitive {
         private final int myLeftX;
 
@@ -251,8 +261,11 @@ public class GraphicPrimitiveContainer {
             return myFont;
         }
 
-        public String getText(TextLengthCalculator textLengthCalculator) {
-            return mySelector.getText(textLengthCalculator);
+        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+            return mySelector.getLabels(textLengthCalculator);
+//            String text = mySelector.getText(textLengthCalculator);
+//            int length = textLengthCalculator.getTextLength(text);
+//            return new Label[] { new Label(text, length) };
         }
 
         public int getLeftX() {
@@ -279,10 +292,14 @@ public class GraphicPrimitiveContainer {
         public TextSelector getTextSelector() {
             return mySelector;
         }
+
+        @Override
+        public String toString() {
+            return String.format("TBox [%d, %d]", myLeftX, myBottomY);
+        }
     }
 
     public static class TextGroup {
-        private final List<TextSelector> mySelectors = new ArrayList<TextSelector>();
         private List<String> myLineStyles;
         private int myHeight;
         private FontChooser myFontChooser;

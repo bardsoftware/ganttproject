@@ -8,6 +8,7 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
@@ -90,20 +91,20 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             curX = 0;
         }
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+        TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.up");
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
                 TimeUnitText[] texts = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
                         .format(nextOffset.getOffsetUnit(), curDate);
                 final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
                 final TimeUnitText timeUnitText = texts[0];
-                int posY = topUnitHeight - 5;
-                GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, new TextSelector() {
+                GraphicPrimitiveContainer.Text text = new GraphicPrimitiveContainer.Text(curX + 5, 0, new TextSelector() {
                     @Override
-                    public String getText(TextLengthCalculator textLengthCalculator) {
-                        return timeUnitText.getText(maxWidth, textLengthCalculator);
+                    public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+                        return timeUnitText.getLabels(maxWidth, textLengthCalculator);
                     }
                 });
-                text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+                textGroup.addText(text);
                 getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
             }
             curX = nextOffset.getOffsetPixels();

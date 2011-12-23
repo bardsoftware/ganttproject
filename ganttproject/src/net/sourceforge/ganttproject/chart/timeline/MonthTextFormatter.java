@@ -1,6 +1,5 @@
 package net.sourceforge.ganttproject.chart.timeline;
 
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -8,9 +7,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
-public class MonthTextFormatter extends CachingTextFormatter implements
-        TimeFormatter {
-    public MonthTextFormatter() {
+public class MonthTextFormatter extends CachingTextFormatter implements TimeFormatter {
+    private String myLongPattern;
+
+    private String myMediumPattern;
+
+    private String myShortPattern;
+
+    public MonthTextFormatter(String longPattern, String mediumPattern, String shortPattern) {
+        myLongPattern = longPattern;
+        myMediumPattern = mediumPattern;
+        myShortPattern = shortPattern;
         initFormats();
     }
 
@@ -25,11 +32,9 @@ public class MonthTextFormatter extends CachingTextFormatter implements
     }
 
     private void initFormats() {
-        myLongFormat = GanttLanguage.getInstance()
-                .createDateFormat("MMMM yyyy");
-        myMediumFormat = GanttLanguage.getInstance().createDateFormat(
-                "MMM''yy");
-        myShortFormat = GanttLanguage.getInstance().createDateFormat("MM''yy");
+        myLongFormat = GanttLanguage.getInstance().createDateFormat(myLongPattern);
+        myMediumFormat = GanttLanguage.getInstance().createDateFormat(myMediumPattern);
+        myShortFormat = GanttLanguage.getInstance().createDateFormat(myShortPattern);
     }
 
     @Override
