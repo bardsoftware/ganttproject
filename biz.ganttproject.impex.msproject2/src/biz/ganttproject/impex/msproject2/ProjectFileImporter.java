@@ -269,6 +269,10 @@ class ProjectFileImporter {
             return;
         }
 
+        if (t.getStart() == null || t.getFinish() == null) {
+            myErrors.add("Failed to import task=" + t + " because its start or end date was null");
+            return;
+        }
         TaskLength duration = convertDuration(t);
         if (duration.getLength() <= 0 && !t.getMilestone()) {
             myErrors.add("Skipped task with id=" + t.getID() + " and name=" + t.getName() + " because its duration=" + duration + " and it is not a milestone");

@@ -44,9 +44,11 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
             if (!errors.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
                 for (String message : errors) {
+                    GPLogger.log(message);
                     builder.append("<li>").append(message);
                 }
-                GPLogger.log(GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
+                getUiFacade().showErrorDialog(
+                        GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
             }
         } catch (MPXJException e) {
             getUiFacade().showErrorDialog(e);

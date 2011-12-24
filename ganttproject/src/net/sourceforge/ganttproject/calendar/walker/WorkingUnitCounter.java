@@ -57,6 +57,8 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
     }
 
     public TaskLength run(Date startDate, Date endDate) {
+        assert startDate != null : "null start date";
+        assert endDate != null : "null end date";
         isMoving = true;
         myUnitCounter = 0;
         myEndDate = endDate;
