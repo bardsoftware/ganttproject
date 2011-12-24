@@ -21,11 +21,14 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.RenderedImage;
 
 import javax.swing.Action;
+
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -39,6 +42,8 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.Task;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -119,6 +124,16 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                     return new Action[] { getOptionsDialogAction()};
                 }
 
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+                    super.mousePressed(e);
+
+                    if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
+                        startScrollView(e);
+                        return;
+                    }
+                }
             };
         }
         return myMouseListener;
