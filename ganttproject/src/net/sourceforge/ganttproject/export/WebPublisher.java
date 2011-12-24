@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.export;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,6 +30,9 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -46,17 +50,50 @@ class WebPublisher {
         Job startingJob = new Job("starting") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                monitor
-                        .beginTask("Publishing files on FTP",
-                                exportFiles.length);
+                monitor.beginTask("Publishing files on FTP", exportFiles.length);
                 try {
                     final URL baseUrl = buildURL(options);
                     if (baseUrl == null) {
                         throw new RuntimeException(
                                 "Failed to discover your FTP settings. Please make sure that you specified server name and user name");
                     }
+                    final FTPClient ftpClient = new FTPClient();
+                    ftpClient.connect(options.getServerName().getValue());
+                    int reply = ftpClient.getReplyCode();
+                    if (!FTPReply.isPositiveCompletion(reply)) {
+                        ftpClient.disconnect();
+                        GPLogger.getLogger(WebPublisher.class).warning("Failed to connect to FTP server=" + options.getServerName()
+                                + " Reply message:" + ftpClient.getReplyString());
+                        return Status.CANCEL_STATUS;
+                    }
+                    if (!ftpClient.login(options.getUserName().getValue(), options.getPassword().getValue())) {
+                        ftpClient.logout();
+                        ftpClient.disconnect();
+                        GPLogger.getLogger(WebPublisher.class).warning("Failed to login to FTP server=" + options.getServerName()
+                                + " Reply message:" + ftpClient.getReplyString());
+                        return Status.CANCEL_STATUS;
+                    }
+                    ftpClient.enterLocalPassiveMode();
+                    if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+                        GPLogger.getLogger(WebPublisher.class).warning("Failed to enter passive mode on FTP server=" + options.getServerName()
+                                + " Reply message:" + ftpClient.getReplyString());
+                        ftpClient.enterLocalActiveMode();
+                        if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+                            GPLogger.getLogger(WebPublisher.class).warning("Failed to enter active mode on FTP server=" + options.getServerName()
+                                    + " Reply message:" + ftpClient.getReplyString());
+                            return Status.CANCEL_STATUS;                            
+                        }                        
+                    }
+                    if (!ftpClient.changeWorkingDirectory(options.getDirectoryName().getValue())) {
+                        ftpClient.logout();
+                        ftpClient.disconnect();
+                        GPLogger.getLogger(WebPublisher.class).warning("Failed to change dir to " + options.getDirectoryName().getValue()
+                                + " Reply message:" + ftpClient.getReplyString());
+                        return Status.CANCEL_STATUS;
+                    }
+                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     for (int i = 0; i < exportFiles.length; i++) {
-                        Job nextJob = createTransferJob(baseUrl, exportFiles[i]);
+                        Job nextJob = createTransferJob(ftpClient, exportFiles[i]);
                         nextJob.setProgressGroup(monitor, 1);
                         nextJob.schedule();
                         nextJob.join();
@@ -65,7 +102,14 @@ class WebPublisher {
                         @Override
                         protected IStatus run(IProgressMonitor monitor) {
                             monitor.done();
-                            return Status.OK_STATUS;
+                            try {
+                                ftpClient.logout();
+                                ftpClient.disconnect();
+                                return Status.OK_STATUS;
+                            } catch (IOException e) {
+                                GPLogger.log(e);
+                                return Status.CANCEL_STATUS;
+                            }
                         }
                     };
                     finishingJob.setProgressGroup(monitor, 0);
@@ -116,21 +160,15 @@ class WebPublisher {
         startingJob.schedule();
     }
 
-    private Job createTransferJob(URL baseUrl, final File file) throws IOException {
-        final URL outUrl = new URL(baseUrl, file.getName());
+    private Job createTransferJob(final FTPClient ftpClient, final File file) throws IOException {
         Job result = new Job("transfer file "+file.getName()) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                byte[] buffer = new byte[(int) file.length()];
-                FileInputStream inputStream = null;
-                OutputStream outStream = null;
                 try {
-                    inputStream = new FileInputStream(file);
-                    inputStream.read(buffer);
-                    GPLogger.log("writing to file="+outUrl);
-                    outStream = outUrl.openConnection().getOutputStream();
-                    outStream.write(buffer);
-                    outStream.flush();
+                    if (!ftpClient.storeFile(file.getName(), new BufferedInputStream(new FileInputStream(file)))) {
+                        GPLogger.getLogger(WebPublisher.class).warning("Failed to write file=" + file.getName() + " server response=" + ftpClient.getReplyString());
+                        return Status.CANCEL_STATUS;
+                    }
                     monitor.worked(1);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
@@ -140,24 +178,6 @@ class WebPublisher {
                     return Status.CANCEL_STATUS;
                 }
                 finally {
-                    if (inputStream!=null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            if (!GPLogger.log(e)) {
-                                e.printStackTrace(System.err);
-                            }
-                        }
-                    }
-                    if (outStream!=null) {
-                        try {
-                            outStream.close();
-                        } catch (IOException e) {
-                            if (!GPLogger.log(e)) {
-                                e.printStackTrace(System.err);
-                            }
-                        }
-                    }
                 }
             }
         };
