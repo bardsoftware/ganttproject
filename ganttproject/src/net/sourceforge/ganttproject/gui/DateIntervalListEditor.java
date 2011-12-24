@@ -52,10 +52,10 @@ public class DateIntervalListEditor extends JPanel{
         private final Date myVisibleEnd;
         private final Date myModelEnd;
 
-        public DateInterval(Date start, Date end) {
+        private DateInterval(Date start, Date visibleEnd, Date modelEnd) {
             this.start = start;
-            myVisibleEnd = end;
-            myModelEnd = GPTimeUnitStack.DAY.adjustRight(end);
+            myVisibleEnd = visibleEnd;
+            myModelEnd = modelEnd;
         }
         @Override
         public boolean equals(Object obj) {
@@ -76,6 +76,12 @@ public class DateIntervalListEditor extends JPanel{
             return myModelEnd;
         }
 
+        public static DateInterval createFromModelDates(Date start, Date end) {
+            return new DateInterval(start, GPTimeUnitStack.DAY.adjustLeft(GPTimeUnitStack.DAY.jumpLeft(end)), end);
+        }
+        public static DateInterval createFromVisibleDates(Date start, Date end) {
+            return new DateInterval(start, end, GPTimeUnitStack.DAY.adjustRight(end));
+        }
     }
     public static interface DateIntervalModel {
         DateInterval[] getIntervals();
@@ -158,7 +164,7 @@ public class DateIntervalListEditor extends JPanel{
         myAddAction = new GPAction("add") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                myIntervalsModel.add(new DateInterval(myStart.getValue(), myFinish.getValue()));
+                myIntervalsModel.add(DateInterval.createFromVisibleDates(myStart.getValue(), myFinish.getValue()));
                 myListModel.update();
             }
         };

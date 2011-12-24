@@ -241,7 +241,7 @@ public class GanttDialogPerson {
         DefaultListModel daysOff = person.getDaysOff();
         for (int i=0; i<daysOff.getSize(); i++) {
             GanttDaysOff next = (GanttDaysOff) daysOff.get(i);
-            myDaysOffModel.add(new DateIntervalListEditor.DateInterval(next.getStart().getTime(), next.getFinish().getTime()));
+            myDaysOffModel.add(DateIntervalListEditor.DateInterval.createFromModelDates(next.getStart().getTime(), next.getFinish().getTime()));
         }
         DateIntervalListEditor editor = new DateIntervalListEditor(myDaysOffModel);
         return editor;
