@@ -39,7 +39,7 @@ public class GanttDialogPublicHoliday {
     public GanttDialogPublicHoliday(IGanttProject project) {
         publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
         for (Date d : project.getActiveCalendar().getPublicHolidays()) {
-            publicHolidays.add(new DateIntervalListEditor.DateInterval(d,d));
+            publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(d,d));
         }
 
         publicHolidayBean = new DateIntervalListEditor(publicHolidays);
