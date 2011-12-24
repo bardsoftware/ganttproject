@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
-    private final Map<HumanResource, ResourceAssignment> myAssignments = new HashMap<HumanResource, ResourceAssignment>();
+    private final Map<HumanResource, ResourceAssignment> myAssignments = new LinkedHashMap<HumanResource, ResourceAssignment>();
 
     private final TaskImpl myTask;
 
