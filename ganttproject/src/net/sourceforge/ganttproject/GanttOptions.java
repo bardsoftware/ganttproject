@@ -767,7 +767,10 @@ public class GanttOptions {
         @Override
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
-            if ("cofiguration".equals(name)) {
+            if (myPluginOptionsHandler != null) {
+                myPluginOptionsHandler.endElement(uri, localName, name);
+            }
+            if ("configuration".equals(name) || "instance".equals(name)) {
                 myPluginOptionsHandler = null;
             }
         }
