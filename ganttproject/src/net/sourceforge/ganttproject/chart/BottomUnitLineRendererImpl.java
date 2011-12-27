@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
@@ -61,11 +62,10 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         if (xpos > 0) {
             xpos = 0;
         }
-        TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom", "timeline.top");
+        TextGroup textGroup = myTimelineContainer.createTextGroup(
+                0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
         for (Offset offset : bottomOffsets) {
-            if (offset.getDayType() == GPCalendar.DayType.WORKING) {
-                renderWorkingDay(xpos, offset, prevOffset);
-            }
+            renderScaleMark(offset, prevOffset);
             renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
             prevOffset = offset;
             xpos = prevOffset.getOffsetPixels();
@@ -88,28 +88,23 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         }
     }
 
-    private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
-        if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {
-            myTimelineContainer.createLine(
-                    prevOffset.getOffsetPixels(), getLineTopPosition(),
-                    prevOffset.getOffsetPixels(), getLineTopPosition()+10);
+    private void renderScaleMark(Offset offset, Offset prevOffset) {
+        if (prevOffset == null) {
+            return;
         }
+        if (offset.getOffsetUnit() == GPTimeUnitStack.DAY) {
+            if (offset.getDayType() != GPCalendar.DayType.WORKING
+                    || prevOffset.getDayType() != GPCalendar.DayType.WORKING) {
+                return;
+            }
+        }
+        myTimelineContainer.createLine(
+                prevOffset.getOffsetPixels(), getLineTopPosition(),
+                prevOffset.getOffsetPixels(), getLineTopPosition()+10);
     }
 
     private int getLineTopPosition() {
         return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-    }
-
-    private int getLineBottomPosition() {
-        return getLineTopPosition() + getLineHeight();
-    }
-
-    private int getLineHeight() {
-        return getLineTopPosition();
-    }
-
-    private int getTextBaselinePosition() {
-        return getLineBottomPosition() - 5;
     }
 
     private List<Offset> getBottomUnitOffsets() {
