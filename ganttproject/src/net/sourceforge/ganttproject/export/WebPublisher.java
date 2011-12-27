@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.export;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -29,6 +30,7 @@ import java.net.URL;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -39,7 +41,67 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 
-class WebPublisher {
+public class WebPublisher {
+
+    public static class Ftp {
+        private final FTPClient ftpClient = new FTPClient();
+        private boolean isLoggedIn;
+        private boolean isConnected;
+
+        public IStatus loginAndChangedir(DocumentManager.FTPOptions options) throws IOException {
+            ftpClient.connect(options.getServerName().getValue());
+            int reply = ftpClient.getReplyCode();
+            if (!FTPReply.isPositiveCompletion(reply)) {
+                ftpClient.disconnect();
+                return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
+                        GanttLanguage.getInstance().getText("errorFTPConnection") + " Connection failed: " + ftpClient.getReplyString());
+            }
+            isConnected = true;
+            if (!ftpClient.login(options.getUserName().getValue(), options.getPassword().getValue())) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+                return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
+                        GanttLanguage.getInstance().getText("errorFTPConnection") + " Login failed: " + ftpClient.getReplyString());
+            }
+            isLoggedIn = true;
+            ftpClient.enterLocalPassiveMode();
+            if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+                GPLogger.getLogger(WebPublisher.class).warning("Failed to enter passive mode on FTP server=" + options.getServerName()
+                        + " Reply message:" + ftpClient.getReplyString());
+                ftpClient.enterLocalActiveMode();
+                if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+                    return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
+                            GanttLanguage.getInstance().getText("errorFTPConnection") + " Passive and active mode failed: " + ftpClient.getReplyString());
+                }
+            }
+            if (!ftpClient.changeWorkingDirectory(options.getDirectoryName().getValue())) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+                return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
+                        GanttLanguage.getInstance().getText("errorFTPConnection") + " Change directory failed: " + ftpClient.getReplyString());
+            }
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            return Status.OK_STATUS;
+        }
+
+        IStatus put(File file) throws IOException {
+            if (!ftpClient.storeFile(file.getName(), new BufferedInputStream(new FileInputStream(file)))) {
+                return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
+                        "Failed to write file=" + file.getName() + " server response=" + ftpClient.getReplyString());
+            }
+            return Status.OK_STATUS;
+        }
+
+        public void detach() throws IOException {
+            if (isLoggedIn) {
+                ftpClient.logout();
+            }
+            if (isConnected) {
+                ftpClient.disconnect();
+            }
+        }
+    }
+
 
     WebPublisher() {
     }
@@ -57,43 +119,14 @@ class WebPublisher {
                         throw new RuntimeException(
                                 "Failed to discover your FTP settings. Please make sure that you specified server name and user name");
                     }
-                    final FTPClient ftpClient = new FTPClient();
-                    ftpClient.connect(options.getServerName().getValue());
-                    int reply = ftpClient.getReplyCode();
-                    if (!FTPReply.isPositiveCompletion(reply)) {
-                        ftpClient.disconnect();
-                        GPLogger.getLogger(WebPublisher.class).warning("Failed to connect to FTP server=" + options.getServerName()
-                                + " Reply message:" + ftpClient.getReplyString());
-                        return Status.CANCEL_STATUS;
+                    final Ftp ftp = new Ftp();
+                    IStatus status = ftp.loginAndChangedir(options);
+                    if (!status.isOK()) {
+                        GPLogger.log(status.getMessage());
+                        return status;
                     }
-                    if (!ftpClient.login(options.getUserName().getValue(), options.getPassword().getValue())) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                        GPLogger.getLogger(WebPublisher.class).warning("Failed to login to FTP server=" + options.getServerName()
-                                + " Reply message:" + ftpClient.getReplyString());
-                        return Status.CANCEL_STATUS;
-                    }
-                    ftpClient.enterLocalPassiveMode();
-                    if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
-                        GPLogger.getLogger(WebPublisher.class).warning("Failed to enter passive mode on FTP server=" + options.getServerName()
-                                + " Reply message:" + ftpClient.getReplyString());
-                        ftpClient.enterLocalActiveMode();
-                        if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
-                            GPLogger.getLogger(WebPublisher.class).warning("Failed to enter active mode on FTP server=" + options.getServerName()
-                                    + " Reply message:" + ftpClient.getReplyString());
-                            return Status.CANCEL_STATUS;                            
-                        }                        
-                    }
-                    if (!ftpClient.changeWorkingDirectory(options.getDirectoryName().getValue())) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                        GPLogger.getLogger(WebPublisher.class).warning("Failed to change dir to " + options.getDirectoryName().getValue()
-                                + " Reply message:" + ftpClient.getReplyString());
-                        return Status.CANCEL_STATUS;
-                    }
-                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     for (int i = 0; i < exportFiles.length; i++) {
-                        Job nextJob = createTransferJob(ftpClient, exportFiles[i]);
+                        Job nextJob = createTransferJob(ftp, exportFiles[i]);
                         nextJob.setProgressGroup(monitor, 1);
                         nextJob.schedule();
                         nextJob.join();
@@ -103,8 +136,7 @@ class WebPublisher {
                         protected IStatus run(IProgressMonitor monitor) {
                             monitor.done();
                             try {
-                                ftpClient.logout();
-                                ftpClient.disconnect();
+                                ftp.detach();
                                 return Status.OK_STATUS;
                             } catch (IOException e) {
                                 GPLogger.log(e);
@@ -160,14 +192,15 @@ class WebPublisher {
         startingJob.schedule();
     }
 
-    private Job createTransferJob(final FTPClient ftpClient, final File file) throws IOException {
+    private Job createTransferJob(final Ftp ftp, final File file) throws IOException {
         Job result = new Job("transfer file "+file.getName()) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    if (!ftpClient.storeFile(file.getName(), new BufferedInputStream(new FileInputStream(file)))) {
-                        GPLogger.getLogger(WebPublisher.class).warning("Failed to write file=" + file.getName() + " server response=" + ftpClient.getReplyString());
-                        return Status.CANCEL_STATUS;
+                    IStatus ftpStatus = ftp.put(file);
+                    if (!ftpStatus.isOK()) {
+                        GPLogger.getLogger(WebPublisher.class).warning(ftpStatus.getMessage());
+                        return ftpStatus;
                     }
                     monitor.worked(1);
                     return Status.OK_STATUS;

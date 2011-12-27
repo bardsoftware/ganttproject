@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.document;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +18,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import org.eclipse.core.runtime.IStatus;
+
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.export.WebPublisher;
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
@@ -61,6 +66,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
         final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
         ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(passwordOption), "ftppwd");
 
+
         final JComponent optionsPane = builder.buildPage(getProject().getDocumentManager().getNetworkOptionGroups(), getPageID());
         final Action testConnectionAction = new AbstractAction() {
             {
@@ -69,31 +75,20 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
             }
             @Override
             public void actionPerformed(ActionEvent e) {
-                StringBuffer urlString = new StringBuffer();
-                urlString.append("ftp://");
-                urlString.append(usernameOption.getValue()==null ? "":usernameOption.getValue());
-                urlString.append(passwordOption.getValue()==null ? "" : ":"+passwordOption.getValue());
-                urlString.append("@");
-                urlString.append(servernameOption.getValue());
-                urlString.append("/");
-                urlString.append(dirnameOption.getValue());
-                urlString.append("/");
-                URL url = null;
+                WebPublisher.Ftp ftp = new WebPublisher.Ftp();
                 try {
-                    url = new URL(urlString.toString() + "test.txt");
-                    URLConnection urlc = url.openConnection();
-                    OutputStream os = urlc.getOutputStream();
-                    os.write(("This is GanttProject +++ I was here!")
-                            .getBytes());
-                    os.close();
-                    JOptionPane.showMessageDialog(optionsPane, GanttLanguage
-                            .getInstance().getText("successFTPConnection"),
-                            GanttLanguage.getInstance().getText("success"),
-                            JOptionPane.INFORMATION_MESSAGE);
-                } catch (IOException e2) {
-                    getUiFacade().showErrorDialog(e2);
-                } finally {
-
+                    IStatus status = ftp.loginAndChangedir(getProject().getDocumentManager().getFTPOptions());
+                    if (status.isOK()) {
+                        getUiFacade().showOptionDialog(JOptionPane.INFORMATION_MESSAGE,
+                                GanttLanguage.getInstance().getText("successFTPConnection"),
+                                new Action [] {
+                                    OkAction.createVoidAction("ok")
+                                });
+                    } else {
+                        getUiFacade().showErrorDialog(status.getMessage());
+                    }
+                } catch (IOException e1) {
+                    getUiFacade().showErrorDialog(e1);
                 }
             }
         };
