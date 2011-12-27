@@ -188,6 +188,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
     public void showFileChooser() {
         final JFileChooser fc = new JFileChooser(new File(myTextField.getText()));
 
+        fc.setCurrentDirectory(getFile().getParentFile());
         fc.setDialogTitle(myDialogCaption);
         fc.setControlButtonsAreShown(false);
         fc.setApproveButtonToolTipText(myDialogCaption);
