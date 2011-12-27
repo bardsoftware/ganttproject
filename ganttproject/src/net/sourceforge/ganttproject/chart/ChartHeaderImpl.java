@@ -91,7 +91,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             curX = 0;
         }
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.up");
+        TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.top");
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
                 TimeUnitText[] texts = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
