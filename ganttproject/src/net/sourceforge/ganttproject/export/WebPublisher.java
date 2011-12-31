@@ -114,11 +114,11 @@ public class WebPublisher {
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask("Publishing files on FTP", exportFiles.length);
                 try {
-                    final URL baseUrl = buildURL(options);
-                    if (baseUrl == null) {
-                        throw new RuntimeException(
-                                "Failed to discover your FTP settings. Please make sure that you specified server name and user name");
-                    }
+//                    final URL baseUrl = buildURL(options);
+//                    if (baseUrl == null) {
+//                        throw new RuntimeException(
+//                                "Failed to discover your FTP settings. Please make sure that you specified server name and user name");
+//                    }
                     final Ftp ftp = new Ftp();
                     IStatus status = ftp.loginAndChangedir(options);
                     if (!status.isOK()) {
