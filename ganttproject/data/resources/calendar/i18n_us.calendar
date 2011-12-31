@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="United States" type="country">
+	<date year="" month="01" date="01"/> #New Year's Day
+	<date year="" month="07" date="04"/> #Independence Day
+	<date year="" month="11" date="11"/> #Veterans Day
+	<date year="" month="12" date="25"/> #Christmas Day
+	<date year="2012" month="1" date="16"/> #Martin Luther King, Jr. Day
+	<date year="2013" month="1" date="21"/> #Martin Luther King, Jr. Day
+	<date year="2014" month="1" date="20"/> #Martin Luther King, Jr. Day
+	<date year="2015" month="1" date="19"/> #Martin Luther King, Jr. Day
+	<date year="2016" month="1" date="18"/> #Martin Luther King, Jr. Day
+	<date year="2017" month="1" date="16"/> #Martin Luther King, Jr. Day
+	<date year="2018" month="1" date="15"/> #Martin Luther King, Jr. Day
+	<date year="2019" month="1" date="21"/> #Martin Luther King, Jr. Day
+	<date year="2020" month="1" date="20"/> #Martin Luther King, Jr. Day
+	<date year="2021" month="1" date="18"/> #Martin Luther King, Jr. Day
+	<date year="2012" month="2" date="20"/> #Washington's Birthday (President's Day)
+	<date year="2013" month="2" date="18"/> #Washington's Birthday (President's Day)
+	<date year="2014" month="2" date="17"/> #Washington's Birthday (President's Day)
+	<date year="2015" month="2" date="16"/> #Washington's Birthday (President's Day)
+	<date year="2016" month="2" date="15"/> #Washington's Birthday (President's Day)
+	<date year="2017" month="2" date="20"/> #Washington's Birthday (President's Day)
+	<date year="2018" month="2" date="19"/> #Washington's Birthday (President's Day)
+	<date year="2019" month="2" date="18"/> #Washington's Birthday (President's Day)
+	<date year="2020" month="2" date="17"/> #Washington's Birthday (President's Day)
+	<date year="2021" month="2" date="15"/> #Washington's Birthday (President's Day)
+	<date year="2012" month="5" date="28"/> #Memorial Day
+	<date year="2013" month="5" date="27"/> #Memorial Day
+	<date year="2014" month="5" date="26"/> #Memorial Day
+	<date year="2015" month="5" date="25"/> #Memorial Day
+	<date year="2016" month="5" date="30"/> #Memorial Day
+	<date year="2017" month="5" date="29"/> #Memorial Day
+	<date year="2018" month="5" date="28"/> #Memorial Day
+	<date year="2019" month="5" date="27"/> #Memorial Day
+	<date year="2020" month="5" date="25"/> #Memorial Day
+	<date year="2021" month="5" date="31"/> #Memorial Day
+	<date year="2012" month="9" date="03"/> #Labor Day
+	<date year="2013" month="9" date="02"/> #Labor Day
+	<date year="2014" month="9" date="01"/> #Labor Day
+	<date year="2015" month="9" date="07"/> #Labor Day
+	<date year="2016" month="9" date="05"/> #Labor Day
+	<date year="2017" month="9" date="04"/> #Labor Day
+	<date year="2018" month="9" date="03"/> #Labor Day
+	<date year="2019" month="9" date="02"/> #Labor Day
+	<date year="2020" month="9" date="07"/> #Labor Day
+	<date year="2021" month="9" date="06"/> #Labor Day
+	<date year="2012" month="10" date="08"/> #Columbus Day
+	<date year="2013" month="10" date="14"/> #Columbus Day
+	<date year="2014" month="10" date="13"/> #Columbus Day
+	<date year="2015" month="10" date="12"/> #Columbus Day
+	<date year="2016" month="10" date="10"/> #Columbus Day
+	<date year="2017" month="10" date="09"/> #Columbus Day
+	<date year="2018" month="10" date="15"/> #Columbus Day
+	<date year="2019" month="10" date="14"/> #Columbus Day
+	<date year="2020" month="10" date="12"/> #Columbus Day
+	<date year="2021" month="10" date="11"/> #Columbus Day
+	<date year="2012" month="11" date="22"/> #Thanksgiving Day
+	<date year="2013" month="11" date="28"/> #Thanksgiving Day
+	<date year="2014" month="11" date="27"/> #Thanksgiving Day
+	<date year="2015" month="11" date="26"/> #Thanksgiving Day
+	<date year="2016" month="11" date="24"/> #Thanksgiving Day
+	<date year="2017" month="11" date="23"/> #Thanksgiving Day
+	<date year="2018" month="11" date="22"/> #Thanksgiving Day
+	<date year="2019" month="11" date="28"/> #Thanksgiving Day
+	<date year="2020" month="11" date="26"/> #Thanksgiving Day
+	<date year="2021" month="11" date="25"/> #Thanksgiving Day
+
+</calendar >
+
+
+ 
+
