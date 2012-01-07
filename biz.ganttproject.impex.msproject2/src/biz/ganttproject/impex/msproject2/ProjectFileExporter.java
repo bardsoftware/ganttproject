@@ -34,6 +34,7 @@ import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.Priority;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
+import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
@@ -100,13 +101,26 @@ class ProjectFileExporter {
     }
 
     private void exportWeekends(ProjectCalendar calendar) {
+        ProjectCalendarHours workingDayHours = calendar.getCalendarHours(Day.MONDAY);
         calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WORKING);
+        if (calendar.isWorkingDay(Day.SATURDAY)) {
+            copyHours(workingDayHours, calendar.addCalendarHours(Day.SATURDAY));
+        }
         calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WORKING);
+        if (calendar.isWorkingDay(Day.SUNDAY)) {
+            copyHours(workingDayHours, calendar.addCalendarHours(Day.SUNDAY));
+        }
+    }
+
+    private void copyHours(ProjectCalendarHours from, ProjectCalendarHours to) {
+        for (DateRange range : from) {
+            to.addRange(range);
+        }
     }
 
     private void exportHolidays(ProjectCalendar calendar) {
@@ -205,7 +219,6 @@ class ProjectFileExporter {
         c.setTime(gpFinishDate);
         c.add(Calendar.DAY_OF_YEAR, -1);
         Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
-
         c.set(Calendar.HOUR, finishTime.getHours());
         c.set(Calendar.MINUTE, finishTime.getMinutes());
         return c.getTime();
