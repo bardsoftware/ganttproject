@@ -47,6 +47,12 @@ public class ShortDateFormatOption extends DefaultStringOption {
     }
 
     @Override
+    public void loadPersistentValue(String value) {
+        super.loadPersistentValue(value);
+        GanttLanguage.getInstance().setShortDateFormat(myDateFormat);
+    }
+
+    @Override
     public void commit() {
         super.commit();
         GanttLanguage.getInstance().setShortDateFormat(myDateFormat);

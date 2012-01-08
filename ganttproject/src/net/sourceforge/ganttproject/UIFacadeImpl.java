@@ -145,7 +145,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                     Locale selected = languageOption.getSelectedValue();
                     shortDateFormatOption.setSelectedLocale(selected);
                     dateSampleOption.setValue(shortDateFormatOption.formatDate(new Date()));
-                } else {
+                } else if (customFormat != null) {
                     shortDateFormatOption.setValue(customFormat);
                 }
             }
