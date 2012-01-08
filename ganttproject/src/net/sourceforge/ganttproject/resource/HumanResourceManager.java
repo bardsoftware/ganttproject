@@ -183,7 +183,7 @@ public class HumanResourceManager {
         List<HumanResource> foreignResources = hrManager.getResources();
         for (int i = 0; i < foreignResources.size(); i++) {
             HumanResource foreignHR = foreignResources.get(i);
-            HumanResource nativeHR = getById(foreignHR.getId());
+            HumanResource nativeHR = merger.findNative(foreignHR, this);
             if (nativeHR == null) {
                 nativeHR = create(foreignHR.getName(), nextFreeId);
             }

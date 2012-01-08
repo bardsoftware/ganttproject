@@ -24,6 +24,8 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 
 public interface HumanResourceMerger {
     void merge(Map<HumanResource, HumanResource> existing2imported);
+    HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr);
+
     public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
         public static final String NO = "mergeresources_no";
         public static final String BY_ID = "mergeresources_by_id";
