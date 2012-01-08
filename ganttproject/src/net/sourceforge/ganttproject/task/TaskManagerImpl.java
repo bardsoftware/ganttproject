@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
@@ -141,16 +142,17 @@ public class TaskManagerImpl implements TaskManager {
     }
     private final TaskMap myTaskMap = new TaskMap(this);
 
-    private final CustomColumnsStorage myCustomColumnStorage;
-
     private final CustomPropertyListenerImpl myCustomPropertyListener;
+
+    private final CustomColumnsManager myCustomColumnsManager;
 
     TaskManagerImpl(
             TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
             TaskManagerConfig config, CustomColumnsStorage columnStorage) {
         myCustomPropertyListener = new CustomPropertyListenerImpl(this);
-        myCustomColumnStorage = columnStorage==null ? new CustomColumnsStorage() : columnStorage;
-        myCustomColumnStorage.addCustomColumnsListener(getCustomPropertyListener());
+        myCustomColumnsManager = new CustomColumnsManager();
+        myCustomColumnsManager.addListener(getCustomPropertyListener());
+
         myConfig = config;
         myHierarchyManager = new TaskHierarchyManagerImpl();
         EventDispatcher dispatcher = new EventDispatcher() {
@@ -861,13 +863,11 @@ public class TaskManagerImpl implements TaskManager {
             }
 
             CustomColumnsValues customValues = nested[i].getCustomValues();
-            Collection<CustomColumn> customColums = myCustomColumnStorage.getCustomColums();
-            for (Iterator<CustomColumn> it=customColums.iterator(); it.hasNext();) {
-                CustomColumn nextColumn = it.next();
-                Object value = customValues.getValue(nextColumn);
+            for (CustomPropertyDefinition def : myCustomColumnsManager.getDefinitions()) {
+                Object value = customValues.getValue(def);
                 if (value!=null) {
                     try {
-                        nextImported.getCustomValues().setValue(nextColumn, value);
+                        nextImported.getCustomValues().setValue(def, value);
                     } catch (CustomColumnsException e) {
                         if (!GPLogger.log(e)) {
                             e.printStackTrace(System.err);
@@ -942,13 +942,8 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     @Override
-    public CustomColumnsStorage getCustomColumnStorage() {
-        return myCustomColumnStorage;
-    }
-
-    @Override
     public CustomPropertyManager getCustomPropertyManager() {
-        return new CustomColumnsManager(getCustomColumnStorage());
+        return myCustomColumnsManager;
     }
 
     public URL getProjectDocument() {

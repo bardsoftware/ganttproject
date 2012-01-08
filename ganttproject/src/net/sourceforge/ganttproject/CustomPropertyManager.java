@@ -18,6 +18,8 @@ public interface CustomPropertyManager {
     void deleteDefinition(CustomPropertyDefinition def);
     void importData(CustomPropertyManager source);
     void addListener(CustomPropertyListener listener);
+    void reset();
+
     class PropertyTypeEncoder {
         public static String encodeFieldType(Class<?> fieldType) {
             String result = null;

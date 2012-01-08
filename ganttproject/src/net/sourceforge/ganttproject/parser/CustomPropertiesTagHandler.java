@@ -23,6 +23,8 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.task.CustomColumn;
@@ -45,14 +47,10 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
 
     private List<CustomPropertiesStructure> listStructure = null;
 
-    private final CustomColumnsStorage myColumnStorage;
-
-    public CustomPropertiesTagHandler(ParsingContext context,
-            TaskManager taskManager, CustomColumnsStorage columnStorage) {
+    public CustomPropertiesTagHandler(ParsingContext context, TaskManager taskManager) {
         this.taskManager = taskManager;
         this.parsingContext = context;
         this.listStructure = new ArrayList<CustomPropertiesStructure>();
-        myColumnStorage = columnStorage;
     }
 
     @Override
@@ -91,7 +89,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
             CustomPropertiesStructure cps = it
                     .next();
             Task task = taskManager.getTask(cps.taskID);
-            CustomColumn cc = myColumnStorage.getCustomColumnByID(cps.taskPropertyID);
+            CustomPropertyDefinition cc = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(cps.taskPropertyID);
             String valueStr = cps.value;
             Object value = null;
             Class<?> cla = cc.getType();

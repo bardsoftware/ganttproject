@@ -16,18 +16,10 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 public class CustomColumnsManager implements CustomPropertyManager {
     private final CustomColumnsStorage myStorage;
 
-    /**
-     * Creates an instance of CustomColumnsManager for the given treetable.
-     *
-     * @param treetable
-     */
-    public CustomColumnsManager(CustomColumnsStorage storage) {
-        myStorage = storage;
+    public CustomColumnsManager() {
+        myStorage = new CustomColumnsStorage();
     }
 
-    /**
-     * Add a new custom column to the treetable.
-     */
     private void addNewCustomColumn(CustomColumn customColumn) {
         assert customColumn!=null;
         myStorage.addCustomColumn(customColumn);
@@ -72,6 +64,7 @@ public class CustomColumnsManager implements CustomPropertyManager {
 
     @Override
     public void importData(CustomPropertyManager source) {
+        myStorage.importData(((CustomColumnsManager)source).myStorage);
     }
 
 
@@ -91,5 +84,10 @@ public class CustomColumnsManager implements CustomPropertyManager {
 
     void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
         myStorage.fireDefinitionChanged(def, oldName);
+    }
+
+    @Override
+    public void reset() {
+        myStorage.reset();
     }
 }

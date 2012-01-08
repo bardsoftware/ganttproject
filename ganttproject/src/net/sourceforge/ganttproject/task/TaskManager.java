@@ -119,7 +119,6 @@ public interface TaskManager {
 
     public void deleteTask(Task tasktoRemove);
 
-    CustomColumnsStorage getCustomColumnStorage();
     CustomPropertyManager getCustomPropertyManager();
 
     StringOption getTaskNamePrefixOption();

@@ -257,7 +257,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                     public TaskContainmentHierarchyFacade createFacede() {
                         return GanttProject.this.getTaskContainment();
                     }
-                }, taskConfig, getCustomColumnsStorage());
+                }, taskConfig, null);
         ImageIcon icon = new ImageIcon(getClass().getResource(
                 "/icons/ganttproject.png"));
         setIconImage(icon.getImage());
@@ -1099,7 +1099,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
         projectDocument = null;
         getTaskManager().projectClosed();
-        getCustomColumnsStorage().reset();
+        getTaskCustomColumnManager().reset();
+        getResourceCustomPropertyManager().reset();
 
         for (int i = 0; i < myPreviousStates.size(); i++) {
             myPreviousStates.get(i).remove();

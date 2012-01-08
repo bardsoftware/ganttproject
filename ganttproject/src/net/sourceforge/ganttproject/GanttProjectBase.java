@@ -96,10 +96,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final JToolBar myToolBar = new JToolBar();
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
-    private final CustomColumnsStorage myTaskCustomColumnStorage;
+    //private final CustomColumnsStorage myTaskCustomColumnStorage;
 
-    private final CustomColumnsManager myResourceCustomPropertyManager =
-        new CustomColumnsManager(new CustomColumnsStorage());
+    private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
 
     private final RssFeedChecker myRssChecker;
     private final ContentPaneBuilder myContentPaneBuilder;
@@ -139,8 +138,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             }
         };
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
-        myTaskCustomColumnStorage = new CustomColumnsStorage();
-        myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
+        myTaskCustomColumnManager = new CustomColumnsManager();
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
 
         mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
@@ -365,10 +363,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myResourceCustomPropertyManager;
     }
 
-    @Override
-    public CustomColumnsStorage getCustomColumnsStorage() {
-        return myTaskCustomColumnStorage;
-    }
+//    @Override
+//    public CustomColumnsStorage getCustomColumnsStorage() {
+//        return myTaskCustomColumnStorage;
+//    }
 
     protected RssFeedChecker getRssFeedChecker() {
         return myRssChecker;

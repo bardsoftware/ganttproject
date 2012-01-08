@@ -55,18 +55,16 @@ public class GanttProjectImpl implements IGanttProject {
     private final List<ProjectEventListener> myListeners = new ArrayList<ProjectEventListener>();
     private UIConfiguration myUIConfiguration;
     private final CustomColumnsManager myTaskCustomColumnManager;
-    private final CustomColumnsStorage myTaskCustomColumnStorage;
     private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
 
     public GanttProjectImpl() {
         myResourceManager = new HumanResourceManager(
                 RoleManager.Access.getInstance().getDefaultRole(),
-                new CustomColumnsManager(new CustomColumnsStorage()));
+                new CustomColumnsManager());
         myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
         myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
         myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT, Color.BLUE, true);
-        myTaskCustomColumnStorage = new CustomColumnsStorage();
-        myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
+        myTaskCustomColumnManager = new CustomColumnsManager();
     }
     @Override
     public String getProjectName() {
@@ -250,11 +248,6 @@ public class GanttProjectImpl implements IGanttProject {
     @Override
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
-    }
-
-    @Override
-    public CustomColumnsStorage getCustomColumnsStorage() {
-        return myTaskCustomColumnStorage;
     }
 
     @Override

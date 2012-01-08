@@ -303,7 +303,7 @@ class ProxyDocument implements Document {
             TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
             opener.addTagHandler(taskPropHandler);
             CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(
-                    opener.getContext(), getTaskManager(), myProject.getCustomColumnsStorage());
+                    opener.getContext(), getTaskManager());
             opener.addTagHandler(customPropHandler);
             TaskDisplayColumnsTagHandler taskDisplayHandler =
                 new TaskDisplayColumnsTagHandler(myVisibleFields);
