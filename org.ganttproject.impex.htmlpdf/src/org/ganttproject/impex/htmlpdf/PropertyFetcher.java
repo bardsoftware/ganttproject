@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -23,9 +24,7 @@ public class PropertyFetcher {
         String text = GanttLanguage.getInstance().getText(key);
         return GanttLanguage.getInstance().correctLabel(text);
     }
-    CustomColumnsStorage getCustomColumnStorage() {
-        return myProject.getCustomColumnsStorage();
-    }
+
     public void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
 
@@ -42,12 +41,10 @@ public class PropertyFetcher {
         }
 
         CustomColumnsValues customValues = t.getCustomValues();
-        for (Iterator<CustomColumn> it = getCustomColumnStorage()
-                .getCustomColums().iterator(); it.hasNext();) {
-            CustomColumn nextColumn = it.next();
-            Object value = customValues.getValue(nextColumn);
+        for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
+            Object value = customValues.getValue(def);
             String valueAsString = value==null ? "" : value.toString();
-            id2value.put(nextColumn.getId(), valueAsString);
+            id2value.put(def.getID(), valueAsString);
         }
     }
 

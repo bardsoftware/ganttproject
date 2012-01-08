@@ -26,6 +26,7 @@ import java.util.Iterator;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
@@ -50,17 +51,17 @@ class TaskSaver extends SaverBase {
         startElement("tasks", attrs, handler);
 
         startElement("taskproperties", handler);
-        writeTaskProperties(handler, project.getCustomColumnsStorage());
+        writeTaskProperties(handler, project.getTaskCustomColumnManager());
         endElement("taskproperties", handler);
         Task rootTask = project.getTaskManager().getTaskHierarchy().getRootTask();
         Task[] tasks = project.getTaskManager().getTaskHierarchy().getNestedTasks(rootTask);
         for (int i=0; i<tasks.length; i++) {
-            writeTask(handler, (GanttTask) tasks[i], project.getCustomColumnsStorage());
+            writeTask(handler, (GanttTask) tasks[i], project.getTaskCustomColumnManager());
         }
         endElement("tasks", handler);
     }
 
-    private void writeTask(TransformerHandler handler, GanttTask task, CustomColumnsStorage customColumns) throws SAXException, IOException {
+    private void writeTask(TransformerHandler handler, GanttTask task, CustomPropertyManager customPropertyManager) throws SAXException, IOException {
         if (task.getTaskID() == -1) {
             throw new IllegalArgumentException("Is it a fake root task? Task="+task);
         }
@@ -118,12 +119,11 @@ class TaskSaver extends SaverBase {
         }
 
         CustomColumnsValues ccv = task.getCustomValues();
-        for (Iterator<CustomColumn> it = customColumns.getCustomColums().iterator(); it.hasNext();) {
-            CustomColumn nextColumn = it.next();
-            final String idc = nextColumn.getId();
-            if (ccv.hasOwnValue(nextColumn)) {
-                Object value = ccv.getValue(nextColumn);
-                if (GregorianCalendar.class.isAssignableFrom(nextColumn.getType()) && value!=null) {
+        for (CustomPropertyDefinition def : customPropertyManager.getDefinitions()) {
+            final String idc = def.getID();
+            if (ccv.hasOwnValue(def)) {
+                Object value = ccv.getValue(def);
+                if (GregorianCalendar.class.isAssignableFrom(def.getType()) && value!=null) {
                     value = DateParser.getIsoDate(((GanttCalendar)value).getTime());
                 }
                 addAttribute("taskproperty-id", idc, attrs);
@@ -136,7 +136,7 @@ class TaskSaver extends SaverBase {
         if (task.getManager().getTaskHierarchy().hasNestedTasks(task)) {
             Task[] nestedTasks = task.getManager().getTaskHierarchy().getNestedTasks(task);
             for (int i = 0; i < nestedTasks.length; i++) {
-                writeTask(handler, (GanttTask) nestedTasks[i], customColumns);
+                writeTask(handler, (GanttTask) nestedTasks[i], customPropertyManager);
             }
         }
 
@@ -160,7 +160,7 @@ class TaskSaver extends SaverBase {
         emptyElement("taskproperty", attrs, handler);
     }
 
-    private void writeTaskProperties(TransformerHandler handler, CustomColumnsStorage customCol) throws SAXException {
+    private void writeTaskProperties(TransformerHandler handler, CustomPropertyManager customPropertyManager) throws SAXException {
         writeTaskProperty(handler, "tpd0", "type", "default", "icon");
         writeTaskProperty(handler, "tpd1", "priority", "default", "icon");
         writeTaskProperty(handler, "tpd2", "info", "default", "icon");
@@ -171,9 +171,7 @@ class TaskSaver extends SaverBase {
         writeTaskProperty(handler, "tpd7", "completion", "default", "int");
         writeTaskProperty(handler, "tpd8", "coordinator", "default", "text");
         writeTaskProperty(handler, "tpd9", "predecessorsr", "default", "text");
-        Iterator<CustomColumn> it = customCol.getCustomColums().iterator();
-        while (it.hasNext()) {
-            final CustomColumn cc = it.next();
+        for (CustomPropertyDefinition cc : customPropertyManager.getDefinitions()) {
             Object defVal = cc.getDefaultValue();
             final Class<?> cla = cc.getType();
             final String valueType = encodeFieldType(cla);
@@ -184,7 +182,7 @@ class TaskSaver extends SaverBase {
                 assert defVal instanceof GanttCalendar;
                 defVal = DateParser.getIsoDate(((GanttCalendar)defVal).getTime());
             }
-            String idcStr = cc.getId();
+            String idcStr = cc.getID();
             writeTaskProperty(handler, idcStr, cc.getName(), "custom", valueType, defVal==null ? null : String.valueOf(defVal));
         }
     }

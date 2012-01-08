@@ -131,9 +131,8 @@ public class GanttCSVExport {
         if (csvOptions.bExportTaskNotes) {
             writeCell(out, i18n("notes"));
         }
-        List<String> customFields = myProject.getCustomColumnsStorage().getCustomColumnsNames();
-        for (int i = 0; i < customFields.size(); i++) {
-            writeCell(out, String.valueOf(customFields.get(i)));
+        for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
+            writeCell(out, def.getName());
         }
         out.write("\n\n");
     }

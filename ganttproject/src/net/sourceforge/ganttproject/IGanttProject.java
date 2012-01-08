@@ -98,7 +98,7 @@ public interface IGanttProject {
 
     CustomPropertyManager getTaskCustomColumnManager();
 
-    CustomColumnsStorage getCustomColumnsStorage();
+    //CustomColumnsStorage getCustomColumnsStorage();
 
     List<GanttPreviousState> getBaselines();
 }

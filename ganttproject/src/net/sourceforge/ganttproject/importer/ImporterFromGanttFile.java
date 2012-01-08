@@ -215,10 +215,6 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             return myTaskManager;
         }
         @Override
-        public CustomColumnsStorage getCustomColumnsStorage() {
-            return myTaskManager.getCustomColumnStorage();
-        }
-        @Override
         public CustomColumnsManager getTaskCustomColumnManager() {
             return super.getTaskCustomColumnManager();
         }
@@ -247,8 +243,8 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                         bufferProject.getHumanResourceManager(), new OverwritingMerger(myMergeResourcesOption));
 
             {
-                CustomColumnsStorage targetCustomColumnStorage = targetProject.getCustomColumnsStorage();
-                targetCustomColumnStorage.importData(bufferProject.getCustomColumnsStorage());
+                CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
+                targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
             }
             TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
             try {
