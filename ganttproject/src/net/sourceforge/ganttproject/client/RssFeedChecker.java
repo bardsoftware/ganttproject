@@ -68,7 +68,7 @@ public class RssFeedChecker {
     private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
     private final RssParser parser = new RssParser();
     private final NotificationItem myRssProposalNotification = new NotificationItem(
-        "", GanttLanguage.getInstance().getText("updateRss.question"),
+        "", GanttLanguage.getInstance().formatText("updateRss.question", GanttLanguage.getInstance().getText("updateRss.question.learnUrl")),
         new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
