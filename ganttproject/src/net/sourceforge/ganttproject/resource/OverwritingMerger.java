@@ -63,6 +63,7 @@ public class OverwritingMerger implements HumanResourceMerger {
         }
     }
 
+    @Override
     public HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr) {
         if (MergeResourcesOption.NO.equals(myMergeOption.getValue())) {
             return null;
