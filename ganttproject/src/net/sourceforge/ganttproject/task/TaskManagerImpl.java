@@ -8,10 +8,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +72,7 @@ public class TaskManagerImpl implements TaskManager {
 
     private int myMaxID = -1;
 
-    private Task myRoot;
+    private final Task myRoot;
 
     private final TaskManagerConfig myConfig;
 
@@ -147,8 +145,7 @@ public class TaskManagerImpl implements TaskManager {
     private final CustomColumnsManager myCustomColumnsManager;
 
     TaskManagerImpl(
-            TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
-            TaskManagerConfig config, CustomColumnsStorage columnStorage) {
+            TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
         myCustomPropertyListener = new CustomPropertyListenerImpl(this);
         myCustomColumnsManager = new CustomColumnsManager();
         myCustomColumnsManager.addListener(getCustomPropertyListener());
@@ -175,16 +172,7 @@ public class TaskManagerImpl implements TaskManager {
         myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl()
                 : containmentFacadeFactory;
         // clear();
-        {
-            Calendar c = CalendarFactory.newCalendar();
-            Date today = c.getTime();
-            myRoot = new GanttTask(null, new GanttCalendar(today), 1, this, -1);
-            myRoot.setStart(new GanttCalendar(today));
-            myRoot.setDuration(createLength(getConfig().getTimeUnitStack()
-                    .getDefaultTimeUnit(), 1));
-            myRoot.setExpand(true);
-
-        }
+        myRoot = createRootTask();
 
         FindPossibleDependeesAlgorithm alg1 = new FindPossibleDependeesAlgorithmImpl() {
             @Override
@@ -237,20 +225,23 @@ public class TaskManagerImpl implements TaskManager {
         //return (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
     }
 
+    private Task createRootTask() {
+        Calendar c = CalendarFactory.newCalendar();
+        Date today = c.getTime();
+        Task root = new GanttTask(null, new GanttCalendar(today), 1, this, -1);
+        root.setStart(new GanttCalendar(today));
+        root.setDuration(createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 1));
+        root.setExpand(true);
+        root.setName("root");
+        return root;
+    }
+
     @Override
     public void projectClosed() {
         myTaskMap.clear();
         setMaxID(-1);
         myDependencyCollection.clear();
-        {
-            Calendar c = CalendarFactory.newCalendar();
-            Date today = c.getTime();
-            myRoot = new GanttTask(null, new GanttCalendar(today), 1, this, -1);
-            myRoot.setStart(new GanttCalendar(today));
-            myRoot.setDuration(createLength(getConfig().getTimeUnitStack()
-                    .getDefaultTimeUnit(), 1));
-            myRoot.setExpand(true);
-        }
+        //createRootTask();
         fireTaskModelReset();
     }
 
@@ -807,7 +798,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public TaskManager emptyClone() {
-        return new TaskManagerImpl(null, myConfig, null);
+        return new TaskManagerImpl(null, myConfig);
     }
 
     @Override

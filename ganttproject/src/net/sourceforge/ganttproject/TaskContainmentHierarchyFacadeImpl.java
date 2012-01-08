@@ -180,6 +180,7 @@ class TaskContainmentHierarchyFacadeImpl implements
     @Override
     public void move(Task whatMove, Task whereMove) {
         DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
+        assert targetNode != null : "Failed to find tree node for task=" + whereMove;
         move(whatMove, whereMove, targetNode.getChildCount());
     }
 
