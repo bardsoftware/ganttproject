@@ -81,14 +81,7 @@ public interface TaskManager {
         public static TaskManager newInstance(
                 TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
                 TaskManagerConfig config) {
-            return new TaskManagerImpl(containmentFacadeFactory, config,null);
-        }
-
-        public static TaskManager newInstance(
-                Factory factory,
-                TaskManagerConfig taskConfig,
-                CustomColumnsStorage customColumnsStorage) {
-            return new TaskManagerImpl(factory, taskConfig, customColumnsStorage);
+            return new TaskManagerImpl(containmentFacadeFactory, config);
         }
     }
 

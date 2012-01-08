@@ -353,7 +353,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
 
     private void initRootNode() {
-        getTaskManager().getRootTask().setName("root");
+        getRootNode().setUserObject(getTaskManager().getRootTask());
     }
 
     public Action[] getPopupMenuActions() {

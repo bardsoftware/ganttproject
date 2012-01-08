@@ -257,7 +257,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                     public TaskContainmentHierarchyFacade createFacede() {
                         return GanttProject.this.getTaskContainment();
                     }
-                }, taskConfig, null);
+                }, taskConfig);
         ImageIcon icon = new ImageIcon(getClass().getResource(
                 "/icons/ganttproject.png"));
         setIconImage(icon.getImage());
@@ -913,7 +913,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         if (mainArgs.log && "auto".equals(mainArgs.logFile)) {
             mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log";
         }
-        if (mainArgs.log && !mainArgs.logFile.isEmpty()) {
+        if (mainArgs.log && !mainArgs.logFile.trim().isEmpty()) {
             try {
                 GPLogger.setLogFile(mainArgs.logFile);
                 File logFile = new File(mainArgs.logFile);
@@ -1108,6 +1108,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         myPreviousStates = new ArrayList<GanttPreviousState>();
         getTaskManager().getCalendar().clearPublicHolidays();
         setModified(false);
+        myFacadeInvalidator.projectClosed();
     }
 
     @Override
