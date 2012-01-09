@@ -145,7 +145,7 @@ public class RssFeedChecker {
                     String url = RSS_URL;
                     while (true) {
                         GetMethod getRssUrl = new GetMethod(url);
-                        getRssUrl.setFollowRedirects(true);
+                        getRssUrl.setFollowRedirects(false);
                         getRssUrl.setRequestHeader("User-Agent", "GanttProject " + GPVersion.PRAHA);
                         int result = httpClient.executeMethod(getRssUrl);
 
