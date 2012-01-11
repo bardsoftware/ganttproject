@@ -78,7 +78,7 @@
          <include name="lib/**"/>
         <include name="data/resources/**"/>
         <include name="AUTHORS"/>
-        <include name="COPYING"/>
+        <include name="LICENSE"/>
         <include name="README"/>
         <include name="build.xml"/>
         <include name="build-user.xml"/>

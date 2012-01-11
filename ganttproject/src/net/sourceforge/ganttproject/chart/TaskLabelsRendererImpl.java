@@ -1,5 +1,5 @@
 /*
- * This code is provided under the terms of GPL version 2.
+ * This code is provided under the terms of GPL version 3.
  * Please see LICENSE file for details
  * (C) Dmitry Barashev, GanttProject team, 2004-2008
  */
