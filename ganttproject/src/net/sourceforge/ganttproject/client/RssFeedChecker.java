@@ -149,14 +149,17 @@ public class RssFeedChecker {
                         getRssUrl.setRequestHeader("User-Agent", "GanttProject " + GPVersion.PRAHA);
                         int result = httpClient.executeMethod(getRssUrl);
 
-                        if (result == HttpStatus.SC_MOVED_TEMPORARILY) {
-                            url = getRssUrl.getResponseHeader("Location").getValue();
-                            continue;
-                        }
-                        if (result == HttpStatus.SC_OK) {
+                        switch (result) {
+                        case HttpStatus.SC_OK:
                             processResponse(getRssUrl.getResponseBodyAsStream());
+                            return;
+                        case HttpStatus.SC_MOVED_PERMANENTLY:
+                        case HttpStatus.SC_MOVED_TEMPORARILY:
+                        case HttpStatus.SC_SEE_OTHER:
+                        case HttpStatus.SC_TEMPORARY_REDIRECT:
+                            url = getRssUrl.getResponseHeader("Location").getValue();
+                            break;
                         }
-                        return;
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();

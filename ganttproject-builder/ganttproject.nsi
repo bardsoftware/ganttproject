@@ -4,10 +4,10 @@
 
 Name "GanttProject"
 XPStyle on
-Icon "ganttproject_16.ico"
+Icon "ganttproject_32_2.ico"
 
-!define MUI_ICON "ganttproject_16.ico"
-!define VERSION "praha-beta4-r823"
+!define MUI_ICON "ganttproject_32_2.ico"
+!define VERSION "praha-beta5-r888"
 
 OutFile ganttproject-${VERSION}.exe
 
@@ -122,9 +122,9 @@ Section "Start Menu Shortcuts"
 
   CreateDirectory "$SMPROGRAMS\GanttProject"
   CreateShortCut "$SMPROGRAMS\GanttProject\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_16.ico"
-  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_16.ico"
-  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_16.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
   CreateShortCut "$DESKTOP\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
 
 SectionEnd
