@@ -166,7 +166,7 @@
         	@{package-description}
         </description>
         <tarfileset dir="${basedir}/../ganttproject/" prefix="usr/share/doc/${package.name}">
-          <include name="COPYING"/>
+          <include name="LICENSE"/>
           <include name="README"/>
           <include name="AUTHORS"/>
         </tarfileset>
