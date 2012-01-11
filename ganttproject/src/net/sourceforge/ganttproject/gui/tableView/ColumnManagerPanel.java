@@ -1,4 +1,4 @@
-/* LICENSE: GPL2
+/* LICENSE: GPL3
 Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or

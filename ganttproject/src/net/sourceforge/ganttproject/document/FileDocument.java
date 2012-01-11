@@ -1,5 +1,5 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or

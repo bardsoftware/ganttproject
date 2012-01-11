@@ -1,4 +1,4 @@
-/* LICENSE: GPL2
+/* LICENSE: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
