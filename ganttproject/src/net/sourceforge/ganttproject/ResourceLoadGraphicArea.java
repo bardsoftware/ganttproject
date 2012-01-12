@@ -37,12 +37,12 @@ import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.Task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -64,11 +64,14 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private final ChartViewState myViewState;
 
-    public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager) {
+    private final ResourceTreeUIFacade myTreeUi;
+
+    public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
+        myTreeUi = treeUi;
         this.setBackground(Color.WHITE);
         myChartModel = new ChartModelResource(getTaskManager(),
-                (HumanResourceManager) app.getHumanResourceManager(),
+                app.getHumanResourceManager(),
                 getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
         myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
         myViewState = new ChartViewState(this, app.getUIFacade());
@@ -101,7 +104,13 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        settings.setRowCount(getResourceManager().getResources().size());
+        int rowCount = getResourceManager().getResources().size();
+        for (HumanResource hr : getResourceManager().getResources()) {
+            if (myTreeUi.isExpanded(hr)) {
+                rowCount += hr.getAssignments().length;
+            }
+        }
+        settings.setRowCount(rowCount);
         return super.getRenderedImage(settings);
     }
 
