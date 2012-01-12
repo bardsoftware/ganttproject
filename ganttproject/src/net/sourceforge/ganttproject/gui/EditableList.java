@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,16 @@ public abstract class EditableList<T>  {
     public JComponent getActionsComponent() {
         initComponent();
         return myTableAndActions.getActionsComponent();
+    }
+
+    public JComponent createDefaultComponent() {
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(getTableComponent(), BorderLayout.CENTER);
+        JComponent actionsComponent = getActionsComponent();
+        actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+        result.add(actionsComponent, BorderLayout.NORTH);
+        result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        return result;
     }
 
     public AbstractTableAndActionsComponent<T> getTableAndActions() {
