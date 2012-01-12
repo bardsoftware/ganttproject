@@ -127,6 +127,7 @@ public class BaselineDialogAction extends GPAction {
         Action[] actions = new Action[] { new OkAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                list.stopEditing();
                 myProject.getBaselines().clear();
                 myProject.getBaselines().addAll(myBaselines);
                 for (GanttPreviousState trashBaseline : myTrash) {

@@ -80,6 +80,12 @@ public abstract class EditableList<T>  {
         return myTableAndActions.getActionsComponent();
     }
 
+    public void stopEditing() {
+        if (resourcesTable.isEditing()) {
+            resourcesTable.getCellEditor().stopCellEditing();
+        }
+    }
+
     public JComponent createDefaultComponent() {
         JPanel result = new JPanel(new BorderLayout());
         result.add(getTableComponent(), BorderLayout.CENTER);
