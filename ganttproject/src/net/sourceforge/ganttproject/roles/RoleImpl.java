@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -38,15 +38,17 @@ public class RoleImpl implements Role {
         myName = name;
         myRoleSet = roleSet;
 
-        GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-            @Override
-            public void languageChanged(Event event) {
-                Role role = myRoleSet.findRole(myID);
-                if (role != null) {
-                    myName = role.getName();
+        if (myRoleSet != null) {
+            GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+                @Override
+                public void languageChanged(Event event) {
+                    Role role = myRoleSet.findRole(myID);
+                    if (role != null) {
+                        myName = role.getName();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
