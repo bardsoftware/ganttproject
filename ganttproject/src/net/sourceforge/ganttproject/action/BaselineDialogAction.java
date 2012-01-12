@@ -123,12 +123,6 @@ public class BaselineDialogAction extends GPAction {
                 list.getTableAndActions().setSelection(-1);
             }
         });
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(list.getTableComponent(), BorderLayout.CENTER);
-        JComponent actionsComponent = list.getActionsComponent();
-        actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
-        result.add(actionsComponent, BorderLayout.NORTH);
-        result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         Action[] actions = new Action[] { new OkAction() {
             @Override
@@ -140,6 +134,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
         }, CancelAction.EMPTY };
-        myUiFacade.createDialog(result, actions, getI18n("baseline.dialog.title")).show();
+        myUiFacade.createDialog(list.createDefaultComponent(), actions, getI18n("baseline.dialog.title")).show();
     }
 }
