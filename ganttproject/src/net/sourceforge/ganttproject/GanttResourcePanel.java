@@ -91,7 +91,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         getTreeTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         getTreeTable().insertWithLeftyScrollBar(this);
-        area = new ResourceLoadGraphicArea(prj, prj.getZoomManager()) {
+        area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this) {
             @Override
             public boolean isExpanded(HumanResource hr) {
                 return getResourceTreeTable().isExpanded(hr);

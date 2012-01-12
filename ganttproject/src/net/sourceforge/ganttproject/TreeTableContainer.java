@@ -141,7 +141,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     protected DefaultMutableTreeNode getNode(ModelObject modelObject) {
         for (Enumeration<TreeNode> nodes = getRootNode().preorderEnumeration(); nodes.hasMoreElements();) {
             DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
-            if (nextNode.getUserObject().equals(modelObject)) {
+            if (nextNode.getUserObject() != null && nextNode.getUserObject().equals(modelObject)) {
                 return nextNode;
             }
         }
