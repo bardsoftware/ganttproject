@@ -37,6 +37,8 @@ import net.sourceforge.ganttproject.roles.RoleSet;
  * @author dbarashev (Dmitry Barashev)
  */
 public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
+    private EditableList<Role> myRolesList;
+
     public ProjectRolesOptionPageProvider() {
         super("project.roles");
     }
@@ -52,7 +54,7 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
     @Override
     public Component buildPageComponent() {
         ArrayList<Role> roles = new ArrayList<Role>(Arrays.asList(getRoleManager().getProjectLevelRoles()));
-        EditableList<Role> rolesList = new EditableList<Role>(roles, Collections.<Role>emptyList()) {
+        myRolesList = new EditableList<Role>(roles, Collections.<Role>emptyList()) {
             @Override
             protected Role updateValue(Role newValue, Role curValue) {
                 curValue.setName(newValue.getName());
@@ -83,9 +85,9 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
                 return role.getName();
             }
         };
-        rolesList.setUndefinedValueLabel(GanttLanguage.getInstance().getText("optionPage.project.roles.undefinedValueLabel"));
+        myRolesList.setUndefinedValueLabel(GanttLanguage.getInstance().getText("optionPage.project.roles.undefinedValueLabel"));
         return OptionPageProviderBase.wrapContentComponent(
-            rolesList.createDefaultComponent(),
+            myRolesList.createDefaultComponent(),
             GanttLanguage.getInstance().getText("resourceRole"),
             GanttLanguage.getInstance().getText("settingsRoles"));
     }
@@ -96,5 +98,8 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
 
     @Override
     public void commit() {
+        if (myRolesList != null) {
+            myRolesList.stopEditing();
+        }
     }
 }
