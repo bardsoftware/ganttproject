@@ -19,12 +19,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
+import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleImpl;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.roles.RoleSet;
 
+/**
+ * Provides project roles page in the project settings dialog.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
-    private RolesSettingsPanel myRolesPanel;
     public ProjectRolesOptionPageProvider() {
         super("project.roles");
     }
@@ -36,19 +48,53 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
     public boolean hasCustomComponent() {
         return true;
     }
+
     @Override
     public Component buildPageComponent() {
-        myRolesPanel = new RolesSettingsPanel(getProject());
-        myRolesPanel.initialize();
+        ArrayList<Role> roles = new ArrayList<Role>(Arrays.asList(getRoleManager().getProjectLevelRoles()));
+        EditableList<Role> rolesList = new EditableList<Role>(roles, Collections.<Role>emptyList()) {
+            @Override
+            protected Role updateValue(Role newValue, Role curValue) {
+                curValue.setName(newValue.getName());
+                return curValue;
+            }
+
+            @Override
+            protected Role createValue(Role prototype) {
+                RoleSet projectRoles = getRoleManager().getProjectRoleSet();
+                return projectRoles.createRole(prototype.getName(), projectRoles.getRoles().length);
+            }
+
+            @Override
+            protected void deleteValue(Role value) {
+                getRoleManager().getProjectRoleSet().deleteRole(value);
+            }
+
+            @Override
+            protected Role createPrototype(Object editValue) {
+                if (editValue == null) {
+                    return null;
+                }
+                return new RoleImpl(0, String.valueOf(editValue), null);
+            }
+
+            @Override
+            protected String getStringValue(Role role) {
+                return role.getName();
+            }
+        };
+        rolesList.setUndefinedValueLabel(GanttLanguage.getInstance().getText("optionPage.project.roles.undefinedValueLabel"));
         return OptionPageProviderBase.wrapContentComponent(
-            myRolesPanel,
+            rolesList.createDefaultComponent(),
             GanttLanguage.getInstance().getText("resourceRole"),
             GanttLanguage.getInstance().getText("settingsRoles"));
-
-
     }
+
+    private RoleManager getRoleManager() {
+        return getProject().getRoleManager();
+    }
+
     @Override
     public void commit() {
-        myRolesPanel.applyChanges(false);
     }
 }
