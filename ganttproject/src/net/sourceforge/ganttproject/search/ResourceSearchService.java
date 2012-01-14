@@ -71,10 +71,11 @@ public class ResourceSearchService implements SearchService {
     @Override
     public void select(List<SearchResult> results) {
         ResourceTreeUIFacade resourceTree = myUiFacade.getResourceTree();
+        resourceTree.clearSelection();
         for (SearchResult r : results) {
             MySearchResult result = (MySearchResult) r;
-            resourceTree.setSelected(result.getResource());
-            resourceTree.getTreeComponent().requestFocusInWindow();
+            resourceTree.setSelected(result.getResource(), false);
         }
+        resourceTree.getTreeComponent().requestFocusInWindow();
     }
 }

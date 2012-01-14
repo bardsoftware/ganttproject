@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 
@@ -30,6 +31,7 @@ public class TaskSearchService implements SearchService {
 
     class MySearchResult extends SearchResult {
         private final Task myTask;
+
         public MySearchResult(Task t) {
             super("Task: " + t.getName(), "", "", TaskSearchService.this);
             myTask = t;
@@ -40,6 +42,7 @@ public class TaskSearchService implements SearchService {
         }
 
     }
+
     private IGanttProject myProject;
     private UIFacade myUiFacade;
 
@@ -67,12 +70,12 @@ public class TaskSearchService implements SearchService {
 
     @Override
     public void select(List<SearchResult> results) {
-        myUiFacade.getTaskSelectionManager().clear();
+        TaskTreeUIFacade taskTree = myUiFacade.getTaskTree();
+        taskTree.clearSelection();
         for (SearchResult r : results) {
             MySearchResult result = (MySearchResult) r;
-            myUiFacade.getTaskSelectionManager().addTask(result.getTask());
-            myUiFacade.getTaskTree().getTreeComponent().requestFocusInWindow();
+            taskTree.setSelected(result.getTask(), false);
         }
+        taskTree.getTreeComponent().requestFocusInWindow();
     }
-
 }

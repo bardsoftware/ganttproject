@@ -582,12 +582,24 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
 
     private void selectTasks(List<Task> tasksList) {
-        getTaskSelectionManager().clear();
+        clearSelection();
         for (Task t : tasksList) {
-            getTaskSelectionManager().addTask(t);
+            setSelected(t, false);
         }
     }
 
+    @Override
+    public void setSelected(Task task, boolean clear) {
+        if (clear) {
+            clearSelection();
+        }
+        getTaskSelectionManager().addTask(task);
+    }
+
+    @Override
+    public void clearSelection() {
+        getTaskSelectionManager().clear();
+    }
 
     private void onTaskSelectionChanged(List<Task> tasks) {
         isOnTaskSelectionEventProcessing = true;
