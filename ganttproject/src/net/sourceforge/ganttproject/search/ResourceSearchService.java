@@ -1,9 +1,9 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -15,30 +15,34 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.search;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.resource.HumanResource;
 
-public class SimpleSearchService implements SearchService {
+/** Search service for resources */
+public class ResourceSearchService implements SearchService {
 
     class MySearchResult extends SearchResult {
-        private final Task myTask;
-        public MySearchResult(Task t) {
-            super(t.getName(), "", "", SimpleSearchService.this);
-            myTask = t;
+        private final HumanResource myResource;
+
+        public MySearchResult(HumanResource r) {
+            super("Resource: " + r.getName(), "", "", ResourceSearchService.this);
+            myResource = r;
         }
 
-        Task getTask() {
-            return myTask;
+        public HumanResource getResource() {
+            return myResource;
         }
 
     }
+
     private IGanttProject myProject;
     private UIFacade myUiFacade;
 
@@ -56,9 +60,9 @@ public class SimpleSearchService implements SearchService {
     public List<SearchResult> search(String query) {
         query = query.toLowerCase();
         List<SearchResult> results = new ArrayList<SearchResult>();
-        for (Task t : myProject.getTaskManager().getTasks()) {
-            if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)) {
-                results.add(new MySearchResult(t));
+        for (HumanResource r : myProject.getHumanResourceManager().getResources()) {
+            if (isNotEmptyAndContains(r.getName(), query)) {
+                results.add(new MySearchResult(r));
             }
         }
         return results;
@@ -66,12 +70,11 @@ public class SimpleSearchService implements SearchService {
 
     @Override
     public void select(List<SearchResult> results) {
-        myUiFacade.getTaskSelectionManager().clear();
+        ResourceTreeUIFacade resourceTree = myUiFacade.getResourceTree();
         for (SearchResult r : results) {
             MySearchResult result = (MySearchResult) r;
-            myUiFacade.getTaskSelectionManager().addTask(result.getTask());
-            myUiFacade.getTaskTree().getTreeComponent().requestFocusInWindow();
+            resourceTree.setSelected(result.getResource());
+            resourceTree.getTreeComponent().requestFocusInWindow();
         }
     }
-
 }
