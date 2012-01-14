@@ -65,5 +65,7 @@ public class TaskMoveUpAction extends TaskActionBase {
             taskHierarchy.move(task, parent, index);
         }
         forwardScheduling();
+        // TODO Ideally this should get done by the move method as it modifies the document
+        getUIFacade().getGanttChart().getProject().setModified();
     }
 }
