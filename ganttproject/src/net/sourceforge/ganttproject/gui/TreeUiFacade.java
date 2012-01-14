@@ -28,4 +28,16 @@ public interface TreeUiFacade<T> {
     TableHeaderUIFacade getVisibleFields();
     boolean isExpanded(T modelElement);
     void setExpanded(T modelElement);
+
+    /**
+     * Modifies the selected node(s) of the tree
+     *
+     * @param clear when true, it first clears the previous selection. When
+     *            false the current selection gets extended
+     * @param modelElement to be selected
+     */
+    void setSelected(T modelElement, boolean clear);
+
+    /** Clears the current selection */
+    void clearSelection();
 }
