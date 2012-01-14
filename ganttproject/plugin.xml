@@ -103,7 +103,8 @@
    </extension>
    <extension
          point="net.sourceforge.ganttproject.search">
-      <searchservice class="net.sourceforge.ganttproject.search.SimpleSearchService"/>
+      <searchservice class="net.sourceforge.ganttproject.search.TaskSearchService"/>
+      <searchservice class="net.sourceforge.ganttproject.search.ResourceSearchService"/>
    </extension>
 
 <!--   <extension point="net.sourceforge.ganttproject.chart">

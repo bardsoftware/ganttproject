@@ -383,6 +383,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     }
 
     @Override
+    public void setSelected(HumanResource resource) {
+        getTree().clearSelection();
+        getTree().setSelectionPath(new TreePath(getResourceTreeTableModel().getNodeForResource(resource).getPath()));
+    }
+
+    @Override
     public AbstractAction getMoveUpAction() {
         return myResourceActionSet.getResourceMoveUpAction();
     }

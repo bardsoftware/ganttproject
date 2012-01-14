@@ -25,4 +25,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 public interface ResourceTreeUIFacade extends TreeUiFacade<HumanResource> {
     AbstractAction getMoveUpAction();
     AbstractAction getMoveDownAction();
+
+    /** Sets the current selection to the given resource */
+    void setSelected(HumanResource resource);
 }
