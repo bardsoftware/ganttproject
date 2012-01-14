@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -74,11 +75,16 @@ public class WebPublisher {
                             GanttLanguage.getInstance().getText("errorFTPConnection") + " Passive and active mode failed: " + ftpClient.getReplyString());
                 }
             }
-            if (!ftpClient.changeWorkingDirectory(options.getDirectoryName().getValue())) {
+            String dirName = options.getDirectoryName().getValue();
+            if (dirName == null) {
+                dirName = "";
+            }
+            if (!dirName.isEmpty() && !ftpClient.changeWorkingDirectory(dirName)) {
                 ftpClient.logout();
                 ftpClient.disconnect();
                 return new Status(IStatus.ERROR, "net.sourceforge.ganttproject",
-                        GanttLanguage.getInstance().getText("errorFTPConnection") + " Change directory failed: " + ftpClient.getReplyString());
+                        GanttLanguage.getInstance().getText("errorFTPConnection")
+                        + MessageFormat.format(" Change directory to {0} failed: ", dirName, ftpClient.getReplyString()));
             }
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             return Status.OK_STATUS;
