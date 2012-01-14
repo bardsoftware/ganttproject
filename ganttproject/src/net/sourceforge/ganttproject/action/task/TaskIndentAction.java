@@ -65,5 +65,8 @@ public class TaskIndentAction extends TaskActionBase {
             Task newParent = taskHierarchy.getPreviousSibling(task);
             taskHierarchy.move(task, newParent);
         }
+        // TODO Ideally this should get done by the move method as it modifies the document
+        getUIFacade().getGanttChart().getProject().setModified();
+
     }
 }
