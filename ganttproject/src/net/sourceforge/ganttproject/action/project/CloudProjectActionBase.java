@@ -44,7 +44,7 @@ abstract class CloudProjectActionBase extends GPAction {
     protected Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
         Document document = project.getDocument();
         GanttURLChooser uc = new GanttURLChooser(myUiFacade,
-            (null != document) ? document.getURLPath() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
+            (null != document) ? document.getURI().toString() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
             (null != document) ? document.getUsername() : null,
             (null != document) ? document.getPassword() : null,
             myDocumentManager.getWebDavLockTimeoutOption().getValue());
@@ -71,7 +71,7 @@ abstract class CloudProjectActionBase extends GPAction {
         if (document == null) {
             return false;
         }
-        return document.getURLPath().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
+        return document.getURI().toString().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
             && document.getPassword().equals(uc.getPassword());
     }
 }

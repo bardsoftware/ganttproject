@@ -89,11 +89,6 @@ public class ReadOnlyProxyDocument implements Document {
     }
 
     @Override
-    public String getURLPath() {
-        return myDelegate.getURLPath();
-    }
-
-    @Override
     public String getUsername() {
         return myDelegate.getUsername();
     }

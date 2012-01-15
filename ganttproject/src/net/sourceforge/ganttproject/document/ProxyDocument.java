@@ -142,11 +142,6 @@ class ProxyDocument implements Document {
     }
 
     @Override
-    public String getURLPath() {
-        return myPhysicalDocument.getURLPath();
-    }
-
-    @Override
     public String getUsername() {
         return myPhysicalDocument.getUsername();
     }
