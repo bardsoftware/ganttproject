@@ -34,11 +34,6 @@ public abstract class AbstractDocument implements Document {
     }
 
     @Override
-    public String getURLPath() {
-        return null;
-    }
-
-    @Override
     public String getUsername() {
         return null;
     }

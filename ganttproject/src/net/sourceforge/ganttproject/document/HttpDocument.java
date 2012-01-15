@@ -242,11 +242,6 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     @Override
-    public String getURLPath() {
-        return getPath();
-    }
-
-    @Override
     public String getUsername() {
         return myUsername;
     }

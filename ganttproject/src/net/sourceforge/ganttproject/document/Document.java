@@ -117,15 +117,6 @@ public interface Document {
     public String getFilePath();
 
     /**
-     * Gets the path to the document, if it is a file on a server (can be used
-     * to initialize an UrlChooser).
-     *
-     * @return the path, if the document is a server file; <code>null</code>,
-     *         otherwise.
-     */
-    public String getURLPath();
-
-    /**
      * Gets the username used to authenticate to the storage container
      *
      * @return username
