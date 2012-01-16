@@ -22,60 +22,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 
 /** Search service for tasks */
-public class TaskSearchService implements SearchService {
+public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
 
-    class MySearchResult extends SearchResult {
-        private final Task myTask;
-
-        public MySearchResult(Task t) {
-            super("Task: " + t.getName(), "", "", TaskSearchService.this);
-            myTask = t;
-        }
-
-        Task getTask() {
-            return myTask;
+    static class MySearchResult extends SearchResult<Task> {
+        public MySearchResult(Task t, TaskSearchService searchService) {
+            super("Task: " + t.getName(), "", "", t, searchService);
         }
 
     }
 
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
-
-    @Override
-    public void init(IGanttProject project, UIFacade uiFacade) {
-        myProject = project;
-        myUiFacade = uiFacade;
-    }
-
-    private static boolean isNotEmptyAndContains(String doc, String query) {
-        return doc != null && doc.toLowerCase().contains(query);
+    public TaskSearchService() {
+        super(UIFacade.GANTT_INDEX);
     }
 
     @Override
-    public List<SearchResult> search(String query) {
+    public List<MySearchResult> search(String query) {
         query = query.toLowerCase();
-        List<SearchResult> results = new ArrayList<SearchResult>();
-        for (Task t : myProject.getTaskManager().getTasks()) {
+        List<MySearchResult> results = new ArrayList<MySearchResult>();
+        for (Task t : getProject().getTaskManager().getTasks()) {
             if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)) {
-                results.add(new MySearchResult(t));
+                results.add(new MySearchResult(t, this));
             }
         }
         return results;
     }
 
     @Override
-    public void select(List<SearchResult> results) {
-        TaskTreeUIFacade taskTree = myUiFacade.getTaskTree();
-        taskTree.clearSelection();
-        for (SearchResult r : results) {
-            MySearchResult result = (MySearchResult) r;
-            taskTree.setSelected(result.getTask(), false);
-        }
-        taskTree.getTreeComponent().requestFocusInWindow();
+    public void init(IGanttProject project, UIFacade uiFacade) {
+        super.init(project, uiFacade.getTaskTree(), uiFacade);
     }
+
 }
