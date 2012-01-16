@@ -22,60 +22,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 
 /** Search service for resources */
-public class ResourceSearchService implements SearchService {
-
-    class MySearchResult extends SearchResult {
-        private final HumanResource myResource;
-
-        public MySearchResult(HumanResource r) {
-            super("Resource: " + r.getName(), "", "", ResourceSearchService.this);
-            myResource = r;
-        }
-
-        public HumanResource getResource() {
-            return myResource;
+public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
+    static class MySearchResult extends SearchResult<HumanResource> {
+        public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
+            super("Resource: " + hr.getName(), "", "", hr, searchService);
         }
 
     }
 
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
-
-    @Override
-    public void init(IGanttProject project, UIFacade uiFacade) {
-        myProject = project;
-        myUiFacade = uiFacade;
-    }
-
-    private static boolean isNotEmptyAndContains(String doc, String query) {
-        return doc != null && doc.toLowerCase().contains(query);
+    public ResourceSearchService() {
+        super(UIFacade.RESOURCES_INDEX);
     }
 
     @Override
-    public List<SearchResult> search(String query) {
+    public List<MySearchResult> search(String query) {
         query = query.toLowerCase();
-        List<SearchResult> results = new ArrayList<SearchResult>();
-        for (HumanResource r : myProject.getHumanResourceManager().getResources()) {
-            if (isNotEmptyAndContains(r.getName(), query)) {
-                results.add(new MySearchResult(r));
+        List<MySearchResult> results = new ArrayList<MySearchResult>();
+        for (HumanResource hr : getProject().getHumanResourceManager().getResources()) {
+            if (isNotEmptyAndContains(hr.getName(), query)) {
+                results.add(new MySearchResult(hr, this));
             }
         }
         return results;
     }
 
     @Override
-    public void select(List<SearchResult> results) {
-        ResourceTreeUIFacade resourceTree = myUiFacade.getResourceTree();
-        resourceTree.clearSelection();
-        for (SearchResult r : results) {
-            MySearchResult result = (MySearchResult) r;
-            resourceTree.setSelected(result.getResource(), false);
-        }
-        resourceTree.getTreeComponent().requestFocusInWindow();
+    public void init(IGanttProject project, UIFacade uiFacade) {
+        super.init(project, uiFacade.getResourceTree(), uiFacade);
     }
 }

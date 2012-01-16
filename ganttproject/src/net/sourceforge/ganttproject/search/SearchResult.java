@@ -18,17 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.search;
 
-public class SearchResult {
+public class SearchResult<SearchObjectType> {
     private final String myOrigin;
     private final String mySnippet;
     private final String myLabel;
     private final SearchService mySearchService;
+    private final SearchObjectType mySearchObject;
 
-    public SearchResult(String label, String snippet, String origin, SearchService service) {
+    public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject, SearchService service) {
         myLabel = label;
         mySnippet = snippet;
         myOrigin = origin;
         mySearchService = service;
+        mySearchObject = searchObject;
     }
 
     public String getLabel() {
@@ -41,6 +43,10 @@ public class SearchResult {
 
     public String getOrigin() {
         return myOrigin;
+    }
+
+    public SearchObjectType getObject() {
+        return mySearchObject;
     }
 
     @Override
