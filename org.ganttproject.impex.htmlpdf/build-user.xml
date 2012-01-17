@@ -16,7 +16,7 @@
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/fop-font-metrics.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-avalon.jar"/>
         <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/ganttproject-batik.jar"/>
-        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/itext.jar"/>
+        <pathelement location="${org.ganttproject.impex.htmlpdf.location}/lib/itextpdf-5.1.3.jar"/>
     </path>
     <path id="ganttproject-2.0.classpath">
         <pathelement location="${ganttproject-2.0.location}/bin"/>
