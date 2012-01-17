@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,9 +32,13 @@ import java.util.logging.Level;
 
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 
-import net.sourceforge.ganttproject.GPLogger;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.pdf.BaseFont;
 
-import com.lowagie.text.FontFactory;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
  * This class collects True Type fonts from .ttf files in the registered directories
@@ -42,6 +47,9 @@ import com.lowagie.text.FontFactory;
  */
 public class TTFontCache {
     private Map<String,Font> myMap_Family_RegularFont = new TreeMap<String,Font>();
+    private Map<String, String> myMap_Family_Filename = new HashMap<String, String>();
+    private final Map<Pair<Integer, Float>, com.itextpdf.text.Font> myFontCache =
+            new HashMap<Pair<Integer,Float>, com.itextpdf.text.Font>();
 
     public void registerDirectory(String path, boolean recursive) {
         GPLogger.log("reading directory="+path);
@@ -101,12 +109,35 @@ public class TTFontCache {
         }
 
         // We will put a font to the mapping only if it is a plain font.
-        final com.lowagie.text.Font itextFont = FontFactory.getFont(family, 12f, com.lowagie.text.Font.NORMAL);
+        final com.itextpdf.text.Font itextFont = FontFactory.getFont(family, 12f, com.itextpdf.text.Font.NORMAL);
         if (itextFont == null || itextFont.getBaseFont() == null) {
             return;
         }
 
         GPLogger.log("registering font: " + family);
         myMap_Family_RegularFont.put(family, awtFont);
+        myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
+    }
+
+    public com.itextpdf.text.Font getFont(String family, float size) {
+        Pair<Integer, Float> key = Pair.create(com.itextpdf.text.Font.NORMAL, size);
+        com.itextpdf.text.Font result = myFontCache.get(key);
+        if (result == null) {
+            //FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);
+            String filename = myMap_Family_Filename.get(family);
+            if (filename != null) {
+                try {
+                    BaseFont bf = BaseFont.createFont(filename, GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED);
+                    result = new com.itextpdf.text.Font(bf, size);
+                    myFontCache.put(key, result);
+                } catch (DocumentException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return result;
+
     }
 }
