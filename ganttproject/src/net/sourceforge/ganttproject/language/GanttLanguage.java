@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -43,6 +44,7 @@ import javax.swing.UIManager;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * Class for the language
@@ -93,7 +95,9 @@ public class GanttLanguage {
     private Locale myDateFormatLocale;
 
     private GanttLanguage() {
-        myCharSetMap = new CharSetMap();
+        Properties charsets = new Properties();
+        PropertiesUtil.loadProperties(charsets, "/charsets.properties");
+        myCharSetMap = new CharSetMap(charsets);
         setLocale(Locale.getDefault());
     }
 
