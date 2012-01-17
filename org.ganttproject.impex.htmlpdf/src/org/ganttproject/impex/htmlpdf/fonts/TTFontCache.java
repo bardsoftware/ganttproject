@@ -119,8 +119,8 @@ public class TTFontCache {
         myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
     }
 
-    public com.itextpdf.text.Font getFont(String family, float size) {
-        Pair<Integer, Float> key = Pair.create(com.itextpdf.text.Font.NORMAL, size);
+    public com.itextpdf.text.Font getFont(String family, int style, float size) {
+        Pair<Integer, Float> key = Pair.create(style, size);
         com.itextpdf.text.Font result = myFontCache.get(key);
         if (result == null) {
             //FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);
