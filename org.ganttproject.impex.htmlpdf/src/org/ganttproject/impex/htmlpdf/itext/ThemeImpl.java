@@ -59,23 +59,27 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.StylesheetImpl;
+import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 
-import com.lowagie.text.BadElementException;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfPageEvent;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEvent;
+import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * Implements Sortavala iText theme.
@@ -91,7 +95,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
             }
         }
     }
-    private static final Color SORTAVALA_GREEN = new Color(0x66, 0x99, 0x99);
+    private static final BaseColor SORTAVALA_GREEN = new BaseColor(new Color(0x66, 0x99, 0x99));
     private Document myDoc;
     private PdfWriter myWriter;
     private IGanttProject myProject;
@@ -109,9 +113,11 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     private final Properties myProperties;
     private FontSubstitutionModel mySubstitutionModel;
     private final AbstractExporter myExporter;
+    private final TTFontCache myFontCache;
 
-    ThemeImpl(URL url, String localizedName, AbstractExporter exporter) {
+    ThemeImpl(URL url, String localizedName, AbstractExporter exporter, TTFontCache fontCache) {
         super(url, localizedName + " (iText)");
+        myFontCache = fontCache;
         myExporter = exporter;
         myProperties = new Properties();
         try {
@@ -172,7 +178,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
 
     protected Font getSansRegular(float size) {
-        return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);
+        return myFontCache.getFont(getFontName(), size);
     }
 
     protected Font getSansItalic(float size) {
@@ -382,7 +388,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 cell.setBorderWidth(0);
                 cell.setBorder(PdfPCell.BOTTOM);
                 cell.setBorderWidthBottom(1);
-                cell.setBorderColor(new Color(0x66, 0x99, 0x99));
+                cell.setBorderColor(SORTAVALA_GREEN);
                 table.addCell(cell);
             }
         }

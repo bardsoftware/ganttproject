@@ -58,7 +58,7 @@ import org.osgi.service.prefs.Preferences;
 
 public class ITextEngine extends AbstractEngine {
     private ITextStylesheet myStylesheet;
-    private TTFontCache myFontCache;
+    private final TTFontCache myFontCache;
     private FontSubstitutionModel mySubstitutionModel;
     private Object myFontsMutex = new Object();
     private boolean myFontsReady = false;
@@ -66,6 +66,7 @@ public class ITextEngine extends AbstractEngine {
 
     public ITextEngine(ExporterToPDF exporter) {
         myExporter = exporter;
+        myFontCache = new TTFontCache();
         registerFonts();
     }
 
@@ -121,7 +122,7 @@ public class ITextEngine extends AbstractEngine {
         StylesheetFactoryImpl factory = new StylesheetFactoryImpl() {
             @Override
             protected Stylesheet newStylesheet(URL resolvedUrl, String localizedName) {
-                return new ThemeImpl(resolvedUrl, localizedName, getExporter());
+                return new ThemeImpl(resolvedUrl, localizedName, getExporter(), myFontCache);
             }
         };
         return factory.createStylesheets(ITextStylesheet.class);
@@ -132,7 +133,6 @@ public class ITextEngine extends AbstractEngine {
     }
 
     private void registerFonts() {
-        myFontCache = new TTFontCache();
         Thread fontReadingThread = new Thread(new Runnable() {
             @Override
             public void run() {
