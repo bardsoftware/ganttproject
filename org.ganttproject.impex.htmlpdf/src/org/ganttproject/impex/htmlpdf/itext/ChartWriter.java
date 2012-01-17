@@ -24,7 +24,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 
+import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+
 import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -45,17 +48,19 @@ class ChartWriter implements ChartImageVisitor {
     private final TimelineChart myChart;
     private final GanttExportSettings myExportSettings;
     private final PdfWriter myWriter;
+    private final TTFontCache myFontCache;
 
     private float myScale;
     private float myYShift;
     private PdfTemplate myTemplate;
     private Graphics2D myGraphics;
 
-    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings) {
+    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings, TTFontCache fontCache) {
         myChart = chart;
         myWriter = writer;
         myDoc = doc;
         myExportSettings = exportSettings;
+        myFontCache = fontCache;
     }
 
     protected ChartModel getModel() {
@@ -71,7 +76,7 @@ class ChartWriter implements ChartImageVisitor {
     private Graphics2D getGraphics(ChartDimensions d) {
         if (myGraphics == null) {
             myTemplate = myWriter.getDirectContent().createTemplate(d.getFullWidth(), d.getChartHeight());
-
+            myTemplate.setFontAndSize(myFontCache.getFont("dejavu sans", Font.NORMAL, 10).getBaseFont(), 10);
             Rectangle page = myDoc.getPageSize();
             final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
             final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();

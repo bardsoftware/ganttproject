@@ -35,8 +35,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -45,8 +45,8 @@ import net.sourceforge.ganttproject.export.AbstractExporter;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -59,23 +59,19 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.StylesheetImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 
-import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEvent;
@@ -178,15 +174,15 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
 
     protected Font getSansRegular(float size) {
-        return myFontCache.getFont(getFontName(), size);
+        return myFontCache.getFont(getFontName(), Font.NORMAL, size);
     }
 
     protected Font getSansItalic(float size) {
-        return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.ITALIC);
+        return myFontCache.getFont(getFontName(), Font.ITALIC, size);
     }
 
     protected Font getSansRegularBold(float size) {
-        return FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size, Font.BOLD);
+        return myFontCache.getFont(getFontName(), Font.BOLD, size);
     }
 
     protected Font getSansRegularBold() {
@@ -326,7 +322,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                 GanttLanguage.getInstance().getText("ganttChart"),
                 String.valueOf(myWriter.getPageNumber()));
-        ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings()) {
+        ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
@@ -342,7 +338,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getText("resourcesChart"),
                 String.valueOf(myWriter.getPageNumber()));
         ChartWriter resourceChartWriter = new ChartWriter(
-                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings()) {
+                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setRowCount(myProject.getHumanResourceManager().getResources().size());
@@ -352,8 +348,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
 
 
-    protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader,
-            ArrayList<Column> orderedColumns) throws DocumentException {
+    protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader, ArrayList<Column> orderedColumns) {
         for (int i = 0; i < tableHeader.getSize(); i++) {
             Column c = tableHeader.getField(i);
             if (c.isVisible()) {
@@ -372,7 +367,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         float[] widths = new float[orderedColumns.size()];
         for (int i = 0; i < orderedColumns.size(); i++) {
             Column column = orderedColumns.get(i);
-            widths[i] = (float) column.getWidth();
+            widths[i] = column.getWidth();
         }
 
         PdfPTable table = new PdfPTable(widths);
@@ -476,7 +471,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 return "";
             }
 
-            private PdfPTable createNameCellContent(Task t) throws BadElementException {
+            private PdfPTable createNameCellContent(Task t) {
                 PdfPTable table = new PdfPTable(1);
                 Paragraph p = new Paragraph(t.getName(), getSansRegular(12));
                 PdfPCell cell1 = new PdfPCell();
