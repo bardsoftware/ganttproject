@@ -121,6 +121,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        myFontCache.setProperties(myProperties);
         I18N i18n = new OptionsPageBuilder.I18N();
         myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
         myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");

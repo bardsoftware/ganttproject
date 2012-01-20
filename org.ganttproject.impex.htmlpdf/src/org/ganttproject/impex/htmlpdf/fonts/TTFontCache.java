@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
@@ -35,6 +36,7 @@ import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.FontMapper;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -50,6 +52,8 @@ public class TTFontCache {
     private Map<String, String> myMap_Family_Filename = new HashMap<String, String>();
     private final Map<Pair<Integer, Float>, com.itextpdf.text.Font> myFontCache =
             new HashMap<Pair<Integer,Float>, com.itextpdf.text.Font>();
+    private Map<String, BaseFont> myMap_Family_ItextFont = new HashMap<String, BaseFont>();
+    private Properties myProperties;
 
     public void registerDirectory(String path, boolean recursive) {
         GPLogger.log("reading directory="+path);
@@ -117,6 +121,13 @@ public class TTFontCache {
         GPLogger.log("registering font: " + family);
         myMap_Family_RegularFont.put(family, awtFont);
         myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
+        try {
+            myMap_Family_ItextFont.put(family, BaseFont.createFont(
+                    fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED));
+        } catch (DocumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public com.itextpdf.text.Font getFont(String family, int style, float size) {
@@ -139,5 +150,28 @@ public class TTFontCache {
         }
         return result;
 
+    }
+
+    public FontMapper getFontMapper() {
+        return new FontMapper() {
+            @Override
+            public BaseFont awtToPdf(Font awtFont) {
+                String family = awtFont.getFamily().toLowerCase();
+                if (myProperties.containsKey("font." + family)) {
+                    family = String.valueOf(myProperties.get("font." + family));
+                }
+                return myMap_Family_ItextFont.get(family);
+            }
+
+            @Override
+            public Font pdfToAwt(BaseFont itextFont, int size) {
+                return null;
+            }
+
+        };
+    }
+
+    public void setProperties(Properties properties) {
+        myProperties = properties;
     }
 }
