@@ -31,6 +31,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
@@ -43,6 +45,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
+import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -63,11 +66,10 @@ public class GanttDialogPerson {
     private final EnumerationOption myRoleField;
     private final GPOptionGroup myGroup;
     private final UIFacade myUIFacade;
-    /** Creates new form GanttDialogPerson */
-    public GanttDialogPerson(UIFacade uiFacade, HumanResource person) {
-//        super(parent, GanttProject.correctLabel(language.getText("human")),
-//                true);
-//
+    private final CustomPropertyManager myCustomPropertyManager;
+
+    public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
+        myCustomPropertyManager = customPropertyManager;
         myUIFacade = uiFacade;
         this.person = person;
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
@@ -136,6 +138,10 @@ public class GanttDialogPerson {
         tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass()
                 .getResource("/icons/holidays_16.gif")),
                 constructDaysOffPanel());
+        CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(
+                myCustomPropertyManager, myUIFacade, person, myUIFacade.getResourceTree().getVisibleFields());
+        tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
+                customColumnsPanel.getComponent());
         //mainPage.requestDefaultFocus();
 //        final FocusTraversalPolicy defaultPolicy = mainPage.getFocusTraversalPolicy();
 //        FocusTraversalPolicy customPolicy = new FocusTraversalPolicy() {
