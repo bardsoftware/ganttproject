@@ -8,6 +8,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -121,7 +123,7 @@ public class OptionsPageBuilder {
         return resultPanel;
     }
 
-    public JComponent createLabeledComponent(GPOption option) {
+    public JComponent createLabeledComponent(GPOption<?> option) {
         GPOptionGroup fake = new GPOptionGroup("", new GPOption[] {option});
         fake.setTitled(false);
         return createGroupComponent(fake);
@@ -138,10 +140,10 @@ public class OptionsPageBuilder {
         return result;
     }
 
-    public JComponent createGroupComponent(GPOptionGroup group, GPOption... options) {
+    public JComponent createGroupComponent(GPOptionGroup group, GPOption<?>... options) {
         JPanel optionsPanel = new JPanel(new SpringLayout());
         for (int i = 0; i < options.length; i++) {
-            GPOption nextOption = options[i];
+            GPOption<?> nextOption = options[i];
             final Component nextComponent = createOptionComponent(group, nextOption);
             if (needsLabel(group, nextOption)) {
                 Component nextLabel =createOptionLabel(group, options[i]);
@@ -170,14 +172,14 @@ public class OptionsPageBuilder {
         return optionsPanel;
     }
 
-    private boolean needsLabel(GPOptionGroup group, GPOption nextOption) {
+    private boolean needsLabel(GPOptionGroup group, GPOption<?> nextOption) {
 //        if (nextOption instanceof BooleanOption) {
 //            return !isCheckboxOption(group, nextOption);
 //        }
         return true;
     }
 
-    public Component createStandaloneOptionPanel(GPOption option) {
+    public Component createStandaloneOptionPanel(GPOption<?> option) {
         JPanel optionPanel = new JPanel(new BorderLayout());
         Component  optionComponent = createOptionComponent(null, option);
         if (needsLabel(null, option)) {
@@ -199,6 +201,7 @@ public class OptionsPageBuilder {
         result.add(placeholder, "placeholder");
         result.add(progressBar, "progressBar");
         controller.addChangeValueListener(new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 if (Boolean.TRUE.equals(event.getNewValue())) {
                     progressBar.setIndeterminate(true);
@@ -212,12 +215,12 @@ public class OptionsPageBuilder {
         });
         return result;
     }
-    private Component createOptionLabel(GPOptionGroup group, GPOption option) {
+    private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
         JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
         //nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
         return nextLabel;
     }
-    public Component createOptionComponent(GPOptionGroup group, GPOption option) {
+    public Component createOptionComponent(GPOptionGroup group, GPOption<?> option) {
         Component result = null;
         if (option instanceof EnumerationOption) {
             result = createEnumerationComponent((EnumerationOption) option, group);
@@ -238,6 +241,7 @@ public class OptionsPageBuilder {
         }
         else if (option instanceof IntegerOption) {
             result = createNumericComponent((IntegerOption)option, new NumericParser<Integer>() {
+                @Override
                 public Integer parse(String text) {
                     return Integer.valueOf(text);
                 }
@@ -245,6 +249,7 @@ public class OptionsPageBuilder {
         }
         else if (option instanceof DoubleOption) {
             result = createNumericComponent((DoubleOption)option, new NumericParser<Double>() {
+                @Override
                 public Double parse(String text) {
                     return Double.valueOf(text);
                 }
@@ -253,6 +258,17 @@ public class OptionsPageBuilder {
         if (result == null) {
             result = new JLabel("Unknown option class=" + option.getClass());
         }
+        result.setEnabled(option.isWritable());
+        final Component finalResult = result;
+        option.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("isWritable".equals(evt.getPropertyName())) {
+                    assert evt.getNewValue() instanceof Boolean : "Unexpected value of property isWritable: " + evt.getNewValue();
+                    finalResult.setEnabled((Boolean)evt.getNewValue());
+                }
+            }
+        });
         return result;
     }
 
@@ -263,6 +279,7 @@ public class OptionsPageBuilder {
     private static void updateTextField(
             final JTextField textField, final DocumentListener listener, final ChangeValueEvent event) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 textField.getDocument().removeDocumentListener(listener);
                 if (!textField.getText().equals(event.getNewValue())) {
@@ -275,21 +292,35 @@ public class OptionsPageBuilder {
 
     private Component createStringComponent(final StringOption option) {
         final JTextField result = new JTextField(option.getValue());
+
         final DocumentListener documentListener = new DocumentListener() {
+            private void saveValue() {
+                try {
+                    option.setValue(result.getText());
+                    result.setBackground(getValidFieldColor());
+                }
+                catch(ValidationException ex) {
+                    result.setBackground(INVALID_FIELD_COLOR);
+                }
+            }
+            @Override
             public void insertUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
-                option.setValue(result.getText());
+                saveValue();
             }
         };
         result.getDocument().addDocumentListener(documentListener);
         option.addChangeValueListener(new ChangeValueListener() {
+            @Override
             public void changeValue(final ChangeValueEvent event) {
                 updateTextField(result, documentListener, event);
             }
@@ -299,6 +330,7 @@ public class OptionsPageBuilder {
 
     private Component createButtonComponent(GPOptionGroup optionGroup) {
         Action action = new AbstractAction(myi18n.getAdvancedActionTitle()) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 System.err.println("[OptionsPageBuilder] createButtonComponent: ");
             }
@@ -321,7 +353,7 @@ public class OptionsPageBuilder {
         return result;
     }
 
-    private boolean isCheckboxOption(GPOptionGroup group, GPOption option) {
+    private boolean isCheckboxOption(GPOptionGroup group, GPOption<?> option) {
         String yesKey = myi18n.getCanonicalOptionLabelKey(option)+".yes";
         if ((group==null || group.getI18Nkey(yesKey)==null) && myi18n.getValue(yesKey)==null) {
             return true;
@@ -335,6 +367,7 @@ public class OptionsPageBuilder {
 
     private Component createRadioButtonBooleanComponent(GPOptionGroup group, final BooleanOption option) {
         final JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!option.isChecked()) {
                     option.toggle();
@@ -347,6 +380,7 @@ public class OptionsPageBuilder {
         yesButton.setSelected(option.isChecked());
 
         final JRadioButton noButton = new JRadioButton(new AbstractAction("") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (option.isChecked()) {
                     option.toggle();
@@ -384,6 +418,7 @@ public class OptionsPageBuilder {
         final EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
         final JComboBox result = new JComboBox(model);
         option.addChangeValueListener(new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 model.onValueChange();
                 result.setSelectedItem(model.getSelectedItem());
@@ -394,16 +429,22 @@ public class OptionsPageBuilder {
 
     private Component createColorComponent(final ColorOption option) {
         final JButton colorButton = new JButton();
+        final JPanel label = new JPanel();
+        label.setPreferredSize(new Dimension(8, 8));
+        label.setBackground(option.getValue());
         Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ActionListener onOkPressing = new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         Color color = ourColorChooser.getColor();
-                        colorButton.setBackground(color);
+                        label.setBackground(color);
                         option.setValue(color);
                     }
                 };
                 ActionListener onCancelPressing = new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         // nothing to do for "Cancel"
                     }
@@ -416,17 +457,23 @@ public class OptionsPageBuilder {
             };
         };
         colorButton.setAction(action);
-        colorButton.setBackground(option.getValue());
-        return colorButton;
+
+        JPanel result = new JPanel(new FlowLayout());
+        result.add(label);
+        result.add(colorButton);
+        return result;
     }
 
     public JComponent createDateComponent(final DateOption option) {
         final JXDatePicker result = new JXDatePicker();
+        result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
         result.setDate(option.getValue());
         class OptionValueUpdater implements ActionListener, PropertyChangeListener {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 option.setValue(((JXDatePicker)e.getSource()).getDate());
             }
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getNewValue() instanceof Date
                         && !evt.getNewValue().equals(option.getValue())) {
@@ -440,6 +487,7 @@ public class OptionsPageBuilder {
 
         if (option instanceof ChangeValueDispatcher) {
             ((ChangeValueDispatcher)option).addChangeValueListener(new ChangeValueListener() {
+                @Override
                 public void changeValue(ChangeValueEvent event) {
                     assert event.getNewValue() instanceof Date : "value=" + event.getNewValue();
                     result.setDate((Date) event.getNewValue());
@@ -477,20 +525,24 @@ public class OptionsPageBuilder {
                     result.setBackground(INVALID_FIELD_COLOR);
                 }
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 saveValue();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 saveValue();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 saveValue();
             }
         };
         result.getDocument().addDocumentListener(listener);
         option.addChangeValueListener(new ChangeValueListener() {
+            @Override
             public void changeValue(final ChangeValueEvent event) {
                 updateTextField(result, listener, event);
             }
@@ -530,7 +582,7 @@ public class OptionsPageBuilder {
             return getValue(group, canonicalKey);
         }
 
-        public String getOptionLabel(GPOptionGroup group, GPOption option) {
+        public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
             String canonicalKey = getCanonicalOptionLabelKey(option);
             return getValue(group, canonicalKey);
         }
@@ -548,7 +600,7 @@ public class OptionsPageBuilder {
         public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
             return myOptionGroupKeyPrefix + group.getID() + ".label";
         }
-        public final String getCanonicalOptionLabelKey(GPOption option) {
+        public final String getCanonicalOptionLabelKey(GPOption<?> option) {
             return myOptionKeyPrefix + option.getID() + ".label";
         }
         public static final String getCanonicalOptionValueLabelKey(String valueID) {

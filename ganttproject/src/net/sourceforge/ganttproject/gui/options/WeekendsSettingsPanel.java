@@ -4,7 +4,7 @@ Copyright (C) 2010-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -39,7 +39,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
     private WeekendConfigurationPage weekendConfigurationPanel;
 
-    private final GPCalendar calendar;
+    private GPCalendar calendar;
 
     public WeekendsSettingsPanel(IGanttProject project) {
         super(language.getCorrectedLabel("weekends"), language
@@ -56,7 +56,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         weekendConfigurationPanel.setActive(false);
         GPCalendar projectCalendar = project.getActiveCalendar();
         boolean hasChange = weekendConfigurationPanel.isChanged();
-        for(int i = 1; i < 8; i++) {
+        for(int i = 1; !hasChange && i < 8; i++) {
             if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
                 hasChange = true;
             }
@@ -70,6 +70,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
             for(Task task : project.getTaskManager().getTasks()) {
                 task.setEnd(null);
             }
+            projectCalendar.setPublicHolidays(calendar.getPublicHolidaysUrl());
             projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
             try {
                 TaskManager taskManager = project.getTaskManager();
@@ -91,11 +92,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
         }
 
         // Make a copy of the WeekDayTypes
-        GPCalendar projectCalendar = project.getActiveCalendar();
-        for(int i = 1; i < 8; i++) {
-            calendar.setWeekDayType(i, projectCalendar.getWeekDayType(i));
-        }
-        calendar.setOnlyShowWeekends(projectCalendar.getOnlyShowWeekends());
+        calendar = project.getActiveCalendar().copy();
         weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, true);
         vb.add(weekendConfigurationPanel.getComponent());
     }

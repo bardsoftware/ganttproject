@@ -4,7 +4,7 @@ Copyright (C) 2003-2010 Alexandre Thomas, Michael Barmeier, Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -25,10 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -105,6 +102,7 @@ public class HumanResourceManager {
     public void remove(HumanResource resource, GPUndoManager myUndoManager) {
         final HumanResource res = resource;
         myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
+            @Override
             public void run() {
                 fireResourcesRemoved(new HumanResource[] { res });
                 resources.remove(res);
@@ -185,7 +183,7 @@ public class HumanResourceManager {
         List<HumanResource> foreignResources = hrManager.getResources();
         for (int i = 0; i < foreignResources.size(); i++) {
             HumanResource foreignHR = foreignResources.get(i);
-            HumanResource nativeHR = getById(foreignHR.getId());
+            HumanResource nativeHR = merger.findNative(foreignHR, this);
             if (nativeHR == null) {
                 nativeHR = create(foreignHR.getName(), nextFreeId);
             }

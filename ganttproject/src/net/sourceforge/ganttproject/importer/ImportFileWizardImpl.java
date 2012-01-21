@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -19,9 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -60,7 +63,12 @@ public class ImportFileWizardImpl extends WizardImpl {
     protected void onOkPressed() {
         super.onOkPressed();
         if ("file".equals(myState.getUrl().getProtocol())) {
-            myState.myImporter.run(new File(myState.getUrl().getPath()));
+            try {
+                String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
+                myState.myImporter.run(new File(path));
+            } catch (UnsupportedEncodingException e) {
+                GPLogger.log(e);
+            }
         }
         else {
             getUIFacade().showErrorDialog(new Exception("You are not supposed to see this. Please report this bug."));

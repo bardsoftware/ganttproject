@@ -4,7 +4,7 @@ Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -107,6 +107,7 @@ public class BaselineDialogAction extends GPAction {
         list.getTableAndActions().addSelectionListener(
                 new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
 
+            @Override
             public void selectionChanged(List<GanttPreviousState> selection) {
                 if (selection.isEmpty()) {
                     myUiFacade.getGanttChart().setBaseline(null);
@@ -122,15 +123,11 @@ public class BaselineDialogAction extends GPAction {
                 list.getTableAndActions().setSelection(-1);
             }
         });
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(list.getTableComponent(), BorderLayout.CENTER);
-        JComponent actionsComponent = list.getActionsComponent();
-        actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
-        result.add(actionsComponent, BorderLayout.NORTH);
-        result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         Action[] actions = new Action[] { new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
+                list.stopEditing();
                 myProject.getBaselines().clear();
                 myProject.getBaselines().addAll(myBaselines);
                 for (GanttPreviousState trashBaseline : myTrash) {
@@ -138,6 +135,6 @@ public class BaselineDialogAction extends GPAction {
                 }
             }
         }, CancelAction.EMPTY };
-        myUiFacade.createDialog(result, actions, getI18n("baseline.dialog.title")).show();
+        myUiFacade.createDialog(list.createDefaultComponent(), actions, getI18n("baseline.dialog.title")).show();
     }
 }

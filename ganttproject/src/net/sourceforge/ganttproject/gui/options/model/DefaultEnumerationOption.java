@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -66,15 +66,28 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
         return myStringValue_ObjectValue.get(value);
     }
 
+    @Override
     public String[] getAvailableValues() {
         return myValues;
     }
 
+    @Override
     public String getPersistentValue() {
         return getValue();
     }
 
+    @Override
     public void loadPersistentValue(String value) {
         setValue(value);
+    }
+
+    public T getSelectedValue() {
+        return stringToObject(getValue());
+    }
+    public void setSelectedValue(T value) {
+        String stringValue = objectToString(value);
+        if (myStringValue_ObjectValue.containsKey(stringValue)) {
+            setValue(stringValue);
+        }
     }
 }

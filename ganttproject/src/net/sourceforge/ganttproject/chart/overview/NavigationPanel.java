@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -30,12 +30,11 @@ import net.sourceforge.ganttproject.action.scroll.ScrollToStartAction;
 import net.sourceforge.ganttproject.action.scroll.ScrollToTodayAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
 
 public class NavigationPanel {
     private final TimelineChart myChart;
     private final IGanttProject myProject;
-    
+
     private final AbstractAction[] myScrollActions;
     private final AbstractAction myScrollBackAction;
     private final AbstractAction myScrollForwardAction;
@@ -46,10 +45,10 @@ public class NavigationPanel {
         myScrollActions = new AbstractAction[] { new ScrollToStartAction(myProject, myChart),
                 new ScrollToTodayAction(myChart), new ScrollToEndAction(myProject, myChart),
                 new ScrollToSelectionAction(uiFacade, myChart) };
-        myScrollBackAction = new ScrollTimeIntervalAction("scroll.back", createTimeInterval(-1), uiFacade
-                .getScrollingManager());
-        myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", createTimeInterval(1), uiFacade
-                .getScrollingManager());
+        myScrollBackAction = new ScrollTimeIntervalAction("scroll.back", -1,
+                myProject.getTaskManager(), chart.getModel(), uiFacade.getScrollingManager());
+        myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", 1,
+                myProject.getTaskManager(), chart.getModel(), uiFacade.getScrollingManager());
     }
 
     public Component getComponent() {
@@ -61,7 +60,4 @@ public class NavigationPanel {
             .build();
     }
 
-    protected TaskLength createTimeInterval(int i) {
-        return myProject.getTaskManager().createLength(myChart.getModel().getBottomUnit(), i);
-    }
 }

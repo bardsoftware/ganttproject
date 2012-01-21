@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -101,12 +101,14 @@ public class CommandLineExportApplication {
         prefs.put("exportRange",
             DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
+        prefs.putBoolean("commandLine", true);
         exporter.setContext(project, consoleUI, prefs);
         if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
             ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());
         }
         try {
             ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
+                @Override
                 public void run(File[] exportedFiles) {
                     System.exit(0);
                 }

@@ -13,6 +13,7 @@ public interface HTMLStylesheet extends Stylesheet {
     }
     String getInputVersion();
     TransformerHandler createTitlePageHandler();
+    @Override
     String getLocalizedName();
     TransformerHandler createTasksPageHandler();
     TransformerHandler createGanttChartPageHandler();

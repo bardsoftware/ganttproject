@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -41,6 +41,7 @@ public class AssignmentDeleteAction extends GPAction {
         myUIFacade = uiFadade;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         final ResourceAssignment[] context = myContext.getResourceAssignments();
         if (context != null && context.length > 0) {
@@ -48,6 +49,7 @@ public class AssignmentDeleteAction extends GPAction {
                     + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
             if (choice == Choice.YES) {
                 myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                    @Override
                     public void run() {
                         deleteAssignments(context);
                         myUIFacade.refresh();

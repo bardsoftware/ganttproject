@@ -18,6 +18,9 @@
       <library name="lib/core/commons-logging.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-net-ftpclient-3.0.1.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/jakarta-slide-webdavlib-2.1.jar">
          <export name="*"/>
       </library>
@@ -84,6 +87,7 @@
       <calendar resource-url="calendar/i18n_pt_brazil.calendar"/>
       <calendar resource-url="calendar/i18n_pt_portugal.calendar"/>
       <calendar resource-url="calendar/i18n_en_canada.calendar"/>
+      <calendar resource-url="calendar/i18n_cn.calendar"/>
       <calendar resource-url="calendar/i18n_es_colombia.calendar"/>
       <calendar resource-url="calendar/i18n_de.calendar"/>
       <calendar resource-url="calendar/i18n_en_england.calendar"/>
@@ -95,10 +99,12 @@
       <calendar resource-url="calendar/i18n_no.calendar"/>
       <calendar resource-url="calendar/i18n_pl.calendar"/>
       <calendar resource-url="calendar/i18n_sk.calendar"/>
+      <calendar resource-url="calendar/i18n_us.calendar"/>
    </extension>
    <extension
          point="net.sourceforge.ganttproject.search">
-      <searchservice class="net.sourceforge.ganttproject.search.SimpleSearchService"/>
+      <searchservice class="net.sourceforge.ganttproject.search.TaskSearchService"/>
+      <searchservice class="net.sourceforge.ganttproject.search.ResourceSearchService"/>
    </extension>
 
 <!--   <extension point="net.sourceforge.ganttproject.chart">

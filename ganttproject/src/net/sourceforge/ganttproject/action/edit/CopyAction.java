@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -19,9 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action on selection changes
 public class CopyAction extends GPAction {
@@ -32,10 +34,23 @@ public class CopyAction extends GPAction {
         myViewmanager = viewManager;
     }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "copy_";
+    private CopyAction(final CopyAction copy, IconSize size) {
+        super("copy", size.asString());
+        myViewmanager = copy.myViewmanager;
+        copy.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                setEnabled(copy.isEnabled());
+            }
+        });
     }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new CopyAction(this, size);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
     }

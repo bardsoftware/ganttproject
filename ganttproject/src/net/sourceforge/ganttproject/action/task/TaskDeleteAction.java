@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -23,6 +23,7 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.task.Task;
@@ -37,9 +38,14 @@ public class TaskDeleteAction extends TaskActionBase {
         super("task.delete", taskManager, selectionManager, uiFacade, tree);
     }
 
+    private TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+            GanttTree2 tree, IconSize size) {
+        super("task.delete", taskManager, selectionManager, uiFacade, tree, size);
+    }
+
     @Override
-    protected String getIconFilePrefix() {
-        return "delete_";
+    public GPAction withIcon(IconSize size) {
+        return new TaskDeleteAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree(), size);
     }
 
     @Override

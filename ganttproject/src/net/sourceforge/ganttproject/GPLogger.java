@@ -4,7 +4,7 @@ Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,9 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -34,10 +39,11 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 
 public class GPLogger {
-    private static Logger ourLogger = Logger.getLogger("org.ganttproject");
+    private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
     private static Handler ourHandler;
     private static UIFacade ourUIFacade;
     private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
+    private static String ourLogFileName;
 
     static {
         ourHandler = new ConsoleHandler();
@@ -47,13 +53,26 @@ public class GPLogger {
     }
 
     public static boolean log(Throwable e) {
+        if (ourUIFacade != null) {
+            ourUIFacade.showErrorDialog(e);
+            return true;
+        }
+        return logToLogger(e);
+    }
+
+    public static boolean logToLogger(String message) {
+        if (ourHandler == null) {
+            return false;
+        }
+        ourLogger.log(Level.WARNING, message);
+        return true;
+    }
+
+    public static boolean logToLogger(Throwable e) {
         if (ourHandler == null) {
             return false;
         }
         ourLogger.log(Level.WARNING, e.getMessage(), e);
-        if (ourUIFacade != null) {
-            ourUIFacade.logErrorMessage(e);
-        }
         return true;
     }
 
@@ -87,6 +106,7 @@ public class GPLogger {
             ourLogger.removeHandler(ourHandler);
             ourLogger.addHandler(fileHandler);
             ourHandler = fileHandler;
+            ourLogFileName = logFileName;
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -97,5 +117,68 @@ public class GPLogger {
     public static void readConfiguration(URL configuration) throws IOException {
         InputStream input = configuration.openStream();
         LogManager.getLogManager().readConfiguration(input);
+    }
+
+    public static String readLog() {
+        if (ourLogFileName != null) {
+            ourHandler.flush();
+            File f = new File(ourLogFileName);
+            try {
+                if (!f.exists()) {
+                    return "Log file not found at " + f.getAbsolutePath() + " Check that you have appropriate access permissions for writing and reading this file";
+                }
+                if (!f.canRead()) {
+                    return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
+                }
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                StringBuilder buffer = new StringBuilder(f.getAbsolutePath());
+                buffer.append("\n\n");
+                for (String s = reader.readLine(); s != null; s = reader.readLine()) {
+                    buffer.append(s).append("\n");
+                }
+                return buffer.toString();
+            } catch (FileNotFoundException e) {
+                log(e);
+                return "Log file not found at " + f.getAbsolutePath() + " Check that you have appropriate access permissions for writing and reading this file";
+            } catch (IOException e) {
+                log(e);
+                return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
+            }
+        }
+        return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
+    }
+
+    private static String[] SYSTEM_PROPERTIES = new String[] {
+        "java.class.path",
+        "java.home",
+        "java.io.tmpdir",
+        "java.runtime.version",
+        "java.vendor",
+        "java.vm.name",
+        "java.vm.vendor",
+        "java.vm.version",
+        "os.arch",
+        "os.name",
+        "os.version",
+        "sun.java.command",
+        "user.country",
+        "user.dir",
+        "user.home",
+        "user.language",
+        "user.timezone"
+    };
+    public static void logSystemInformation() {
+        try {
+            StringBuilder result = new StringBuilder();
+            for (String name : SYSTEM_PROPERTIES) {
+                result.append(name).append(": ").append(System.getProperty(name)).append("\n");
+            }
+
+            System.err.println(result.toString());
+        } catch (AccessControlException e) {
+            // This can happen when running in a sandbox (Java WebStart)
+            System.err.println(e + ": " + e.getMessage());
+        }
+
     }
 }

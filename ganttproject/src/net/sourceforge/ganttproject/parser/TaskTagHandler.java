@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.parser;
 
 import java.awt.Color;
@@ -25,6 +43,7 @@ public class TaskTagHandler implements TagHandler {
         myContext = context;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("task")) {
@@ -33,6 +52,7 @@ public class TaskTagHandler implements TagHandler {
     }
 
     /** Method when finish to parse an attribute */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("task")) {
             myStack.pop();
@@ -100,30 +120,7 @@ public class TaskTagHandler implements TagHandler {
 
         String priority = attrs.getValue("priority");
         if (priority != null) {
-            try {
-                int old_p = Integer.parseInt(priority);
-                // old_p contains old priority values, so convert them
-                Task.Priority p;
-                switch(old_p) {
-                    case 0:
-                        p = Task.Priority.LOW;
-                        break;
-                    case 2:
-                        p = Task.Priority.HIGH;
-                        break;
-                    default:
-                        p = Task.Priority.NORMAL;
-                }
-                task.setPriority(p);
-            } catch (NumberFormatException nfe) {
-                try {
-                    task.setPriority(Task.Priority.valueOf(priority.toUpperCase()));
-                } catch(IllegalArgumentException e) {
-                    throw new RuntimeException("Failed to parse the value '"
-                        + priority + "' of attribute 'priority' of tag <task>",
-                        e);
-                }
-            }
+            task.setPriority(Task.Priority.fromPersistentValue(priority));
         }
 
         String color = attrs.getValue("color");

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.List;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -60,6 +61,7 @@ class FileChooserPage extends FileChooserPageBase {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
 
+    @Override
     public String getTitle() {
         return GanttLanguage.getInstance().getText("selectFileToExport");
     }
@@ -165,7 +167,8 @@ class FileChooserPage extends FileChooserPageBase {
     protected GPOptionGroup[] getOptionGroups() {
         GPOptionGroup[] exporterOptions = null;
         if (myState.getExporter()!=null) {
-            exporterOptions = myState.getExporter().getSecondaryOptions();
+            List<GPOptionGroup> options = myState.getExporter().getSecondaryOptions();
+            exporterOptions = options == null ? null : options.toArray(new GPOptionGroup[0]);
         }
         if (exporterOptions==null) {
             return new GPOptionGroup[] {myWebPublishingGroup};

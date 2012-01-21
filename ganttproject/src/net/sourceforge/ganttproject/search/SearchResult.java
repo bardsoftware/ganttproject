@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,17 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.search;
 
-public class SearchResult {
+public class SearchResult<SearchObjectType> {
     private final String myOrigin;
     private final String mySnippet;
     private final String myLabel;
     private final SearchService mySearchService;
+    private final SearchObjectType mySearchObject;
 
-    public SearchResult(String label, String snippet, String origin, SearchService service) {
+    public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject, SearchService service) {
         myLabel = label;
         mySnippet = snippet;
         myOrigin = origin;
         mySearchService = service;
+        mySearchObject = searchObject;
     }
 
     public String getLabel() {
@@ -41,6 +43,10 @@ public class SearchResult {
 
     public String getOrigin() {
         return myOrigin;
+    }
+
+    public SearchObjectType getObject() {
+        return mySearchObject;
     }
 
     @Override

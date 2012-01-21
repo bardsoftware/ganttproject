@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
@@ -6,8 +24,11 @@ import java.awt.Window;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+
+import net.sourceforge.ganttproject.action.GPAction;
 
 public abstract class UIUtil {
     public static void repackWindow(JComponent component) {
@@ -45,4 +66,13 @@ public abstract class UIUtil {
         component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));
     }
 
+    public static void pushAction(JComponent root, KeyStroke keyStroke, GPAction action) {
+        root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, action.getID());
+        root.getActionMap().put(action.getID(), action);
+        for (Component child : root.getComponents()) {
+            if (child instanceof JComponent) {
+                pushAction((JComponent)child, keyStroke, action);
+            }
+        }
+    }
 }

@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.walker.ForwardTimeWalker;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 import net.sourceforge.ganttproject.task.TaskLength;
@@ -59,6 +58,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
     private AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
+    private URL myCalendarUrl;
+
     public WeekendCalendarImpl() {
         for (int i = 0; i < myTypes.length; i++) {
             myTypes[i] = GPCalendar.DayType.WORKING;
@@ -67,6 +68,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
     }
 
+    @Override
     public List<GPCalendarActivity> getActivities(Date startDate,
             final Date endDate) {
         if (getWeekendDaysCount() == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
@@ -155,6 +157,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return result;
     }
 
+    @Override
     public void setWeekDayType(int day, DayType type) {
         if (type != myTypes[day - 1]) {
             myWeekendDaysCount += (type == DayType.WEEKEND ? 1 : -1);
@@ -162,14 +165,17 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         myTypes[day - 1] = type;
     }
 
+    @Override
     public DayType getWeekDayType(int day) {
         return myTypes[day - 1];
     }
 
+    @Override
     public boolean getOnlyShowWeekends() {
         return myOnlyShowWeekends;
     }
 
+    @Override
     public void setOnlyShowWeekends(boolean onlyShowWeekends) {
         myOnlyShowWeekends = onlyShowWeekends;
     }
@@ -179,6 +185,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return myOnlyShowWeekends ? 0 : myWeekendDaysCount;
     }
 
+    @Override
     public Date findClosestWorkingTime(Date time) {
         if (getWeekendDaysCount() == 0 && myStableHolidays.isEmpty() && publicHolidaysArray.isEmpty()) {
             return time;
@@ -189,15 +196,18 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return findClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
     }
 
+    @Override
     public void setPublicHoliDayType(int month, int date) {
         setPublicHoliDayType(new GanttCalendar(1, month - 1, date).getTime());
         myStableHolidays.add(new GanttCalendar(1, month - 1, date).getTime());
     }
 
+    @Override
     public void setPublicHoliDayType(Date curDayStart) {
         publicHolidaysArray.add(curDayStart);
     }
 
+    @Override
     public boolean isPublicHoliDay(Date curDayStart) {
         boolean result = publicHolidaysArray.contains(curDayStart);
         if (!result) {
@@ -206,6 +216,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return result;
     }
 
+    @Override
     public DayType getDayTypeDate(Date curDayStart) {
         myCalendar.setTime(curDayStart);
         int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
@@ -222,34 +233,54 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
         return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
     }
 
-    public void setPublicHolidays(URL calendar, IGanttProject gp) {
+    @Override
+    public void setPublicHolidays(URL calendarUrl) {
+        myCalendarUrl = calendarUrl;
         clearPublicHolidays();
-        if (calendar != null) {
+        if (calendarUrl != null) {
             XMLCalendarOpen opener = new XMLCalendarOpen();
 
-            HolidayTagHandler dependencyHandler = new HolidayTagHandler(gp);
+            HolidayTagHandler tagHandler = new HolidayTagHandler(this);
 
-            opener.addTagHandler(dependencyHandler);
-            opener.addParsingListener(dependencyHandler);
+            opener.addTagHandler(tagHandler);
+            opener.addParsingListener(tagHandler);
             try {
-                opener.load(calendar.openStream());
+                opener.load(calendarUrl.openStream());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
+    @Override
     public Collection<Date> getPublicHolidays() {
         return Collections.unmodifiableCollection(publicHolidaysArray);
     }
 
+    @Override
     public void clearPublicHolidays() {
         publicHolidaysArray.clear();
     }
 
     @Override
     public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
-        return getActivities(startingFrom, period.getTimeUnit(), period
-                .getLength());
+        return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
+    }
+
+    @Override
+    public GPCalendar copy() {
+        WeekendCalendarImpl result = new WeekendCalendarImpl();
+        for(int i = 1; i < 8; i++) {
+            result.setWeekDayType(i, getWeekDayType(i));
+        }
+        result.setOnlyShowWeekends(getOnlyShowWeekends());
+        result.setPublicHolidays(myCalendarUrl);
+        result.publicHolidaysArray.addAll(publicHolidaysArray);
+        return result;
+    }
+
+    @Override
+    public URL getPublicHolidaysUrl() {
+        return myCalendarUrl;
     }
 }

@@ -4,7 +4,7 @@ Copyright (C) 2003-2011 Alexandre Thomas, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -335,8 +335,6 @@ public class GanttOptions {
             // automatic popup launch
             addAttribute("value", "" + automatic, attrs);
             emptyElement("automatic-launch", attrs, handler);
-            // automaticdrag time on the chart
-            emptyElement("dragTime", attrs, handler);
             // automatic tips of the day launch
             // Should WebDAV resources be locked, when opening them?
             addAttribute("value", "" + lockDAVMinutes, attrs);
@@ -769,7 +767,10 @@ public class GanttOptions {
         @Override
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
-            if ("cofiguration".equals(name)) {
+            if (myPluginOptionsHandler != null) {
+                myPluginOptionsHandler.endElement(uri, localName, name);
+            }
+            if ("configuration".equals(name) || "instance".equals(name)) {
                 myPluginOptionsHandler = null;
             }
         }

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.project;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 
 /**
  * Collection of actions present in the project menu
@@ -30,26 +31,29 @@ public class ProjectMenu extends JMenu {
     private final NewProjectAction myNewProjectAction;
     private final SaveProjectAction mySaveProjectAction;
     private final PrintAction myPrintAction;
+    private OpenProjectAction myOpenProjectAction;
 
-    public ProjectMenu(final GanttProject project, JMenu mru) {
-        super();
+    public ProjectMenu(final GanttProject project, JMenu mru, String key) {
+        super(GPAction.createVoidAction(key));
         myNewProjectAction = new NewProjectAction(project);
         mySaveProjectAction = new SaveProjectAction(project);
         myPrintAction = new PrintAction(project);
 
         ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
-        OpenProjectAction openProjectAction = new OpenProjectAction(project);
+        myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());
         SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
-        OpenURLAction openURLAction = new OpenURLAction(project);
-        SaveURLAction saveURLAction = new SaveURLAction(project);
+        OpenURLAction openURLAction = new OpenURLAction(
+                project.getProject(), project.getUIFacade(), project.getProjectUIFacade());
+        SaveURLAction saveURLAction = new SaveURLAction(
+                project.getProject(), project.getUIFacade(), project.getProjectUIFacade());
         ExitAction exitAction = new ExitAction(project);
         ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
         ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project, project
                 .getGanttOptions());
-        
+
         add(projectSettingsAction);
         add(myNewProjectAction);
-        add(openProjectAction);
+        add(myOpenProjectAction);
         add(mru);
 
         addSeparator();
@@ -61,7 +65,7 @@ public class ProjectMenu extends JMenu {
         add(projectExportAction);
         addSeparator();
 
-        JMenu mServer = project.createNewMenu("webServer", "/icons/server_16.gif");
+        JMenu mServer = new JMenu(GPAction.createVoidAction("webServer"));
         mServer.add(openURLAction);
         mServer.add(saveURLAction);
         add(mServer);
@@ -77,12 +81,16 @@ public class ProjectMenu extends JMenu {
         return myNewProjectAction;
     }
 
-    public AbstractAction getSaveProjectAction() {
+    public GPAction getSaveProjectAction() {
         return mySaveProjectAction;
     }
 
     public AbstractAction getPrintAction() {
         return myPrintAction;
+    }
+
+    public OpenProjectAction getOpenProjectAction() {
+        return myOpenProjectAction;
     }
 
 }

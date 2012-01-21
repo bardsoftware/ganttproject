@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -83,42 +83,52 @@ class ProxyDocument implements Document {
         myVisibleFields = visibleFields;
     }
 
+    @Override
     public String getFileName() {
         return myPhysicalDocument.getFileName();
     }
 
+    @Override
     public boolean canRead() {
         return myPhysicalDocument.canRead();
     }
 
+    @Override
     public IStatus canWrite() {
         return myPhysicalDocument.canWrite();
     }
 
+    @Override
     public boolean isValidForMRU() {
         return myPhysicalDocument.isValidForMRU();
     }
 
+    @Override
     public boolean acquireLock() {
         return myPhysicalDocument.acquireLock();
     }
 
+    @Override
     public void releaseLock() {
         myPhysicalDocument.releaseLock();
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return myPhysicalDocument.getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return myPhysicalDocument.getOutputStream();
     }
 
+    @Override
     public String getPath() {
         return myPhysicalDocument.getPath();
     }
 
+    @Override
     public String getFilePath() {
         String result = myPhysicalDocument.getFilePath();
         if (result==null) {
@@ -131,22 +141,22 @@ class ProxyDocument implements Document {
         return result;
     }
 
-    public String getURLPath() {
-        return myPhysicalDocument.getURLPath();
-    }
-
+    @Override
     public String getUsername() {
         return myPhysicalDocument.getUsername();
     }
 
+    @Override
     public String getPassword() {
         return myPhysicalDocument.getPassword();
     }
 
+    @Override
     public String getLastError() {
         return myPhysicalDocument.getLastError();
     }
 
+    @Override
     public void read() throws IOException, DocumentException {
         FailureState failure = new FailureState();
         SuccessState success = new SuccessState();
@@ -164,6 +174,7 @@ class ProxyDocument implements Document {
         //lock.enter();
     }
 
+    @Override
     public void write() throws IOException {
         GPSaver saver = myParserFactory.newSaver();
         byte[] buffer;
@@ -207,48 +218,48 @@ class ProxyDocument implements Document {
         return myUIFacade;
     }
 
-    class AcquireLockState {
-        OpenCopyConfirmationState myConfirmationState;
-
-        ParsingState myParsingState;
-
-        public AcquireLockState(ParsingState parsing,
-                OpenCopyConfirmationState confirmation) {
-            myParsingState = parsing;
-            myConfirmationState = confirmation;
-        }
-
-        void enter() throws IOException, DocumentException {
-            boolean locked = acquireLock();
-            if (!locked) {
-                myConfirmationState.enter();
-            } else {
-                myParsingState.enter();
-            }
-        }
-    }
-
-    class OpenCopyConfirmationState {
-        private final ParsingState myParsingState;
-
-        private final FailureState myExitState;
-
-        public OpenCopyConfirmationState(ParsingState parsing,
-                FailureState failure) {
-            myParsingState = parsing;
-            myExitState = failure;
-        }
-
-        void enter() throws IOException, DocumentException {
-            String message = GanttLanguage.getInstance().getText("msg13");
-            String title = GanttLanguage.getInstance().getText("warning");
-            if (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(message, title)) {
-                myParsingState.enter();
-            } else {
-                myExitState.enter();
-            }
-        }
-    }
+//    class AcquireLockState {
+//        OpenCopyConfirmationState myConfirmationState;
+//
+//        ParsingState myParsingState;
+//
+//        public AcquireLockState(ParsingState parsing,
+//                OpenCopyConfirmationState confirmation) {
+//            myParsingState = parsing;
+//            myConfirmationState = confirmation;
+//        }
+//
+//        void enter() throws IOException, DocumentException {
+//            boolean locked = acquireLock();
+//            if (!locked) {
+//                myConfirmationState.enter();
+//            } else {
+//                myParsingState.enter();
+//            }
+//        }
+//    }
+//
+//    class OpenCopyConfirmationState {
+//        private final ParsingState myParsingState;
+//
+//        private final FailureState myExitState;
+//
+//        public OpenCopyConfirmationState(ParsingState parsing,
+//                FailureState failure) {
+//            myParsingState = parsing;
+//            myExitState = failure;
+//        }
+//
+//        void enter() throws IOException, DocumentException {
+//            String message = GanttLanguage.getInstance().getText("msg13");
+//            String title = GanttLanguage.getInstance().getText("warning");
+//            if (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(message, title)) {
+//                myParsingState.enter();
+//            } else {
+//                myExitState.enter();
+//            }
+//        }
+//    }
 
     class ParsingState {
         private final FailureState myFailureState;
@@ -287,7 +298,7 @@ class ProxyDocument implements Document {
             TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
             opener.addTagHandler(taskPropHandler);
             CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(
-                    opener.getContext(), getTaskManager(), myProject.getCustomColumnsStorage());
+                    opener.getContext(), getTaskManager());
             opener.addTagHandler(customPropHandler);
             TaskDisplayColumnsTagHandler taskDisplayHandler =
                 new TaskDisplayColumnsTagHandler(myVisibleFields);
@@ -318,7 +329,7 @@ class ProxyDocument implements Document {
             opener.addParsingListener(dependencyHandler);
             opener.addParsingListener(resourceHandler);
 
-            HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject);
+            HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());
             opener.addTagHandler(holidayHandler);
             opener.addParsingListener(holidayHandler);
 
@@ -350,10 +361,12 @@ class ProxyDocument implements Document {
         }
     }
 
+    @Override
     public URI getURI() {
         return myPhysicalDocument.getURI();
     }
 
+    @Override
     public boolean isLocal() {
         return myPhysicalDocument.isLocal();
     }
@@ -366,6 +379,7 @@ class ProxyDocument implements Document {
         return getPath().equals(((Document)doc).getPath());
     }
 
+    @Override
     public Portfolio getPortfolio() {
         return myPortfolio;
     }
@@ -380,6 +394,7 @@ class ProxyDocument implements Document {
     private class PortfolioImpl implements Portfolio {
         private Document myDefaultDocument;
 
+        @Override
         public Document getDefaultDocument() {
             return myDefaultDocument;
         }
@@ -397,6 +412,7 @@ class ProxyDocument implements Document {
         private static final String PROJECT_TAG = "project";
         private static final String LOCATION_ATTR = "location";
         private boolean isReadingPortfolio = false;
+        @Override
         public void startElement(String namespaceURI, String sName, String qName,
                 Attributes attrs) throws FileFormatException {
             if (PORTFOLIO_TAG.equals(qName)) {
@@ -413,6 +429,7 @@ class ProxyDocument implements Document {
             }
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
             if (PORTFOLIO_TAG.equals(qName)) {
                 isReadingPortfolio = false;
@@ -428,12 +445,14 @@ class ProxyDocument implements Document {
             this.calendar = calendar;
         }
 
+        @Override
         public void startElement(String namespaceURI, String sName,
                 String qName, Attributes attrs) {
             if ("only-show-weekends".equals(qName))
                 calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
         }
 
+        @Override
         public void endElement(String namespaceURI, String sName, String qName) {
         }
     }

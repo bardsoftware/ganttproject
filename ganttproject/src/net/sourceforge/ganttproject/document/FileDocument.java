@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -44,14 +44,17 @@ public class FileDocument extends AbstractDocument {
         this.file = file;
     }
 
+    @Override
     public String getFileName() {
         return file.getName();
     }
 
+    @Override
     public boolean canRead() {
         return file.canRead();
     }
 
+    @Override
     public IStatus canWrite() {
         return (file.exists()) ? canOverwrite() : canCreate(file);
     }
@@ -97,15 +100,18 @@ public class FileDocument extends AbstractDocument {
         return canCreate(parentFile);
     }
 
+    @Override
     public boolean isValidForMRU() {
         return file.exists();
     }
 
+    @Override
     public InputStream getInputStream() throws FileNotFoundException {
         myLastAccessTimestamp = System.currentTimeMillis();
         return new FileInputStream(file);
     }
 
+    @Override
     public OutputStream getOutputStream() throws FileNotFoundException {
         return new FileOutputStream(file) {
             @Override
@@ -116,6 +122,7 @@ public class FileDocument extends AbstractDocument {
         };
     }
 
+    @Override
     public String getPath() {
         return file.getPath();
     }
@@ -129,14 +136,17 @@ public class FileDocument extends AbstractDocument {
         // Method is not used
     }
 
+    @Override
     public void write() throws IOException {
         // Method is not used
     }
 
+    @Override
     public URI getURI() {
         return file.toURI();
     }
 
+    @Override
     public boolean isLocal() {
         return true;
     }

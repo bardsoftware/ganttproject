@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -212,6 +212,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         addEmptyRow(propertiesPanel);
         propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
         myStartDatePicker = createDatePicker(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setStart(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
             }
@@ -220,6 +221,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
         myEndDatePicker = createDatePicker(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 GanttCalendar c = new GanttCalendar(((JXDatePicker)e.getSource()).getDate());
                 c.add(Calendar.DATE, 1);
@@ -232,10 +234,12 @@ public class GanttTaskPropertiesBean extends JPanel {
         durationField1 = new JTextField(8);
         durationField1.setName("length");
         durationField1.addFocusListener(new FocusListener() {
-                       public void focusLost(FocusEvent e) {
+                       @Override
+                    public void focusLost(FocusEvent e) {
                                fireDurationChanged();
                        }
-                       public void focusGained(FocusEvent e) {}
+                       @Override
+                    public void focusGained(FocusEvent e) {}
                });
         propertiesPanel.add(durationField1);
 
@@ -245,6 +249,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         thirdDateComboBox.addItem(language.getText("earliestBegin"));
         thirdDateComboBox.setName("third");
         thirdDateComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 switch (thirdDateComboBox.getSelectedIndex()) {
                 case TaskImpl.EARLIESTBEGIN:
@@ -258,6 +263,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         });
         extraConstraintBox.add(thirdDateComboBox);
         myThirdDatePicker = createDatePicker(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setThird(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
             }
@@ -293,11 +299,13 @@ public class GanttTaskPropertiesBean extends JPanel {
         colorButton.setBackground(selectedTasks[0].getColor());
         final String colorChooserTitle = language.getText("selectColor");
         colorButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog = JColorChooser.createDialog(
                         GanttTaskPropertiesBean.this, colorChooserTitle,
                         true, colorChooser,
                         new ActionListener() {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 colorButton.setBackground(colorChooser.getColor());
                                 isColorChanged = true;
@@ -315,6 +323,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         defaultColorButton.setToolTipText(GanttProject.getToolTip(language
                 .getText("resetColor")));
         defaultColorButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
                 isColorChanged = true;
@@ -336,6 +345,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         weblinkBox.add(bWebLink);
 
         bWebLink.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // link to open the web link
                 if (!BrowserControl.displayURL(tfWebLink.getText())) {
@@ -374,7 +384,11 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
 
     private void constructCustomColumnPanel() {
-        myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myUIfacade);
+        myCustomColumnPanel = new CustomColumnsPanel(
+                myProject.getTaskCustomColumnManager(),
+                myUIfacade,
+                selectedTasks[0].getCustomValues(),
+                myUIfacade.getTaskTree().getVisibleFields());
     }
 
     /** Construct the predecessors tabbed pane */
@@ -428,6 +442,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         tabbedPane = new JTabbedPane();
         tabbedPane.getModel().addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 changeNameOfTask();
                 fireDurationChanged();
@@ -455,7 +470,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         constructCustomColumnPanel();
         tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(
                 getClass().getResource("/icons/custom.gif")),
-                myCustomColumnPanel);
+                myCustomColumnPanel.geComponent());
         tabbedPane.addFocusListener(new FocusAdapter() {
             private boolean isFirstFocusGain = true;
             @Override
@@ -771,6 +786,7 @@ public class GanttTaskPropertiesBean extends JPanel {
             result = Pair.create(language.getText("projectTask"), projectTaskCheckBox1);
         } else if (canBeMilestone) {
             mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent arg0) {
                     enableMilestoneUnfriendlyControls(!isMilestone());
                 }

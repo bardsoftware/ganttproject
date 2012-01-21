@@ -1,19 +1,20 @@
-/* LICENSE: GPL2
-Copyright (C) 2010-2011 Dmitry Barashev
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
@@ -24,17 +25,27 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.swing.JLabel;
+
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**
@@ -58,6 +69,8 @@ public class StyledPainterImpl implements Painter {
 
     /** List Y coordinates used to draw polygons */
     private int[] myYPoints = new int[4];
+
+    private Properties myProperties;
 
     /** Default stroke used for the primitives */
     private final static BasicStroke defaultStroke = new BasicStroke();
@@ -108,6 +121,9 @@ public class StyledPainterImpl implements Painter {
         myStyle2painter.put("load.underload.last", myResourceLoadPainter);
         myStyle2painter.put("load.underload.first.last", myResourceLoadPainter);
         myStyle2painter.put("previousStateTask", myPreviousStateTaskRectanglePainter);
+
+        myProperties = new Properties();
+        PropertiesUtil.loadProperties(myProperties, "/chart.properties");
     }
 
     public void setGraphics(Graphics g) {
@@ -115,11 +131,13 @@ public class StyledPainterImpl implements Painter {
         myTextLengthCalculator.setGraphics(myGraphics);
     }
 
+    @Override
     public void prePaint() {
         myGraphics.setStroke(defaultStroke);
         myGraphics.setFont(myConfig.getChartFont());
     }
 
+    @Override
     public void paint(GraphicPrimitiveContainer.Rectangle next) {
         assert myGraphics != null;
         RectanglePainter painter = myStyle2painter.get(next.getStyle());
@@ -150,6 +168,7 @@ public class StyledPainterImpl implements Painter {
     }
 
     private final RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
             myGraphics.setColor(c);
@@ -158,6 +177,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private class TaskRectanglePainter implements RectanglePainter {
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Object modelObject = next.getModelObject();
             if (modelObject instanceof TaskActivity == false) {
@@ -226,6 +246,7 @@ public class StyledPainterImpl implements Painter {
         float myAlphaValue = 0;
         Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
 
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
                 myAlphaValue = myConfig.getWeekendAlphaValue();
@@ -250,6 +271,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = next.getBackgroundColor();
             if (c == null) {
@@ -271,6 +293,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             myXPoints[0] = next.myLeftX;
@@ -285,6 +308,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             int rightx = next.getRightX();
@@ -300,6 +324,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Color c = getDefaultColor();
             if (myConfig.isCriticalPathOn()
@@ -318,6 +343,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myProjectTaskStartPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             myXPoints[0] = next.myLeftX;
@@ -332,6 +358,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myProjectTaskEndPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int bottomy = next.getBottomY() - 3;
             int rightx = next.getRightX();
@@ -347,6 +374,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myMilestonePainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Object modelObject = next.getModelObject();
             if (modelObject instanceof TaskActivity == false) {
@@ -377,6 +405,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowDownPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -390,6 +419,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowUpPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -403,6 +433,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowLeftPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             Graphics g = myGraphics;
             g.setColor(Color.BLACK);
@@ -417,6 +448,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myArrowRightPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             myXPoints[0] = next.myLeftX;
             myXPoints[1] = next.getRightX();
@@ -430,6 +462,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myDayOffPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             int margin = StyledPainterImpl.this.margin - 3;
             Color c = myConfig.getDayOffColor();
@@ -450,6 +483,7 @@ public class StyledPainterImpl implements Painter {
     };
 
     private final RectanglePainter myResourceLoadPainter = new RectanglePainter() {
+        @Override
         public void paint(Rectangle next) {
             String style = next.getStyle();
             Color c;
@@ -501,6 +535,7 @@ public class StyledPainterImpl implements Painter {
         private int[] myXPoints = new int[4];
         private int[] myYPoints = new int[4];
 
+        @Override
         public void paint(GraphicPrimitiveContainer.Rectangle next) {
             Graphics g = myGraphics;
             final Color c;
@@ -558,12 +593,14 @@ public class StyledPainterImpl implements Painter {
             myColor = color;
         }
 
+        @Override
         public void paint(Rectangle next) {
             myGraphics.setColor(myColor);
             myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
         }
     }
 
+    @Override
     public void paint(Line line) {
         Color foreColor = line.getForegroundColor();
         if (foreColor == null) {
@@ -582,6 +619,7 @@ public class StyledPainterImpl implements Painter {
         }
     }
 
+    @Override
     public void paint(Text next) {
         Font graphicFont = null;
         Color foreColor = next.getForegroundColor();
@@ -595,52 +633,85 @@ public class StyledPainterImpl implements Painter {
             myGraphics.setFont(next.getFont());
         }
 
-        String nextTextString = next.getText();
-
-        int requestedMaxLength = next.getMaxLength();
-        if (next.getModelObject() != null) {
-            // TODO Maybe add this functionality to GraphicsPrimitiveContainer.Text?? (And make it more safe, as modelObject could be something else than TimeUnitText...)
-            // Get TimeUnit text
-            TimeUnitText nextText = (TimeUnitText) next.getModelObject();
-            nextTextString = nextText.getText(requestedMaxLength,
-                    myTextLengthCalculator);
+        Label[] labels = next.getLabels(myTextLengthCalculator);
+        if (labels.length == 0) {
+            return;
         }
-
-        int actualLength = myTextLengthCalculator.getTextLength(nextTextString);
-        if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
-            return; // Text is too large
-        }
+//        int actualLength = myTextLengthCalculator.getTextLength(nextTextString);
+//        if (requestedMaxLength >= 0 && actualLength > requestedMaxLength) {
+//            return; // Text is too large
+//        }
         //FIXME This check if not 100% working (when scrolling to the right the text seems to disappear too soon...)
-        if (next.getLeftX() + actualLength < 0) {
-            return; // Text is not visible: too far to the left for current view
+//        if (next.getLeftX() + actualLength < 0) {
+//            return; // Text is not visible: too far to the left for current view
+//        }
+        Label label = labels[0];
+        if (label == null) {
+            return;
         }
-
-        int xleft, ybottom;
-        switch (next.getHAlignment()) {
-        case CENTER:
-            xleft = next.getLeftX() - actualLength / 2;
-            break;
-        case RIGHT:
-            xleft = next.getLeftX() - actualLength;
-            break;
-        default:
-            xleft = next.getLeftX();
-        }
-        switch (next.getVAlignment()) {
-        case CENTER:
-            ybottom = next.getBottomY() + myGraphics.getFont().getSize() / 2;
-            break;
-        case TOP:
-            ybottom = next.getBottomY() + myGraphics.getFont().getSize();
-            break;
-        default:
-            ybottom = next.getBottomY();
-        }
-
-        myGraphics.drawString(nextTextString, xleft, ybottom);
+        paint(next.getLeftX(), next.getBottomY(), next.getHAlignment(), next.getVAlignment(), label);
         if (graphicFont != null) {
             // Set Font back to original font
             myGraphics.setFont(graphicFont);
         }
+    }
+
+    private void paint(int xleft, int ybottom, HAlignment alignHor, VAlignment alignVer, Label label) {
+        switch (alignHor) {
+        case CENTER:
+            xleft = xleft - label.lengthPx / 2;
+            break;
+        case RIGHT:
+            xleft = xleft - label.lengthPx;
+            break;
+        }
+        switch (alignVer) {
+        case CENTER:
+            ybottom = ybottom + myGraphics.getFont().getSize() / 2;
+            break;
+        case TOP:
+            ybottom = ybottom + myGraphics.getFont().getSize();
+            break;
+        }
+        myGraphics.drawString(label.text, xleft, ybottom);
+    }
+
+    @Override
+    public void paint(TextGroup textGroup) {
+        TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl((Graphics2D)myGraphics.create());
+        FontChooser fontChooser = new FontChooser(myProperties, calculator);
+        textGroup.setFonts(fontChooser);
+        for (int i = 0; i < textGroup.getLineCount(); i++) {
+            paintTextLine(textGroup, i);
+        }
+    }
+
+    private void paintTextLine(TextGroup textGroup, int lineNum) {
+        List<Text> line = textGroup.getLine(lineNum);
+        Font savedFont = myGraphics.getFont();
+        Color savedColor = myGraphics.getColor();
+
+        myGraphics.setFont(textGroup.getFont(lineNum));
+        myGraphics.setColor(textGroup.getColor(lineNum));
+
+        List<Label[]> labelList = new ArrayList<Label[]>();
+        int maxIndex = Integer.MAX_VALUE;
+        for (Text t : line) {
+            Label[] labels = t.getLabels(myTextLengthCalculator);
+            maxIndex = Math.min(maxIndex, labels.length);
+            if (maxIndex == 0) {
+                return;
+            }
+            labelList.add(labels);
+        }
+
+        for (int i = 0; i < labelList.size(); i++) {
+            Label longest = labelList.get(i)[maxIndex - 1];
+            Text t = line.get(i);
+            paint(textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), t.getHAlignment(), t.getVAlignment(), longest);
+        }
+
+        myGraphics.setFont(savedFont);
+        myGraphics.setColor(savedColor);
     }
 }

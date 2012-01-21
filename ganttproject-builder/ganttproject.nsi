@@ -4,17 +4,12 @@
 
 Name "GanttProject"
 XPStyle on
-Icon "ganttproject_16.ico"
+Icon "ganttproject_32_2.ico"
 
-!define VERSION "praha-beta1"
-!define VM_ARGS "-Xmx512m -Xms16m"
+!define MUI_ICON "ganttproject_32_2.ico"
+!define VERSION "praha-beta5-r888"
 
-!ifdef VERSION
 OutFile ganttproject-${VERSION}.exe
-!else
-OutFile installer-ganttproject.exe
-!endif
-
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\GanttProjectPraha
@@ -51,6 +46,7 @@ InstallDir $PROGRAMFILES\GanttProjectPraha
 !insertmacro MUI_LANGUAGE "Slovenian"
 !insertmacro MUI_LANGUAGE "Croatian"
 !insertmacro MUI_LANGUAGE "Portuguese"
+!insertmacro MUI_LANGUAGE "Catalan"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -126,9 +122,9 @@ Section "Start Menu Shortcuts"
 
   CreateDirectory "$SMPROGRAMS\GanttProject"
   CreateShortCut "$SMPROGRAMS\GanttProject\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_16.ico"
-  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_16.ico"
-  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_16.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
   CreateShortCut "$DESKTOP\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
 
 SectionEnd
@@ -170,14 +166,6 @@ Section "Uninstall"
   DeleteRegKey HKCR ".gan\shell\open\command"
 
   ; Remove files and uninstaller
-  ; Delete $INSTDIR\uninstall.exe
-
-  ; Delete $INSTDIR\eclipsito.jar
-  ; Delete $INSTDIR\ganttproject.bat
-  ; Delete $INSTDIR\ganttproject-eclipsito-config.xml
-  ; Delete $INSTDIR\ganttproject_16.ico
-  ; Delete $INSTDIR\ganttproject_32_2.ico
-  RMDir /r "$INSTDIR\plugins"  
   RMDir /r "$INSTDIR"
 
 

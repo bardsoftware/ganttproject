@@ -22,7 +22,7 @@
       <library name="lib/ganttproject-batik.jar">
          <export name="*"/>
       </library>
-      <library name="lib/itext.jar">
+      <library name="lib/itextpdf-5.1.3.jar">
          <export name="*"/>
       </library>
       <library name="resource/">
@@ -35,13 +35,12 @@
    </requires>
    <extension-point id="HTMLStylesheet" name="HTML Stylesheet"/>
    <extension-point id="PDFStylesheet" name="PDF Stylesheet"/>
-   <extension-point id="ITextStylesheet" name="IText Stylesheet"/>
+   <extension-point id="itext.ITextStylesheet" name="IText Stylesheet"/>
    <extension-point id="FontDirectory" name="Font Directory"/>
    <extension
          point="net.sourceforge.ganttproject.exporter">
          <exporter class="org.ganttproject.impex.htmlpdf.ExporterToHTML"/>
          <exporter class="org.ganttproject.impex.htmlpdf.ExporterToPDF"/>
-         <exporter class="org.ganttproject.impex.htmlpdf.ExporterToIText"/>
    </extension>
    <extension point="org.ganttproject.impex.htmlpdf.HTMLStylesheet">
        <theme name="Samara" url="html-export-themes/samara/"/>
@@ -49,12 +48,12 @@
        <theme name="Striped Blue" url="html-export-themes/striped_blue/"/>
    </extension>
    <extension point="org.ganttproject.impex.htmlpdf.PDFStylesheet">
-       <theme name="Default theme" url="pdf-export-themes/ganttproject.xsl"/>
-       <theme name="Samara" url="pdf-export-themes/samara/samara-portrait.xsl"/>
        <theme name="Samara Landscape" url="pdf-export-themes/samara/samara-landscape.xsl"/>
-       <theme name="Landscape theme" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
+       <theme name="Samara" url="pdf-export-themes/samara/samara-portrait.xsl"/>
+       <theme name="Legacy" url="pdf-export-themes/ganttproject.xsl"/>
+       <theme name="Legacy Landscape" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
    </extension>
-   <extension point="org.ganttproject.impex.htmlpdf.ITextStylesheet">
+   <extension point="org.ganttproject.impex.htmlpdf.itext.ITextStylesheet">
        <theme name="Sortavala" url="itext-export-themes/sortavala.txt"/>
    </extension>
    <extension point="org.ganttproject.impex.htmlpdf.FontDirectory">

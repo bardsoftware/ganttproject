@@ -1,20 +1,18 @@
 /*
- * This code is provided under the terms of GPL version 2.
+ * This code is provided under the terms of GPL version 3.
  * Please see LICENSE file for details
  * (C) Dmitry Barashev, GanttProject team, 2004-2008
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders chart timeline.
@@ -22,39 +20,24 @@ import net.sourceforge.ganttproject.time.TimeUnitText;
 class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
 
     private GraphicPrimitiveContainer myPrimitiveContainer;
-    private final BooleanOption myRedlineOption;
-    private final BooleanOption myProjectDatesOption;
-    private GPOptionGroup myOptions;
     private GraphicPrimitiveContainer myTimelineContainer;
+    private GraphicPrimitiveContainer myBackgroundContainer;
 
-    ChartHeaderImpl(ChartModel model, final UIConfiguration projectConfig) {
+    ChartHeaderImpl(ChartModelBase model) {
         super(model);
-        myRedlineOption = projectConfig.getRedlineOption();
-        myProjectDatesOption= projectConfig.getProjectBoundariesOption();
-        myOptions = new ChartOptionGroup(
-                "ganttChartGridDetails",
-                new GPOption[] {myRedlineOption, myProjectDatesOption, projectConfig.getWeekendAlphaRenderingOption()},
-                model.getOptionEventDispatcher());
-        myPrimitiveContainer = new GraphicPrimitiveContainer();
-    }
-    GPOptionGroup getOptions() {
-        return myOptions;
-    }
-
-    @Override
-    public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myPrimitiveContainer;
-    }
-
-    public void beforeProcessingTimeFrames() {
-        myPrimitiveContainer = new GraphicPrimitiveContainer(0, 0);
+        myPrimitiveContainer = getPrimitiveContainer();
+        myBackgroundContainer = myPrimitiveContainer.newLayer();
         myPrimitiveContainer.newLayer();
         myPrimitiveContainer.newLayer();
         myTimelineContainer = myPrimitiveContainer.newLayer();
+    }
+
+    public void beforeProcessingTimeFrames() {
+        myPrimitiveContainer.clear();
         createGreyRectangleWithNiceBorders();
     }
 
-    private GraphicPrimitiveContainer getTimelineContainer() {
+    public GraphicPrimitiveContainer getTimelineContainer() {
         return myTimelineContainer;
     }
     /** Draws the timeline box
@@ -64,7 +47,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final int spanningHeaderHeight = getChartModel().getChartUIConfiguration()
                 .getSpanningHeaderHeight();
         final int headerHeight =  getChartModel().getChartUIConfiguration().getHeaderHeight();
-        GraphicPrimitiveContainer container = getPrimitiveContainer().getLayer(0);
+        GraphicPrimitiveContainer container = myTimelineContainer;
         GraphicPrimitiveContainer.Rectangle headerRectangle = container
                 .createRectangle(0, 0, sizex, headerHeight);
         headerRectangle.setBackgroundColor(getChartModel()
@@ -108,15 +91,20 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             curX = 0;
         }
         final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+        TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.top");
         for (Offset nextOffset : topOffsets) {
             if (curX >= 0) {
-                TimeUnitText timeUnitText = nextOffset.getOffsetUnit().format(curDate);
-                String unitText = timeUnitText.getText(-1);
-                int posY = topUnitHeight - 5;
-                GraphicPrimitiveContainer.Text text = getTimelineContainer().createText(curX + 5, posY, unitText);
-                getTimelineContainer().bind(text, timeUnitText);
-                text.setMaxLength(nextOffset.getOffsetPixels() - curX -5 );
-                text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
+                TimeUnitText[] texts = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE)
+                        .format(nextOffset.getOffsetUnit(), curDate);
+                final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
+                final TimeUnitText timeUnitText = texts[0];
+                GraphicPrimitiveContainer.Text text = new GraphicPrimitiveContainer.Text(curX + 5, 0, new TextSelector() {
+                    @Override
+                    public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+                        return timeUnitText.getLabels(maxWidth, textLengthCalculator);
+                    }
+                });
+                textGroup.addText(text);
                 getTimelineContainer().createLine(curX, topUnitHeight-10, curX, topUnitHeight);
             }
             curX = nextOffset.getOffsetPixels();
@@ -124,40 +112,12 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         }
     }
 
-    private void renderLine(Date date, Color color, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
-        final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-        OffsetLookup lookup = new OffsetLookup();
-        int todayOffsetIdx = lookup.lookupOffsetBy(date, getChartModel().getDefaultUnitOffsets(), dateComparator);
-        if (todayOffsetIdx < 0) {
-            todayOffsetIdx = -todayOffsetIdx - 1;
-        }
-        Offset yesterdayOffset = todayOffsetIdx == 0 ? null : getChartModel().getDefaultUnitOffsets().get(todayOffsetIdx - 1);
-        if (yesterdayOffset == null) {
-            return;
-        }
-        int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
-        Line line = getPrimitiveContainer().createLine(
-            yesterdayEndPixel + marginPx, topUnitHeight*2,
-            yesterdayEndPixel + marginPx, getHeight()+topUnitHeight*2);
-        line.setForegroundColor(color);
-
-    }
     /** Draws cells of the bottom line in the time line
      */
     private void renderBottomUnits() {
         BottomUnitLineRendererImpl bottomUnitLineRenderer =
-            new BottomUnitLineRendererImpl(getChartModel(), getPrimitiveContainer().getLayer(1), getPrimitiveContainer());
+            new BottomUnitLineRendererImpl(getChartModel(), myTimelineContainer, getPrimitiveContainer());
         bottomUnitLineRenderer.setHeight(getHeight());
         bottomUnitLineRenderer.render();
-        if (myRedlineOption.isChecked()) {
-            renderLine(new Date(), Color.RED, 2, OffsetLookup.BY_END_DATE);
-        }
-        if (isProjectBoundariesOptionOn()) {
-            renderLine(getChartModel().getTaskManager().getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
-            renderLine(getChartModel().getTaskManager().getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
-        }
    }
-    private boolean isProjectBoundariesOptionOn() {
-        return myProjectDatesOption.isChecked();
-    }
 }

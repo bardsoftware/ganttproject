@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,6 +21,9 @@ package biz.ganttproject.impex.msproject2;
 import java.awt.Component;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.osgi.service.prefs.Preferences;
 
 import net.sf.mpxj.ProjectFile;
@@ -75,27 +78,33 @@ public class ExporterToMsProjectFile implements Exporter {
         myFileFormatOption.commit();
     }
 
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.msproject.description");
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         return myOptions;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
-        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? new GPOptionGroup[] {myMPXOptions} : null;
+    @Override
+    public List<GPOptionGroup> getSecondaryOptions() {
+        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : Collections.<GPOptionGroup>emptyList();
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
 
+    @Override
     public String getFileNamePattern() {
         return myFileFormat;
     }
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myProject = project;
         myLanguageOption = new LocaleOption();
@@ -103,6 +112,7 @@ public class ExporterToMsProjectFile implements Exporter {
         myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
     }
 
+    @Override
     public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
         ProjectFile outProject = new ProjectFileExporter(myProject).run();
         ProjectWriter writer = createProjectWriter();
@@ -125,6 +135,7 @@ public class ExporterToMsProjectFile implements Exporter {
         return null;
     }
 
+    @Override
     public String proposeFileExtension() {
         return getSelectedFormatExtension();
     }
@@ -140,10 +151,12 @@ public class ExporterToMsProjectFile implements Exporter {
                 + Arrays.asList(FILE_FORMAT_IDS));
     }
 
+    @Override
     public String[] getFileExtensions() {
         return FILE_EXTENSIONS;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return getFileExtensions();
     }

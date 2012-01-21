@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -38,18 +38,22 @@ class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelLi
         isValid = true;
     }
 
+    @Override
     public void treeNodesChanged(TreeModelEvent e) {
         isValid = false;
     }
 
+    @Override
     public void treeNodesInserted(TreeModelEvent e) {
         isValid = false;
     }
 
+    @Override
     public void treeNodesRemoved(TreeModelEvent e) {
         isValid = false;
     }
 
+    @Override
     public void treeStructureChanged(TreeModelEvent e) {
         isValid = false;
     }

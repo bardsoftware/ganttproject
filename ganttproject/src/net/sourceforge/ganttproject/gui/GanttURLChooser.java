@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2003-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -44,7 +44,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * @author Dmitry Barashev (major rewrite).
  * @author Alexandre Thomas (initial version).
  */
-class GanttURLChooser {
+public class GanttURLChooser {
     private JTextField urlField;
 
     private JTextField userNameField;
@@ -71,7 +71,7 @@ class GanttURLChooser {
 
     protected boolean isTimeoutEnabled;
 
-    GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
+    public GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
         myUiFacade = uiFacade;
         myUrl = url;
         myUsername = username;
@@ -80,7 +80,7 @@ class GanttURLChooser {
         myChoice = UIFacade.Choice.CANCEL;
     }
 
-    void show(boolean isOpenUrl) {
+    public void show(boolean isOpenUrl) {
         JPanel panel = new JPanel(new SpringLayout());
 
         panel.add(new JLabel(language.getText("fileFromServer")));
@@ -102,6 +102,7 @@ class GanttURLChooser {
         panel.add(new JLabel(language.getText("webdav.lockResource.label")));
         lockCheckbox = new JCheckBox();
         lockCheckbox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myLockTimeout.setEnabled(lockCheckbox.isSelected());
             }
@@ -122,6 +123,7 @@ class GanttURLChooser {
 
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         OkAction okAction = new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 myUrl = urlField.getText();
                 myUsername = userNameField.getText();
@@ -146,27 +148,27 @@ class GanttURLChooser {
                 language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     }
 
-    UIFacade.Choice getChoice() {
+    public UIFacade.Choice getChoice() {
         return myChoice;
     }
 
-    String getUsername() {
+    public String getUsername() {
         return myUsername;
     }
 
-    String getUrl() {
+    public String getUrl() {
         return myUrl;
     }
 
-    String getPassword() {
+    public String getPassword() {
         return myPassword;
     }
 
-    int getTimeout() {
+    public int getTimeout() {
         return myTimeout;
     }
 
-    boolean isTimeoutEnabled() {
+    public boolean isTimeoutEnabled() {
         return isTimeoutEnabled;
     }
 }

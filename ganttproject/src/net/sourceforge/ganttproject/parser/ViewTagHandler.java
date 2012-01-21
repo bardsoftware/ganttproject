@@ -17,6 +17,7 @@ public class ViewTagHandler implements TagHandler {
         myUIFacade = uiFacade;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if ("view".equals(qName)) {
@@ -29,6 +30,7 @@ public class ViewTagHandler implements TagHandler {
                 attrs.getValue("zooming-state"));
     }
 
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
     }
 

@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.about.AboutDialog;
+import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 
 import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
@@ -64,8 +64,8 @@ public class OSXAdapter extends ApplicationAdapter {
     /** Handle the Mac OSX "about" menu option. */
     @Override
     public void handleAbout(ApplicationEvent event) {
-        AboutDialog abd = new AboutDialog(myProj);
-        abd.setVisible(true);
+        AboutDialog2 abd = new AboutDialog2(myProj.getUIFacade());
+        abd.show();
         // Indicate we've handled this event ourselves
         event.setHandled(true);
     }

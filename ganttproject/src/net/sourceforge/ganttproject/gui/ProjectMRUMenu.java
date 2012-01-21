@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -25,6 +25,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.project.OpenMRUDocumentAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentMRUListener;
@@ -42,13 +43,14 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
     private final UIFacade myUIFacade;
     private final ProjectUIFacade myProjectUIFacade;
 
-    public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade) {
-        super();
+    public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade, String key) {
+        super(GPAction.createVoidAction(key));
         myProject = project;
         myUIFacade = uiFacade;
         myProjectUIFacade = projectUIFacade;
     }
 
+    @Override
     public void mruListChanged(Collection<Document> newMRUList) {
         removeAll();
         int index = 0;

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -42,12 +42,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 abstract class ChartTabContentPanel {
     private JSplitPane mySplitPane;
     private final List<Component> myPanels = new ArrayList<Component>();
+    private final UIFacade myUiFacade;
 
     protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
         NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
         ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
         addChartPanel(zoomingPanel.getComponent());
         addChartPanel(navigationPanel.getComponent());
+        myUiFacade = workbenchFacade;
     }
 
     protected JComponent createContentComponent() {
@@ -118,5 +120,9 @@ abstract class ChartTabContentPanel {
 
     protected void addChartPanel(Component panel) {
         myPanels.add(panel);
+    }
+
+    protected UIFacade getUiFacade() {
+        return myUiFacade;
     }
 }

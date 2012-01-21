@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -106,6 +106,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         return JFileChooser.FILES_AND_DIRECTORIES;
     }
 
+    @Override
     public Component getComponent() {
         myComponent = new JPanel(new BorderLayout());
         myChooser = new TextFieldAndFileChooserComponent(
@@ -138,12 +139,15 @@ public abstract class FileChooserPageBase implements WizardPage {
             urlBox.add(myUrlField);
             urlBox.add(myUrlLabel);
             myUrlField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     onChange();
                 }
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     onChange();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     onChange();
                 }
@@ -157,12 +161,14 @@ public abstract class FileChooserPageBase implements WizardPage {
             fileBox.add(myFileLabel);
 
             Action fileSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("file")) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
                     myChooser.tryFile();
                 }
             };
             Action urlSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("url")) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ourSelectedSource = FileChooserPageBase.URL_SOURCE;
                     urlFetcher.setStatusLabel(myUrlLabel);
@@ -200,6 +206,7 @@ public abstract class FileChooserPageBase implements WizardPage {
         }
     }
 
+    @Override
     public void setActive(boolean b) {
         GPOptionGroup[] optionGroups = getOptionGroups();
         if (b == false) {
@@ -280,7 +287,7 @@ public abstract class FileChooserPageBase implements WizardPage {
 
     protected IStatus setSelectedFile(File file) {
         try {
-            onSelectedUrlChange(new URL("file://" + file.getAbsolutePath()));
+            onSelectedUrlChange(file.toURI().toURL());
             return new Status(IStatus.OK, "foo", IStatus.OK, "  ", null);
         } catch (MalformedURLException e) {
             e.printStackTrace();

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -23,10 +23,21 @@ import java.util.List;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
-public interface SearchService {
+/**
+ * Interface of a pluggable search service. Given a search query, a search service should
+ * be able to search for results and return {@link SearchResult} objects which are shown in
+ * the search UI. When user selects some search result, a service should be able to
+ * show the result somehow (e.g. make it visible and switch keyboard focus to the result).
+ *
+ * @author dbarashev (Dmitry Barashev)
+ *
+ * @param <SR> search result object type
+ * @param <SO> target search object type
+ */
+public interface SearchService<SR extends SearchResult<SO>, SO> {
     String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.search";
 
     void init(IGanttProject project, UIFacade uiFacade);
-    List<SearchResult> search(String query);
-    void select(List<SearchResult> results);
+    List<SR> search(String query);
+    void select(List<SR> results);
 }

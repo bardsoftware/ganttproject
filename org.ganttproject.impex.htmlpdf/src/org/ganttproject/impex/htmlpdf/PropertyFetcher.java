@@ -1,20 +1,20 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject Team
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.ganttproject.impex.htmlpdf;
 
@@ -23,19 +23,18 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.task.CustomColumn;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 
-class PropertyFetcher {
+public class PropertyFetcher {
     private static final GanttLanguage language = GanttLanguage.getInstance();
     private final IGanttProject myProject;
 
-    PropertyFetcher(IGanttProject project) {
+    public PropertyFetcher(IGanttProject project) {
         myProject = project;
     }
 
@@ -43,11 +42,7 @@ class PropertyFetcher {
         return language.getCorrectedLabel(key);
     }
 
-    CustomColumnsStorage getCustomColumnStorage() {
-        return myProject.getCustomColumnsStorage();
-    }
-
-    void getTaskAttributes(Task t, Map<String, String> id2value) {
+    public void getTaskAttributes(Task t, Map<String, String> id2value) {
         id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
 
         DateFormat dateFormat = language.getShortDateFormat();
@@ -63,14 +58,14 @@ class PropertyFetcher {
         }
 
         CustomColumnsValues customValues = t.getCustomValues();
-        for (CustomColumn column : getCustomColumnStorage().getCustomColums()) {
-            Object value = customValues.getValue(column);
-            String valueAsString = value == null ? "" : value.toString();
-            id2value.put(column.getId(), valueAsString);
+        for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
+            Object value = customValues.getValue(def);
+            String valueAsString = value==null ? "" : value.toString();
+            id2value.put(def.getID(), valueAsString);
         }
     }
 
-    void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
+    public void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
         id2value.put("0", hr.getName());
         id2value.put("1", hr.getRole().getName());
         id2value.put("2", hr.getMail());

@@ -1,19 +1,20 @@
-/* LICENSE: GPL2
-Copyright (C) 2004-2011 Dmitry Barashev
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.util;
 
@@ -54,14 +55,25 @@ public class TextLengthCalculatorImpl implements TextLengthCalculator {
         return (int) bounds.getWidth() + 1;
     }
 
+    public int getTextHeight(Font f, String s) {
+        Font existing = myGraphics.getFont();
+        myGraphics.setFont(f);
+        int result = getTextHeight(s);
+        myGraphics.setFont(existing);
+        return result;
+    }
+
+    @Override
     public int getTextHeight(String text) {
         return (int) myGraphics.getFontMetrics().getLineMetrics(text, myGraphics).getAscent();
     }
 
+    @Override
     public int getTextLength(String text) {
         return getTextLength(myGraphics, text);
     }
 
+    @Override
     public Object getState() {
         if (myState == null) {
             myState = new State(myGraphics.getFontRenderContext(), myGraphics

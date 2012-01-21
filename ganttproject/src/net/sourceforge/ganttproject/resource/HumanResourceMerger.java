@@ -4,7 +4,7 @@ Copyright (C) 2010-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -24,6 +24,8 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 
 public interface HumanResourceMerger {
     void merge(Map<HumanResource, HumanResource> existing2imported);
+    HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr);
+
     public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
         public static final String NO = "mergeresources_no";
         public static final String BY_ID = "mergeresources_by_id";

@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,11 +22,14 @@ import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 
 public abstract class AbstractExporter implements Exporter {
@@ -39,6 +42,7 @@ public abstract class AbstractExporter implements Exporter {
     private DefaultDateOption myExportRangeEnd;
 
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myGanttChart= uiFacade.getGanttChart();
         myResourceChart = uiFacade.getResourceChart();
@@ -57,11 +61,16 @@ public abstract class AbstractExporter implements Exporter {
         return myExportRangeEnd;
     }
 
-    protected UIFacade getUIFacade() {
+    protected GPOptionGroup createExportRangeOptionGroup() {
+        return new GPOptionGroup("export.range",
+                new GPOption[] {getExportRangeStartOption(), getExportRangeEndOption()});
+    }
+
+    public UIFacade getUIFacade() {
         return myUIFacade;
     }
 
-    protected IGanttProject getProject() {
+    public IGanttProject getProject() {
         return myProject;
     }
 
@@ -77,7 +86,7 @@ public abstract class AbstractExporter implements Exporter {
         return myResourceChart;
     }
 
-    protected GanttExportSettings createExportSettings() {
+    public GanttExportSettings createExportSettings() {
         GanttExportSettings result = new GanttExportSettings();
         if (myRootPreferences != null) {
             int zoomLevel = myRootPreferences.getInt("zoom", -1);
@@ -96,10 +105,11 @@ public abstract class AbstractExporter implements Exporter {
                     result.setStartDate(DateParser.parse(rangeBounds[0]));
                     result.setEndDate(DateParser.parse(rangeBounds[1]));
                 } catch (InvalidDateException e) {
-                    myUIFacade.logErrorMessage(e);
+                    GPLogger.log(e);
                 }
                 result.setWidth(-1);
             }
+            result.setCommandLineMode(myRootPreferences.getBoolean("commandLine", false));
         }
         return result;
     }

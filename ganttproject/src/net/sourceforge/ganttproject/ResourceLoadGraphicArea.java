@@ -4,7 +4,7 @@ Copyright (C) 2002-2011 Thomas Alexandre, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,27 +21,28 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
-import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
+import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -63,17 +64,20 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private final ChartViewState myViewState;
 
-    public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager) {
+    private final ResourceTreeUIFacade myTreeUi;
+
+    public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
         super(app.getProject(), app.getUIFacade(), zoomManager);
+        myTreeUi = treeUi;
         this.setBackground(Color.WHITE);
         myChartModel = new ChartModelResource(getTaskManager(),
-                (HumanResourceManager) app.getHumanResourceManager(),
+                app.getHumanResourceManager(),
                 getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
-        myChartImplementation = new ResourcechartImplementation(app.getProject(), myChartModel, this);
+        myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
         myViewState = new ChartViewState(this, app.getUIFacade());
-        super.setStartDate(GregorianCalendar.getInstance().getTime());
+        app.getUIFacade().getZoomManager().addZoomListener(myViewState);
         appli = app;
-        //myTableHeader = app.getResourcePanel().table.getTableHeader();
+        initMouseListeners();
     }
 
     /** @return the preferred size of the panel. */
@@ -83,7 +87,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     }
 
     protected int getRowHeight() {
-        return appli.getResourcePanel().table.getRowHeight();
+        return appli.getResourcePanel().getRowHeight();
     }
 
     public void drawGPVersion(Graphics g) {
@@ -93,31 +97,27 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 getHeight() - 8);
     }
 
-    public BufferedImage getChart(GanttExportSettings settings) {
-        RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
-        BufferedImage result = renderedImage.getWholeImage();
-        repaint();
-        return result;
+    @Override
+    protected GPTreeTableBase getTreeTable() {
+        return appli.getResourcePanel().getResourceTreeTable();
     }
 
+    @Override
     public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        settings.setRowCount(getResourceManager().getResources().size());
-        return getRenderedImage(settings, appli.getResourcePanel().getResourceTreeTable());
+        int rowCount = getResourceManager().getResources().size();
+        for (HumanResource hr : getResourceManager().getResources()) {
+            if (myTreeUi.isExpanded(hr)) {
+                rowCount += hr.getAssignments().length;
+            }
+        }
+        settings.setRowCount(rowCount);
+        return super.getRenderedImage(settings);
     }
 
     @Override
     public String getName() {
         return GanttLanguage.getInstance().getText("resourcesChart");
     }
-//
-//    public Date getStartDate() {
-//        // return this.beg.getTime();
-//        return getTaskManager().getProjectStart();
-//    }
-//
-//    public Date getEndDate() {
-//        return getTaskManager().getProjectEnd();
-//    }
 
     @Override
     protected ChartModelBase getChartModel() {
@@ -127,12 +127,22 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     protected MouseListener getMouseListener() {
         if (myMouseListener == null) {
-            myMouseListener = new MouseListenerBase() {
+            myMouseListener = new MouseListenerBase(getUIFacade(), this, getImplementation()) {
                 @Override
                 protected Action[] getPopupMenuActions() {
                     return new Action[] { getOptionsDialogAction()};
                 }
 
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+                    super.mousePressed(e);
+
+                    if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
+                        startScrollView(e);
+                        return;
+                    }
+                }
             };
         }
         return myMouseListener;
@@ -141,16 +151,20 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     protected MouseMotionListener getMouseMotionListener() {
         if (myMouseMotionListener == null) {
-            myMouseMotionListener = new MouseMotionListenerBase();
+            myMouseMotionListener = new MouseMotionListenerBase(getUIFacade(), getImplementation());
         }
         return myMouseMotionListener;
     }
 
     @Override
     protected AbstractChartImplementation getImplementation() {
+        if (myChartImplementation == null) {
+            myChartImplementation = new ResourcechartImplementation(getProject(), getUIFacade(), myChartModel, this);
+        }
         return myChartImplementation;
     }
 
+    @Override
     public boolean isExpanded(HumanResource resource) {
         return true;
     }
@@ -159,27 +173,13 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
     private MouseListener myMouseListener;
 
-    private final AbstractChartImplementation myChartImplementation;
-
-    public void setTaskManager(TaskManager taskManager) {
-        // TODO Auto-generated method stub
-    }
-
-    public void reset() {
-        repaint();
-    }
-
-    public Icon getIcon() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    private AbstractChartImplementation myChartImplementation;
 
     private class ResourcechartImplementation extends AbstractChartImplementation {
 
         public ResourcechartImplementation(
-                IGanttProject project, ChartModelBase chartModel, ChartComponentBase chartComponent) {
-            super(project, chartModel, chartComponent);
-            // TODO Auto-generated constructor stub
+                IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel, ChartComponentBase chartComponent) {
+            super(project, uiFacade, chartModel, chartComponent);
         }
         @Override
         public void paintChart(Graphics g) {
@@ -188,7 +188,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 // ResourceLoadGraphicArea.super.paintComponent(g);
                 if (isShowing()) {
                     myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(
-                        appli.getResourcePanel(), appli.getResourcePanel().table.getTable()));
+                        appli.getResourcePanel(), appli.getResourcePanel().getTreeTable().getTable()));
                 }
                 myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
                 myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());

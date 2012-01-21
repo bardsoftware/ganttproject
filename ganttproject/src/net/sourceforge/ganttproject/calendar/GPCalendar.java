@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
@@ -65,13 +64,15 @@ public interface GPCalendar {
 
     public DayType getDayTypeDate(Date curDayStart);
 
-    public void setPublicHolidays(URL calendar, IGanttProject gp);
+    public void setPublicHolidays(URL calendar);
 
     /** Clears all defined public holidays */
     public void clearPublicHolidays();
 
     /** @return an unmodifiable collection of (public) holidays */
     public Collection<Date> getPublicHolidays();
+
+    public GPCalendar copy();
 
     public enum DayType {
         WORKING, NON_WORKING, WEEKEND, HOLIDAY
@@ -92,5 +93,6 @@ public interface GPCalendar {
 
     GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
     String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
+    URL getPublicHolidaysUrl();
 
 }

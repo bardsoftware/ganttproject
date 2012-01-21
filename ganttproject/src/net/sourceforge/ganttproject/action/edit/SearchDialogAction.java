@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,23 +20,18 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.search.SearchDialog;
+import net.sourceforge.ganttproject.search.SearchUi;
 
 public class SearchDialogAction extends GPAction {
-    private final IGanttProject myProject;
-    private final UIFacade myUiFacade;
+    private final SearchUi mySearchUi;
 
-    public SearchDialogAction(IGanttProject project, UIFacade uiFacade) {
+    public SearchDialogAction(SearchUi searchUi) {
         super("search.dialog.open");
-        myProject = project;
-        myUiFacade = uiFacade;
+        mySearchUi = searchUi;
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        SearchDialog dlg = new SearchDialog(myProject, myUiFacade);
-        dlg.show();
+        mySearchUi.requestFocus();
     }
 }

@@ -4,7 +4,7 @@ Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -47,14 +47,17 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
         myTypeAsString = stub.getTypeAsString();
     }
 
+    @Override
     public Object getDefaultValue() {
         return myDefaultValue;
     }
 
+    @Override
     public String getDefaultValueAsString() {
         return myDefaultValueAsString;
     }
 
+    @Override
     public void setDefaultValueAsString(String value) {
         CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
                 getTypeAsString(), value);
@@ -62,34 +65,42 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
         myDefaultValueAsString = stub.getDefaultValueAsString();
     }
 
+    @Override
     public String getID() {
         return myID;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public void setName(String name) {
         myName = name;
     }
 
+    @Override
     public Class<?> getType() {
         return myPropertyClass.getJavaClass();
     }
 
+    @Override
     public CustomPropertyClass getPropertyClass() {
         return myPropertyClass;
     }
 
+    @Override
     public String getTypeAsString() {
         return myTypeAsString;
     }
 
+    @Override
     public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
         return Status.OK_STATUS;
     }
 
+    @Override
     public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
         myPropertyClass = propertyClass;
         myTypeAsString = propertyClass.getID();

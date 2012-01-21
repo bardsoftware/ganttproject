@@ -4,7 +4,7 @@ Copyright (C) 2010-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -86,17 +86,20 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                 myMergeResourcesOption.getID(), HumanResourceMerger.MergeResourcesOption.BY_ID));
         myMergeResourcesOption.commit();
         myMergeResourcesOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 node.put(myMergeResourcesOption.getID(), String.valueOf(event.getNewValue()));
             }
         });
     }
 
+    @Override
     public void run(final File selectedFile) {
         final IGanttProject targetProject = getProject();
         final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
         getUiFacade().getUndoManager().undoableEdit("Import",
                 new Runnable() {
+                    @Override
                     public void run() {
                         ImporterFromGanttFile.this.run(selectedFile, targetProject, bufferProject);
                     }
@@ -119,44 +122,55 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
             myOrder = order;
             myWidth = width;
         }
+        @Override
         public String getID() {
             return myID;
         }
 
+        @Override
         public int getOrder() {
             return myOrder;
         }
 
+        @Override
         public int getWidth() {
             return myWidth;
         }
+        @Override
         public boolean isVisible() {
             return true;
     }
+        @Override
         public String getName() {
             return null;
         }
         @Override
         public void setVisible(boolean visible) {
         }
+        @Override
         public void setOrder(int order) {
         }
 
     }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
         private final List<Column> myFields = new ArrayList<Column>();
+        @Override
         public void add(String name, int order, int width) {
             myFields.add(new TaskFieldImpl(name, order, width));
         }
+        @Override
         public void clear() {
             myFields.clear();
         }
+        @Override
         public Column getField(int index) {
             return myFields.get(index);
         }
+        @Override
         public int getSize() {
             return myFields.size();
         }
+        @Override
         public void importData(TableHeaderUIFacade source) {
             for (int i=0; i<source.getSize(); i++) {
                 Column nextField = source.getField(i);
@@ -184,9 +198,11 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         public TableHeaderUIFacade getVisibleFields() {
             return myVisibleFields;
         }
+        @Override
         public GPParser newParser() {
             return new GanttXMLOpen(myProjectInfo, getUIConfiguration(), getTaskManager(), myUIfacade);
         }
+        @Override
         public GPSaver newSaver() {
             return null;
         }
@@ -197,10 +213,6 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         @Override
         public TaskManager getTaskManager() {
             return myTaskManager;
-        }
-        @Override
-        public CustomColumnsStorage getCustomColumnsStorage() {
-            return myTaskManager.getCustomColumnStorage();
         }
         @Override
         public CustomColumnsManager getTaskCustomColumnManager() {
@@ -231,8 +243,8 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
                         bufferProject.getHumanResourceManager(), new OverwritingMerger(myMergeResourcesOption));
 
             {
-                CustomColumnsStorage targetCustomColumnStorage = targetProject.getCustomColumnsStorage();
-                targetCustomColumnStorage.importData(bufferProject.getCustomColumnsStorage());
+                CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
+                targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
             }
             TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
             try {

@@ -4,7 +4,7 @@ Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -24,26 +24,23 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Vector;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
@@ -93,8 +90,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      *            The root.
      * @param customColumnsManager
      */
-    public GanttTreeTableModel(TreeNode root, CustomPropertyManager customColumnsManager) {
-        super(root);
+    public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager) {
+        super(new TaskNode(taskManager.getRootTask()));
         changeLanguage(language);
         myCustomColumnsManager = customColumnsManager;
     }
@@ -179,7 +176,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     @Override
-    public Class getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         if (column < 0) {
             return null;
         }
@@ -204,7 +201,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             return Integer.class;
         default: {
             CustomPropertyDefinition customColumn = getCustomProperty(column);
-            return customColumn == null ? String.class : customColumn.getType();
+            Class<?> result =  customColumn == null ? String.class : customColumn.getType();
+            return result;
         }
         }
     }
@@ -341,6 +339,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 //            System.out.println("undoable column: " + column);
             Mediator.getGanttProjectSingleton().getUndoManager().undoableEdit(
                     "Change properties column", new Runnable() {
+                        @Override
                         public void run() {
                             setValue(value, node, column);
                         }
@@ -404,20 +403,25 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     }
 
+    @Override
     public void columnAdded(TableColumnModelEvent arg0) {
     }
 
+    @Override
     public void columnRemoved(TableColumnModelEvent arg0) {
     }
 
+    @Override
     public void columnMoved(TableColumnModelEvent arg0) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void columnMarginChanged(ChangeEvent arg0) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void columnSelectionChanged(ListSelectionEvent arg0) {
         // TODO Auto-generated method stub
     }
@@ -491,6 +495,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         return 0;
     }
 
+    @Override
     public void languageChanged(Event event) {
         changeLanguage(event.getLanguage());
     }
@@ -501,5 +506,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     public boolean contains(Task task) {
         throw new UnsupportedOperationException();
+    }
+
+
+    public DefaultMutableTreeNode getRootNode() {
+        return (DefaultMutableTreeNode) getRoot();
     }
 }

@@ -34,18 +34,22 @@ class TaskActivityImpl implements TaskActivity {
         myTask = task;
     }
 
+    @Override
     public Date getStart() {
         return myStartDate;
     }
 
+    @Override
     public Date getEnd() {
         return myEndDate;
     }
 
+    @Override
     public TaskLength getDuration() {
         return myDuration;
     }
 
+    @Override
     public float getIntensity() {
         return myIntensity;
     }
@@ -55,14 +59,17 @@ class TaskActivityImpl implements TaskActivity {
         return myTask.toString() + "[" + getStart() + ", " + getEnd() + "]";
     }
 
+    @Override
     public Task getTask() {
         return myTask;
     }
 
+    @Override
     public boolean isFirst() {
         return this == getTask().getActivities()[0];
     }
 
+    @Override
     public boolean isLast() {
         TaskActivity[] all = getTask().getActivities();
         return this == all[all.length - 1];

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -34,6 +34,7 @@ import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.Priority;
 import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
+import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
@@ -101,13 +102,26 @@ class ProjectFileExporter {
     }
 
     private void exportWeekends(ProjectCalendar calendar) {
+        ProjectCalendarHours workingDayHours = calendar.getCalendarHours(Day.MONDAY);
         calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WORKING);
         calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WORKING);
+        if (calendar.isWorkingDay(Day.SATURDAY)) {
+            copyHours(workingDayHours, calendar.addCalendarHours(Day.SATURDAY));
+        }
         calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WORKING);
+        if (calendar.isWorkingDay(Day.SUNDAY)) {
+            copyHours(workingDayHours, calendar.addCalendarHours(Day.SUNDAY));
+        }
+    }
+
+    private void copyHours(ProjectCalendarHours from, ProjectCalendarHours to) {
+        for (DateRange range : from) {
+            to.addRange(range);
+        }
     }
 
     private void exportHolidays(ProjectCalendar calendar) {
@@ -134,7 +148,7 @@ class ProjectFileExporter {
         rootTask.setDuration(convertDuration(getTaskManager().createLength(
                 getTaskManager().getRootTask().getDuration().getTimeUnit(),
                 getTaskManager().getProjectStart(), getTaskManager().getProjectEnd())));
-        rootTask.setDurationFormat(TimeUnit.DAYS);
+        //rootTask.setDurationFormat(TimeUnit.DAYS);
         rootTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
 
         int i = 0;
@@ -170,13 +184,14 @@ class ProjectFileExporter {
         mpxjTask.setStart(convertStartTime(t.getStart().getTime()));
         mpxjTask.setFinish(convertFinishTime(t.getEnd().getTime()));
         mpxjTask.setDuration(convertDuration(t.getDuration()));
-        mpxjTask.setDurationFormat(TimeUnit.DAYS);
+        //mpxjTask.setDurationFormat(TimeUnit.DAYS);
         Duration[] durations = getActualAndRemainingDuration(mpxjTask);
         mpxjTask.setActualDuration(durations[0]);
         mpxjTask.setRemainingDuration(durations[1]);
         mpxjTask.setPriority(convertPriority(t));
 
         exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
+            @Override
             public void set(FieldType ft, Object value) {
                 mpxjTask.set(ft, value);
             }
@@ -204,7 +219,6 @@ class ProjectFileExporter {
         c.setTime(gpFinishDate);
         c.add(Calendar.DAY_OF_YEAR, -1);
         Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
-
         c.set(Calendar.HOUR, finishTime.getHours());
         c.set(Calendar.MINUTE, finishTime.getMinutes());
         return c.getTime();
@@ -312,6 +326,7 @@ class ProjectFileExporter {
 
         exportDaysOff(hr, mpxjResource);
         exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
+            @Override
             public void set(FieldType ft, Object value) {
                 mpxjResource.set(ft, value);
             }

@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -20,7 +21,7 @@ public interface Exporter {
 
     GPOptionGroup getOptions();
 
-    GPOptionGroup[] getSecondaryOptions();
+    List<GPOptionGroup> getSecondaryOptions();
 
     String getFileNamePattern();
 

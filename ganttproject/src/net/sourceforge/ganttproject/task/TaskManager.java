@@ -4,7 +4,7 @@ Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -81,14 +81,7 @@ public interface TaskManager {
         public static TaskManager newInstance(
                 TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
                 TaskManagerConfig config) {
-            return new TaskManagerImpl(containmentFacadeFactory, config,null);
-        }
-
-        public static TaskManager newInstance(
-                Factory factory,
-                TaskManagerConfig taskConfig,
-                CustomColumnsStorage customColumnsStorage) {
-            return new TaskManagerImpl(factory, taskConfig, customColumnsStorage);
+            return new TaskManagerImpl(containmentFacadeFactory, config);
         }
     }
 
@@ -119,7 +112,6 @@ public interface TaskManager {
 
     public void deleteTask(Task tasktoRemove);
 
-    CustomColumnsStorage getCustomColumnStorage();
     CustomPropertyManager getCustomPropertyManager();
 
     StringOption getTaskNamePrefixOption();

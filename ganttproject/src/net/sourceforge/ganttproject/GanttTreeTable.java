@@ -1,10 +1,27 @@
+/*
+GanttProject is an opensource project management tool. License: GPL3
+Copyright (C) 2005-2011 GanttProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JScrollBar;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -19,12 +36,12 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
- * TreeTable used to displayed tabular data and hierarchical data.
+ * Task tree table.
  *
- * @author bbaranne
- * @version 1.0 (20050301) (yyyymmdd)
+ * @author bbaranne (Benoit Baranne) - original version
+ * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
-public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyListener {
+public class GanttTreeTable extends GPTreeTableBase {
     private final GanttTreeTableModel ttModel;
 
     private final UIFacade myUIfacade;
@@ -47,7 +64,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
         INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)),
         NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)),
         BEGIN_DATE(new TableHeaderUIFacade.ColumnStub("tpd4", null, true, 1, 75)),
-        END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 0, 75)),
+        END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 2, 75)),
         DURATION(new TableHeaderUIFacade.ColumnStub("tpd6", null, false, -1, 50)),
         COMPLETION(new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50)),
         COORDINATOR(new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200)),
@@ -125,6 +142,7 @@ public class GanttTreeTable extends GPTreeTableBase implements CustomPropertyLis
      * @author Benoit Baranne
      */
     private class ModelListener implements TableModelListener {
+        @Override
         public void tableChanged(TableModelEvent e) {
             getUiFacade().getGanttChart().reset();
         }

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -180,8 +180,8 @@ class ResourcesTableModel extends AbstractTableModel {
                 float load = updateTarget.getLoad();
                 boolean coord = updateTarget.isCoordinator();
                 updateTarget.delete();
-                ResourceAssignment newAssignment = myMutator
-                        .addAssignment((HumanResource) value);
+                myMutator.deleteAssignment(updateTarget.getResource());
+                ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
                 newAssignment.setLoad(load);
                 newAssignment.setCoordinator(coord);
                 myAssignments.set(row, newAssignment);

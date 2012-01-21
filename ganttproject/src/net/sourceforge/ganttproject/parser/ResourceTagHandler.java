@@ -4,7 +4,7 @@ Copyright (C) 2003-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -59,6 +59,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
 
     }
@@ -67,6 +68,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
 
@@ -167,9 +169,11 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
         return result;
     }
 
+    @Override
     public void parsingStarted() {
     }
 
+    @Override
     public void parsingFinished() {
         // System.err.println("[ResourceTagHandler] parsingFinished():");
         for (Iterator<Entry<HumanResource, String>> lateBindingEntries = myLateResource2roleBinding

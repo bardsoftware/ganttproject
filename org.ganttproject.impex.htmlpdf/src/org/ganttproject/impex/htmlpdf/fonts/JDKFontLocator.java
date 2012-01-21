@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -41,6 +41,7 @@ public class JDKFontLocator {
         String javaHome = System.getProperty("java.home");
         File fontDirectory = new File(javaHome + "/lib/fonts");
         File[] children = fontDirectory.listFiles(new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(".ttf");
             }

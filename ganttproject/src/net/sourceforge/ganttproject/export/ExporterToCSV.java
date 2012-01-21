@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.export;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -37,28 +38,34 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
     private IGanttProject myProject;
     private GanttOptions myOptions;
 
+    @Override
     public String getFileTypeDescription() {
         return GanttLanguage.getInstance().getText("impex.csv.description");
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public GPOptionGroup[] getSecondaryOptions() {
+    @Override
+    public List<GPOptionGroup> getSecondaryOptions() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public Component getCustomOptionsUI() {
         return null;
     }
 
+    @Override
     public String getFileNamePattern() {
         return ExporterToCSV.FILE_EXTENSIONS[0];
     }
 
+    @Override
     public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
         outputFile.createNewFile();
         GanttCSVExport legacyExporter = new GanttCSVExport(myProject, myOptions.getCSVOptions());
@@ -66,22 +73,27 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
         finalizationJob.run(new File[] {outputFile});
     }
 
+    @Override
     public String proposeFileExtension() {
         return ExporterToCSV.FILE_EXTENSIONS[0];
     }
 
+    @Override
     public String[] getFileExtensions() {
         return ExporterToCSV.FILE_EXTENSIONS;
     }
 
+    @Override
     public String[] getCommandLineKeys() {
         return ExporterToCSV.FILE_EXTENSIONS;
     }
 
+    @Override
     public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
         myProject = project;
     }
 
+    @Override
     public void setOptions(GanttOptions options) {
         myOptions = options;
     }

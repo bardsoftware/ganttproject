@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -151,6 +151,7 @@ public class GanttStatusBar extends JPanel implements Runnable {
         return new Dimension(getWidth(), 24);
     }
 
+    @Override
     public void run() {
         try {
             switch (mode) {
@@ -338,40 +339,50 @@ public class GanttStatusBar extends JPanel implements Runnable {
         ProgressMonitorImpl() {
             myProgressDialog = new ProgressBarDialog(this);
         }
+        @Override
         public void beginTask(final String name, final int totalWork)  {
+            isCanceled = false;
             myWorked = 0;
             GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myProgressDialog.start(name, totalWork);
                 }
             });
         }
 
+        @Override
         public void done() {
             GPLogger.log("[ProgressMonitorImpl] finished Task");
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myProgressDialog.done();
                 }
             });
         }
 
+        @Override
         public void internalWorked(double work) {
         }
 
+        @Override
         public boolean isCanceled() {
             return isCanceled;
         }
 
+        @Override
         public void setCanceled(boolean value) {
             myProgressDialog.done();
             isCanceled = value;
         }
 
+        @Override
         public void setTaskName(String name) {
         }
 
+        @Override
         public void subTask(final String name) {
             if (name == null) {
                 GPLogger.log("[ProgressMonitorImpl] finished subTask");
@@ -379,14 +390,17 @@ public class GanttStatusBar extends JPanel implements Runnable {
                 GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myProgressDialog.setSubTask(name);
                 }
             });
         }
 
+        @Override
         public void worked(final int work) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     myWorked += work;
                     myProgressDialog.setProgress(myWorked);

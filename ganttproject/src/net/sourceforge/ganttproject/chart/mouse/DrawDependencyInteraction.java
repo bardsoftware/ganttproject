@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.chart.DependencyInteractionRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -51,6 +52,7 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
 
     public static interface ChartModelFacade {
         Task findTaskUnderMousePointer(int xpos, int ypos);
+        TaskDependency.Hardness getDefaultHardness();
     }
 
     public DrawDependencyInteraction(MouseEvent initiatingEvent,
@@ -66,11 +68,13 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
             myStartPoint.x, myStartPoint.y, myStartPoint.x, myStartPoint.y);
     }
 
+    @Override
     public void apply(MouseEvent event) {
         myArrow.changePoint2(event.getX(), event.getY());
         myLastMouseEvent = event;
     }
 
+    @Override
     public void finish() {
         if (myLastMouseEvent != null) {
             myDependant = myChartModelFacade.findTaskUnderMousePointer(
@@ -80,10 +84,12 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements
                 if (myDependencyCollection.canCreateDependency(myDependant, dependee)) {
                     myUiFacade.getUndoManager().undoableEdit("Draw dependency",
                             new Runnable() {
+                                @Override
                                 public void run() {
                                     try {
-                                        myDependencyCollection.createDependency(
+                                        TaskDependency dep = myDependencyCollection.createDependency(
                                             myDependant, dependee, new FinishStartConstraintImpl());
+                                        dep.setHardness(myChartModelFacade.getDefaultHardness());
 
                                     } catch (TaskDependencyException e) {
                                         myUiFacade.showErrorDialog(e);

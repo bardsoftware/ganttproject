@@ -4,7 +4,7 @@ Copyright (C) 2002-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
@@ -99,7 +98,7 @@ public interface IGanttProject {
 
     CustomPropertyManager getTaskCustomColumnManager();
 
-    CustomColumnsStorage getCustomColumnsStorage();
+    //CustomColumnsStorage getCustomColumnsStorage();
 
     List<GanttPreviousState> getBaselines();
 }

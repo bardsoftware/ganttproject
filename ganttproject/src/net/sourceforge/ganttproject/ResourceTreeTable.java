@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -76,11 +76,12 @@ public class ResourceTreeTable extends GPTreeTableBase {
         }
     }
 
-    public ResourceTreeTable(GanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
+    public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
         super(project, uiFacade, project.getResourceCustomPropertyManager(), model);
         myUiFacade = uiFacade;
         myRoleManager = project.getRoleManager();
         myRoleManager.addRoleListener(new RoleManager.Listener() {
+            @Override
             public void rolesChanged(RoleEvent e) {
                 setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE.getStub().getID()));
                 setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID()));
