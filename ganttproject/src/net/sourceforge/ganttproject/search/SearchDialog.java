@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -52,11 +52,16 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 public class SearchDialog {
+    public interface SearchCallback {
+        void accept(List<SearchResult> results);
+    }
+
     private final UIFacade myUiFacade;
     private DefaultListModel myResultViewDataModel;
     private final IGanttProject myProject;
     private JList myResultView;
     private UIFacade.Dialog myDialog;
+    private SearchCallback mySearchCallback;
 
     public SearchDialog(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
@@ -71,6 +76,12 @@ public class SearchDialog {
             },
             new CancelAction("close")
         }, GanttLanguage.getInstance().getText("search.dialog.title"));
+        mySearchCallback = new SearchCallback() {
+            @Override
+            public void accept(List<SearchResult> results) {
+                processResults(results);
+            }
+        };
     }
 
     public void show() {
@@ -84,6 +95,19 @@ public class SearchDialog {
         }
     }
 
+    public JTextField createSearchBox(final SearchCallback callback) {
+        final JTextField inputField = new JTextField(30);
+        inputField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    runSearch(inputField.getText(), callback);
+                }
+            }
+        });
+        return inputField;
+    }
+
     private JComponent getComponent() {
         JPanel result = new JPanel(new BorderLayout());
         JPanel inputPanel = new JPanel(new BorderLayout());
@@ -91,7 +115,7 @@ public class SearchDialog {
         final GPAction searchAction = new GPAction("search.dialog.search") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                runSearch(inputField.getText());
+                runSearch(inputField.getText(), mySearchCallback);
             }
         };
         JButton searchButton = new JButton(searchAction);
@@ -127,7 +151,7 @@ public class SearchDialog {
         return myResultViewDataModel;
     }
 
-    protected void runSearch(final String text) {
+    void runSearch(final String text, final SearchCallback callback) {
         myResultViewDataModel.clear();
         List<SearchService> services = PluginManager.getExtensions(SearchService.EXTENSION_POINT_ID, SearchService.class);
         final List<Future<List<SearchResult>>> tasks = new ArrayList<Future<List<SearchResult>>>();
@@ -155,6 +179,7 @@ public class SearchDialog {
             @Override
             protected void done() {
                 try {
+                    callback.accept(get());
                     processResults(get());
                 } catch (InterruptedException e) {
                     e.printStackTrace();

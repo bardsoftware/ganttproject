@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -184,6 +184,7 @@ public class PrintPreview extends JDialog {
         JButton bPrint = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource("/icons/print_16.gif")));
         bPrint.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 print();
             }
@@ -192,6 +193,7 @@ public class PrintPreview extends JDialog {
         JButton bClose = new TestGanttRolloverButton(new ImageIcon(getClass()
                 .getResource("/icons/exit_16.gif")));
         bClose.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
@@ -204,8 +206,10 @@ public class PrintPreview extends JDialog {
                 getClass().getResource("/icons/landscape_16.gif")));
 
         bPortrait.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 run(new Runnable() {
+                    @Override
                     public void run() {
                         changePageOrientation(PageFormat.PORTRAIT);
                         bLandscape.setEnabled(true);
@@ -216,8 +220,10 @@ public class PrintPreview extends JDialog {
         });
 
         bLandscape.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 run(new Runnable() {
+                    @Override
                     public void run() {
                         changePageOrientation(PageFormat.LANDSCAPE);
                         bLandscape.setEnabled(false);
@@ -231,8 +237,10 @@ public class PrintPreview extends JDialog {
         myComboScale = new JComboBox(scales);
         myComboScale.setSelectedIndex(2);
         myComboScale.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 run(new Runnable() {
+                    @Override
                     public void run() {
                         changeScale();
                     }
@@ -241,8 +249,10 @@ public class PrintPreview extends JDialog {
         });
 
         myComboScale.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent arg0) {
                 run(new Runnable() {
+                    @Override
                     public void run() {
                         changeScale();
                     }
@@ -301,6 +311,7 @@ public class PrintPreview extends JDialog {
             */
             myWholeProjectButton = new JButton(language.getText("wholeProject"));
             myWholeProjectButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     myStart.setValue(myChart.getStartDate());
                     myFinish.setValue(myChart.getEndDate());
@@ -338,8 +349,10 @@ public class PrintPreview extends JDialog {
         }
         myComboMediaSize = new JComboBox(sizes.toArray());
         myComboMediaSize.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 run(new Runnable() {
+                    @Override
                     public void run() {
                         Object selectedItem = myComboMediaSize.getSelectedItem();
                         if (selectedItem != null) {
@@ -394,8 +407,10 @@ public class PrintPreview extends JDialog {
             bZoomOut.setHorizontalTextPosition(SwingConstants.RIGHT);
             bZoomOut.setText(language.getText("narrowChart"));
             bZoomOut.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent arg0) {
                     run(new Runnable() {
+                        @Override
                         public void run() {
                             zoomOut.actionPerformed(null);
                             updateSourceImage();
@@ -409,8 +424,10 @@ public class PrintPreview extends JDialog {
             bZoomIn.setHorizontalTextPosition(SwingConstants.RIGHT);
             bZoomIn.setText(language.getText("widenChart"));
             bZoomIn.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent arg0) {
                     run(new Runnable() {
+                        @Override
                         public void run() {
                             zoomIn.actionPerformed(null);
                             updateSourceImage();

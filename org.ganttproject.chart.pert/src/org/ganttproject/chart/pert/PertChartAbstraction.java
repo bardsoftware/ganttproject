@@ -1,20 +1,20 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.ganttproject.chart.pert;
 
@@ -28,13 +28,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
-/**
- * This class is the abstract representation of PERT chart There are
- * TaskGraphNodes that describe a PERT chart.
- *
- * @author bbaranne
- *
- */
 public class PertChartAbstraction {
 
     private final TaskManager myTaskManager;

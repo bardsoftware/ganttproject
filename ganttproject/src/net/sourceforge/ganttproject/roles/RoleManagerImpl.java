@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -51,12 +51,14 @@ public class RoleManagerImpl implements RoleManager {
         SOFTWARE_DEVELOPMENT_ROLE_SET.setEnabled(false);
 
         GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+            @Override
             public void languageChanged(Event event) {
                 changeRoleSet();
             }
         });
     }
 
+    @Override
     public void clear() {
         myProjectRoleSet.clear();
         for (int i = 0; i < myRoleSets.size(); i++) {
@@ -68,20 +70,24 @@ public class RoleManagerImpl implements RoleManager {
         SOFTWARE_DEVELOPMENT_ROLE_SET.setEnabled(false);
     }
 
+    @Override
     public Role[] getProjectLevelRoles() {
         return myProjectRoleSet.getRoles();
     }
 
     /** Add a role on the list */
+    @Override
     public void add(int ID, String roleName) {
         // myProjectLevelRoles.add(newRole(ID, role));
         myProjectRoleSet.createRole(roleName, ID);
     }
 
+    @Override
     public RoleSet[] getRoleSets() {
         return myRoleSets.toArray(new RoleSet[0]);
     }
 
+    @Override
     public RoleSet createRoleSet(String name) {
         RoleSet result = new RoleSetImpl(name, this);
         myRoleSets.add(result);
@@ -90,10 +96,12 @@ public class RoleManagerImpl implements RoleManager {
         return result;
     }
 
+    @Override
     public RoleSet getProjectRoleSet() {
         return myProjectRoleSet;
     }
 
+    @Override
     public RoleSet getRoleSet(String rolesetName) {
         RoleSet result = null;
         RoleSet[] roleSets = getRoleSets();
@@ -106,6 +114,7 @@ public class RoleManagerImpl implements RoleManager {
         return result;
     }
 
+    @Override
     public Role[] getEnabledRoles() {
         ArrayList<Role> result = new ArrayList<Role>();
         RoleSet[] roleSets = getRoleSets();
@@ -118,10 +127,12 @@ public class RoleManagerImpl implements RoleManager {
         return result.toArray(new Role[0]);
     }
 
+    @Override
     public Role getDefaultRole() {
         return DEFAULT_ROLE_SET.findRole(0);
     }
 
+    @Override
     public Role getRole(String persistentID) {
         Role[] enabledRoles = getEnabledRoles();
         for (int i=0; i<enabledRoles.length; i++) {
@@ -132,6 +143,7 @@ public class RoleManagerImpl implements RoleManager {
         return null;
     }
 
+    @Override
     public void importData(RoleManager original) {
         myProjectRoleSet.importData(original.getProjectRoleSet());
         RoleSet[] originalRoleSets = original.getRoleSets();
@@ -150,10 +162,12 @@ public class RoleManagerImpl implements RoleManager {
     }
 
 
+    @Override
     public void addRoleListener(Listener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public void removeRoleListener(Listener listener) {
         myListeners.remove(listener);
     }

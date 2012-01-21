@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -34,11 +35,22 @@ public class ResourceNewAction extends ResourceAction {
 
     private final RoleManager myRoleManager;
 
-    public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager,
-            UIFacade uiFacade) {
+    public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade) {
         super("resource.new", hrManager);
         myUIFacade = uiFacade;
         myRoleManager = roleManager;
+    }
+
+    private ResourceNewAction(
+            HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
+        super("resource.new", hrManager, size);
+        myUIFacade = uiFacade;
+        myRoleManager = roleManager;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ResourceNewAction(getManager(), myRoleManager, myUIFacade, size);
     }
 
     @Override
@@ -49,15 +61,11 @@ public class ResourceNewAction extends ResourceAction {
         dp.setVisible(true);
         if (dp.result()) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                @Override
                 public void run() {
                     getManager().add(resource);
                 }
             });
         }
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "insert_";
     }
 }

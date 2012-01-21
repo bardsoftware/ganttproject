@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,11 +21,6 @@ package net.sourceforge.ganttproject.action;
 public class ArtefactNewAction extends ArtefactAction {
 
     public ArtefactNewAction(ActiveActionProvider provider) {
-        super("artefact.new", provider);
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "insert_";
+        super("artefact.new", IconSize.NO_ICON, provider, new ActionDelegate[0]);
     }
 }

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,17 +21,30 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 /**
  * Abstract class which provides a base implementation for the artefact actions.
  * Depending on the visible chart, the name, description and action will change
  */
-public abstract class ArtefactAction extends GPAction {
+public class ArtefactAction extends GPAction implements ActionStateChangedListener {
     private final ActiveActionProvider myProvider;
+    private final ActionDelegate[] myDelegates;
 
-    public ArtefactAction(String name, ActiveActionProvider provider) {
-        super(name);
+    public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, ActionDelegate[] delegates) {
+        super(name, iconSize.asString());
         myProvider = provider;
+        for(ActionDelegate delegate : delegates) {
+            delegate.addStateChangedListener(this);
+        }
+        myDelegates = delegates;
+        // Make action state equal to active delegate action state
+        actionStateChanged();
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ArtefactAction(getID(), size, myProvider, myDelegates);
     }
 
     @Override
@@ -57,4 +70,12 @@ public abstract class ArtefactAction extends GPAction {
         GPAction activeAction = (GPAction) myProvider.getActiveAction();
         return activeAction.getLocalizedDescription();
     };
+
+    @Override
+    public void actionStateChanged() {
+        // State of a delegate action has been changed, so update out state as well
+        GPAction activeAction = (GPAction) myProvider.getActiveAction();
+        setEnabled(activeAction.isEnabled());
+        putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+    }
 }

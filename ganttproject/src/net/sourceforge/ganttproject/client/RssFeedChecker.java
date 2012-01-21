@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -68,7 +68,7 @@ public class RssFeedChecker {
     private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
     private final RssParser parser = new RssParser();
     private final NotificationItem myRssProposalNotification = new NotificationItem(
-        "", GanttLanguage.getInstance().getText("updateRss.question"),
+        "", GanttLanguage.getInstance().formatText("updateRss.question", GanttLanguage.getInstance().getText("updateRss.question.learnUrl")),
         new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -145,18 +145,21 @@ public class RssFeedChecker {
                     String url = RSS_URL;
                     while (true) {
                         GetMethod getRssUrl = new GetMethod(url);
-                        getRssUrl.setFollowRedirects(true);
+                        getRssUrl.setFollowRedirects(false);
                         getRssUrl.setRequestHeader("User-Agent", "GanttProject " + GPVersion.PRAHA);
                         int result = httpClient.executeMethod(getRssUrl);
 
-                        if (result == HttpStatus.SC_MOVED_TEMPORARILY) {
-                            url = getRssUrl.getResponseHeader("Location").getValue();
-                            continue;
-                        }
-                        if (result == HttpStatus.SC_OK) {
+                        switch (result) {
+                        case HttpStatus.SC_OK:
                             processResponse(getRssUrl.getResponseBodyAsStream());
+                            return;
+                        case HttpStatus.SC_MOVED_PERMANENTLY:
+                        case HttpStatus.SC_MOVED_TEMPORARILY:
+                        case HttpStatus.SC_SEE_OTHER:
+                        case HttpStatus.SC_TEMPORARY_REDIRECT:
+                            url = getRssUrl.getResponseHeader("Location").getValue();
+                            break;
                         }
-                        return;
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();

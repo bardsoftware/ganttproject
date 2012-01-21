@@ -4,7 +4,7 @@ Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -35,8 +35,13 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 public interface Task extends MutableTask {
     /** Available task priorities */
     public enum Priority {
-        LOWEST, LOW, NORMAL, HIGH, HIGHEST;
+        LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");
 
+        private final String myPersistentValue;
+
+        private Priority(String persistentValue) {
+            myPersistentValue = persistentValue;
+        }
         /** @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown */
         public static Priority getPriority(int value) {
             for (Task.Priority p: Task.Priority.values()) {
@@ -45,6 +50,10 @@ public interface Task extends MutableTask {
                 }
             }
             return DEFAULT_PRIORITY;
+        }
+
+        public String getPersistentValue() {
+            return myPersistentValue;
         }
 
         /** @return the priority as a lower-case String */
@@ -62,6 +71,14 @@ public interface Task extends MutableTask {
          */
         public String getIconPath() {
             return "/icons/task_" + getLowerString() + ".gif";
+        }
+        public static Priority fromPersistentValue(String priority) {
+            for (Priority p : values()) {
+                if (p.getPersistentValue().equals(priority)) {
+                    return p;
+                }
+            }
+            return Priority.NORMAL;
         }
     }
 

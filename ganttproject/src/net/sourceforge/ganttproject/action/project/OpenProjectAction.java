@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,17 +20,31 @@ package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 
-class OpenProjectAction extends GPAction {
-    private GanttProject myMainFrame;
+public class OpenProjectAction extends GPAction {
+    private ProjectUIFacade myProjectUiFacade;
+    private IGanttProject myProject;
 
-    OpenProjectAction(GanttProject mainFrame) {
+    OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade) {
         super("project.open");
-        myMainFrame = mainFrame;
+        myProject = project;
+        myProjectUiFacade = projectUiFacade;
     }
 
+    private OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade, IconSize iconSize) {
+        super("project.open", iconSize.asString());
+        myProject = project;
+        myProjectUiFacade = projectUiFacade;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize iconSize) {
+        return new OpenProjectAction(myProject, myProjectUiFacade, iconSize);
+    }
     @Override
     protected String getIconFilePrefix() {
         return "open_";
@@ -39,9 +53,9 @@ class OpenProjectAction extends GPAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            myMainFrame.openFile();
+            myProjectUiFacade.openProject(myProject);
         } catch (Exception ex) {
-            myMainFrame.getUIFacade().showErrorDialog(ex);
+            GPLogger.log(ex);
         }
     }
 }

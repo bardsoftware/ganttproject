@@ -122,22 +122,27 @@ public class TestResourceAssignments extends TestCase {
     private TaskManager newTaskManager() {
         return TaskManager.Access.newInstance(null, new TaskManagerConfig() {
 
+            @Override
             public Color getDefaultColor() {
                 return null;
             }
 
+            @Override
             public GPCalendar getCalendar() {
                 return new AlwaysWorkingTimeCalendarImpl();
             }
 
+            @Override
             public TimeUnitStack getTimeUnitStack() {
                 return new GPTimeUnitStack();
             }
 
+            @Override
             public HumanResourceManager getResourceManager() {
                 return null;
             }
 
+            @Override
             public URL getProjectDocumentURL() {
                 return null;
             }

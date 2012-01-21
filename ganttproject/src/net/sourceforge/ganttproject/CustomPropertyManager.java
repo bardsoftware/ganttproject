@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.Date;
@@ -18,6 +36,8 @@ public interface CustomPropertyManager {
     void deleteDefinition(CustomPropertyDefinition def);
     void importData(CustomPropertyManager source);
     void addListener(CustomPropertyListener listener);
+    void reset();
+
     class PropertyTypeEncoder {
         public static String encodeFieldType(Class<?> fieldType) {
             String result = null;
@@ -87,36 +107,47 @@ public interface CustomPropertyManager {
                 defaultValue = "";
             }
             return new CustomPropertyDefinition() {
+                @Override
                 public Object getDefaultValue() {
                     return defaultValue;
                 }
+                @Override
                 public String getDefaultValueAsString() {
                     return valueAsString;
                 }
+                @Override
                 public void setDefaultValueAsString(String value) {
                     throw new UnsupportedOperationException();
                 }
+                @Override
                 public String getID() {
                     return null;
                 }
+                @Override
                 public String getName() {
                     return null;
                 }
+                @Override
                 public void setName(String name) {
                     throw new UnsupportedOperationException();
                 }
+                @Override
                 public Class<?> getType() {
                     return propertyClass.getJavaClass();
                 }
+                @Override
                 public String getTypeAsString() {
                     return typeAsString;
                 }
+                @Override
                 public CustomPropertyClass getPropertyClass() {
                     return propertyClass;
                 }
+                @Override
                 public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
                     return Status.CANCEL_STATUS;
                 }
+                @Override
                 public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
                     throw new UnsupportedOperationException();
                 }

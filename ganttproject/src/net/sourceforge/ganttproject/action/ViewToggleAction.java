@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,9 +21,10 @@ package net.sourceforge.ganttproject.action;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 
-import net.sourceforge.ganttproject.GPView;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 /**
  * @author bard
@@ -33,12 +34,15 @@ public class ViewToggleAction extends GPAction {
 
     private final GPView myView;
 
-    public ViewToggleAction(Chart chart, GPView view) {
+    private final GPViewManager myViewManager;
+
+    public ViewToggleAction(Chart chart, GPViewManager viewManager, GPView view) {
         myChart = chart;
         myView = view;
+        myViewManager = viewManager;
         updateAction();
     }
-    
+
     @Override
     protected String getLocalizedDescription() {
         return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
@@ -47,10 +51,10 @@ public class ViewToggleAction extends GPAction {
     @Override
     protected String getLocalizedName() {
         return myChart == null ? null : myChart.getName();
-    }    
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        myView.setVisible(!myView.isVisible());
+        myViewManager.toggleVisible(myView);
     }
 }

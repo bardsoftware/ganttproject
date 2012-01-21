@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,10 +20,12 @@ package net.sourceforge.ganttproject.export;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -91,21 +93,23 @@ public class ExportFileWizardImpl extends WizardImpl {
     protected void onOkPressed() {
         super.onOkPressed();
         SwingUtilities.invokeLater(new Runnable(){
+            @Override
             public void run() {
                 try {
                     ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
                     if ("file".equals(myState.getUrl().getProtocol())) {
-                        String path = myState.getUrl().getPath();
+                        String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
                         myState.getExporter().run(new File(path), finalizationJob);
                     }
                 } catch (Exception e) {
-                    getUIFacade().showErrorDialog(e);
+                    GPLogger.log(e);
                 }
             }
         });
     }
 
     private class ExportFinalizationJobImpl implements ExportFinalizationJob {
+        @Override
         public void run(File[] exportedFiles) {
             if (myState.getPublishInWebOption().isChecked() && exportedFiles.length>0) {
                 WebPublisher publisher = new WebPublisher();

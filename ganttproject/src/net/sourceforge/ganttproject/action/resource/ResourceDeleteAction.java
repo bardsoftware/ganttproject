@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 
 
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -40,10 +41,20 @@ public class ResourceDeleteAction extends ResourceAction {
     private GanttProject myProject;
 
     public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
-        super("resource.delete", hrManager);
+        this(hrManager, context, project, uiFacade, IconSize.MENU);
+    }
+
+    private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
+            UIFacade uiFacade, IconSize size) {
+        super("resource.delete", hrManager, size);
         myUIFacade = uiFacade;
         myProject = project;
         myContext = context;
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new ResourceDeleteAction(getManager(), myContext, myProject, myUIFacade, size);
     }
 
     @Override
@@ -55,6 +66,7 @@ public class ResourceDeleteAction extends ResourceAction {
             Choice choice = myUIFacade.showConfirmationDialog(message, title);
             if (choice == Choice.YES) {
                 myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                    @Override
                     public void run() {
                         deleteResources(selectedResources);
                         myProject.repaint2();

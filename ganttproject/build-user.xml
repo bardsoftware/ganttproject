@@ -8,6 +8,7 @@
         <pathelement location="${ganttproject-2.0.location}/lib/core/AppleJavaExtensions.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/commons-logging.jar"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-net-ftpclient-3.0.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/jcommander-1.17.jar"/>
@@ -77,7 +78,7 @@
          <include name="lib/**"/>
         <include name="data/resources/**"/>
         <include name="AUTHORS"/>
-        <include name="COPYING"/>
+        <include name="LICENSE"/>
         <include name="README"/>
         <include name="build.xml"/>
         <include name="build-user.xml"/>

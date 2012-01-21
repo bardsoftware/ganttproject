@@ -4,7 +4,7 @@ Copyright (C) 2003-2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -115,15 +115,6 @@ public interface Document {
      *         otherwise.
      */
     public String getFilePath();
-
-    /**
-     * Gets the path to the document, if it is a file on a server (can be used
-     * to initialize an UrlChooser).
-     *
-     * @return the path, if the document is a server file; <code>null</code>,
-     *         otherwise.
-     */
-    public String getURLPath();
 
     /**
      * Gets the username used to authenticate to the storage container

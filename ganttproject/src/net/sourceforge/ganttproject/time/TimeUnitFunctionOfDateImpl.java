@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -33,6 +33,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
         myDirectFrameable = directAtomUnit;
     }
 
+    @Override
     public TimeUnit createTimeUnit(Date date) {
         //TODO Only works if myBaseDate is not a TimeUnitFunctiongOfDateImpl! (Quarter -> Month -> Day fails!)
         return new ParameterizedTimeUnitImpl(date);
@@ -44,7 +45,7 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
                 "This time unit is function of date. Use method createTimeUnit() to create a parameterized instance.");
     }
 
-    private class ParameterizedTimeUnitImpl implements TimeUnit, DateFrameable {
+    private class ParameterizedTimeUnitImpl implements TimeUnit {
         private final Date myRightDate;
 
         private final Date myLeftDate;
@@ -58,14 +59,17 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
                     .adjustLeft(myBaseDate);
         }
 
+        @Override
         public String getName() {
             return TimeUnitFunctionOfDateImpl.this.getName();
         }
 
+        @Override
         public boolean isConstructedFrom(TimeUnit unit) {
             return TimeUnitFunctionOfDateImpl.this.isConstructedFrom(unit);
         }
 
+        @Override
         public int getAtomCount(TimeUnit atomUnit) {
             if (atomUnit == TimeUnitFunctionOfDateImpl.this || atomUnit == this) {
                 return 1;
@@ -87,36 +91,35 @@ public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl
             return myAtomCount;
         }
 
+        @Override
         public TimeUnit getDirectAtomUnit() {
             return TimeUnitFunctionOfDateImpl.this.getDirectAtomUnit();
         }
 
+        @Override
         public Date adjustRight(Date baseDate) {
             return TimeUnitFunctionOfDateImpl.this.adjustRight(baseDate);
         }
 
+        @Override
         public Date adjustLeft(Date baseDate) {
             return TimeUnitFunctionOfDateImpl.this.adjustLeft(baseDate);
         }
 
+        @Override
         public Date jumpLeft(Date baseDate) {
             return TimeUnitFunctionOfDateImpl.this.jumpLeft(baseDate);
-        }
-
-        public void setTextFormatter(TextFormatter formatter) {
-            TimeUnitFunctionOfDateImpl.this.setTextFormatter(formatter);
-        }
-
-        public TimeUnitText format(Date baseDate) {
-            TextFormatter formatter = TimeUnitFunctionOfDateImpl.this
-                    .getTextFormatter();
-            return formatter == null ? new TimeUnitText("") : formatter.format(
-                    this, baseDate);
         }
 
         @Override
         public boolean equals(Object o) {
             return TimeUnitFunctionOfDateImpl.this.equals(o);
         }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
     }
 }

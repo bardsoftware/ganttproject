@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,9 +20,9 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
@@ -33,9 +33,14 @@ public class PasteAction extends GPAction {
         myViewmanager = viewManager;
     }
 
+    private PasteAction(GPViewManager viewmanager, IconSize size) {
+        super("paste", size);
+        myViewmanager = viewmanager;
+    }
+
     @Override
-    protected String getIconFilePrefix() {
-        return "paste_";
+    public GPAction withIcon(IconSize size) {
+        return new PasteAction(myViewmanager, size);
     }
 
     @Override

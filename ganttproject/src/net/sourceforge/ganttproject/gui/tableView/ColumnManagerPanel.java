@@ -1,19 +1,20 @@
-/* LICENSE: GPL2
-Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.tableView;
 
@@ -51,9 +52,7 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.CustomPropertyDefaultValueAdapter;
-import net.sourceforge.ganttproject.gui.options.model.DateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -63,7 +62,6 @@ public class ColumnManagerPanel {
     private IsVisibleOption myIsVisibleOption = new IsVisibleOption();
     private NameOption myNameOption = new NameOption();
     private DefaultValueOption myEnableDefaultValueOption = new DefaultValueOption();
-    private DateOption myDate = new DefaultDateOption("taskProperties.customColumn.defaultDate");
     private PropertyClassOption myType = new PropertyClassOption();
     private GPOption myDefaultValueOption;
 
@@ -156,10 +154,12 @@ public class ColumnManagerPanel {
                 this.isShow = isShow;
             }
 
+            @Override
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 mySelection = selection;
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (CustomPropertyDefinition def: mySelection) {
                     myIsVisibleOption.setVisible(def, isShow);
@@ -170,6 +170,7 @@ public class ColumnManagerPanel {
         props.getTableAndActions().addAction(new ShowHideSelectionAction(false, "$Hide selected"));
         myIsVisibleOption.setVisibleFields(myVisibleFields);
         ChangeValueListener defaultValuePanelEnabler = new ChangeValueListener() {
+            @Override
             public void changeValue(ChangeValueEvent event) {
                 setDefaultValuePanelEnabled(myEnableDefaultValueOption.isChecked());
             }
@@ -180,6 +181,7 @@ public class ColumnManagerPanel {
         ListAndFieldsPanel<CustomPropertyDefinition> listAndFields =
             new ListAndFieldsPanel<CustomPropertyDefinition>(props, fields);
         props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
+            @Override
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 if (selection.size()!=1) {
                     UIUtil.setEnabledTree(fields, false);

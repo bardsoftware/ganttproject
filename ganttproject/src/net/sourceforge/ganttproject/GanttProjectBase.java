@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 Dmitry Barashev, GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -19,28 +19,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JFrame;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JToolBar;
 import javax.swing.table.AbstractTableModel;
 
-import net.sourceforge.ganttproject.action.edit.CopyAction;
-import net.sourceforge.ganttproject.action.edit.CutAction;
-import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
-import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
@@ -52,19 +45,22 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
+import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.search.SearchUiImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
@@ -76,7 +72,6 @@ import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 
-import org.eclipse.core.runtime.IAdaptable;
 
 /**
  * This class is designed to be a GanttProject-after-refactorings. I am going to
@@ -97,24 +92,31 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final ProjectUIFacadeImpl myProjectUIFacade;
     private final DocumentManager myDocumentManager;
     /** The tabbed pane with the different parts of the project */
-    private GanttTabbedPane myTabPane;
+    private final GanttTabbedPane myTabPane;
+    private final JToolBar myToolBar = new JToolBar();
     private final GPUndoManager myUndoManager;
     private final CustomColumnsManager myTaskCustomColumnManager;
-    private final CustomColumnsStorage myTaskCustomColumnStorage;
+    //private final CustomColumnsStorage myTaskCustomColumnStorage;
 
-    private final CustomColumnsManager myResourceCustomPropertyManager =
-        new CustomColumnsManager(new CustomColumnsStorage());
+    private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
 
     private final RssFeedChecker myRssChecker;
+    private final ContentPaneBuilder myContentPaneBuilder;
+    private final SearchUiImpl mySearchUi;
 
     protected GanttProjectBase() {
         super("Gantt Chart");
+        myToolBar.setFloatable(false);
+        myToolBar.setBorderPainted(false);
+        myToolBar.setRollover(true);
+
         statusBar = new GanttStatusBar(this);
         myTabPane = new GanttTabbedPane();
-        myViewManager = new ViewManagerImpl(myTabPane);
-        addProjectEventListener(myViewManager.getProjectEventListener());
+        myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
+        myViewManager = new ViewManagerImpl(getProject(), myTabPane);
+
         myTimeUnitStack = new GPTimeUnitStack();
-        NotificationManagerImpl notificationManager = new NotificationManagerImpl(getTabs().getAnimationHost());
+        NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
@@ -136,15 +138,18 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             }
         };
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
-        myTaskCustomColumnStorage = new CustomColumnsStorage();
-        myTaskCustomColumnManager = new CustomColumnsManager(myTaskCustomColumnStorage);
+        myTaskCustomColumnManager = new CustomColumnsManager();
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
+
+        mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
     }
 
+    @Override
     public void addProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.add(listener);
     }
 
+    @Override
     public void removeProjectEventListener(ProjectEventListener listener) {
         myModifiedStateChangeListeners.remove(listener);
     }
@@ -194,6 +199,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myUIFacade;
     }
 
+    @Override
     public Frame getMainFrame() {
         return myUIFacade.getMainFrame();
     }
@@ -203,54 +209,62 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.setLookAndFeel(laf);
     }
 
+    @Override
     public GanttLookAndFeelInfo getLookAndFeel() {
         return myUIFacade.getLookAndFeel();
     }
 
+    @Override
     public GPOptionGroup getOptions() {
         return myUIFacade.getOptions();
     }
 
+    @Override
     public ScrollingManager getScrollingManager() {
         return myUIFacade.getScrollingManager();
     }
 
+    @Override
     public ZoomManager getZoomManager() {
         return myUIFacade.getZoomManager();
     }
 
+    @Override
     public GPUndoManager getUndoManager() {
         return myUndoManager;
     }
+    @Override
     public void setStatusText(String text) {
         myUIFacade.setStatusText(text);
     }
 
+    @Override
     public Dialog createDialog(Component content, Action[] buttonActions, String title) {
         return myUIFacade.createDialog(content, buttonActions, title);
     }
 
 
+    @Override
     public UIFacade.Choice showConfirmationDialog(String message, String title) {
         return myUIFacade.showConfirmationDialog(message, title);
     }
 
+    @Override
     public void showOptionDialog(int messageType, String message, Action[] actions) {
         myUIFacade.showOptionDialog(messageType, message, actions);
     }
 
+    @Override
     public void showErrorDialog(String message) {
         myUIFacade.showErrorDialog(message);
     }
 
+    @Override
     public void showErrorDialog(Throwable e) {
         myUIFacade.showErrorDialog(e);
     }
 
-    public void logErrorMessage(Throwable e) {
-        myUIFacade.logErrorMessage(e);
-    }
-
+    @Override
     public NotificationManager getNotificationManager() {
         return myUIFacade.getNotificationManager();
     }
@@ -265,14 +279,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myUIFacade.showPopupMenu(invoker, actions, x, y);
     }
 
+    @Override
     public TaskSelectionContext getTaskSelectionContext() {
         return myUIFacade.getTaskSelectionContext();
     }
 
+    @Override
     public TaskSelectionManager getTaskSelectionManager() {
         return myUIFacade.getTaskSelectionManager();
     }
 
+    @Override
     public void setWorkbenchTitle(String title) {
         myUIFacade.setWorkbenchTitle(title);
     }
@@ -281,159 +298,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myViewManager;
     }
 
+    @Override
     public Chart getActiveChart() {
-        GPView activeView = myViewManager.mySelectedView;
-        return activeView.getChart();
-    }
-
-    private class ViewManagerImpl implements GPViewManager {
-        private final GanttTabbedPane myTabs;
-        private final List<GPView> myViews = new ArrayList<GPView>();
-        private GPView mySelectedView;
-
-        private final AbstractAction myCopyAction;
-        private final AbstractAction myCutAction;
-        private final AbstractAction myPasteAction;
-
-        ViewManagerImpl(GanttTabbedPane tabs) {
-            myTabs = tabs;
-
-            // Create actions
-            myCopyAction = new CopyAction(this);
-            myCutAction = new CutAction(this);
-            myPasteAction = new PasteAction(this);
-
-            myTabs.addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    GPView selectedView = (GPView) myTabs.getSelectedUserObject();
-                    if (mySelectedView == selectedView) {
-                        return;
-                    }
-                    if (mySelectedView != null) {
-                        mySelectedView.setActive(false);
-                    }
-                    mySelectedView = selectedView;
-                    mySelectedView.setActive(true);
-                }
-            });
-        }
-
-        public GPView createView(IAdaptable adaptable, Icon icon) {
-            GPView view = new GPViewImpl(this, myTabs, (Container) adaptable
-                    .getAdapter(Container.class), (Chart)adaptable.getAdapter(Chart.class), icon);
-            myViews.add(view);
-            return view;
-        }
-
-        public AbstractAction getCopyAction() {
-            return myCopyAction;
-        }
-
-        public AbstractAction getCutAction() {
-            return myCutAction;
-        }
-
-        public AbstractAction getPasteAction() {
-            return myPasteAction;
-        }
-
-        public ChartSelection getSelectedArtefacts() {
-            return mySelectedView.getChart().getSelection();
-        }
-
-        ProjectEventListener getProjectEventListener() {
-            return new ProjectEventListener.Stub() {
-                @Override
-                public void projectClosed() {
-                    for (int i=0; i<myViews.size(); i++) {
-                        GPViewImpl nextView = (GPViewImpl) myViews.get(i);
-                        nextView.reset();
-                    }
-                }
-            };
-        }
-
-        private void updateActions() {
-            ChartSelection selection = mySelectedView.getChart().getSelection();
-            myCopyAction.setEnabled(false==selection.isEmpty());
-            myCutAction.setEnabled(false==selection.isEmpty() && selection.isDeletable().isOK());
-        }
-
-        public Chart getActiveChart() {
-            return mySelectedView.getChart();
-        }
-    }
-
-    private class GPViewImpl implements GPView, ChartSelectionListener, GanttLanguage.Listener {
-        private final GanttTabbedPane myTabs;
-
-        private int myIndex;
-
-        private Container myComponent;
-
-        private boolean isVisible;
-
-        private final Icon myIcon;
-
-        private final Chart myChart;
-
-        private final ViewManagerImpl myManager;
-
-        GPViewImpl(ViewManagerImpl manager, GanttTabbedPane tabs, Container component, Chart chart, Icon icon) {
-            myManager = manager;
-            myTabs = tabs;
-            myComponent = component;
-            myIcon = icon;
-            myChart = chart;
-            language.addListener(this);
-            assert myChart!=null;
-        }
-
-        public void setActive(boolean active) {
-            if (active) {
-                myChart.addSelectionListener(this);
-            }
-            else {
-                myChart.removeSelectionListener(this);
-            }
-        }
-
-        public void reset() {
-            myChart.reset();
-        }
-
-        public void setVisible(boolean isVisible) {
-            if (isVisible) {
-                myChart.setTaskManager(GanttProjectBase.this.getTaskManager());
-                String tabName = myChart.getName();
-                myTabs.addTab(tabName, myIcon, myComponent, tabName, this);
-                myTabs.setSelectedComponent(myComponent);
-                myIndex = myTabs.getSelectedIndex();
-
-            } else {
-                myTabs.remove(myIndex);
-            }
-            this.isVisible = isVisible;
-        }
-
-        public boolean isVisible() {
-            return isVisible;
-        }
-
-        public void selectionChanged() {
-            myManager.updateActions();
-        }
-
-        public Chart getChart() {
-            return myChart;
-        }
-
-        public void languageChanged(Event event) {
-            if(isVisible()) {
-                myTabs.setTitleAt(myIndex, myChart.getName());
-            }
-        }
+        return myViewManager.getSelectedView().getChart();
     }
 
     protected static class RowHeightAligner implements GPOptionChangeListener {
@@ -448,6 +315,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             myTreeView = treeView;
         }
 
+        @Override
         public void optionsChanged() {
             myTreeView.getTable().setRowHeight(myGanttViewModel.calculateRowHeight());
             AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
@@ -456,74 +324,117 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         }
     }
 
+    protected void createContentPane() {
+        myContentPaneBuilder.build(getContentPane(), getLayeredPane());
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension windowSize = getPreferredSize();
+        // Put the frame at the middle of the screen
+        setLocation(screenSize.width / 2 - (windowSize.width / 2),
+                screenSize.height / 2 - (windowSize.height / 2));
+        pack();
+    }
+
     public GanttTabbedPane getTabs() {
         return myTabPane;
+    }
+
+    protected JToolBar getToolBar() {
+        return myToolBar;
     }
 
     public IGanttProject getProject() {
         return this;
     }
 
+    @Override
     public TimeUnitStack getTimeUnitStack() {
         return myTimeUnitStack;
     }
 
+    @Override
     public CustomColumnsManager getTaskCustomColumnManager() {
         return myTaskCustomColumnManager;
     }
 
+    @Override
     public CustomPropertyManager getResourceCustomPropertyManager() {
         return myResourceCustomPropertyManager;
     }
 
-    public CustomColumnsStorage getCustomColumnsStorage() {
-        return myTaskCustomColumnStorage;
-    }
+//    @Override
+//    public CustomColumnsStorage getCustomColumnsStorage() {
+//        return myTaskCustomColumnStorage;
+//    }
 
     protected RssFeedChecker getRssFeedChecker() {
         return myRssChecker;
     }
 
+    protected SearchUiImpl getSearchUi() {
+        return mySearchUi;
+    }
+
+    @Override
     public abstract String getProjectName();
 
+    @Override
     public abstract void setProjectName(String projectName);
 
+    @Override
     public abstract String getDescription();
 
+    @Override
     public abstract void setDescription(String description);
 
+    @Override
     public abstract String getOrganization();
 
+    @Override
     public abstract void setOrganization(String organization);
 
+    @Override
     public abstract String getWebLink();
 
+    @Override
     public abstract void setWebLink(String webLink);
 
+    @Override
     public abstract Task newTask();
 
+    @Override
     public abstract UIConfiguration getUIConfiguration();
 
+    @Override
     public abstract HumanResourceManager getHumanResourceManager();
 
+    @Override
     public abstract RoleManager getRoleManager();
 
+    @Override
     public abstract TaskManager getTaskManager();
 
+    @Override
     public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
+    @Override
     public abstract GPCalendar getActiveCalendar();
 
+    @Override
     public abstract void setModified();
 
+    @Override
     public abstract void close();
 
+    @Override
     public abstract Document getDocument();
 
     protected GanttStatusBar getStatusBar() {
         return statusBar;
     }
 
+    @Override
     public DocumentManager getDocumentManager() {
         return myDocumentManager;
     }

@@ -4,7 +4,7 @@ Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 
 /**
  * Interface providing paint methods
@@ -36,4 +37,6 @@ public interface Painter {
     void paint(Line line);
 
     void paint(Text next);
+
+    void paint(TextGroup textGroup);
 }

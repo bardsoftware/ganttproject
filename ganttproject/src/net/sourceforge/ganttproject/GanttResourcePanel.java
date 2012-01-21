@@ -4,7 +4,7 @@ Copyright (C) 2003-2011 Thomas Alexandre, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,9 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,7 +27,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -37,8 +34,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
+import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
@@ -50,13 +47,10 @@ import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
-public class GanttResourcePanel extends JPanel implements ResourceView,
-        ResourceContext, AssignmentContext, ResourceTreeUIFacade {
-
-    private final ResourceTreeTableModel model;
-
-    final ResourceTreeTable table;
+public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
+        implements ResourceView, ResourceContext, AssignmentContext, ResourceTreeUIFacade {
 
     public final GanttProject appli;
 
@@ -73,27 +67,31 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private final UIFacade myUIFacade;
 
+    private static Pair<ResourceTreeTable, ResourceTreeTableModel> createTreeTable(IGanttProject project, UIFacade uiFacade) {
+        ResourceTreeTableModel model = new ResourceTreeTableModel(
+                project.getHumanResourceManager(), project.getTaskManager(), project.getResourceCustomPropertyManager());
+        return Pair.create(new ResourceTreeTable(project, model, uiFacade), model);
+    }
+
     public GanttResourcePanel(final GanttProject prj, final UIFacade uiFacade) {
-        super(new BorderLayout());
+        super(createTreeTable(prj.getProject(), uiFacade));
         appli = prj;
         myUIFacade = uiFacade;
 
         prj.addProjectEventListener(getProjectEventListener());
-        model = new ResourceTreeTableModel(appli.getHumanResourceManager(), prj.getTaskManager(), prj.getResourceCustomPropertyManager());
-        table = new ResourceTreeTable(appli, model, uiFacade);
-        myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, table);
+        myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
 
-        table.setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
+        getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
                 .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
                 .getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myResourceActionSet
                 .getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
-        table.addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
-        table.setRowHeight(20);
-        table.setBackground(new Color(1.0f, 1.0f, 1.0f));
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
+        getTreeTable().setRowHeight(20);
+        getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
+        getTreeTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        table.insertWithLeftyScrollBar(this);
-        area = new ResourceLoadGraphicArea(prj, prj.getZoomManager()) {
+        getTreeTable().insertWithLeftyScrollBar(this);
+        area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this) {
             @Override
             public boolean isExpanded(HumanResource hr) {
                 return getResourceTreeTable().isExpanded(hr);
@@ -101,11 +99,11 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
             @Override
             protected int getRowHeight(){
-                return table.getRowHeight();
+                return getTreeTable().getRowHeight();
             }
         };
         prj.getZoomManager().addZoomListener(area.getZoomListener());
-        area.getChartModel().setRowHeight(table.getRowHeight());
+        area.getChartModel().setRowHeight(getTreeTable().getRowHeight());
 
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
         //applyComponentOrientation(lang.getComponentOrientation());
@@ -114,9 +112,9 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         MouseListener ml = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                TreePath selPath = table.getTreeTable().getPathForLocation(
+                TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(
                         e.getX(), e.getY());
-                table.getTreeTable().getTree().setSelectionPath(selPath);
+                getTreeTable().getTreeTable().getTree().setSelectionPath(selPath);
                 handlePopupTrigger(e);
             }
 
@@ -137,8 +135,8 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
             }
         };
         if (!prj.isOnlyViewer) {
-            table.addMouseListener(ml);
-            table.getTreeTable().getParent().addMouseListener(ml);
+            getTreeTable().addMouseListener(ml);
+            getTreeTable().getTreeTable().getParent().addMouseListener(ml);
         }
     }
 
@@ -154,7 +152,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-            DefaultMutableTreeNode[] selectedNodes = table.getSelectedNodes();
+            DefaultMutableTreeNode[] selectedNodes = getTreeTable().getSelectedNodes();
             // TODO Allow to have multiple assignments selected as well!
             if (selectedNodes.length == 1
                     && selectedNodes[0] instanceof AssignmentNode) {
@@ -178,7 +176,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
 
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
         final int x = popupTriggerEvent.getX();
-        final int y = popupTriggerEvent.getY() + table.getRowHeight();
+        final int y = popupTriggerEvent.getY() + getTreeTable().getRowHeight();
         return new Point(x,y);
     }
 
@@ -187,7 +185,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         JPopupMenu menu = new JPopupMenu();
         AbstractAction[] resourceActions = myResourceActionSet.getActions();
         menu.add(resourceActions[0]);
-        if (table.getSelectedNodes().length == 1) {
+        if (getTreeTable().getSelectedNodes().length == 1) {
             for (int i = 1; i < resourceActions.length; i++) {
                 menu.add(resourceActions[i]);
             }
@@ -208,38 +206,43 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     /** Function called when the language is changed */
     public void refresh(GanttLanguage language) {
         lang = language;
-        model.changeLanguage(lang);
+        getTreeModel().changeLanguage(lang);
     }
 
+    @Override
     public void resourceAdded(ResourceEvent event) {
         newHuman(event.getResource());
     }
 
+    @Override
     public void resourcesRemoved(ResourceEvent event) {
-        table.getTable().editingStopped(new ChangeEvent(table.getTable()));
-        model.deleteResources(event.getResources());
+        getTreeTable().getTreeTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
+        getTreeModel().deleteResources(event.getResources());
     }
 
+    @Override
     public void resourceChanged(ResourceEvent e) {
-        model.resourceChanged(e.getResource());
+        getTreeModel().resourceChanged(e.getResource());
         e.getResource().resetLoads();
         repaint();
     }
 
+    @Override
     public void resourceAssignmentsChanged(ResourceEvent e) {
-        model.resourceAssignmentsChanged(e.getResources());
+        getTreeModel().resourceAssignmentsChanged(e.getResources());
         repaint();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // ResourceContext interface
+    @Override
     public HumanResource[] getResources() {
         // ProjectResource[] res;
         // List allRes = model.getAllResouces();
         // res = new ProjectResource[allRes.size()];
         // model.getAllResouces().toArray(res);
         // return res;
-        DefaultMutableTreeNode[] tNodes = table.getSelectedNodes();
+        DefaultMutableTreeNode[] tNodes = getTreeTable().getSelectedNodes();
         if (tNodes == null) {
             return new HumanResource[0];
         }
@@ -263,41 +266,42 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     /** Create a new Human */
     public void newHuman(HumanResource people) {
         if (people != null) {
-            DefaultMutableTreeNode result = model.addResource(people);
-            table.getTree().scrollPathToVisible(new TreePath(result.getPath()));
+            DefaultMutableTreeNode result = getTreeModel().addResource(people);
+            getTreeTable().getTree().scrollPathToVisible(new TreePath(result.getPath()));
         }
     }
 
     /** Return the list of the person */
     public List<HumanResource> getPeople() {
-        return model.getAllResouces();
+        return getTreeModel().getAllResouces();
     }
 
     public ResourceTreeTable getResourceTreeTable() {
-        return table;
+        return getTreeTable();
     }
 
     public ResourceTreeTableModel getResourceTreeTableModel() {
-        return model;
+        return getTreeModel();
     }
 
     /** Return the number of people on the list */
     public int nbPeople() {
-        return model.getAllResouces().size();
+        return getTreeModel().getAllResouces().size();
     }
 
     /** Reset all human... */
     public void reset() {
-        model.reset();
+        getTreeModel().reset();
     }
 
     public ResourceContext getContext() {
         return this;
     }
 
+    @Override
     public ResourceAssignment[] getResourceAssignments() {
         ResourceAssignment[] res = null;
-        DefaultMutableTreeNode[] tNodes = table.getSelectedNodes();
+        DefaultMutableTreeNode[] tNodes = getTreeTable().getSelectedNodes();
         if (tNodes != null) {
             int nbAssign = 0;
             for (int i = 0; i < tNodes.length; i++) {
@@ -347,7 +351,7 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
     }
 
     public void saveSelectionToClipboard(boolean cut) {
-        DefaultMutableTreeNode selectedNodes[] = table.getSelectedNodes();
+        DefaultMutableTreeNode selectedNodes[] = getTreeTable().getSelectedNodes();
 
         if(selectedNodes == null) {
             return;
@@ -378,16 +382,27 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         }
     }
 
+    @Override
+    public void setSelected(HumanResource resource, boolean clear) {
+        if (clear) {
+            clearSelection();
+        }
+        getTree().setSelectionPath(new TreePath(getResourceTreeTableModel().getNodeForResource(resource).getPath()));
+    }
+
+    @Override
+    public void clearSelection() {
+        getTree().clearSelection();
+    }
+
+    @Override
     public AbstractAction getMoveUpAction() {
         return myResourceActionSet.getResourceMoveUpAction();
     }
 
+    @Override
     public AbstractAction getMoveDownAction() {
         return myResourceActionSet.getResourceMoveDownAction();
-    }
-
-    public Component getUIComponent() {
-        return this;
     }
 
     public ResourceActionSet getResourceActionSet() {
@@ -406,7 +421,13 @@ public class GanttResourcePanel extends JPanel implements ResourceView,
         return getUIFacade().getTaskSelectionManager();
     }
 
-    public TableHeaderUIFacade getVisibleFields() {
-        return table.getVisibleFields();
+    @Override
+    protected DefaultMutableTreeNode getRootNode() {
+        return (DefaultMutableTreeNode) getTreeModel().getRoot();
+    }
+
+    @Override
+    protected Chart getChart() {
+        return myUIFacade.getResourceChart();
     }
 }

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,7 +22,8 @@ import java.awt.event.MouseEvent;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 
-public class ScrollViewInteraction extends MouseInteractionBase implements MouseInteraction {
+public class ScrollViewInteraction extends MouseInteractionBase
+        implements MouseInteraction {
     private ScrollingSession myScrollingSession;
 
     public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade) {
@@ -30,10 +31,12 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
         myScrollingSession = timelineFacade.createScrollingSession(e.getX());
     }
 
+    @Override
     public void apply(MouseEvent event) {
         myScrollingSession.setXpos(event.getX());
     }
 
+    @Override
     public void finish() {
         myScrollingSession.finish();
     }

@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -37,14 +37,17 @@ public class RoleSetImpl implements RoleSet {
         myRoleManager = roleManager;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public Role[] getRoles() {
         return myRoles.toArray(new Role[0]);
     }
 
+    @Override
     public Role createRole(String name, int persistentID) {
         RoleImpl result = new RoleImpl(persistentID, name, this);
         myRoles.add(result);
@@ -52,11 +55,13 @@ public class RoleSetImpl implements RoleSet {
         return result;
     }
 
+    @Override
     public void deleteRole(Role role) {
         myRoles.remove(role);
         myRoleManager.fireRolesChanged(this);
     }
 
+    @Override
     public void changeRole(String name, int roleID) {
         Role role = findRole(roleID);
         if (role != null) {
@@ -64,6 +69,7 @@ public class RoleSetImpl implements RoleSet {
         }
     }
 
+    @Override
     public Role findRole(int roleID) {
         Role result = null;
         for (int i = 0; i < myRoles.size(); i++) {
@@ -76,6 +82,7 @@ public class RoleSetImpl implements RoleSet {
         return result;
     }
 
+    @Override
     public boolean isEnabled() {
         return isEnabled;
     }
@@ -85,15 +92,18 @@ public class RoleSetImpl implements RoleSet {
         return getName();
     }
 
+    @Override
     public void setEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
         myRoleManager.fireRolesChanged(this);
     }
 
+    @Override
     public boolean isEmpty() {
         return myRoles.isEmpty();
     }
 
+    @Override
     public void clear() {
         myRoles.clear();
     }

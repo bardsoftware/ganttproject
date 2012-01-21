@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -23,6 +23,8 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.task.CustomColumn;
@@ -45,16 +47,13 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
 
     private List<CustomPropertiesStructure> listStructure = null;
 
-    private final CustomColumnsStorage myColumnStorage;
-
-    public CustomPropertiesTagHandler(ParsingContext context,
-            TaskManager taskManager, CustomColumnsStorage columnStorage) {
+    public CustomPropertiesTagHandler(ParsingContext context, TaskManager taskManager) {
         this.taskManager = taskManager;
         this.parsingContext = context;
         this.listStructure = new ArrayList<CustomPropertiesStructure>();
-        myColumnStorage = columnStorage;
     }
 
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) throws FileFormatException {
         if (qName.equals("customproperty"))
@@ -66,6 +65,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(java.lang.String,
      *      java.lang.String, java.lang.String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         // nothing to do.
     }
@@ -73,6 +73,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
     /**
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingStarted()
      */
+    @Override
     public void parsingStarted() {
         // nothing to do.
     }
@@ -80,6 +81,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
     /**
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
      */
+    @Override
     public void parsingFinished() {
         Iterator<CustomPropertiesStructure> it = this.listStructure.iterator();
 
@@ -87,7 +89,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
             CustomPropertiesStructure cps = it
                     .next();
             Task task = taskManager.getTask(cps.taskID);
-            CustomColumn cc = myColumnStorage.getCustomColumnByID(cps.taskPropertyID);
+            CustomPropertyDefinition cc = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(cps.taskPropertyID);
             String valueStr = cps.value;
             Object value = null;
             Class<?> cla = cc.getType();

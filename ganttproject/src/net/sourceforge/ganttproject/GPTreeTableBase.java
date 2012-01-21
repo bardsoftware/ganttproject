@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
@@ -31,11 +32,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.text.AttributedCharacterIterator;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +46,7 @@ import java.util.ListIterator;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -72,7 +71,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -88,6 +86,7 @@ import org.jdesktop.swing.decorator.AlternateRowHighlighter;
 import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
 import org.jdesktop.swing.decorator.Highlighter;
 import org.jdesktop.swing.decorator.HighlighterPipeline;
+import org.jdesktop.swing.table.TableCellRenderers;
 import org.jdesktop.swing.table.TableColumnExt;
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 import org.jdesktop.swing.treetable.TreeTableModel;
@@ -102,6 +101,11 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
         private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
         private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+
+        private List<ColumnImpl> getColumns() {
+            return Collections.unmodifiableList(myColumns);
+        }
+
         @Override
         public int getSize() {
             return myColumns.size();
@@ -223,6 +227,15 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             c.setName(definition.getName());
         }
 
+        protected void updateType(CustomPropertyDefinition def) {
+            ColumnImpl c = findColumnByID(def.getID());
+            if (c == null) {
+                return;
+            }
+            c.getTableColumnExt().setCellRenderer(createCellRenderer(def.getType()));
+            c.getTableColumnExt().setCellEditor(createCellEditor(def.getType()));
+        }
+
         protected void deleteColumn(CustomPropertyDefinition definition) {
             ColumnImpl c = findColumnByID(definition.getID());
             if (c == null) {
@@ -316,6 +329,17 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         @Override
         public void setOrder(int order) {
         }
+
+        Dimension getHeaderFitDimension() {
+            TableCellRenderer renderer = myTableColumn.getHeaderRenderer();
+            if (renderer == null) {
+                renderer = myTable.getTableHeader().getDefaultRenderer();
+            }
+            Component comp = renderer.getTableCellRendererComponent(
+                    myTable, myTableColumn.getHeaderValue(), false, false, 0, 0);
+            return comp.getPreferredSize();
+        }
+
     }
 
     protected IGanttProject getProject() {
@@ -504,10 +528,13 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         case CustomPropertyEvent.EVENT_REMOVE:
             deleteCustomColumn((CustomColumn) event.getDefinition());
             break;
-        case CustomPropertyEvent.EVENT_PROPERTY_CHANGE:
+        case CustomPropertyEvent.EVENT_NAME_CHANGE:
             getTableHeaderUiFacade().renameColumn(event.getDefinition());
             getTable().getTableHeader().repaint();
             break;
+        case CustomPropertyEvent.EVENT_TYPE_CHANGE:
+            getTableHeaderUiFacade().updateType(event.getDefinition());
+            getTable().repaint();
         }
     }
 
@@ -525,73 +552,37 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
     protected abstract Chart getChart();
 
-//    protected TableColumnExt newTableColumnExt(int modelIndex, CustomColumn customColumn) {
-//        TableColumnExt result = new TableColumnExt(modelIndex);
-//        TableCellEditor defaultEditor = getTreeTable().getDefaultEditor(customColumn.getType());
-//        if (defaultEditor!=null) {
-//            result.setCellEditor(new TreeTableCellEditorImpl(defaultEditor));
-//        }
-//        return result;
-//    }
-
     protected TableColumnExt newTableColumnExt(int modelIndex) {
         TableColumnExt result = new TableColumnExt(modelIndex);
         Class<?> columnClass = getTreeTableModel().getColumnClass(modelIndex);
-        TableCellEditor editor = columnClass.equals(GregorianCalendar.class)
-            ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+        TableCellRenderer renderer = createCellRenderer(columnClass);
+        if (renderer != null) {
+            result.setCellRenderer(renderer);
+        }
+        TableCellEditor editor = createCellEditor(columnClass);
         if (editor!=null) {
             result.setCellEditor(new TreeTableCellEditorImpl(editor));
         }
         return result;
     }
 
-    protected TableCellEditor newDateCellEditor() {
-        return new DateCellEditor() {
-            @Override
-            protected Date parseDate(String dateString) {
-                DateFormat[] formats = new DateFormat[] {
-                        GanttLanguage.getInstance().getLongDateFormat(),
-                        GanttLanguage.getInstance().getMediumDateFormat(),
-                        GanttLanguage.getInstance().getShortDateFormat(),
-                };
-                for (int i=0; i<formats.length; i++) {
-                    try {
-                        Date typedDate = formats[i].parse(dateString);
-                        Calendar typedCal = CalendarFactory.newCalendar();
-                        typedCal.setTime(typedDate);
-                        Calendar projectStartCal = CalendarFactory.newCalendar();
-                        projectStartCal.setTime(myProject.getTaskManager().getProjectStart());
-                        int yearDiff = Math.abs(typedCal.get(Calendar.YEAR) - projectStartCal.get(Calendar.YEAR));
-                        if (yearDiff > 1500) {
-                            AttributedCharacterIterator iter = formats[i].formatToCharacterIterator(typedDate);
-                            int additionalZeroes = -1;
-                            StringBuffer result = new StringBuffer();
-                            for (char c = iter.first(); c!=AttributedCharacterIterator.DONE; c = iter.next()) {
-                                if (iter.getAttribute(DateFormat.Field.YEAR)!=null && additionalZeroes==-1) {
-                                    additionalZeroes = iter.getRunLimit(DateFormat.Field.YEAR) - iter.getIndex();
-                                    for (int j=0; j<additionalZeroes; j++) {
-                                        result.append('0');
-                                    }
-                                }
-                                result.append(c);
-                            }
-                            if (!result.toString().equals(dateString)) {
-                                typedCal.add(Calendar.YEAR, 2000);
-                                return typedCal.getTime();
-                            }
-                        }
-                        return typedDate;
-                    }
-                    catch (ParseException e) {
-                        if (i+1 == formats.length) {
-                            return null;
-                        }
-                    }
-                }
-                return null;
+    TableCellRenderer createCellRenderer(Class<?> columnClass) {
+        TableCellRenderer renderer = null;
+        if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass)) {
+            renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+        }
+        if (renderer == null) {
+            renderer = getTreeTable().getDefaultRenderer(columnClass);
+        }
+        return renderer;
+    }
 
-            }
-        };
+    TableCellEditor createCellEditor(Class<?> columnClass) {
+        return columnClass.equals(GregorianCalendar.class)
+                ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+    }
+    protected TableCellEditor newDateCellEditor() {
+        return new DateCellEditor();
     }
 
     public JTree getTree() {
@@ -625,7 +616,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
 
-    private static abstract class DateCellEditor extends DefaultCellEditor {
+    private static class DateCellEditor extends DefaultCellEditor {
         // normal textfield background color
         private final Color colorNormal = null;
 
@@ -650,7 +641,18 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             return new GanttCalendar(myDate == null ? new Date() : myDate);
         }
 
-        protected abstract Date parseDate(String dateString);
+        private Date parseDate(String dateString) {
+            try {
+                Date parsed = GanttLanguage.getInstance().getShortDateFormat().parse(dateString);
+                if (GanttLanguage.getInstance().getShortDateFormat().format(parsed).equals(dateString)) {
+                    return parsed;
+                }
+            } catch (ParseException e) {
+                GPLogger.logToLogger(e);
+            }
+            return null;
+
+        }
 
         @Override
         public boolean stopCellEditing() {
@@ -660,12 +662,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                 getComponent().setBackground(colorError);
                 return false;
             }
-            else {
-                myDate = parsedDate;
-                getComponent().setBackground(colorNormal);
-                super.fireEditingStopped();
-                return true;
-            }
+            myDate = parsedDate;
+            getComponent().setBackground(colorNormal);
+            super.fireEditingStopped();
+            return true;
         }
     }
 
@@ -710,24 +710,18 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     /** Adds an action to the object and makes it active */
-    public void addActionWithAccelleratorKey(Action action) {
+    public void addActionWithAccelleratorKey(GPAction action) {
         if (action != null) {
-            addAction(action, (KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
+            for (KeyStroke ks : GPAction.getAllKeyStrokes(action.getID())) {
+                addAction(action, ks);
+            }
         }
     }
 
-    void setupActionMaps(Action up, Action down, Action indent, Action unindent, Action _new,
-            Action cut, Action copy, Action paste, Action properties, Action delete) {
-        addActionWithAccelleratorKey(up);
-        addActionWithAccelleratorKey(down);
-        addActionWithAccelleratorKey(indent);
-        addActionWithAccelleratorKey(unindent);
-        addActionWithAccelleratorKey(_new);
-        addActionWithAccelleratorKey(properties);
-        addActionWithAccelleratorKey(delete);
-        addActionWithAccelleratorKey(cut);
-        addActionWithAccelleratorKey(copy);
-        addActionWithAccelleratorKey(paste);
+    void setupActionMaps(GPAction... actions) {
+        for (GPAction action : actions) {
+            addActionWithAccelleratorKey(action);
+        }
     }
 
     private class HeaderMouseListener extends MouseAdapter {
@@ -776,11 +770,6 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                   });
             }
             {
-                result.add(new GPAction("columns.pack.label") {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                    }
-                });
                 GPAction fitAction = new GPAction("columns.fit.label") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -835,29 +824,52 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         }
     }
 
-    private void autoFitColumnWidth(ColumnImpl column) {
+    public void autoFitColumns() {
+        int visibleWidth = 0;
+        int headerHeight = 0;
+        for (ColumnImpl column : getTableHeaderUiFacade().getColumns()) {
+            if (column.isVisible()) {
+                Dimension columnDimension = autoFitColumnWidth(column);
+                visibleWidth += columnDimension.width;
+                headerHeight = Math.max(headerHeight, column.getHeaderFitDimension().height);
+            }
+        }
+//        {
+//            Rectangle bounds = getBounds();
+//            setBounds(bounds.x, bounds.y, visibleWidth, bounds.height);
+//        }
+        if (headerHeight > 0) {
+            Rectangle bounds = getTable().getTableHeader().getBounds();
+            getTable().getTableHeader().setBounds(bounds.x, bounds.y, visibleWidth, headerHeight);
+        }
+        {
+            Rectangle bounds = getTable().getBounds();
+            getTable().setBounds(bounds.x, bounds.y, visibleWidth, getTable().getRowCount() * getTable().getRowHeight());
+        }
+    }
+
+    private Dimension autoFitColumnWidth(ColumnImpl column) {
         final int margin = 5;
         final JTable table = getTable();
         final TableColumnExt tableColumn = column.myTableColumn;
 
-        TableCellRenderer renderer = tableColumn.getHeaderRenderer();
-        if (renderer == null) {
-            renderer = getTable().getTableHeader().getDefaultRenderer();
-        }
-        Component comp = renderer.getTableCellRendererComponent(
-                getTable(), tableColumn.getHeaderValue(), false, false, 0, 0);
-        int width = comp.getPreferredSize().width;
+        Dimension headerFit = column.getHeaderFitDimension();
+        int width = headerFit.width;
+        int height = 0;
 
         // Get maximum width of column data
-        renderer = tableColumn.getCellRenderer();
         for (int r = 0; r < getTable().getRowCount(); r++) {
-            comp = renderer.getTableCellRendererComponent(
+            TableCellRenderer renderer = table.getCellRenderer(r, column.getOrder());
+            Component comp = renderer.getTableCellRendererComponent(
                     table, table.getValueAt(r, column.getOrder()), false, false, r, column.getOrder());
             width = Math.max(width, comp.getPreferredSize().width);
+            height += comp.getPreferredSize().height;
         }
         // Add margin
         width += 2 * margin;
         // Set the width
+        tableColumn.setWidth(width);
         tableColumn.setPreferredWidth(width);
+        return new Dimension(width, height);
     }
 }

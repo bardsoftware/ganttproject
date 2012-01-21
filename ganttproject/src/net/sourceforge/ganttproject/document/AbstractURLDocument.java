@@ -12,12 +12,4 @@ package net.sourceforge.ganttproject.document;
  */
 public abstract class AbstractURLDocument extends AbstractDocument {
 
-    /**
-     * "URLDocuments" don't return null on calls to getURLPath().
-     */
-    @Override
-    public String getURLPath() {
-        return getPath();
-    }
-
 }

@@ -14,9 +14,6 @@ import java.util.Date;
 public interface TimeUnitStack {
     TimeUnit getDefaultTimeUnit();
 
-    TimeFrame createTimeFrame(Date startDate, TimeUnit topUnit,
-            TimeUnit bottomUnit);
-
     TimeUnitPair[] getTimeUnitPairs();
 
     String getName();

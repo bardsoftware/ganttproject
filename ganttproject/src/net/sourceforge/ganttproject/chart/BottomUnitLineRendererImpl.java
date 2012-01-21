@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2004-2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,14 +22,19 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.time.TimeUnitText;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
-    private final GraphicPrimitiveContainer myPrimitiveContainer;
     private GraphicPrimitiveContainer myTimelineContainer;
 
     public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
@@ -41,13 +46,12 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
             GraphicPrimitiveContainer timelineContainer,
             GraphicPrimitiveContainer primitiveContainer) {
         super(model);
-        myPrimitiveContainer = primitiveContainer;
         myTimelineContainer = timelineContainer;
     }
 
     @Override
     public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myPrimitiveContainer;
+        return myTimelineContainer;
     }
 
     @Override
@@ -58,92 +62,49 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         if (xpos > 0) {
             xpos = 0;
         }
+        TextGroup textGroup = myTimelineContainer.createTextGroup(
+                0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
         for (Offset offset : bottomOffsets) {
-            if (offset.getDayType() == GPCalendar.DayType.WORKING) {
-                renderWorkingDay(xpos, offset, prevOffset);
-            }
-            renderLabel(xpos, offset.getOffsetStart(), offset);
+            renderScaleMark(offset, prevOffset);
+            renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
             prevOffset = offset;
             xpos = prevOffset.getOffsetPixels();
         }
-        renderNonWorkingDayColumns();
     }
 
-    private void renderLabel(int curX, Date curDate, Offset curOffset) {
-        TimeUnitText timeUnitText = curOffset.getOffsetUnit().format(curDate);
-        String unitText = timeUnitText.getText(-1);
-        int posY = getTextBaselinePosition();
-        GraphicPrimitiveContainer.Text text = myTimelineContainer.createText(
-                curX + 2, posY, unitText);
-        myTimelineContainer.bind(text, timeUnitText);
-        text.setMaxLength(curOffset.getOffsetPixels() - curX);
-        text.setFont(getChartModel().getChartUIConfiguration().getSpanningHeaderFont());
-    }
-
-    private void renderNonWorkingDayColumns() {
-        List<Offset> defaultOffsets = getChartModel().getDefaultUnitOffsets();
-        int curX = defaultOffsets.get(0).getOffsetPixels();
-        if (curX > 0) {
-            curX = 0;
+    private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
+        final int maxWidth = curOffset.getOffsetPixels() - curX;
+        TimeFormatter formatter = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE);
+        TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
+        for (int i = 0; i < texts.length; i++) {
+            final TimeUnitText timeUnitText = texts[i];
+            GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
+                @Override
+                public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+                    return timeUnitText.getLabels(maxWidth, textLengthCalculator);
+                }
+            });
+            textGroup.addText(text);
         }
-        for (Offset offset : defaultOffsets) {
-            if (offset.getDayType() != GPCalendar.DayType.WORKING){
-                // Create a non-working day bar in the main area
-                renderNonWorkingDay(curX, offset);
-                // And expand it to the timeline area.
-                Rectangle r = myTimelineContainer.createRectangle(
-                    curX, getLineTopPosition() + 1,
-                    offset.getOffsetPixels() - curX,
-                    getLineBottomPosition() - getLineTopPosition() + 1);
-                //System.err.println(offset.getDayType()+": " + r);
-                applyRectangleStyle(r, offset.getDayType());
+    }
+
+    private void renderScaleMark(Offset offset, Offset prevOffset) {
+        if (prevOffset == null) {
+            return;
+        }
+        if (offset.getOffsetUnit() == GPTimeUnitStack.DAY) {
+            if (offset.getDayType() != GPCalendar.DayType.WORKING
+                    || prevOffset.getDayType() != GPCalendar.DayType.WORKING) {
+                return;
             }
-            curX = offset.getOffsetPixels();
         }
-    }
-
-    private void renderNonWorkingDay(int curX, Offset curOffset) {
-        GraphicPrimitiveContainer.Rectangle r =
-            getPrimitiveContainer().createRectangle(
-                    curX,
-                    getLineBottomPosition(),
-                    curOffset.getOffsetPixels() - curX,
-                    getHeight());
-        applyRectangleStyle(r, curOffset.getDayType());
-        getPrimitiveContainer().bind(r, curOffset.getDayType());
-    }
-
-    private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
-        if (dayType == GPCalendar.DayType.WEEKEND) {
-            r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
-        }
-        else if (dayType == GPCalendar.DayType.HOLIDAY) {
-            r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
-        }
-        r.setStyle("calendar.holiday");
-    }
-    private void renderWorkingDay(int curX, Offset offset, Offset prevOffset) {
-        if (prevOffset != null && prevOffset.getDayType() == GPCalendar.DayType.WORKING) {
-            myTimelineContainer.createLine(
-                    prevOffset.getOffsetPixels(), getLineTopPosition(),
-                    prevOffset.getOffsetPixels(), getLineTopPosition()+10);
-        }
+        myTimelineContainer.createLine(
+                prevOffset.getOffsetPixels(), getLineTopPosition(),
+                prevOffset.getOffsetPixels(), getLineTopPosition()+10);
     }
 
     private int getLineTopPosition() {
         return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-    }
-
-    private int getLineBottomPosition() {
-        return getLineTopPosition() + getLineHeight();
-    }
-
-    private int getLineHeight() {
-        return getLineTopPosition();
-    }
-
-    private int getTextBaselinePosition() {
-        return getLineBottomPosition() - 5;
     }
 
     private List<Offset> getBottomUnitOffsets() {

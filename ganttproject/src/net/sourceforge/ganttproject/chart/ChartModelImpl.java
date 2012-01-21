@@ -1,5 +1,5 @@
 /*
- * This code is provided under the terms of GPL version 2.
+ * This code is provided under the terms of GPL version 3.
  * Please see LICENSE file for details
  * (C) Dmitry Barashev, GanttProject team, 2004-2008
  */
@@ -69,20 +69,23 @@ public class ChartModelImpl extends ChartModelBase {
         super(taskManager, timeUnitStack, projectConfig);
         this.taskManager = taskManager;
         myTaskRendererImpl = new TaskRendererImpl2(this);
-        addRenderer(myTaskRendererImpl);
+        getRenderers().add(myTaskRendererImpl);
 
         class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
             private NewTaskColorOption() {
                 super("taskDefaultColor");
             }
+            @Override
             public String getTagName() {
                 return "colors";
             }
 
+            @Override
             public String getAttributeName() {
                 return "tasks";
             }
 
+            @Override
             public void loadValue(String legacyValue) {
                 lock();
                 loadPersistentValue(legacyValue);
@@ -164,6 +167,7 @@ public class ChartModelImpl extends ChartModelBase {
 
     }
 
+    @Override
     public void setVisibleTasks(List<Task> visibleTasks) {
         myVisibleTasks = visibleTasks;
     }
@@ -191,8 +195,7 @@ public class ChartModelImpl extends ChartModelBase {
             GraphicPrimitiveContainer.Rectangle rect = (GraphicPrimitiveContainer.Rectangle) primitive;
             if ("task.progress.end".equals(primitive.getStyle())
                     && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-                result = new TaskProgressChartItem(x, getBottomUnitWidth(),
-                        getBottomUnit(), (Task) primitive.getModelObject());
+                result = new TaskProgressChartItem((Task) primitive.getModelObject());
             }
         }
         return result;

@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,20 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action.edit;
 
-import javax.swing.Action;
 import javax.swing.JMenu;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.search.SearchUi;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu extends JMenu {
     private final UndoAction myUndoAction;
     private final RedoAction myRedoAction;
 
-    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager) {
-        super();
+    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, SearchUi searchUi, String key) {
+        super(GPAction.createVoidAction(key));
         final GPUndoManager undoManager = uiFacade.getUndoManager();
         myUndoAction = new UndoAction(undoManager);
         myRedoAction = new RedoAction(undoManager);
@@ -40,7 +41,7 @@ public class EditMenu extends JMenu {
         add(getRedoAction());
         addSeparator();
         add(new RefreshViewAction(uiFacade));
-        add(new SearchDialogAction(project,uiFacade));
+        add(new SearchDialogAction(searchUi));
         addSeparator();
         add(viewManager.getCutAction());
         add(viewManager.getCopyAction());
@@ -49,11 +50,11 @@ public class EditMenu extends JMenu {
         add(new SettingsDialogAction(project, uiFacade));
     }
 
-    public Action getUndoAction() {
+    public GPAction getUndoAction() {
         return myUndoAction;
     }
 
-    public Action getRedoAction() {
+    public GPAction getRedoAction() {
         return myRedoAction;
     }
 }

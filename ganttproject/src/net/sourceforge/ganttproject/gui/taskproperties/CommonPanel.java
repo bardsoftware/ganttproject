@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2010 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -30,8 +30,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
-
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 
 import org.jdesktop.jdnc.JNTable;
 import org.jdesktop.swing.decorator.AlternateRowHighlighter;
@@ -66,9 +64,8 @@ abstract class CommonPanel {
                 table.getRowHeight() * 10));
     }
 
-    static <T> JPanel createTableAndActions(JComponent table, AbstractTableAndActionsComponent<T> tableAndActions) {
+    static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
         JPanel result = new JPanel(new BorderLayout());
-        JComponent actionsComponent = tableAndActions.getActionsComponent();
         actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
         JPanel actionsWrapper = new JPanel(new BorderLayout());
         actionsWrapper.add(actionsComponent, BorderLayout.WEST);

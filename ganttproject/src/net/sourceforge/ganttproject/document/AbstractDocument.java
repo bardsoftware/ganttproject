@@ -19,25 +19,26 @@ public abstract class AbstractDocument implements Document {
         return false;
     }
 
+    @Override
     public boolean acquireLock() {
         return true;
     }
 
+    @Override
     public void releaseLock() {
     }
 
+    @Override
     public String getFilePath() {
         return null;
     }
 
-    public String getURLPath() {
-        return null;
-    }
-
+    @Override
     public String getUsername() {
         return null;
     }
 
+    @Override
     public String getPassword() {
         return null;
     }
@@ -45,15 +46,18 @@ public abstract class AbstractDocument implements Document {
     public void setUserInfo(String user, String pass) {
     }
 
+    @Override
     public String getLastError() {
         return "";
     }
 
+    @Override
     public void read() throws IOException {
         throw new UnsupportedOperationException(
                 "This method should be overriden in derived classes");
     }
 
+    @Override
     public Portfolio getPortfolio() {
         throw new UnsupportedOperationException();
     }

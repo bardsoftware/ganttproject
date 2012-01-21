@@ -4,7 +4,7 @@ Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -34,14 +34,17 @@ public class ProjectNamePage implements WizardPage {
         myI18N = i18n;
     }
 
+    @Override
     public String getTitle() {
         return myI18N.getNewProjectWizardWindowTitle();
     }
 
+    @Override
     public Component getComponent() {
         return myProjectSettingsPanel;
     }
 
+    @Override
     public void setActive(boolean active) {
         if (!active) {
             myProjectSettingsPanel.applyChanges(false);

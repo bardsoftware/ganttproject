@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
-    private final Map<HumanResource, ResourceAssignment> myAssignments = new HashMap<HumanResource, ResourceAssignment>();
+    private final Map<HumanResource, ResourceAssignment> myAssignments = new LinkedHashMap<HumanResource, ResourceAssignment>();
 
     private final TaskImpl myTask;
 
@@ -57,6 +58,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
     }
 
+    @Override
     public void clear() {
         ResourceAssignment[] assignments = getAssignments();
         for (int i = 0; i < assignments.length; i++) {
@@ -64,15 +66,18 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
     }
 
+    @Override
     public ResourceAssignment[] getAssignments() {
         return myAssignments.values().toArray(
                 new ResourceAssignment[myAssignments.size()]);
     }
 
+    @Override
     public ResourceAssignment getAssignment(HumanResource resource) {
         return myAssignments.get(resource);
     }
 
+    @Override
     public ResourceAssignmentMutator createMutator() {
         return new ResourceAssignmentMutatorImpl();
     }
@@ -81,10 +86,12 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         return new ResourceAssignmentCollectionImpl(this);
     }
 
+    @Override
     public ResourceAssignment addAssignment(HumanResource resource) {
         return auxAddAssignment(resource);
     }
 
+    @Override
     public void deleteAssignment(HumanResource resource) {
         myAssignments.remove(resource);
     }
@@ -120,19 +127,23 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 //            resource.setAssignmentCollection(ResourceAssignmentCollectionImpl.this);
         }
 
+        @Override
         public Task getTask() {
             return ResourceAssignmentCollectionImpl.this.getTask();
         }
 
+        @Override
         public HumanResource getResource() {
             return myAssignmentToResource.getResource();
         }
 
+        @Override
         public float getLoad() {
             return myAssignmentToResource.getLoad();
         }
 
         // TODO transaction
+        @Override
         public void setLoad(float load) {
             myAssignmentToResource.setLoad(load);
         }
@@ -140,24 +151,29 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         /**
          * Deletes all the assignments and all the related assignments
          */
+        @Override
         public void delete() {
             ResourceAssignmentCollectionImpl.this
                     .deleteAssignment(getResource());
             myAssignmentToResource.delete();
         }
 
+        @Override
         public void setCoordinator(boolean responsible) {
             myAssignmentToResource.setCoordinator(responsible);
         }
 
+        @Override
         public boolean isCoordinator() {
             return myAssignmentToResource.isCoordinator();
         }
 
+        @Override
         public Role getRoleForAssignment() {
             return myAssignmentToResource.getRoleForAssignment();
         }
 
+        @Override
         public void setRoleForAssignment(Role role) {
             myAssignmentToResource.setRoleForAssignment(role);
 
@@ -183,38 +199,47 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             myResource = resource;
         }
 
+        @Override
         public Task getTask() {
             return ResourceAssignmentCollectionImpl.this.getTask();
         }
 
+        @Override
         public HumanResource getResource() {
             return myResource;
         }
 
+        @Override
         public float getLoad() {
             return myLoad;
         }
 
+        @Override
         public void setLoad(float load) {
             myLoad = load;
         }
 
+        @Override
         public void delete() {
         }
 
+        @Override
         public void setCoordinator(boolean responsible) {
             myCoordinator = responsible;
         }
 
+        @Override
         public boolean isCoordinator() {
             return myCoordinator;
         }
 
+        @Override
         public Role getRoleForAssignment() {
 
             return myRoleForAssignment;
         }
 
+        @Override
         public void setRoleForAssignment(Role role) {
             myRoleForAssignment = role;
 
@@ -231,12 +256,14 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             ResourceAssignmentMutator {
         private Map<HumanResource, MutationInfo> myQueue = new HashMap<HumanResource, MutationInfo>();
 
+        @Override
         public ResourceAssignment addAssignment(HumanResource resource) {
             ResourceAssignment result = new ResourceAssignmentStub(resource);
             myQueue.put(resource, new MutationInfo(result, MutationInfo.ADD));
             return result;
         }
 
+        @Override
         public void deleteAssignment(HumanResource resource) {
             MutationInfo info = myQueue.get(resource);
             if (info == null) {
@@ -247,6 +274,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             }
         }
 
+        @Override
         public void commit() {
             List<MutationInfo> mutations = new ArrayList<MutationInfo>(myQueue.values());
             Collections.sort(mutations);
@@ -311,6 +339,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
             return result;
         }
 
+        @Override
         public int compareTo(MutationInfo o) {
             if (!(o instanceof MutationInfo)) {
                 throw new IllegalArgumentException();
@@ -347,6 +376,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
         }
     }
 
+    @Override
     public HumanResource getCoordinator() {
         for (Iterator<ResourceAssignment> assignments = myAssignments.values().iterator(); assignments.hasNext();) {
             ResourceAssignment next = assignments.next();

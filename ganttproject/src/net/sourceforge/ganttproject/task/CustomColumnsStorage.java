@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 Benoit Baranne, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -28,7 +28,7 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
-import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.DateUtils;
 
@@ -307,8 +307,14 @@ public class CustomColumnsStorage {
         }
     }
 
+    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+        CustomPropertyEvent e = new CustomPropertyEvent(event, def, oldDef);
+        fireCustomColumnsChange(e);
+    }
+
     void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
-        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_PROPERTY_CHANGE, def, oldName);
+        CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);
+        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);
         fireCustomColumnsChange(e);
     }
 

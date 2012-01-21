@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -52,10 +52,10 @@ public class DateIntervalListEditor extends JPanel{
         private final Date myVisibleEnd;
         private final Date myModelEnd;
 
-        public DateInterval(Date start, Date end) {
+        private DateInterval(Date start, Date visibleEnd, Date modelEnd) {
             this.start = start;
-            myVisibleEnd = end;
-            myModelEnd = GPTimeUnitStack.DAY.adjustRight(end);
+            myVisibleEnd = visibleEnd;
+            myModelEnd = modelEnd;
         }
         @Override
         public boolean equals(Object obj) {
@@ -76,6 +76,12 @@ public class DateIntervalListEditor extends JPanel{
             return myModelEnd;
         }
 
+        public static DateInterval createFromModelDates(Date start, Date end) {
+            return new DateInterval(start, GPTimeUnitStack.DAY.adjustLeft(GPTimeUnitStack.DAY.jumpLeft(end)), end);
+        }
+        public static DateInterval createFromVisibleDates(Date start, Date end) {
+            return new DateInterval(start, end, GPTimeUnitStack.DAY.adjustRight(end));
+        }
     }
     public static interface DateIntervalModel {
         DateInterval[] getIntervals();
@@ -86,15 +92,19 @@ public class DateIntervalListEditor extends JPanel{
 
     public static class DefaultDateIntervalModel implements DateIntervalModel {
         List/*<DatInterval>*/<DateInterval> myIntervals = new ArrayList<DateInterval>();
+        @Override
         public DateInterval[] getIntervals() {
             return myIntervals.toArray(new DateInterval[myIntervals.size()]);
         }
+        @Override
         public void remove(DateInterval interval) {
             myIntervals.remove(interval);
         }
+        @Override
         public void add(DateInterval interval) {
             myIntervals.add(interval);
         }
+        @Override
         public int getMaxIntervalLength() {
             return 1;
         }
@@ -107,10 +117,12 @@ public class DateIntervalListEditor extends JPanel{
     private final GPAction myDeleteAction;
 
     private class MyListModel extends AbstractListModel {
+        @Override
         public int getSize() {
             return myIntervalsModel.getIntervals().length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             DateInterval interval = myIntervalsModel.getIntervals()[index];
             StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));
@@ -152,7 +164,7 @@ public class DateIntervalListEditor extends JPanel{
         myAddAction = new GPAction("add") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                myIntervalsModel.add(new DateInterval(myStart.getValue(), myFinish.getValue()));
+                myIntervalsModel.add(DateInterval.createFromVisibleDates(myStart.getValue(), myFinish.getValue()));
                 myListModel.update();
             }
         };

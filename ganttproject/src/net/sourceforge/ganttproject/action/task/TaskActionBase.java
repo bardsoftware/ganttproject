@@ -4,7 +4,7 @@ Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.ActionDelegate;
+import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -30,16 +32,21 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener {
+public abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener, ActionDelegate {
+    private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
     private final TaskManager myTaskManager;
-    private List<Task> mySelection;
     private final UIFacade myUIFacade;
     private final TaskSelectionManager mySelectionManager;
     private final GanttTree2 myTree;
+    private List<Task> mySelection;
 
     protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
             UIFacade uiFacade, GanttTree2 tree) {
-        super(name);
+        this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);
+    }
+    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+            UIFacade uiFacade, GanttTree2 tree, IconSize size) {
+        super(name, size);
         myTaskManager = taskManager;
         mySelectionManager = selectionManager;
         myUIFacade = uiFacade;
@@ -48,10 +55,17 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
         selectionChanged(selectionManager.getSelectedTasks());
     }
 
+    @Override
+    public void addStateChangedListener(ActionStateChangedListener l) {
+        myListeners.add(l);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         final List<Task> selection = new ArrayList<Task>(mySelection);
         if(isEnabled() && askUserPermission(selection)) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+                @Override
                 public void run() {
                     try {
                         TaskActionBase.this.run(selection);
@@ -72,11 +86,21 @@ abstract class TaskActionBase extends GPAction implements TaskSelectionManager.L
         return true;
     }
 
+    @Override
     public void selectionChanged(List<Task> currentSelection) {
         setEnabled(isEnabled(currentSelection));
         mySelection = currentSelection;
     }
 
+    @Override
+    public void setEnabled(boolean newValue) {
+        super.setEnabled(newValue);
+        for(ActionStateChangedListener l: myListeners) {
+            l.actionStateChanged();
+        }
+    }
+
+    @Override
     public void userInputConsumerChanged(Object newConsumer) {
     }
 

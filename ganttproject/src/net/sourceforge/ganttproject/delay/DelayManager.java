@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -25,12 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.event.UndoableEditEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
@@ -63,7 +60,7 @@ public class DelayManager implements GPUndoListener {
     public DelayManager(TaskManager taskManager, GPUndoManager undoManager, GanttTree2 tree) {
         myObservers = new ArrayList<DelayObserver>();
         myTaskManager = taskManager;
-        myRootTask = (Task) ((TaskNode) tree.getRoot()).getUserObject();
+        myRootTask = taskManager.getRootTask();
         myTree = tree;
         myTaskManager.addTaskListener(new TaskListenerImpl());
         undoManager.addUndoableEditListener(this);
@@ -83,14 +80,16 @@ public class DelayManager implements GPUndoListener {
         if (ourCriticProcess) {
             ourCriticProcess = false;
             myTaskManager.processCriticalPath(myRootTask);
-            ArrayList<TaskNode> projectTasks = myTree.getProjectTasks();
-            if (projectTasks.size() != 0) {
-                for (DefaultMutableTreeNode projectTask: projectTasks) {
-                    myTaskManager.processCriticalPath((Task) ((TaskNode) projectTask).getUserObject());
+
+            ArrayList<Task> projectTasks = new ArrayList<Task>();
+            for (Task t : myTaskManager.getTasks()) {
+                if (t.isProjectTask()) {
+                    projectTasks.add(t);
                 }
             }
-
-//            System.out.println("critical path processed");
+            for (Task t : projectTasks) {
+                myTaskManager.processCriticalPath(t);
+            }
         }
         Iterator<Task> itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
         while (itTasks.hasNext()) {
@@ -158,6 +157,7 @@ public class DelayManager implements GPUndoListener {
             fireDelayObservation();
         }
     }
+    @Override
     public void undoOrRedoHappened() {
 //        System.out.println("undoOrRedoHappened");
         ourCriticProcess = true;
@@ -165,6 +165,7 @@ public class DelayManager implements GPUndoListener {
 
     }
 
+    @Override
     public void undoableEditHappened(UndoableEditEvent arg0) {
         // TODO Auto-generated method stub
     }

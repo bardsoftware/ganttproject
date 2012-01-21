@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -56,10 +56,12 @@ public class PublicHolidayDialogAction extends AbstractAction {
                 "/icons/holidays_16.gif")));
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
         Component dialogContent = dialog.getContentPane();
         myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateHolidays(dialog.getHolidays());
                 myProject.setModified();

@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,12 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-
 import javax.swing.AbstractAction;
 
-public interface TaskTreeUIFacade {
+import net.sourceforge.ganttproject.task.Task;
+
+public interface TaskTreeUIFacade extends TreeUiFacade<Task> {
     AbstractAction[] getTreeActions();
-    Component getTreeComponent();
-    TableHeaderUIFacade getVisibleFields();
 }

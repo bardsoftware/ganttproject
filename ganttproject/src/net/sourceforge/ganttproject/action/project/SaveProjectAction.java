@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -28,10 +28,19 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
     private final GanttProject myMainFrame;
 
     SaveProjectAction(GanttProject mainFrame) {
-        super("project.save");
+        this(mainFrame, IconSize.MENU);
+    }
+
+    private SaveProjectAction(GanttProject mainFrame, IconSize size) {
+        super("project.save", size);
         myMainFrame = mainFrame;
         mainFrame.addProjectEventListener(this);
         setEnabled(false);
+    }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new SaveProjectAction(myMainFrame, size);
     }
 
     @Override
@@ -59,10 +68,12 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
         setEnabled(false);
     }
 
+    @Override
     public void projectCreated() {
         setEnabled(false);
     }
 
+    @Override
     public void projectOpened() {
         setEnabled(false);
     }

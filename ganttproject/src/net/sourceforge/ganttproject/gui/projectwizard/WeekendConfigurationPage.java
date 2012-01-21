@@ -4,7 +4,7 @@ Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -62,7 +62,6 @@ public class WeekendConfigurationPage implements WizardPage {
         private final List<URL> myUrls;
         private final List<String> myLabels;
         private final GPCalendar myCalendar;
-        private final IGanttProject myProject;
 
         private static List<String> append(List<String> list, String s) {
             ArrayList<String> result = new ArrayList<String>(list);
@@ -70,13 +69,18 @@ public class WeekendConfigurationPage implements WizardPage {
             return result;
         }
 
-        public CalendarOption(IGanttProject project, GPCalendar calendar, List<URL> urls, List<String> labels) {
+        public CalendarOption(GPCalendar calendar, List<URL> urls, List<String> labels) {
             super("project.calendar", append(labels, i18n("none")));
             setValue(i18n("none"), true);
             myUrls = urls;
             myLabels = labels;
             myCalendar = calendar;
-            myProject = project;
+            if (calendar.getPublicHolidaysUrl() != null) {
+                int idx = urls.indexOf(calendar.getPublicHolidaysUrl());
+                if (idx >= 0) {
+                    setValue(labels.get(idx));
+                }
+            }
             assert myUrls.size() == myLabels.size();
         }
 
@@ -92,7 +96,7 @@ public class WeekendConfigurationPage implements WizardPage {
         @Override
         public void commit() {
             super.commit();
-            myCalendar.setPublicHolidays(getSelectedUrl(), myProject);
+            myCalendar.setPublicHolidays(getSelectedUrl());
         }
     }
 
@@ -130,7 +134,7 @@ public class WeekendConfigurationPage implements WizardPage {
             }
 
             myCalendarOption = new CalendarOption(
-                project, calendar, Arrays.asList(calendarUrls), Arrays.asList(calendarLabels));
+                calendar, Arrays.asList(calendarUrls), Arrays.asList(calendarLabels));
             myBox.add(builder.createLabeledComponent(myCalendarOption));
         } else {
             myCalendarOption = null;
@@ -185,14 +189,17 @@ public class WeekendConfigurationPage implements WizardPage {
         myPanel.add(projectPanel);
     }
 
+    @Override
     public String getTitle() {
         return myI18N.getProjectWeekendPageTitle();
     }
 
+    @Override
     public Component getComponent() {
         return myPanel;
     }
 
+    @Override
     public void setActive(boolean active) {
         if (!active) {
             myCalendarOption.commit();
@@ -218,6 +225,7 @@ public class WeekendConfigurationPage implements WizardPage {
             myCheckBoxes = allCheckBoxes;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             // Counting number of selected days of the week.
             int count = 0;

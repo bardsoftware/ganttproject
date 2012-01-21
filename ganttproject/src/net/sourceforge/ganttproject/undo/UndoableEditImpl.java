@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.undo;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.swing.undo.AbstractUndoableEdit;
@@ -51,13 +50,8 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     }
 
     private Document saveFile() throws IOException {
-        File tempFile = createTemporaryFile();
-        tempFile.deleteOnExit();
-        Document doc = myManager.getDocumentManager().getDocument(
-                tempFile.getAbsolutePath());
+        Document doc = myManager.getDocumentManager().newAutosaveDocument();
         doc.write();
-        //GPSaver saver = myManager.getParserFactory().newSaver();
-        //saver.save(doc.getOutputStream());
         return doc;
     }
 
@@ -104,10 +98,6 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     @Override
     public String getPresentationName() {
         return myPresentationName;
-    }
-
-    File createTemporaryFile() throws IOException {
-        return File.createTempFile("_GanttProject_qSave", ".gan");
     }
 
     private void undoRedoExceptionHandler(Exception e) {

@@ -5,7 +5,6 @@ package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -16,10 +15,9 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.GPView;
 
-import org.eclipse.core.runtime.IAdaptable;
-
-class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdaptable {
+class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPView {
     private ResourceTreeUIFacade myTreeFacade;
     private Component myResourceChart;
     private JComponent myTabContentPanel;
@@ -56,16 +54,6 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
         return buttonPanel;
     }
 
-    public Object getAdapter(Class adapter) {
-        if (Container.class.equals(adapter)) {
-            return getComponent();
-        }
-        if (Chart.class.equals(adapter)) {
-            return myResourceChart;
-        }
-        return null;
-    }
-
     @Override
     protected Component getChartComponent() {
         return myResourceChart;
@@ -73,6 +61,23 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements IAdap
 
     @Override
     protected Component getTreeComponent() {
-        return myTreeFacade.getUIComponent();
+        return myTreeFacade.getTreeComponent();
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        if (active) {
+            getTreeComponent().requestFocus();
+        }
+    }
+
+    @Override
+    public Chart getChart() {
+        return getUiFacade().getResourceChart();
+    }
+
+    @Override
+    public Component getViewComponent() {
+        return getComponent();
     }
 }

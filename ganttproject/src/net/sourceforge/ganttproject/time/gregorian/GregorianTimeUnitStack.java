@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.time.gregorian;
 
 import java.text.DateFormat;
@@ -5,9 +23,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+import net.sourceforge.ganttproject.chart.timeline.DayTextFormatter;
+import net.sourceforge.ganttproject.chart.timeline.MonthTextFormatter;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
-import net.sourceforge.ganttproject.time.TimeFrame;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
@@ -53,10 +72,8 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
                 HOUR_FRAMER);
 
         DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER);
-        DAY.setTextFormatter(new DayTextFormatter());
         MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY,
                 MONTH_FRAMER);
-        MONTH.setTextFormatter(new MonthTextFormatter());
         ourUnit2field.put(DAY, new Integer(Calendar.DAY_OF_MONTH));
         ourUnit2field.put(HOUR, new Integer(Calendar.HOUR_OF_DAY));
         ourUnit2field.put(MINUTE, new Integer(Calendar.MINUTE));
@@ -67,32 +84,28 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     }
 
-    public TimeFrame createTimeFrame(Date baseDate, TimeUnit topUnit,
-            TimeUnit bottomUnit) {
-        if (topUnit instanceof TimeUnitFunctionOfDate) {
-            topUnit = ((TimeUnitFunctionOfDate) topUnit)
-                    .createTimeUnit(baseDate);
-        }
-        return new TimeFrameImpl(baseDate, topUnit, bottomUnit);
-    }
-
+    @Override
     public TimeUnit getDefaultTimeUnit() {
         return DAY;
     }
 
+    @Override
     public TimeUnitPair[] getTimeUnitPairs() {
         return null;
     }
 
+    @Override
     public String getName() {
         return null;
     }
 
+    @Override
     public DateFormat[] getDateFormats() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public DateFormat getTimeFormat() {
         return null;
     }

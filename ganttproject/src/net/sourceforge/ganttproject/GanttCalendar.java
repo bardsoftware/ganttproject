@@ -4,7 +4,7 @@ Copyright (C) 2002-2011 Thomas Alexandre, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -203,6 +203,7 @@ public class GanttCalendar extends GregorianCalendar {
     }
 
     public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
+        @Override
         public int compare(GanttCalendar o1, GanttCalendar o2) {
             return o1.compareTo(o2);
         }

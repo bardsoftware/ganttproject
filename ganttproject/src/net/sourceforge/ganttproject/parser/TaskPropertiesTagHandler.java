@@ -24,6 +24,7 @@ public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
      *      String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI, String sName, String qName,
             Attributes attrs) {
         if (qName.equals("taskproperty"))
@@ -34,6 +35,7 @@ public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
      * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
      *      String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         // System.out.println(Mediator.getCustomColumnsStorage().toString());
     }
@@ -52,6 +54,7 @@ public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
     /**
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingStarted()
      */
+    @Override
     public void parsingStarted() {
         // nothing to do.
 
@@ -62,6 +65,7 @@ public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
      *
      * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
      */
+    @Override
     public void parsingFinished() {
         // this.treeTable.setDisplayedColumns(columns);
     }

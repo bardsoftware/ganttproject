@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package org.ganttproject.impex.htmlpdf;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.ganttproject.GPLogger;
 
@@ -26,13 +28,12 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 
-abstract class StylesheetFactoryImpl {
-    Stylesheet[] createStylesheets(Class<? extends Stylesheet> stylesheetInterface) {
+public abstract class StylesheetFactoryImpl {
+    public List<Stylesheet> createStylesheets(Class<? extends Stylesheet> stylesheetInterface) {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] configElements = extensionRegistry
                 .getConfigurationElementsFor(stylesheetInterface.getName());
-        Stylesheet[] result = (Stylesheet[])java.lang.reflect.Array.newInstance(
-                stylesheetInterface, configElements.length);
+        List<Stylesheet> result = new ArrayList<Stylesheet>();
         for (int i = 0; i < configElements.length; i++) {
             try {
                 //Object nextExtension = configElements[i].createExecutableExtension("class");
@@ -44,7 +45,7 @@ abstract class StylesheetFactoryImpl {
                 assert stylesheetUrl != null : "Failed to resolve url=" + pluginRelativeUrl;
                 URL resolvedUrl = Platform.resolve(stylesheetUrl);
                 assert resolvedUrl != null : "Failed to resolve URL=" + stylesheetUrl;
-                result[i] = newStylesheet(resolvedUrl, localizedName);
+                result.add(newStylesheet(resolvedUrl, localizedName));
             }
             catch(Exception e) {
                 if (!GPLogger.log(e)) {

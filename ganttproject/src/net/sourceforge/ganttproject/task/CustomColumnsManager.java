@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -16,18 +34,10 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 public class CustomColumnsManager implements CustomPropertyManager {
     private final CustomColumnsStorage myStorage;
 
-    /**
-     * Creates an instance of CustomColumnsManager for the given treetable.
-     *
-     * @param treetable
-     */
-    public CustomColumnsManager(CustomColumnsStorage storage) {
-        myStorage = storage;
+    public CustomColumnsManager() {
+        myStorage = new CustomColumnsStorage();
     }
 
-    /**
-     * Add a new custom column to the treetable.
-     */
     private void addNewCustomColumn(CustomColumn customColumn) {
         assert customColumn!=null;
         myStorage.addCustomColumn(customColumn);
@@ -44,14 +54,17 @@ public class CustomColumnsManager implements CustomPropertyManager {
         myStorage.changeDefaultValue(colName, newDefaultValue);
     }
 
+    @Override
     public void addListener(CustomPropertyListener listener) {
         myStorage.addCustomColumnsListener(listener);
     }
 
+    @Override
     public List<CustomPropertyDefinition> getDefinitions() {
         return new ArrayList<CustomPropertyDefinition>(myStorage.getCustomColums());
     }
 
+    @Override
     public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
             String defaultValueAsString) {
         CustomPropertyDefinition stub =
@@ -62,23 +75,37 @@ public class CustomColumnsManager implements CustomPropertyManager {
         return result;
     }
 
+    @Override
     public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
         return createDefinition("tpc"+getDefinitions().size(),typeAsString, colName, defValue);
     }
 
+    @Override
     public void importData(CustomPropertyManager source) {
+        myStorage.importData(((CustomColumnsManager)source).myStorage);
     }
 
 
+    @Override
     public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
         return myStorage.getCustomColumnByID(id);
     }
 
+    @Override
     public void deleteDefinition(CustomPropertyDefinition def) {
         myStorage.removeCustomColumn(def);
     }
 
+    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+        myStorage.fireDefinitionChanged(event, def, oldDef);
+    }
+
     void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
         myStorage.fireDefinitionChanged(def, oldName);
+    }
+
+    @Override
+    public void reset() {
+        myStorage.reset();
     }
 }

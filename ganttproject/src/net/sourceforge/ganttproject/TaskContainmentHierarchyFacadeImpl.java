@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -59,6 +59,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         myTree = tree;
     }
 
+    @Override
     public Task[] getNestedTasks(Task container) {
         Task[] result = null;
         DefaultMutableTreeNode treeNode = myTask2treeNode
@@ -78,6 +79,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         return result == null ? new Task[0] : result;
     }
 
+    @Override
     public Task[] getDeepNestedTasks(Task container) {
         ArrayList<Task> result = new ArrayList<Task>();
         DefaultMutableTreeNode treeNodes = myTask2treeNode.get(container);
@@ -102,6 +104,7 @@ class TaskContainmentHierarchyFacadeImpl implements
      * @param container
      *            The Task on which to check for children.
      */
+    @Override
     public boolean hasNestedTasks(Task container) {
         DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(container);
@@ -113,10 +116,12 @@ class TaskContainmentHierarchyFacadeImpl implements
         return false;
     }
 
+    @Override
     public Task getRootTask() {
         return myRootTask;
     }
 
+    @Override
     public Task getContainer(Task nestedTask) {
         DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(nestedTask);
@@ -129,6 +134,7 @@ class TaskContainmentHierarchyFacadeImpl implements
                 .getUserObject();
     }
 
+    @Override
     public Task getPreviousSibling(Task nestedTask) {
         DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
         assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
@@ -136,6 +142,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         return siblingNode == null ? null : (Task) siblingNode.getUserObject();
     }
 
+    @Override
     public Task getNextSibling(Task nestedTask) {
         DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
         assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
@@ -143,6 +150,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         return siblingNode == null ? null : (Task) siblingNode.getUserObject();
     }
 
+    @Override
     public int getTaskIndex(Task nestedTask) {
         DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
         assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
@@ -150,6 +158,7 @@ class TaskContainmentHierarchyFacadeImpl implements
         return containerNode.getIndex(treeNode);
     }
 
+    @Override
     public boolean areUnrelated(Task first, Task second) {
         myPathBuffer.clear();
         for (Task container = getContainer(first); container != null; container = getContainer(container)) {
@@ -168,11 +177,14 @@ class TaskContainmentHierarchyFacadeImpl implements
         return true;
     }
 
+    @Override
     public void move(Task whatMove, Task whereMove) {
         DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
+        assert targetNode != null : "Failed to find tree node for task=" + whereMove;
         move(whatMove, whereMove, targetNode.getChildCount());
     }
 
+    @Override
     public void move(Task whatMove, Task whereMove, int index) {
         DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
         DefaultMutableTreeNode movedNode = myTask2treeNode.get(whatMove);
@@ -205,22 +217,26 @@ class TaskContainmentHierarchyFacadeImpl implements
         return myRootTask.getManager();
     }
 
+    @Override
     public int getDepth(Task task) {
         DefaultMutableTreeNode treeNode = myTask2treeNode
                 .get(task);
         return treeNode.getLevel();
     }
 
+    @Override
     public int compareDocumentOrder(Task task1, Task task2) {
         Integer index1 = myTask2index.get(task1);
         Integer index2 = myTask2index.get(task2);
         return index1.intValue() - index2.intValue();
     }
 
+    @Override
     public boolean contains(Task task) {
         return myTask2treeNode.containsKey(task);
     }
 
+    @Override
     public List<Task> getTasksInDocumentOrder() {
         List<Task> result = new ArrayList<Task>();
         DefaultMutableTreeNode rootNode = myTask2treeNode.get(getRootTask());

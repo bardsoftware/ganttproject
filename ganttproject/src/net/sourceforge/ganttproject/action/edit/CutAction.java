@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,8 +20,8 @@ package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GPViewManager;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action on selection changes
 public class CutAction extends GPAction {
@@ -32,10 +32,17 @@ public class CutAction extends GPAction {
         myViewmanager = viewManager;
     }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "cut_";
+    private CutAction(GPViewManager viewmanager, IconSize size) {
+        super("cut", size);
+        myViewmanager = viewmanager;
     }
+
+    @Override
+    public GPAction withIcon(IconSize size) {
+        return new CutAction(myViewmanager, size);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
     }

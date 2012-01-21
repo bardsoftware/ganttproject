@@ -1,5 +1,5 @@
 <project name="JavaDeb Task" basedir="." default="release-dist">
-
+  <property file="build-deb.properties"/>
   <property name="package.name" value="ganttproject-praha"/>
 
   <path id="class.path">
@@ -67,7 +67,7 @@
           public target: release-dist
          ================================= -->
   <target name="release-dist" depends="dist" description="Release all distribution files">
-    <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="522-beta1" />
+    <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="728-beta2" />
     <mkdir dir="dist-deb"/>
     <antcall target="createdeb-full" />
     <antcall target="createdeb-minimal" />
@@ -118,7 +118,7 @@
 
   <target name="createdeb-full" depends="define_tasks">
     <description>Create a complete GanttProject deb package. Everything included.</description>
-    <ganttproject-base-deb package-name="${package.name}" output-dir=".">
+    <ganttproject-base-deb package-name="${package.name}" output-dir="." package-description="${description.full}">
       <application-files>
         <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
           <include name="plugins/**/"/>
@@ -134,7 +134,7 @@
          - - - - - - - - - - - - - - - - - -->
   <target name="createdeb-minimal" depends="define_tasks">
     <description>Create a debian package of the GanttProject (without plugins)</description>
-    <ganttproject-base-deb package-name="${package.name}-minimal" output-dir="dist-deb">
+    <ganttproject-base-deb package-name="${package.name}-minimal" output-dir="dist-deb" package-description="${description.min}">
       <application-files>
         <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
           <include name="plugins/net.sourceforge.ganttproject_*/**/"/>
@@ -148,6 +148,7 @@
   <macrodef name="ganttproject-base-deb">
     <attribute name="package-name"/>
     <attribute name="output-dir"/>
+  	<attribute name="package-description"/>
     <element name="application-files"/>
     <sequential>
       <deb todir="@{output-dir}"
@@ -160,25 +161,12 @@
            postrm="deb/postrm"
            postinst="deb/postinst">
         <version upstream="${dist.version.number}"/>
-        <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
+        <maintainer name="GanttProject Developers" email="contact@ganttproject.biz"/>
         <description synopsis="Gantt chart based project scheduling and management tool.">
-          Minimal installation of GanttProject without (exporter) plugins.
-
-          GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
-          Our major features include:
-
-          * Task hierarchy and dependencies
-          * Gantt chart
-          * Resource load chart
-          * Generation of PERT chart
-          * PDF and HTML reports
-          * MS Project import/export
-          * WebDAV based groupwork
-
-          Visit http://ganttproject.biz to learn more
+        	@{package-description}
         </description>
         <tarfileset dir="${basedir}/../ganttproject/" prefix="usr/share/doc/${package.name}">
-          <include name="COPYING"/>
+          <include name="LICENSE"/>
           <include name="README"/>
           <include name="AUTHORS"/>
         </tarfileset>

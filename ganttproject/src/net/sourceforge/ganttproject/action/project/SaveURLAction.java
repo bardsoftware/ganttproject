@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,23 +20,38 @@ package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
-class SaveURLAction extends GPAction {
-    private final GanttProject myMainFrame;
+class SaveURLAction extends CloudProjectActionBase {
 
-    SaveURLAction(GanttProject mainFrame){
-        super("project.save.url");
-        myMainFrame = mainFrame;
+    private ProjectUIFacade myProjectUiFacade;
+    private IGanttProject myProject;
+
+    SaveURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade){
+        super("project.save.url", uiFacade, project.getDocumentManager());
+        myProjectUiFacade = projectUiFacade;
+        myProject = project;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            myMainFrame.saveAsURLProject();
+            saveProjectRemotely(myProject);
         } catch (Exception ex) {
-            myMainFrame.getUIFacade().showErrorDialog(ex);
+            GPLogger.log(ex);
         }
     }
+
+    private void saveProjectRemotely(IGanttProject project) {
+        Document document = showURLDialog(project, false);
+        if (document != null) {
+            project.setDocument(document);
+            myProjectUiFacade.saveProject(project);
+        }
+    }
+
 }

@@ -4,7 +4,7 @@ Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -42,14 +42,17 @@ public class TaskLengthImpl implements TaskLength {
         myCount = length;
     }
 
+    @Override
     public float getValue() {
         return myCount;
     }
 
+    @Override
     public int getLength() {
         return (int) myCount;
     }
 
+    @Override
     public TimeUnit getTimeUnit() {
         return myUnit;
     }
@@ -62,6 +65,7 @@ public class TaskLengthImpl implements TaskLength {
         myCount = length;
     }
 
+    @Override
     public float getLength(TimeUnit unit) {
         if (myUnit.isConstructedFrom(unit)) {
             return (float) myCount * myUnit.getAtomCount(unit);
@@ -74,10 +78,12 @@ public class TaskLengthImpl implements TaskLength {
         return myCount;
     }
 
+    @Override
     public TaskLength reverse() {
         return new TaskLengthImpl(getTimeUnit(), -getLength());
     }
 
+    @Override
     public TaskLength translate(TimeUnit toUnit) {
         float translatedLength = getLength(toUnit);
         return new TaskLengthImpl(toUnit, translatedLength);

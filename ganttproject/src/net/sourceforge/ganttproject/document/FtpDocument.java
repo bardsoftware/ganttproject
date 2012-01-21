@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.document;
 
 import java.io.IOException;
@@ -55,43 +73,53 @@ public class FtpDocument extends AbstractURLDocument implements Document {
         }
     }
 
+    @Override
     public String getFileName() {
         //TODO return filename instead of complete URI?
         return myURI.toString();
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
 
+    @Override
     public IStatus canWrite() {
         return Status.OK_STATUS;
     }
 
+    @Override
     public boolean isValidForMRU() {
         return true;
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return myURI.toURL().openConnection().getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return myURI.toURL().openConnection().getOutputStream();
     }
 
+    @Override
     public String getPath() {
         return myURI.toString();
     }
 
+    @Override
     public void write() throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public URI getURI() {
         return myURI;
     }
 
+    @Override
     public boolean isLocal() {
         return false;
     }

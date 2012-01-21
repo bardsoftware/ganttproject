@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2005-2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -27,7 +27,7 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 
-import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
 
 public class RenderedChartImage extends SimpleRenderedImage {
@@ -42,9 +42,11 @@ public class RenderedChartImage extends SimpleRenderedImage {
     //private final List myVisibleTasks;
     private int myCurrentTile = -1;
     private Raster myCurrentRaster;
-    private final ChartModelBase myChartModel;
+    private final ChartModel myChartModel;
+    private final int headerYOffset;
 
-    public RenderedChartImage(ChartModelBase chartModel, BufferedImage taskImage, int chartWidth, int chartHeight) {
+    public RenderedChartImage(ChartModel chartModel, BufferedImage taskImage, int chartWidth, int chartHeight,
+            int headerYOffset) {
         myChartModel = chartModel;
         myTaskImage = taskImage;
         sampleModel = myColorModel.createCompatibleSampleModel(chartWidth,chartHeight);
@@ -55,7 +57,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
         height = chartHeight;
         tileWidth = width;
         tileHeight = 32;
-
+        this.headerYOffset = headerYOffset;
     }
 
     public BufferedImage getWholeImage() {
@@ -68,9 +70,10 @@ public class RenderedChartImage extends SimpleRenderedImage {
         return result;
     }
 
+    @Override
     public Raster getTile(int tileX, int tileY) {
         if (myCurrentTile!=tileY) {
-            int offsety = tileY*getTileHeight();
+            int offsety = tileY*getTileHeight() - headerYOffset;
             BufferedImage tile = getChart(myTaskImage.getWidth(), offsety, getTileWidth(),getTileHeight(),  getWidth(), getHeight());
             Graphics g = tile.getGraphics();
             g.translate(0, -offsety);
@@ -96,9 +99,5 @@ public class RenderedChartImage extends SimpleRenderedImage {
         paintChart(g2);
         //myChartModel.setTuningOptions(ChartModelImpl.TuningOptions.DEFAULT);
         return result;
-    }
-
-    protected ChartModelBase getChartModel() {
-        return myChartModel;
     }
 }

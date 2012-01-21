@@ -1,10 +1,10 @@
 /*
-GanttProject is an opensource project management tool. License: GPL2
+GanttProject is an opensource project management tool. License: GPL3
 Copyright (C) 2011 Dmitry Barashev
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -41,29 +41,35 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         myPageID = pageID;
     }
 
+    @Override
     public String getPageID() {
         return myPageID;
     }
 
+    @Override
     public boolean hasCustomComponent() {
         return false;
     }
 
+    @Override
     public Component buildPageComponent() {
         return null;
     }
 
+    @Override
     public void init(IGanttProject project, UIFacade uiFacade) {
         myProject = project;
         myUiFacade = uiFacade;
     }
 
+    @Override
     public void commit() {
         for (GPOptionGroup optionGroup : getOptionGroups()) {
             optionGroup.commit();
         }
     }
 
+    @Override
     public abstract GPOptionGroup[] getOptionGroups();
 
     protected IGanttProject getProject() {

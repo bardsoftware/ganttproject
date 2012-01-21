@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 Bernoit Baranne, Julien Seiler, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -40,13 +40,14 @@ import javax.swing.JComponent;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.StringUtils;
 
 import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
 
 /**
- * PERT char implementation where nodes are tasks and links succession
+ * PERT chart implementation where nodes are tasks and links succession
  * relations.
  *
  * @author bbaranne
@@ -126,10 +127,10 @@ public class ActivityOnNodePertChart extends PertChart {
     private final static Color ARROW_COLOR = Color.GRAY;
 
     public ActivityOnNodePertChart() {
-        super(null);
         setBackground(Color.WHITE.brighter());
 
         this.addMouseMotionListener(new MouseMotionListener() {
+            @Override
             public void mouseDragged(final MouseEvent e) {
                 if (myPressedGraphicalNode != null) {
                     myPressedGraphicalNode.x = e.getX() - myXClickedOffset;
@@ -148,24 +149,29 @@ public class ActivityOnNodePertChart extends PertChart {
                 }
             }
 
+            @Override
             public void mouseMoved(MouseEvent e) {
                 // nothing to do...
             }
         });
 
         this.addMouseListener(new MouseListener() {
+            @Override
             public void mouseClicked(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mouseEntered(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mouseExited(MouseEvent arg0) {
                 // nothing to do...
             }
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 myPressedGraphicalNode = getGraphicalNode(e.getX(), e.getY());
                 if (myPressedGraphicalNode != null) {
@@ -177,6 +183,7 @@ public class ActivityOnNodePertChart extends PertChart {
                 repaint();
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (myPressedGraphicalNode != null) {
                     if (myPressedGraphicalNode.node.isCritical()) {
@@ -595,12 +602,15 @@ public class ActivityOnNodePertChart extends PertChart {
         }
     }
 
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        return getChart(settings);
+
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
-    public BufferedImage getChart(GanttExportSettings settings) {
+    public RenderedImage getRenderedImage(GanttExportSettings settings) {
         BufferedImage image = new BufferedImage(myMaxX, myMaxY,
                 BufferedImage.TYPE_INT_RGB);
         Graphics g = image.getGraphics();
@@ -614,6 +624,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return language.getText("pertChartLongName");
     }
 
+    @Override
     public void reset() {
         myPertAbstraction = null;
     }
@@ -661,6 +672,7 @@ public class ActivityOnNodePertChart extends PertChart {
         return iconUrl==null ? null : new ImageIcon(iconUrl);
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter.equals(Container.class) || adapter.equals(Chart.class)) {
             return this;
@@ -831,7 +843,7 @@ public class ActivityOnNodePertChart extends PertChart {
                     arrowToY + ARROW_HEIGHT / 2 };
             int nb = xS.length;
 
-            g.fillPolygon(xS, yS, nb); // fl�che
+            g.fillPolygon(xS, yS, nb); // flèche
 
             if (arrowFromY != arrowToY) {
                 int[] middleLineX = {
@@ -861,15 +873,18 @@ public class ActivityOnNodePertChart extends PertChart {
         }
     }
 
+    @Override
     public IGanttProject getProject() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public void setDimensions(int height, int width) {
         // TODO Auto-generated method stub
     }
 
+    @Override
     public void setStartDate(Date startDate) {
         // TODO Auto-generated method stub
     }

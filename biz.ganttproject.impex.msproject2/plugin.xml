@@ -15,7 +15,7 @@
                name="*">
          </export>
       </library>
-      <library name="lib/poi-3.6-20091214.jar">
+      <library name="lib/poi-3.7-20101029.jar">
          <export
                name="*">
          </export>

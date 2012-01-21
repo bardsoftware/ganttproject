@@ -4,7 +4,7 @@ Copyright (C) 2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -53,10 +53,12 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         myTaskHierarchyFactory = taskHierarchyFactory;
     }
 
+    @Override
     public TaskDependency[] getDependencies() {
         return myDependencies.toArray(new TaskDependency[0]);
     }
 
+    @Override
     public TaskDependency[] getDependencies(Task task) {
         SearchKey fromKey = new RangeSearchFromKey(task);
         SearchKey toKey = new RangeSearchToKey(task);
@@ -65,6 +67,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .toArray(new TaskDependency[0]);
     }
 
+    @Override
     public TaskDependency[] getDependenciesAsDependant(Task dependant) {
         SearchKey fromKey = new SearchKey(SearchKey.DEPENDANT, dependant
                 .getTaskID(), -1);
@@ -75,6 +78,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .toArray(new TaskDependency[0]);
     }
 
+    @Override
     public TaskDependency[] getDependenciesAsDependee(Task dependee) {
         SearchKey fromKey = new SearchKey(SearchKey.DEPENDEE, dependee
                 .getTaskID(), -1);
@@ -85,12 +89,14 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
                 .toArray(new TaskDependency[0]);
     }
 
+    @Override
     public TaskDependency createDependency(Task dependant, Task dependee)
             throws TaskDependencyException{
         return createDependency(dependant, dependee,
                 new FinishStartConstraintImpl());
     }
 
+    @Override
     public TaskDependency createDependency(Task dependant, Task dependee,
             TaskDependencyConstraint constraint) throws TaskDependencyException {
         TaskDependency result = auxCreateDependency(dependant, dependee,
@@ -99,6 +105,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         return result;
     }
 
+    @Override
     public boolean canCreateDependency(Task dependant, Task dependee) {
         if (dependant == dependee) {
             return false;
@@ -117,6 +124,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         return true;
     }
 
+    @Override
     public void deleteDependency(TaskDependency dependency) {
         delete(dependency);
     }
@@ -125,10 +133,12 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         myEventDispatcher.fireDependencyRemoved(dependency);
         myEventDispatcher.fireDependencyAdded(dependency);
     }
+    @Override
     public void clear() {
         doClear();
     }
 
+    @Override
     public TaskDependencyCollectionMutator createMutator() {
         return new MutatorImpl();
     }
@@ -138,6 +148,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
 
         private MutationInfo myCleanupMutation;
 
+        @Override
         public void commit() {
             List<MutationInfo> mutations = new ArrayList<MutationInfo>(myQueue.values());
             if (myCleanupMutation != null) {
@@ -173,17 +184,20 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             }
         }
 
+        @Override
         public void clear() {
             myQueue.clear();
             myCleanupMutation = new MutationInfo(null, MutationInfo.CLEAR);
         }
 
+        @Override
         public TaskDependency createDependency(Task dependant, Task dependee)
                 throws TaskDependencyException {
             return createDependency(dependant, dependee,
                     new FinishFinishConstraintImpl());
         }
 
+        @Override
         public TaskDependency createDependency(Task dependant, Task dependee,
                 TaskDependencyConstraint constraint)
                 throws TaskDependencyException {
@@ -193,6 +207,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             return result;
         }
 
+        @Override
         public void deleteDependency(TaskDependency dependency) {
             MutationInfo info = myQueue.get(dependency);
             if (info == null) {
@@ -225,6 +240,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
             this.myOperation = myOperation;
         }
 
+        @Override
         public int compareTo(MutationInfo rvalue) {
             return myOrder - rvalue.myOrder;
         }

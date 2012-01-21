@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -20,20 +20,25 @@ package net.sourceforge.ganttproject.action.view;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JTabbedPane;
-
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 public class ViewCycleAction extends GPAction {
-    private final JTabbedPane myTabbedPane;
+    private GPViewManager myViewManager;
+    private boolean isNextNotPrev;
 
-    public ViewCycleAction(JTabbedPane tabbedPane) {
-        super("view.cycle");
-        myTabbedPane = tabbedPane;
+    public ViewCycleAction(GPViewManager viewManager, boolean nextNotPrev) {
+        super("view.cycle" + ((nextNotPrev) ? ".forward" : ".backward"));
+        myViewManager = viewManager;
+        isNextNotPrev = nextNotPrev;
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        myTabbedPane.setSelectedIndex((myTabbedPane.getSelectedIndex() + 1) % myTabbedPane.getTabCount());
+        if (isNextNotPrev) {
+            myViewManager.activateNextView();
+        } else {
+            myViewManager.activatePrevView();
+        }
     }
 }

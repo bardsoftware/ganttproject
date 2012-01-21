@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Brazilian Portuguese holiday calendar                              -->
-<!-- Last revised and updated by Rubem Pechansky (pechansky@hypervisual.com) -->
-<!-- Date: July 28, 2006                                                -->
+<!-- Last revised and updated by Aureo Gaspar (aureo.gaspaar@gmail.com) -->
+<!-- Date: November 12, 2011                                            -->
 
 <calendar name="Brasil" type="country">
 
@@ -11,13 +11,16 @@
 	<date year="" month="01" date="01"/>
 	<date year="" month="04" date="21"/>
 	<date year="" month="05" date="01"/>
-	<date year="" month="09" date="07"/>
+	<date year="" month="07" date="09"/>
 	<date year="" month="10" date="12"/>
 	<date year="" month="11" date="02"/>
 	<date year="" month="11" date="15"/>
+	<date year="" month="11" date="20"/>
+	<date year="" month="12" date="24"/>
 	<date year="" month="12" date="25"/>
+	<date year="" month="12" date="31"/>
 
-	<!-- These are the national holidays specific to 2007 -->
+	<!-- These are the national holidays that dates change -->
 
 	<date year="2005" month="03" date="25"/>
 	<date year="2006" month="04" date="14"/>
@@ -28,6 +31,14 @@
 	<date year="2008" month="03" date="21"/>
 	<date year="2009" month="04" date="10"/>
 	<date year="2010" month="04" date="02"/>
+	<date year="2011" month="04" date="22"/>
+	<date year="2011" month="04" date="24"/>
+	<date year="2012" month="02" date="20"/>
+	<date year="2012" month="02" date="21"/>
+	<date year="2012" month="04" date="06"/>
+	<date year="2012" month="04" date="08"/>
+	<date year="2012" month="06" date="07"/>
+	
 
 </calendar >
 

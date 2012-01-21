@@ -5,7 +5,10 @@
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -83,6 +86,7 @@ public class DocumentCreator implements DocumentManager {
         return new FileDocument(new File(path));
     }
 
+    @Override
     public Document getDocument(String path) {
         Document physicalDocument = createDocument(path);
         Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject,
@@ -90,16 +94,59 @@ public class DocumentCreator implements DocumentManager {
         return proxyDocument;
     }
 
+    @Override
     public Document getDocument(String path, String userName, String password) {
         Document physicalDocument = createDocument(path, userName, password);
         Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(), getParserFactory());
         return proxyDocument;
     }
 
+    @Override
+    public Document newAutosaveDocument() throws IOException {
+        File tempFile = createAutosaveFile();
+        //tempFile.deleteOnExit();
+        return getDocument(tempFile.getAbsolutePath());
+    }
+
+    private File createAutosaveFile() throws IOException {
+        return File.createTempFile("_ganttproject_autosave", ".gan");
+    }
+
+    @Override
+    public Document getLastAutosaveDocument(Document priorTo) throws IOException {
+        File f = File.createTempFile("tmp", "");
+        File directory = f.getParentFile();
+        File files[] = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File f, String arg1) {
+                return arg1.startsWith("_ganttproject_autosave");
+            }
+        });
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File left, File right) {
+                return Long.valueOf(left.lastModified()).compareTo(Long.valueOf(right.lastModified()));
+            }
+        });
+        if (files.length == 0) {
+            return null;
+        }
+        if (priorTo == null) {
+            return getDocument(files[files.length - 1].getAbsolutePath());
+        }
+        for (int i = files.length - 1; i >= 0; i--) {
+            if (files[i].getName().equals(priorTo.getFileName())) {
+                return i > 0 ? getDocument(files[i - 1].getAbsolutePath()) : null;
+            }
+        }
+        return null;
+    }
+
     protected TableHeaderUIFacade getVisibleFields() {
         return null;
     }
 
+    @Override
     public void addToRecentDocuments(Document document) {
         // TODO Auto-generated method stub
 
@@ -118,18 +165,22 @@ public class DocumentCreator implements DocumentManager {
         return tempFile.getAbsolutePath();
     }
 
+    @Override
     public void changeWorkingDirectory(File directory) {
         assert directory.isDirectory();
         myWorkingDirectory.lock();
         myWorkingDirectory.setValue(directory.getAbsolutePath());
         myWorkingDirectory.commit();
     }
+    @Override
     public String getWorkingDirectory() {
         return myWorkingDirectory.getValue();
     }
+    @Override
     public StringOption getLastWebDAVDocumentOption() {
         return myLastWebDAVDocument;
     }
+    @Override
     public IntegerOption getWebDavLockTimeoutOption() {
         return myWebDavLockTimeoutOption;
     }
@@ -137,12 +188,15 @@ public class DocumentCreator implements DocumentManager {
     private File getWorkingDirectoryFile() {
         return new File(getWorkingDirectory());
     }
+    @Override
     public GPOptionGroup getOptionGroup() {
         return myOptionGroup;
     }
+    @Override
     public FTPOptions getFTPOptions() {
         return myFtpOptions;
     }
+    @Override
     public GPOptionGroup[] getNetworkOptionGroups() {
         return new GPOptionGroup[] {myFtpOptions};
     }
@@ -196,14 +250,17 @@ public class DocumentCreator implements DocumentManager {
             myLegacyTagName = legacyTagName;
             myLegacyAttrName = legacyAttrName;
         }
+        @Override
         public String getTagName() {
             return myLegacyTagName;
         }
 
+        @Override
         public String getAttributeName() {
             return myLegacyAttrName;
         }
 
+        @Override
         public void loadValue(String legacyValue) {
             loadPersistentValue(legacyValue);
         }

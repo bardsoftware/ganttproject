@@ -4,7 +4,7 @@ Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -19,9 +19,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,11 +40,25 @@ import org.eclipse.core.runtime.Platform;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+    public enum IconSize {
+        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
+
+        private final String mySize;
+
+        IconSize(String size) {
+            mySize = size;
+        }
+
+        public String asString() {
+            return mySize;
+        }
+    }
     public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     /** Location of the icon files */
@@ -49,6 +69,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     private Icon myIcon = null;
 
     private final String myName;
+
+    private KeyStroke myKeyStroke;
 
     private static Properties ourKeyboardProperties;
 
@@ -68,13 +90,50 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     protected GPAction(String name, String iconSize) {
         super(name);
         myName = name;
-        updateIcon(iconSize);
+        if (iconSize != null) {
+            updateIcon(iconSize);
+        }
         updateName();
         updateTooltip();
         language.addListener(this);
         if(name != null) {
-            putValue(Action.ACCELERATOR_KEY, getKeyStroke(name));
+            myKeyStroke = getKeyStroke(name);
+            putValue(Action.ACCELERATOR_KEY, myKeyStroke);
         }
+    }
+
+    protected GPAction(String name, IconSize size) {
+        this(name, size.asString());
+    }
+
+    public GPAction withIcon(IconSize size) {
+        try {
+            Constructor<? extends GPAction> constructor = getClass().getConstructor(String.class, String.class);
+            return constructor.newInstance(myName, size.asString());
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public KeyStroke getKeyStroke() {
+        return myKeyStroke;
     }
 
     public Icon getIconOnMouseOver() {
@@ -121,7 +180,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return getID() == null ? null : getI18n(getID());
     }
 
-    protected String getID() {
+    public String getID() {
         return myName;
     }
 
@@ -179,6 +238,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         setIconVisible(isNull);
     }
 
+    @Override
     public void languageChanged(Event event) {
         updateAction();
     }
@@ -188,9 +248,22 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
             return null;
         }
         if (ourIconProperties == null) {
-            ourIconProperties = loadProperties("/icons.properties");
+            ourIconProperties = new Properties();
+            PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
         }
         return (String) ourIconProperties.get(getID());
+    }
+
+    public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {
+        String text = getKeyStrokeText(keystrokeID);
+        if (text == null) {
+            return Collections.emptyList();
+        }
+        List<KeyStroke> result = new ArrayList<KeyStroke>();
+        for (String ksText : text.split(",")) {
+            result.add(KeyStroke.getKeyStroke(ksText));
+        }
+        return result;
     }
 
     public static KeyStroke getKeyStroke(String keystrokeID) {
@@ -198,29 +271,22 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
     }
 
-    private static String getKeyStrokeText(String keystrokeID) {
+    public static String getKeyStrokeText(String keystrokeID) {
         if (ourKeyboardProperties == null) {
-            ourKeyboardProperties = loadProperties("/keyboard.properties");
+            ourKeyboardProperties = new Properties();
+            PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
+            PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
         }
         return (String) ourKeyboardProperties.get(keystrokeID);
     }
 
-    private static Properties loadProperties(String resource) {
-        Properties result = new Properties();
-        URL url = GPAction.class.getResource(resource);
-        if (url == null) {
-            return null;
-        }
-        URL resolvedUrl;
-        try {
-            resolvedUrl = Platform.resolve(url);
-            result.load(resolvedUrl.openStream());
-            return result;
-        } catch (IOException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
+
+    public static GPAction createVoidAction(String key) {
+        return new GPAction(key) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // No action
             }
-            return null;
-        }
+        };
     }
 }
