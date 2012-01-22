@@ -234,24 +234,24 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     @Override
     public Object getValueAt(Object node, int column) {
-        Object res = null;
-        if (!(node instanceof TaskNode))
+        if (!(node instanceof TaskNode)) {
             return null;
+        }
+        Object res = null;
         TaskNode tn = (TaskNode) node;
         Task t = (Task) tn.getUserObject();
         // if(tn.getParent()!=null){
         switch (column) {
         case 0:
             if (((Task) tn.getUserObject()).isProjectTask()) {
-                res = new ImageIcon(getClass().getResource(
-                        "/icons/mproject.gif"));
+                res = new ImageIcon(getClass().getResource("/icons/mproject.gif"));
             } else if (!tn.isLeaf())
                 res = new ImageIcon(getClass().getResource("/icons/mtask.gif"));
-            else if (t.isMilestone())
-                res = new ImageIcon(getClass()
-                        .getResource("/icons/meeting.gif"));
-            else
+            else if (t.isMilestone()) {
+                res = new ImageIcon(getClass().getResource("/icons/meeting.gif"));
+            } else {
                 res = new ImageIcon(getClass().getResource("/icons/tasks2.png"));
+            }
             break;
         case 1: // Priority
             GanttTask task = (GanttTask) tn.getUserObject();
@@ -262,12 +262,11 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
             if (info != null) {
                 if (info instanceof Delay) {
                     int type = ((Delay) info).getType();
-                    if (type == Delay.NORMAL)
-                        res = new ImageIcon(getClass().getResource(
-                                "/icons/alert1_16.gif"));
-                    else if (type == Delay.CRITICAL)
-                        res = new ImageIcon(getClass().getResource(
-                                "/icons/alert2_16.gif"));
+                    if (type == Delay.NORMAL) {
+                        res = new ImageIcon(getClass().getResource("/icons/alert1_16.gif"));
+                    } else if (type == Delay.CRITICAL) {
+                        res = new ImageIcon(getClass().getResource("/icons/alert2_16.gif"));
+                    }
                 }
             }
             break;
@@ -286,46 +285,38 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
         case 7:
             res = new Integer(tn.getCompletionPercentage());
             break;
-        case 8: {
+        case 8:
             ResourceAssignment[] tAssign = t.getAssignments();
             StringBuffer sb = new StringBuffer();
             int nb = 0;
             for (int i = 0; i < tAssign.length; i++) {
                 ResourceAssignment resAss = tAssign[i];
                 if (resAss.isCoordinator()) {
-                    sb.append(nb++ == 0 ? "" : ", ").append(
-                            resAss.getResource().getName());
+                    sb.append(nb++ == 0 ? "" : ", ").append(resAss.getResource().getName());
                 }
             }
             res = sb.toString();
             break;
-        }
-        case 9: {
+        case 9:
             String resStr = "";
             TaskDependency[] dep = t.getDependenciesAsDependant().toArray();
             int i = 0;
             if (dep != null && dep.length > 0) {
-                for (i = 0; i < dep.length - 1; i++)
+                for (i = 0; i < dep.length - 1; i++) {
                     resStr += dep[i].getDependee().getTaskID() + ", ";
-                resStr += dep[i].getDependee().getTaskID() + "";
+                }
+                resStr += dep[i].getDependee().getTaskID();
             }
             res = resStr;
             break;
-        }
         case 10:
             res = new Integer(t.getTaskID());
             break;
         default:
             CustomPropertyDefinition customColumn = getCustomProperty(column);
-            //String colName = this.getColumnName(column);
-            // System.out.println(" -> "+colName);
-            // System.out.println(t+" : "+t.getCustomValues());
             res = t.getCustomValues().getValue(customColumn);
             break;
         }
-        // }
-        // else
-        // res ="";
         return res;
     }
 

@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,8 +21,7 @@ package net.sourceforge.ganttproject.chart;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 /**
- * Created by IntelliJ IDEA. User: bard Date: 12.10.2004 Time: 0:56:19 To change
- * this template use Options | File Templates.
+ * @author bard
  */
 public class ChartRendererBase {
     private int myHeight;
@@ -68,6 +67,7 @@ public class ChartRendererBase {
     protected GPCalendar getCalendar() {
         return myChartModel.getTaskManager().getCalendar();
     }
+
     public boolean isEnabled() {
         return isEnabled;
     }
@@ -79,10 +79,7 @@ public class ChartRendererBase {
     public void clear() {
         getPrimitiveContainer().clear();
     }
-//    protected void setChartModel(ChartModelBase chartModel) {
-//        myChartModel = chartModel;
-//    }
+
     public void render() {
     }
-
 }

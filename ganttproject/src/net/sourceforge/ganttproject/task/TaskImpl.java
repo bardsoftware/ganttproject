@@ -846,9 +846,11 @@ public class TaskImpl implements Task {
         }
 
         private void cachePrecomputedShift(Task result, float unitCount) {
+            // TODO Implement cache
         }
 
         private Task getPrecomputedShift(float unitCount) {
+            // TODO Use cache to grab value
             return null;
         }
 
