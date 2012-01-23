@@ -181,7 +181,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             myModel, getPrimitiveContainer(), myLabelsRenderer,
             new TaskActivityRenderer.Style(0, getRectangleHeight()));
         List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
-        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t)) {
+        if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
             renderProgressBar(rectangles);
         }
         return rectangles;

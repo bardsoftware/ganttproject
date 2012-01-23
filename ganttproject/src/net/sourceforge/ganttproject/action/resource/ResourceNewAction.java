@@ -57,7 +57,7 @@ public class ResourceNewAction extends ResourceAction {
     public void actionPerformed(ActionEvent event) {
         final HumanResource resource = getManager().newHumanResource();
         resource.setRole(myRoleManager.getDefaultRole());
-        GanttDialogPerson dp = new GanttDialogPerson(myUIFacade, resource);
+        GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);
         dp.setVisible(true);
         if (dp.result()) {
             myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {

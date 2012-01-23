@@ -470,7 +470,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         constructCustomColumnPanel();
         tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(
                 getClass().getResource("/icons/custom.gif")),
-                myCustomColumnPanel.geComponent());
+                myCustomColumnPanel.getComponent());
         tabbedPane.addFocusListener(new FocusAdapter() {
             private boolean isFirstFocusGain = true;
             @Override
