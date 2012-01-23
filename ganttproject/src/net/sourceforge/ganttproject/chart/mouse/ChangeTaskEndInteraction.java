@@ -33,7 +33,7 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
     private TaskMutator myMutator;
     private WorkingUnitCounter myCounter;
 
-    public ChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary,
+    public ChangeTaskEndInteraction(TaskBoundaryChartItem taskBoundary,
             TimelineFacade chartDateGrid, UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
         super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask(),
             chartDateGrid, uiFacade, taskScheduleAlgorithm);

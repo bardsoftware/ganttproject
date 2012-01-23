@@ -48,7 +48,6 @@ public class GregorianCalendar extends java.util.GregorianCalendar {
         super(aLocale);
     }
 
-
     public GregorianCalendar(TimeZone zone) {
         super(zone);
     }

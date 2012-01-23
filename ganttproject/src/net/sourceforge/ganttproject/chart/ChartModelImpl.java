@@ -296,10 +296,6 @@ public class ChartModelImpl extends ChartModelBase {
         return getTaskManager().getTaskCount();
     }
 
-    public boolean isSelected(int index) {
-        return myTaskRendererImpl.isVisible(index);
-    }
-
     @Override
     public TaskManager getTaskManager() {
         return taskManager;

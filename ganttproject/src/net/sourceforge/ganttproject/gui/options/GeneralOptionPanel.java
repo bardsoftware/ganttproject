@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+/** Abstract class for the Options panels */
 public abstract class GeneralOptionPanel extends JPanel {
 
     protected static final GanttLanguage language = GanttLanguage.getInstance();

@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultEnumerationOption<T> extends GPAbstractOption<String>
-implements EnumerationOption {
+public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implements EnumerationOption {
     private final String[] myValues;
     private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
 

@@ -18,9 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.ganttproject.chart.pert;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.swing.JPanel;
 
@@ -34,13 +32,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public abstract class PertChart extends JPanel implements Chart {
-
-    // TODO List of Listeners is not used...
-    private final List<ChartSelectionListener> myListeners = new ArrayList<ChartSelectionListener>();
-
-    /**
-     * Task manager used to build PERT chart. It provides data.
-     */
+    /** Task manager used to build PERT chart. It provides data. */
     protected TaskManager myTaskManager;
 
     public PertChart() {
@@ -50,32 +42,28 @@ public abstract class PertChart extends JPanel implements Chart {
     public void init(IGanttProject project) {
         myTaskManager = project.getTaskManager();
     }
-    /**
-     * @inheritDoc
-     */
+
     @Override
     public abstract String getName();
 
-    /**
-     * Builds PERT chart.
-     *
-     */
+    /** Builds PERT chart. */
     protected abstract void buildPertChart();
 
-    /**
-     * This method in not supported by this Chart.
-     */
+    /** This method in not supported by this Chart. */
     @Override
     public Date getStartDate() {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * This method in not supported by this Chart.
-     */
+    /** This method in not supported by this Chart. */
     @Override
     public Date getEndDate() {
         throw new UnsupportedOperationException();
+    }
+
+    /** Sets the task manager. */
+    public void setTaskManager(TaskManager taskManager) {
+        myTaskManager = taskManager;
     }
 
     @Override
@@ -105,11 +93,11 @@ public abstract class PertChart extends JPanel implements Chart {
 
     @Override
     public void addSelectionListener(ChartSelectionListener listener) {
-        myListeners.add(listener);
+        // No listeners are implemented
     }
 
     @Override
     public void removeSelectionListener(ChartSelectionListener listener) {
-        myListeners.remove(listener);
+        // No listeners are implemented
     }
 }

@@ -49,8 +49,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
     private final ResourceTreeTableModel myResourceTreeModel;
 
-    private final IGanttProject myProject;
-
     private final UIFacade myUiFacade;
 
     private static enum DefaultColumn {
@@ -58,8 +56,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         ROLE(new TableHeaderUIFacade.ColumnStub("1", null, true, 1, 75)),
         EMAIL(new TableHeaderUIFacade.ColumnStub("2", null, false, -1, 75)),
         PHONE(new TableHeaderUIFacade.ColumnStub("3", null, false, -1, 50)),
-        ROLE_IN_TASK(new TableHeaderUIFacade.ColumnStub("4", null, false, -1, 75)),
-        ;
+        ROLE_IN_TASK(new TableHeaderUIFacade.ColumnStub("4", null, false, -1, 75));
 
         private final Column myDelegate;
         private DefaultColumn(TableHeaderUIFacade.Column delegate) {
@@ -82,7 +79,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
     public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
         super(project, uiFacade, project.getResourceCustomPropertyManager(), model);
         myUiFacade = uiFacade;
-        myProject = project;
         myRoleManager = project.getRoleManager();
         myRoleManager.addRoleListener(new RoleManager.Listener() {
             @Override
@@ -110,7 +106,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
     }
 
-
     @Override
     protected List<Column> getDefaultColumns() {
         return DefaultColumn.getColumnStubs();
@@ -121,9 +116,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
         return myUiFacade.getResourceChart();
     }
 
-    /**
-     * Initialize the treetable. Addition of various listeners, tree's icons,
-     */
+    /** Initialize the treetable. Addition of various listeners, tree's icons. */
     @Override
     protected void doInit() {
         super.doInit();
@@ -133,7 +126,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
             protected TimelineChart getChart() {
                 return (TimelineChart)myUiFacade.getResourceChart();
             }
-
         });
     }
 
@@ -160,8 +152,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
     /** @return the list of the selected nodes. */
     public DefaultMutableTreeNode[] getSelectedNodes() {
-        TreePath[] currentSelection = getTreeTable().getTree()
-                .getSelectionPaths();
+        TreePath[] currentSelection = getTreeTable().getTree().getSelectionPaths();
 
         if (currentSelection == null || currentSelection.length == 0) {
             return new DefaultMutableTreeNode[0];
@@ -169,15 +160,13 @@ public class ResourceTreeTable extends GPTreeTableBase {
         DefaultMutableTreeNode[] dmtnselected = new DefaultMutableTreeNode[currentSelection.length];
 
         for (int i = 0; i < currentSelection.length; i++) {
-            dmtnselected[i] = (DefaultMutableTreeNode) currentSelection[i]
-                    .getLastPathComponent();
+            dmtnselected[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
         }
         return dmtnselected;
     }
 
     public boolean isExpanded(HumanResource hr) {
-        ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel())
-                .exists(hr);
+        ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel()).exists(hr);
         if (node != null) {
             return getTreeTable().isExpanded(new TreePath(node.getPath()));
         }
@@ -246,7 +235,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     /** Move the selected resource down */
     public void downResource() {
         final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
-        if(selectedNodes.length==0) {
+        if (selectedNodes.length == 0) {
             return;
         }
         DefaultMutableTreeNode selectedNode = selectedNodes[0];

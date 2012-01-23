@@ -97,13 +97,13 @@ public class HttpDocument extends AbstractURLDocument {
     public String getFileName() {
         // TODO return filename instead of URL?
         String filenName = httpURL.toString();
-        return (filenName != null) ? filenName : url;
+        return (filenName != null ? filenName : url);
     }
 
     @Override
     public boolean canRead() {
         WebdavResource res = getWebdavResource();
-        return (null == res) ? false : (res.exists() && !res.isCollection());
+        return (null == res ? false : (res.exists() && !res.isCollection()));
     }
 
     @Override
@@ -127,10 +127,8 @@ public class HttpDocument extends AbstractURLDocument {
         }
 
         if (res.exists()) {
-            return (res.isCollection())
-                ? new Status(
-                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(),  null)
-                : Status.OK_STATUS;
+            return (res.isCollection()) ? new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY
+                    .ordinal(), res.getPath(), null) : Status.OK_STATUS;
         }
 
         try {
@@ -147,19 +145,16 @@ public class HttpDocument extends AbstractURLDocument {
             parentURL.setPath(currentHierPath);
             WebdavResource parentRes = new WebdavResource(parentURL);
             if (!parentRes.isCollection()) {
-                return new Status(
-                    IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
-                    parentRes.getPath(),  null);
+                return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY
+                        .ordinal(), parentRes.getPath(), null);
             }
             return Status.OK_STATUS;
         } catch (HttpException e) {
-            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-                    (e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode())
-                            : e.getReason()), e);
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), (e
+                    .getReason() == null ? "Code: " + getHTTPError(e.getReasonCode()) : e.getReason()), e);
         } catch (Exception e) {
-            return new Status(IStatus.ERROR, Document.PLUGIN_ID,
-                    Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e.getMessage(), e);
+            return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), e
+                    .getMessage(), e);
         }
     }
 

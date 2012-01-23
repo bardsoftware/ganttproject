@@ -1,13 +1,21 @@
 /*
- LICENSE:
+GanttProject is an opensource project management tool.
+Copyright (C) 2004-2011 GanttProject Team
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
 
- Copyright (C) 2004, GanttProject Development Team
- */
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
@@ -20,7 +28,7 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * @author bard
  */
 public class UIConfiguration {
     private final Font myMenuFont;
@@ -30,11 +38,14 @@ public class UIConfiguration {
     private Color myTaskColor;
     private Color myProjectLevelTaskColor;
 
-    private Color myResColor; // default resource color
+    /** default resource color */
+    private Color myResColor;
 
-    private Color myResOverColor; // overload resoure color
+    /** overload resource color */
+    private Color myResOverColor;
 
-    private Color myResUnderColor; // underload resoure color
+    /** underload resource color */
+    private Color myResUnderColor;
 
     private Color myEarlierPreviousTaskColor;
 
@@ -42,8 +53,10 @@ public class UIConfiguration {
 
     private Color myPreviousTaskColor;
 
-    private Color myWeekEndColor; // week end color
+    /** Color used for weekend indications */
+    private Color myWeekEndColor;
 
+    /** Color used for days off (and holidays) */
     private Color myDayOffColor;
 
     private boolean isRedlineOn;
@@ -52,12 +65,10 @@ public class UIConfiguration {
 
     private final AlphaRenderingOption myWeekendAlphaRenderingOption;
     private final RedlineOption myRedlineOption = new RedlineOption();
-    private BooleanOption myProjectDatesOption = new DefaultBooleanOption(
-    "showProjectDates");
-    public UIConfiguration(Font menuFont, Font chartMainFont, Color taskColor,
-            boolean isRedlineOn) {
-        myMenuFont = menuFont == null ? Fonts.DEFAULT_MENU_FONT
-                : menuFont;
+    private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
+
+    public UIConfiguration(Font menuFont, Font chartMainFont, Color taskColor, boolean isRedlineOn) {
+        myMenuFont = menuFont == null ? Fonts.DEFAULT_MENU_FONT : menuFont;
         myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
         this.isRedlineOn = isRedlineOn;
         setTaskColor(taskColor);
@@ -69,7 +80,7 @@ public class UIConfiguration {
         myPreviousTaskColor = Color.LIGHT_GRAY;
         myWeekEndColor = Color.GRAY;
         myDayOffColor = new Color(0.9f, 1f, 0.17f);
-        myWeekendAlphaRenderingOption = new AlphaRenderingOption(this);
+        myWeekendAlphaRenderingOption = new AlphaRenderingOption();
     }
 
     public Font getMenuFont() {
@@ -81,7 +92,7 @@ public class UIConfiguration {
     }
 
     public Color getTaskColor() {
-        return myProjectLevelTaskColor==null ? myTaskColor : myProjectLevelTaskColor;
+        return myProjectLevelTaskColor == null ? myTaskColor : myProjectLevelTaskColor;
     }
 
     public void setTaskColor(Color myTaskColor) {
@@ -172,33 +183,31 @@ public class UIConfiguration {
     }
 
     public static class AlphaRenderingOption extends DefaultEnumerationOption<Object>  {
-        static final String[] VALUES = new String[] {"chart.weekend_alpha_rendering.100", "chart.weekend_alpha_rendering.75", "chart.weekend_alpha_rendering.50", "chart.weekend_alpha_rendering.25", "chart.weekend_alpha_rendering.0"};
-        final float[] FLOATS = new float[] {1f, 0.75f, 0.5f, 0.25f, 0f};
-        private int myIndex=0;
-        AlphaRenderingOption(UIConfiguration config) {
+        private static final String[] VALUES = new String[] { "chart.weekend_alpha_rendering.100",
+                "chart.weekend_alpha_rendering.75", "chart.weekend_alpha_rendering.50",
+                "chart.weekend_alpha_rendering.25", "chart.weekend_alpha_rendering.0" };
+        private static final float[] FLOATS = new float[] { 1f, 0.75f, 0.5f, 0.25f, 0f };
+
+        private int myIndex = 0;
+
+        AlphaRenderingOption() {
             super("chart.weekend_alpha_rendering", VALUES);
-//            for (int i=0; i<VALUES.length; i++) {
-//                if (FLOATS[i]==config.getWeekendAlphaValue()) {
-//                    myIndex = i;
-//                    break;
-//                }
-//            }
         }
         @Override
         public void commit() {
             super.commit();
             String value = getValue();
-            for (int i=0; i<VALUES.length; i++) {
+            for (int i = 0; i < VALUES.length; i++) {
                 if (VALUES[i].equals(value)) {
                     myIndex = i;
                     break;
                 }
             }
         }
+
         public float getValueAsFloat() {
             return FLOATS[myIndex];
         }
-
     }
 
     public AlphaRenderingOption getWeekendAlphaRenderingOption() {

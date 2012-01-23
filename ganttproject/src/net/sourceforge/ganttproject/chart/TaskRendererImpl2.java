@@ -43,9 +43,6 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * in the gantt chart
  */
 public class TaskRendererImpl2 extends ChartRendererBase {
-    private boolean isVisible[] = { false, false, false, false, true, false,
-            true };
-
     private ChartModelImpl myModel;
 
     private GPOptionGroup[] myOptionGroups;
@@ -419,8 +416,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             if (dependant.getTask().isMilestone()) {
                 dependant = new MilestoneTaskFakeActivity(dependant.getTask());
             }
-            GraphicPrimitiveContainer dependantContainer = getContainerFor(dependant.getTask());
-            GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle)dependantContainer
+            GraphicPrimitiveContainer graphicPrimitiveContainer = getPrimitiveContainer();
+            GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer
                     .getPrimitive(dependant);
             if (dependantRectangle == null) {
                 //System.out.println("dependantRectangle == null");
@@ -430,8 +427,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
             if (dependee.getTask().isMilestone()) {
                 dependee = new MilestoneTaskFakeActivity(dependee.getTask());
             }
-            GraphicPrimitiveContainer dependeeContainer = getContainerFor(dependee.getTask());
-            GraphicPrimitiveContainer.Rectangle dependeeRectangle = (Rectangle)dependeeContainer
+            GraphicPrimitiveContainer.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer
                     .getPrimitive(dependee);
             if (dependeeRectangle == null) {
                 //System.out.println("dependeeRectangle == null");
@@ -564,16 +560,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         }
     }
 
-    public boolean isVisible(int index) {
-        return isVisible[index];
-    }
-
     public GPOptionGroup[] getOptionGroups() {
         return myOptionGroups;
-    }
-
-    private GraphicPrimitiveContainer getContainerFor(Task task) {
-        return getPrimitiveContainer();
     }
 
     int calculateRowHeight() {

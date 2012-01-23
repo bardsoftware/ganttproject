@@ -21,15 +21,12 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.awt.event.MouseEvent;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
-import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 public class ScrollViewInteraction extends MouseInteractionBase
         implements MouseInteraction {
     private ScrollingSession myScrollingSession;
 
-    public ScrollViewInteraction(
-            MouseEvent e, TimelineFacade timelineFacade, ScrollingManager scrollingManager, TimeUnit bottomUnit) {
+    public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade) {
         super(timelineFacade.getDateAt(0), timelineFacade);
         myScrollingSession = timelineFacade.createScrollingSession(e.getX());
     }
@@ -43,5 +40,4 @@ public class ScrollViewInteraction extends MouseInteractionBase
     public void finish() {
         myScrollingSession.finish();
     }
-
 }

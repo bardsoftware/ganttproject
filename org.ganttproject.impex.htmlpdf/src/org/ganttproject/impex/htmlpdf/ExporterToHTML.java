@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005 GanttProject team
+Copyright (C) 2005-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -62,7 +62,6 @@ public class ExporterToHTML extends ExporterBase {
 
     @Override
     public List<GPOptionGroup> getSecondaryOptions() {
-        //return getGanttChart().getOptionGroups();
         return null;
     }
 
@@ -93,9 +92,11 @@ public class ExporterToHTML extends ExporterBase {
                     ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
                     resultFiles.add(ganttChartImageFile);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 } catch (OutOfMemoryError e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
+                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }
@@ -113,9 +114,11 @@ public class ExporterToHTML extends ExporterBase {
                     ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
                     resultFiles.add(resourceChartImageFile);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 } catch (OutOfMemoryError e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
+                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }
@@ -157,13 +160,17 @@ public class ExporterToHTML extends ExporterBase {
                         resultFiles.add(resourcesPageFile);
                     }
                 } catch (SAXException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 } catch (OutOfMemoryError e) {
-                    throw new RuntimeException("Out of memory when running XSL transformation", e);
+                    getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
+                    return Status.CANCEL_STATUS;
                 } catch (ExportException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }
@@ -199,7 +206,8 @@ public class ExporterToHTML extends ExporterBase {
                         }
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    getUIFacade().showErrorDialog(e);
+                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }

@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject team
+Copyright (C) 2005-2011 Alexandre Thomas, Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

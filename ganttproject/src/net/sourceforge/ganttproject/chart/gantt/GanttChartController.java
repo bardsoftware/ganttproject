@@ -91,11 +91,9 @@ public class GanttChartController extends AbstractChartImplementation implements
     @Override
     public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
             TaskBoundaryChartItem taskBoundary) {
-        setActiveInteraction(new ChangeTaskEndInteraction(
-            initiatingEvent, taskBoundary,
-            new TimelineFacadeImpl(super.getChartModel(), getTaskManager()),
-            getUIFacade(),
-            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+        setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(super.getChartModel(),
+                getTaskManager()), getUIFacade(), getTaskManager().getAlgorithmCollection()
+                .getRecalculateTaskScheduleAlgorithm()));
         setCursor(GanttGraphicArea.E_RESIZE_CURSOR);
     }
 

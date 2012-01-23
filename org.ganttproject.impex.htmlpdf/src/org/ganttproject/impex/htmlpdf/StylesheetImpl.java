@@ -21,10 +21,11 @@ package org.ganttproject.impex.htmlpdf;
 import java.net.URL;
 
 public class StylesheetImpl implements Stylesheet {
-    private String myLocalizedName;
+    private final String myLocalizedName;
     private final URL myURL;
+
     protected StylesheetImpl(URL stylesheetURL, String localizedName) {
-        assert stylesheetURL!=null;
+        assert stylesheetURL != null;
         myURL = stylesheetURL;
         myLocalizedName = localizedName;
     }

@@ -69,11 +69,11 @@ public class FontSubstitutionPanel {
             }
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return columnIndex==1;
+                return columnIndex == 1;
             }
             @Override
             public void setValueAt(Object value, int rowIndex, int columnIndex) {
-                assert columnIndex==1;
+                assert columnIndex == 1;
                 assert value instanceof String;
                 getSubstitution(rowIndex).setSubstitutionFamily((String)value);
                 updateFontStatusMessage();
@@ -90,30 +90,27 @@ public class FontSubstitutionPanel {
                     throw new IllegalStateException();
                 }
             }
-
         };
         JTable table = new JTable(tableModel);
         table.setRowHeight(30);
 
         class CellRendererImpl implements TableCellRenderer {
             private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+
             @Override
-            public Component getTableCellRendererComponent(
-                    JTable table, Object value, boolean isSelected, boolean hasFocus,
-                    int row, int column) {
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
                  JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(
                          table, value, isSelected, hasFocus, row, column);
                  FontSubstitution substitution = getSubstitution(row);
                  if (!substitution.isResolved() || column==0) {
                      result.setFont(result.getFont().deriveFont(16f));
-                 }
-                 else {
+                 } else {
                      result.setFont(substitution.getSubstitutionFont().deriveFont(16f));
                  }
                  if (substitution.isResolved()) {
                      result.setForeground(Color.BLACK);
-                 }
-                 else {
+                 } else {
                      result.setForeground(Color.RED);
                  }
                  return result;
@@ -148,6 +145,6 @@ public class FontSubstitutionPanel {
     }
 
     private FontSubstitution getSubstitution(int row) {
-        return (FontSubstitution) myModel.getSubstitution(row);
+        return myModel.getSubstitution(row);
     }
 }

@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.util;
 
+import java.awt.FontMetrics;
+
 /**
  * This class groups static methods together to handle strings.
  *
@@ -44,7 +46,7 @@ public class StringUtils {
         }
         return string;
     }
-    
+
     /** @return a comma separated list showing the names of the given objects */
     public static String getDisplayNames(Object[] objects) {
         if (objects.length == 1) {
@@ -58,5 +60,30 @@ public class StringUtils {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Truncates the <code>str</code> String according to
+     * <code>width</code> and <code>fontMetrics</code>.
+     *
+     * @return the truncated String.
+     */
+    public static String getTruncatedString(String str, int width, FontMetrics fontMetrics) {
+        int strWidth = fontMetrics.stringWidth(str);
+        if (strWidth <= width) {
+            // No truncation is required
+            return str;
+        }
+
+        // Start with width of "..." part
+        int maxWidth = fontMetrics.stringWidth("...");
+
+        // Find amount of chars to reach the given width
+        int i;
+        for (i = 0; i < str.length() && maxWidth < width; i++) {
+            maxWidth += fontMetrics.charWidth(str.charAt(i));;
+        }
+        // last check went over allowed width, so use up to this length (see substring documentation)
+        return str.substring(0, i) + "...";
     }
 }

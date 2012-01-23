@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,6 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -77,9 +75,9 @@ public class ChartModelResource extends ChartModelBase {
             loadPersistentValue(legacyValue);
         }
     }
-    public ChartModelResource(TaskManager taskManager,
-            HumanResourceManager resourceManager, TimeUnitStack timeUnitStack,
-            final UIConfiguration projectConfig, ResourceChart resourceChart) {
+
+    public ChartModelResource(TaskManager taskManager, HumanResourceManager resourceManager,
+            TimeUnitStack timeUnitStack, final UIConfiguration projectConfig, ResourceChart resourceChart) {
         super(taskManager, timeUnitStack, projectConfig);
         myResourceChart = resourceChart;
         ResourceLoadRenderer resourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);
@@ -163,24 +161,10 @@ public class ChartModelResource extends ChartModelBase {
 
     @Override
     public ChartModelBase createCopy() {
-        ChartModelBase result = new ChartModelResource(myTaskManager,
-                myManager, myTimeUnitStack, getProjectConfig(), myResourceChart);
+        ChartModelBase result = new ChartModelResource(myTaskManager, myManager, myTimeUnitStack, getProjectConfig(),
+                myResourceChart);
         super.setupCopy(result);
         return result;
-    }
-
-    public Task findTaskWithCoordinates(int x, int y) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Rectangle getBoundingRectangle(Task task) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void setTaskContainment(TaskContainmentHierarchyFacade taskContainment) {
-        // TODO Auto-generated method stub
     }
 
     @Override

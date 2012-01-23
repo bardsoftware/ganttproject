@@ -263,9 +263,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     }
 
     public MouseInteraction newScrollViewInteraction(MouseEvent e) {
-        return new ScrollViewInteraction(
-            e, new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade().getScrollingManager(),
-            getChartModel().getBottomUnit());
+        return new ScrollViewInteraction(e, new TimelineFacadeImpl(getChartModel(), getTaskManager()));
     }
 
     @Override

@@ -115,7 +115,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             @Override
             public void optionsChanged() {
                 repaint();
-
             }
         });
         this.tree = ttree;
@@ -153,9 +152,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
                 }
             }
         });
-
         myPublicHolidayDialogAction = new PublicHolidayDialogAction(getProject(), getUIFacade());
-
         getProject().getTaskCustomColumnManager().addListener(this);
         initMouseListeners();
     }
@@ -173,9 +170,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     /** @return the preferred size of the panel. */
     @Override
     public Dimension getPreferredSize() {
-
         return new Dimension(465, 600);
-
     }
 
     public ChartModelImpl getMyChartModel() {
@@ -296,6 +291,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
             return result;
         }
     }
+
     @Override
     protected AbstractChartImplementation getImplementation() {
         return getChartImplementation();
@@ -342,8 +338,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
         setPreviousStateTasks(null);
     }
     @Override
+
     public void projectOpened() {
     }
+
     @Override
     public void projectCreated() {
         // TODO Auto-generated method stub

@@ -74,10 +74,10 @@ public class GanttDialogPerson {
         this.person = person;
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
         String[] roleFieldValues = new String[enabledRoles.length];
-        for (int i=0; i<enabledRoles.length; i++) {
+        for (int i = 0; i < enabledRoles.length; i++) {
             roleFieldValues[i]= enabledRoles[i].getName();
         }
-        myRoleField = new DefaultEnumerationOption("colRole", roleFieldValues);
+        myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
         myGroup = new GPOptionGroup("", new GPOption[] {myNameField, myPhoneField, myMailField,myRoleField});
         myGroup.setTitled(false);
     }
@@ -94,7 +94,7 @@ public class GanttDialogPerson {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     myGroup.commit();
-                    okButtonActionPerformed(e);
+                    okButtonActionPerformed();
                 }
             };
             CancelAction cancelAction = new CancelAction(){
@@ -182,19 +182,17 @@ public class GanttDialogPerson {
         return tabbedPane;
     }
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_okButtonActionPerformed
-        if (person.getId() != -1) {// person ID is -1 when it is new one
-            // i.e. before the Person dialog is
-            // closed
-            myUIFacade.getUndoManager().undoableEdit(
-                    "Resource properties changed", new Runnable() {
-                        @Override
-                        public void run() {
-                            applyChanges();
-                        }
-                    });
-        }
-        else {
+    private void okButtonActionPerformed() {
+        if (person.getId() != -1) {
+            // person ID is -1 when it is new one
+            // i.e. before the Person dialog is closed
+            myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
+                @Override
+                public void run() {
+                    applyChanges();
+                }
+            });
+        } else {
             applyChanges();
         }
         change = true;
@@ -205,21 +203,21 @@ public class GanttDialogPerson {
         person.setMail(myMailField.getValue());
         person.setPhone(myPhoneField.getValue());
         Role role = findRole(myRoleField.getValue());
-        if (role!=null) {
+        if (role != null) {
             person.setRole(role);
         }
-        DateInterval[] intervals = myDaysOffModel.getIntervals();
         person.getDaysOff().clear();
-        for (int i=0; i<intervals.length; i++) {
-            person.addDaysOff(new GanttDaysOff(intervals[i].start, intervals[i].getEnd()));
+        for (DateInterval interval : myDaysOffModel.getIntervals()) {
+            person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));
         }
+        // FIXME change = false;? (after applying changed they are not changes anymore...)
     }
 
     private Role findRole(String roleName) {
         Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
-        for (int i=0; i<enabledRoles.length; i++) {
-            if (enabledRoles[i].getName().equals(roleName)) {
-                return enabledRoles[i];
+        for (Role enabledRole : enabledRoles) {
+            if (enabledRole.getName().equals(roleName)) {
+                return enabledRole;
             }
         }
         return null;

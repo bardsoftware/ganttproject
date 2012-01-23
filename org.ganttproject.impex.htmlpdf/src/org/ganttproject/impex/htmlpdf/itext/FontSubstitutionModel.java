@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2009 Dmitry Barashev
+Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -107,9 +107,7 @@ public class FontSubstitutionModel {
     }
 
     public boolean hasUnresolvedFonts() {
-        for (Iterator<FontSubstitution> substitutions = mySubstitutions
-                .values().iterator(); substitutions.hasNext();) {
-            FontSubstitution fs = substitutions.next();
+        for (FontSubstitution fs : mySubstitutions.values()) {
             if (!fs.isResolved()) {
                 return true;
             }

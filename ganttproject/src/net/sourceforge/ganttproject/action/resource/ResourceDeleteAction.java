@@ -38,24 +38,23 @@ public class ResourceDeleteAction extends ResourceAction {
 
     private final ResourceContext myContext;
 
-    private GanttProject myProjectFrame;
+    private GanttProject myProject;
 
-    public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject projectFrame,
-            UIFacade uiFacade) {
-        this(hrManager, context, projectFrame, uiFacade, IconSize.MENU);
+    public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
+        this(hrManager, context, project, uiFacade, IconSize.MENU);
     }
 
-    private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject projectFrame,
+    private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
             UIFacade uiFacade, IconSize size) {
         super("resource.delete", hrManager, size);
         myUIFacade = uiFacade;
-        myProjectFrame = projectFrame;
+        myProject = project;
         myContext = context;
     }
 
     @Override
     public GPAction withIcon(IconSize size) {
-        return new ResourceDeleteAction(getManager(), myContext, myProjectFrame, myUIFacade, size);
+        return new ResourceDeleteAction(getManager(), myContext, myProject, myUIFacade, size);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class ResourceDeleteAction extends ResourceAction {
                     @Override
                     public void run() {
                         deleteResources(selectedResources);
-                        myProjectFrame.repaint2();
+                        myProject.repaint2();
                     }
                 });
             }

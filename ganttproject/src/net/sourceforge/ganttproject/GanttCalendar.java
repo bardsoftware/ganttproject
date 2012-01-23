@@ -185,8 +185,6 @@ public class GanttCalendar extends GregorianCalendar {
                 return -1;
             case 1:
                 return 1;
-            default:
-                break;
             }
         }
         return 0;
