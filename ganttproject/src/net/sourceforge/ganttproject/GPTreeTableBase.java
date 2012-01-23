@@ -399,13 +399,17 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
             @Override
             public void projectCreated() {
-                getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
-                getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+                onProjectCreated();
             }
         });
     }
 
     protected void onProjectOpened() {
+    }
+
+    protected void onProjectCreated() {
+        getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
+        getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
     }
 
     protected void initTreeTable() {

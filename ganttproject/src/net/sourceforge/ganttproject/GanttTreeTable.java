@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -155,6 +156,18 @@ public class GanttTreeTable extends GPTreeTableBase {
         getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
         cellEditor.requestFocus();
     }
+
+    @Override
+    protected void onProjectCreated() {
+        super.onProjectCreated();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getUiFacade().getGanttChart().reset();
+            }
+        });
+    }
+
 
 
     /*
