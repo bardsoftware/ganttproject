@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.util.MouseUtil;
 
 class MouseListenerImpl extends MouseListenerBase {
     private final GanttTree2 myTree;
@@ -87,7 +88,7 @@ class MouseListenerImpl extends MouseListenerBase {
     @Override
     public void mousePressed(MouseEvent e) {
         myTree.stopEditing();
-        String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+        String text = MouseUtil.toString(e);
         super.mousePressed(e);
 
         // If there is no task under the mouse pointer, we consider dragging the chart

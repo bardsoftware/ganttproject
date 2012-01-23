@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.util.MouseUtil;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -135,7 +136,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+                    String text = MouseUtil.toString(e);
                     super.mousePressed(e);
 
                     if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
