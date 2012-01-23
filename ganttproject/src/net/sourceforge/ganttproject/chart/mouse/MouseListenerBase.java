@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.util.MouseUtil;
 
 public class MouseListenerBase extends MouseAdapter {
     private UIFacade myUiFacade;
@@ -61,7 +62,7 @@ public class MouseListenerBase extends MouseAdapter {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        String text = MouseEvent.getModifiersExText(e.getModifiersEx());
+        String text = MouseUtil.toString(e);
         if (e.isPopupTrigger() || text.equals(GPAction.getKeyStrokeText("mouse.contextMenu"))) {
             showPopupMenu(e);
             return;
