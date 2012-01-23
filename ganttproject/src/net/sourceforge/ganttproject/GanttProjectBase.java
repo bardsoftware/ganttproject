@@ -29,6 +29,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -173,7 +174,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             modifiedStateChangeListener.projectCreated();
         }
         // A new project just got created, so it is not yet modified
-        setModified(false);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setModified(false);
+            }
+        });
     }
 
     protected void fireProjectClosed() {

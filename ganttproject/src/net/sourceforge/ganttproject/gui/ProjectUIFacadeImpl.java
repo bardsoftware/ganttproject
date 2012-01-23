@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.eclipse.core.runtime.IStatus;
@@ -269,7 +270,11 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
             Document defaultDocument = document.getPortfolio().getDefaultDocument();
             project.open(defaultDocument);
         }
-
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                project.setModified(false);
+            }
+        });
     }
 
     private void beforeClose() {
