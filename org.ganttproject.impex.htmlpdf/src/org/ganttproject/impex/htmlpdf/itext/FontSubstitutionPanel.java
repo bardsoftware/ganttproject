@@ -32,6 +32,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import net.sourceforge.ganttproject.gui.UIUtil;
+
+import org.jdesktop.swing.JXTable;
+
 import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
 
 public class FontSubstitutionPanel {
@@ -91,8 +95,9 @@ public class FontSubstitutionPanel {
                 }
             }
         };
-        JTable table = new JTable(tableModel);
+        JTable table = new JXTable(tableModel);
         table.setRowHeight(30);
+        UIUtil.setupTableUI(table);
 
         class CellRendererImpl implements TableCellRenderer {
             private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();

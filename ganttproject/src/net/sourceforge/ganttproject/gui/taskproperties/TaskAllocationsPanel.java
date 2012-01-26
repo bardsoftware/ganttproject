@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -52,7 +53,7 @@ public class TaskAllocationsPanel {
     public JPanel getComponent() {
         myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
         myTable = new JTable(myModel);
-        CommonPanel.setupTableUI(getTable());
+        UIUtil.setupTableUI(getTable());
         CommonPanel.setupComboBoxEditor(
                 getTable().getColumnModel().getColumn(1),
                 myHRManager.getResources().toArray());

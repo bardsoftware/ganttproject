@@ -41,8 +41,10 @@ public interface UIFacade {
         void show();
         void hide();
         void layout();
+        void center(Centering centering);
     }
 
+    public enum Centering { SCREEN, WINDOW };
     public enum Choice { YES, NO, CANCEL, OK };
 
     public static final int GANTT_INDEX = 0;
