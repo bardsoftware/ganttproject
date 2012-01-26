@@ -49,7 +49,7 @@ import net.sourceforge.ganttproject.util.collect.Pair;
  */
 public class TTFontCache {
     private Map<String,Font> myMap_Family_RegularFont = new TreeMap<String,Font>();
-    private Map<String, String> myMap_Family_Filename = new HashMap<String, String>();
+    //private Map<String, String> myMap_Family_Filename = new HashMap<String, String>();
     private final Map<Pair<Integer, Float>, com.itextpdf.text.Font> myFontCache =
             new HashMap<Pair<Integer,Float>, com.itextpdf.text.Font>();
     private Map<String, BaseFont> myMap_Family_ItextFont = new HashMap<String, BaseFont>();
@@ -120,13 +120,16 @@ public class TTFontCache {
 
         GPLogger.log("registering font: " + family);
         myMap_Family_RegularFont.put(family, awtFont);
-        myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
+        //myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
         try {
-            myMap_Family_ItextFont.put(family, BaseFont.createFont(
-                    fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED));
+            BaseFont bf = BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED);
+            myMap_Family_ItextFont.put(family, bf);
         } catch (DocumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            if (e.getMessage().indexOf("cannot be embedded") > 0) {
+                GPLogger.logToLogger("Font " + family + " from " + fontFile.getAbsolutePath() + " skipped due to licensing restrictions");
+            } else {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -134,18 +137,10 @@ public class TTFontCache {
         Pair<Integer, Float> key = Pair.create(style, size);
         com.itextpdf.text.Font result = myFontCache.get(key);
         if (result == null) {
-            //FontFactory.getFont(getFontName(), GanttLanguage.getInstance().getCharSet(), size);
-            String filename = myMap_Family_Filename.get(family);
-            if (filename != null) {
-                try {
-                    BaseFont bf = BaseFont.createFont(filename, GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED);
-                    result = new com.itextpdf.text.Font(bf, size);
-                    myFontCache.put(key, result);
-                } catch (DocumentException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            BaseFont bf = myMap_Family_ItextFont.get(family);
+            if (bf != null) {
+                result = new com.itextpdf.text.Font(bf, size);
+                myFontCache.put(key, result);
             }
         }
         return result;
