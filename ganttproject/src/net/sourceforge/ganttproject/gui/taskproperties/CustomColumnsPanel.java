@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.ShowHideColumnsDialog;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
@@ -69,7 +70,7 @@ public class CustomColumnsPanel {
         model = new CustomColumnTableModel();
         table = new JTable(model);
 
-        CommonPanel.setupTableUI(table);
+        UIUtil.setupTableUI(table);
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
             @Override

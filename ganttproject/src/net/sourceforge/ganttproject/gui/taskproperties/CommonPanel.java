@@ -58,12 +58,6 @@ abstract class CommonPanel {
         }
     }
 
-    static void setupTableUI(JTable table) {
-        table.setPreferredScrollableViewportSize(new Dimension(
-                table.getPreferredScrollableViewportSize().width,
-                table.getRowHeight() * 10));
-    }
-
     static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
         JPanel result = new JPanel(new BorderLayout());
         actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));

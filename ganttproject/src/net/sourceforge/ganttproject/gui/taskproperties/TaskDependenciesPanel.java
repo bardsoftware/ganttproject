@@ -28,6 +28,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -62,7 +63,7 @@ public class TaskDependenciesPanel {
     public JPanel getComponent() {
         myModel = new DependencyTableModel(myTask);
         myTable = new JTable(myModel);
-        CommonPanel.setupTableUI(myTable);
+        UIUtil.setupTableUI(myTable);
         setUpPredecessorComboColumn(
                 DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()),
                 getTable());

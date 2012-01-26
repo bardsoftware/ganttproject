@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -20,10 +20,12 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Window;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -75,4 +77,12 @@ public abstract class UIUtil {
             }
         }
     }
+
+    public static void setupTableUI(JTable table) {
+        table.setPreferredScrollableViewportSize(new Dimension(
+                table.getPreferredScrollableViewportSize().width,
+                table.getRowHeight() * 10));
+    }
+
+
 }

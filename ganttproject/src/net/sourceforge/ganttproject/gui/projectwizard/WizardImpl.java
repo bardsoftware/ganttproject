@@ -28,11 +28,13 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Centering;
 import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -101,6 +103,7 @@ public abstract class WizardImpl {
             getCurrentPage().setActive(true);
             myCardLayout.next(myPagesContainer);
         }
+        myDialog.center(Centering.WINDOW);
         adjustButtonState();
     }
 
@@ -111,6 +114,7 @@ public abstract class WizardImpl {
             getCurrentPage().setActive(true);
             myCardLayout.previous(myPagesContainer);
         }
+        myDialog.center(Centering.WINDOW);
         adjustButtonState();
     }
 
@@ -124,7 +128,7 @@ public abstract class WizardImpl {
             pagePanel.add(titlePanel, BorderLayout.NORTH);
             JComponent component = (JComponent) nextPage.getComponent();
             component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-            pagePanel.add(component);
+            pagePanel.add(component, BorderLayout.CENTER);
 
             myPagesContainer.add(pagePanel, nextPage.getTitle());
         }
@@ -133,6 +137,7 @@ public abstract class WizardImpl {
         adjustButtonState();
         myDialog = myUIFacade.createDialog(myPagesContainer,
                 new Action[] { myBackAction, myNextAction, myOkAction, myCancelAction }, myTitle);
+        myDialog.center(Centering.SCREEN);
         myDialog.show();
     }
 
