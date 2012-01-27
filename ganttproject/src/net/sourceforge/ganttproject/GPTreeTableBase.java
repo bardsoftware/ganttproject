@@ -97,6 +97,16 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
     private final CustomPropertyManager myCustomPropertyManager;
     private boolean isInitialized;
+    private GPAction myEditCellAction = new GPAction("tree.edit") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTable t = getTable();
+            TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(
+                    t.getSelectedRow(), t.getSelectedColumn());
+            t.editCellAt(t.getSelectedRow(), t.getSelectedColumn());
+            cellEditor.requestFocus();
+        }
+    };
 
     protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
         private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
@@ -470,6 +480,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         ActionMap actionMap= getActionMap();
         actionMap.setParent(getTreeTable().getActionMap());
         getTreeTable().setActionMap(actionMap);
+        addActionWithAccelleratorKey(myEditCellAction);
 
         setHighlighters(new HighlighterPipeline(new Highlighter[] {
                 AlternateRowHighlighter.quickSilver,
@@ -582,9 +593,15 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     TableCellEditor createCellEditor(Class<?> columnClass) {
-        return columnClass.equals(GregorianCalendar.class)
+        TableCellEditor editor = columnClass.equals(GregorianCalendar.class)
                 ? newDateCellEditor() : getTreeTable().getDefaultEditor(columnClass);
+        return wrapEditor(editor);
     }
+
+    private static TableCellEditor wrapEditor(TableCellEditor editor) {
+        return new TreeTableCellEditorImpl(editor);
+    }
+
     protected TableCellEditor newDateCellEditor() {
         return new DateCellEditor();
     }
