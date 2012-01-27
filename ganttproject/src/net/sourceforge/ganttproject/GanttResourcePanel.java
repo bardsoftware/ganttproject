@@ -54,8 +54,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
     public final GanttProject appli;
 
-    private GanttLanguage lang = GanttLanguage.getInstance();
-
     private final ResourceActionSet myResourceActionSet;
 
     public ResourceLoadGraphicArea area;
@@ -198,15 +196,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
             menu.add(appli.getCopyAction());
             menu.add(appli.getPasteAction());
         }
-        menu.applyComponentOrientation(lang.getComponentOrientation());
+        menu.applyComponentOrientation(GanttLanguage.getInstance().getComponentOrientation());
         Point popupPoint = getPopupMenuPoint(e);
         menu.show(this, popupPoint.x, popupPoint.y);
-    }
-
-    /** Function called when the language is changed */
-    public void refresh(GanttLanguage language) {
-        lang = language;
-        getTreeModel().changeLanguage(lang);
     }
 
     @Override

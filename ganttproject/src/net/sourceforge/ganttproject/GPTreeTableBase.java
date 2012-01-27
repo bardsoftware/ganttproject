@@ -77,6 +77,7 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
@@ -112,6 +113,16 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
         private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
 
+        TableHeaderUiFacadeImpl() {
+            GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+                @Override
+                public void languageChanged(Event event) {
+                    for (ColumnImpl column : myColumns) {
+                        column.setName(column.getName());
+                    }
+                }
+            });
+        }
         private List<ColumnImpl> getColumns() {
             return Collections.unmodifiableList(myColumns);
         }

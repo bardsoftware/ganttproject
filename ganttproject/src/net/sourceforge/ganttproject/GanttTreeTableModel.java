@@ -92,6 +92,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
      */
     public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager) {
         super(new TaskNode(taskManager.getRootTask()));
+        GanttLanguage.getInstance().addListener(this);
         changeLanguage(language);
         myCustomColumnsManager = customColumnsManager;
     }

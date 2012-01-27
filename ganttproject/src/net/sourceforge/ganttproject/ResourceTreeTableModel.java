@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -28,6 +28,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -43,9 +44,6 @@ import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
-    private static GanttLanguage language = GanttLanguage.getInstance();
-
-
     public static final int INDEX_RESOURCE_NAME = 0;
 
     public static final int INDEX_RESOURCE_ROLE = 1;
@@ -97,9 +95,15 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
                 }
             }
         });
-        changeLanguage(language);
         root = buildTree();
         this.setRoot(root);
+        changeLanguage();
+        GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+            @Override
+            public void languageChanged(Event event) {
+                changeLanguage();
+            }
+        });
     }
 
     public int useNextIndex() {
@@ -188,7 +192,8 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
      * @param ganttLanguage
      *            New language to use.
      */
-    public void changeLanguage(GanttLanguage ganttLanguage) {
+    public void changeLanguage() {
+        GanttLanguage language = GanttLanguage.getInstance();
         myDefaultColumnTitles = new String[] {
             language.getText("tableColResourceName"),
             language.getText("tableColResourceRole"),
