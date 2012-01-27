@@ -96,8 +96,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     private final GanttTabbedPane myTabPane;
     private final JToolBar myToolBar = new JToolBar();
     private final GPUndoManager myUndoManager;
-    private final CustomColumnsManager myTaskCustomColumnManager;
-    //private final CustomColumnsStorage myTaskCustomColumnStorage;
 
     private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
 
@@ -139,7 +137,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
             }
         };
         myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
-        myTaskCustomColumnManager = new CustomColumnsManager();
         myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
 
         mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
@@ -360,8 +357,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     @Override
-    public CustomColumnsManager getTaskCustomColumnManager() {
-        return myTaskCustomColumnManager;
+    public CustomPropertyManager getTaskCustomColumnManager() {
+        return getTaskManager().getCustomPropertyManager();
     }
 
     @Override
