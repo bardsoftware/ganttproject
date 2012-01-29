@@ -54,13 +54,16 @@ class ChartWriter implements ChartImageVisitor {
     private float myYShift;
     private PdfTemplate myTemplate;
     private Graphics2D myGraphics;
+    private final String myCharset;
 
-    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings, TTFontCache fontCache) {
+    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings,
+            TTFontCache fontCache, String charset) {
         myChart = chart;
         myWriter = writer;
         myDoc = doc;
         myExportSettings = exportSettings;
         myFontCache = fontCache;
+        myCharset = charset;
     }
 
     protected ChartModel getModel() {
@@ -84,7 +87,7 @@ class ChartWriter implements ChartImageVisitor {
             final float yscale = height/d.getChartHeight();
             myScale = Math.min(xscale, yscale);
             myYShift = height - d.getChartHeight() * myScale + myDoc.bottomMargin();
-            myGraphics = myTemplate.createGraphics(d.getFullWidth(), d.getChartHeight(), myFontCache.getFontMapper());
+            myGraphics = myTemplate.createGraphics(d.getFullWidth(), d.getChartHeight(), myFontCache.getFontMapper(myCharset));
             myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         return myGraphics;
