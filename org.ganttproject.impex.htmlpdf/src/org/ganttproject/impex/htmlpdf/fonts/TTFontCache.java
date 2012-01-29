@@ -22,6 +22,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,9 @@ import java.util.logging.Level;
 
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
@@ -48,11 +52,11 @@ import net.sourceforge.ganttproject.util.collect.Pair;
  * @author dbarashev
  */
 public class TTFontCache {
-    private Map<String,Font> myMap_Family_RegularFont = new TreeMap<String,Font>();
+    private Map<String, Supplier<Font>> myMap_Family_RegularFont = new TreeMap<String,Supplier<Font>>();
     //private Map<String, String> myMap_Family_Filename = new HashMap<String, String>();
     private final Map<Pair<Integer, Float>, com.itextpdf.text.Font> myFontCache =
             new HashMap<Pair<Integer,Float>, com.itextpdf.text.Font>();
-    private Map<String, BaseFont> myMap_Family_ItextFont = new HashMap<String, BaseFont>();
+    private Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<String, Function<String, BaseFont>>();
     private Properties myProperties;
 
     public void registerDirectory(String path, boolean recursive) {
@@ -70,7 +74,8 @@ public class TTFontCache {
     }
 
     public Font getAwtFont(String family) {
-        return (Font) myMap_Family_RegularFont.get(family);
+        Supplier<Font> supplier = myMap_Family_RegularFont.get(family);
+        return supplier == null ? null : supplier.get();
     }
 
     private void registerFonts(File dir) {
@@ -101,29 +106,59 @@ public class TTFontCache {
        }
     }
 
-    private void registerFontFile(File fontFile, boolean runningUnderJava6) throws FontFormatException, IOException {
-        FontFactory.register(fontFile.getAbsolutePath());
-        Font awtFont = runningUnderJava6 ?
-            Font.createFont(Font.TRUETYPE_FONT, fontFile) :
-            Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fontFile));
+    private static Font createAwtFont(File fontFile, boolean runningUnderJava6) throws IOException, FontFormatException {
+        return runningUnderJava6 ?
+                Font.createFont(Font.TRUETYPE_FONT, fontFile) :
+                Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fontFile));
+    }
+
+    private void registerFontFile(final File fontFile, final boolean runningUnderJava6) throws FontFormatException, IOException {
+        //FontFactory.register(fontFile.getAbsolutePath());
+        Font awtFont = createAwtFont(fontFile, runningUnderJava6);
 
         final String family = awtFont.getFamily().toLowerCase();
         if (myMap_Family_RegularFont.containsKey(family)) {
             return;
         }
 
-        // We will put a font to the mapping only if it is a plain font.
-        final com.itextpdf.text.Font itextFont = FontFactory.getFont(family, 12f, com.itextpdf.text.Font.NORMAL);
-        if (itextFont == null || itextFont.getBaseFont() == null) {
-            return;
-        }
+//        // We will put a font to the mapping only if it is a plain font.
+//        final com.itextpdf.text.Font itextFont = FontFactory.getFont(family, 12f, com.itextpdf.text.Font.NORMAL);
+//        if (itextFont == null || itextFont.getBaseFont() == null) {
+//            return;
+//        }
 
         GPLogger.log("registering font: " + family);
-        myMap_Family_RegularFont.put(family, awtFont);
+        myMap_Family_RegularFont.put(family, Suppliers.<Font>memoize(new Supplier<Font>() {
+            @Override
+            public Font get() {
+                try {
+                    return createAwtFont(fontFile, runningUnderJava6);
+                } catch (IOException e) {
+                    GPLogger.log(e);
+                } catch (FontFormatException e) {
+                    GPLogger.log(e);
+                }
+                return null;
+            }
+        }));
         //myMap_Family_Filename.put(family, fontFile.getAbsolutePath());
         try {
-            BaseFont bf = BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED);
-            myMap_Family_ItextFont.put(family, bf);
+            BaseFont.createFont(
+                    fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), BaseFont.EMBEDDED);
+            myMap_Family_ItextFont.put(family, new Function<String, BaseFont>() {
+                @Override
+                public BaseFont apply(String charset) {
+                    try {
+                        return BaseFont.createFont(
+                                fontFile.getAbsolutePath(), charset, BaseFont.EMBEDDED);
+                    } catch (DocumentException e) {
+                        GPLogger.log(e);
+                    } catch (IOException e) {
+                        GPLogger.log(e);
+                    }
+                    return null;
+                }
+            });
         } catch (DocumentException e) {
             if (e.getMessage().indexOf("cannot be embedded") > 0) {
                 GPLogger.logToLogger("Font " + family + " from " + fontFile.getAbsolutePath() + " skipped due to licensing restrictions");
@@ -133,11 +168,11 @@ public class TTFontCache {
         }
     }
 
-    public com.itextpdf.text.Font getFont(String family, int style, float size) {
+    public com.itextpdf.text.Font getFont(String family, String charset, int style, float size) {
         Pair<Integer, Float> key = Pair.create(style, size);
         com.itextpdf.text.Font result = myFontCache.get(key);
         if (result == null) {
-            BaseFont bf = myMap_Family_ItextFont.get(family);
+            BaseFont bf = myMap_Family_ItextFont.get(family).apply(charset);
             if (bf != null) {
                 result = new com.itextpdf.text.Font(bf, size);
                 myFontCache.put(key, result);
@@ -147,7 +182,7 @@ public class TTFontCache {
 
     }
 
-    public FontMapper getFontMapper() {
+    public FontMapper getFontMapper(final String charset) {
         return new FontMapper() {
             @Override
             public BaseFont awtToPdf(Font awtFont) {
@@ -155,7 +190,7 @@ public class TTFontCache {
                 if (myProperties.containsKey("font." + family)) {
                     family = String.valueOf(myProperties.get("font." + family));
                 }
-                return myMap_Family_ItextFont.get(family);
+                return myMap_Family_ItextFont.get(family).apply(charset);
             }
 
             @Override

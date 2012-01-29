@@ -175,19 +175,23 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
 
     protected Font getSansRegular(float size) {
-        return myFontCache.getFont(getFontName(), Font.NORMAL, size);
+        return myFontCache.getFont(getFontName(), getCharset(), Font.NORMAL, size);
     }
 
     protected Font getSansItalic(float size) {
-        return myFontCache.getFont(getFontName(), Font.ITALIC, size);
+        return myFontCache.getFont(getFontName(), getCharset(), Font.ITALIC, size);
     }
 
     protected Font getSansRegularBold(float size) {
-        return myFontCache.getFont(getFontName(), Font.BOLD, size);
+        return myFontCache.getFont(getFontName(), getCharset(), Font.BOLD, size);
     }
 
     protected Font getSansRegularBold() {
         return getSansRegularBold(12);
+    }
+
+    private String getCharset() {
+        return myProperties.getProperty("charset", GanttLanguage.getInstance().getCharSet());
     }
 
     void run(IGanttProject project, UIFacade facade, OutputStream out) throws ExportException {
@@ -323,7 +327,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
                 GanttLanguage.getInstance().getText("ganttChart"),
                 String.valueOf(myWriter.getPageNumber()));
-        ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache) {
+        ChartWriter ganttChartWriter = new ChartWriter(
+                myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache, getCharset()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
@@ -339,7 +344,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getText("resourcesChart"),
                 String.valueOf(myWriter.getPageNumber()));
         ChartWriter resourceChartWriter = new ChartWriter(
-                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache) {
+                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings(),
+                myFontCache, getCharset()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setRowCount(myProject.getHumanResourceManager().getResources().size());
