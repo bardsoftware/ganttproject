@@ -21,6 +21,7 @@
     <path id="ganttproject-2.0.classpath">
         <pathelement location="${ganttproject-2.0.location}/bin"/>
         <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
+        <pathelement location="${ganttproject-2.0.location}/lib/core/jdnc-modifBen.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
