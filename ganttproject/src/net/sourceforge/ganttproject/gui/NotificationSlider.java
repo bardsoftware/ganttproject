@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -63,31 +63,32 @@ public class NotificationSlider {
     public void setContents(JComponent contents, Runnable onHide) {
         myOnHide = onHide;
         this.contents = contents;
-        JWindow tempWindow = new JWindow();
-        tempWindow.setVisible(false);
-        tempWindow.getContentPane().add(contents);
-        tempWindow.pack();
-        tempWindow.getContentPane().removeAll();
-        myOffscreenImage = createOffscreenImage(contents);
-        myHost.setImage(myOffscreenImage);
+//        JWindow tempWindow = new JWindow();
+//        tempWindow.setVisible(false);
+//        tempWindow.getContentPane().add(contents);
+//        tempWindow.pack();
+//        tempWindow.getContentPane().removeAll();
+//        myOffscreenImage = createOffscreenImage(contents);
+//        myHost.setImage(myOffscreenImage);
     }
 
     public void show() {
-        Timeline timeline = new Timeline(myHost);
-        timeline.addPropertyToInterpolate("height", 0, myOffscreenImage.getHeight());
-        timeline.setDuration(ANIMATION_TIME_MS);
-        timeline.addCallback(new TimelineCallback() {
-            @Override
-            public void onTimelinePulse(float arg0, float arg1) {
-            }
-            @Override
-            public void onTimelineStateChanged(TimelineState from, TimelineState to, float arg2, float arg3) {
-                if (TimelineState.DONE == to) {
+
+//        Timeline timeline = new Timeline(myHost);
+//        timeline.addPropertyToInterpolate("height", 0, myOffscreenImage.getHeight());
+//        timeline.setDuration(ANIMATION_TIME_MS);
+//        timeline.addCallback(new TimelineCallback() {
+//            @Override
+//            public void onTimelinePulse(float arg0, float arg1) {
+//            }
+//            @Override
+//            public void onTimelineStateChanged(TimelineState from, TimelineState to, float arg2, float arg3) {
+//                if (TimelineState.DONE == to) {
                     myHost.setComponent(contents, myOnHide);
-                }
-            }
-        });
-        timeline.play();
+//                }
+//            }
+//        });
+//        timeline.play();
     }
 
     public void hide() {

@@ -24,8 +24,10 @@ import java.awt.Composite;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -33,6 +35,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import org.netbeans.core.ui.notifications.BalloonManager;
+
+import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.NotificationSlider;
@@ -83,40 +88,47 @@ public class ContentPaneBuilder {
 
         @Override
         public void setImage(BufferedImage image) {
-            myImage = image;
-            myLabel = new JLabel(new ImageIcon(image)) {
-                @Override
-                public void paint(Graphics g) {
-                    if (myImage == null) {
-                        return;
-                    }
-                    Composite was = ((Graphics2D)g).getComposite();
-                    ((Graphics2D)g).setComposite(myAlphaComposite);
-                    g.drawImage(myImage, 0, 0, null);
-                    ((Graphics2D)g).setComposite(was);
-                }
-            };
-            myLayeredPane.add(myLabel, JLayeredPane.POPUP_LAYER);
-            myLabel.setBounds(0, getTopX(), image.getWidth(), 0);
+//            myImage = image;
+//            myLabel = new JLabel(new ImageIcon(image)) {
+//                @Override
+//                public void paint(Graphics g) {
+//                    if (myImage == null) {
+//                        return;
+//                    }
+//                    Composite was = ((Graphics2D)g).getComposite();
+//                    ((Graphics2D)g).setComposite(myAlphaComposite);
+//                    g.drawImage(myImage, 0, 0, null);
+//                    ((Graphics2D)g).setComposite(was);
+//                }
+//            };
+//            myLayeredPane.add(myLabel, JLayeredPane.POPUP_LAYER);
+//            myLabel.setBounds(0, getTopX(), image.getWidth(), 0);
         }
 
         @Override
         public void setHeight(int height) {
-            myLabel.setBounds(0, getTopX() - height, myImage.getWidth(), height);
+//            myLabel.setBounds(0, getTopX() - height, myImage.getWidth(), height);
         }
 
         @Override
         public void setComponent(JComponent component, final Runnable onHide) {
-            myLayeredPane.remove(myLabel);
-            myLayeredPane.add(component);
-            myComponent = component;
-            component.setBounds(0, getTopX() - component.getHeight(), component.getWidth(), component.getHeight());
+//            myLayeredPane.remove(myLabel);
+//            myLayeredPane.add(component);
+//            myComponent = component;
+//            component.setBounds(0, getTopX() - component.getHeight(), component.getWidth(), component.getHeight());
+            Action okAction = new OkAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    onHide.run();
+                }
+            };
+            BalloonManager.show(myStatusBar.getNotificationPanel(), component, okAction, okAction, 0);
         }
 
         @Override
         public void close() {
-            myLayeredPane.remove(myComponent);
-            myLayeredPane.repaint();
+//            myLayeredPane.remove(myComponent);
+//            myLayeredPane.repaint();
         }
 
         private int getTopX() {
