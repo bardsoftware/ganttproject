@@ -107,4 +107,22 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
         setDefaultValueAsString(getDefaultValueAsString());
         return Status.OK_STATUS;
     }
+
+    @Override
+    public int hashCode() {
+        return myID.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof DefaultCustomPropertyDefinition == false) {
+            return false;
+        }
+        DefaultCustomPropertyDefinition that = (DefaultCustomPropertyDefinition) obj;
+        return this.myID.equals(that.myID);
+    }
+
 }

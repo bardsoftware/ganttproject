@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task;
 import java.util.Date;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -95,7 +96,8 @@ public interface TaskManager {
 
     public TaskManager emptyClone();
 
-    public Map<Task, Task> importData(TaskManager taskManager);
+    public Map<Task, Task> importData(
+            TaskManager taskManager, Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping);
 
     public void importAssignments(TaskManager importedTaskManager,
             HumanResourceManager hrManager, Map<Task, Task> original2importedTask,
