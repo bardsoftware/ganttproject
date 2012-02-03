@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,10 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -40,7 +44,21 @@ import javax.swing.text.html.HTMLEditorKit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-class NotificationComponent implements NotificationChannel.Listener {
+public class NotificationComponent implements NotificationChannel.Listener {
+    public static interface AnimationView {
+        boolean isReady();
+
+        boolean isVisible();
+
+        void setImage(BufferedImage image);
+
+        void setHeight(int height);
+
+        void setComponent(JComponent component, JComponent owner, Runnable onHide);
+
+        void close();
+    }
+
     private final JPanel myComponent;
     private final Action[] myActions;
     int myPosition;
@@ -49,9 +67,9 @@ class NotificationComponent implements NotificationChannel.Listener {
     private final Set<NotificationItem> myNotifications = new HashSet<NotificationItem>();
     private final NotificationChannel myChannel;
     private Action myClearAction;
-    private final NotificationSlider mySlider;
+    private final AnimationView mySlider;
 
-    NotificationComponent(NotificationChannel channel, NotificationSlider slider) {
+    NotificationComponent(NotificationChannel channel, AnimationView slider) {
         mySlider = slider;
         myComponent = new JPanel(new CardLayout());
         List<Action> actions = new ArrayList<Action>();
@@ -64,10 +82,9 @@ class NotificationComponent implements NotificationChannel.Listener {
         myActions = actions.toArray(new Action[0]);
         myChannel = channel;
         myChannel.addListener(this);
-        processItems();
     }
 
-    private void processItems() {
+    void processItems() {
         if (myChannel.getItems().isEmpty() && myChannel.getDefaultNotification() != null) {
             addNotification(myChannel.getDefaultNotification(), myChannel);
         }
@@ -120,7 +137,7 @@ class NotificationComponent implements NotificationChannel.Listener {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 myChannel.clear();
-                mySlider.hide();
+                mySlider.close();
             }
         };
     }
@@ -148,7 +165,20 @@ class NotificationComponent implements NotificationChannel.Listener {
     }
 
     JComponent getComponent() {
-        return myComponent;
+        Action[] actions = getActions();
+        JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
+        for (final Action a : actions) {
+            JButton button = new TestGanttRolloverButton(a);
+            buttonPanel.add(button);
+        }
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
+        JPanel result = new JPanel(new BorderLayout());
+
+        result.add(myComponent, BorderLayout.CENTER);
+        result.add(buttonPanel, BorderLayout.NORTH);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+        return result;
     }
 
     Action[] getActions() {

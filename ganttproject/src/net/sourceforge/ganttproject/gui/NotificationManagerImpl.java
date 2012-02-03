@@ -18,34 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.Collection;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.ShowChannelAction;
-import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
-
-import org.pushingpixels.trident.Timeline;
-import org.pushingpixels.trident.Timeline.RepeatBehavior;
-import org.pushingpixels.trident.Timeline.TimelineState;
-import org.pushingpixels.trident.callback.TimelineCallback;
+import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
 public class NotificationManagerImpl implements NotificationManager {
     private final AnimationView myAnimationView;
     private NotificationChannel myFirstChannel;
-    private final NotificationSlider myNotificationSlider;
+    private final Runnable myOnReadyCommand;
 
-    public NotificationManagerImpl(AnimationView animationView) {
+    public NotificationManagerImpl(AnimationView animationView, Runnable onReady) {
         myAnimationView = animationView;
-        myNotificationSlider = new NotificationSlider(myAnimationView);
+        myOnReadyCommand = onReady;
     }
 
     @Override
@@ -59,42 +51,18 @@ public class NotificationManagerImpl implements NotificationManager {
             }
             return;
         }
-        NotificationComponent nc = new NotificationComponent(channel, myNotificationSlider);
-        Action[] actions = nc.getActions();
-        JPanel buttonPanel = new JPanel(new GridLayout(1, actions.length, 2, 0));
-        for (final Action a : actions) {
-            JButton button = new TestGanttRolloverButton(a);
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    myNotificationSlider.hide();
-                    channel.setVisible(false);
-                }
-            });
-            buttonPanel.add(button);
+        if (myAnimationView.isVisible()) {
+            return;
         }
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-        JPanel result = new JPanel(new BorderLayout());
-
-        JComponent content = nc.getComponent();
-        result.add(content, BorderLayout.CENTER);
-        result.add(buttonPanel, BorderLayout.NORTH);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
+        NotificationComponent nc = new NotificationComponent(channel, myAnimationView);
         channel.setVisible(true);
-        myNotificationSlider.setContents(result, new Runnable() {
+        nc.processItems();
+        myAnimationView.setComponent(nc.getComponent(), channel.getButton(), new Runnable() {
             @Override
             public void run() {
                 channel.getButton().setBackground(channel.getNormalColor());
             }
         });
-        myNotificationSlider.show();
-
-        // Stop pulsing now, the notification is shown
-        if (channel.isPulsing()) {
-            channel.getButton().setBackground(channel.getNormalColor());
-            channel.setPulsing(false);
-        }
     }
 
     public void showPending() {
@@ -104,7 +72,7 @@ public class NotificationManagerImpl implements NotificationManager {
     }
 
     JComponent getChannelButtons() {
-        JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
+        final JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
         TestGanttRolloverButton rssButton = new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.RSS));
 
         NotificationChannel.RSS.setButton(rssButton);
@@ -114,20 +82,39 @@ public class NotificationManagerImpl implements NotificationManager {
             new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.ERROR));
         NotificationChannel.ERROR.setButton(errorButton);
         result.add(errorButton);
+        result.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+            }
+            @Override
+            public void componentResized(ComponentEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showPending();
+                        myOnReadyCommand.run();
+                    }
+                });
+                result.removeComponentListener(this);
+            }
+            @Override
+            public void componentMoved(ComponentEvent e) {
+            }
+            @Override
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
+
         return result;
     }
 
-
-
     @Override
-    public void addNotification(final NotificationChannel channel, NotificationItem item) {
-        channel.addNotification(item);
+    public void addNotifications(final NotificationChannel channel, Collection<NotificationItem> items) {
+        channel.addNotifications(items);
         if (!channel.isVisible()) {
+            boolean hasVisibleChannel = false;
             for (NotificationChannel ch : NotificationChannel.values()) {
-                if (ch.isVisible()) {
-                    runPulsingAnimation(channel);
-                    return;
-                }
+                hasVisibleChannel |= ch.isVisible();
             }
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -137,37 +124,19 @@ public class NotificationManagerImpl implements NotificationManager {
                     showNotification(channel);
                 }
             });
+            if (!hasVisibleChannel) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showNotification(channel);
+                    }
+                });
+            }
         }
-
     }
 
     @Override
     public void hideNotification() {
-        myNotificationSlider.hide();
-    }
-
-    private static void runPulsingAnimation(final NotificationChannel channel) {
-        channel.setPulsing(true);
-        channel.saveNormalColor();
-        Timeline t = createTimeline(channel);
-        t.addCallback(new TimelineCallback() {
-            @Override
-            public void onTimelinePulse(float arg0, float arg1) {
-            }
-            @Override
-            public void onTimelineStateChanged(TimelineState arg0, TimelineState newState, float arg2, float arg3) {
-                if (newState == TimelineState.DONE) {
-                    createTimeline(channel).play();
-                }
-            }
-        });
-        t.playLoop(6, RepeatBehavior.REVERSE);
-    }
-
-    private static Timeline createTimeline(NotificationChannel channel) {
-        Timeline t = new Timeline(channel.getButton());
-        t.addPropertyToInterpolate("background", channel.getNormalColor(), channel.getColor());
-        t.setDuration(3000);
-        return t;
+        myAnimationView.close();
     }
 }

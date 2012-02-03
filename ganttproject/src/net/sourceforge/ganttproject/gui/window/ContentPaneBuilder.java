@@ -18,30 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.gui.window;
 
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
-import java.awt.Composite;
+import java.awt.Color;
 import java.awt.Container;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 
-import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-import org.netbeans.core.ui.notifications.BalloonManager;
-
-import net.sourceforge.ganttproject.action.OkAction;
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
-import net.sourceforge.ganttproject.gui.NotificationSlider;
-import net.sourceforge.ganttproject.gui.NotificationSlider.AnimationView;
+import net.sourceforge.ganttproject.gui.NotificationComponent;
+import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
 /**
  * Builds a main frame's content pane and creates an animation host for the
@@ -61,82 +52,57 @@ public class ContentPaneBuilder {
         myToolBar = toolBar;
     }
 
-    public void build(Container contentPane, JLayeredPane layeredPane) {
+    public void build(Container contentPane) {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(myToolBar, BorderLayout.NORTH);
         contentPanel.add(myTabbedPane, BorderLayout.CENTER);
         contentPanel.add(myStatusBar, BorderLayout.SOUTH);
         contentPane.add(contentPanel);
-        myAnimationHost.setLayeredPane(layeredPane);
     }
 
     public class AnimationHostImpl implements AnimationView {
-        Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
-        private BufferedImage myImage;
-        private JLayeredPane myLayeredPane;
-        private JLabel myLabel;
-        private JComponent myComponent;
-
-        private void setLayeredPane(JLayeredPane layeredPane) {
-            myLayeredPane = layeredPane;
-        }
+        private BalloonTip myBalloon;
+        private Runnable myOnHide;
 
         @Override
         public boolean isReady() {
-            return myLayeredPane != null && myLayeredPane.isShowing();
+            return myStatusBar.isShowing();
         }
 
         @Override
         public void setImage(BufferedImage image) {
-//            myImage = image;
-//            myLabel = new JLabel(new ImageIcon(image)) {
-//                @Override
-//                public void paint(Graphics g) {
-//                    if (myImage == null) {
-//                        return;
-//                    }
-//                    Composite was = ((Graphics2D)g).getComposite();
-//                    ((Graphics2D)g).setComposite(myAlphaComposite);
-//                    g.drawImage(myImage, 0, 0, null);
-//                    ((Graphics2D)g).setComposite(was);
-//                }
-//            };
-//            myLayeredPane.add(myLabel, JLayeredPane.POPUP_LAYER);
-//            myLabel.setBounds(0, getTopX(), image.getWidth(), 0);
         }
 
         @Override
         public void setHeight(int height) {
-//            myLabel.setBounds(0, getTopX() - height, myImage.getWidth(), height);
         }
 
         @Override
-        public void setComponent(JComponent component, final Runnable onHide) {
-//            myLayeredPane.remove(myLabel);
-//            myLayeredPane.add(component);
-//            myComponent = component;
-//            component.setBounds(0, getTopX() - component.getHeight(), component.getWidth(), component.getHeight());
-            Action okAction = new OkAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    onHide.run();
-                }
-            };
-            BalloonManager.show(myStatusBar.getNotificationPanel(), component, okAction, okAction, 0);
+        public void setComponent(JComponent component, JComponent owner, final Runnable onHide) {
+            myBalloon = new BalloonTip(
+                    owner,
+                    component,
+                    new EdgedBalloonStyle(Color.WHITE, Color.BLACK),
+                    BalloonTip.Orientation.LEFT_ABOVE,
+                    BalloonTip.AttachLocation.ALIGNED,
+                    30, 10, false);
+            myOnHide = onHide;
+            myBalloon.setVisible(true);
         }
 
         @Override
         public void close() {
-//            myLayeredPane.remove(myComponent);
-//            myLayeredPane.repaint();
+            myBalloon.setVisible(false);
+            myOnHide.run();
         }
 
-        private int getTopX() {
-            return myLayeredPane.getSize().height - myStatusBar.getHeight();
+        @Override
+        public boolean isVisible() {
+            return myBalloon != null && myBalloon.isVisible();
         }
     }
 
-    public NotificationSlider.AnimationView getAnimationHost() {
+    public NotificationComponent.AnimationView getAnimationHost() {
         return myAnimationHost;
     }
 }

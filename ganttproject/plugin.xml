@@ -12,6 +12,9 @@
       <library name="lib/core/AppleJavaExtensions.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/balloontip-1.2.1.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-httpclient.jar">
          <export name="*"/>
       </library>
@@ -37,9 +40,6 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/core/trident.jar">
          <export name="*"/>
       </library>
       <library name="data/resources/">

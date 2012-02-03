@@ -91,7 +91,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -364,11 +363,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             @Override
             public void windowOpened(WindowEvent e) {
                 myRowHeightAligner.optionsChanged();
-                ((NotificationManagerImpl) getNotificationManager()).showPending();
-                getRssFeedChecker().run();
             }
         });
-
 
         System.err.println("5. calculating size and packing...");
         createContentPane();
