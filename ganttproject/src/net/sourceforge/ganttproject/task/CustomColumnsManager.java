@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
@@ -35,23 +36,12 @@ public class CustomColumnsManager implements CustomPropertyManager {
     private final CustomColumnsStorage myStorage;
 
     public CustomColumnsManager() {
-        myStorage = new CustomColumnsStorage();
+        myStorage = new CustomColumnsStorage(this);
     }
 
     private void addNewCustomColumn(CustomColumn customColumn) {
         assert customColumn!=null;
         myStorage.addCustomColumn(customColumn);
-    }
-
-    public void changeCustomColumnName(String oldName, String newName) {
-        //ganttTreeTable.renameCustomcolumn(oldName, newName);
-        myStorage.renameCustomColumn(oldName, newName);
-    }
-
-    public void changeCustomColumnDefaultValue(String colName,
-            Object newDefaultValue) throws CustomColumnsException {
-        // ganttTreeTable.changeDefaultValue(colName, newDefaultValue);
-        myStorage.changeDefaultValue(colName, newDefaultValue);
     }
 
     @Override
@@ -77,12 +67,13 @@ public class CustomColumnsManager implements CustomPropertyManager {
 
     @Override
     public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
-        return createDefinition("tpc"+getDefinitions().size(),typeAsString, colName, defValue);
+        return createDefinition(myStorage.createId(), typeAsString, colName, defValue);
     }
 
     @Override
-    public void importData(CustomPropertyManager source) {
-        myStorage.importData(((CustomColumnsManager)source).myStorage);
+    public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(
+            CustomPropertyManager source) {
+        return myStorage.importData(((CustomColumnsManager)source).myStorage);
     }
 
 

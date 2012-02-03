@@ -802,12 +802,12 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     @Override
-    public Map<Task, Task> importData(TaskManager taskManager) {
+    public Map<Task, Task> importData(
+            TaskManager taskManager, Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping) {
         Task importRoot = taskManager.getRootTask();
         Map<Task, Task> original2imported = new HashMap<Task, Task>();
-        importData(importRoot, getRootTask(), original2imported);
-        TaskDependency[] deps = taskManager.getDependencyCollection()
-                .getDependencies();
+        importData(importRoot, getRootTask(), customPropertyMapping, original2imported);
+        TaskDependency[] deps = taskManager.getDependencyCollection().getDependencies();
         for (int i = 0; i < deps.length; i++) {
             Task nextDependant = deps[i].getDependant();
             Task nextDependee = deps[i].getDependee();
@@ -815,9 +815,8 @@ public class TaskManagerImpl implements TaskManager {
                     .get(nextDependant);
             Task importedDependee = original2imported.get(nextDependee);
             try {
-                TaskDependency dependency = getDependencyCollection()
-                        .createDependency(importedDependant, importedDependee,
-                                new FinishStartConstraintImpl());
+                TaskDependency dependency = getDependencyCollection().createDependency(
+                        importedDependant, importedDependee, new FinishStartConstraintImpl());
                 dependency.setConstraint(deps[i].getConstraint());
                 dependency.setDifference(deps[i].getDifference());
                 dependency.setHardness(deps[i].getHardness());
@@ -830,9 +829,9 @@ public class TaskManagerImpl implements TaskManager {
         return original2imported;
     }
 
-    private void importData(Task importRoot, Task root, Map<Task, Task> original2imported) {
-        Task[] nested = importRoot.getManager().getTaskHierarchy()
-                .getNestedTasks(importRoot);
+    private void importData(Task importRoot, Task root, Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping,
+            Map<Task, Task> original2imported) {
+        Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
         for (int i = nested.length - 1; i >= 0; i--) {
             Task nextImported = getTask(nested[i].getTaskID()) == null ? createTask(nested[i].getTaskID()) : createTask();
             registerTask(nextImported);
@@ -849,16 +848,16 @@ public class TaskManagerImpl implements TaskManager {
             nextImported.setExpand(nested[i].getExpand());
             if (nested[i].getThird() != null) {
                 nextImported.setThirdDate(nested[i].getThird().clone());
-                nextImported.setThirdDateConstraint(nested[i]
-                        .getThirdDateConstraint());
+                nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());
             }
 
             CustomColumnsValues customValues = nested[i].getCustomValues();
-            for (CustomPropertyDefinition def : myCustomColumnsManager.getDefinitions()) {
-                Object value = customValues.getValue(def);
+            for (CustomPropertyDefinition thatDef : importRoot.getManager().getCustomPropertyManager().getDefinitions()) {
+                CustomPropertyDefinition thisDef = customPropertyMapping.get(thatDef);
+                Object value = customValues.getValue(thatDef);
                 if (value!=null) {
                     try {
-                        nextImported.getCustomValues().setValue(def, value);
+                        nextImported.getCustomValues().setValue(thisDef, value);
                     } catch (CustomColumnsException e) {
                         if (!GPLogger.log(e)) {
                             e.printStackTrace(System.err);
@@ -871,7 +870,7 @@ public class TaskManagerImpl implements TaskManager {
 
             original2imported.put(nested[i], nextImported);
             getTaskHierarchy().move(nextImported, root);
-            importData(nested[i], nextImported, original2imported);
+            importData(nested[i], nextImported, customPropertyMapping, original2imported);
         }
     }
 

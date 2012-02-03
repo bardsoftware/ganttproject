@@ -27,6 +27,7 @@ import java.util.Map;
 import org.osgi.service.prefs.Preferences;
 
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttProjectImpl;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -244,20 +245,23 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
 
             {
                 CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
-                targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
-            }
-            TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
-            try {
-                origTaskManager.setEventsEnabled(false);
-                Map<Task, Task> original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager());
-                origTaskManager.importAssignments(
-                        bufferProject.getTaskManager(),
-                        targetProject.getHumanResourceManager(),
-                        original2ImportedTask,
-                        original2ImportedResource);
-            }
-            finally {
-                origTaskManager.setEventsEnabled(true);
+                Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs =
+                        targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
+                TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
+                try {
+                    origTaskManager.setEventsEnabled(false);
+                    Map<Task, Task> original2ImportedTask = origTaskManager.importData(
+                            bufferProject.getTaskManager(),
+                            that2thisCustomDefs);
+                    origTaskManager.importAssignments(
+                            bufferProject.getTaskManager(),
+                            targetProject.getHumanResourceManager(),
+                            original2ImportedTask,
+                            original2ImportedResource);
+                }
+                finally {
+                    origTaskManager.setEventsEnabled(true);
+                }
             }
             uiFacade.refresh();
         } catch (DocumentException e) {

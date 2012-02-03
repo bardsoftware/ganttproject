@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-
+import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,7 +34,7 @@ public interface CustomPropertyManager {
     CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue);
     CustomPropertyDefinition getCustomPropertyDefinition(String id);
     void deleteDefinition(CustomPropertyDefinition def);
-    void importData(CustomPropertyManager source);
+    Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomPropertyManager source);
     void addListener(CustomPropertyListener listener);
     void reset();
 
@@ -151,7 +151,6 @@ public interface CustomPropertyManager {
                 public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
                     throw new UnsupportedOperationException();
                 }
-
             };
         }
 
