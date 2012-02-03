@@ -47,7 +47,7 @@ public class ShowChannelAction extends GPAction implements NotificationChannel.L
         int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
         String channelName = super.getLocalizedName();
         return unreadCount == 0
-            ? channelName
+            ? MessageFormat.format(getI18n("notification.channel.clearformat"), channelName)
             : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
     }
 

@@ -115,7 +115,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         myViewManager = new ViewManagerImpl(getProject(), myTabPane);
 
         myTimeUnitStack = new GPTimeUnitStack();
-        NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
+        NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost(), new Runnable() {
+            @Override
+            public void run() {
+                getRssFeedChecker().run();
+            }
+        });
         myUIFacade =new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
         GPLogger.setUIFacade(myUIFacade);
         myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
@@ -328,7 +333,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
 
     protected void createContentPane() {
-        myContentPaneBuilder.build(getContentPane(), getLayeredPane());
+        myContentPaneBuilder.build(getContentPane());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

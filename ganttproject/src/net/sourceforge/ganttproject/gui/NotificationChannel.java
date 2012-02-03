@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JButton;
 
@@ -42,7 +44,7 @@ public enum NotificationChannel {
     private boolean isPulsing;
     private Color myNormalColor;
     private NotificationItem myDefaultNotification;
-    private final List<Listener> myListeners = new ArrayList<Listener>();
+    private final List<Listener> myListeners = new CopyOnWriteArrayList<Listener>();
 
     NotificationChannel(Color color) {
         myColor = color;
@@ -60,8 +62,8 @@ public enum NotificationChannel {
         isVisible = b;
     }
 
-    void addNotification(NotificationItem item) {
-        myItems.add(item);
+    void addNotifications(Collection<NotificationItem> items) {
+        myItems.addAll(items);
         for (Listener l : myListeners) {
             l.notificationAdded();
         }

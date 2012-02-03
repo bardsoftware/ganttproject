@@ -21,7 +21,10 @@ package net.sourceforge.ganttproject.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
@@ -170,11 +173,12 @@ public class RssFeedChecker {
 
             private void processResponse(InputStream responseStream) {
                 RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
+                List<NotificationItem> items = new ArrayList<NotificationItem>();
                 for (RssFeed.Item item : feed.getItems()) {
-                    getNotificationManager().addNotification(
-                        NotificationChannel.RSS,
-                        new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
+                    items.add(new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
                 }
+                Collections.reverse(items);
+                getNotificationManager().addNotifications(NotificationChannel.RSS, items);
                 markLastCheck();
             }
         };
@@ -184,7 +188,7 @@ public class RssFeedChecker {
         return new Runnable() {
             @Override
             public void run() {
-                getNotificationManager().addNotification(NotificationChannel.RSS, myRssProposalNotification);
+                getNotificationManager().addNotifications(NotificationChannel.RSS, Collections.singletonList(myRssProposalNotification));
             }
         };
     }

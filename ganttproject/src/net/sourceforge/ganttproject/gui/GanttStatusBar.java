@@ -19,16 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -37,10 +32,8 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.font.Fonts;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -50,35 +43,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @author athomas
  */
 public class GanttStatusBar extends JPanel {
-    private static final int NO_MESSAGE = 1;
-
-    private static final int MESSAGE_1 = 0;
-
-    private static final int MESSAGE_2 = 1;
-
-    int mode = NO_MESSAGE;
-
     boolean bRunning = false;
 
     private JFrame myMainFrame;
-
-    private Runnable myErrorNotifier;
-
-    private JPanel myErrorNotificationPanel;
 
     private static IProgressMonitor ourMonitor;
 
     public GanttStatusBar(JFrame mainFrame) {
         super(new BorderLayout());
         myMainFrame = mainFrame;
-        myErrorNotificationPanel = new JPanel();
-
-        add(myErrorNotificationPanel, BorderLayout.EAST);
+        add(new JPanel(), BorderLayout.CENTER);
     }
 
-    public JComponent getNotificationPanel() {
-        return myErrorNotificationPanel;
-    }
     public IProgressMonitor createProgressMonitor() {
         if(ourMonitor == null) {
             ourMonitor = new ProgressMonitorImpl();
@@ -268,26 +244,7 @@ public class GanttStatusBar extends JPanel {
         }
     }
 
-    public void setErrorNotifier(Runnable notifier) {
-        if (notifier == null && myErrorNotifier != null) {
-            clearErrorNotification();
-            return;
-        }
-        if (myErrorNotifier == null) {
-            createErrorNotification(notifier);
-        }
-        myErrorNotifier = notifier;
-    }
-
-    private void clearErrorNotification() {
-//        myErrorNotificationPanel.disableNotifier();
-    }
-
-    private void createErrorNotification(Runnable notifier) {
-//        myErrorNotificationPanel.enableNotifier(notifier);
-    }
-
     public void setNotificationManager(NotificationManagerImpl notificationManager) {
-        myErrorNotificationPanel.add(notificationManager.getChannelButtons());
+        add(notificationManager.getChannelButtons(), BorderLayout.EAST);
     }
 }
