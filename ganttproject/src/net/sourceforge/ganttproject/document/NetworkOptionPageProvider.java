@@ -20,13 +20,8 @@ package net.sourceforge.ganttproject.document;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;

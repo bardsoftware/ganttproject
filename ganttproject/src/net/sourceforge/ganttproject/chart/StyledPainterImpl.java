@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.JLabel;
-
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
@@ -44,7 +42,6 @@ import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.time.TimeUnitText;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
