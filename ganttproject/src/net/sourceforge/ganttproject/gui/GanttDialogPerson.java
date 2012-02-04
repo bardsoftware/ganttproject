@@ -124,7 +124,7 @@ public class GanttDialogPerson {
         OptionsPageBuilder builder = new OptionsPageBuilder();
         OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
             @Override
-            public String getOptionLabel(GPOptionGroup group, GPOption option) {
+            public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
                 return getValue(option.getID());
             }
         };

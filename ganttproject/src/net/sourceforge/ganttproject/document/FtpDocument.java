@@ -31,7 +31,7 @@ import org.eclipse.core.runtime.Status;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 
-public class FtpDocument extends AbstractURLDocument implements Document {
+public class FtpDocument extends AbstractURLDocument {
     private static final Object EMPTY_STRING = "";
     private final URI myURI;
 
@@ -123,6 +123,4 @@ public class FtpDocument extends AbstractURLDocument implements Document {
     public boolean isLocal() {
         return false;
     }
-
-
 }

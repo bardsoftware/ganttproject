@@ -43,8 +43,6 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 
-import org.eclipse.core.runtime.IStatus;
-
 /**
  * @author bard
  */
@@ -251,8 +249,5 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
             GPLogger.log(e);
             return null;
         }
-    }
-
-    protected void showFileStatus(IStatus status) {
     }
 }
