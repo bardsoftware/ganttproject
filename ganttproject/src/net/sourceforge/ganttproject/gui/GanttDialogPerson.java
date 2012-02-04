@@ -104,7 +104,7 @@ public class GanttDialogPerson {
                     change = false;
                 }
             };
-            myUIFacade.createDialog(contentPane, new Action[] {okAction, cancelAction}, language.getText("human")).show();
+            myUIFacade.createDialog(contentPane, new Action[] {okAction, cancelAction}, language.getCorrectedLabel("human")).show();
         }
     }
 
