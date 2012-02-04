@@ -31,7 +31,6 @@ import java.util.Calendar;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -48,7 +47,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -211,7 +209,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
         addEmptyRow(propertiesPanel);
         propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
-        myStartDatePicker = createDatePicker(new ActionListener() {
+        myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setStart(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
@@ -220,7 +218,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         propertiesPanel.add(myStartDatePicker);
 
         propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
-        myEndDatePicker = createDatePicker(new ActionListener() {
+        myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GanttCalendar c = new GanttCalendar(((JXDatePicker)e.getSource()).getDate());
@@ -262,7 +260,7 @@ public class GanttTaskPropertiesBean extends JPanel {
             }
         });
         extraConstraintBox.add(thirdDateComboBox);
-        myThirdDatePicker = createDatePicker(new ActionListener() {
+        myThirdDatePicker = UIUtil.createDatePicker(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setThird(new GanttCalendar(((JXDatePicker)e.getSource()).getDate()), false);
@@ -418,22 +416,6 @@ public class GanttTaskPropertiesBean extends JPanel {
         scrollPaneNotes = new JScrollPane(noteAreaNotes);
         secondRowPanelNotes.add(scrollPaneNotes, BorderLayout.CENTER);
         notesPanel = secondRowPanelNotes;
-    }
-
-    private JXDatePicker createDatePicker(ActionListener listener) {
-        ImageIcon calendarImage = new ImageIcon(getClass().getResource(
-                "/icons/calendar_16.gif"));
-        Icon nextMonth = new ImageIcon(getClass().getResource(
-                "/icons/nextmonth.gif"));
-        Icon prevMonth = new ImageIcon(getClass().getResource(
-                "/icons/prevmonth.gif"));
-        UIManager.put("JXDatePicker.arrowDown.image", calendarImage);
-        UIManager.put("JXMonthView.monthUp.image", prevMonth);
-        UIManager.put("JXMonthView.monthDown.image", nextMonth);
-        UIManager.put("JXMonthView.monthCurrent.image", calendarImage);
-        JXDatePicker result = new JXDatePicker();
-        result.addActionListener(listener);
-        return result;
     }
 
     /** Initialize the widgets */

@@ -465,9 +465,6 @@ public class OptionsPageBuilder {
     }
 
     public JComponent createDateComponent(final DateOption option) {
-        final JXDatePicker result = new JXDatePicker();
-        result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
-        result.setDate(option.getValue());
         class OptionValueUpdater implements ActionListener, PropertyChangeListener {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -482,7 +479,8 @@ public class OptionsPageBuilder {
             }
         }
         OptionValueUpdater valueUpdater = new OptionValueUpdater();
-        result.addActionListener(valueUpdater);
+        final JXDatePicker result = UIUtil.createDatePicker(valueUpdater);
+        result.setDate(option.getValue());
         result.getEditor().addPropertyChangeListener("value", valueUpdater);
 
         if (option instanceof ChangeValueDispatcher) {
