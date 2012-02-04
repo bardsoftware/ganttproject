@@ -340,7 +340,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
 
     public void changeLanguage(GanttLanguage ganttLanguage) {
-        this.language = ganttLanguage;
+        language = ganttLanguage;
         //this.treetable.changeLanguage(language);
     }
 

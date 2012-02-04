@@ -128,7 +128,7 @@ public class OptionsPageBuilder {
     }
 
     public JComponent createGroupComponent(GPOptionGroup group) {
-        GPOption[] options = group.getOptions();
+        GPOption<?>[] options = group.getOptions();
         JComponent optionsPanel = createGroupComponent(group, options);
         if (group.isTitled()) {
             UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));

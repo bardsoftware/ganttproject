@@ -28,8 +28,6 @@ import javax.swing.SwingUtilities;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
@@ -50,19 +48,12 @@ public class ExportFileWizardImpl extends WizardImpl {
     private static Exporter ourLastSelectedExporter;
     private static List<Exporter> ourExporters;
 
-    public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project,
-            GanttOptions options) {
-        this(uiFacade, project, uiFacade.getGanttChart(),
-                uiFacade.getResourceChart(), uiFacade.getActiveChart(), options);
-    }
-
     public ExportFileWizardImpl(UIFacade uiFacade,
-            IGanttProject project, Chart ganttChart, Chart resourceChart,
-            Chart visibleChart, GanttOptions options) {
+            IGanttProject project, GanttOptions options) {
         super(uiFacade, language.getText("exportWizard.dialog.title"));
         myProject = project;
         myOptions = options;
-        myState = new State(project.getDocument());
+        myState = new State();
         if (ourExporters == null) {
             ourExporters = PluginManager.getExporters();
         }
@@ -113,23 +104,17 @@ public class ExportFileWizardImpl extends WizardImpl {
         public void run(File[] exportedFiles) {
             if (myState.getPublishInWebOption().isChecked() && exportedFiles.length>0) {
                 WebPublisher publisher = new WebPublisher();
-                publisher.run(exportedFiles, myProject.getDocumentManager().getFTPOptions(), getUIFacade());
+                publisher.run(exportedFiles, myProject.getDocumentManager().getFTPOptions());
             }
         }
     }
 
     static class State {
-        //final Document myProjectDocument;
-
         private Exporter myExporter;
 
         private final BooleanOption myPublishInWebOption = new DefaultBooleanOption("exporter.publishInWeb");
 
         private URL myUrl;
-
-        State(Document projectDocument) {
-            //myProjectDocument = projectDocument;
-        }
 
         void setExporter(Exporter exporter) {
             myExporter = exporter;

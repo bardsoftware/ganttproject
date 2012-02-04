@@ -363,14 +363,12 @@ public abstract class FileChooserPageBase implements WizardPage {
                     OutputStream to = new FileOutputStream(tempFile);
                     try {
                         byte[] buf = new byte[1024];
-                        long total = 0;
                         while (true) {
                             int r = from.read(buf);
                             if (r == -1) {
                                 break;
                             }
                             to.write(buf, 0, r);
-                            total += r;
                         }
                         myFetchedFile = tempFile;
                         setStatus(new Status(IStatus.OK, "foo", IStatus.OK,
