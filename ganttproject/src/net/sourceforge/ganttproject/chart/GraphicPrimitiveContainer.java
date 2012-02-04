@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**
  * Stores the available primitives and their information (used for painting) and

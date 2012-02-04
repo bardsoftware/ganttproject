@@ -23,8 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.sourceforge.ganttproject.chart.timeline.DayTextFormatter;
-import net.sourceforge.ganttproject.chart.timeline.MonthTextFormatter;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
 import net.sourceforge.ganttproject.time.TimeUnit;

@@ -22,7 +22,6 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.FontMapper;
 

@@ -27,7 +27,6 @@ import java.awt.RenderingHints;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.Font;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;

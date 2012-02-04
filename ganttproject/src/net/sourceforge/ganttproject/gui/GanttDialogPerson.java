@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
