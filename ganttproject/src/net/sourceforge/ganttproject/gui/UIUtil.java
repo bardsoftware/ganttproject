@@ -22,17 +22,35 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
+
+import org.jdesktop.swing.JXDatePicker;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class UIUtil {
+    static {
+        ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
+        ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
+        ImageIcon prevMonth = new ImageIcon(UIUtil.class.getResource("/icons/prevmonth.gif"));
+        UIManager.put("JXDatePicker.arrowDown.image", calendarImage);
+        UIManager.put("JXMonthView.monthUp.image", prevMonth);
+        UIManager.put("JXMonthView.monthDown.image", nextMonth);
+        UIManager.put("JXMonthView.monthCurrent.image", calendarImage);
+    }
+
     public static void repackWindow(JComponent component) {
         Window windowAncestor = SwingUtilities.getWindowAncestor(component);
         if (windowAncestor != null) {
@@ -84,5 +102,19 @@ public abstract class UIUtil {
                 table.getRowHeight() * 10));
     }
 
+    /** @return a {@link JXDatePicker} component with the default locale, images and date formats. */
+    public static JXDatePicker createDatePicker(ActionListener listener) {
+        JXDatePicker result = new JXDatePicker();
+        result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
+        result.addActionListener(listener);
+
+        // Set the date format to the (user defined) short format
+        // Note: there is a setFormats() method available in newer library version, which might more convenient than setDateFormatterFactory()
+        DateFormatter shortFormatter = new DateFormatter(GanttLanguage.getInstance().getShortDateFormat());
+        DateFormatter longFormatter = new DateFormatter(GanttLanguage.getInstance().getLongDateFormat());
+        DefaultFormatterFactory factory = new DefaultFormatterFactory(longFormatter, longFormatter, shortFormatter);
+        result.setDateFormatterFactory(factory);
+        return result;
+    }
 
 }
