@@ -353,7 +353,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         actions.add(getTaskNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
-            actions.add(getTaskDeleteAction());
             actions.add(null);
             for(AbstractAction a : getTreeActions()) {
                 actions.add(a);
@@ -362,6 +361,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             actions.add(myProject.getCutAction());
             actions.add(myProject.getCopyAction());
             actions.add(myProject.getPasteAction());
+            actions.add(getTaskDeleteAction());
         }
         return actions.toArray(new Action[0]);
     }
