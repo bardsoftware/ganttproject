@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.ganttproject.chart.pert"
+   name="Pert Plug-in"
+   version="1.0.0"
+   provider-name="">
+
+   <runtime>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.chart.pert.WebStartIDClass/pert.jar"/>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.chart.pert.WebStartIDClass/org.ganttproject.chart.pert_resources.jar"/>
+   </runtime>
+   <requires>
+      <import plugin="net.sourceforge.ganttproject"/>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+   <extension
+         point="net.sourceforge.ganttproject.chart">
+         <exporter class="org.ganttproject.chart.pert.ActivityOnNodePertChart"/>
+   </extension>
+</plugin>
