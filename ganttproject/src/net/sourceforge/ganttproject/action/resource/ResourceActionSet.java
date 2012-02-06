@@ -63,7 +63,7 @@ public class ResourceActionSet {
 
     public AbstractAction[] getActions() {
         if (myActions == null) {
-            myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction, myResourceDeleteAction };
+            myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
         }
         return myActions;
     }
