@@ -195,6 +195,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
             menu.add(appli.getCutAction());
             menu.add(appli.getCopyAction());
             menu.add(appli.getPasteAction());
+            menu.add(myResourceActionSet.getResourceDeleteAction());
         }
         menu.applyComponentOrientation(GanttLanguage.getInstance().getComponentOrientation());
         Point popupPoint = getPopupMenuPoint(e);

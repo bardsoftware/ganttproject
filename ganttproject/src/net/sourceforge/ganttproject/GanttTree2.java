@@ -287,14 +287,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             private void handlePopupTrigger(MouseEvent e) {
                 if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
                     TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
-                    if (selPath == null) {
-                        return;
-                    }
-                    DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-                    Task task = (Task) treeNode.getUserObject();
-                    if (!getTaskSelectionManager().isTaskSelected(task)) {
-                        getTaskSelectionManager().clear();
-                        getTaskSelectionManager().addTask(task);
+                    if (selPath != null) {
+                        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                        Task task = (Task) treeNode.getUserObject();
+                        if (!getTaskSelectionManager().isTaskSelected(task)) {
+                            getTaskSelectionManager().clear();
+                            getTaskSelectionManager().addTask(task);
+                        }
                     }
                     createPopupMenu(e.getX(), e.getY());
                     e.consume();
@@ -353,7 +352,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         actions.add(getTaskNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
             actions.add(getTaskPropertiesAction());
-            actions.add(getTaskDeleteAction());
             actions.add(null);
             for(AbstractAction a : getTreeActions()) {
                 actions.add(a);
@@ -362,6 +360,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             actions.add(myProject.getCutAction());
             actions.add(myProject.getCopyAction());
             actions.add(myProject.getPasteAction());
+            actions.add(getTaskDeleteAction());
         }
         return actions.toArray(new Action[0]);
     }
