@@ -1,21 +1,19 @@
 <property file="build-user.properties"/>
-<property name="plugin.name.versioned" value="${plugin.name}_${plugin.version}"/>
+<property name="plugin.name.versioned" value="${plugin.name}"/>
 <property name="plugin.install.dir" value="${install.dir}/plugins/${plugin.name.versioned}"/>
 
-    <property name="ganttproject-2.0.location" value="../ganttproject"/>
-    <property name="biz.ganttproject.impex.msproject2.location" value="."/>
     <path id="project.classpath">
         <path refid="mainproject.classpath"/>
-        <path refid="ganttproject-2.0.classpath"/>
+        <path refid="deps.classpath"/>
     </path>
     <path id="mainproject.classpath">
         <pathelement location="bin"/>
-        <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/poi-3.6-20091214.jar"/>
-        <pathelement location="${biz.ganttproject.impex.msproject2.location}/lib/mpxj.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/poi-3.6-20091214.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/mpxj.jar"/>
     </path>
-    <path id="ganttproject-2.0.classpath">
-        <pathelement location="${ganttproject-2.0.location}/bin"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
+    <path id="deps.classpath">
+        <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
+        <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/eclipsito.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -24,7 +22,7 @@
         <delete dir="bin"/>
     </target>
     <target depends="init" name="build">
-        <ant antfile="${ganttproject-2.0.location}/build.xml" inheritAll="false"/>
+        <ant antfile="${net.sourceforge.ganttproject.src.dir}/build.xml" inheritAll="false"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac destdir="bin" source="1.5" target="1.5" debug="${debug}">
             <src path="src"/>
