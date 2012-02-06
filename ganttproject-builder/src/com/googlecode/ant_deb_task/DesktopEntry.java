@@ -21,7 +21,8 @@ public class DesktopEntry extends Task
     private Map _entries;
     private List _localizedEntries = new ArrayList ();
 
-    private static final Set VALID_ONLY_SHOW_IN = new HashSet (Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old"}));
+    private static final Set VALID_ONLY_SHOW_IN = new HashSet (
+        Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old", "Unity"}));
 
     public static class LocalizedEntry
     {
