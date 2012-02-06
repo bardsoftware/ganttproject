@@ -120,18 +120,9 @@ public class TaskImpl implements Task {
 
     private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
-    protected TaskImpl(TaskManager taskManager, int taskID) {
-        myManager = (TaskManagerImpl) taskManager;
-        if (taskID == -1) {
-            myID = myManager.getMaxID();
-            myManager.increaseMaxID();
-        } else {
-            if (myManager.getTask(taskID) != null) {
-                throw new IllegalArgumentException("There is a task with ID="
-                        + taskID + " already");
-            }
-            myID = taskID;
-        }
+    protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
+        myManager = taskManager;
+        myID = taskID;
 
         myAssignments = new ResourceAssignmentCollectionImpl(this, myManager
                 .getConfig().getResourceManager());
@@ -153,8 +144,7 @@ public class TaskImpl implements Task {
     protected TaskImpl(TaskImpl copy, boolean isUnplugged) {
         myManager = copy.myManager;
         // Use a new (unique) ID for the cloned task
-        myID = myManager.getMaxID();
-        myManager.increaseMaxID();
+        myID = myManager.getAndIncrementId();
 
         if (!isUnplugged) {
             myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);

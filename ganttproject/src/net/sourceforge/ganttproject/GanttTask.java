@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.io.Serializable;
 import net.sourceforge.ganttproject.task.TaskImpl;
-import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskMutator;
 
 /**
@@ -36,7 +36,7 @@ public class GanttTask extends TaskImpl implements Serializable {
      * @param taskID contains the id to be used for the new task, or -1 to generate a unique one.
      */
     public GanttTask(String name, GanttCalendar start, long length,
-            TaskManager taskManager, int taskID) {
+            TaskManagerImpl taskManager, int taskID) {
         super(taskManager, taskID);
         TaskMutator mutator = createMutator();
         mutator.setName(name);

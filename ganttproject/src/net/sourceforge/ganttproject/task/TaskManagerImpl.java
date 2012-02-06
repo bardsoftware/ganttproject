@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
@@ -70,7 +71,7 @@ public class TaskManagerImpl implements TaskManager {
 
     private final List<TaskListener> myListeners = new ArrayList<TaskListener>();
 
-    private int myMaxID = -1;
+    private AtomicInteger myMaxID = new AtomicInteger(0);
 
     private final Task myRoot;
 
@@ -222,7 +223,6 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public Task[] getTasks() {
         return myTaskMap.getTasks();
-        //return (Task[]) myId2task.values().toArray(new Task[myId2task.size()]);
     }
 
     private Task createRootTask() {
@@ -239,7 +239,7 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public void projectClosed() {
         myTaskMap.clear();
-        setMaxID(-1);
+        myMaxID.set(0);
         myDependencyCollection.clear();
         //createRootTask();
         fireTaskModelReset();
@@ -265,31 +265,24 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public GanttTask createTask(int taskID) {
-        GanttTask result = new GanttTask("", new GanttCalendar(), 1, this,
-                taskID);
-        if (result.getTaskID() >= getMaxID()) {
-            setMaxID(result.getTaskID() + 1);
+        if (taskID == -1 || myTaskMap.getTask(taskID) != null) {
+            taskID = getAndIncrementId();
         }
-        // result.setTaskID(taskID);
-        // getTaskHierarchy().move(result, getRootTask());
-        // result.move(getRootTask());
+        GanttTask result = new GanttTask("", new GanttCalendar(), 1, this, taskID);
         fireTaskAdded(result);
         return result;
+    }
+
+    int getAndIncrementId() {
+        return myMaxID.getAndIncrement();
     }
 
     @Override
     public void registerTask(Task task) {
         int taskID = task.getTaskID();
-        if (myTaskMap.getTask(taskID) == null) { // if the taskID is
-            // not in the map
-            myTaskMap.addTask(task);
-            if (getMaxID() < taskID) {
-                setMaxID(taskID + 1);
-            }
-        } else { // taskID has been in the map. the newTask will not be added
-            throw new RuntimeException(
-                    "There is a task that already has the ID " + taskID);
-        }
+        assert myTaskMap.getTask(taskID) == null : "There is a task that already has the ID " + taskID;
+        myTaskMap.addTask(task);
+        myMaxID.set(Math.max(taskID + 1, myMaxID.get()));
     }
 
     boolean isRegistered(TaskImpl task) {
@@ -513,18 +506,6 @@ public class TaskManagerImpl implements TaskManager {
             throw new IllegalArgumentException("Unknown constraint type=" + type);
         }
         return result;
-    }
-
-    public int getMaxID() {
-        return myMaxID;
-    }
-
-    private void setMaxID(int id) {
-        myMaxID = id;
-    }
-
-    void increaseMaxID() {
-        myMaxID++;
     }
 
     @Override
