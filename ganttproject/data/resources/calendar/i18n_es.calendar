@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="España" type="country">
+	<date year="" month="01" date="01"/>
+	<date year="" month="01" date="06"/>
+	<date year="" month="05" date="01"/>
+	<date year="" month="08" date="15"/>
+	<date year="" month="10" date="12"/>
+	<date year="" month="11" date="01"/>
+	<date year="" month="12" date="06"/>
+	<date year="" month="12" date="08"/>
+	<date year="" month="12" date="25"/>
+</calendar>

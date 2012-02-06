@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Norge" type="country">
+	<date year="" month="12" date="26"/>
+	<date year="2005" month="03" date="24"/>
+	<date year="2005" month="03" date="25"/>
+	<date year="2005" month="03" date="28"/>
+	<date year="2005" month="05" date="05"/>
+	<date year="2005" month="05" date="16"/>
+	<date year="2005" month="05" date="17"/>
+	<date year="2006" month="04" date="13"/>
+	<date year="2006" month="04" date="14"/>
+	<date year="2006" month="04" date="17"/>
+	<date year="2006" month="05" date="01"/>
+	<date year="2006" month="05" date="17"/>
+	<date year="2006" month="05" date="25"/>
+	<date year="2006" month="06" date="05"/>
+	<date year="2006" month="12" date="25"/>
+	<date year="2007" month="01" date="01"/>
+	<date year="2007" month="04" date="05"/>
+	<date year="2007" month="04" date="06"/>
+	<date year="2007" month="04" date="09"/>
+	<date year="2007" month="05" date="01"/>
+	<date year="2007" month="05" date="17"/>
+	<date year="2007" month="05" date="28"/>
+	<date year="2007" month="12" date="25"/>
+	<date year="2008" month="01" date="01"/>
+	<date year="2008" month="03" date="20"/>
+	<date year="2008" month="03" date="21"/>
+	<date year="2008" month="03" date="24"/>
+	<date year="2008" month="05" date="01"/>
+	<date year="2008" month="05" date="12"/>
+	<date year="2008" month="12" date="25"/>
+</calendar >
