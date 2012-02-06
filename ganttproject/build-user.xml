@@ -1,22 +1,21 @@
 <property file="build-user.properties"/>
-<property name="plugin.name.versioned" value="${plugin.name}_${plugin.version}"/>
+<property name="plugin.name.versioned" value="${plugin.name}"/>
 <property name="plugin.install.dir" value="${install.dir}/plugins/${plugin.name.versioned}"/>
 
-    <property name="ganttproject-2.0.location" value="."/>
     <path id="project.classpath">
         <pathelement location="bin"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/AppleJavaExtensions.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/balloontip-1.2.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-httpclient.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-logging.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/commons-net-ftpclient-3.0.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/eclipsito.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jcommander-1.17.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jdnc-modifBen.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jdom-1.0.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-common-1.1.1.jar"/>
-        <pathelement location="${ganttproject-2.0.location}/lib/core/jgoodies-looks-2.4.0.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/AppleJavaExtensions.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/balloontip-1.2.1.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/commons-httpclient.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/commons-logging.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/commons-net-ftpclient-3.0.1.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/eclipsito.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jcommander-1.17.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jdnc-modifBen.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jdom-1.0.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jgoodies-common-1.1.1.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/jgoodies-looks-2.4.0.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
