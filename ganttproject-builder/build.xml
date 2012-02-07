@@ -92,7 +92,11 @@
 			addproperty="package.name.suffix"
 		    defaultvalue="2.5"/>
 		<move file="${install.dir}" tofile="${package.name.prefix}-${package.name.suffix}"></move>
-		<zip destfile="${package.name.prefix}-${package.name.suffix}.zip" basedir="." includes="${package.name.prefix}-${package.name.suffix}/**">
+		<zip destfile="${package.name.prefix}-${package.name.suffix}.zip" basedir="." includes="/**">
+			<zipfileset dir="${package.name.prefix}-${package.name.suffix}" excludes="ganttproject" prefix="${package.name.prefix}-${package.name.suffix}">
+			</zipfileset>
+            <zipfileset dir="${package.name.prefix}-${package.name.suffix}" includes="ganttproject" prefix="${package.name.prefix}-${package.name.suffix}" filemode="755">
+            </zipfileset>
 		</zip>
 	</target>
 	
