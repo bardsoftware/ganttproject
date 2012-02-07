@@ -3,7 +3,7 @@ set -e
 
 if [ "$1" = "configure" ]; then
   if [ -e /usr/bin/ganttproject ]; then rm -f /usr/bin/ganttproject; fi
-  ln -s /usr/share/ganttproject-praha/ganttproject /usr/bin/ganttproject
+  ln -s /usr/share/ganttproject/ganttproject /usr/bin/ganttproject
 
   if [ -x "$(which update-menus 2>/dev/null)" ]; then update-menus; fi
   if [ -x "$(which update-mime 2>/dev/null)" ]; then update-mime; fi

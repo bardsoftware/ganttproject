@@ -1,6 +1,5 @@
 <project name="JavaDeb Task" basedir="." default="release-dist">
   <property file="build-deb.properties"/>
-  <property name="package.name" value="ganttproject-praha"/>
 
   <path id="class.path">
     <pathelement location="build-deb/classes"/>
@@ -98,7 +97,7 @@
         >
             <version upstream="${dist.version.number}"/>
             <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
-            <description synopsis="Gantt chart based project scheduling and management tool.">
+            <description synopsis="${package.synopsis}">
                 GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
                 Our major features include:
 
@@ -109,8 +108,6 @@
                 * PDF and HTML reports
                 * MS Project import/export
                 * WebDAV based groupwork
-
-                Visit http://ganttproject.biz to learn more
             </description>
         </deb>
     </target>
@@ -162,7 +159,7 @@
            postinst="deb/postinst">
         <version upstream="${dist.version.number}"/>
         <maintainer name="GanttProject Developers" email="contact@ganttproject.biz"/>
-        <description synopsis="Gantt chart based project scheduling and management tool.">
+        <description synopsis="${package.synopsis}">
         	@{package-description}
         </description>
         <tarfileset dir="${basedir}/../ganttproject/" prefix="usr/share/doc/${package.name}">
@@ -196,7 +193,7 @@
         >
       <version upstream="${dist.version.number}"/>
       <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
-      <description synopsis="Gantt chart based project scheduling and management tool.">
+      <description synopsis="${package.synopsis}">
               Extra plugins for GanttProject
 
                 GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
