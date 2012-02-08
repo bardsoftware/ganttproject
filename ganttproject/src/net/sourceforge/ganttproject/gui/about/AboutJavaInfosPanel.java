@@ -114,10 +114,12 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
         }
 
+        @Override
         public int getColumnCount() {
             return columnNames.length;
         }
 
+        @Override
         public int getRowCount() {
             return data.size();
         }
@@ -132,6 +134,7 @@ public class AboutJavaInfosPanel extends GeneralOptionPanel {
             return columnClasses[c];
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             SystemInfo info = data.elementAt(row);
             if (col == 0) {

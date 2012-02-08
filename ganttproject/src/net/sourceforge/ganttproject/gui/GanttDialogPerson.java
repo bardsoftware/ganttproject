@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.calendar.GanttDaysOff;
@@ -125,7 +124,7 @@ public class GanttDialogPerson {
         OptionsPageBuilder builder = new OptionsPageBuilder();
         OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
             @Override
-            public String getOptionLabel(GPOptionGroup group, GPOption option) {
+            public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
                 return getValue(option.getID());
             }
         };

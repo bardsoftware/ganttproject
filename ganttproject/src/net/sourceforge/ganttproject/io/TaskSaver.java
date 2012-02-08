@@ -22,8 +22,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -31,8 +29,6 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.task.CustomColumn;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;

@@ -20,22 +20,16 @@ package net.sourceforge.ganttproject.chart.timeline;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**
- *
  * @author dbarashev (Dmitry Barashev)
- *
  */
 public class TimeFormatters {
-    private static GanttLanguage i18n = GanttLanguage.getInstance();
     public static enum Position {
         UPPER_LINE, LOWER_LINE
     }
