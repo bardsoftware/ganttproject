@@ -70,13 +70,13 @@ public class SearchUiImpl implements SearchUi {
         return searchBox;
     }
 
-
     class PopupSearchCallback implements SearchCallback {
         private SearchDialog myDialog = new SearchDialog(project, uiFacade);
         private JTextField searchBox;
         private JList list;
+
         @Override
-        public void accept(final List<SearchResult> results) {
+        public void accept(final List<SearchResult<?>> results) {
             if (results.isEmpty()) {
                 return;
             }
@@ -128,7 +128,6 @@ public class SearchUiImpl implements SearchUi {
                     PopupSearchCallback.this.searchBox.setForeground(myInitialForeground);
                 }
             });
-
         }
 
         protected void runSearch() {

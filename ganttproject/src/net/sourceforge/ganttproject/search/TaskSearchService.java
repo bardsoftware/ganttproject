@@ -27,12 +27,10 @@ import net.sourceforge.ganttproject.task.Task;
 
 /** Search service for tasks */
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
-
     static class MySearchResult extends SearchResult<Task> {
         public MySearchResult(Task t, TaskSearchService searchService) {
             super("Task: " + t.getName(), "", "", t, searchService);
         }
-
     }
 
     public TaskSearchService() {

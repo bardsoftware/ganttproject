@@ -31,7 +31,6 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
         public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
             super("Resource: " + hr.getName(), "", "", hr, searchService);
         }
-
     }
 
     public ResourceSearchService() {
