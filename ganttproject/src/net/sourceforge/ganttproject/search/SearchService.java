@@ -39,5 +39,5 @@ public interface SearchService<SR extends SearchResult<SO>, SO> {
 
     void init(IGanttProject project, UIFacade uiFacade);
     List<SR> search(String query);
-    void select(List<SR> results);
+    void select(List<SR> list);
 }
