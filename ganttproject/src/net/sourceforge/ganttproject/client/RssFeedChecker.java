@@ -195,7 +195,7 @@ public class RssFeedChecker {
 
     private boolean wasToday(Date date) {
         return myTimeUnitStack.createDuration(
-            myTimeUnitStack.DAY, date, myTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
+            GPTimeUnitStack.DAY, date, GPTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
     }
 
     private void onYes() {

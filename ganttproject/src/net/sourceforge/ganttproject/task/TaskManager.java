@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade.Factory;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;

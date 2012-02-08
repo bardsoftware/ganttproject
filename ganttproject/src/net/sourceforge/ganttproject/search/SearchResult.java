@@ -22,10 +22,10 @@ public class SearchResult<SearchObjectType> {
     private final String myOrigin;
     private final String mySnippet;
     private final String myLabel;
-    private final SearchService mySearchService;
+    private final SearchService<?, SearchObjectType> mySearchService;
     private final SearchObjectType mySearchObject;
 
-    public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject, SearchService service) {
+    public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject, SearchService<?, SearchObjectType> service) {
         myLabel = label;
         mySnippet = snippet;
         myOrigin = origin;
@@ -54,9 +54,7 @@ public class SearchResult<SearchObjectType> {
         return myLabel;
     }
 
-    public SearchService getSearchService() {
+    public SearchService<?, SearchObjectType> getSearchService() {
         return mySearchService;
     }
-
-
 }

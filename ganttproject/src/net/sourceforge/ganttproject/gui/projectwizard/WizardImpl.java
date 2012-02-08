@@ -28,8 +28,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;

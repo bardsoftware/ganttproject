@@ -50,7 +50,7 @@ public interface DocumentManager {
     IntegerOption getWebDavLockTimeoutOption();
 
     abstract class FTPOptions extends GPOptionGroup {
-        public FTPOptions(String id, GPOption[] options) {
+        public FTPOptions(String id, GPOption<?>[] options) {
             super(id, options);
         }
         public abstract StringOption getServerName();

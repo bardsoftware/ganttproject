@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -35,9 +34,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.eclipse.core.runtime.Platform;
-
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.util.PropertiesUtil;

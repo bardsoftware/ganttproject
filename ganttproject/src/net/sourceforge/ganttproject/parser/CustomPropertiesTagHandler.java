@@ -24,12 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 

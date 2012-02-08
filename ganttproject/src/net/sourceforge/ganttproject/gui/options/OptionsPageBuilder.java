@@ -23,8 +23,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -130,7 +128,7 @@ public class OptionsPageBuilder {
     }
 
     public JComponent createGroupComponent(GPOptionGroup group) {
-        GPOption[] options = group.getOptions();
+        GPOption<?>[] options = group.getOptions();
         JComponent optionsPanel = createGroupComponent(group, options);
         if (group.isTitled()) {
             UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
@@ -618,17 +616,4 @@ public class OptionsPageBuilder {
     }
 
     private static JColorChooser ourColorChooser = new JColorChooser();
-
-    static {
-        ImageIcon calendarImage = new ImageIcon(OptionsPageBuilder.class
-                .getResource("/icons/calendar_16.gif"));
-        Icon nextMonth = new ImageIcon(OptionsPageBuilder.class
-                .getResource("/icons/nextmonth.gif"));
-        Icon prevMonth = new ImageIcon(OptionsPageBuilder.class
-                .getResource("/icons/prevmonth.gif"));
-        UIManager.put("JXDatePicker.arrowDown.image", calendarImage);
-        UIManager.put("JXMonthView.monthUp.image", prevMonth);
-        UIManager.put("JXMonthView.monthDown.image", nextMonth);
-        UIManager.put("JXMonthView.monthCurrent.image", calendarImage);
-    }
 }

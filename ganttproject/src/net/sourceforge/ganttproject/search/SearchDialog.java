@@ -53,7 +53,7 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
 
 public class SearchDialog {
     public interface SearchCallback {
-        void accept(List<SearchResult> results);
+        void accept(List<SearchResult<?>> results);
     }
 
     private final UIFacade myUiFacade;
@@ -78,7 +78,7 @@ public class SearchDialog {
         }, GanttLanguage.getInstance().getText("search.dialog.title"));
         mySearchCallback = new SearchCallback() {
             @Override
-            public void accept(List<SearchResult> results) {
+            public void accept(List<SearchResult<?>> results) {
                 processResults(results);
             }
         };
@@ -154,23 +154,23 @@ public class SearchDialog {
     void runSearch(final String text, final SearchCallback callback) {
         myResultViewDataModel.clear();
         List<SearchService> services = PluginManager.getExtensions(SearchService.EXTENSION_POINT_ID, SearchService.class);
-        final List<Future<List<SearchResult>>> tasks = new ArrayList<Future<List<SearchResult>>>();
+        final List<Future<List<SearchResult<?>>>> tasks = new ArrayList<Future<List<SearchResult<?>>>>();
         ExecutorService executor = Executors.newFixedThreadPool(services.size());
-        for (final SearchService service : services) {
+        for (final SearchService<SearchResult<?>,?> service : services) {
             service.init(myProject, myUiFacade);
-            tasks.add(executor.submit(new Callable<List<SearchResult>>() {
+            tasks.add(executor.submit(new Callable<List<SearchResult<?>>>() {
                 @Override
-                public List<SearchResult> call() throws Exception {
-                    List<SearchResult> search = service.search(text);
+                public List<SearchResult<?>> call() throws Exception {
+                    List<SearchResult<?>> search = service.search(text);
                     return search;
                 }
             }));
         }
-        SwingWorker<List<SearchResult>, Object> worker = new SwingWorker<List<SearchResult>, Object>() {
+        SwingWorker<List<SearchResult<?>>, Object> worker = new SwingWorker<List<SearchResult<?>>, Object>() {
             @Override
-            protected List<SearchResult> doInBackground() throws Exception {
-                List<SearchResult> totalResult = new ArrayList<SearchResult>();
-                for (Future<List<SearchResult>> f : tasks) {
+            protected List<SearchResult<?>> doInBackground() throws Exception {
+                List<SearchResult<?>> totalResult = new ArrayList<SearchResult<?>>();
+                for (Future<List<SearchResult<?>>> f : tasks) {
                     totalResult.addAll(f.get());
                 }
                 return totalResult;
@@ -191,11 +191,11 @@ public class SearchDialog {
         worker.execute();
     }
 
-    protected void processResults(final List<SearchResult> results) {
+    protected void processResults(final List<SearchResult<?>> results) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                for (SearchResult r : results) {
+                for (SearchResult<?> r : results) {
                     myResultViewDataModel.addElement(r);
                 }
             }
