@@ -7,12 +7,12 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "praha-beta5-r888"
+!define VERSION "2.5-rc1-r963"
 
 OutFile ganttproject-${VERSION}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProjectPraha
+InstallDir $PROGRAMFILES\GanttProject-2.5
 
 
 !define MUI_ABORTWARNING
@@ -68,7 +68,7 @@ Section "GanttProject"
   File LICENSE
   
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\net.sourceforge.ganttproject_2.0.0
+  File /r plugins\net.sourceforge.ganttproject
   SetOutPath $INSTDIR
 
   ; Write the installation path into the registry
@@ -94,7 +94,7 @@ Section "MS-Project Import/Export"
 
   SetOutPath $INSTDIR
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\biz.ganttproject.impex.msproject2_2.0.0
+  File /r plugins\biz.ganttproject.impex.msproject2
   SetOutPath $INSTDIR
 SectionEnd
 
@@ -102,7 +102,7 @@ Section "PERT chart"
 
   SetOutPath $INSTDIR
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\org.ganttproject.chart.pert_2.0.0
+  File /r plugins\org.ganttproject.chart.pert
   SetOutPath $INSTDIR
 
 SectionEnd
@@ -112,7 +112,7 @@ Section "HTML/PDF export"
   SectionSetText "HTML and PDF export capabilities" 1
   SetOutPath $INSTDIR
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\org.ganttproject.impex.htmlpdf_2.0.0
+  File /r plugins\org.ganttproject.impex.htmlpdf
   SetOutPath $INSTDIR
 
 SectionEnd
