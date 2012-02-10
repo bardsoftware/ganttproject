@@ -24,7 +24,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.RenderedImage;
 
 import javax.swing.Action;
 
@@ -34,6 +33,7 @@ import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.font.Fonts;
@@ -53,11 +53,6 @@ import org.eclipse.core.runtime.Status;
  */
 public class ResourceLoadGraphicArea extends ChartComponentBase implements
         ResourceChart {
-
-
-    /** Render the ganttproject version */
-    private boolean drawVersion = false;
-
     /** The main application */
     private final GanttProject appli;
 
@@ -101,18 +96,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
     @Override
     protected GPTreeTableBase getTreeTable() {
         return appli.getResourcePanel().getResourceTreeTable();
-    }
-
-    @Override
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        int rowCount = getResourceManager().getResources().size();
-        for (HumanResource hr : getResourceManager().getResources()) {
-            if (myTreeUi.isExpanded(hr)) {
-                rowCount += hr.getAssignments().length;
-            }
-        }
-        settings.setRowCount(rowCount);
-        return super.getRenderedImage(settings);
     }
 
     @Override
@@ -197,10 +180,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
                 myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
                 //myChartModel.paint(g);
                 super.paintChart(g);
-
-                if (drawVersion) {
-                    drawGPVersion(g);
-                }
             }
         }
         @Override
@@ -231,6 +210,18 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
         @Override
         public void paste(ChartSelection selection) {
             appli.getResourcePanel().pasteSelection();
+        }
+
+        @Override
+        public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+            int rowCount = getResourceManager().getResources().size();
+            for (HumanResource hr : getResourceManager().getResources()) {
+                if (myTreeUi.isExpanded(hr)) {
+                    rowCount += hr.getAssignments().length;
+                }
+            }
+            settings.setRowCount(rowCount);
+            super.buildImage(settings, imageVisitor);
         }
     }
 
