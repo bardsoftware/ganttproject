@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel;
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 
 import com.google.common.base.Function;
@@ -180,7 +182,7 @@ public class TTFontCache {
 
     }
 
-    public FontMapper getFontMapper(final String charset) {
+    public FontMapper getFontMapper(final FontSubstitutionModel substitutions, final String charset) {
         return new FontMapper() {
             @Override
             public BaseFont awtToPdf(Font awtFont) {
@@ -188,7 +190,12 @@ public class TTFontCache {
                 if (myProperties.containsKey("font." + family)) {
                     family = String.valueOf(myProperties.get("font." + family));
                 }
-                return myMap_Family_ItextFont.get(family).apply(charset);
+                FontSubstitution substitution = substitutions.getSubstitution(family);
+                if (substitution != null) {
+                    family = substitution.getSubstitutionFamily();
+                }
+                Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
+                return f == null ? null : f.apply(charset);
             }
 
             @Override
