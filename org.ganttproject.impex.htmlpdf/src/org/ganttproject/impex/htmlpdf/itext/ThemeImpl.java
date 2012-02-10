@@ -328,7 +328,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getText("ganttChart"),
                 String.valueOf(myWriter.getPageNumber()));
         ChartWriter ganttChartWriter = new ChartWriter(
-                myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(), myFontCache, getCharset()) {
+                myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(),
+                myFontCache, mySubstitutionModel, getCharset()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
@@ -344,8 +345,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 GanttLanguage.getInstance().getText("resourcesChart"),
                 String.valueOf(myWriter.getPageNumber()));
         ChartWriter resourceChartWriter = new ChartWriter(
-                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc, myExporter.createExportSettings(),
-                myFontCache, getCharset()) {
+                (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc,
+                myExporter.createExportSettings(),
+                myFontCache, mySubstitutionModel, getCharset()) {
             @Override
             protected void setupChart(GanttExportSettings settings) {
                 settings.setRowCount(myProject.getHumanResourceManager().getResources().size());
