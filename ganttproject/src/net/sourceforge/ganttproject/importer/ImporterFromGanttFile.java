@@ -150,7 +150,9 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
         @Override
         public void setOrder(int order) {
         }
-
+        @Override
+        public void setWidth(int width) {
+        }
     }
     private static class VisibleFieldsImpl implements TableHeaderUIFacade {
         private final List<Column> myFields = new ArrayList<Column>();

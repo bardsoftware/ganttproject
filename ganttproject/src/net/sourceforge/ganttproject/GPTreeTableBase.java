@@ -183,6 +183,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
                 } else {
                     mine.getStub().setOrder(foreign.getOrder());
                     mine.getStub().setVisible(foreign.isVisible());
+                    mine.getStub().setWidth(foreign.getWidth());
                 }
             }
             Collections.sort(myColumns, new Comparator<ColumnImpl>() {
@@ -238,6 +239,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
         protected void insertColumnIntoUi(ColumnImpl column) {
             getTable().addColumn(column.myTableColumn);
+            column.setWidth(column.getStub().getWidth());
         }
 
         protected void renameColumn(CustomPropertyDefinition definition) {
@@ -337,6 +339,11 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             } else if (!visible && isVisible()) {
                 myTable.getColumnModel().removeColumn(myTableColumn);
             }
+        }
+        @Override
+        public void setWidth(int width) {
+            myTableColumn.setWidth(width);
+            myTableColumn.setPreferredWidth(width);
         }
 
         Column getStub() {

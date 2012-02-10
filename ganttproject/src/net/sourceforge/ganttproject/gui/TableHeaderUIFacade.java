@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -36,12 +36,13 @@ public interface TableHeaderUIFacade {
         boolean isVisible();
         void setVisible(boolean visible);
         void setOrder(int order);
+        void setWidth(int width);
     }
 
     class ColumnStub implements TableHeaderUIFacade.Column {
         private final String myID;
         private int myOrder;
-        private final int myWidth;
+        private int myWidth;
         private final String myName;
         private boolean isVisible;
 
@@ -79,6 +80,10 @@ public interface TableHeaderUIFacade {
         @Override
         public void setOrder(int order) {
             myOrder = order;
+        }
+        @Override
+        public void setWidth(int width) {
+            myWidth = width;
         }
         @Override
         public String toString() {
