@@ -60,12 +60,12 @@ public class TTFontCache {
     private Properties myProperties;
 
     public void registerDirectory(String path, boolean recursive) {
-        GPLogger.log("reading directory="+path);
+        GPLogger.getLogger(getClass()).fine("reading directory="+path);
         File dir = new File(path);
         if (dir.exists() && dir.isDirectory()) {
             registerFonts(dir);
         } else {
-            GPLogger.log("directory "+path+" is not readable");
+            GPLogger.getLogger(getClass()).fine("directory "+path+" is not readable");
         }
     }
 
@@ -101,7 +101,7 @@ public class TTFontCache {
                 registerFontFile(f, runningUnderJava6);
             } catch (Throwable e) {
                 GPLogger.getLogger(ITextEngine.class).log(
-                    Level.INFO, "Failed to register font from " + f.getAbsolutePath(), e);
+                    Level.FINE, "Failed to register font from " + f.getAbsolutePath(), e);
             }
        }
     }
@@ -127,7 +127,7 @@ public class TTFontCache {
 //            return;
 //        }
 
-        GPLogger.log("registering font: " + family);
+        GPLogger.getLogger(getClass()).fine("registering font: " + family);
         myMap_Family_RegularFont.put(family, Suppliers.<Font>memoize(new Supplier<Font>() {
             @Override
             public Font get() {
@@ -161,7 +161,7 @@ public class TTFontCache {
             });
         } catch (DocumentException e) {
             if (e.getMessage().indexOf("cannot be embedded") > 0) {
-                GPLogger.logToLogger("Font " + family + " from " + fontFile.getAbsolutePath() + " skipped due to licensing restrictions");
+                GPLogger.getLogger(getClass()).fine("Font " + family + " from " + fontFile.getAbsolutePath() + " skipped due to licensing restrictions");
             } else {
                 e.printStackTrace();
             }
