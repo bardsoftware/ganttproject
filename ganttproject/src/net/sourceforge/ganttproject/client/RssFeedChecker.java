@@ -178,7 +178,9 @@ public class RssFeedChecker {
                     items.add(new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
                 }
                 Collections.reverse(items);
-                getNotificationManager().addNotifications(NotificationChannel.RSS, items);
+                if (!items.isEmpty()) {
+                    getNotificationManager().addNotifications(NotificationChannel.RSS, items);
+                }
                 markLastCheck();
             }
         };
