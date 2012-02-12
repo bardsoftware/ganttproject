@@ -174,14 +174,14 @@ public class ITextEngine extends AbstractEngine {
     }
 
     protected void registerFontDirectories() {
-        myFontCache.registerDirectory(System.getProperty("java.home") + "/lib/fonts", false);
+        myFontCache.registerDirectory(System.getProperty("java.home") + "/lib/fonts");
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] configElements =
             extensionRegistry.getConfigurationElementsFor("org.ganttproject.impex.htmlpdf.FontDirectory");
         for (int i=0; i<configElements.length; i++) {
             final String dirName = configElements[i].getAttribute("name");
             if (Boolean.TRUE.toString().equalsIgnoreCase(configElements[i].getAttribute("absolute"))) {
-                myFontCache.registerDirectory(dirName, true);
+                myFontCache.registerDirectory(dirName);
             } else {
                 String namespace = configElements[i].getDeclaringExtension().getNamespaceIdentifier();
                 URL dirUrl = Platform.getBundle(namespace).getResource(dirName);
@@ -192,7 +192,7 @@ public class ITextEngine extends AbstractEngine {
                 }
                 try {
                     URL resolvedDir = Platform.resolve(dirUrl);
-                    myFontCache.registerDirectory(resolvedDir.getPath(), true);
+                    myFontCache.registerDirectory(resolvedDir.getPath());
                 } catch (IOException e) {
                    GPLogger.getLogger(ITextEngine.class).log(Level.WARNING, e.getMessage(), e);
                    continue;
