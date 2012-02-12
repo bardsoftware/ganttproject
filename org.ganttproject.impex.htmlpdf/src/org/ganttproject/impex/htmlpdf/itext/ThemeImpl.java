@@ -347,12 +347,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         ChartWriter resourceChartWriter = new ChartWriter(
                 (TimelineChart)myUIFacade.getResourceChart(), myWriter, myDoc,
                 myExporter.createExportSettings(),
-                myFontCache, mySubstitutionModel, getCharset()) {
-            @Override
-            protected void setupChart(GanttExportSettings settings) {
-                settings.setRowCount(myProject.getHumanResourceManager().getResources().size());
-            }
-        };
+                myFontCache, mySubstitutionModel, getCharset());
         resourceChartWriter.write();
     }
 
