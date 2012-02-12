@@ -291,10 +291,10 @@ public class ChartModelImpl extends ChartModelBase {
         return rowHeight;
     }
 
-    @Override
-    protected int getRowCount() {
-        return getTaskManager().getTaskCount();
-    }
+//    @Override
+//    protected int getRowCount() {
+//        return getTaskManager().getTaskCount();
+//    }
 
     @Override
     public TaskManager getTaskManager() {

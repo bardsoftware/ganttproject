@@ -366,20 +366,20 @@ public abstract class ChartModelBase implements /*TimeUnitStack.Listener,*/ Char
         return myBounds;
     }
 
-    @Override
-    public Dimension getMaxBounds() {
-        OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
-                this, Integer.MAX_VALUE, getTaskManager().getProjectEnd());
-        List<Offset> topUnitOffsets = new ArrayList<Offset>();
-        OffsetList bottomUnitOffsets = new OffsetList();
-        offsetBuilder.constructOffsets(topUnitOffsets, bottomUnitOffsets);
-        int width = topUnitOffsets.get(topUnitOffsets.size()-1).getOffsetPixels();
-        int height = calculateRowHeight()*getRowCount();
-        return new Dimension(width, height);
-    }
+//    @Override
+//    public Dimension getMaxBounds() {
+//        OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(
+//                this, Integer.MAX_VALUE, getTaskManager().getProjectEnd());
+//        List<Offset> topUnitOffsets = new ArrayList<Offset>();
+//        OffsetList bottomUnitOffsets = new OffsetList();
+//        offsetBuilder.constructOffsets(topUnitOffsets, bottomUnitOffsets);
+//        int width = topUnitOffsets.get(topUnitOffsets.size()-1).getOffsetPixels();
+//        int height = calculateRowHeight()*getRowCount();
+//        return new Dimension(width, height);
+//    }
 
     public abstract int calculateRowHeight();
-    protected abstract int getRowCount();
+    //protected abstract int getRowCount();
 
 
     @Override
