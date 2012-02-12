@@ -154,10 +154,10 @@ public class ChartModelResource extends ChartModelBase {
         return result.toArray(new GPOptionGroup[result.size()]);
     }
 
-    @Override
-    protected int getRowCount() {
-        return getVisibleResources().length;
-    }
+//    @Override
+//    protected int getRowCount() {
+//        return getVisibleResources().length;
+//    }
 
     @Override
     public ChartModelBase createCopy() {
