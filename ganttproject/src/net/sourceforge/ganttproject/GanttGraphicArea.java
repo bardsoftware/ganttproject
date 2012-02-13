@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -28,13 +28,10 @@ import java.awt.Toolkit;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -208,22 +205,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart,
     @Override
     protected GPTreeTableBase getTreeTable() {
         return tree.getTreeTable();
-    }
-
-    @Override
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        List<DefaultMutableTreeNode> visibleNodes = settings.isOnlySelectedItem() ?
-            Arrays.asList(this.tree.getSelectedNodes()) :
-            this.tree.getAllVisibleNodes();
-
-        for (int i = 0; i < visibleNodes.size(); i++) {
-            if (visibleNodes.get(i).isRoot()) {
-                visibleNodes.remove(i);
-                break;
-            }
-        }
-        settings.setVisibleTasks(GanttTree2.convertNodesListToItemList(visibleNodes));
-        return super.getRenderedImage(settings);
     }
 
     GPUndoManager getUndoManager() {

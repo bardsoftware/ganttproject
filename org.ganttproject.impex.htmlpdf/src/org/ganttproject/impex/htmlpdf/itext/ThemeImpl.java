@@ -26,7 +26,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -38,7 +37,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.AbstractExporter;
@@ -329,12 +327,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
                 String.valueOf(myWriter.getPageNumber()));
         ChartWriter ganttChartWriter = new ChartWriter(
                 myUIFacade.getGanttChart(), myWriter, myDoc, myExporter.createExportSettings(),
-                myFontCache, mySubstitutionModel, getCharset()) {
-            @Override
-            protected void setupChart(GanttExportSettings settings) {
-                settings.setVisibleTasks(Arrays.asList(getProject().getTaskManager().getTasks()));
-            }
-        };
+                myFontCache, mySubstitutionModel, getCharset());
         ganttChartWriter.write();
     }
     private void writeResourceChart() {
