@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 The Guava Authors
+ * Copyright (C) 2008 The Guava Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package com.google.common.base;
+package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
 
+import java.util.Iterator;
+
 /**
- * A class that can supply objects of a single type.  Semantically, this could
- * be a factory, generator, builder, closure, or something else entirely. No
- * guarantees are implied by this interface.
+ * An iterator that does not support {@link #remove}.
  *
- * @author Harry Heymann
+ * @author Jared Levy
  * @since 2.0 (imported from Google Collections Library)
  */
 @GwtCompatible
-public interface Supplier<T> {
+public abstract class UnmodifiableIterator<E> implements Iterator<E> {
+  /** Constructor for use by subclasses. */
+  protected UnmodifiableIterator() {}
+  
   /**
-   * Retrieves an instance of the appropriate type. The returned object may or
-   * may not be a new instance, depending on the implementation.
+   * Guaranteed to throw an exception and leave the underlying data unmodified.
    *
-   * @return an instance of the appropriate type
+   * @throws UnsupportedOperationException always
    */
-  T get();
+  @Override
+  public final void remove() {
+    throw new UnsupportedOperationException();
+  }
 }
