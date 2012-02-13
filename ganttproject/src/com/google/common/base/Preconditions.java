@@ -16,6 +16,7 @@
 
 package com.google.common.base;
 
+import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.NoSuchElementException;
@@ -52,9 +53,14 @@ import javax.annotation.Nullable;
  * perhaps ever. Postcondition or other invariant failures should not throw
  * these types of exceptions.
  *
+ * <p>See the Guava User Guide on <a href=
+ * "http://code.google.com/p/guava-libraries/wiki/PreconditionsExplained">
+ * using {@code Preconditions}</a>.
+ *
  * @author Kevin Bourrillion
  * @since 2.0 (imported from Google Collections Library)
  */
+@GwtCompatible
 public final class Preconditions {
   private Preconditions() {}
 
