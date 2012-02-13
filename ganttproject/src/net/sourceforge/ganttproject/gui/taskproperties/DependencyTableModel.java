@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -25,6 +25,8 @@ import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
+
+import com.google.common.base.Objects;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -142,6 +144,9 @@ public class DependencyTableModel extends AbstractTableModel {
     @Override
     public void setValueAt(Object value, int row, int col) {
         assert row >= 0;
+        if (Objects.equal(value, getValueAt(row, col))) {
+            return;
+        }
         try {
             if (row == myDependencies.size()) {
                 createDependency(value);
