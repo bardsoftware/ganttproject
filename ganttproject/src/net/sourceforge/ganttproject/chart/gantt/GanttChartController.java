@@ -28,6 +28,7 @@ import java.util.List;
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.ChartImplementation;
+import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -40,6 +41,7 @@ import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.GraphicPrimitive;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
@@ -50,6 +52,7 @@ import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
 import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -59,6 +62,10 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
     private final TaskManager myTaskManager;
@@ -228,4 +235,22 @@ public class GanttChartController extends AbstractChartImplementation implements
         ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
         return result;
     }
+
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+        final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
+        List<Task> visibleTasks = ImmutableList.copyOf(
+                Collections2.filter(
+                        ImmutableList.copyOf(getTaskManager().getTasks()),
+                        new Predicate<Task>() {
+                            @Override
+                            public boolean apply(Task input) {
+                                return taskTree.isVisible(input);
+                            }
+                        }));
+        settings.setVisibleTasks(visibleTasks);
+        super.buildImage(settings, imageVisitor);
+    }
+
+
 }
