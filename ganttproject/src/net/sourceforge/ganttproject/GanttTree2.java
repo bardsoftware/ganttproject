@@ -526,6 +526,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         return res;
     }
 
+
     List<DefaultMutableTreeNode> getAllVisibleNodes() {
         List<DefaultMutableTreeNode> res = new ArrayList<DefaultMutableTreeNode>();
         Enumeration<TreeNode> enumeration = getRootNode().preorderEnumeration();
@@ -534,22 +535,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                     .nextElement();
             if (getTreeTable().getTree().isVisible(new TreePath(o.getPath())))
                 res.add(o);
-        }
-        return res;
-    }
-
-    /** @return all sub tasks for the tree node base */
-    private ArrayList<TaskNode> getAllChildTasks(DefaultMutableTreeNode base) {
-        ArrayList<TaskNode> res = new ArrayList<TaskNode>();
-        if (base == null || !(base instanceof TaskNode)) {
-            return res;
-        }
-        Enumeration<?> e = base.children();
-        while (e.hasMoreElements()) {
-            Object next = e.nextElement();
-            if (next instanceof TaskNode) {
-                res.add((TaskNode) next);
-            }
         }
         return res;
     }
