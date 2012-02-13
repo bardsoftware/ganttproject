@@ -26,6 +26,8 @@ import java.awt.Component;
 public interface TreeUiFacade<T> {
     Component getTreeComponent();
     TableHeaderUIFacade getVisibleFields();
+
+    boolean isVisible(T modelElement);
     boolean isExpanded(T modelElement);
     void setExpanded(T modelElement);
 
