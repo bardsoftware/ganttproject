@@ -134,6 +134,15 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         }
     }
 
+    @Override
+    public boolean isVisible(ModelObject modelObject) {
+        DefaultMutableTreeNode node = getNode(modelObject);
+        if (node == null) {
+            return false;
+        }
+        return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
+    }
+
     public int getRowHeight() {
         return myTreeTable.getTable().getRowHeight();
     }
