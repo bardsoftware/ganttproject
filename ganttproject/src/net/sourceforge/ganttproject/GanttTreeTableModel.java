@@ -209,7 +209,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
     }
 
     private CustomPropertyDefinition getCustomProperty(int columnIndex) {
-        return myCustomColumnsManager.getDefinitions().get(columnIndex - 11);
+        assert columnIndex >= 11 :
+            "We have 11 default properties, and custom property index starts at 11. I've got index #"
+                + columnIndex + ". Something must be wrong here";
+        List<CustomPropertyDefinition> definitions = myCustomColumnsManager.getDefinitions();
+        columnIndex -= 11;
+        return columnIndex < definitions.size() ? definitions.get(columnIndex) : null;
     }
 
     @Override
@@ -235,6 +240,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements
 
     @Override
     public Object getValueAt(Object node, int column) {
+        if (column < 0) {
+            return "";
+        }
         if (!(node instanceof TaskNode)) {
             return null;
         }
