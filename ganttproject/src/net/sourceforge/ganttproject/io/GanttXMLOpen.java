@@ -58,10 +58,6 @@ public class GanttXMLOpen implements GPParser {
 
     private String indent = "";
 
-    private final String margin = "    "; // the margin
-
-    final static Pattern IGNORABLE_WHITESPACE = Pattern.compile("^\\s*$");
-
     private final ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
     private final ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
@@ -80,8 +76,6 @@ public class GanttXMLOpen implements GPParser {
 
     private UIFacade myUIFacade = null;
 
-    private boolean bMerge = false;
-
     private UIConfiguration myUIConfig;
 
     public GanttXMLOpen(PrjInfos info, UIConfiguration uiConfig,
@@ -99,10 +93,6 @@ public class GanttXMLOpen implements GPParser {
     public GanttXMLOpen(TaskManager taskManager) {
         myContext = new ParsingContext();
         myTaskManager = taskManager;
-    }
-
-    public boolean load(String filename) {
-        return load(new File(filename));
     }
 
     @Override
@@ -137,12 +127,10 @@ public class GanttXMLOpen implements GPParser {
         myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm()
                 .setEnabled(true);
 
-        if (!bMerge) {
-            myUIFacade.setViewIndex(viewIndex);
-            myUIFacade.setGanttDividerLocation(ganttDividerLocation);
-            if (resourceDividerLocation != 0) {
-                myUIFacade.setResourceDividerLocation(resourceDividerLocation);
-            }
+        myUIFacade.setViewIndex(viewIndex);
+        myUIFacade.setGanttDividerLocation(ganttDividerLocation);
+        if (resourceDividerLocation != 0) {
+            myUIFacade.setResourceDividerLocation(resourceDividerLocation);
         }
         return true;
 
@@ -214,7 +202,7 @@ public class GanttXMLOpen implements GPParser {
                         aName = attrs.getQName(i);
                         // The project part
                     }
-                    if (eName.equals("project") && myTagStack.size()==1) {
+                    if (eName.equals("project")) {
                         if (aName.equals("name")) {
                             myProjectInfo.setName(attrs.getValue(i));
                         } else if (aName.equals("company")) {
@@ -250,13 +238,10 @@ public class GanttXMLOpen implements GPParser {
         public void endElement(String namespaceURI, String sName, String qName) {
             indent = indent.substring(0, indent.length() - 4);
             if ("description".equals(qName)) {
-                myProjectInfo.setDescription(getCorrectString(myCharacterBuffer
-                        .toString()));
+                myProjectInfo.setDescription(myCharacterBuffer.toString());
             } else if ("notes".equals(qName)) {
-                Task currentTask = myTaskManager.getTask(getContext()
-                        .getTaskID());
-                currentTask.setNotes(getCorrectString(myCharacterBuffer
-                        .toString()));
+                Task currentTask = myTaskManager.getTask(getContext().getTaskID());
+                currentTask.setNotes(myCharacterBuffer.toString());
             }
         }
 
@@ -272,38 +257,11 @@ public class GanttXMLOpen implements GPParser {
         }
     }
 
-    private String getCorrectString(String s) {
-        // return s.replaceAll("\n" + indent, "\n");
-        s = s.replaceAll("\n" + indent, "\n");
-        s = s.replaceAll(margin, "");
-        while (s.startsWith("\n")) {
-            s = s.substring(1, s.length());
-        }
-        while (s.endsWith("\n")) {
-            s = s.substring(0, s.length() - 1);
-        }
-
-        s = s.replaceAll("&#38;", "&");
-        s = s.replaceAll("&#60;", "<");
-        s = s.replaceAll("&#62;", ">");
-        s = s.replaceAll("&#47;", "/");
-        s = s.replaceAll("&#34;", "\"");
-        return s;
-    }
-
-    public void isMerging(boolean b) {
-        bMerge = b;
-    }
-
     private StringBuffer myCharacterBuffer = new StringBuffer();
-    private final Stack<String> myTagStack = new Stack<String>();
 
     class GanttXMLParser extends DefaultHandler {
-        StringBuffer textBuffer;
+        private final Stack<String> myTagStack = new Stack<String>();
 
-        // ===========================================================
-        // SAX DocumentHandler methods
-        // ===========================================================
         @Override
         public void startDocument() throws SAXException {
             super.startDocument();
@@ -312,8 +270,7 @@ public class GanttXMLOpen implements GPParser {
 
         @Override
         public void endDocument() throws SAXException {
-            for (int i = 0; i < myListeners.size(); i++) {
-                ParsingListener l = myListeners.get(i);
+            for (ParsingListener l : myListeners) {
                 l.parsingFinished();
             }
         }
@@ -324,9 +281,7 @@ public class GanttXMLOpen implements GPParser {
                 String qName, // qualified name
                 Attributes attrs) throws SAXException {
             myTagStack.push(qName);
-            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
-                    .hasNext();) {
-                TagHandler next = handlers.next();
+            for (TagHandler next : myTagHandlers) {
                 try {
                     next.startElement(namespaceURI, sName, qName, attrs);
                 } catch (FileFormatException e) {
@@ -338,9 +293,7 @@ public class GanttXMLOpen implements GPParser {
         @Override
         public void endElement(String namespaceURI, String sName, String qName)
                 throws SAXException {
-            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
-                    .hasNext();) {
-                TagHandler next = handlers.next();
+            for (TagHandler next : myTagHandlers) {
                 next.endElement(namespaceURI, sName, qName);
             }
             myTagStack.pop();
@@ -351,10 +304,6 @@ public class GanttXMLOpen implements GPParser {
                 throws SAXException {
             String s = new String(buf, offset, len);
             if (typeChar >= 0) {
-                if (IGNORABLE_WHITESPACE.matcher(s).matches()) {
-                    return;
-                }
-                s = s.replaceAll("^\\n\\x20*", "\n");
                 myCharacterBuffer.append(s);
             }
         }
