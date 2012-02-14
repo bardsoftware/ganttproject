@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,8 +31,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.jdesktop.jdnc.JNTable;
-import org.jdesktop.swing.JXTable;
 
 public abstract class EditableList<T>  {
 
@@ -43,7 +42,7 @@ public abstract class EditableList<T>  {
     };
     private final List<T> myValues;
     private final TableModelImpl myTableModel;
-    private JXTable resourcesTable;
+    private JTable resourcesTable;
     private AbstractTableAndActionsComponent<T> myTableAndActions;
     private JScrollPane resourcesScrollPane;
     private int[] mySelectedRows;
@@ -102,8 +101,18 @@ public abstract class EditableList<T>  {
     }
     private void initComponent() {
         if (myTableAndActions==null) {
-            JNTable jnTable = new JNTable(myTableModel);
-            resourcesTable = jnTable.getTable();
+            //JXTable jnTable = new JNTable(myTableModel);
+            resourcesTable = new JTable(myTableModel) {
+                @Override
+                public String getToolTipText(MouseEvent event) {
+                    try {
+                        return super.getToolTipText(event);
+                    } catch (NullPointerException e) {
+                        return null;
+                    }
+                }
+            };
+            UIUtil.setupTableUI(resourcesTable);
             resourcesTable.setTableHeader(null);
             resourcesTable.getColumnModel().getColumn(0).setPreferredWidth(240);
             resourcesTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
@@ -154,7 +163,7 @@ public abstract class EditableList<T>  {
                 setupEditor(myPossibleValues, resourcesTable);
             }
             //resourcesTable.setHighlighters(HighlighterFactory.createSimpleStriping());
-            resourcesScrollPane = new JScrollPane(jnTable);
+            resourcesScrollPane = new JScrollPane(resourcesTable);
             //resourcesScrollPane.setPreferredSize(new Dimension(300, 130));
 
             myTableAndActions = new TableAndActionsImpl();

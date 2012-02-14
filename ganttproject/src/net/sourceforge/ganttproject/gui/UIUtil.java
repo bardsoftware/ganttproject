@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 
@@ -100,6 +101,8 @@ public abstract class UIUtil {
         table.setPreferredScrollableViewportSize(new Dimension(
                 table.getPreferredScrollableViewportSize().width,
                 table.getRowHeight() * 10));
+        Font font = table.getFont();
+        table.setRowHeight(table.getFontMetrics(font).getHeight() + 5);
     }
 
     /** @return a {@link JXDatePicker} component with the default locale, images and date formats. */
