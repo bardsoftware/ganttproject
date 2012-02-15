@@ -27,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import org.w3c.util.DateParser;
+
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
@@ -155,7 +157,7 @@ public class CustomColumnsPanel {
                 throw new IllegalArgumentException();
             }
             CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(row);
-            myHolder.addCustomProperty(def, String.valueOf(o));
+            myHolder.addCustomProperty(def, DateParser.getIsoDate(GanttLanguage.getInstance().parseDate(String.valueOf(o))));
         }
     }
 }

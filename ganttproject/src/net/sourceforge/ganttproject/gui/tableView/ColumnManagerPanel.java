@@ -346,6 +346,7 @@ public class ColumnManagerPanel {
         private Map<CustomPropertyClass, Component> myDefaultValueEditors =
             new HashMap<CustomPropertyClass, Component>();
         private CustomPropertyDefinition myDefinition;
+        private CustomPropertyDefinition myDefinitionRO;
 
         public PropertyClassOption() {
             super("taskProperties.customColumn.type", CustomPropertyClass.values());
@@ -358,6 +359,7 @@ public class ColumnManagerPanel {
         @Override
         protected void setValue(String value, boolean resetInitial) {
             CustomPropertyClass propertyClass = getCustomPropertyClass(value);
+            myDefinition.setPropertyClass(propertyClass);
             Component defaultValueEditor = myDefaultValueEditors.get(propertyClass);
             if (defaultValueEditor == null) {
                 myDefaultValueOption = CustomPropertyDefaultValueAdapter.createDefaultValueOption(propertyClass, myDefinition);
@@ -378,7 +380,8 @@ public class ColumnManagerPanel {
         public void commit() {
             if (isChanged()) {
                 super.commit();
-                myDefinition.setPropertyClass(getCustomPropertyClass(getValue()));
+                myDefinitionRO.setPropertyClass(getCustomPropertyClass(getValue()));
+                myDefinitionRO.setDefaultValueAsString(myDefinition.getDefaultValueAsString());
             }
         }
 
@@ -397,9 +400,10 @@ public class ColumnManagerPanel {
             myCardLayout = layout;
             myCardPanel = panel;
         }
-        public void reloadValue(CustomPropertyDefinition selectedElement) {
-            myDefinition = selectedElement;
-            setValue(selectedElement.getPropertyClass().getDisplayName(), true);
+        public void reloadValue(CustomPropertyDefinition def) {
+            myDefinitionRO = def;
+            myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
+            setValue(def.getPropertyClass().getDisplayName(), true);
         }
     }
 

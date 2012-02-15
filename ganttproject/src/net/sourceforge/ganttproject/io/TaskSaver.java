@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.io;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -175,8 +176,13 @@ class TaskSaver extends SaverBase {
                 continue;
             }
             if ("date".equals(valueType) && defVal!=null){
-                assert defVal instanceof GanttCalendar;
-                defVal = DateParser.getIsoDate(((GanttCalendar)defVal).getTime());
+                if (defVal instanceof GanttCalendar) {
+                    defVal = DateParser.getIsoDate(((GanttCalendar)defVal).getTime());
+                } else if (defVal instanceof Date) {
+                    defVal = DateParser.getIsoDate((Date)defVal);
+                } else {
+                    assert false : "Default value is expected to be either GanttCalendar or Date instance, while it is " + defVal.getClass();
+                }
             }
             String idcStr = cc.getID();
             writeTaskProperty(handler, idcStr, cc.getName(), "custom", valueType, defVal==null ? null : String.valueOf(defVal));

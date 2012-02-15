@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Keeps a map of custom property ID to value.
@@ -152,7 +153,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
         String result = null;
         if (value != null) {
             if (value instanceof GanttCalendar) {
-                result = ((GanttCalendar)value).toXMLString();
+                result = GanttLanguage.getInstance().formatShortDate((GanttCalendar)value);
             }
             else {
                 result = String.valueOf(value);
