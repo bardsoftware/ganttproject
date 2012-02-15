@@ -100,7 +100,7 @@ public interface CustomPropertyManager {
                     } catch (InvalidDateException e) {
                         defaultDate = null;
                     }
-                    defaultValue = defaultDate;
+                    defaultValue = new GanttCalendar(defaultDate);
                 }
             } else {
                 propertyClass = CustomPropertyClass.TEXT;
