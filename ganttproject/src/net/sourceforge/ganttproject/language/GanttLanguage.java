@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
@@ -205,11 +207,16 @@ public class GanttLanguage {
         return currentTimeFormat.format(date.getTime());
     }
 
-    public GanttCalendar parseDate(String date) throws ParseException {
-        Calendar tmp = Calendar.getInstance(currentLocale);
-        tmp.setTime(currentDateFormat.parse(date));
-        return new GanttCalendar(tmp.get(Calendar.YEAR), tmp
-                .get(Calendar.MONTH), tmp.get(Calendar.DATE));
+    public Date parseDate(String dateString) {
+        try {
+            Date parsed = getShortDateFormat().parse(dateString);
+            if (getShortDateFormat().format(parsed).equals(dateString)) {
+                return parsed;
+            }
+        } catch (ParseException e) {
+            GPLogger.logToLogger(e);
+        }
+        return null;
     }
 
     public String getMonth(int m) {
