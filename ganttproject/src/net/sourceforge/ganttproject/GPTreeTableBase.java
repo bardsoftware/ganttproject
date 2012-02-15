@@ -680,23 +680,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
             return new GanttCalendar(myDate == null ? new Date() : myDate);
         }
 
-        private Date parseDate(String dateString) {
-            try {
-                Date parsed = GanttLanguage.getInstance().getShortDateFormat().parse(dateString);
-                if (GanttLanguage.getInstance().getShortDateFormat().format(parsed).equals(dateString)) {
-                    return parsed;
-                }
-            } catch (ParseException e) {
-                GPLogger.logToLogger(e);
-            }
-            return null;
-
-        }
-
         @Override
         public boolean stopCellEditing() {
             final String dateString = ((JTextComponent)getComponent()).getText();
-            Date parsedDate = parseDate(dateString);
+            Date parsedDate = GanttLanguage.getInstance().parseDate(dateString);
             if (parsedDate==null) {
                 getComponent().setBackground(colorError);
                 return false;
