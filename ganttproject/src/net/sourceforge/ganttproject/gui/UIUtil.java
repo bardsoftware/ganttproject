@@ -97,12 +97,16 @@ public abstract class UIUtil {
         }
     }
 
-    public static void setupTableUI(JTable table) {
+    public static void setupTableUI(JTable table, int visibleRows) {
         table.setPreferredScrollableViewportSize(new Dimension(
                 table.getPreferredScrollableViewportSize().width,
-                table.getRowHeight() * 10));
+                table.getRowHeight() * visibleRows));
         Font font = table.getFont();
         table.setRowHeight(table.getFontMetrics(font).getHeight() + 5);
+    }
+
+    public static void setupTableUI(JTable table) {
+        setupTableUI(table, 10);
     }
 
     /** @return a {@link JXDatePicker} component with the default locale, images and date formats. */
