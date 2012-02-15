@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +113,7 @@ public abstract class EditableList<T>  {
                     }
                 }
             };
-            UIUtil.setupTableUI(resourcesTable);
+            UIUtil.setupTableUI(resourcesTable, Math.min(20, myTableModel.getRowCount()));
             resourcesTable.setTableHeader(null);
             resourcesTable.getColumnModel().getColumn(0).setPreferredWidth(240);
             resourcesTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
@@ -335,9 +336,12 @@ public abstract class EditableList<T>  {
                 //resourcesTable.setValueAt("<column name>", lastRow, 0);
             }
 
+            Rectangle cellRect = resourcesTable.getCellRect(lastRow, 0, true);
+            resourcesTable.scrollRectToVisible(cellRect);
             resourcesTable.getSelectionModel().setSelectionInterval(lastRow, lastRow);
             resourcesTable.editCellAt(lastRow, 0);
             resourcesTable.getEditorComponent().requestFocus();
+
         }
         @Override
         protected void onDeleteEvent() {
