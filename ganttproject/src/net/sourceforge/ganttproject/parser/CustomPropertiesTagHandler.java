@@ -125,7 +125,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
         if (attrs != null) {
             // System.out.println(parsingContext.getTaskID());
             CustomPropertiesStructure cps = new CustomPropertiesStructure();
-            cps.setTaskID(this.parsingContext.getTaskID());
+            cps.setTaskID(this.parsingContext.peekTask().getTaskID());
             cps.setTaskPropertyID(attrs.getValue("taskproperty-id"));
             cps.setValue(attrs.getValue("value"));
 

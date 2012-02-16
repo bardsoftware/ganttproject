@@ -20,16 +20,28 @@ package net.sourceforge.ganttproject.parser;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.Task;
 
 public class ParsingContext {
-    public int getTaskID() {
-        return myTaskID;
+    private final Stack<Task> myStack = new Stack<Task>();
+
+    boolean isStackEmpty() {
+        return myStack.isEmpty();
     }
 
-    public void setTaskID(int id) {
-        myTaskID = id;
+    public Task peekTask() {
+        return myStack.peek();
+    }
+
+    public void pushTask(Task t) {
+        myStack.push(t);
+    }
+
+    Task popTask() {
+        return myStack.pop();
     }
 
     void addTaskWithLegacyFixedStart(Task task) {
@@ -41,5 +53,4 @@ public class ParsingContext {
     }
 
     private final Set<Task> myFixedStartTasks = new HashSet<Task>();
-    private int myTaskID;
 }
