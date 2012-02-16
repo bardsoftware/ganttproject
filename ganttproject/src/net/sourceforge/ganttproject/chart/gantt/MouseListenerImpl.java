@@ -96,8 +96,8 @@ class MouseListenerImpl extends MouseListenerBase {
         if (taskUnderPointer == null) {
             if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
                 startScrollView(e);
-                return;
             }
+            return;
         }
 
         // Process selection change before doing other interactions

@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -582,8 +583,15 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         isOnTaskSelectionEventProcessing = true;
         List<TreePath> paths = new ArrayList<TreePath>();
         for (Task t : tasks) {
+            if (t == null) {
+                GPLogger.getLogger(getClass()).log(
+                        Level.SEVERE,
+                        "Found null task in the selection. Full selection=" + tasks,
+                        new NullPointerException());
+                continue;
+            }
             DefaultMutableTreeNode treeNode = getNode(t);
-            assert treeNode != null;
+            assert treeNode != null : "Failed to find tree ndoe for task=" + t;
             paths.add(new TreePath(treeNode.getPath()));
         }
         getTreeTable().getTree().getSelectionModel().setSelectionPaths(paths.toArray(new TreePath[paths.size()]));
