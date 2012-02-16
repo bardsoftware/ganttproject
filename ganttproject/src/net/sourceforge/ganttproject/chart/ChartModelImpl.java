@@ -177,8 +177,6 @@ public class ChartModelImpl extends ChartModelBase {
     }
 
     public ChartItem getChartItemWithCoordinates(int x, int y) {
-        y = y + getVerticalOffset();
-        x = x - getHorizontalOffset();
         ChartItem result = findTaskProgressItem(x, y);
         if (result == null) {
             result = findTaskBoundaryItem(x, y);
