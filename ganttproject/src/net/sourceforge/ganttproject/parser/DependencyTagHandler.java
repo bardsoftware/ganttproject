@@ -130,7 +130,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
     }
 
     protected int getDependencyAddressee() {
-        return getContext().getTaskID();
+        return getContext().peekTask().getTaskID();
     }
 
     protected int getDependencyAddresser(Attributes attrs) {

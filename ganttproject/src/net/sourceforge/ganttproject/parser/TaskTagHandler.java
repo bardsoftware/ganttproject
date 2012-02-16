@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -36,7 +36,6 @@ import org.xml.sax.Attributes;
 public class TaskTagHandler implements TagHandler {
     private final ParsingContext myContext;
     private final TaskManager myManager;
-    private final Stack<GanttTask> myStack = new Stack<GanttTask>();
 
     public TaskTagHandler(TaskManager mgr, ParsingContext context) {
         myManager = mgr;
@@ -55,7 +54,7 @@ public class TaskTagHandler implements TagHandler {
     @Override
     public void endElement(String namespaceURI, String sName, String qName) {
         if (qName.equals("task")) {
-            myStack.pop();
+            myContext.popTask();
         }
     }
 
@@ -185,11 +184,9 @@ public class TaskTagHandler implements TagHandler {
         getManager().registerTask(task);
         TaskContainmentHierarchyFacade taskHierarchy = getManager()
                 .getTaskHierarchy();
-        myContext.setTaskID(task.getTaskID());
-        Task lastTask = myStack.isEmpty() ? taskHierarchy.getRootTask()
-                : myStack.peek();
-        taskHierarchy.move(task, lastTask);
-        myStack.push(task);
+        Task stackHead = myContext.isStackEmpty() ? taskHierarchy.getRootTask() : myContext.peekTask();
+        taskHierarchy.move(task, stackHead);
+        myContext.pushTask(task);
     }
 
     private TaskManager getManager() {

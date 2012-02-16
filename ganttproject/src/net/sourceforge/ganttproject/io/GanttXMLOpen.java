@@ -240,7 +240,7 @@ public class GanttXMLOpen implements GPParser {
             if ("description".equals(qName)) {
                 myProjectInfo.setDescription(myCharacterBuffer.toString());
             } else if ("notes".equals(qName)) {
-                Task currentTask = myTaskManager.getTask(getContext().getTaskID());
+                Task currentTask = getContext().peekTask();
                 currentTask.setNotes(myCharacterBuffer.toString());
             }
         }
