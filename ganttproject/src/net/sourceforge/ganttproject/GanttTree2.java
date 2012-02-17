@@ -1140,8 +1140,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         GanttTask originalTask = (GanttTask) child.getUserObject();
         GanttTask newTask = new GanttTask(originalTask);
 
-        newTask.setName((first ? language.getText("copy2") + "_" : "")
-                + newTask.toString());
+        String newName = language.formatText("task.copy.prefix", language.getText("copy2"), newTask.getName());
+        newTask.setName(newName);
 
         mapOriginalIDCopyID.put(new Integer(originalTask.getTaskID()), new Integer(newTask.getTaskID()));
 

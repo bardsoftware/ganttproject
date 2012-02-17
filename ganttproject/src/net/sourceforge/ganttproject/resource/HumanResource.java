@@ -70,8 +70,9 @@ public class HumanResource implements CustomPropertyHolder {
     private HumanResource(HumanResource copy) {
         areEventsEnabled = false;
         setId(-1);
-        setName(GanttLanguage.getInstance().getText("copy2") + "_"
-                + copy.getName());
+        String newName = GanttLanguage.getInstance().formatText(
+                "resource.copy.prefix", GanttLanguage.getInstance().getText("copy2"), copy.getName());
+        setName(newName);
         setDescription(copy.getDescription());
         setMail(copy.getMail());
         setPhone(copy.getPhone());
