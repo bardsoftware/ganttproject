@@ -67,9 +67,12 @@ public class ViewManagerImpl implements GPViewManager {
                 }
                 if (mySelectedView != null) {
                     mySelectedView.setActive(false);
+                    myViews.get(mySelectedView).setActive(false);
                 }
                 mySelectedView = selectedView;
                 mySelectedView.setActive(true);
+                myViews.get(mySelectedView).setActive(true);
+                updateActions();
             }
         });
     }

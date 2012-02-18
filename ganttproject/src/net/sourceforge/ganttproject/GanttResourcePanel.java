@@ -125,6 +125,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         super.onSelectionChanged(selection);
         getPropertiesAction().setEnabled(!selection.isEmpty());
         getDeleteAction().setEnabled(!selection.isEmpty());
+        appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
+        appli.getViewManager().getCutAction().setEnabled(getResources().length > 0);
     }
 
     @Override
