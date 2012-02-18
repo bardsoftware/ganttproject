@@ -187,7 +187,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements
             ChartSelectionImpl result = new ChartSelectionImpl() {
                 @Override
                 public boolean isEmpty() {
-                    return false;
+                    return appli.getResourcePanel().getSelectedNodes().length == 0;
                 }
                 @Override
                 public void startCopyClipboardTransaction() {

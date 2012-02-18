@@ -32,16 +32,6 @@ public class CutAction extends GPAction {
         myViewmanager = viewManager;
     }
 
-    private CutAction(GPViewManager viewmanager, IconSize size) {
-        super("cut", size);
-        myViewmanager = viewmanager;
-    }
-
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new CutAction(myViewmanager, size);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();

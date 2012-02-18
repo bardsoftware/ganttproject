@@ -205,7 +205,7 @@ public class GanttChartController extends AbstractChartImplementation implements
         ChartSelectionImpl result = new ChartSelectionImpl() {
             @Override
             public boolean isEmpty() {
-                return false;
+                return myTree.getSelectedNodes().length == 0;
             }
             @Override
             public void startCopyClipboardTransaction() {
