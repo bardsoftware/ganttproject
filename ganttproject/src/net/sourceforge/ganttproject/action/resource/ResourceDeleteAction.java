@@ -20,9 +20,7 @@ package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 
-
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -36,8 +34,6 @@ import net.sourceforge.ganttproject.util.StringUtils;
 public class ResourceDeleteAction extends ResourceAction {
     private final UIFacade myUIFacade;
 
-    private final ResourceContext myContext;
-
     private GanttProject myProject;
 
     public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
@@ -46,20 +42,15 @@ public class ResourceDeleteAction extends ResourceAction {
 
     private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
             UIFacade uiFacade, IconSize size) {
-        super("resource.delete", hrManager, size);
+        super("resource.delete", hrManager, context, size);
         myUIFacade = uiFacade;
         myProject = project;
-        myContext = context;
-    }
-
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new ResourceDeleteAction(getManager(), myContext, myProject, myUIFacade, size);
+        setEnabled(hasResources());
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        final HumanResource[] selectedResources = myContext.getResources();
+        final HumanResource[] selectedResources = getSelection();
         if (selectedResources.length > 0) {
             final String message = getI18n("msg6") + " " + StringUtils.getDisplayNames(selectedResources) + "?";
             final String title = getI18n("question");
@@ -80,10 +71,5 @@ public class ResourceDeleteAction extends ResourceAction {
         for (HumanResource resource : resources) {
             resource.delete();
         }
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "delete_";
     }
 }

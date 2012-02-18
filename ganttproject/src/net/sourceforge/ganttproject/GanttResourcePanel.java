@@ -79,6 +79,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         prj.addProjectEventListener(getProjectEventListener());
         myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
 
+        setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(),
+                myResourceActionSet.getResourceDeleteAction());
         getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(), myResourceActionSet
                 .getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(), appli
                 .getCutAction(), appli.getCopyAction(), appli.getPasteAction(), myResourceActionSet
@@ -105,37 +107,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
         this.setBackground(new Color(0.0f, 0.0f, 0.0f));
         //applyComponentOrientation(lang.getComponentOrientation());
-
-        // Add listener for mouse click
-        MouseListener ml = new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(
-                        e.getX(), e.getY());
-                getTreeTable().getTreeTable().getTree().setSelectionPath(selPath);
-                handlePopupTrigger(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                handlePopupTrigger(e);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                e.consume();
-                if (e.getClickCount()==2 && e.getButton()==MouseEvent.BUTTON1) {
-                    handleDoubleClick();
-                }
-                else {
-                    handlePopupTrigger(e);
-                }
-            }
-        };
-        if (!prj.isOnlyViewer) {
-            getTreeTable().addMouseListener(ml);
-            getTreeTable().getTreeTable().getParent().addMouseListener(ml);
-        }
     }
 
     private ProjectEventListener getProjectEventListener() {
@@ -148,9 +119,18 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         };
     }
 
-    private void handlePopupTrigger(MouseEvent e) {
+
+    @Override
+    protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+        super.onSelectionChanged(selection);
+        getPropertiesAction().setEnabled(!selection.isEmpty());
+        getDeleteAction().setEnabled(!selection.isEmpty());
+    }
+
+    @Override
+    protected void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-            DefaultMutableTreeNode[] selectedNodes = getTreeTable().getSelectedNodes();
+            DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
             // TODO Allow to have multiple assignments selected as well!
             if (selectedNodes.length == 1
                     && selectedNodes[0] instanceof AssignmentNode) {
@@ -168,10 +148,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         }
     }
 
-    private void handleDoubleClick() {
-        myResourceActionSet.getResourcePropertiesAction().actionPerformed(null);
-    }
-
     private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
         final int x = popupTriggerEvent.getX();
         final int y = popupTriggerEvent.getY() + getTreeTable().getRowHeight();
@@ -183,7 +159,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         JPopupMenu menu = new JPopupMenu();
         AbstractAction[] resourceActions = myResourceActionSet.getActions();
         menu.add(resourceActions[0]);
-        if (getTreeTable().getSelectedNodes().length == 1) {
+        if (getSelectedNodes().length == 1) {
             for (int i = 1; i < resourceActions.length; i++) {
                 menu.add(resourceActions[i]);
             }
@@ -235,7 +211,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         // res = new ProjectResource[allRes.size()];
         // model.getAllResouces().toArray(res);
         // return res;
-        DefaultMutableTreeNode[] tNodes = getTreeTable().getSelectedNodes();
+        DefaultMutableTreeNode[] tNodes = getSelectedNodes();
         if (tNodes == null) {
             return new HumanResource[0];
         }
@@ -294,7 +270,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     @Override
     public ResourceAssignment[] getResourceAssignments() {
         ResourceAssignment[] res = null;
-        DefaultMutableTreeNode[] tNodes = getTreeTable().getSelectedNodes();
+        DefaultMutableTreeNode[] tNodes = getSelectedNodes();
         if (tNodes != null) {
             int nbAssign = 0;
             for (int i = 0; i < tNodes.length; i++) {
@@ -344,7 +320,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     }
 
     public void saveSelectionToClipboard(boolean cut) {
-        DefaultMutableTreeNode selectedNodes[] = getTreeTable().getSelectedNodes();
+        DefaultMutableTreeNode selectedNodes[] = getSelectedNodes();
 
         if(selectedNodes == null) {
             return;

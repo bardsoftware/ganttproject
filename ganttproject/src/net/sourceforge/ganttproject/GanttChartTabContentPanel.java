@@ -69,7 +69,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
             .build();
     }
 
-    Component getComponent() {
+    JComponent getComponent() {
         if (myComponent == null) {
             myComponent = createContentComponent();
         }

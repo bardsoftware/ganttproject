@@ -24,7 +24,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -41,21 +40,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
@@ -64,7 +57,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -76,8 +68,6 @@ import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
-import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
-import net.sourceforge.ganttproject.action.task.TaskActionBase;
 import net.sourceforge.ganttproject.action.view.ViewCycleAction;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
@@ -151,9 +141,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     private final DocumentsMRU myMRU = new DocumentsMRU(5);
 
     private TestGanttRolloverButton bNew;
-
-    /** List of buttons that have changing actions depending on the visible tab (ie Task or Resource) */
-    private JButton[] myArtefactButtons;
 
     /** The project filename */
     public Document projectDocument = null;
@@ -309,13 +296,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), "view");
         bar.add(viewMenu);
 
-        JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
-        mTask.add(getTree().getTaskNewAction());
-        mTask.add(getTree().getTaskPropertiesAction());
-        mTask.add(getTree().getTaskDeleteAction());
-        getResourcePanel().setTaskPropertiesAction(getTree().getTaskPropertiesAction());
-        bar.add(mTask);
-
+        {
+            TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
+            JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
+            mTask.add(taskTree.getNewAction());
+            mTask.add(taskTree.getPropertiesAction());
+            mTask.add(taskTree.getDeleteAction());
+            getResourcePanel().setTaskPropertiesAction(taskTree.getPropertiesAction());
+            bar.add(mTask);
+        }
         JMenu mHuman = new JMenu(GPAction.createVoidAction("human"));
         for (AbstractAction a : myResourceActions.getActions()) {
             mHuman.add(a);
@@ -339,21 +328,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
         getViewManager().toggleVisible(myResourceChartTabContent);
 
-        this.addButtons(getToolBar());
-
-        // Chart tabs
-        getTabs().addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                // Tell artefact actions that the active provider changed, so they
-                // are able to update their state according to the current delegate
-                for(JButton button: myArtefactButtons) {
-                    ((ArtefactAction) button.getAction()).actionStateChanged();
-                }
-            }
-        });
-        getTabs().setSelectedIndex(0);
-
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -368,6 +342,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
         System.err.println("5. calculating size and packing...");
         createContentPane();
+        addButtons(getToolBar());
+        // Chart tabs
+        getTabs().setSelectedIndex(0);
 
         System.err.println("6. changing language ...");
         languageChanged(null);
@@ -396,19 +373,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         myDelayManager.addObserver(tree);
 
         // Add globally available actions/key strokes
-        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        ActionMap actionMap = getRootPane().getActionMap();
-        for(JButton button : myArtefactButtons) {
-            Action action = button.getAction();
-            Object actionName = action.getValue(Action.NAME);
-            inputMap.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), actionName);
-            actionMap.put(actionName, action);
-        }
         GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
-        UIUtil.pushAction(getTabs(), viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
+        UIUtil.pushAction(getTabs(), true, viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
 
         GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
-        UIUtil.pushAction(getTabs(), viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
+        UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
     }
 
     @Override
@@ -449,20 +418,20 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     private MouseListener getStopEditingMouseListener() {
         if (myStopEditingMouseListener == null)
             myStopEditingMouseListener = new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getSource() != bNew && e.getClickCount() == 1) {
-                        tree.stopEditing();
-                    }
-                    if (e.getButton() == MouseEvent.BUTTON1
-                            && !(e.getSource() instanceof JTable)
-                            && !(e.getSource() instanceof AbstractButton)) {
-                        Task taskUnderPointer = area.getChartImplementation().findTaskUnderPointer(e.getX(), e.getY());
-                        if (taskUnderPointer == null) {
-                            getTaskSelectionManager().clear();
-                        }
-                    }
-                }
+//                @Override
+//                public void mouseClicked(MouseEvent e) {
+//                    if (e.getSource() != bNew && e.getClickCount() == 1) {
+//                        tree.stopEditing();
+//                    }
+//                    if (e.getButton() == MouseEvent.BUTTON1
+//                            && !(e.getSource() instanceof JTable)
+//                            && !(e.getSource() instanceof AbstractButton)) {
+//                        Task taskUnderPointer = area.getChartImplementation().findTaskUnderPointer(e.getX(), e.getY());
+//                        if (taskUnderPointer == null) {
+//                            getTaskSelectionManager().clear();
+//                        }
+//                    }
+//                }
             };
         return myStopEditingMouseListener;
     }
@@ -510,47 +479,71 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
         buttons.add(null);
 
-        GPAction newAction = new ArtefactNewAction(new ActiveActionProvider() {
+        final ArtefactAction newAction;
+        {
+            newAction = new ArtefactNewAction(new ActiveActionProvider() {
+                @Override
+                public AbstractAction getActiveAction() {
+                    return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                            ? getTaskTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL)
+                            : getResourceTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+                }
+            });
+        }
+
+        final ArtefactAction deleteAction;
+        {
+            final GPAction taskDeleteAction = getTaskTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
+            final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
+            deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
+                    @Override
+                    public AbstractAction getActiveAction() {
+                        return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                                ? taskDeleteAction : resourceDeleteAction;
+                    }
+                },
+                new Action[] { taskDeleteAction, resourceDeleteAction }
+            );
+        }
+
+        final ArtefactAction propertiesAction;
+        {
+            final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
+            final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
+            propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
+                    @Override
+                    public AbstractAction getActiveAction() {
+                        return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
+                                ? taskPropertiesAction
+                                : resourcePropertiesAction;
+                    }
+                },
+                new Action[] { taskPropertiesAction, resourcePropertiesAction }
+             );
+        }
+
+        UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
+        //UIUtil.registerActions(toolBar, false, newAction, propertiesAction, deleteAction);
+        UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
+        UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
+        getTabs().addChangeListener(new ChangeListener() {
             @Override
-            public AbstractAction getActiveAction() {
-                return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                        ? getTree().getTaskNewAction().withIcon(IconSize.TOOLBAR_SMALL)
-                        : myResourceActions.getResourceNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+            public void stateChanged(ChangeEvent e) {
+                // Tell artefact actions that the active provider changed, so they
+                // are able to update their state according to the current delegate
+                newAction.actionStateChanged();
+                propertiesAction.actionStateChanged();
+                deleteAction.actionStateChanged();
+                getTabs().getSelectedComponent().requestFocus();
             }
         });
-        bNew = new TestGanttRolloverButton(newAction);
-        bNew.setTextHidden(true);
 
-        final TaskActionBase taskDeleteAction = (TaskActionBase) getTree().getTaskDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
-        final ResourceDeleteAction resourceDeleteAction = (ResourceDeleteAction)
-                myResourceActions.getResourceDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
-        GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
-                @Override
-                public AbstractAction getActiveAction() {
-                    return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                            ? taskDeleteAction : resourceDeleteAction;
-                }
-            },
-            new ActionDelegate[] { taskDeleteAction, resourceDeleteAction }
-        ).withIcon(IconSize.TOOLBAR_SMALL);
-        TestGanttRolloverButton bDelete = new TestGanttRolloverButton(deleteAction);
+        bNew = new TestGanttRolloverButton(newAction);
         buttons.add(bNew);
-        buttons.add(bDelete);
+        buttons.add(new TestGanttRolloverButton(deleteAction));
         buttons.add(null);
 
-        GPAction propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
-                @Override
-                public AbstractAction getActiveAction() {
-                    return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX
-                            ? getTree().getTaskPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL)
-                            : myResourceActions.getResourcePropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
-                }
-            },
-            new ActionDelegate[] { getTree().getTaskPropertiesAction(), myResourceActions.getResourcePropertiesAction()}
-         ).withIcon(IconSize.TOOLBAR_SMALL);
-        TestGanttRolloverButton bProperties = new TestGanttRolloverButton(propertiesAction);
-
-        buttons.add(bProperties);
+        buttons.add(new TestGanttRolloverButton(propertiesAction));
         buttons.add(new TestGanttRolloverButton(getCutAction().withIcon(IconSize.TOOLBAR_SMALL)));
         buttons.add(new TestGanttRolloverButton(getCopyAction().withIcon(IconSize.TOOLBAR_SMALL)));
         buttons.add(new TestGanttRolloverButton(getPasteAction().withIcon(IconSize.TOOLBAR_SMALL)));
@@ -572,7 +565,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
                 toolBar.add(b);
             }
         }
-        myArtefactButtons = new TestGanttRolloverButton[] {bNew, bDelete, bProperties};
 
         JTextField searchBox = getSearchUi().getSearchField();
         searchBox.setMaximumSize(new Dimension(
@@ -634,27 +626,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getUIFacade().setStatusText(language.getText("createNewTask"));
         // setQuickSave(true);
         tree.setEditingTask(task);
-        if (options.getAutomatic()) {
-            propertiesTask();
-        }
         repaint2();
         return task;
-    }
-
-    /**
-     * Delete the current task
-     *
-     * @param confirmation
-     *            Unused at the moment, but might be used to show confirmation
-     *            when true
-     */
-    public void deleteTasks(boolean confirmation) {
-        getTree().getTaskDeleteAction().actionPerformed(null);
-    }
-
-    /** Edit task parameters */
-    public void propertiesTask() {
-        getTree().getTaskPropertiesAction().actionPerformed(null);
     }
 
     /** Refresh the information of the project on the status bar. */

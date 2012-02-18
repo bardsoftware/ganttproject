@@ -24,7 +24,9 @@ import java.util.List;
 import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ResourceContext;
 
 //TODO Add listener for changed resource selection, see TaskActionBase
 /**
@@ -33,15 +35,16 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 abstract class ResourceAction extends GPAction implements ActionDelegate {
     private final HumanResourceManager myManager;
     private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
+    private final ResourceContext myContext;
 
     public ResourceAction(String name, HumanResourceManager hrManager) {
-        super(name);
-        myManager = hrManager;
+        this(name, hrManager, null, IconSize.NO_ICON);
     }
 
-    protected ResourceAction(String name, HumanResourceManager hrManager, IconSize size) {
+    protected ResourceAction(String name, HumanResourceManager hrManager, ResourceContext context, IconSize size) {
         super(name, size.asString());
         myManager = hrManager;
+        myContext = context;
     }
 
     @Override
@@ -51,6 +54,16 @@ abstract class ResourceAction extends GPAction implements ActionDelegate {
 
     protected HumanResourceManager getManager() {
         return myManager;
+    }
+
+    protected boolean hasResources() {
+        HumanResource[] selection = myContext.getResources();
+        return selection != null && selection.length > 0;
+    }
+
+    protected HumanResource[] getSelection() {
+        HumanResource[] selection = myContext.getResources();
+        return selection == null ? new HumanResource[0] : selection;
     }
 
     @Override

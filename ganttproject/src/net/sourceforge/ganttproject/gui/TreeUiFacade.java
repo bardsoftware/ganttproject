@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 
+import net.sourceforge.ganttproject.action.GPAction;
+
 /**
  * @author dbarashev (Dmitry Barashev)
  */
@@ -42,4 +44,8 @@ public interface TreeUiFacade<T> {
 
     /** Clears the current selection */
     void clearSelection();
+
+    GPAction getNewAction();
+    GPAction getPropertiesAction();
+    GPAction getDeleteAction();
 }

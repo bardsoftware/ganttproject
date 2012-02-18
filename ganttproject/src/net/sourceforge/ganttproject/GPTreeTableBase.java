@@ -533,7 +533,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         getTable().setFillsViewportHeight(true);
     }
 
-    private void onCellSelectionChanged() {
+    protected void onCellSelectionChanged() {
         if (!getTable().isEditing()) {
             int row = getTable().getSelectedRow();
             int col = getTable().getSelectedColumn();
