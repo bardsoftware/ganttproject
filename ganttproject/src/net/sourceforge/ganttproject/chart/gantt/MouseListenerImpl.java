@@ -64,7 +64,7 @@ class MouseListenerImpl extends MouseListenerBase {
             }
         }
         if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-            myTree.getTaskPropertiesAction().actionPerformed(null);
+            myTree.getPropertiesAction().actionPerformed(null);
         }
     }
 

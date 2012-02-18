@@ -151,6 +151,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     }
 
     /** @return the list of the selected nodes. */
+    @Deprecated
     public DefaultMutableTreeNode[] getSelectedNodes() {
         TreePath[] currentSelection = getTreeTable().getTree().getSelectionPaths();
 

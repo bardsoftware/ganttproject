@@ -28,7 +28,7 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
         myResourceChart = resourceChart;
     }
 
-    Component getComponent() {
+    JComponent getComponent() {
         if (myTabContentPanel==null) {
             myTabContentPanel = createContentComponent();
         }

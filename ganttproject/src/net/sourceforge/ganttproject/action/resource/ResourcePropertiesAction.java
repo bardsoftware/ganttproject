@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.action.resource;
 import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -30,28 +29,22 @@ import net.sourceforge.ganttproject.resource.ResourceContext;
 public class ResourcePropertiesAction extends ResourceAction {
     private final IGanttProject myProject;
     private final UIFacade myUIFacade;
-    private final ResourceContext myContext;
 
     public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
         this(project, context, uiFacade, IconSize.MENU);
     }
 
     private ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade, IconSize size) {
-        super("resource.properties", null, size);
+        super("resource.properties", null, context, size);
         myProject = project;
         myUIFacade = uiFacade;
-        myContext = context;
-    }
-
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new ResourcePropertiesAction(myProject, myContext, myUIFacade, size);
+        setEnabled(hasResources());
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        HumanResource[] selectedResources = myContext.getResources();
-        if (selectedResources != null) {
+        HumanResource[] selectedResources = getSelection();
+        if (selectedResources.length > 0) {
             // TODO Allow to edit multiple resources (instead of [0])
             GanttDialogPerson dp = new GanttDialogPerson(myProject.getResourceCustomPropertyManager(), myUIFacade, selectedResources[0]);
             dp.setVisible(true);

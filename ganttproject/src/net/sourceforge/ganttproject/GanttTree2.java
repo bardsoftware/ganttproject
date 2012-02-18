@@ -46,9 +46,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -85,8 +83,9 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.task.TaskActionBase;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskIndentAction;
 import net.sourceforge.ganttproject.action.task.TaskLinkAction;
@@ -156,12 +155,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     private final GPAction myUnlinkTasksAction;
 
-    private final GPAction myNewTaskAction;
-
-    private final TaskActionBase myDeleteAction;
-
-    private final TaskActionBase myTaskPropertiesAction;
-
     private boolean isOnTaskSelectionEventProcessing;
 
     private static Pair<GanttTreeTable, GanttTreeTableModel> createTreeTable(IGanttProject project, UIFacade uiFacade) {
@@ -199,38 +192,26 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         initRootNode();
 
         // Create Actions
-        myTaskPropertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
-        myDeleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
-        myNewTaskAction = new TaskNewAction(project.getProject(), getUndoManager());
+        GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
+        GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
+        GPAction newAction = new TaskNewAction(project.getProject(), getUndoManager());
+
+        setArtefactActions(newAction, propertiesAction, deleteAction);
         myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
         myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
         myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, this);
         myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
         myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
         myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
-        getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, myNewTaskAction,
+        getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, newAction,
             myProject.getCutAction(), myProject.getCopyAction(), myProject.getPasteAction(),
-            getTaskPropertiesAction(), myDeleteAction);
+            propertiesAction, deleteAction);
 
         getTreeTable().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");
         getTreeTable().getTree().addTreeSelectionListener(
                 new TreeSelectionListener() {
                     @Override
                     public void valueChanged(TreeSelectionEvent e) {
-                        if (isOnTaskSelectionEventProcessing) {
-                            return;
-                        }
-                        List<Task> selectedTasks = new ArrayList<Task>();
-                        TaskNode tn[] = getSelectedTaskNodes();
-                        if (tn != null) {
-                            for (TaskNode taskNode : tn) {
-                                selectedTasks.add((Task)taskNode.getUserObject());
-                            }
-                        }
-                        getTaskSelectionManager().clear();
-                        for (Task t : selectedTasks) {
-                            getTaskSelectionManager().addTask(t);
-                        }
                     }
                 });
 
@@ -259,50 +240,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                 mySelectionManager.setUserInputConsumer(this);
             }
         });
-        // A listener on mouse click (menu)
-        MouseListener ml = new MouseAdapter() {
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                handlePopupTrigger(e);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                handlePopupTrigger(e);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                    TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
-                    if (selPath != null) {
-                        e.consume();
-                        myProject.propertiesTask();
-                    }
-                } else  {
-                    handlePopupTrigger(e);
-                }
-            }
-
-            private void handlePopupTrigger(MouseEvent e) {
-                if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-                    TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
-                    if (selPath == null) {
-                        return;
-                    }
-                    DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-                    Task task = (Task) treeNode.getUserObject();
-                    if (!getTaskSelectionManager().isTaskSelected(task)) {
-                        getTaskSelectionManager().clear();
-                        getTaskSelectionManager().addTask(task);
-                    }
-                    createPopupMenu(e.getX(), e.getY());
-                    e.consume();
-                }
-            }
-        };
-        getTreeTable().addMouseListener(ml);
         DragSource dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(getTreeTable(),
                 DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -313,6 +250,41 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
         getTreeTable().setToolTipText("aze");
         getTreeTable().getTreeTable().setToolTipText("rty");
+    }
+
+    @Override
+    protected void handlePopupTrigger(MouseEvent e) {
+        if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
+            TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
+            if (selPath == null) {
+                return;
+            }
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+            Task task = (Task) treeNode.getUserObject();
+            if (!getTaskSelectionManager().isTaskSelected(task)) {
+                getTaskSelectionManager().clear();
+                getTaskSelectionManager().addTask(task);
+            }
+            createPopupMenu(e.getX(), e.getY());
+            e.consume();
+        }
+    }
+
+    @Override
+    protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+        if (isOnTaskSelectionEventProcessing) {
+            return;
+        }
+        List<Task> selectedTasks = Lists.newArrayList();
+        for (DefaultMutableTreeNode node : selection) {
+            if (node instanceof TaskNode) {
+                selectedTasks.add((Task) node.getUserObject());
+            }
+        }
+        getTaskSelectionManager().clear();
+        for (Task t : selectedTasks) {
+            getTaskSelectionManager().addTask(t);
+        }
     }
 
     private TaskSelectionManager getTaskSelectionManager() {
@@ -351,9 +323,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     public Action[] getPopupMenuActions() {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getTaskNewAction());
+        actions.add(getNewAction());
         if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
-            actions.add(getTaskPropertiesAction());
+            actions.add(getPropertiesAction());
             actions.add(null);
             for(AbstractAction a : getTreeActions()) {
                 actions.add(a);
@@ -362,7 +334,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             actions.add(myProject.getCutAction());
             actions.add(myProject.getCopyAction());
             actions.add(myProject.getPasteAction());
-            actions.add(getTaskDeleteAction());
+            actions.add(getDeleteAction());
         }
         return actions.toArray(new Action[0]);
     }
@@ -456,25 +428,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                     .getLastPathComponent();
 
         TaskNode[] res = getOnlyTaskNodes(dmtnselected);
-
-        return res;
-    }
-
-    /** @return the list of the selected nodes. */
-    public DefaultMutableTreeNode[] getSelectedNodes() {
-        TreePath[] currentSelection = getTreeTable().getTree().getSelectionPaths();
-
-        if (currentSelection == null || currentSelection.length == 0) {
-            // no elements are selected
-            return null;
-        }
-
-        DefaultMutableTreeNode[] dmtnselected = new DefaultMutableTreeNode[currentSelection.length];
-        for (int i = 0; i < currentSelection.length; i++)
-            dmtnselected[i] = (DefaultMutableTreeNode) currentSelection[i]
-                    .getLastPathComponent();
-
-        DefaultMutableTreeNode[] res = dmtnselected;
 
         return res;
     }
@@ -952,11 +905,11 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         }
     }
 
-    private ArrayList<DefaultMutableTreeNode> cpNodesArrayList;
+    private List<DefaultMutableTreeNode> cpNodesArrayList;
 
-    private ArrayList<DefaultMutableTreeNode> allNodes;
+    private List<DefaultMutableTreeNode> allNodes;
 
-    private ArrayList<TaskDependency> cpDependencies;
+    private List<TaskDependency> cpDependencies;
 
     private Map<Integer, Integer> mapOriginalIDCopyID;
 
@@ -969,19 +922,19 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         final TreePath currentSelection = getTreeTable().getTree()
                 .getSelectionPath();
         if (currentSelection != null) {
-            final DefaultMutableTreeNode[] cdmtn = getSelectedNodes();
+            final DefaultMutableTreeNode[] selection = getSelectedNodes();
             getUndoManager().undoableEdit("Cut", new Runnable() {
                 @Override
                 public void run() {
                     cpNodesArrayList = new ArrayList<DefaultMutableTreeNode>();
-                    cpAllDependencies(cdmtn);
+                    cpAllDependencies(selection);
                     GanttTask taskFather = null;
                     DefaultMutableTreeNode parent = null;
                     DefaultMutableTreeNode current = null;
-                    for (int i = 0; i < cdmtn.length; i++) {
-                        current = getSelectedTaskNode();
+                    for (DefaultMutableTreeNode node : selection) {
+                        current = node;
                         if (current != null) {
-                            cpNodesArrayList.add(cdmtn[i]);
+                            cpNodesArrayList.add(current);
                             parent = getParentNode(current/* task */);
                             where = parent.getIndex(current);
                             removeCurrentNode(current);
@@ -1263,12 +1216,14 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         dge.startDrag(null, ghostImage, new Point(5, 5), transferable, this);
     }
 
-    private void cpAllDependencies(DefaultMutableTreeNode[] cdmtn) {
+    private void cpAllDependencies(DefaultMutableTreeNode[] nodes) {
         // to get all the dependencies who need to be paste.
         cpDependencies = new ArrayList<TaskDependency>();
-        allNodes = new ArrayList<DefaultMutableTreeNode>();
-        for (int i = 0; i < cdmtn.length; i++) {
-            getAllNodes(cdmtn[i]);
+        allNodes = Lists.newArrayList();
+        for (DefaultMutableTreeNode node : nodes) {
+            for (Enumeration subtree = node.preorderEnumeration(); subtree.hasMoreElements();) {
+                allNodes.add((DefaultMutableTreeNode) subtree.nextElement());
+            }
         }
         TaskDependency[] dependencies = myTaskManager.getDependencyCollection().getDependencies();
         for (TaskDependency dependency : dependencies) {
@@ -1288,16 +1243,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             if (hasDependantNode && hasDependeeNode) {
                 cpDependencies.add(dependency);
             }
-        }
-    }
-
-    /** Add node and all of its (full depth) the child nodes to {@link #allNodes} */
-    private void getAllNodes(DefaultMutableTreeNode node) {
-        if (!allNodes.contains(node)) {
-            allNodes.add(node);
-        }
-        for (int i = 0; i < node.getChildCount(); i++) {
-            getAllNodes((DefaultMutableTreeNode) node.getChildAt(i));
         }
     }
 
@@ -1335,18 +1280,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                     myLinkTasksAction, myUnlinkTasksAction };
         }
         return myTreeActions;
-    }
-
-    public TaskActionBase getTaskPropertiesAction() {
-        return myTaskPropertiesAction;
-    }
-
-    public GPAction getTaskNewAction() {
-        return myNewTaskAction;
-    }
-
-    public TaskActionBase getTaskDeleteAction() {
-        return myDeleteAction;
     }
 
     @Override

@@ -87,12 +87,20 @@ public abstract class UIUtil {
         component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));
     }
 
-    public static void pushAction(JComponent root, KeyStroke keyStroke, GPAction action) {
+    public static void registerActions(JComponent component, boolean recursive, GPAction... actions) {
+        for (GPAction action : actions) {
+            for (KeyStroke ks : GPAction.getAllKeyStrokes(action.getID())) {
+                pushAction(component, recursive, ks, action);
+            }
+        }
+    }
+
+    public static void pushAction(JComponent root, boolean recursive, KeyStroke keyStroke, GPAction action) {
         root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, action.getID());
         root.getActionMap().put(action.getID(), action);
         for (Component child : root.getComponents()) {
             if (child instanceof JComponent) {
-                pushAction((JComponent)child, keyStroke, action);
+                pushAction((JComponent)child, recursive, keyStroke, action);
             }
         }
     }

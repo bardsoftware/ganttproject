@@ -23,7 +23,12 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -31,6 +36,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -56,6 +63,9 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         extends JPanel implements TreeUiFacade<ModelObject> {
     private final TreeTableClass myTreeTable;
     private final TreeTableModelClass myTreeTableModel;
+    private GPAction myNewAction;
+    private GPAction myPropertiesAction;
+    private GPAction myDeleteAction;
 
     private class ExpandCollapseAction extends GPAction {
         ExpandCollapseAction() {
@@ -81,7 +91,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
         ExpandCollapseAction expandAction = new ExpandCollapseAction();
         for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
-            UIUtil.pushAction(myTreeTable, ks, expandAction);
+            UIUtil.pushAction(myTreeTable, false, ks, expandAction);
         }
         this.addFocusListener(new FocusAdapter() {
             @Override
@@ -94,8 +104,46 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
                 });
             }
         });
+        MouseListener ml = new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                handlePopupTrigger(e);
+            }
 
+            @Override
+            public void mousePressed(MouseEvent e) {
+                TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
+                getTreeTable().getTreeTable().getTree().setSelectionPath(selPath);
+                handlePopupTrigger(e);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    TreePath selPath = getTree().getPathForLocation(e.getX(), e.getY());
+                    if (selPath != null) {
+                        e.consume();
+                        getPropertiesAction().actionPerformed(null);
+                    }
+                } else  {
+                    handlePopupTrigger(e);
+                }
+            }
+
+        };
+        getTreeTable().addMouseListener(ml);
+        getTree().addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                onSelectionChanged(Arrays.asList(getSelectedNodes()));
+            }
+        });
     }
+
+    protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+    }
+
+    protected abstract void handlePopupTrigger(MouseEvent e);
 
     protected JTree getTree() {
         return getTreeTable().getTree();
@@ -158,9 +206,22 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     }
 
     protected DefaultMutableTreeNode getSelectedNode() {
-        TreePath currentSelection = getTreeTable().getTree().getSelectionPath();
+        TreePath currentSelection = getTree().getSelectionPath();
         return (currentSelection == null) ? null :
             (DefaultMutableTreeNode) currentSelection.getLastPathComponent();
+    }
+
+    public DefaultMutableTreeNode[] getSelectedNodes() {
+        TreePath[] currentSelection = getTree().getSelectionPaths();
+
+        if (currentSelection == null || currentSelection.length == 0) {
+            return new DefaultMutableTreeNode[0];
+        }
+        DefaultMutableTreeNode[] result = new DefaultMutableTreeNode[currentSelection.length];
+        for (int i = 0; i < currentSelection.length; i++) {
+            result[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
+        }
+        return result;
     }
 
     protected abstract DefaultMutableTreeNode getRootNode();
@@ -185,4 +246,23 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         }
     }
 
+
+    @Override
+    public GPAction getNewAction() {
+        return myNewAction;
+    }
+    @Override
+    public GPAction getPropertiesAction() {
+        return myPropertiesAction;
+    }
+    @Override
+    public GPAction getDeleteAction() {
+        return myDeleteAction;
+    }
+
+    protected void setArtefactActions(GPAction newAction, GPAction propertiesAction, GPAction deleteAction) {
+        myNewAction = newAction;
+        myPropertiesAction = propertiesAction;
+        myDeleteAction = deleteAction;
+    }
 }

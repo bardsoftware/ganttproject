@@ -18,8 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.action;
 
+import javax.swing.Action;
+
 public class ArtefactPropertiesAction extends ArtefactAction {
-    public ArtefactPropertiesAction(ActiveActionProvider provider, ActionDelegate[] delegates) {
+    public ArtefactPropertiesAction(ActiveActionProvider provider, Action[] delegates) {
         super("artefact.properties", IconSize.NO_ICON, provider, delegates);
     }
 }

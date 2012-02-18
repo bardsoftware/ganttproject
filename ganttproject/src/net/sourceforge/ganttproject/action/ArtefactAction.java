@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -29,13 +31,20 @@ import javax.swing.Action;
  */
 public class ArtefactAction extends GPAction implements ActionStateChangedListener {
     private final ActiveActionProvider myProvider;
-    private final ActionDelegate[] myDelegates;
+    private final Action[] myDelegates;
 
-    public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, ActionDelegate[] delegates) {
+    public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, Action[] delegates) {
         super(name, iconSize.asString());
         myProvider = provider;
-        for(ActionDelegate delegate : delegates) {
-            delegate.addStateChangedListener(this);
+        for (Action delegate : delegates) {
+            delegate.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("enabled".equals(evt.getPropertyName())) {
+                        actionStateChanged();
+                    }
+                }
+            });
         }
         myDelegates = delegates;
         // Make action state equal to active delegate action state

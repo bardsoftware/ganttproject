@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -43,14 +42,9 @@ public class ResourceNewAction extends ResourceAction {
 
     private ResourceNewAction(
             HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
-        super("resource.new", hrManager, size);
+        super("resource.new", hrManager, null, size);
         myUIFacade = uiFacade;
         myRoleManager = roleManager;
-    }
-
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new ResourceNewAction(getManager(), myRoleManager, myUIFacade, size);
     }
 
     @Override
@@ -64,6 +58,7 @@ public class ResourceNewAction extends ResourceAction {
                 @Override
                 public void run() {
                     getManager().add(resource);
+                    myUIFacade.getResourceTree().setSelected(resource, true);
                 }
             });
         }
