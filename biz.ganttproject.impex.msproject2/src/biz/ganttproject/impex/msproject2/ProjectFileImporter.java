@@ -489,8 +489,6 @@ class ProjectFileImporter {
             }
             Resource resource = ra.getResource();
             if (resource == null) {
-                myErrors.add("Failed to import resource assignment=" + ra
-                        + " because its resource field was NULL");
                 continue;
             }
             HumanResource nativeResource = foreignId2nativeResource.get(resource.getUniqueID());

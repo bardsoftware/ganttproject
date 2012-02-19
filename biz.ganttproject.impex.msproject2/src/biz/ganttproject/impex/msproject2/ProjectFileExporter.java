@@ -225,7 +225,7 @@ class ProjectFileExporter {
 
     }
     private Duration convertDuration(TaskLength duration) {
-        return Duration.getInstance(duration.getLength() * 8, TimeUnit.HOURS);
+        return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);
     }
 
     private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask) {
