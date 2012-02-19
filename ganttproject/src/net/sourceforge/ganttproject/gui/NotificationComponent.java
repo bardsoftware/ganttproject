@@ -37,6 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
@@ -115,7 +116,6 @@ public class NotificationComponent implements NotificationChannel.Listener {
         htmlPane.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(channel.getColor().darker()),
             BorderFactory.createEmptyBorder(3, 3, 3, 3)));
-
         myComponent.add(htmlPane, String.valueOf(myComponent.getComponentCount()));
     }
 
@@ -185,19 +185,27 @@ public class NotificationComponent implements NotificationChannel.Listener {
         return myActions;
     }
 
-    static JComponent createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
+    static JScrollPane createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
         JEditorPane htmlPane = new JEditorPane();
         htmlPane.setEditorKit(new HTMLEditorKit());
         htmlPane.setEditable(false);
-        htmlPane.setPreferredSize(new Dimension(300, 150));
+        //htmlPane.setPreferredSize(new Dimension(400, 290));
         htmlPane.addHyperlinkListener(hyperlinkListener);
         htmlPane.setBackground(Color.YELLOW);
         htmlPane.setText(html);
         htmlPane.setBorder(BorderFactory.createEmptyBorder());
-        JScrollPane scrollPane = new JScrollPane(htmlPane);
+        final JScrollPane scrollPane = new JScrollPane(htmlPane);
+        scrollPane.setAutoscrolls(false);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                scrollPane.getVerticalScrollBar().setValue(0);
+            }
+        });
         return scrollPane;
-
     }
 
     @Override
