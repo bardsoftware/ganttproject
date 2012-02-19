@@ -194,11 +194,13 @@ public class NotificationComponent implements NotificationChannel.Listener {
         htmlPane.setBackground(Color.YELLOW);
         htmlPane.setText(html);
         htmlPane.setBorder(BorderFactory.createEmptyBorder());
+        Dimension htmlSize = htmlPane.getPreferredSize();
+
         final JScrollPane scrollPane = new JScrollPane(htmlPane);
         scrollPane.setAutoscrolls(false);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.setPreferredSize(new Dimension(Math.min(400, htmlSize.width + 50), Math.min(300, htmlSize.height + 50)));
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
