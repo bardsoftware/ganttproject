@@ -256,14 +256,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     protected void handlePopupTrigger(MouseEvent e) {
         if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
             TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
-            if (selPath == null) {
-                return;
-            }
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-            Task task = (Task) treeNode.getUserObject();
-            if (!getTaskSelectionManager().isTaskSelected(task)) {
-                getTaskSelectionManager().clear();
-                getTaskSelectionManager().addTask(task);
+            if (selPath != null) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                Task task = (Task) treeNode.getUserObject();
+                if (!getTaskSelectionManager().isTaskSelected(task)) {
+                    getTaskSelectionManager().clear();
+                    getTaskSelectionManager().addTask(task);
+                }
             }
             createPopupMenu(e.getX(), e.getY());
             e.consume();
