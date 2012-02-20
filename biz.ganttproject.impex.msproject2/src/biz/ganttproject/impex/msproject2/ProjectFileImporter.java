@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -269,38 +270,41 @@ class ProjectFileImporter {
             return;
         }
 
-        if (t.getStart() == null || t.getFinish() == null) {
-            myErrors.add("Failed to import task=" + t + " because its start or end date was null");
+        if ((t.getStart() == null || t.getFinish() == null) && t.getChildTasks().isEmpty()) {
+            myErrors.add("Failed to import leaf task=" + t + " because its start or end date was null");
             return;
         }
-        TaskLength duration = convertDuration(t);
-        if (duration.getLength() <= 0 && !t.getMilestone()) {
-            myErrors.add("Skipped task with id=" + t.getID() + " and name=" + t.getName() + " because its duration=" + duration + " and it is not a milestone");
-        } else {
-            GanttTask nativeTask = getTaskManager().createTask();
-            myNativeProject.getTaskContainment().move(nativeTask, supertask);
-            nativeTask.setName(t.getName());
-            nativeTask.setStart(convertStartTime(t.getStart()));
-            nativeTask.setNotes(t.getNotes());
-            nativeTask.setWebLink(t.getHyperlink());
+
+        GanttTask nativeTask = getTaskManager().createTask();
+        myNativeProject.getTaskContainment().move(nativeTask, supertask);
+        nativeTask.setName(t.getName());
+        nativeTask.setNotes(t.getNotes());
+        nativeTask.setWebLink(t.getHyperlink());
+        if (t.getPriority() != null) {
             nativeTask.setPriority(convertPriority(t.getPriority()));
-            if (t.getChildTasks().isEmpty()) {
-                if (t.getPercentageComplete() != null) {
-                    nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
-                }
-                nativeTask.setMilestone(t.getMilestone());
-                if (duration.getLength() > 0) {
-                    nativeTask.setDuration(duration);
-                }
-            }
-            else {
-                for (Task child: t.getChildTasks()) {
-                    importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
-                }
-            }
-            importCustomFields(t, nativeTask);
-            foreignId2nativeTask.put(t.getID(), nativeTask);
         }
+        if (t.getChildTasks().isEmpty()) {
+            nativeTask.setStart(convertStartTime(t.getStart()));
+            if (t.getPercentageComplete() != null) {
+                nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
+            }
+            nativeTask.setMilestone(t.getMilestone());
+            TaskLength duration = convertDuration(t);
+            if (duration.getLength() <= 0 && !t.getMilestone()) {
+                myErrors.add(MessageFormat.format("Skipped duration of task with id={0}, name={1}, start date={2}, end date={3}, milestone={4}",
+                        t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone()));
+            }
+            if (duration.getLength() > 0) {
+                nativeTask.setDuration(duration);
+            }
+        }
+        else {
+            for (Task child: t.getChildTasks()) {
+                importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
+            }
+        }
+        importCustomFields(t, nativeTask);
+        foreignId2nativeTask.put(t.getID(), nativeTask);
     }
 
     private GanttCalendar convertStartTime(Date start) {
@@ -442,11 +446,11 @@ class ProjectFileImporter {
                 GanttTask dependant = foreignId2nativeTask.get(r.getSourceTask().getID());
                 GanttTask dependee = foreignId2nativeTask.get(r.getTargetTask().getID());
                 if (dependant == null) {
-                    myErrors.add("Failed to import relation=" + t + " because task=" + r.getSourceTask().getID() + " was not found");
+                    myErrors.add("Failed to import relation=" + t + " because source task=" + r.getSourceTask().getID() + " was not found");
                     continue;
                 }
                 if (dependee == null) {
-                    myErrors.add("Failed to import relation=" + t + " because task=" + r.getTargetTask().getID() + " was not found");
+                    myErrors.add("Failed to import relation=" + t + " because target task=" + r.getTargetTask().getID() + " was not found");
                     continue;
                 }
                 TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(
