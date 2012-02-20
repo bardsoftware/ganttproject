@@ -518,7 +518,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                 continue;
             }
             DefaultMutableTreeNode treeNode = getNode(t);
-            assert treeNode != null : "Failed to find tree ndoe for task=" + t;
+            assert treeNode != null : "Failed to find tree node for task=" + t;
             paths.add(new TreePath(treeNode.getPath()));
         }
         getTreeTable().getTree().getSelectionModel().setSelectionPaths(paths.toArray(new TreePath[paths.size()]));
