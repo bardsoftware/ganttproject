@@ -24,9 +24,13 @@ import java.net.URL;
  * determined by the OS. This has been tested under: n/a
  * </p>
  * <p>
- * In other cases (and under Unix), the system browser is hard-coded to be
- * 'netscape'. Netscape must be in your PATH for this to work. This has been
- * tested with the following platforms: AIX, HP-UX and Solaris.
+ * Under (K)Ubuntu, Debian and other *nix platforms, try <a
+ * href="http://wiki.debian.org/DebianAlternatives">Debian Alternatives</a>. If
+ * that fails, fallback on the 'other platforms' methods. This has been tested
+ * under: Kubuntu 11.10
+ * </p>
+ * <p>
+ * In other platforms, a range of known browsers is invoked.
  * </p>
  * <p>
  * Examples:
@@ -38,10 +42,6 @@ import java.net.URL;
  * <p>
  * Note - you must include the url type -- either "http://" or "file://".
  * </p>
- *
- * @todo The claim above is wrong for (K)Ubuntu, Debian and other *nix systems
- *       that make use of the alternates system:
- *       http://www.debian-administration.org/articles/91
  */
 public class BrowserControl {
 
@@ -106,18 +106,26 @@ public class BrowserControl {
         if (displayUrlWithJnlpApi(url)) {
             return true;
         }
-        switch (getPlatform()) {
-        case (WIN_ID):
+        Platforms platform = getPlatform();
+        switch (platform) {
+        case WINDOWS:
             return runCmdLine(replaceToken(WIN_CMDLINE, URLTOKEN, url));
-        case (MAC_ID):
+        case MAC:
             return runCmdLine(replaceToken(MAC_CMDLINE, URLTOKEN, url));
-        default:
-            assert OTHER_CMDLINES.length == OTHER_FALLBACKS.length;
-            for (int i = 0; i < OTHER_CMDLINES.length; i++) {
-                if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url),
-                        replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {
-                    return true;
-                }
+        case LINUX:
+            if (runCmdLine(replaceToken(LINUX_CMDLINE, URLTOKEN, url))) {
+                // Succeeded
+                return true;
+            }
+            // Fallback on 'brute-force' method
+        }
+
+        // Try out a series of commands and hope one is recognized...
+        assert OTHER_CMDLINES.length == OTHER_FALLBACKS.length;
+        for (int i = 0; i < OTHER_CMDLINES.length; i++) {
+            if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url),
+                    replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {
+                return true;
             }
         }
         return false;
@@ -129,15 +137,18 @@ public class BrowserControl {
      *
      * @return the ID of the platform
      */
-    private static int getPlatform() {
+    private static Platforms getPlatform() {
         String os = System.getProperty("os.name");
         if (os != null && os.startsWith(WIN_PREFIX)) {
-            return WIN_ID;
+            return Platforms.WINDOWS;
         }
         if (os != null && os.startsWith(MAC_PREFIX)) {
-            return MAC_ID;
+            return Platforms.MAC;
         }
-        return OTHER_ID;
+        if (os != null && os.startsWith(LINUX_PREFIX)) {
+            return Platforms.LINUX;
+        }
+        return Platforms.OTHER;
     }
 
     private static String connectStringArray(String[] a) {
@@ -214,11 +225,20 @@ public class BrowserControl {
         return false;
     }
 
+    /** Available/Supported platforms for opening URLs in browsers */
+    private enum Platforms {
+        /** Used to identify the Windows platform. */
+        WINDOWS,
+        /** Used to identify the <ac platform. */
+        MAC,
+        /** Used to identify the (generic) Linux platform. */
+        LINUX,
+        /** Unable to identify the platform */
+        OTHER
+    };
+
     // This token is a place holder for the actual URL
     private static final String URLTOKEN = "%URLTOKEN%";
-
-    // Used to identify the windows platform.
-    private static final int WIN_ID = 1;
 
     // Used to discover the windows platform.
     private static final String WIN_PREFIX = "Windows";
@@ -230,17 +250,18 @@ public class BrowserControl {
     private static final String[] WIN_CMDLINE = { "rundll32",
             "url.dll,FileProtocolHandler", URLTOKEN };
 
-    // Used to identify the mac platform.
-    private static final int MAC_ID = 2;
-
     // Used to discover the mac platform.
     private static final String MAC_PREFIX = "Mac";
 
     // The default system browser under mac.
     private static final String[] MAC_CMDLINE = { "open", URLTOKEN };
 
-    // Used to identify the mac platform.
-    private static final int OTHER_ID = -1;
+    // Used to discover the Linux platform.
+    private static final String LINUX_PREFIX = "Linux";
+
+    // The default system browser under Linux supporting Debian Alternatives
+    // http://wiki.debian.org/DebianAlternatives
+    private static final String[] LINUX_CMDLINE = { "/etc/alternatives/x-www-browser", URLTOKEN };
 
     private static final String[][] OTHER_CMDLINES = {
 
