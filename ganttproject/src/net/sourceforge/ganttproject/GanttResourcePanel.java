@@ -87,8 +87,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
                 .getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
         getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
         getTreeTable().setRowHeight(20);
-        getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
-        getTreeTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         getTreeTable().insertWithLeftyScrollBar(this);
         area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this) {
@@ -123,6 +121,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     @Override
     protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
         super.onSelectionChanged(selection);
+        new Exception("selection=" + selection).printStackTrace();
         getPropertiesAction().setEnabled(!selection.isEmpty());
         getDeleteAction().setEnabled(!selection.isEmpty());
         appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
