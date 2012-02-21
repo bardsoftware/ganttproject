@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -33,6 +34,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -88,6 +90,9 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         super(new BorderLayout());
         myTreeTableModel = tableAndModel.second();
         myTreeTable = tableAndModel.first();
+        myTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
+
         myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
         ExpandCollapseAction expandAction = new ExpandCollapseAction();
         for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
@@ -112,8 +117,6 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
             @Override
             public void mousePressed(MouseEvent e) {
-                TreePath selPath = getTreeTable().getTreeTable().getPathForLocation(e.getX(), e.getY());
-                getTreeTable().getTreeTable().getTree().setSelectionPath(selPath);
                 handlePopupTrigger(e);
             }
 

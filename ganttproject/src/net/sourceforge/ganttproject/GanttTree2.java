@@ -215,7 +215,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                     }
                 });
 
-        getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
         getTreeTable().getTree().addTreeExpansionListener(
                 new GanttTreeExpansionListener());
 
