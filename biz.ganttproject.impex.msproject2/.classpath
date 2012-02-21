@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/mpxj.jar" sourcepath="/home/bard/ganttproject-2.0.11/lib-src/mpxj/mpxj-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/mpxj.jar" sourcepath="/home/bard/mpxj-4.2.0/mpxj/src"/>
 	<classpathentry kind="lib" path="lib/poi-3.7-20101029.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
