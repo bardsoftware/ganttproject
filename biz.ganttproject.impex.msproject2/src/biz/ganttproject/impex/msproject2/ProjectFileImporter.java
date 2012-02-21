@@ -18,15 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.impex.msproject2;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
@@ -49,20 +65,21 @@ import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
+import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
+import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -113,8 +130,46 @@ class ProjectFileImporter {
         return myNativeProject.getTaskManager();
     }
 
+    private static InputStream createPatchedStream(final File inputFile)
+            throws TransformerConfigurationException, TransformerFactoryConfigurationError, IOException {
+        final Transformer transformer = SAXTransformerFactory.newInstance().newTransformer(
+                new StreamSource(ProjectFileImporter.class.getResourceAsStream("/mspdi_fix.xsl")));
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+        ByteArrayOutputStream transformationOut = new ByteArrayOutputStream();
+        try {
+            transformer.transform(new StreamSource(inputFile), new StreamResult(transformationOut));
+        } catch (TransformerException e) {
+            GPLogger.log(new RuntimeException("Failed to transform file=" + inputFile.getAbsolutePath(), e));
+        }
+
+        return new ByteArrayInputStream(transformationOut.toByteArray());
+    }
+
+    @SuppressWarnings("unused")
+    private List<String> debugTransformation() throws MPXJException {
+        try {
+        BufferedReader is = new BufferedReader(new InputStreamReader(createPatchedStream(myForeignFile)));
+        for (String s = is.readLine(); s!= null; s = is.readLine()) {
+            System.out.println(s);
+        }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
+
     public List<String> run() throws MPXJException {
-        ProjectFile pf = myReader.read(myForeignFile);
+        ProjectFile pf;
+        try {
+            pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile)) : myReader.read(myForeignFile);
+        } catch (TransformerConfigurationException e) {
+            throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath() + "<br>" + e.getMessage(), e);
+        } catch (TransformerFactoryConfigurationError e) {
+            throw new MPXJException("Failed to create a transformer factory");
+        } catch (IOException e) {
+            throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath(), e);
+        }
         Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
         Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
         importCalendar(pf);
