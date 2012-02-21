@@ -11,18 +11,37 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * A simple, static class to display an URL in the system browser. Under
- * Windows, this will bring up the default browser, usually either Netscape or
- * Microsoft IE. The default browser is determined by the OS. This has been
- * tested under: Windows 95/98/NT/2000. Under MacOS, this will bring up the
- * default browser. The default browser is determined by the OS. This has been
- * tested under: n/a In other cases (and under Unix), the system browser is
- * hard-coded to be 'netscape'. Netscape must be in your PATH for this to work.
- * This has been tested with the following platforms: AIX, HP-UX and Solaris.
- * Examples: * BrowserControl.displayURL("http://www.javaworld.com")
- * BrowserControl.displayURL("file://c:\\docs\\index.html")
- * BrowserContorl.displayURL("file:///user/joe/index.html"); Note - you must
- * include the url type -- either "http://" or "file://".
+ * <p>
+ * A simple, static class to display an URL in the system browser.
+ * </p>
+ * <p>
+ * Under Windows, this will bring up the default browser, usually either
+ * Netscape or Microsoft IE. The default browser is determined by the OS. This
+ * has been tested under: Windows 95/98/NT/2000.
+ * </p>
+ * <p>
+ * Under MacOS, this will bring up the default browser. The default browser is
+ * determined by the OS. This has been tested under: n/a
+ * </p>
+ * <p>
+ * Under (K)Ubuntu, Debian and other *nix platforms, try <a
+ * href="http://wiki.debian.org/DebianAlternatives">Debian Alternatives</a>. If
+ * that fails, fallback on the 'other platforms' methods. This has been tested
+ * under: Kubuntu 11.10
+ * </p>
+ * <p>
+ * In other platforms, a range of known browsers is invoked.
+ * </p>
+ * <p>
+ * Examples:
+ * <ul>
+ * <li>BrowserControl.displayURL("http://www.javaworld.com")</li>
+ * <li>BrowserControl.displayURL("file://c:\\docs\\index.html")</li>
+ * <li>BrowserContorl.displayURL("file:///user/joe/index.html")</li>
+ * </p>
+ * <p>
+ * Note - you must include the url type -- either "http://" or "file://".
+ * </p>
  */
 public class BrowserControl {
 
@@ -87,17 +106,26 @@ public class BrowserControl {
         if (displayUrlWithJnlpApi(url)) {
             return true;
         }
-        switch (getPlatform()) {
-        case (WIN_ID):
+        Platforms platform = getPlatform();
+        switch (platform) {
+        case WINDOWS:
             return runCmdLine(replaceToken(WIN_CMDLINE, URLTOKEN, url));
-        case (MAC_ID):
+        case MAC:
             return runCmdLine(replaceToken(MAC_CMDLINE, URLTOKEN, url));
-        default:
-            for (int i = 0; i < OTHER_CMDLINES.length; i++) {
-                if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url),
-                        replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {
-                    return true;
-                }
+        case LINUX:
+            if (runCmdLine(replaceToken(LINUX_CMDLINE, URLTOKEN, url))) {
+                // Succeeded
+                return true;
+            }
+            // Fallback on 'brute-force' method
+        }
+
+        // Try out a series of commands and hope one is recognized...
+        assert OTHER_CMDLINES.length == OTHER_FALLBACKS.length;
+        for (int i = 0; i < OTHER_CMDLINES.length; i++) {
+            if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url),
+                    replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {
+                return true;
             }
         }
         return false;
@@ -109,15 +137,18 @@ public class BrowserControl {
      *
      * @return the ID of the platform
      */
-    private static int getPlatform() {
+    private static Platforms getPlatform() {
         String os = System.getProperty("os.name");
         if (os != null && os.startsWith(WIN_PREFIX)) {
-            return WIN_ID;
+            return Platforms.WINDOWS;
         }
         if (os != null && os.startsWith(MAC_PREFIX)) {
-            return MAC_ID;
+            return Platforms.MAC;
         }
-        return OTHER_ID;
+        if (os != null && os.startsWith(LINUX_PREFIX)) {
+            return Platforms.LINUX;
+        }
+        return Platforms.OTHER;
     }
 
     private static String connectStringArray(String[] a) {
@@ -150,29 +181,20 @@ public class BrowserControl {
         return runCmdLine(cmdLine, null);
     }
 
+    // TODO Maybe make method a little less chatty...
     private static boolean runCmdLine(String[] cmdLine, String[] fallBackCmdLine) {
         try {
-
-            System.err.println("Trying to invoke browser, cmd='"
-                    + connectStringArray(cmdLine) + "' ... ");
+            System.err.println("Trying to invoke browser, cmd='" + connectStringArray(cmdLine) + "' ... ");
             Process p = Runtime.getRuntime().exec(cmdLine);
 
-            if (null != fallBackCmdLine) {
-                // wait for exit code -- if it's 0, command worked,
-                // otherwise we need to start fallBackCmdLine.
-                int exitCode = p.waitFor();
-                if (exitCode != 0) {
-                    System.err.println(exitCode);
-                    System.err.println();
-
-                    System.err.println("Trying to invoke browser, cmd='"
-                            + connectStringArray(fallBackCmdLine) + "' ...");
-                    Runtime.getRuntime().exec(fallBackCmdLine);
-                }
+            int exitCode = p.waitFor();
+            if (exitCode == 0) {
+                // Succeeded!
+                System.err.println();
+                return true;
             }
-
+            System.err.println(exitCode);
             System.err.println();
-            return true;
 
         } catch (InterruptedException e) {
             System.err.println("Caught: " + e);
@@ -180,15 +202,43 @@ public class BrowserControl {
             System.err.println("Caught: " + e);
         }
 
+        // Failed, caught exception or exitCode indicated an error
+        if (null != fallBackCmdLine) {
+            // Start fallBackCmdLine
+            try {
+                System.err.println("Trying to invoke browser, cmd='" + connectStringArray(fallBackCmdLine) + "' ...");
+                Process p = Runtime.getRuntime().exec(fallBackCmdLine);
+                int exitCode = p.waitFor();
+                if (exitCode == 0) {
+                    // Succeeded!
+                    System.err.println();
+                    return true;
+                }
+            } catch (InterruptedException e) {
+                System.err.println("Caught: " + e);
+            } catch (IOException e) {
+                System.err.println("Caught: " + e);
+            }
+        }
+
         System.err.println();
         return false;
     }
 
+    /** Available/Supported platforms for opening URLs in browsers */
+    private enum Platforms {
+        /** Used to identify the Windows platform. */
+        WINDOWS,
+        /** Used to identify the <ac platform. */
+        MAC,
+        /** Used to identify the (generic) Linux platform. */
+        LINUX,
+        /** Unable to identify the platform */
+        OTHER
+    };
+
     // This token is a place holder for the actual URL
     private static final String URLTOKEN = "%URLTOKEN%";
-
-    // Used to identify the windows platform.
-    private static final int WIN_ID = 1;
 
     // Used to discover the windows platform.
     private static final String WIN_PREFIX = "Windows";
@@ -200,21 +250,23 @@ public class BrowserControl {
     private static final String[] WIN_CMDLINE = { "rundll32",
             "url.dll,FileProtocolHandler", URLTOKEN };
 
-    // Used to identify the mac platform.
-    private static final int MAC_ID = 2;
-
     // Used to discover the mac platform.
     private static final String MAC_PREFIX = "Mac";
 
     // The default system browser under mac.
     private static final String[] MAC_CMDLINE = { "open", URLTOKEN };
 
-    // Used to identify the mac platform.
-    private static final int OTHER_ID = -1;
+    // Used to discover the Linux platform.
+    private static final String LINUX_PREFIX = "Linux";
+
+    // The default system browser under Linux supporting Debian Alternatives
+    // http://wiki.debian.org/DebianAlternatives
+    private static final String[] LINUX_CMDLINE = { "/etc/alternatives/x-www-browser", URLTOKEN };
 
     private static final String[][] OTHER_CMDLINES = {
 
-    // Try to invoke the browser specified in the BROWSER environment variable
+            // Try to invoke the browser specified in the BROWSER environment
+            // variable
             // Comment because this method, because it use a deprecated method
             // and cause exception
             // GetEnv.GetEnvironement(URLTOKEN),
@@ -224,33 +276,49 @@ public class BrowserControl {
             // (http://www.mozilla.org/unix/remote.html)
             { "mozilla", "-remote", "openURL(" + URLTOKEN + ",new-window)" },
 
-            // The second guess for a browser under other systems (and unix):
+            // Next guess for a browser under other systems (and unix):
             // The RedHat script htmlview
             { "htmlview", URLTOKEN },
 
-            // The third guess for a browser under KDE:
-            // Remote controlling konqueror
-            { "konqueror", URLTOKEN },
+            // Next guess, try Opera (if a user installed it, it is probably
+            // 'more-wanted' than the default browser)
+            // See /usr/share/applications/opera-browser.desktop
+            { "opera", URLTOKEN },
 
-            // The fourth guess for a browser under other systems (and unix):
+            // Next guess for a browser under Gnome: try FireFox (
+            // See /usr/share/applications/firefox.desktop
+            { "firefox", URLTOKEN },
+
+            // Next guess for a browser under KDE4: rekonq
+            // See /usr/share/applications/kde4/rekonq.desktop
+            { "rekonq", URLTOKEN },
+
+            // Next guess for a browser under other systems (and unix):
             // Remote controlling netscape
             // (http://wp.netscape.com/newsref/std/x-remote.html)
             { "netscape", "-remote", "openURL(" + URLTOKEN + ")" }
-
     };
 
     private static final String[][] OTHER_FALLBACKS = {
-
-    // Fallback for remote controlling mozilla:
+            // Fallback for remote controlling mozilla:
             // Starting up a new mozilla
             { "mozilla", URLTOKEN },
 
             // No fallback for htmlview
             null,
 
+            // Fallback for Opera: Opera-Next (alpha/development version
+            // of Opera, can be separately used next to Opera)
+            // See /usr/share/applications/opera-next-browser.desktop
+            { "opera-next", URLTOKEN },
+
+            // No fallback for FireFox
+            null,
+
+            // Fallback for rekonq: old KDE browser is konqueror
+            { "konqueror", URLTOKEN },
+
             // Fallback for remote controlling netscape:
             // Starting up a new netscape
-            { "netscape", URLTOKEN }
-    };
-
+            { "netscape", URLTOKEN } };
 }
