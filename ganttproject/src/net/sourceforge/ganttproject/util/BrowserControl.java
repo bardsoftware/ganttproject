@@ -24,10 +24,11 @@ import java.net.URL;
  * determined by the OS. This has been tested under: n/a
  * </p>
  * <p>
- * Under (K)Ubuntu, Debian and other *nix platforms, try <a
+ * Under (K)Ubuntu, Debian and other *nix platforms, try sensible-browser. It
+ * checks $BROWSER and the variable is not available <a
  * href="http://wiki.debian.org/DebianAlternatives">Debian Alternatives</a>. If
- * that fails, fallback on the 'other platforms' methods. This has been tested
- * under: Kubuntu 11.10
+ * that fails, fallback on the '<em>other platforms</em>' methods. This has been
+ * tested under: Kubuntu 11.10
  * </p>
  * <p>
  * In other platforms, a range of known browsers is invoked.
@@ -259,9 +260,8 @@ public class BrowserControl {
     // Used to discover the Linux platform.
     private static final String LINUX_PREFIX = "Linux";
 
-    // The default system browser under Linux supporting Debian Alternatives
-    // http://wiki.debian.org/DebianAlternatives
-    private static final String[] LINUX_CMDLINE = { "/etc/alternatives/x-www-browser", URLTOKEN };
+    // The default definition for the preferred browser under Linux
+    private static final String[] LINUX_CMDLINE = { "sensible-browser", URLTOKEN };
 
     private static final String[][] OTHER_CMDLINES = {
 
@@ -283,7 +283,7 @@ public class BrowserControl {
             // Next guess, try Opera (if a user installed it, it is probably
             // 'more-wanted' than the default browser)
             // See /usr/share/applications/opera-browser.desktop
-            { "opera", URLTOKEN },
+            { "opera", "-remote", "openURL(" + URLTOKEN + ")" },
 
             // Next guess for a browser under Gnome: try FireFox (
             // See /usr/share/applications/firefox.desktop
@@ -310,7 +310,7 @@ public class BrowserControl {
             // Fallback for Opera: Opera-Next (alpha/development version
             // of Opera, can be separately used next to Opera)
             // See /usr/share/applications/opera-next-browser.desktop
-            { "opera-next", URLTOKEN },
+            { "opera-next", "-remote", "openURL(" + URLTOKEN + ")" },
 
             // No fallback for FireFox
             null,
