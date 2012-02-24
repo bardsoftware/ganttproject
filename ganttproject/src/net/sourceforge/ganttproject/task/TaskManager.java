@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -116,4 +117,6 @@ public interface TaskManager {
     CustomPropertyManager getCustomPropertyManager();
 
     StringOption getTaskNamePrefixOption();
+
+    EnumerationOption getDependencyHardnessOption();
 }

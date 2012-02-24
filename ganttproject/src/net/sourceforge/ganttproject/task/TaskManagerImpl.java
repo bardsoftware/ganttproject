@@ -23,7 +23,9 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -78,6 +80,13 @@ public class TaskManagerImpl implements TaskManager {
     private final TaskManagerConfig myConfig;
 
     private final TaskNamePrefixOption myTaskNamePrefixOption = new TaskNamePrefixOption();
+
+    private final EnumerationOption myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
+            "dependencyDefaultHardness", new String[] {"Strong", "Rubber"}) {
+            {
+                setValue("Strong", true);
+            }
+        };
 
     private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
@@ -944,5 +953,9 @@ public class TaskManagerImpl implements TaskManager {
         return myTaskNamePrefixOption;
     }
 
+    @Override
+    public EnumerationOption getDependencyHardnessOption() {
+        return myDependencyHardnessOption;
+    }
 
 }
