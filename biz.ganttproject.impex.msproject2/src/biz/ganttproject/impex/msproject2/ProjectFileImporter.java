@@ -88,6 +88,9 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
+import net.sourceforge.ganttproject.util.collect.Pair;
+
+import com.google.common.collect.Lists;
 
 class ProjectFileImporter {
     private final IGanttProject myNativeProject;
@@ -178,10 +181,18 @@ class ProjectFileImporter {
         hideCustomProperties();
         try {
             importDependencies(pf, foreignId2nativeTask);
+            List<net.sourceforge.ganttproject.task.Task> leafTasks = Lists.newArrayList();
+            for (GanttTask task : foreignId2nativeTask.values()) {
+                if (!getTaskManager().getTaskHierarchy().hasNestedTasks(task)) {
+                    leafTasks.add(task);
+                }
+            }
+            myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
         } catch (TaskDependencyException e) {
-            e.printStackTrace();
+            throw new MPXJException("Failed to import dependencies", e);
         }
         importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
+
         return myErrors;
     }
 
@@ -344,13 +355,31 @@ class ProjectFileImporter {
                 nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
             }
             nativeTask.setMilestone(t.getMilestone());
-            TaskLength duration = convertDuration(t);
-            if (duration.getLength() <= 0 && !t.getMilestone()) {
-                myErrors.add(MessageFormat.format("Skipped duration of task with id={0}, name={1}, start date={2}, end date={3}, milestone={4}",
-                        t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone()));
-            }
-            if (duration.getLength() > 0) {
-                nativeTask.setDuration(duration);
+            Pair<TaskLength, TaskLength> durations = convertDuration(t);
+
+            TaskLength workingDuration = durations.first();
+            TaskLength nonWorkingDuration = durations.second();
+            TaskLength defaultDuration = myNativeProject.getTaskManager().createLength(
+                    myNativeProject.getTimeUnitStack().getDefaultTimeUnit(), 1.0f);
+
+            if (!t.getMilestone()) {
+                if (workingDuration.getLength() > 0) {
+                    nativeTask.setDuration(workingDuration);
+                } else if (nonWorkingDuration.getLength() > 0){
+                    myErrors.add(MessageFormat.format(
+                            "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
+                            + "We set its duration to {6}",
+                            t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone(), workingDuration, nonWorkingDuration));
+                    nativeTask.setDuration(nonWorkingDuration);
+                } else {
+                    myErrors.add(MessageFormat.format(
+                            "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
+                            + "We set its duration to default={7}",
+                            t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone(), workingDuration, nonWorkingDuration, defaultDuration));
+                    nativeTask.setDuration(defaultDuration);
+                }
+            } else {
+                nativeTask.setDuration(defaultDuration);
             }
         }
         else {
@@ -482,13 +511,15 @@ class ProjectFileImporter {
         }
     }
 
-    private TaskLength convertDuration(Task t) {
+    private Pair<TaskLength, TaskLength> convertDuration(Task t) {
         if (t.getMilestone()) {
-            return getTaskManager().createLength(1);
+            return Pair.create(getTaskManager().createLength(1), null);
         }
         WorkingUnitCounter unitCounter = new WorkingUnitCounter(
                 getNativeCalendar(), myNativeProject.getTimeUnitStack().getDefaultTimeUnit());
-        return unitCounter.run(t.getStart(), t.getFinish());
+        TaskLength workingDuration = unitCounter.run(t.getStart(), t.getFinish());
+        TaskLength nonWorkingDuration = unitCounter.getNonWorkingTime();
+        return Pair.create(workingDuration, nonWorkingDuration);
     }
 
     private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask)

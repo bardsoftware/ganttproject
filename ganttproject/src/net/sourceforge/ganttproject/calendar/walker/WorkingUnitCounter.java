@@ -34,7 +34,8 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 public class WorkingUnitCounter extends ForwardTimeWalker {
     private Date myEndDate;
     private boolean isMoving = true;
-    private int myUnitCounter;
+    private int myWorkingUnitCounter;
+    private int myNonWorkingUnitCounter;
 
     public WorkingUnitCounter(GPCalendar calendar, TimeUnit timeUnit) {
         super(calendar, timeUnit);
@@ -47,22 +48,28 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
 
     @Override
     protected void processNonWorkingTime(Date intervalStart, Date workingIntervalStart) {
+        myNonWorkingUnitCounter++;
         isMoving = workingIntervalStart.before(myEndDate);
     }
 
     @Override
     protected void processWorkingTime(Date intervalStart, Date nextIntervalStart) {
-        myUnitCounter++;
+        myWorkingUnitCounter++;
         isMoving = nextIntervalStart.before(myEndDate);
+    }
+
+    public TaskLength getNonWorkingTime() {
+        return new TaskLengthImpl(getTimeUnit(), myNonWorkingUnitCounter);
     }
 
     public TaskLength run(Date startDate, Date endDate) {
         assert startDate != null : "null start date";
         assert endDate != null : "null end date";
         isMoving = true;
-        myUnitCounter = 0;
+        myNonWorkingUnitCounter = 0;
+        myWorkingUnitCounter = 0;
         myEndDate = endDate;
         walk(startDate);
-        return new TaskLengthImpl(getTimeUnit(), myUnitCounter);
+        return new TaskLengthImpl(getTimeUnit(), myWorkingUnitCounter);
     }
 }
