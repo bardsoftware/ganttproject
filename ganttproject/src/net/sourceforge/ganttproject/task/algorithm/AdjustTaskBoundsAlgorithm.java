@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,12 +40,17 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
     }
 
     public void run(Task[] tasks) {
+        run(Arrays.asList(tasks));
+    }
+
+    public void run(Collection<Task> tasks) {
         if (!isEnabled()) {
             return;
         }
         AlgorithmImpl algorithmImpl = new AlgorithmImpl();
         algorithmImpl.run(tasks);
     }
+
 
     public void adjustNestedTasks(Task supertask) throws TaskDependencyException {
         TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
@@ -86,8 +92,8 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
 
         private Set<Task> myModifiedTasks = new HashSet<Task>();
 
-        public void run(Task[] tasks) {
-            HashSet<Task> taskSet = new HashSet<Task>(Arrays.asList(tasks));
+        public void run(Collection<Task> tasks) {
+            HashSet<Task> taskSet = new HashSet<Task>(tasks);
             myModifiedTasks.addAll(taskSet);
             TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
             while (!taskSet.isEmpty()) {
