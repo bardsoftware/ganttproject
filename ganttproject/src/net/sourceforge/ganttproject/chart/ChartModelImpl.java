@@ -48,8 +48,6 @@ public class ChartModelImpl extends ChartModelBase {
 
     private int rowHeight = 20;
 
-    private final EnumerationOption myDependencyHardnessOption;
-
     private final ColorOption myTaskDefaultColorOption;
 
     private final GPOptionGroup myTaskDefaultsOptions;
@@ -144,19 +142,13 @@ public class ChartModelImpl extends ChartModelBase {
 
 
         myTaskDefaultColorOption = new NewTaskColorOption();
-        myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
-            "dependencyDefaultHardness", new String[] {"Strong", "Rubber"}) {
-            {
-                setValue("Strong", true);
-            }
-        };
         myTaskDefaultsOptions = new GPOptionGroup(
             "ganttChartDefaults", new GPOption[] {
                 taskManager.getTaskNamePrefixOption(),
                 myTaskDefaultColorOption,
-                myDependencyHardnessOption});
+                getTaskManager().getDependencyHardnessOption()});
         myTaskDefaultsOptions.setI18Nkey(
-            new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(myDependencyHardnessOption),
+            new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(getTaskManager().getDependencyHardnessOption()),
             "hardness");
         myTaskDefaultsOptions.setI18Nkey(
                 OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
@@ -338,6 +330,6 @@ public class ChartModelImpl extends ChartModelBase {
     }
 
     public EnumerationOption getDependencyHardnessOption() {
-        return myDependencyHardnessOption;
+        return getTaskManager().getDependencyHardnessOption();
     }
 }

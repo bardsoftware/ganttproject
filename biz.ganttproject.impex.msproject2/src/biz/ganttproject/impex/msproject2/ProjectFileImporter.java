@@ -172,6 +172,8 @@ class ProjectFileImporter {
             throw new MPXJException("Failed to create a transformer factory");
         } catch (IOException e) {
             throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath(), e);
+        } catch (RuntimeException e) {
+            throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath(), e);
         }
         Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
         Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
@@ -547,6 +549,7 @@ class ProjectFileImporter {
                     dependency.setDifference((int) r.getLag().convertUnits(
                             TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
                 }
+                dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));
             }
         }
     }
