@@ -67,7 +67,7 @@
          ================================= -->
   <target name="release-dist" depends="dist" description="Release all distribution files">
     <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="728-beta2" />
-    <mkdir dir="dist-deb"/>
+    <mkdir dir="dist-deb/single-package"/>
     <antcall target="createdeb-full" />
     <antcall target="createdeb-minimal" />
     <antcall target="createdeb-plugins" />
@@ -115,7 +115,7 @@
 
   <target name="createdeb-full" depends="define_tasks">
     <description>Create a complete GanttProject deb package. Everything included.</description>
-    <ganttproject-base-deb package-name="${package.name}" output-dir="." package-description="${description.full}">
+    <ganttproject-base-deb package-name="${package.name}" output-dir="dist-deb/single-package" package-description="${description.full}">
       <application-files>
         <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
           <include name="plugins/**/"/>
@@ -155,6 +155,8 @@
            section="editors"
            priority="optional"
            depends="sun-java5-jre | sun-java6-jre | openjdk-6-jre"
+           conflicts="ganttproject-praha"
+      	   replaces="ganttproject-praha"
            postrm="deb/postrm"
            postinst="deb/postinst">
         <version upstream="${dist.version.number}"/>
