@@ -23,6 +23,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,10 +98,7 @@ public class SearchUiImpl implements SearchUi {
                     case KeyEvent.VK_ENTER:
                         e.consume();
                         e.setKeyCode(0);
-                        popup.setVisible(false);
-                        SearchResult selectedValue = results.get(list.getSelectedIndex());
-                        selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
-                        list = null;
+                        onSelect(popup, results);
                         break;
                     case KeyEvent.VK_ESCAPE:
                         searchBox.requestFocusInWindow();
@@ -107,8 +106,21 @@ public class SearchUiImpl implements SearchUi {
                         break;
                     }
                 }
+            });
+            list.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    onSelect(popup, results);
+                }
 
             });
+        }
+
+        private void onSelect(JPopupMenu popup, List<SearchResult<?>> results) {
+            popup.setVisible(false);
+            SearchResult selectedValue = results.get(list.getSelectedIndex());
+            selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
+            list = null;
         }
 
         void setSearchBox(JTextField searchBox) {
