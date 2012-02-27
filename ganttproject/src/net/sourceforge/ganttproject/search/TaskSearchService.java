@@ -42,7 +42,9 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
         query = query.toLowerCase();
         List<MySearchResult> results = new ArrayList<MySearchResult>();
         for (Task t : getProject().getTaskManager().getTasks()) {
-            if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)) {
+            if (isNotEmptyAndContains(t.getName(), query)
+                    || isNotEmptyAndContains(t.getNotes(), query)
+                    || isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
                 results.add(new MySearchResult(t, this));
             }
         }
