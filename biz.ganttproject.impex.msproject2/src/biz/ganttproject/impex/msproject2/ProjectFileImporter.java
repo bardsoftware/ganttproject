@@ -80,6 +80,7 @@ import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -191,9 +192,9 @@ class ProjectFileImporter {
                     leafTasks.add(task);
                 }
             }
+            myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
             getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
             getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-            myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
         } catch (TaskDependencyException e) {
             throw new MPXJException("Failed to import dependencies", e);
         }
@@ -356,11 +357,12 @@ class ProjectFileImporter {
             nativeTask.setPriority(convertPriority(t.getPriority()));
         }
         if (t.getChildTasks().isEmpty()) {
-            nativeTask.setStart(convertStartTime(t.getStart()));
+            TaskMutator mutator = nativeTask.createMutator();
+            mutator.setStart(convertStartTime(t.getStart()));
             if (t.getPercentageComplete() != null) {
-                nativeTask.setCompletionPercentage(t.getPercentageComplete().intValue());
+                mutator.setCompletionPercentage(t.getPercentageComplete().intValue());
             }
-            nativeTask.setMilestone(t.getMilestone());
+            mutator.setMilestone(t.getMilestone());
             Pair<TaskLength, TaskLength> durations = convertDuration(t);
 
             TaskLength workingDuration = durations.first();
@@ -370,23 +372,24 @@ class ProjectFileImporter {
 
             if (!t.getMilestone()) {
                 if (workingDuration.getLength() > 0) {
-                    nativeTask.setDuration(workingDuration);
+                    mutator.setDuration(workingDuration);
                 } else if (nonWorkingDuration.getLength() > 0){
                     myErrors.add(MessageFormat.format(
                             "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
                             + "We set its duration to {6}",
                             t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone(), workingDuration, nonWorkingDuration));
-                    nativeTask.setDuration(nonWorkingDuration);
+                    mutator.setDuration(nonWorkingDuration);
                 } else {
                     myErrors.add(MessageFormat.format(
                             "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
                             + "We set its duration to default={7}",
                             t.getID(), t.getName(), t.getStart(), t.getFinish(), t.getMilestone(), workingDuration, nonWorkingDuration, defaultDuration));
-                    nativeTask.setDuration(defaultDuration);
+                    mutator.setDuration(defaultDuration);
                 }
             } else {
-                nativeTask.setDuration(defaultDuration);
+                mutator.setDuration(defaultDuration);
             }
+            mutator.commit();
         }
         else {
             for (Task child: t.getChildTasks()) {
