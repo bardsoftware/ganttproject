@@ -179,6 +179,8 @@ class ProjectFileImporter {
         Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
         importCalendar(pf);
         importResources(pf, foreignId2nativeResource);
+
+        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
         importTasks(pf, foreignId2nativeTask);
         hideCustomProperties();
         try {
@@ -189,6 +191,8 @@ class ProjectFileImporter {
                     leafTasks.add(task);
                 }
             }
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
             myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
         } catch (TaskDependencyException e) {
             throw new MPXJException("Failed to import dependencies", e);
