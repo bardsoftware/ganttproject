@@ -23,6 +23,7 @@ import java.util.Date;
 import javax.swing.JPanel;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -78,17 +79,16 @@ public abstract class PertChart extends JPanel implements Chart {
 
     @Override
     public ChartSelection getSelection() {
-        throw new UnsupportedOperationException();
+        return ChartSelection.EMPTY;
     }
 
     @Override
     public IStatus canPaste(ChartSelection selection) {
-        throw new UnsupportedOperationException();
+        return Status.CANCEL_STATUS;
     }
 
     @Override
     public void paste(ChartSelection selection) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
