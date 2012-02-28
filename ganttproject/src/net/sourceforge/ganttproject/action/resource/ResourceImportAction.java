@@ -23,8 +23,8 @@ import java.io.File;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.OpenFileDialog;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
-import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -38,35 +38,33 @@ import net.sourceforge.ganttproject.task.TaskManager;
 public class ResourceImportAction extends ResourceAction {
     private final TaskManager myTaskManager;
 
-    private final GanttProject myProject;
-
     private final RoleManager myRoleManager;
 
     private OpenFileDialog myOpenDialog;
+
+    private final UIFacade myUiFacade;
 
     public ResourceImportAction(HumanResourceManager resourceManager, TaskManager taskManager, RoleManager roleManager,
             GanttProject project) {
         super("resource.import", resourceManager);
         myTaskManager = taskManager;
         myRoleManager = roleManager;
-        myProject = project;
+        myUiFacade = project.getUIFacade();
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
         final File file = getResourcesFile();
         if (file != null) {
-            myProject.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+            myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
                 @Override
                 public void run() {
-                    GanttXMLOpen loader = new GanttXMLOpen(myTaskManager);
-                    ResourceTagHandler tagHandler = new ResourceTagHandler(getManager(), myRoleManager, myProject
-                            .getResourceCustomPropertyManager());
-                    DependencyTagHandler dependencyHandler = new DependencyTagHandler(loader.getContext(),
-                            myTaskManager, myProject.getUIFacade());
+                    GanttXMLOpen loader = new GanttXMLOpen(null, null, myTaskManager, myUiFacade);
+                    ResourceTagHandler tagHandler = new ResourceTagHandler(
+                            getManager(), myRoleManager, getManager().getCustomPropertyManager());
+                    loader.addParsingListener(tagHandler);
                     RoleTagHandler rolesHandler = new RoleTagHandler(RoleManager.Access.getInstance());
                     loader.addTagHandler(tagHandler);
-                    loader.addTagHandler(dependencyHandler);
                     loader.addTagHandler(rolesHandler);
                     loader.load(file);
                 }
