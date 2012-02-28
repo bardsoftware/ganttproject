@@ -18,12 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 public interface ChartSelection {
     boolean isEmpty();
@@ -34,4 +36,35 @@ public interface ChartSelection {
     void startMoveClipboardTransaction();
     void cancelClipboardTransaction();
     void commitClipboardTransaction();
+
+    ChartSelection EMPTY = new ChartSelection() {
+        @Override
+        public void startMoveClipboardTransaction() {
+        }
+        @Override
+        public void startCopyClipboardTransaction() {
+        }
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+        @Override
+        public IStatus isDeletable() {
+            return Status.CANCEL_STATUS;
+        }
+        @Override
+        public List<Task> getTasks() {
+            return Collections.emptyList();
+        }
+        @Override
+        public List<HumanResource> getHumanResources() {
+            return Collections.emptyList();
+        }
+        @Override
+        public void commitClipboardTransaction() {
+        }
+        @Override
+        public void cancelClipboardTransaction() {
+        }
+    };
 }
