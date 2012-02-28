@@ -204,9 +204,10 @@ public class GanttTaskPropertiesBean extends JPanel {
         nameField1.setName("name_of_task");
         propertiesPanel.add(nameField1);
         Pair<String, JCheckBox> checkBox = constructCheckBox();
-        propertiesPanel.add(new JLabel(checkBox.first()));
-        propertiesPanel.add(checkBox.second());
-
+        if (checkBox != null) {
+            propertiesPanel.add(new JLabel(checkBox.first()));
+            propertiesPanel.add(checkBox.second());
+        }
         addEmptyRow(propertiesPanel);
         propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
         myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
@@ -357,7 +358,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         propertiesPanel.add(new JLabel(language.getText("webLink")));
         propertiesPanel.add(weblinkBox);
 
-        SpringUtilities.makeCompactGrid(propertiesPanel, 14, 2, 1, 1, 5, 5);
+        SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount()/2, 2, 1, 1, 5, 5);
 
         generalPanel = new JPanel(new SpringLayout());
         generalPanel.add(propertiesPanel);
@@ -775,7 +776,7 @@ public class GanttTaskPropertiesBean extends JPanel {
             });
             result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);
         } else {
-            throw new IllegalStateException("Can't be here");
+            result = null;
         }
         return result;
     }
