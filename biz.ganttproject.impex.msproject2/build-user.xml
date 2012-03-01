@@ -88,7 +88,7 @@
 	    <include name="*.jar"/>
 	    <include name="lib/**"/>
 	  </fileset>
-	  <fileset dir="bin" includes="org/ganttproject/impex/msproject/WebStartIDClass.class"/>
+	  <fileset dir="bin" includes="biz/ganttproject/impex/msproject2/WebStartIDClass.class"/>
 	</jar>
 	<signjar jar="${webstart.dir}/${plugin.name.versioned}.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
 </target>
