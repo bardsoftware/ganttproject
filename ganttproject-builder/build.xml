@@ -175,7 +175,7 @@
 		</ant>
 	</target>
 
-	<target name="webstart_org.ganttproject.impex.msproject">
+	<target name="webstart_biz.ganttproject.impex.msproject2">
 		<fail message="Please set properties keystore and storepass in build.private.properties">
 			<condition>
 				<not>
@@ -186,7 +186,7 @@
 				</not>
 			</condition>
 		</fail>
-		<ant antfile="../org.ganttproject.impex.msproject/build.xml" target="webstart" inheritall="false">
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="webstart" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
 			<property name="webstart.dir" value="${webstart.dir}"></property>
 			<property name="keystore" value="${keystore}"/>
@@ -230,7 +230,10 @@
 		<mkdir dir="${webstart.dir}"/>
 		<mkdir dir="${webstart.dir}/configuration"/>
 	</target>
-	<target name="dist-webstart" depends="init-webstart, dist-bin, webstart_net.sourceforge.ganttproject, webstart_org.ganttproject.impex.htmlpdf, webstart_org.ganttproject.impex.msproject, webstart_org.ganttproject.chart.pert">
+	<!--
+	   <target name="dist-webstart" depends="init-webstart, build, webstart_net.sourceforge.ganttproject, webstart_org.ganttproject.impex.htmlpdf, webstart_biz.ganttproject.impex.msproject2, webstart_org.ganttproject.chart.pert">
+	-->
+	<target name="dist-webstart" depends="init-webstart, build, webstart_net.sourceforge.ganttproject">
 		<copy todir="${webstart.dir}" file="ganttproject.jnlp"/>
 		<copy todir="${webstart.dir}/configuration" file="ganttproject-webstart-config.xml"/>
 		<jar destfile="${webstart.dir}/configuration.jar">
