@@ -182,6 +182,7 @@ class ProjectFileImporter {
         importResources(pf, foreignId2nativeResource);
 
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+        getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
         importTasks(pf, foreignId2nativeTask);
         hideCustomProperties();
         try {
@@ -193,6 +194,8 @@ class ProjectFileImporter {
                 }
             }
             myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);
+            getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
             getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
             getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         } catch (TaskDependencyException e) {

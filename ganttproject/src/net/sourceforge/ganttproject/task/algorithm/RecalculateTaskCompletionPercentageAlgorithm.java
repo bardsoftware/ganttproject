@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,8 +21,22 @@ package net.sourceforge.ganttproject.task.algorithm;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 
-public abstract class RecalculateTaskCompletionPercentageAlgorithm {
+public abstract class RecalculateTaskCompletionPercentageAlgorithm extends AlgorithmBase {
+    public void run() {
+        if (!isEnabled()) {
+            return;
+        }
+        TaskContainmentHierarchyFacade facade = createContainmentFacade();
+        for (Task t : facade.getTasksInDocumentOrder()) {
+            if (!facade.hasNestedTasks(t)) {
+                run(t);
+            }
+        }
+    }
     public void run(Task task) {
+        if (!isEnabled()) {
+            return;
+        }
         TaskContainmentHierarchyFacade facade = createContainmentFacade();
         recalculateSupertaskCompletionPercentageBottomUp(task, facade);
     }
@@ -47,7 +61,7 @@ public abstract class RecalculateTaskCompletionPercentageAlgorithm {
                 completedDays += nextDuration * next.getCompletionPercentage();
                 plannedDays += nextDuration;
             }
-            int completionPercentage = (int) (completedDays / plannedDays);
+            int completionPercentage = plannedDays == 0 ? 0 : (int) (completedDays / plannedDays);
             task.setCompletionPercentage(completionPercentage);
         }
     }

@@ -204,6 +204,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
 
     private void renderProgressBar(List<Rectangle> rectangles) {
+        if (rectangles.isEmpty()) {
+            return;
+        }
         final GraphicPrimitiveContainer container = getPrimitiveContainer().getLayer(0);
         final TimeUnit timeUnit = getChartModel().getTimeUnitStack().getDefaultTimeUnit();
         final Task task = ((TaskActivity)rectangles.get(0).getModelObject()).getTask();
