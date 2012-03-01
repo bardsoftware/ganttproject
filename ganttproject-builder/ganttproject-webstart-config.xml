@@ -6,6 +6,5 @@
   logging-level="ALL"
   application="net.sourceforge.ganttproject.GanttProject"
   >
-  <plugin descriptor-path="net.sourceforge.ganttproject_2.0.0/webstart-plugin.xml"/>
-  <plugin descriptor-path="org.ganttproject.chart.pert_2.0.0/webstart-plugin.xml"/>
+  <plugin descriptor-path="net.sourceforge.ganttproject/webstart-plugin.xml"/>
 </configuration>
