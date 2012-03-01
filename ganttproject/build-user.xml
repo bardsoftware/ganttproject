@@ -95,7 +95,7 @@
   <mkdir dir="${webstart.dir}/configuration/${plugin.name.versioned}"/>
   <copy todir="${webstart.dir}/configuration/${plugin.name.versioned}/" file="webstart-plugin.xml"/>
   <copy todir="${webstart.dir}" file="lib/core/eclipsito.jar"/>
-  <copy tofile="${webstart.dir}/ganttproject.gif" file="data/resources/logos/icon32.gif"/>
+  <copy tofile="${webstart.dir}/ganttproject.png" file="data/resources/icons/ganttproject.png"/>
   <jar destfile="${plugin.install.dir}/resources.jar">
     <fileset dir="${plugin.install.dir}/data/resources/" includes="**/*"/>
   </jar>
