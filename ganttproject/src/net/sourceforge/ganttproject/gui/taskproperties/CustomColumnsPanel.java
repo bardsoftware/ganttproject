@@ -156,8 +156,8 @@ public class CustomColumnsPanel {
             if (col != 2) {
                 throw new IllegalArgumentException();
             }
-            CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(row);
-            myHolder.addCustomProperty(def, DateParser.getIsoDate(GanttLanguage.getInstance().parseDate(String.valueOf(o))));
+            myHolder.addCustomProperty(myCustomPropertyManager.getDefinitions().get(row), String.valueOf(o));
+            //myHolder.addCustomProperty(def, DateParser.getIsoDate(GanttLanguage.getInstance().parseDate(String.valueOf(o))));
         }
     }
 }
