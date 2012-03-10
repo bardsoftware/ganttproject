@@ -25,10 +25,8 @@ import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -70,6 +68,7 @@ public class ColumnManagerPanel {
     private CardLayout cardLayoutDefaultValue = null;
     private final CustomPropertyManager myManager;
     private final TableHeaderUIFacade myVisibleFields;
+    private JComponent myFields;
 
     public ColumnManagerPanel(CustomPropertyManager columnManager, TableHeaderUIFacade visibleFields) {
         myManager = columnManager;
@@ -81,9 +80,6 @@ public class ColumnManagerPanel {
         myNameOption.commit();
         myEnableDefaultValueOption.commit();
         myType.commit();
-        if (myEnableDefaultValueOption.getValue() && myDefaultValueOption != null) {
-            myDefaultValueOption.commit();
-        }
     }
 
     public Component createComponent() {
@@ -115,6 +111,7 @@ public class ColumnManagerPanel {
                     public void run() {
                         myVisibleFields.add(def.getID(), -1, -1);
                         getTableComponent().requestFocus();
+                        setSelectedDefinition(def);
                     }
                 });
                 return def;
@@ -136,7 +133,7 @@ public class ColumnManagerPanel {
                 StringBuffer value = new StringBuffer("<html>");
                 Column column = myIsVisibleOption.findColumn(def);
                 if (column!=null && !column.isVisible()) {
-                    value.append("<font color=#cccccc>{0}</font>");
+                    value.append("<font color=#999999>{0}</font>");
                 } else {
                     value.append("{0}");
                 }
@@ -177,29 +174,33 @@ public class ColumnManagerPanel {
         };
         myEnableDefaultValueOption.addChangeValueListener(defaultValuePanelEnabler);
         myType.addChangeValueListener(defaultValuePanelEnabler);
-        final JComponent fields = getFieldsComponent();
+        myFields = getFieldsComponent();
         ListAndFieldsPanel<CustomPropertyDefinition> listAndFields =
-            new ListAndFieldsPanel<CustomPropertyDefinition>(props, fields);
+            new ListAndFieldsPanel<CustomPropertyDefinition>(props, myFields);
         props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
             @Override
             public void selectionChanged(List<CustomPropertyDefinition> selection) {
                 if (selection.size()!=1) {
-                    UIUtil.setEnabledTree(fields, false);
+                    UIUtil.setEnabledTree(myFields, false);
                 }
                 else {
                     commitCustomPropertyEdit();
                     CustomPropertyDefinition selectedElement = selection.get(0);
-                    UIUtil.setEnabledTree(fields, isEditable(selectedElement));
-                    myNameOption.reloadValue(selectedElement);
-                    myType.reloadValue(selectedElement);
-                    myEnableDefaultValueOption.reloadValue(selectedElement);
-                    myIsVisibleOption.reloadValue(selectedElement);
+                    setSelectedDefinition(selectedElement);
                 }
             }
         });
         return listAndFields.getComponent();
     }
 
+    private void setSelectedDefinition(CustomPropertyDefinition selected) {
+        UIUtil.setEnabledTree(myFields, isEditable(selected));
+        myNameOption.reloadValue(selected);
+        myType.reloadValue(selected);
+        myEnableDefaultValueOption.reloadValue(selected);
+        myIsVisibleOption.reloadValue(selected);
+
+    }
     private void createDefaultFieldDefinitions(
             TableHeaderUIFacade tableHeader, List<CustomPropertyDefinition> customFields,
             List<CustomPropertyDefinition> output) {
@@ -343,8 +344,8 @@ public class ColumnManagerPanel {
     class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClass> {
         private CardLayout myCardLayout;
         private JPanel myCardPanel;
-        private Map<CustomPropertyClass, Component> myDefaultValueEditors =
-            new HashMap<CustomPropertyClass, Component>();
+//        private Map<CustomPropertyClass, Component> myDefaultValueEditors =
+//            new HashMap<CustomPropertyClass, Component>();
         private CustomPropertyDefinition myDefinition;
         private CustomPropertyDefinition myDefinitionRO;
 
@@ -360,16 +361,17 @@ public class ColumnManagerPanel {
         protected void setValue(String value, boolean resetInitial) {
             CustomPropertyClass propertyClass = getCustomPropertyClass(value);
             myDefinition.setPropertyClass(propertyClass);
-            Component defaultValueEditor = myDefaultValueEditors.get(propertyClass);
-            if (defaultValueEditor == null) {
+//            Component defaultValueEditor = myDefaultValueEditors.get(propertyClass);
+//            System.err.println("property class option setValue: class=" + propertyClass + " defaultValueEditor=" + defaultValueEditor);
+//            if (defaultValueEditor == null) {
                 myDefaultValueOption = CustomPropertyDefaultValueAdapter.createDefaultValueOption(propertyClass, myDefinition);
                 OptionsPageBuilder builder = new OptionsPageBuilder();
-                defaultValueEditor = builder.createOptionComponent(null, myDefaultValueOption);
+                Component defaultValueEditor = builder.createOptionComponent(null, myDefaultValueOption);
                 JPanel defaultValuePanel = new JPanel(new BorderLayout());
                 defaultValuePanel.add(defaultValueEditor, BorderLayout.NORTH);
-                myDefaultValueEditors.put(propertyClass, defaultValuePanel);
+//                myDefaultValueEditors.put(propertyClass, defaultValuePanel);
                 myCardPanel.add(defaultValuePanel, propertyClass.getDisplayName());
-            }
+//            }
 
             myCardLayout.show(myCardPanel, value);
 
@@ -381,6 +383,10 @@ public class ColumnManagerPanel {
             if (isChanged()) {
                 super.commit();
                 myDefinitionRO.setPropertyClass(getCustomPropertyClass(getValue()));
+            }
+            if (myEnableDefaultValueOption.getValue()
+                    && myDefaultValueOption != null && myDefaultValueOption.isChanged()) {
+                myDefaultValueOption.commit();
                 myDefinitionRO.setDefaultValueAsString(myDefinition.getDefaultValueAsString());
             }
         }
