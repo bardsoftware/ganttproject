@@ -1,41 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-###############################################################################
-#
-# ganttproject.jnlp	0.1 2003-06-04
-#
-# JNLP File for GanttProject
-#
-###############################################################################
- -->
-
-
 <jnlp spec="0.2 1.0"
-	codebase="http://ganttproject.biz/jws209"
+	codebase="http://ganttproject.googlecode.com/svn/webstart/ganttproject-2.5"
       href="ganttproject.jnlp">
 
    <information>
-      <title>GanttProject 2.0.9</title>
+      <title>GanttProject 2.5</title>
       <vendor>GanttProject Team</vendor>
       <homepage href="http://ganttproject.biz"/>
-      <description>GanttProject is a project scheduling application featuring gantt chart, resource management, calendaring, import/export (MS Project, HTML, PDF, spreadsheets).</description>
-      <description kind="short">GanttProject is a project scheduling tool</description>
-      <icon href="ganttproject.gif"/>
+      <description>GanttProject is free project scheduling and management tool with Gantt chart, resource load chart, MS Project import/export, PDF and HTML reports</description>
+      <description kind="short">GanttProject is a free project scheduling tool</description>
+      <icon href="ganttproject.png"/>
       <offline-allowed/>
    </information>
   <security>
       <all-permissions/>
   </security>
    <resources>
-      <j2se version="1.5+" href="http://java.sun.com/products/autodl/j2se"/>
-      <j2se version="1.5+"/>
+      <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
       <jar href="eclipsito.jar" download="eager"/>
       <jar href="configuration.jar" download="eager"/>
-       <jar href="net.sourceforge.ganttproject_2.0.0.jar" download="eager"/>
-       <jar href="org.ganttproject.impex.htmlpdf_2.0.0.jar" download="eager"/>
-       <jar href="org.ganttproject.impex.msproject_2.0.0.jar" download="eager"/>
-       <jar href="org.ganttproject.chart.pert_2.0.0.jar" download="eager"/>
+      <jar href="net.sourceforge.ganttproject.jar" download="eager"/>
+      <jar href="jgoodies-common-1.1.1.jar" download="eager"/>
+      <jar href="jgoodies-looks-2.4.0.jar" download="eager"/>
     </resources>
    <application-desc main-class="org.bardsoftware.eclipsito.Boot">
       <argument>ganttproject-webstart-config.xml</argument>
