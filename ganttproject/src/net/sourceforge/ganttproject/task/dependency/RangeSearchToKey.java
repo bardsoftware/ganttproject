@@ -15,13 +15,13 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
 
 public class RangeSearchToKey extends SearchKey {
-    public RangeSearchToKey(Task task) {
-        super(3, task.getTaskID(), 0);
-    }
+  public RangeSearchToKey(Task task) {
+    super(3, task.getTaskID(), 0);
+  }
 }

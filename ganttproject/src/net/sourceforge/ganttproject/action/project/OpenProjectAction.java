@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -26,36 +26,37 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 
 public class OpenProjectAction extends GPAction {
-    private ProjectUIFacade myProjectUiFacade;
-    private IGanttProject myProject;
+  private ProjectUIFacade myProjectUiFacade;
+  private IGanttProject myProject;
 
-    OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade) {
-        super("project.open");
-        myProject = project;
-        myProjectUiFacade = projectUiFacade;
-    }
+  OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade) {
+    super("project.open");
+    myProject = project;
+    myProjectUiFacade = projectUiFacade;
+  }
 
-    private OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade, IconSize iconSize) {
-        super("project.open", iconSize.asString());
-        myProject = project;
-        myProjectUiFacade = projectUiFacade;
-    }
+  private OpenProjectAction(IGanttProject project, ProjectUIFacade projectUiFacade, IconSize iconSize) {
+    super("project.open", iconSize.asString());
+    myProject = project;
+    myProjectUiFacade = projectUiFacade;
+  }
 
-    @Override
-    public GPAction withIcon(IconSize iconSize) {
-        return new OpenProjectAction(myProject, myProjectUiFacade, iconSize);
-    }
-    @Override
-    protected String getIconFilePrefix() {
-        return "open_";
-    }
+  @Override
+  public GPAction withIcon(IconSize iconSize) {
+    return new OpenProjectAction(myProject, myProjectUiFacade, iconSize);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        try {
-            myProjectUiFacade.openProject(myProject);
-        } catch (Exception ex) {
-            GPLogger.log(ex);
-        }
+  @Override
+  protected String getIconFilePrefix() {
+    return "open_";
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    try {
+      myProjectUiFacade.openProject(myProject);
+    } catch (Exception ex) {
+      GPLogger.log(ex);
     }
+  }
 }

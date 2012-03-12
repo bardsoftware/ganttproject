@@ -15,32 +15,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 
 class CustomPropertyListenerImpl implements CustomPropertyListener {
-    private final TaskManagerImpl myTaskManager;
+  private final TaskManagerImpl myTaskManager;
 
-    CustomPropertyListenerImpl(TaskManagerImpl taskManagerImpl) {
-        myTaskManager = taskManagerImpl;
-    }
+  CustomPropertyListenerImpl(TaskManagerImpl taskManagerImpl) {
+    myTaskManager = taskManagerImpl;
+  }
 
-    @Override
-    public void customPropertyChange(CustomPropertyEvent event) {
-        switch (event.getType()) {
-        case CustomPropertyEvent.EVENT_REMOVE:
-            removeCustomPropertyValues(event.getDefinition());
-            break;
-        }
+  @Override
+  public void customPropertyChange(CustomPropertyEvent event) {
+    switch (event.getType()) {
+    case CustomPropertyEvent.EVENT_REMOVE:
+      removeCustomPropertyValues(event.getDefinition());
+      break;
     }
+  }
 
-    private void removeCustomPropertyValues(CustomPropertyDefinition definition) {
-        for (Task t : myTaskManager.getTasks()) {
-            t.getCustomValues().removeCustomColumn(definition);
-        }
+  private void removeCustomPropertyValues(CustomPropertyDefinition definition) {
+    for (Task t : myTaskManager.getTasks()) {
+      t.getCustomValues().removeCustomColumn(definition);
     }
+  }
 
 }

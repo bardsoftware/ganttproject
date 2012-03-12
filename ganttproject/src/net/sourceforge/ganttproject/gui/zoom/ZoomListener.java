@@ -9,5 +9,5 @@ import java.util.EventListener;
  * @author bard
  */
 public interface ZoomListener extends EventListener {
-    void zoomChanged(ZoomEvent e);
+  void zoomChanged(ZoomEvent e);
 }

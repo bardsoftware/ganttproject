@@ -7,5 +7,5 @@ package net.sourceforge.ganttproject.gui.options.model;
  * @author bard
  */
 public interface GPOptionChangeListener {
-    public void optionsChanged();
+  public void optionsChanged();
 }

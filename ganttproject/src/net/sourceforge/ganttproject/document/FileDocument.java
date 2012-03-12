@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
@@ -33,121 +33,113 @@ import org.eclipse.core.runtime.Status;
 /**
  * This class implements the interface Document for file access on local file
  * systems.
- *
+ * 
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class FileDocument extends AbstractDocument {
-    private File file;
-    private long myLastAccessTimestamp;
+  private File file;
+  private long myLastAccessTimestamp;
 
-    public FileDocument(File file) {
-        this.file = file;
+  public FileDocument(File file) {
+    this.file = file;
+  }
+
+  @Override
+  public String getFileName() {
+    return file.getName();
+  }
+
+  @Override
+  public boolean canRead() {
+    return file.canRead();
+  }
+
+  @Override
+  public IStatus canWrite() {
+    return (file.exists()) ? canOverwrite() : canCreate(file);
+  }
+
+  private IStatus canOverwrite() {
+    if (file.isDirectory()) {
+      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), "", null);
     }
-
-    @Override
-    public String getFileName() {
-        return file.getName();
+    if (!file.canWrite()) {
+      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal(), "", null);
     }
-
-    @Override
-    public boolean canRead() {
-        return file.canRead();
+    if (file.lastModified() > getLastAccessTimestamp()) {
+      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.LOST_UPDATE.ordinal(), "", null);
     }
+    return Status.OK_STATUS;
+  }
 
-    @Override
-    public IStatus canWrite() {
-        return (file.exists()) ? canOverwrite() : canCreate(file);
+  private long getLastAccessTimestamp() {
+    return myLastAccessTimestamp;
+  }
+
+  private static IStatus canCreate(File f) {
+    File parentFile = f.getParentFile();
+    if (parentFile.exists()) {
+      if (!parentFile.isDirectory()) {
+        return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
+            parentFile.getAbsolutePath(), null);
+      }
+      if (!parentFile.canWrite()) {
+        return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_WRITABLE.ordinal(),
+            parentFile.getAbsolutePath(), null);
+      }
+      return Status.OK_STATUS;
     }
+    return canCreate(parentFile);
+  }
 
-    private IStatus canOverwrite() {
-        if (file.isDirectory()) {
-            return new Status(
-                IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(),
-                "",  null);
-        }
-        if (!file.canWrite()) {
-            return new Status(
-                IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal(),
-                "",  null);
-        }
-        if (file.lastModified() > getLastAccessTimestamp()) {
-            return new Status(
-                IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.LOST_UPDATE.ordinal(),
-                "",  null);
-        }
-        return Status.OK_STATUS;
-    }
+  @Override
+  public boolean isValidForMRU() {
+    return file.exists();
+  }
 
-    private long getLastAccessTimestamp() {
-        return myLastAccessTimestamp;
-    }
+  @Override
+  public InputStream getInputStream() throws FileNotFoundException {
+    myLastAccessTimestamp = System.currentTimeMillis();
+    return new FileInputStream(file);
+  }
 
-    private static IStatus canCreate(File f) {
-        File parentFile = f.getParentFile();
-        if (parentFile.exists()) {
-            if (!parentFile.isDirectory()) {
-                return new Status(
-                    IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
-                    parentFile.getAbsolutePath(),  null);
-            }
-            if (!parentFile.canWrite()) {
-                return new Status(
-                    IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_WRITABLE.ordinal(),
-                    parentFile.getAbsolutePath(),  null);
-            }
-            return Status.OK_STATUS;
-        }
-        return canCreate(parentFile);
-    }
-
-    @Override
-    public boolean isValidForMRU() {
-        return file.exists();
-    }
-
-    @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+  @Override
+  public OutputStream getOutputStream() throws FileNotFoundException {
+    return new FileOutputStream(file) {
+      @Override
+      public void close() throws IOException {
+        super.close();
         myLastAccessTimestamp = System.currentTimeMillis();
-        return new FileInputStream(file);
-    }
+      }
+    };
+  }
 
-    @Override
-    public OutputStream getOutputStream() throws FileNotFoundException {
-        return new FileOutputStream(file) {
-            @Override
-            public void close() throws IOException {
-                super.close();
-                myLastAccessTimestamp = System.currentTimeMillis();
-            }
-        };
-    }
+  @Override
+  public String getPath() {
+    return file.getPath();
+  }
 
-    @Override
-    public String getPath() {
-        return file.getPath();
-    }
+  @Override
+  public String getFilePath() {
+    return getPath();
+  }
 
-    @Override
-    public String getFilePath() {
-        return getPath();
-    }
+  public void open() {
+    // Method is not used
+  }
 
-    public void open() {
-        // Method is not used
-    }
+  @Override
+  public void write() throws IOException {
+    // Method is not used
+  }
 
-    @Override
-    public void write() throws IOException {
-        // Method is not used
-    }
+  @Override
+  public URI getURI() {
+    return file.toURI();
+  }
 
-    @Override
-    public URI getURI() {
-        return file.toURI();
-    }
-
-    @Override
-    public boolean isLocal() {
-        return true;
-    }
+  @Override
+  public boolean isLocal() {
+    return true;
+  }
 }

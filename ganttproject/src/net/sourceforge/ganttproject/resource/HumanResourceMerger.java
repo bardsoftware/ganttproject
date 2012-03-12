@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.resource;
 
 import java.util.Map;
@@ -23,19 +23,18 @@ import java.util.Map;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 
 public interface HumanResourceMerger {
-    void merge(Map<HumanResource, HumanResource> existing2imported);
-    HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr);
+  void merge(Map<HumanResource, HumanResource> existing2imported);
 
-    public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
-        public static final String NO = "mergeresources_no";
-        public static final String BY_ID = "mergeresources_by_id";
-        public static final String BY_EMAIL = "mergeresources_by_email";
-        public static final String BY_NAME = "mergeresources_by_name";
+  HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr);
 
-        public MergeResourcesOption() {
-            super("impex.ganttprojectFiles.mergeResources", new String[] {
-                    NO, BY_ID, BY_EMAIL, BY_NAME
-            });
-        }
+  public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
+    public static final String NO = "mergeresources_no";
+    public static final String BY_ID = "mergeresources_by_id";
+    public static final String BY_EMAIL = "mergeresources_by_email";
+    public static final String BY_NAME = "mergeresources_by_name";
+
+    public MergeResourcesOption() {
+      super("impex.ganttprojectFiles.mergeResources", new String[] { NO, BY_ID, BY_EMAIL, BY_NAME });
     }
+  }
 }

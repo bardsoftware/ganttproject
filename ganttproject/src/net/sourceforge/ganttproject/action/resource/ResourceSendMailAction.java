@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -29,36 +29,36 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public class ResourceSendMailAction extends GPAction implements TreeSelectionListener {
-    private final ResourceTreeTable myTable;
+  private final ResourceTreeTable myTable;
 
-    public ResourceSendMailAction(ResourceTreeTable table) {
-        super("resource.sendmail");
-        myTable = table;
-        setEnabled(false);
-        table.getTree().getSelectionModel().addTreeSelectionListener(this);
-    }
+  public ResourceSendMailAction(ResourceTreeTable table) {
+    super("resource.sendmail");
+    myTable = table;
+    setEnabled(false);
+    table.getTree().getSelectionModel().addTreeSelectionListener(this);
+  }
 
-    @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        setEnabled(myTable.getSelectedNodes() != null && myTable.getSelectedNodes().length > 0);
-    }
+  @Override
+  public void valueChanged(TreeSelectionEvent e) {
+    setEnabled(myTable.getSelectedNodes() != null && myTable.getSelectedNodes().length > 0);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "send_mail_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "send_mail_";
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (myTable.getSelectedNodes() != null && myTable.getSelectedNodes().length > 0)        {
-            HumanResource resource = (HumanResource) myTable.getSelectedNodes()[0].getUserObject();
-            if (resource != null) {
-                try {
-                    BrowserControl.displayURL("mailto:" + resource.getMail());
-                } catch (Exception exception) {
-                    System.err.println(exception);
-                }
-            }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (myTable.getSelectedNodes() != null && myTable.getSelectedNodes().length > 0) {
+      HumanResource resource = (HumanResource) myTable.getSelectedNodes()[0].getUserObject();
+      if (resource != null) {
+        try {
+          BrowserControl.displayURL("mailto:" + resource.getMail());
+        } catch (Exception exception) {
+          System.err.println(exception);
         }
+      }
     }
+  }
 }

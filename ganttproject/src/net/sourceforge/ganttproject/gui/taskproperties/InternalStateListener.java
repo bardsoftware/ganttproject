@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 /**
@@ -23,7 +23,7 @@ package net.sourceforge.ganttproject.gui.taskproperties;
  * To change this template use Options | File Templates.
  */
 public interface InternalStateListener {
-    void nameChanged(String newName);
+  void nameChanged(String newName);
 
-    void durationChanged(int newDuration);
+  void durationChanged(int newDuration);
 }

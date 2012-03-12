@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -32,28 +32,28 @@ import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
  */
 public class GanttDialogPublicHoliday {
 
-    private DateIntervalListEditor publicHolidayBean;
+  private DateIntervalListEditor publicHolidayBean;
 
-    private DateIntervalListEditor.DateIntervalModel publicHolidays;
+  private DateIntervalListEditor.DateIntervalModel publicHolidays;
 
-    public GanttDialogPublicHoliday(IGanttProject project) {
-        publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
-        for (Date d : project.getActiveCalendar().getPublicHolidays()) {
-            publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(d,d));
-        }
-
-        publicHolidayBean = new DateIntervalListEditor(publicHolidays);
+  public GanttDialogPublicHoliday(IGanttProject project) {
+    publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
+    for (Date d : project.getActiveCalendar().getPublicHolidays()) {
+      publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(d, d));
     }
 
-    public Component getContentPane() {
-        return publicHolidayBean;
-    }
+    publicHolidayBean = new DateIntervalListEditor(publicHolidays);
+  }
 
-    public List<GanttCalendar> getHolidays() {
-        List<GanttCalendar> result = new ArrayList<GanttCalendar>();
-        for (DateInterval interval : publicHolidays.getIntervals()) {
-            result.add(new GanttCalendar(interval.start));
-        }
-        return result;
+  public Component getContentPane() {
+    return publicHolidayBean;
+  }
+
+  public List<GanttCalendar> getHolidays() {
+    List<GanttCalendar> result = new ArrayList<GanttCalendar>();
+    for (DateInterval interval : publicHolidays.getIntervals()) {
+      result.add(new GanttCalendar(interval.start));
     }
+    return result;
+  }
 }

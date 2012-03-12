@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -32,45 +32,44 @@ import net.sourceforge.ganttproject.print.PrintPreview;
  */
 public class ProjectPreviewAction extends GPAction {
 
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private final GanttProject myProject;
+  private final GanttProject myProject;
 
-    public ProjectPreviewAction(GanttProject project) {
-        super("project.preview");
-        myUIFacade = project.getUIFacade();
-        myProject = project;
+  public ProjectPreviewAction(GanttProject project) {
+    super("project.preview");
+    myUIFacade = project.getUIFacade();
+    myProject = project;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    Date startDate, endDate;
+    Chart chart = myUIFacade.getActiveChart();
+    if (chart == null) {
+      myUIFacade.showErrorDialog("Failed to find active chart.\nPlease report this problem to GanttProject development team");
+      return;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        Date startDate, endDate;
-        Chart chart = myUIFacade.getActiveChart();
-        if (chart == null) {
-            myUIFacade
-                    .showErrorDialog("Failed to find active chart.\nPlease report this problem to GanttProject development team");
-            return;
-        }
-
-        try {
-            startDate = chart.getStartDate();
-            endDate = chart.getEndDate();
-        } catch (UnsupportedOperationException exception) {
-            startDate = null;
-            endDate = null;
-        }
-
-        try {
-            PrintPreview preview = new PrintPreview(myProject, myUIFacade, chart, startDate, endDate);
-            preview.setVisible(true);
-        } catch (OutOfMemoryError exception) {
-            myUIFacade.showErrorDialog(getI18n("printing.out_of_memory"));
-            return;
-        }
+    try {
+      startDate = chart.getStartDate();
+      endDate = chart.getEndDate();
+    } catch (UnsupportedOperationException exception) {
+      startDate = null;
+      endDate = null;
     }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "preview_";
+    try {
+      PrintPreview preview = new PrintPreview(myProject, myUIFacade, chart, startDate, endDate);
+      preview.setVisible(true);
+    } catch (OutOfMemoryError exception) {
+      myUIFacade.showErrorDialog(getI18n("printing.out_of_memory"));
+      return;
     }
+  }
+
+  @Override
+  protected String getIconFilePrefix() {
+    return "preview_";
+  }
 }

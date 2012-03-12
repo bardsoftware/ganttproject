@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.List;
@@ -24,5 +24,5 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskChartModelFacade {
-    List<Rectangle> getTaskRectangles(Task t);
+  List<Rectangle> getTaskRectangles(Task t);
 }

@@ -15,17 +15,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.Component;
 
 public interface WizardPage {
-    /** @return the title of the page */
-    String getTitle();
+  /** @return the title of the page */
+  String getTitle();
 
-    /** @return the Component that makes the page */
-    Component getComponent();
+  /** @return the Component that makes the page */
+  Component getComponent();
 
-    void setActive(boolean b);
+  void setActive(boolean b);
 }

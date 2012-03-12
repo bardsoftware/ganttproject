@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import javax.swing.Action;
@@ -28,15 +28,15 @@ import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 
 /**
  * Small utility to show logs in a dialog.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class ViewLogDialog {
-    public static void show(UIFacade uiFacade) {
-        JTextArea textArea = new JTextArea(GPLogger.readLog(), 20, 80);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        Dialog dlg = uiFacade.createDialog(scrollPane, new Action[] {CancelAction.CLOSE}, "");
-        dlg.show();
+  public static void show(UIFacade uiFacade) {
+    JTextArea textArea = new JTextArea(GPLogger.readLog(), 20, 80);
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    Dialog dlg = uiFacade.createDialog(scrollPane, new Action[] { CancelAction.CLOSE }, "");
+    dlg.show();
 
-    }
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import java.util.Date;
@@ -27,80 +27,80 @@ import net.sourceforge.ganttproject.GanttCalendar;
  * this template use File | Settings | File Templates.
  */
 public interface TaskDependencyConstraint extends Cloneable {
-    enum Type {
-        startstart, finishstart, finishfinish, startfinish;
+  enum Type {
+    startstart, finishstart, finishfinish, startfinish;
 
-        public static Type getType(TaskDependencyConstraint constraint) {
-            return getType(constraint.getID());
-        }
-
-        public static Type getType(int constraintID) {
-            for (Type t : Type.values()) {
-                if (t.ordinal()+1 == constraintID) {
-                    return t;
-                }
-            }
-            return null;
-        }
-    }
-    void setTaskDependency(TaskDependency dependency);
-
-    // boolean isFulfilled();
-    // void fulfil();
-    Collision getCollision();
-
-    Collision getBackwardCollision(Date depedantStart);
-
-    String getName();
-
-    int getID();
-
-    TaskDependency.ActivityBinding getActivityBinding();
-
-    interface Collision {
-        GanttCalendar getAcceptableStart();
-
-        int getVariation();
-
-        int NO_VARIATION = 0;
-
-        int START_EARLIER_VARIATION = -1;
-
-        int START_LATER_VARIATION = 1;
-
-        boolean isActive();
+    public static Type getType(TaskDependencyConstraint constraint) {
+      return getType(constraint.getID());
     }
 
-    class DefaultCollision implements Collision {
-        private final GanttCalendar myAcceptableStart;
-
-        private final int myVariation;
-
-        private final boolean isActive;
-
-        public DefaultCollision(GanttCalendar myAcceptableStart,
-                int myVariation, boolean isActive) {
-            this.myAcceptableStart = myAcceptableStart;
-            this.myVariation = myVariation;
-            this.isActive = isActive;
+    public static Type getType(int constraintID) {
+      for (Type t : Type.values()) {
+        if (t.ordinal() + 1 == constraintID) {
+          return t;
         }
+      }
+      return null;
+    }
+  }
 
-        @Override
-        public GanttCalendar getAcceptableStart() {
-            return myAcceptableStart;
-        }
+  void setTaskDependency(TaskDependency dependency);
 
-        @Override
-        public int getVariation() {
-            return myVariation;
-        }
+  // boolean isFulfilled();
+  // void fulfil();
+  Collision getCollision();
 
-        @Override
-        public boolean isActive() {
-            return isActive;
-        }
+  Collision getBackwardCollision(Date depedantStart);
 
+  String getName();
+
+  int getID();
+
+  TaskDependency.ActivityBinding getActivityBinding();
+
+  interface Collision {
+    GanttCalendar getAcceptableStart();
+
+    int getVariation();
+
+    int NO_VARIATION = 0;
+
+    int START_EARLIER_VARIATION = -1;
+
+    int START_LATER_VARIATION = 1;
+
+    boolean isActive();
+  }
+
+  class DefaultCollision implements Collision {
+    private final GanttCalendar myAcceptableStart;
+
+    private final int myVariation;
+
+    private final boolean isActive;
+
+    public DefaultCollision(GanttCalendar myAcceptableStart, int myVariation, boolean isActive) {
+      this.myAcceptableStart = myAcceptableStart;
+      this.myVariation = myVariation;
+      this.isActive = isActive;
     }
 
-    Object clone() throws CloneNotSupportedException;
+    @Override
+    public GanttCalendar getAcceptableStart() {
+      return myAcceptableStart;
+    }
+
+    @Override
+    public int getVariation() {
+      return myVariation;
+    }
+
+    @Override
+    public boolean isActive() {
+      return isActive;
+    }
+
+  }
+
+  Object clone() throws CloneNotSupportedException;
 }

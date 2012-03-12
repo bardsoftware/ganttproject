@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -32,44 +32,45 @@ import net.sourceforge.ganttproject.util.StringUtils;
  * Action for deleting resources
  */
 public class ResourceDeleteAction extends ResourceAction {
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private GanttProject myProject;
+  private GanttProject myProject;
 
-    public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project, UIFacade uiFacade) {
-        this(hrManager, context, project, uiFacade, IconSize.MENU);
+  public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
+      UIFacade uiFacade) {
+    this(hrManager, context, project, uiFacade, IconSize.MENU);
+  }
+
+  private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
+      UIFacade uiFacade, IconSize size) {
+    super("resource.delete", hrManager, context, size);
+    myUIFacade = uiFacade;
+    myProject = project;
+    setEnabled(hasResources());
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    final HumanResource[] selectedResources = getSelection();
+    if (selectedResources.length > 0) {
+      final String message = getI18n("msg6") + " " + StringUtils.getDisplayNames(selectedResources) + "?";
+      final String title = getI18n("question");
+      Choice choice = myUIFacade.showConfirmationDialog(message, title);
+      if (choice == Choice.YES) {
+        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+          @Override
+          public void run() {
+            deleteResources(selectedResources);
+            myProject.repaint2();
+          }
+        });
+      }
     }
+  }
 
-    private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
-            UIFacade uiFacade, IconSize size) {
-        super("resource.delete", hrManager, context, size);
-        myUIFacade = uiFacade;
-        myProject = project;
-        setEnabled(hasResources());
+  private void deleteResources(HumanResource[] resources) {
+    for (HumanResource resource : resources) {
+      resource.delete();
     }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        final HumanResource[] selectedResources = getSelection();
-        if (selectedResources.length > 0) {
-            final String message = getI18n("msg6") + " " + StringUtils.getDisplayNames(selectedResources) + "?";
-            final String title = getI18n("question");
-            Choice choice = myUIFacade.showConfirmationDialog(message, title);
-            if (choice == Choice.YES) {
-                myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-                    @Override
-                    public void run() {
-                        deleteResources(selectedResources);
-                        myProject.repaint2();
-                    }
-                });
-            }
-        }
-    }
-
-    private void deleteResources(HumanResource[] resources) {
-        for (HumanResource resource : resources) {
-            resource.delete();
-        }
-    }
+  }
 }

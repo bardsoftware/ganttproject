@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.calendar;
 
 import java.net.URL;
@@ -30,69 +30,71 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface GPCalendar {
-    public enum MoveDirection {
-        FORWARD, BACKWARD
-    }
+  public enum MoveDirection {
+    FORWARD, BACKWARD
+  }
 
-    List<GPCalendarActivity> getActivities(Date startDate, Date endDate);
+  List<GPCalendarActivity> getActivities(Date startDate, Date endDate);
 
-    List<GPCalendarActivity> getActivities(Date startDate, TimeUnit timeUnit, long l);
+  List<GPCalendarActivity> getActivities(Date startDate, TimeUnit timeUnit, long l);
 
-    void setWeekDayType(int day, DayType type);
+  void setWeekDayType(int day, DayType type);
 
-    DayType getWeekDayType(int day);
+  DayType getWeekDayType(int day);
 
-    /**
-     * @return true when weekends are only shown and taken into
-     *  account for the task scheduling.
-     */
-    public boolean getOnlyShowWeekends();
+  /**
+   * @return true when weekends are only shown and taken into account for the
+   *         task scheduling.
+   */
+  public boolean getOnlyShowWeekends();
 
-    /**
-     * @param onlyShowWeekends must be set to true if weekends are
-     *  only shown and not taken into account for the task scheduling
-     */
-    public void setOnlyShowWeekends(boolean onlyShowWeekends);
+  /**
+   * @param onlyShowWeekends
+   *          must be set to true if weekends are only shown and not taken into
+   *          account for the task scheduling
+   */
+  public void setOnlyShowWeekends(boolean onlyShowWeekends);
 
-    void setPublicHoliDayType(int month, int date);
+  void setPublicHoliDayType(int month, int date);
 
-    public void setPublicHoliDayType(Date curDayStart);
+  public void setPublicHoliDayType(Date curDayStart);
 
-    public boolean isPublicHoliDay(Date curDayStart);
+  public boolean isPublicHoliDay(Date curDayStart);
 
-    public boolean isNonWorkingDay(Date curDayStart);
+  public boolean isNonWorkingDay(Date curDayStart);
 
-    public DayType getDayTypeDate(Date curDayStart);
+  public DayType getDayTypeDate(Date curDayStart);
 
-    public void setPublicHolidays(URL calendar);
+  public void setPublicHolidays(URL calendar);
 
-    /** Clears all defined public holidays */
-    public void clearPublicHolidays();
+  /** Clears all defined public holidays */
+  public void clearPublicHolidays();
 
-    /** @return an unmodifiable collection of (public) holidays */
-    public Collection<Date> getPublicHolidays();
+  /** @return an unmodifiable collection of (public) holidays */
+  public Collection<Date> getPublicHolidays();
 
-    public GPCalendar copy();
+  public GPCalendar copy();
 
-    public enum DayType {
-        WORKING, NON_WORKING, WEEKEND, HOLIDAY
-    }
+  public enum DayType {
+    WORKING, NON_WORKING, WEEKEND, HOLIDAY
+  }
 
-    Date findClosestWorkingTime(Date time);
+  Date findClosestWorkingTime(Date time);
 
-    /**
-     * Adds <code>shift</code> period to <code>input</code> date taking into
-     * account this calendar working/non-working time If input date corresponds
-     * to Friday midnight and this calendar if configured to have a weekend on
-     * Saturday and Sunday then adding a shift of "1 day" will result to the
-     * midnight of the next Monday
-     */
-    Date shiftDate(Date input, TaskLength shift);
+  /**
+   * Adds <code>shift</code> period to <code>input</code> date taking into
+   * account this calendar working/non-working time If input date corresponds to
+   * Friday midnight and this calendar if configured to have a weekend on
+   * Saturday and Sunday then adding a shift of "1 day" will result to the
+   * midnight of the next Monday
+   */
+  Date shiftDate(Date input, TaskLength shift);
 
-    Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
+  Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
 
-    GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
-    String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
-    URL getPublicHolidaysUrl();
+  GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
+  String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
+
+  URL getPublicHolidaysUrl();
 
 }

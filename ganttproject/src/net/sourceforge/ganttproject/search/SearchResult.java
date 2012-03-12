@@ -15,46 +15,47 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
-    private final String myOrigin;
-    private final String mySnippet;
-    private final String myLabel;
-    private final SearchService<?, SearchObjectType> mySearchService;
-    private final SearchObjectType mySearchObject;
+  private final String myOrigin;
+  private final String mySnippet;
+  private final String myLabel;
+  private final SearchService<?, SearchObjectType> mySearchService;
+  private final SearchObjectType mySearchObject;
 
-    public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject, SearchService<?, SearchObjectType> service) {
-        myLabel = label;
-        mySnippet = snippet;
-        myOrigin = origin;
-        mySearchService = service;
-        mySearchObject = searchObject;
-    }
+  public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject,
+      SearchService<?, SearchObjectType> service) {
+    myLabel = label;
+    mySnippet = snippet;
+    myOrigin = origin;
+    mySearchService = service;
+    mySearchObject = searchObject;
+  }
 
-    public String getLabel() {
-        return myLabel;
-    }
+  public String getLabel() {
+    return myLabel;
+  }
 
-    public String getSnippet() {
-        return mySnippet;
-    }
+  public String getSnippet() {
+    return mySnippet;
+  }
 
-    public String getOrigin() {
-        return myOrigin;
-    }
+  public String getOrigin() {
+    return myOrigin;
+  }
 
-    public SearchObjectType getObject() {
-        return mySearchObject;
-    }
+  public SearchObjectType getObject() {
+    return mySearchObject;
+  }
 
-    @Override
-    public String toString() {
-        return myLabel;
-    }
+  @Override
+  public String toString() {
+    return myLabel;
+  }
 
-    public SearchService<?, SearchObjectType> getSearchService() {
-        return mySearchService;
-    }
+  public SearchService<?, SearchObjectType> getSearchService() {
+    return mySearchService;
+  }
 }

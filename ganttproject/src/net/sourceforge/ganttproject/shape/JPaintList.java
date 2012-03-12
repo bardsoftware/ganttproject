@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.shape;
 
 /*
@@ -27,13 +27,13 @@ import java.awt.Paint;
 import javax.swing.JList;
 
 public class JPaintList extends JList {
-    public JPaintList(Paint[] list) {
-        super(list);
-        setCellRenderer(new PaintCellRenderer());
-        setSelectedIndex(0);
-    }
+  public JPaintList(Paint[] list) {
+    super(list);
+    setCellRenderer(new PaintCellRenderer());
+    setSelectedIndex(0);
+  }
 
-    public Paint getSelectedPaint() {
-        return (Paint) getSelectedValue();
-    }
+  public Paint getSelectedPaint() {
+    return (Paint) getSelectedValue();
+  }
 }

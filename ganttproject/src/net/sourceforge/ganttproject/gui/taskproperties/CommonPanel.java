@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.awt.BorderLayout;
@@ -37,32 +37,31 @@ import org.jdesktop.swing.decorator.HighlighterPipeline;
  * @author dbarashev (Dmitry Barashev)
  */
 abstract class CommonPanel {
-    static void setupTableUI(JNTable table) {
-        table.setPreferredVisibleRowCount(10);
-        table.setHighlighters(new HighlighterPipeline(new Highlighter[] {
-                AlternateRowHighlighter.floralWhite,
-                AlternateRowHighlighter.quickSilver }));
-        table.getTable().setSortable(false);
-    }
+  static void setupTableUI(JNTable table) {
+    table.setPreferredVisibleRowCount(10);
+    table.setHighlighters(new HighlighterPipeline(new Highlighter[] { AlternateRowHighlighter.floralWhite,
+        AlternateRowHighlighter.quickSilver }));
+    table.getTable().setSortable(false);
+  }
 
-    static void setupComboBoxEditor(TableColumn column, Object[] values) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(values);
-        JComboBox comboBox = new JComboBox(model);
-        comboBox.setEditable(false);
-        column.setCellEditor(new DefaultCellEditor(comboBox));
-        if (values.length > 1) {
-            comboBox.setSelectedIndex(0);
-        }
+  static void setupComboBoxEditor(TableColumn column, Object[] values) {
+    DefaultComboBoxModel model = new DefaultComboBoxModel(values);
+    JComboBox comboBox = new JComboBox(model);
+    comboBox.setEditable(false);
+    column.setCellEditor(new DefaultCellEditor(comboBox));
+    if (values.length > 1) {
+      comboBox.setSelectedIndex(0);
     }
+  }
 
-    static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
-        JPanel result = new JPanel(new BorderLayout());
-        actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
-        JPanel actionsWrapper = new JPanel(new BorderLayout());
-        actionsWrapper.add(actionsComponent, BorderLayout.WEST);
-        result.add(actionsWrapper, BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(table);
-        result.add(scrollPane, BorderLayout.CENTER);
-        return result;
-    }
+  static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
+    JPanel result = new JPanel(new BorderLayout());
+    actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+    JPanel actionsWrapper = new JPanel(new BorderLayout());
+    actionsWrapper.add(actionsComponent, BorderLayout.WEST);
+    result.add(actionsWrapper, BorderLayout.NORTH);
+    JScrollPane scrollPane = new JScrollPane(table);
+    result.add(scrollPane, BorderLayout.CENTER);
+    return result;
+  }
 }

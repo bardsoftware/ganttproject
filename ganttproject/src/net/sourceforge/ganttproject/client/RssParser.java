@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.client;
 
 import org.w3c.dom.Node;
@@ -32,63 +32,63 @@ import java.util.Iterator;
 
 class RssParser {
 
-    private final XPathFactory myXPathFactory = XPathFactory.newInstance();
+  private final XPathFactory myXPathFactory = XPathFactory.newInstance();
 
-    private XPathExpression getXPath(String expression) throws XPathExpressionException {
-        XPath xpath = myXPathFactory.newXPath();
-        xpath.setNamespaceContext(new NamespaceContext() {
-            @Override
-            public String getNamespaceURI(String s) {
-                if ("atom".equals(s)) {
-                    return "http://www.w3.org/2005/Atom";
-                }
-                throw new IllegalArgumentException(s);
-            }
-
-            @Override
-            public String getPrefix(String s) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Iterator<?> getPrefixes(String s) {
-                throw new UnsupportedOperationException();
-            }
-        });
-        return xpath.compile(expression);
-    }
-
-    public RssFeed parse(InputStream inputStream, Date lastCheckDate) {
-        RssFeed result = new RssFeed();
-        try {
-            XPathExpression xpath = getXPath("//atom:entry");
-            NodeList items = (NodeList) xpath.evaluate(
-                new InputSource(new InputStreamReader(inputStream)), XPathConstants.NODESET);
-            for (int i = 0; i < items.getLength(); i++) {
-                addItem(result, items.item(i), lastCheckDate);
-            }
-
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
+  private XPathExpression getXPath(String expression) throws XPathExpressionException {
+    XPath xpath = myXPathFactory.newXPath();
+    xpath.setNamespaceContext(new NamespaceContext() {
+      @Override
+      public String getNamespaceURI(String s) {
+        if ("atom".equals(s)) {
+          return "http://www.w3.org/2005/Atom";
         }
-        return result;
-    }
+        throw new IllegalArgumentException(s);
+      }
 
-    private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
-        if (lastCheckDate != null) {
-            String updateString = getXPath("atom:updated/text()").evaluate(item);
-            try {
-                Date updateDate = DateParser.parse(updateString);
-                if (updateDate.before(lastCheckDate)) {
-                    return;
-                }
-            } catch (InvalidDateException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        String title = getXPath("atom:title/text()").evaluate(item);
-        String body = getXPath("atom:content/text()").evaluate(item);
-        result.addItem(title, body);
+      @Override
+      public String getPrefix(String s) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Iterator<?> getPrefixes(String s) {
+        throw new UnsupportedOperationException();
+      }
+    });
+    return xpath.compile(expression);
+  }
+
+  public RssFeed parse(InputStream inputStream, Date lastCheckDate) {
+    RssFeed result = new RssFeed();
+    try {
+      XPathExpression xpath = getXPath("//atom:entry");
+      NodeList items = (NodeList) xpath.evaluate(new InputSource(new InputStreamReader(inputStream)),
+          XPathConstants.NODESET);
+      for (int i = 0; i < items.getLength(); i++) {
+        addItem(result, items.item(i), lastCheckDate);
+      }
+
+    } catch (XPathExpressionException e) {
+      e.printStackTrace();
     }
+    return result;
+  }
+
+  private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
+    if (lastCheckDate != null) {
+      String updateString = getXPath("atom:updated/text()").evaluate(item);
+      try {
+        Date updateDate = DateParser.parse(updateString);
+        if (updateDate.before(lastCheckDate)) {
+          return;
+        }
+      } catch (InvalidDateException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    String title = getXPath("atom:title/text()").evaluate(item);
+    String body = getXPath("atom:content/text()").evaluate(item);
+    result.addItem(title, body);
+  }
 }

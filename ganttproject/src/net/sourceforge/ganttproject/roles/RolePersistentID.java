@@ -15,43 +15,41 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.roles;
 
 public class RolePersistentID {
-    private static final String ROLESET_DELIMITER = ":";
+  private static final String ROLESET_DELIMITER = ":";
 
-    private final String myRoleSetID;
+  private final String myRoleSetID;
 
-    private final int myRoleID;
+  private final int myRoleID;
 
-    public RolePersistentID(String persistentID) {
-        int posDelimiter = persistentID.lastIndexOf(ROLESET_DELIMITER);
-        String rolesetName = posDelimiter == -1 ? null : persistentID
-                .substring(0, posDelimiter);
-        String roleIDasString = posDelimiter == -1 ? persistentID
-                : persistentID.substring(posDelimiter + 1);
-        int roleID;
-        try {
-            roleID = Integer.parseInt(roleIDasString);
-        } catch (NumberFormatException e) {
-            roleID = 0;
-        }
-        myRoleID = roleID;
-        myRoleSetID = rolesetName;
-
+  public RolePersistentID(String persistentID) {
+    int posDelimiter = persistentID.lastIndexOf(ROLESET_DELIMITER);
+    String rolesetName = posDelimiter == -1 ? null : persistentID.substring(0, posDelimiter);
+    String roleIDasString = posDelimiter == -1 ? persistentID : persistentID.substring(posDelimiter + 1);
+    int roleID;
+    try {
+      roleID = Integer.parseInt(roleIDasString);
+    } catch (NumberFormatException e) {
+      roleID = 0;
     }
+    myRoleID = roleID;
+    myRoleSetID = rolesetName;
 
-    public String getRoleSetID() {
-        return myRoleSetID;
-    }
+  }
 
-    public int getRoleID() {
-        return myRoleID;
-    }
+  public String getRoleSetID() {
+    return myRoleSetID;
+  }
 
-    public String asString() {
-        return myRoleSetID + ROLESET_DELIMITER + myRoleID;
-    }
+  public int getRoleID() {
+    return myRoleID;
+  }
+
+  public String asString() {
+    return myRoleSetID + ROLESET_DELIMITER + myRoleID;
+  }
 
 }

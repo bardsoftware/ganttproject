@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
@@ -35,79 +35,75 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
  * @author dbarashev (Dmitry Barashev)
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
-    private GraphicPrimitiveContainer myTimelineContainer;
+  private GraphicPrimitiveContainer myTimelineContainer;
 
-    public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
-        this(model, primitiveContainer, primitiveContainer);
+  public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
+    this(model, primitiveContainer, primitiveContainer);
+  }
+
+  public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer timelineContainer,
+      GraphicPrimitiveContainer primitiveContainer) {
+    super(model);
+    myTimelineContainer = timelineContainer;
+  }
+
+  @Override
+  public GraphicPrimitiveContainer getPrimitiveContainer() {
+    return myTimelineContainer;
+  }
+
+  @Override
+  public void render() {
+    Offset prevOffset = null;
+    List<Offset> bottomOffsets = getBottomUnitOffsets();
+    int xpos = bottomOffsets.get(0).getOffsetPixels();
+    if (xpos > 0) {
+      xpos = 0;
     }
-
-    public BottomUnitLineRendererImpl(
-            ChartModel model,
-            GraphicPrimitiveContainer timelineContainer,
-            GraphicPrimitiveContainer primitiveContainer) {
-        super(model);
-        myTimelineContainer = timelineContainer;
+    TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(),
+        getConfig().getSpanningHeaderHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
+    for (Offset offset : bottomOffsets) {
+      renderScaleMark(offset, prevOffset);
+      renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
+      prevOffset = offset;
+      xpos = prevOffset.getOffsetPixels();
     }
+  }
 
-    @Override
-    public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myTimelineContainer;
-    }
-
-    @Override
-    public void render() {
-        Offset prevOffset = null;
-        List<Offset> bottomOffsets = getBottomUnitOffsets();
-        int xpos = bottomOffsets.get(0).getOffsetPixels();
-        if (xpos > 0) {
-            xpos = 0;
+  private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
+    final int maxWidth = curOffset.getOffsetPixels() - curX;
+    TimeFormatter formatter = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE);
+    TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
+    for (int i = 0; i < texts.length; i++) {
+      final TimeUnitText timeUnitText = texts[i];
+      GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
+        @Override
+        public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          return timeUnitText.getLabels(maxWidth, textLengthCalculator);
         }
-        TextGroup textGroup = myTimelineContainer.createTextGroup(
-                0, getLineTopPosition(), getConfig().getSpanningHeaderHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
-        for (Offset offset : bottomOffsets) {
-            renderScaleMark(offset, prevOffset);
-            renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
-            prevOffset = offset;
-            xpos = prevOffset.getOffsetPixels();
-        }
+      });
+      textGroup.addText(text);
     }
+  }
 
-    private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
-        final int maxWidth = curOffset.getOffsetPixels() - curX;
-        TimeFormatter formatter = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE);
-        TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
-        for (int i = 0; i < texts.length; i++) {
-            final TimeUnitText timeUnitText = texts[i];
-            GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
-                @Override
-                public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
-                    return timeUnitText.getLabels(maxWidth, textLengthCalculator);
-                }
-            });
-            textGroup.addText(text);
-        }
+  private void renderScaleMark(Offset offset, Offset prevOffset) {
+    if (prevOffset == null) {
+      return;
     }
+    if (offset.getOffsetUnit() == GPTimeUnitStack.DAY) {
+      if (offset.getDayType() != GPCalendar.DayType.WORKING || prevOffset.getDayType() != GPCalendar.DayType.WORKING) {
+        return;
+      }
+    }
+    myTimelineContainer.createLine(prevOffset.getOffsetPixels(), getLineTopPosition(), prevOffset.getOffsetPixels(),
+        getLineTopPosition() + 10);
+  }
 
-    private void renderScaleMark(Offset offset, Offset prevOffset) {
-        if (prevOffset == null) {
-            return;
-        }
-        if (offset.getOffsetUnit() == GPTimeUnitStack.DAY) {
-            if (offset.getDayType() != GPCalendar.DayType.WORKING
-                    || prevOffset.getDayType() != GPCalendar.DayType.WORKING) {
-                return;
-            }
-        }
-        myTimelineContainer.createLine(
-                prevOffset.getOffsetPixels(), getLineTopPosition(),
-                prevOffset.getOffsetPixels(), getLineTopPosition()+10);
-    }
+  private int getLineTopPosition() {
+    return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+  }
 
-    private int getLineTopPosition() {
-        return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-    }
-
-    private List<Offset> getBottomUnitOffsets() {
-        return getChartModel().getBottomUnitOffsets();
-    }
+  private List<Offset> getBottomUnitOffsets() {
+    return getChartModel().getBottomUnitOffsets();
+  }
 }

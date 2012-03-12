@@ -15,57 +15,56 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.algorithm;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 
 public abstract class RecalculateTaskCompletionPercentageAlgorithm extends AlgorithmBase {
-    public void run() {
-        if (!isEnabled()) {
-            return;
-        }
-        TaskContainmentHierarchyFacade facade = createContainmentFacade();
-        for (Task t : facade.getTasksInDocumentOrder()) {
-            if (!facade.hasNestedTasks(t)) {
-                run(t);
-            }
-        }
+  public void run() {
+    if (!isEnabled()) {
+      return;
     }
-    public void run(Task task) {
-        if (!isEnabled()) {
-            return;
-        }
-        TaskContainmentHierarchyFacade facade = createContainmentFacade();
-        recalculateSupertaskCompletionPercentageBottomUp(task, facade);
+    TaskContainmentHierarchyFacade facade = createContainmentFacade();
+    for (Task t : facade.getTasksInDocumentOrder()) {
+      if (!facade.hasNestedTasks(t)) {
+        run(t);
+      }
     }
+  }
 
-    private void recalculateSupertaskCompletionPercentageBottomUp(Task task,
-            TaskContainmentHierarchyFacade facade) {
-        while (task != null) {
-            recalculateSupertaskCompletionPercentage(task, facade);
-            task = facade.getContainer(task);
-        }
+  public void run(Task task) {
+    if (!isEnabled()) {
+      return;
     }
+    TaskContainmentHierarchyFacade facade = createContainmentFacade();
+    recalculateSupertaskCompletionPercentageBottomUp(task, facade);
+  }
 
-    private void recalculateSupertaskCompletionPercentage(Task task,
-            TaskContainmentHierarchyFacade facade) {
-        Task[] nestedTasks = facade.getNestedTasks(task);
-        if (nestedTasks.length > 0) {
-            int completedDays = 0;
-            long plannedDays = 0;
-            for (int i = 0; i < nestedTasks.length; i++) {
-                Task next = nestedTasks[i];
-                long nextDuration = next.getDuration().getLength();
-                completedDays += nextDuration * next.getCompletionPercentage();
-                plannedDays += nextDuration;
-            }
-            int completionPercentage = plannedDays == 0 ? 0 : (int) (completedDays / plannedDays);
-            task.setCompletionPercentage(completionPercentage);
-        }
+  private void recalculateSupertaskCompletionPercentageBottomUp(Task task, TaskContainmentHierarchyFacade facade) {
+    while (task != null) {
+      recalculateSupertaskCompletionPercentage(task, facade);
+      task = facade.getContainer(task);
     }
+  }
 
-    protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
+  private void recalculateSupertaskCompletionPercentage(Task task, TaskContainmentHierarchyFacade facade) {
+    Task[] nestedTasks = facade.getNestedTasks(task);
+    if (nestedTasks.length > 0) {
+      int completedDays = 0;
+      long plannedDays = 0;
+      for (int i = 0; i < nestedTasks.length; i++) {
+        Task next = nestedTasks[i];
+        long nextDuration = next.getDuration().getLength();
+        completedDays += nextDuration * next.getCompletionPercentage();
+        plannedDays += nextDuration;
+      }
+      int completionPercentage = plannedDays == 0 ? 0 : (int) (completedDays / plannedDays);
+      task.setCompletionPercentage(completionPercentage);
+    }
+  }
+
+  protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
 
 }

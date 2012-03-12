@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.resource;
 
 import java.io.OutputStream;
@@ -35,181 +35,178 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  */
 public class HumanResourceManager {
 
-    private List<ResourceView> myViews = new ArrayList<ResourceView>();
+  private List<ResourceView> myViews = new ArrayList<ResourceView>();
 
-    private List<HumanResource> resources = new ArrayList<HumanResource>();
+  private List<HumanResource> resources = new ArrayList<HumanResource>();
 
-    private int nextFreeId = 0;
+  private int nextFreeId = 0;
 
-    private final Role myDefaultRole;
+  private final Role myDefaultRole;
 
-    private final CustomPropertyManager myCustomPropertyManager;
+  private final CustomPropertyManager myCustomPropertyManager;
 
-    public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager) {
-        myDefaultRole = defaultRole;
-        myCustomPropertyManager = customPropertyManager;
+  public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager) {
+    myDefaultRole = defaultRole;
+    myCustomPropertyManager = customPropertyManager;
+  }
+
+  public HumanResource newHumanResource() {
+    HumanResource result = new HumanResource(this);
+    result.setRole(myDefaultRole);
+    return result;
+  }
+
+  public HumanResource create(String name, int i) {
+    HumanResource hr = new HumanResource(name, i, this);
+    hr.setRole(myDefaultRole);
+    add(hr);
+    return hr;
+  }
+
+  public void add(HumanResource resource) {
+    if (resource.getId() == -1) {
+      resource.setId(nextFreeId);
     }
-
-    public HumanResource newHumanResource() {
-        HumanResource result = new HumanResource(this);
-        result.setRole(myDefaultRole);
-        return result;
+    if (resource.getId() >= nextFreeId) {
+      nextFreeId = resource.getId() + 1;
     }
+    resources.add(resource);
+    fireResourceAdded(resource);
+  }
 
-    public HumanResource create(String name, int i) {
-        HumanResource hr = new HumanResource(name, i, this);
-        hr.setRole(myDefaultRole);
-        add(hr);
-        return hr;
+  public HumanResource getById(int id) {
+    // Linear search is not really efficient, but we do not have so many
+    // resources !?
+    HumanResource pr = null;
+    for (int i = 0; i < resources.size(); i++)
+      if (resources.get(i).getId() == id) {
+        pr = resources.get(i);
+        break;
+      }
+    return pr;
+  }
+
+  public List<HumanResource> getResources() {
+    return resources;
+  }
+
+  public HumanResource[] getResourcesArray() {
+    return resources.toArray(new HumanResource[resources.size()]);
+  }
+
+  public void remove(HumanResource resource) {
+    fireResourcesRemoved(new HumanResource[] { resource });
+    resources.remove(resource);
+  }
+
+  public void remove(HumanResource resource, GPUndoManager myUndoManager) {
+    final HumanResource res = resource;
+    myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
+      @Override
+      public void run() {
+        fireResourcesRemoved(new HumanResource[] { res });
+        resources.remove(res);
+      }
+    });
+  }
+
+  public void save(OutputStream target) {
+  }
+
+  public void clear() {
+    fireCleanup();
+    resources.clear();
+  }
+
+  public void addView(ResourceView view) {
+    myViews.add(view);
+  }
+
+  private void fireResourceAdded(HumanResource resource) {
+    ResourceEvent e = new ResourceEvent(this, resource);
+    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+      ResourceView nextView = i.next();
+      nextView.resourceAdded(e);
     }
+  }
 
-    public void add(HumanResource resource) {
-        if (resource.getId() == -1) {
-            resource.setId(nextFreeId);
-        }
-        if (resource.getId() >= nextFreeId) {
-            nextFreeId = resource.getId() + 1;
-        }
-        resources.add(resource);
-        fireResourceAdded(resource);
+  void fireResourceChanged(HumanResource resource) {
+    ResourceEvent e = new ResourceEvent(this, resource);
+    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+      ResourceView nextView = i.next();
+      nextView.resourceChanged(e);
     }
+  }
 
-    public HumanResource getById(int id) {
-        // Linear search is not really efficient, but we do not have so many
-        // resources !?
-        HumanResource pr = null;
-        for (int i = 0; i < resources.size(); i++)
-            if (resources.get(i).getId() == id) {
-                pr = resources.get(i);
-                break;
-            }
-        return pr;
+  private void fireResourcesRemoved(HumanResource[] resources) {
+    ResourceEvent e = new ResourceEvent(this, resources);
+    for (int i = 0; i < myViews.size(); i++) {
+      ResourceView nextView = myViews.get(i);
+      nextView.resourcesRemoved(e);
     }
+  }
 
-    public List<HumanResource> getResources() {
-        return resources;
+  public void fireAssignmentsChanged(HumanResource resource) {
+    ResourceEvent e = new ResourceEvent(this, resource);
+    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
+      ResourceView nextView = i.next();
+      nextView.resourceAssignmentsChanged(e);
     }
+  }
 
-    public HumanResource[] getResourcesArray() {
-        return resources.toArray(new HumanResource[resources.size()]);
+  private void fireCleanup() {
+    fireResourcesRemoved(resources.toArray(new HumanResource[resources.size()]));
+  }
+
+  /** Move up the resource number index */
+  public void up(HumanResource hr) {
+    int index = resources.indexOf(hr);
+    assert index >= 0;
+    resources.remove(index);
+    resources.add(index - 1, hr);
+    fireResourceChanged(hr);
+  }
+
+  /** Move down the resource number index */
+  public void down(HumanResource hr) {
+    int index = resources.indexOf(hr);
+    assert index >= 0;
+    resources.remove(index);
+    resources.add(index + 1, hr);
+    fireResourceChanged(hr);
+
+  }
+
+  public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
+    Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
+    List<HumanResource> foreignResources = hrManager.getResources();
+    for (int i = 0; i < foreignResources.size(); i++) {
+      HumanResource foreignHR = foreignResources.get(i);
+      HumanResource nativeHR = merger.findNative(foreignHR, this);
+      if (nativeHR == null) {
+        nativeHR = create(foreignHR.getName(), nextFreeId);
+      }
+      foreign2native.put(foreignHR, nativeHR);
     }
+    merger.merge(foreign2native);
+    return foreign2native;
+  }
 
-    public void remove(HumanResource resource) {
-        fireResourcesRemoved(new HumanResource[] { resource });
-        resources.remove(resource);
+  public CustomPropertyManager getCustomPropertyManager() {
+    return myCustomPropertyManager;
+  }
+
+  static String getValueAsString(Object value) {
+    final String result;
+    if (value != null) {
+      if (value instanceof GanttCalendar) {
+        result = ((GanttCalendar) value).toXMLString();
+      } else {
+        result = String.valueOf(value);
+      }
+    } else {
+      result = null;
     }
-
-    public void remove(HumanResource resource, GPUndoManager myUndoManager) {
-        final HumanResource res = resource;
-        myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
-            @Override
-            public void run() {
-                fireResourcesRemoved(new HumanResource[] { res });
-                resources.remove(res);
-            }
-        });
-    }
-
-    public void save(OutputStream target) {
-    }
-
-    public void clear() {
-        fireCleanup();
-        resources.clear();
-    }
-
-    public void addView(ResourceView view) {
-        myViews.add(view);
-    }
-
-    private void fireResourceAdded(HumanResource resource) {
-        ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = i.next();
-            nextView.resourceAdded(e);
-        }
-    }
-
-    void fireResourceChanged(HumanResource resource) {
-        ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = i.next();
-            nextView.resourceChanged(e);
-        }
-    }
-
-    private void fireResourcesRemoved(HumanResource[] resources) {
-        ResourceEvent e = new ResourceEvent(this, resources);
-        for (int i = 0; i < myViews.size(); i++) {
-            ResourceView nextView = myViews.get(i);
-            nextView.resourcesRemoved(e);
-        }
-    }
-
-    public void fireAssignmentsChanged(HumanResource resource) {
-        ResourceEvent e = new ResourceEvent(this, resource);
-        for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-            ResourceView nextView = i.next();
-            nextView.resourceAssignmentsChanged(e);
-        }
-    }
-
-    private void fireCleanup() {
-        fireResourcesRemoved(resources
-                .toArray(new HumanResource[resources.size()]));
-    }
-
-    /** Move up the resource number index */
-    public void up(HumanResource hr) {
-        int index =  resources.indexOf(hr);
-        assert index>=0;
-        resources.remove(index);
-        resources.add(index - 1, hr);
-        fireResourceChanged(hr);
-    }
-
-    /** Move down the resource number index */
-    public void down(HumanResource hr) {
-        int index =  resources.indexOf(hr);
-        assert index>=0;
-        resources.remove(index);
-        resources.add(index + 1, hr);
-        fireResourceChanged(hr);
-
-    }
-
-    public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
-        Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
-        List<HumanResource> foreignResources = hrManager.getResources();
-        for (int i = 0; i < foreignResources.size(); i++) {
-            HumanResource foreignHR = foreignResources.get(i);
-            HumanResource nativeHR = merger.findNative(foreignHR, this);
-            if (nativeHR == null) {
-                nativeHR = create(foreignHR.getName(), nextFreeId);
-            }
-            foreign2native.put(foreignHR, nativeHR);
-        }
-        merger.merge(foreign2native);
-        return foreign2native;
-    }
-
-    public CustomPropertyManager getCustomPropertyManager() {
-        return myCustomPropertyManager;
-    }
-
-    static String getValueAsString(Object value) {
-        final String result;
-        if (value!=null) {
-            if (value instanceof GanttCalendar) {
-                result = ((GanttCalendar)value).toXMLString();
-            }
-            else {
-                result = String.valueOf(value);
-            }
-        }
-        else {
-            result = null;
-        }
-        return result;
-    }
+    return result;
+  }
 }

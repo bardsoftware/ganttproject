@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
@@ -27,49 +27,49 @@ import net.sourceforge.ganttproject.shape.ShapePaint;
  * @author bard
  */
 public interface MutableTask {
-    void setName(String name);
+  void setName(String name);
 
-    void setMilestone(boolean isMilestone);
+  void setMilestone(boolean isMilestone);
 
-    void setPriority(Task.Priority priority);
+  void setPriority(Task.Priority priority);
 
-    void setStart(GanttCalendar start);
+  void setStart(GanttCalendar start);
 
-    void setEnd(GanttCalendar end);
+  void setEnd(GanttCalendar end);
 
-    void setDuration(TaskLength length);
+  void setDuration(TaskLength length);
 
-    void shift(TaskLength shift);
+  void shift(TaskLength shift);
 
-    void setCompletionPercentage(int percentage);
+  void setCompletionPercentage(int percentage);
 
-//    void setStartFixed(boolean isFixed);
+  // void setStartFixed(boolean isFixed);
 
-//    void setFinishFixed(boolean isFixed);
+  // void setFinishFixed(boolean isFixed);
 
-    void setShape(ShapePaint shape);
+  void setShape(ShapePaint shape);
 
-    void setColor(Color color);
+  void setColor(Color color);
 
-    void setNotes(String notes);
+  void setNotes(String notes);
 
-    void addNotes(String notes);
+  void addNotes(String notes);
 
-    void setExpand(boolean expand);
+  void setExpand(boolean expand);
 
-    /**
-     * Sets the task as critical or not. The method is used be TaskManager after
-     * having run a CriticalPathAlgorithm to set the critical tasks. When
-     * painted, the tasks are rendered as critical using Task.isCritical(). So,
-     * a task is set as critical only if critical path is displayed.
-     *
-     * @param critical
-     *            <code>true</code> if this is critical, <code>false</code>
-     *            otherwise.
-     */
-    void setCritical(boolean critical);
+  /**
+   * Sets the task as critical or not. The method is used be TaskManager after
+   * having run a CriticalPathAlgorithm to set the critical tasks. When painted,
+   * the tasks are rendered as critical using Task.isCritical(). So, a task is
+   * set as critical only if critical path is displayed.
+   * 
+   * @param critical
+   *          <code>true</code> if this is critical, <code>false</code>
+   *          otherwise.
+   */
+  void setCritical(boolean critical);
 
-    void setTaskInfo(TaskInfo taskInfo);
+  void setTaskInfo(TaskInfo taskInfo);
 
-    void setProjectTask (boolean projectTask);
+  void setProjectTask(boolean projectTask);
 }

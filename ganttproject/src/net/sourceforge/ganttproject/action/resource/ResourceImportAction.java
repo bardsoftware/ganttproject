@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -36,51 +36,51 @@ import net.sourceforge.ganttproject.task.TaskManager;
  * resources from
  */
 public class ResourceImportAction extends ResourceAction {
-    private final TaskManager myTaskManager;
+  private final TaskManager myTaskManager;
 
-    private final RoleManager myRoleManager;
+  private final RoleManager myRoleManager;
 
-    private OpenFileDialog myOpenDialog;
+  private OpenFileDialog myOpenDialog;
 
-    private final UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-    public ResourceImportAction(HumanResourceManager resourceManager, TaskManager taskManager, RoleManager roleManager,
-            GanttProject project) {
-        super("resource.import", resourceManager);
-        myTaskManager = taskManager;
-        myRoleManager = roleManager;
-        myUiFacade = project.getUIFacade();
-    }
+  public ResourceImportAction(HumanResourceManager resourceManager, TaskManager taskManager, RoleManager roleManager,
+      GanttProject project) {
+    super("resource.import", resourceManager);
+    myTaskManager = taskManager;
+    myRoleManager = roleManager;
+    myUiFacade = project.getUIFacade();
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        final File file = getResourcesFile();
-        if (file != null) {
-            myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-                @Override
-                public void run() {
-                    GanttXMLOpen loader = new GanttXMLOpen(null, null, myTaskManager, myUiFacade);
-                    ResourceTagHandler tagHandler = new ResourceTagHandler(
-                            getManager(), myRoleManager, getManager().getCustomPropertyManager());
-                    loader.addParsingListener(tagHandler);
-                    RoleTagHandler rolesHandler = new RoleTagHandler(RoleManager.Access.getInstance());
-                    loader.addTagHandler(tagHandler);
-                    loader.addTagHandler(rolesHandler);
-                    loader.load(file);
-                }
-            });
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    final File file = getResourcesFile();
+    if (file != null) {
+      myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+        @Override
+        public void run() {
+          GanttXMLOpen loader = new GanttXMLOpen(null, null, myTaskManager, myUiFacade);
+          ResourceTagHandler tagHandler = new ResourceTagHandler(getManager(), myRoleManager,
+              getManager().getCustomPropertyManager());
+          loader.addParsingListener(tagHandler);
+          RoleTagHandler rolesHandler = new RoleTagHandler(RoleManager.Access.getInstance());
+          loader.addTagHandler(tagHandler);
+          loader.addTagHandler(rolesHandler);
+          loader.load(file);
         }
+      });
     }
+  }
 
-    private File getResourcesFile() {
-        if (myOpenDialog == null) {
-            myOpenDialog = new OpenFileDialog();
-        }
-        return myOpenDialog.show();
+  private File getResourcesFile() {
+    if (myOpenDialog == null) {
+      myOpenDialog = new OpenFileDialog();
     }
+    return myOpenDialog.show();
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "impres_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "impres_";
+  }
 }

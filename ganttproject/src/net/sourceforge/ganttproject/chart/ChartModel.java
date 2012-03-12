@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Dimension;
@@ -33,47 +33,57 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * @author dbarashev
  */
 public interface ChartModel {
-    ChartHeader getChartHeader();
+  ChartHeader getChartHeader();
 
-    void setBounds(Dimension bounds);
+  void setBounds(Dimension bounds);
 
-    Dimension getBounds();
-    //Dimension getMaxBounds();
-    void setStartDate(Date startDate);
+  Dimension getBounds();
 
-    /**
-     * This method calculates the end date of this chart. It is a function of
-     * (start date, bounds, bottom time unit, top time unit, bottom unit width)
-     * so it expects that all these parameters are set correctly.
-     */
-    Date getEndDate();
+  // Dimension getMaxBounds();
+  void setStartDate(Date startDate);
 
-    Date getStartDate();
+  /**
+   * This method calculates the end date of this chart. It is a function of
+   * (start date, bounds, bottom time unit, top time unit, bottom unit width) so
+   * it expects that all these parameters are set correctly.
+   */
+  Date getEndDate();
 
-    void setBottomUnitWidth(int pixelsWidth);
-    int getBottomUnitWidth();
-    void setRowHeight(int rowHeight);
+  Date getStartDate();
 
-    void setTopTimeUnit(TimeUnit topTimeUnit);
+  void setBottomUnitWidth(int pixelsWidth);
 
-    void setBottomTimeUnit(TimeUnit bottomTimeUnit);
-    public TimeUnit getBottomUnit();
+  int getBottomUnitWidth();
 
-    void setVisibleTasks(List<Task> visibleTasks);
+  void setRowHeight(int rowHeight);
 
-    void paint(Graphics g);
+  void setTopTimeUnit(TimeUnit topTimeUnit);
 
-    void setVerticalOffset(int i);
+  void setBottomTimeUnit(TimeUnit bottomTimeUnit);
 
-    ChartUIConfiguration getChartUIConfiguration();
+  public TimeUnit getBottomUnit();
 
-    void addRenderer(ChartRendererBase renderer);
+  void setVisibleTasks(List<Task> visibleTasks);
 
-    List<Offset> getTopUnitOffsets();
-    List<Offset> getBottomUnitOffsets();
-    List<Offset> getDefaultUnitOffsets();
-    Offset getOffsetAt(int x);
-    TaskManager getTaskManager();
-    TimeUnitStack getTimeUnitStack();
-    OptionEventDispatcher getOptionEventDispatcher();
+  void paint(Graphics g);
+
+  void setVerticalOffset(int i);
+
+  ChartUIConfiguration getChartUIConfiguration();
+
+  void addRenderer(ChartRendererBase renderer);
+
+  List<Offset> getTopUnitOffsets();
+
+  List<Offset> getBottomUnitOffsets();
+
+  List<Offset> getDefaultUnitOffsets();
+
+  Offset getOffsetAt(int x);
+
+  TaskManager getTaskManager();
+
+  TimeUnitStack getTimeUnitStack();
+
+  OptionEventDispatcher getOptionEventDispatcher();
 }

@@ -13,33 +13,33 @@ import net.sourceforge.ganttproject.task.TaskLength;
  */
 public class DayTypeAlternance {
 
-    private DayType myDayType;
+  private DayType myDayType;
 
-    private TaskLength myDuration;
+  private TaskLength myDuration;
 
-    private Date myEnd;
+  private Date myEnd;
 
-    DayTypeAlternance(DayType dayType, TaskLength duration, Date endDate) {
-        myDayType = dayType;
-        myDuration = duration;
-        myEnd = endDate;
-    }
+  DayTypeAlternance(DayType dayType, TaskLength duration, Date endDate) {
+    myDayType = dayType;
+    myDuration = duration;
+    myEnd = endDate;
+  }
 
-    public Date getEnd() {
-        return myEnd;
-    }
-    public DayType getDayType() {
-        return myDayType;
-    }
+  public Date getEnd() {
+    return myEnd;
+  }
 
-    public TaskLength getDuration() {
-        return myDuration;
-    }
+  public DayType getDayType() {
+    return myDayType;
+  }
 
-    @Override
-    public String toString() {
-        return "period length=" + myDuration.getLength() + " ("
-                + myDuration.getTimeUnit().getName() + ")" + " is"
-                + (myDayType == DayType.WEEKEND ? " holiday" : " working\n");
-    }
+  public TaskLength getDuration() {
+    return myDuration;
+  }
+
+  @Override
+  public String toString() {
+    return "period length=" + myDuration.getLength() + " (" + myDuration.getTimeUnit().getName() + ")" + " is"
+        + (myDayType == DayType.WEEKEND ? " holiday" : " working\n");
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
@@ -27,31 +27,31 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class TaskUnlinkAction extends TaskActionBase {
 
-    public TaskUnlinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-        super("task.unlink", taskManager, selectionManager, uiFacade, null);
-    }
+  public TaskUnlinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+    super("task.unlink", taskManager, selectionManager, uiFacade, null);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "unlink_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "unlink_";
+  }
 
-    @Override
-    protected boolean isEnabled(List<Task> selection) {
-        for (Task task : selection) {
-            if (task.getDependencies().hasLinks(selection)) {
-                return true;
-            }
-        }
-        return false;
+  @Override
+  protected boolean isEnabled(List<Task> selection) {
+    for (Task task : selection) {
+      if (task.getDependencies().hasLinks(selection)) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    @Override
-    protected void run(List<Task> selection) throws Exception {
-        for (Task task : selection) {
-            task.getDependencies().clear(selection);
-        }
-        // Update (un)link buttons
-        getSelectionManager().fireSelectionChanged();
+  @Override
+  protected void run(List<Task> selection) throws Exception {
+    for (Task task : selection) {
+      task.getDependencies().clear(selection);
     }
+    // Update (un)link buttons
+    getSelectionManager().fireSelectionChanged();
+  }
 }

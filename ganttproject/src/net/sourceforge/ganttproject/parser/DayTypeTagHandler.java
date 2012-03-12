@@ -15,24 +15,24 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import org.xml.sax.Attributes;
 
 public class DayTypeTagHandler implements TagHandler {
 
-    @Override
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) throws FileFormatException {
-        // TODO Auto-generated method stub
+  @Override
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
+      throws FileFormatException {
+    // TODO Auto-generated method stub
 
-    }
+  }
 
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
-        // TODO Auto-generated method stub
+  @Override
+  public void endElement(String namespaceURI, String sName, String qName) {
+    // TODO Auto-generated method stub
 
-    }
+  }
 
 }

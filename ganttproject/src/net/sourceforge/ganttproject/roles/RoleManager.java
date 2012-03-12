@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.roles;
 
 import java.util.EventListener;
@@ -25,61 +25,61 @@ import java.util.EventObject;
  * @author athomas
  */
 public interface RoleManager {
-    public RoleSet createRoleSet(String name);
+  public RoleSet createRoleSet(String name);
 
-    public RoleSet[] getRoleSets();
+  public RoleSet[] getRoleSets();
 
-    /** Clear the role list */
-    public void clear();
+  /** Clear the role list */
+  public void clear();
 
-    /** Return all roles except the default roles */
-    // public String [] getRolesShort();
-    public Role[] getProjectLevelRoles();
+  /** Return all roles except the default roles */
+  // public String [] getRolesShort();
+  public Role[] getProjectLevelRoles();
 
-    /** Load roles from the file */
-    /** Add a role on the list */
-    public void add(int ID, String role);
+  /** Load roles from the file */
+  /** Add a role on the list */
+  public void add(int ID, String role);
 
-    public class Access {
-        public static RoleManager getInstance() {
-            return ourInstance;
-        }
-
-        private static RoleManager ourInstance = new RoleManagerImpl();
+  public class Access {
+    public static RoleManager getInstance() {
+      return ourInstance;
     }
 
-    public static int DEFAULT_ROLES_NUMBER = 11;
+    private static RoleManager ourInstance = new RoleManagerImpl();
+  }
 
-    public RoleSet getProjectRoleSet();
+  public static int DEFAULT_ROLES_NUMBER = 11;
 
-    public RoleSet getRoleSet(String rolesetName);
+  public RoleSet getProjectRoleSet();
 
-    public Role[] getEnabledRoles();
+  public RoleSet getRoleSet(String rolesetName);
 
-    public Role getDefaultRole();
+  public Role[] getEnabledRoles();
 
-    public Role getRole(String roleName);
+  public Role getDefaultRole();
 
-    public void importData(RoleManager roleManager);
+  public Role getRole(String roleName);
 
-    public void addRoleListener(Listener listener);
+  public void importData(RoleManager roleManager);
 
-    public void removeRoleListener(Listener listener);
+  public void addRoleListener(Listener listener);
 
-    public interface Listener extends EventListener {
-        public void rolesChanged(RoleEvent e);
+  public void removeRoleListener(Listener listener);
+
+  public interface Listener extends EventListener {
+    public void rolesChanged(RoleEvent e);
+  }
+
+  public class RoleEvent extends EventObject {
+    private RoleSet myChangedRoleSet;
+
+    public RoleEvent(RoleManager source, RoleSet changedRoleSet) {
+      super(source);
+      myChangedRoleSet = changedRoleSet;
     }
 
-    public class RoleEvent extends EventObject {
-        private RoleSet myChangedRoleSet;
-
-        public RoleEvent(RoleManager source, RoleSet changedRoleSet) {
-            super(source);
-            myChangedRoleSet = changedRoleSet;
-        }
-
-        public RoleSet getChangedRoleSet() {
-            return myChangedRoleSet;
-        }
+    public RoleSet getChangedRoleSet() {
+      return myChangedRoleSet;
     }
+  }
 }

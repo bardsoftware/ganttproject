@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
@@ -33,40 +33,42 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
  */
 public class TaskIndentAction extends TaskActionBase {
 
-    public TaskIndentAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade, GanttTree2 tree) {
-        super("task.indent", taskManager, selectionManager, uiFacade, tree);
-    }
+  public TaskIndentAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+      GanttTree2 tree) {
+    super("task.indent", taskManager, selectionManager, uiFacade, tree);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "indent_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "indent_";
+  }
 
-    @Override
-    protected boolean isEnabled(List<Task> selection) {
-        if(selection.size() == 0) {
-            return false;
-        }
-        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-        TaskDependencyCollection dependencyCollection = getTaskManager().getDependencyCollection();
-        for(Task task: selection) {
-            Task newParent = taskHierarchy.getPreviousSibling(task);
-            if(newParent == null || dependencyCollection.canCreateDependency(newParent, task) == false) {
-                return false;
-            }
-        }
-        return true;
+  @Override
+  protected boolean isEnabled(List<Task> selection) {
+    if (selection.size() == 0) {
+      return false;
     }
-
-    @Override
-    protected void run(List<Task> selection) throws Exception {
-        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-        for(Task task: selection) {
-            Task newParent = taskHierarchy.getPreviousSibling(task);
-            taskHierarchy.move(task, newParent);
-        }
-        // TODO Ideally this should get done by the move method as it modifies the document
-        getUIFacade().getGanttChart().getProject().setModified();
-
+    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    TaskDependencyCollection dependencyCollection = getTaskManager().getDependencyCollection();
+    for (Task task : selection) {
+      Task newParent = taskHierarchy.getPreviousSibling(task);
+      if (newParent == null || dependencyCollection.canCreateDependency(newParent, task) == false) {
+        return false;
+      }
     }
+    return true;
+  }
+
+  @Override
+  protected void run(List<Task> selection) throws Exception {
+    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    for (Task task : selection) {
+      Task newParent = taskHierarchy.getPreviousSibling(task);
+      taskHierarchy.move(task, newParent);
+    }
+    // TODO Ideally this should get done by the move method as it modifies the
+    // document
+    getUIFacade().getGanttChart().getProject().setModified();
+
+  }
 }

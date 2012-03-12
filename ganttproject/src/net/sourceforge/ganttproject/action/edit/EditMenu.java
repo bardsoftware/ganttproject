@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.edit;
 
 import javax.swing.JMenu;
@@ -28,33 +28,33 @@ import net.sourceforge.ganttproject.search.SearchUi;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class EditMenu extends JMenu {
-    private final UndoAction myUndoAction;
-    private final RedoAction myRedoAction;
+  private final UndoAction myUndoAction;
+  private final RedoAction myRedoAction;
 
-    public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, SearchUi searchUi, String key) {
-        super(GPAction.createVoidAction(key));
-        final GPUndoManager undoManager = uiFacade.getUndoManager();
-        myUndoAction = new UndoAction(undoManager);
-        myRedoAction = new RedoAction(undoManager);
+  public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, SearchUi searchUi, String key) {
+    super(GPAction.createVoidAction(key));
+    final GPUndoManager undoManager = uiFacade.getUndoManager();
+    myUndoAction = new UndoAction(undoManager);
+    myRedoAction = new RedoAction(undoManager);
 
-        add(getUndoAction());
-        add(getRedoAction());
-        addSeparator();
-        add(new RefreshViewAction(uiFacade));
-        add(new SearchDialogAction(searchUi));
-        addSeparator();
-        add(viewManager.getCutAction());
-        add(viewManager.getCopyAction());
-        add(viewManager.getPasteAction());
-        addSeparator();
-        add(new SettingsDialogAction(project, uiFacade));
-    }
+    add(getUndoAction());
+    add(getRedoAction());
+    addSeparator();
+    add(new RefreshViewAction(uiFacade));
+    add(new SearchDialogAction(searchUi));
+    addSeparator();
+    add(viewManager.getCutAction());
+    add(viewManager.getCopyAction());
+    add(viewManager.getPasteAction());
+    addSeparator();
+    add(new SettingsDialogAction(project, uiFacade));
+  }
 
-    public GPAction getUndoAction() {
-        return myUndoAction;
-    }
+  public GPAction getUndoAction() {
+    return myUndoAction;
+  }
 
-    public GPAction getRedoAction() {
-        return myRedoAction;
-    }
+  public GPAction getRedoAction() {
+    return myRedoAction;
+  }
 }

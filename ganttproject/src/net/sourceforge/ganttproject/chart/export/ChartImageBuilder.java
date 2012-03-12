@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.export;
 
 import java.awt.Dimension;
@@ -28,42 +28,40 @@ import net.sourceforge.ganttproject.chart.OffsetBuilder;
 import net.sourceforge.ganttproject.chart.OffsetList;
 
 public class ChartImageBuilder {
-    private final ChartModelBase myChartModel;
-    private final GanttExportSettings mySettings;
-    private final GPTreeTableBase myTreeTable;
-    private final ChartDimensions myDimensions;
+  private final ChartModelBase myChartModel;
+  private final GanttExportSettings mySettings;
+  private final GPTreeTableBase myTreeTable;
+  private final ChartDimensions myDimensions;
 
-    public ChartImageBuilder(GanttExportSettings settings, ChartModelBase chartModel, GPTreeTableBase treeTable) {
-        myChartModel = chartModel;
-        mySettings = settings;
-        myTreeTable = treeTable;
-        myDimensions = new ChartDimensions(settings, treeTable);
+  public ChartImageBuilder(GanttExportSettings settings, ChartModelBase chartModel, GPTreeTableBase treeTable) {
+    myChartModel = chartModel;
+    mySettings = settings;
+    myTreeTable = treeTable;
+    myDimensions = new ChartDimensions(settings, treeTable);
+  }
+
+  public void buildImage(ChartImageVisitor visitor) {
+    if (mySettings.getZoomLevel() != null) {
+      myChartModel.setBottomTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getBottomTimeUnit());
+      myChartModel.setTopTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
+      myChartModel.setBottomUnitWidth(mySettings.getZoomLevel().getBottomUnitWidth());
     }
+    OffsetBuilder.Factory factory = myChartModel.createOffsetBuilderFactory().withStartDate(mySettings.getStartDate()).withEndDate(
+        mySettings.getEndDate()).withEndOffset(mySettings.getWidth() < 0 ? Integer.MAX_VALUE : mySettings.getWidth());
 
-    public void buildImage(ChartImageVisitor visitor) {
-        if (mySettings.getZoomLevel() != null) {
-            myChartModel.setBottomTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getBottomTimeUnit());
-            myChartModel.setTopTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
-            myChartModel.setBottomUnitWidth(mySettings.getZoomLevel().getBottomUnitWidth());
-        }
-        OffsetBuilder.Factory factory = myChartModel.createOffsetBuilderFactory()
-            .withStartDate(mySettings.getStartDate())
-            .withEndDate(mySettings.getEndDate())
-            .withEndOffset(mySettings.getWidth() < 0 ? Integer.MAX_VALUE : mySettings.getWidth());
+    OffsetBuilder offsetBuilder = factory.build();
+    OffsetList bottomOffsets = new OffsetList();
+    offsetBuilder.constructOffsets(null, bottomOffsets);
+    myDimensions.setChartWidth(bottomOffsets.getEndPx());
+    myChartModel.setStartDate(mySettings.getStartDate());
+    myChartModel.setBounds(new Dimension(myDimensions.getChartWidth(), myDimensions.getChartHeight()));
 
-        OffsetBuilder offsetBuilder = factory.build();
-        OffsetList bottomOffsets = new OffsetList();
-        offsetBuilder.constructOffsets(null, bottomOffsets);
-        myDimensions.setChartWidth(bottomOffsets.getEndPx());
-        myChartModel.setStartDate(mySettings.getStartDate());
-        myChartModel.setBounds(new Dimension(myDimensions.getChartWidth(), myDimensions.getChartHeight()));
+    myChartModel.setHeaderHeight(myDimensions.getLogoHeight() + myDimensions.getTableHeaderHeight() - 1);
+    myChartModel.setVisibleTasks(mySettings.getVisibleTasks());
 
-        myChartModel.setHeaderHeight(myDimensions.getLogoHeight() + myDimensions.getTableHeaderHeight() - 1);
-        myChartModel.setVisibleTasks(mySettings.getVisibleTasks());
+    visitor.acceptLogo(myDimensions, AbstractChartImplementation.LOGO.getImage());
+    visitor.acceptTable(myDimensions, myTreeTable.getTable().getTableHeader(), myTreeTable.getTable());
 
-        visitor.acceptLogo(myDimensions, AbstractChartImplementation.LOGO.getImage());
-        visitor.acceptTable(myDimensions, myTreeTable.getTable().getTableHeader(), myTreeTable.getTable());
-
-        visitor.acceptChart(myDimensions, myChartModel);
-    }
+    visitor.acceptChart(myDimensions, myChartModel);
+  }
 }

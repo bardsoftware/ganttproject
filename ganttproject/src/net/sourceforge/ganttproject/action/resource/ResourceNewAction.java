@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -30,37 +30,36 @@ import net.sourceforge.ganttproject.roles.RoleManager;
  * Action connected to the menu item for insert a new resource
  */
 public class ResourceNewAction extends ResourceAction {
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private final RoleManager myRoleManager;
+  private final RoleManager myRoleManager;
 
-    public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade) {
-        super("resource.new", hrManager);
-        myUIFacade = uiFacade;
-        myRoleManager = roleManager;
-    }
+  public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade) {
+    super("resource.new", hrManager);
+    myUIFacade = uiFacade;
+    myRoleManager = roleManager;
+  }
 
-    private ResourceNewAction(
-            HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
-        super("resource.new", hrManager, null, size);
-        myUIFacade = uiFacade;
-        myRoleManager = roleManager;
-    }
+  private ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
+    super("resource.new", hrManager, null, size);
+    myUIFacade = uiFacade;
+    myRoleManager = roleManager;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        final HumanResource resource = getManager().newHumanResource();
-        resource.setRole(myRoleManager.getDefaultRole());
-        GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);
-        dp.setVisible(true);
-        if (dp.result()) {
-            myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-                @Override
-                public void run() {
-                    getManager().add(resource);
-                    myUIFacade.getResourceTree().setSelected(resource, true);
-                }
-            });
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    final HumanResource resource = getManager().newHumanResource();
+    resource.setRole(myRoleManager.getDefaultRole());
+    GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);
+    dp.setVisible(true);
+    if (dp.result()) {
+      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+        @Override
+        public void run() {
+          getManager().add(resource);
+          myUIFacade.getResourceTree().setSelected(resource, true);
         }
+      });
     }
+  }
 }

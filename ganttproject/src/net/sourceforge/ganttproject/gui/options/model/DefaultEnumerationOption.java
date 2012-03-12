@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options.model;
 
 import java.util.ArrayList;
@@ -24,70 +24,71 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implements EnumerationOption {
-    private final String[] myValues;
-    private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
+  private final String[] myValues;
+  private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
 
-    public DefaultEnumerationOption(String id, String[] values) {
-        super(id);
-        myValues = values;
-    }
+  public DefaultEnumerationOption(String id, String[] values) {
+    super(id);
+    myValues = values;
+  }
 
-    public DefaultEnumerationOption(String id, List<String> values) {
-        super(id);
-        myValues = values.toArray(new String[0]);
-    }
+  public DefaultEnumerationOption(String id, List<String> values) {
+    super(id);
+    myValues = values.toArray(new String[0]);
+  }
 
-    public DefaultEnumerationOption(String id, T[] values) {
-        super(id);
-        List<String> buf = new ArrayList<String>();
-        for (T nextValue : values) {
-            buf.add(objectToString(nextValue));
-        }
-        myValues = buf.toArray(new String[0]);
-        fillStringObjectValueMapping(values);
+  public DefaultEnumerationOption(String id, T[] values) {
+    super(id);
+    List<String> buf = new ArrayList<String>();
+    for (T nextValue : values) {
+      buf.add(objectToString(nextValue));
     }
+    myValues = buf.toArray(new String[0]);
+    fillStringObjectValueMapping(values);
+  }
 
-    private void fillStringObjectValueMapping(T[] values) {
-        assert myValues.length == values.length;
-        for (int i = 0; i < values.length; i++) {
-            myStringValue_ObjectValue.put(myValues[i], values[i]);
-        }
+  private void fillStringObjectValueMapping(T[] values) {
+    assert myValues.length == values.length;
+    for (int i = 0; i < values.length; i++) {
+      myStringValue_ObjectValue.put(myValues[i], values[i]);
     }
+  }
 
-    protected String objectToString(T obj) {
-        assert obj != null;
-        return obj.toString();
-    }
+  protected String objectToString(T obj) {
+    assert obj != null;
+    return obj.toString();
+  }
 
-    protected T stringToObject(String value) {
-        if (myStringValue_ObjectValue.isEmpty()) {
-            return null;
-        }
-        return myStringValue_ObjectValue.get(value);
+  protected T stringToObject(String value) {
+    if (myStringValue_ObjectValue.isEmpty()) {
+      return null;
     }
+    return myStringValue_ObjectValue.get(value);
+  }
 
-    @Override
-    public String[] getAvailableValues() {
-        return myValues;
-    }
+  @Override
+  public String[] getAvailableValues() {
+    return myValues;
+  }
 
-    @Override
-    public String getPersistentValue() {
-        return getValue();
-    }
+  @Override
+  public String getPersistentValue() {
+    return getValue();
+  }
 
-    @Override
-    public void loadPersistentValue(String value) {
-        setValue(value);
-    }
+  @Override
+  public void loadPersistentValue(String value) {
+    setValue(value);
+  }
 
-    public T getSelectedValue() {
-        return stringToObject(getValue());
+  public T getSelectedValue() {
+    return stringToObject(getValue());
+  }
+
+  public void setSelectedValue(T value) {
+    String stringValue = objectToString(value);
+    if (myStringValue_ObjectValue.containsKey(stringValue)) {
+      setValue(stringValue);
     }
-    public void setSelectedValue(T value) {
-        String stringValue = objectToString(value);
-        if (myStringValue_ObjectValue.containsKey(stringValue)) {
-            setValue(stringValue);
-        }
-    }
+  }
 }

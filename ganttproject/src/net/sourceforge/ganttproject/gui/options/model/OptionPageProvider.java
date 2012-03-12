@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options.model;
 
 import java.awt.Component;
@@ -24,14 +24,15 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public interface OptionPageProvider {
-    GPOptionGroup[] getOptionGroups();
+  GPOptionGroup[] getOptionGroups();
 
-    String getPageID();
+  String getPageID();
 
-    boolean hasCustomComponent();
-    Component buildPageComponent();
+  boolean hasCustomComponent();
 
-    void init(IGanttProject project, UIFacade uiFacade);
+  Component buildPageComponent();
 
-    void commit();
+  void init(IGanttProject project, UIFacade uiFacade);
+
+  void commit();
 }

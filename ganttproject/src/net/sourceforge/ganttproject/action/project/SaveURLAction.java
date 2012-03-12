@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -28,30 +28,30 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 class SaveURLAction extends CloudProjectActionBase {
 
-    private ProjectUIFacade myProjectUiFacade;
-    private IGanttProject myProject;
+  private ProjectUIFacade myProjectUiFacade;
+  private IGanttProject myProject;
 
-    SaveURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade){
-        super("project.save.url", uiFacade, project.getDocumentManager());
-        myProjectUiFacade = projectUiFacade;
-        myProject = project;
-    }
+  SaveURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
+    super("project.save.url", uiFacade, project.getDocumentManager());
+    myProjectUiFacade = projectUiFacade;
+    myProject = project;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        try {
-            saveProjectRemotely(myProject);
-        } catch (Exception ex) {
-            GPLogger.log(ex);
-        }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    try {
+      saveProjectRemotely(myProject);
+    } catch (Exception ex) {
+      GPLogger.log(ex);
     }
+  }
 
-    private void saveProjectRemotely(IGanttProject project) {
-        Document document = showURLDialog(project, false);
-        if (document != null) {
-            project.setDocument(document);
-            myProjectUiFacade.saveProject(project);
-        }
+  private void saveProjectRemotely(IGanttProject project) {
+    Document document = showURLDialog(project, false);
+    if (document != null) {
+      project.setDocument(document);
+      myProjectUiFacade.saveProject(project);
     }
+  }
 
 }

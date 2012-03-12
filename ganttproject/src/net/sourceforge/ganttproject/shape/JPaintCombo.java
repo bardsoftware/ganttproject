@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.shape;
 
 import java.awt.Paint;
@@ -23,15 +23,15 @@ import java.awt.Paint;
 import javax.swing.JComboBox;
 
 /**
- *@author Etienne L'kenfack (etienne.lkenfack@itcogita.com)
+ * @author Etienne L'kenfack (etienne.lkenfack@itcogita.com)
  */
 public class JPaintCombo extends JComboBox {
-    public JPaintCombo(Paint[] list) {
-        super(list);
-        setRenderer(new PaintCellRenderer());
-    }
+  public JPaintCombo(Paint[] list) {
+    super(list);
+    setRenderer(new PaintCellRenderer());
+  }
 
-    public Paint getSelectedPaint() {
-        return (Paint) getSelectedItem();
-    }
+  public Paint getSelectedPaint() {
+    return (Paint) getSelectedItem();
+  }
 }

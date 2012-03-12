@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.event;
 
 import java.util.EventObject;
@@ -24,15 +24,15 @@ import net.sourceforge.ganttproject.task.Task;
 
 public class TaskPropertyEvent extends EventObject {
 
-    private Task myTask;
+  private Task myTask;
 
-    public TaskPropertyEvent(Object source) {
-        super(source);
-        myTask = (Task) source;
-    }
+  public TaskPropertyEvent(Object source) {
+    super(source);
+    myTask = (Task) source;
+  }
 
-    public Task getTask() {
-        return myTask;
-    }
+  public Task getTask() {
+    return myTask;
+  }
 
 }

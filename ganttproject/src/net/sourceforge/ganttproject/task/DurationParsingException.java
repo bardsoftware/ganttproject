@@ -15,23 +15,23 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 public class DurationParsingException extends RuntimeException {
-    public DurationParsingException() {
-    }
+  public DurationParsingException() {
+  }
 
-    public DurationParsingException(String message) {
-        super(message);
-    }
+  public DurationParsingException(String message) {
+    super(message);
+  }
 
-    public DurationParsingException(Throwable cause) {
-        super(cause);
-    }
+  public DurationParsingException(Throwable cause) {
+    super(cause);
+  }
 
-    public DurationParsingException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public DurationParsingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

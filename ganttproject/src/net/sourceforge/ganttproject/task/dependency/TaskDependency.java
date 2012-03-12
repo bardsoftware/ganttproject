@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import java.util.Date;
@@ -29,65 +29,69 @@ import net.sourceforge.ganttproject.task.TaskActivity;
  * this template use File | Settings | File Templates.
  */
 public interface TaskDependency {
-    abstract class Hardness {
-        public static final Hardness RUBBER = new Hardness("Rubber"){
-            @Override
-            public String toString() {
-                return GanttLanguage.getInstance().getText("hardness.rubber");
-            }
-        };
-        public static final Hardness STRONG = new Hardness("Strong"){
-            @Override
-            public String toString() {
-                return GanttLanguage.getInstance().getText("hardness.strong");
-            }
-        };
-        public static Hardness parse(String hardnessAsString) {
-            if (hardnessAsString==null) {
-                throw new IllegalArgumentException("Null value is not allowed as hardness");
-            }
-            if ("Rubber".equals(hardnessAsString.trim())) {
-                return RUBBER;
-            }
-            if ("Strong".equals(hardnessAsString.trim())) {
-                return STRONG;
-            }
-            throw new IllegalArgumentException("Unexpected hardness string value="+hardnessAsString);
-        }
-        private String myID;
+  abstract class Hardness {
+    public static final Hardness RUBBER = new Hardness("Rubber") {
+      @Override
+      public String toString() {
+        return GanttLanguage.getInstance().getText("hardness.rubber");
+      }
+    };
+    public static final Hardness STRONG = new Hardness("Strong") {
+      @Override
+      public String toString() {
+        return GanttLanguage.getInstance().getText("hardness.strong");
+      }
+    };
 
-        private Hardness(String id) {
-            myID = id;
-        }
-        public String getIdentifier() {
-            return myID;
-        }
+    public static Hardness parse(String hardnessAsString) {
+      if (hardnessAsString == null) {
+        throw new IllegalArgumentException("Null value is not allowed as hardness");
+      }
+      if ("Rubber".equals(hardnessAsString.trim())) {
+        return RUBBER;
+      }
+      if ("Strong".equals(hardnessAsString.trim())) {
+        return STRONG;
+      }
+      throw new IllegalArgumentException("Unexpected hardness string value=" + hardnessAsString);
     }
 
-    Task getDependant();
+    private String myID;
 
-    Task getDependee();
-
-    void setConstraint(TaskDependencyConstraint constraint);
-
-    TaskDependencyConstraint getConstraint();
-
-    ActivityBinding getActivityBinding();
-
-    void delete();
-
-    interface ActivityBinding {
-        TaskActivity getDependantActivity();
-
-        TaskActivity getDependeeActivity();
-
-        Date[] getAlignedBounds();
+    private Hardness(String id) {
+      myID = id;
     }
 
-    int getDifference();
+    public String getIdentifier() {
+      return myID;
+    }
+  }
 
-    void setDifference(int difference);
+  Task getDependant();
 
-    Hardness getHardness();
-    void setHardness(Hardness hardness);
+  Task getDependee();
+
+  void setConstraint(TaskDependencyConstraint constraint);
+
+  TaskDependencyConstraint getConstraint();
+
+  ActivityBinding getActivityBinding();
+
+  void delete();
+
+  interface ActivityBinding {
+    TaskActivity getDependantActivity();
+
+    TaskActivity getDependeeActivity();
+
+    Date[] getAlignedBounds();
+  }
+
+  int getDifference();
+
+  void setDifference(int difference);
+
+  Hardness getHardness();
+
+  void setHardness(Hardness hardness);
 }

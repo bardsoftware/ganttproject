@@ -15,14 +15,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 /**
  * Created by IntelliJ IDEA. User: bard
  */
 public interface EventDispatcher {
-    void fireDependencyAdded(TaskDependency dep);
+  void fireDependencyAdded(TaskDependency dep);
 
-    void fireDependencyRemoved(TaskDependency dep);
+  void fireDependencyRemoved(TaskDependency dep);
 }

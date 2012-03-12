@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Color;
@@ -27,32 +27,33 @@ import javax.swing.Action;
 import javax.swing.UIManager;
 
 class HighlightOnMouseOver extends MouseAdapter {
-    static final Color backgroundColor = UIManager.getColor("MenuItem.selectionBackground");
-    static final String backgroundString = "#" +
-        Integer.toHexString(backgroundColor.getRed()) +
-        Integer.toHexString(backgroundColor.getGreen()) +
-        Integer.toHexString(backgroundColor.getBlue());
-    private AbstractButton myComponent;
-    private Action myActionOnClick;
+  static final Color backgroundColor = UIManager.getColor("MenuItem.selectionBackground");
+  static final String backgroundString = "#" + Integer.toHexString(backgroundColor.getRed())
+      + Integer.toHexString(backgroundColor.getGreen()) + Integer.toHexString(backgroundColor.getBlue());
+  private AbstractButton myComponent;
+  private Action myActionOnClick;
 
-    HighlightOnMouseOver(AbstractButton component, Action onClick) {
-        myComponent = component;
-        myActionOnClick = onClick;
+  HighlightOnMouseOver(AbstractButton component, Action onClick) {
+    myComponent = component;
+    myActionOnClick = onClick;
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent arg0) {
+    if (myComponent.isEnabled()) {
+      myComponent.setBorderPainted(true);
     }
-    @Override
-    public void mouseEntered(MouseEvent arg0) {
-        if (myComponent.isEnabled()) {
-            myComponent.setBorderPainted(true);
-        }
+  }
+
+  @Override
+  public void mouseExited(MouseEvent arg0) {
+    myComponent.setBorderPainted(false);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent arg0) {
+    if (myActionOnClick != null) {
+      myActionOnClick.actionPerformed(null);
     }
-    @Override
-    public void mouseExited(MouseEvent arg0) {
-        myComponent.setBorderPainted(false);
-    }
-    @Override
-    public void mouseClicked(MouseEvent arg0) {
-        if (myActionOnClick != null) {
-            myActionOnClick.actionPerformed(null);
-        }
-    }
+  }
 }

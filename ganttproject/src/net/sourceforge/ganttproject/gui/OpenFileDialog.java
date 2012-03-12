@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.io.File;
@@ -26,35 +26,38 @@ import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 
 /**
  * Open A dialog box to select an GanttProject or XML
- *
+ * 
  * The current directory is stored, when the user selected a file
  */
 public class OpenFileDialog {
 
-    private final JFileChooser myFileChooser;
+  private final JFileChooser myFileChooser;
 
-    public OpenFileDialog() {
-        this(System.getProperty("user.home"));
+  public OpenFileDialog() {
+    this(System.getProperty("user.home"));
+  }
+
+  public OpenFileDialog(String startDirectory) {
+    File f = new File(startDirectory);
+    if (!f.isDirectory()) {
+      f = f.getParentFile();
     }
+    myFileChooser = new JFileChooser(f);
+    myFileChooser.addChoosableFileFilter(new GanttXMLFileFilter());
+  }
 
-    public OpenFileDialog(String startDirectory) {
-        File f = new File(startDirectory);
-        if (!f.isDirectory()) {
-            f = f.getParentFile();
-        }
-        myFileChooser = new JFileChooser(f);
-        myFileChooser.addChoosableFileFilter(new GanttXMLFileFilter());
+  /**
+   * Show the dialog box
+   * 
+   * @return the selected file, or null if the user aborted
+   */
+  public File show() {
+    File result = null;
+
+    int returnVal = myFileChooser.showOpenDialog(null);
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+      result = myFileChooser.getSelectedFile();
     }
-
-    /** Show the dialog box
-     * @return the selected file, or null if the user aborted */
-    public File show() {
-        File result = null;
-
-        int returnVal = myFileChooser.showOpenDialog(null);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            result = myFileChooser.getSelectedFile();
-        }
-        return result;
-    }
+    return result;
+  }
 }

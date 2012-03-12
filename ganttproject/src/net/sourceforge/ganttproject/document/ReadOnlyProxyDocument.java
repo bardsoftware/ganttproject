@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.document;
 
 import java.io.IOException;
@@ -28,104 +28,104 @@ import org.eclipse.core.runtime.Status;
 
 /**
  * Document which proxies all read methods and forbids all write methods.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class ReadOnlyProxyDocument implements Document {
 
-    private final Document myDelegate;
+  private final Document myDelegate;
 
-    public ReadOnlyProxyDocument(Document delegate) {
-        myDelegate = delegate;
-    }
+  public ReadOnlyProxyDocument(Document delegate) {
+    myDelegate = delegate;
+  }
 
-    @Override
-    public String getFileName() {
-        return myDelegate.getFileName();
-    }
+  @Override
+  public String getFileName() {
+    return myDelegate.getFileName();
+  }
 
-    @Override
-    public boolean canRead() {
-        return myDelegate.canRead();
-    }
+  @Override
+  public boolean canRead() {
+    return myDelegate.canRead();
+  }
 
-    @Override
-    public IStatus canWrite() {
-        return new Status(IStatus.ERROR, "net.sourceforge.ganttproject", 0, "You can't write a read-only document", null);
-    }
+  @Override
+  public IStatus canWrite() {
+    return new Status(IStatus.ERROR, "net.sourceforge.ganttproject", 0, "You can't write a read-only document", null);
+  }
 
-    @Override
-    public boolean isValidForMRU() {
-        return false;
-    }
+  @Override
+  public boolean isValidForMRU() {
+    return false;
+  }
 
-    @Override
-    public boolean acquireLock() {
-        return true;
-    }
+  @Override
+  public boolean acquireLock() {
+    return true;
+  }
 
-    @Override
-    public void releaseLock() {
-    }
+  @Override
+  public void releaseLock() {
+  }
 
-    @Override
-    public InputStream getInputStream() throws IOException {
-        return myDelegate.getInputStream();
-    }
+  @Override
+  public InputStream getInputStream() throws IOException {
+    return myDelegate.getInputStream();
+  }
 
-    @Override
-    public OutputStream getOutputStream() throws IOException {
-        return null;
-    }
+  @Override
+  public OutputStream getOutputStream() throws IOException {
+    return null;
+  }
 
-    @Override
-    public String getPath() {
-        return myDelegate.getPath();
-    }
+  @Override
+  public String getPath() {
+    return myDelegate.getPath();
+  }
 
-    @Override
-    public String getFilePath() {
-        return myDelegate.getFilePath();
-    }
+  @Override
+  public String getFilePath() {
+    return myDelegate.getFilePath();
+  }
 
-    @Override
-    public String getUsername() {
-        return myDelegate.getUsername();
-    }
+  @Override
+  public String getUsername() {
+    return myDelegate.getUsername();
+  }
 
-    @Override
-    public String getPassword() {
-        return myDelegate.getPassword();
-    }
+  @Override
+  public String getPassword() {
+    return myDelegate.getPassword();
+  }
 
-    @Override
-    public String getLastError() {
-        return myDelegate.getLastError();
-    }
+  @Override
+  public String getLastError() {
+    return myDelegate.getLastError();
+  }
 
-    @Override
-    public void read() throws IOException, DocumentException {
-        myDelegate.read();
-    }
+  @Override
+  public void read() throws IOException, DocumentException {
+    myDelegate.read();
+  }
 
-    @Override
-    public void write() throws IOException {
-        throw new IOException("You can't write a read-only document");
-    }
+  @Override
+  public void write() throws IOException {
+    throw new IOException("You can't write a read-only document");
+  }
 
-    @Override
-    public URI getURI() {
-        return myDelegate.getURI();
-    }
+  @Override
+  public URI getURI() {
+    return myDelegate.getURI();
+  }
 
-    @Override
-    public Portfolio getPortfolio() {
-        return null;
-    }
+  @Override
+  public Portfolio getPortfolio() {
+    return null;
+  }
 
-    @Override
-    public boolean isLocal() {
-        return myDelegate.isLocal();
-    }
+  @Override
+  public boolean isLocal() {
+    return myDelegate.isLocal();
+  }
 
 }

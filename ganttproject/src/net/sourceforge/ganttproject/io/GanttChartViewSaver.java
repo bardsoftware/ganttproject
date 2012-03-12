@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.io;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -28,17 +28,17 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 
 class GanttChartViewSaver extends SaverBase {
 
-    void save(TableHeaderUIFacade tableHeader, TransformerHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        startElement("taskdisplaycolumns", handler);
-        for (int i=0; i<tableHeader.getSize(); i++) {
-            Column column = tableHeader.getField(i);
-            addAttribute("property-id", column.getID(), attrs);
-            addAttribute("order", column.getOrder(), attrs);
-            addAttribute("width", column.getWidth(), attrs);
-            addAttribute("visible", column.isVisible(), attrs);
-            emptyElement("displaycolumn", attrs, handler);
-        }
-        endElement("taskdisplaycolumns", handler);
+  void save(TableHeaderUIFacade tableHeader, TransformerHandler handler) throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    startElement("taskdisplaycolumns", handler);
+    for (int i = 0; i < tableHeader.getSize(); i++) {
+      Column column = tableHeader.getField(i);
+      addAttribute("property-id", column.getID(), attrs);
+      addAttribute("order", column.getOrder(), attrs);
+      addAttribute("width", column.getWidth(), attrs);
+      addAttribute("visible", column.isVisible(), attrs);
+      emptyElement("displaycolumn", attrs, handler);
     }
+    endElement("taskdisplaycolumns", handler);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.time.gregorian;
 
 import java.util.Calendar;
@@ -27,41 +27,40 @@ import java.util.TimeZone;
  * October duplicated day bug
  */
 public class GregorianCalendar extends java.util.GregorianCalendar {
-    public GregorianCalendar() {
-        super();
-    }
+  public GregorianCalendar() {
+    super();
+  }
 
-    public GregorianCalendar(int year, int month, int date) {
-        super(year, month, date);
-    }
+  public GregorianCalendar(int year, int month, int date) {
+    super(year, month, date);
+  }
 
-    public GregorianCalendar(int year, int month, int date, int hour, int minute) {
-        super(year, month, date, hour, minute);
-    }
+  public GregorianCalendar(int year, int month, int date, int hour, int minute) {
+    super(year, month, date, hour, minute);
+  }
 
-    public GregorianCalendar(int year, int month, int date, int hour,
-            int minute, int second) {
-        super(year, month, date, hour, minute, second);
-    }
+  public GregorianCalendar(int year, int month, int date, int hour, int minute, int second) {
+    super(year, month, date, hour, minute, second);
+  }
 
-    public GregorianCalendar(Locale aLocale) {
-        super(aLocale);
-    }
+  public GregorianCalendar(Locale aLocale) {
+    super(aLocale);
+  }
 
-    public GregorianCalendar(TimeZone zone) {
-        super(zone);
-    }
+  public GregorianCalendar(TimeZone zone) {
+    super(zone);
+  }
 
-    public GregorianCalendar(TimeZone zone, Locale aLocale) {
-        super(zone, aLocale);
-    }
+  public GregorianCalendar(TimeZone zone, Locale aLocale) {
+    super(zone, aLocale);
+  }
 
-    @Override
-    public void add(int field, int value) {
-        if (field == Calendar.DATE) {
-            this.add(Calendar.HOUR, value * 24);
-        } else {
-            super.add(field, value);
-        }
+  @Override
+  public void add(int field, int value) {
+    if (field == Calendar.DATE) {
+      this.add(Calendar.HOUR, value * 24);
+    } else {
+      super.add(field, value);
     }
+  }
 }

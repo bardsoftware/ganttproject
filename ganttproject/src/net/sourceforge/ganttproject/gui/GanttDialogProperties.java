@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.event.ActionEvent;
@@ -32,45 +32,44 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class GanttDialogProperties {
-    private final GanttTask[] myTasks;
+  private final GanttTask[] myTasks;
 
-    public GanttDialogProperties(GanttTask[] tasks) {
-        myTasks = tasks;
+  public GanttDialogProperties(GanttTask[] tasks) {
+    myTasks = tasks;
+  }
+
+  public void show(final IGanttProject project, final UIFacade uiFacade) {
+    final GanttLanguage language = GanttLanguage.getInstance();
+    final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
+    final Action[] actions = new Action[] { new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), new Runnable() {
+          @Override
+          public void run() {
+            taskPropertiesBean.getReturnTask();
+            try {
+              project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+            } catch (TaskDependencyException e) {
+              if (!GPLogger.log(e)) {
+                e.printStackTrace();
+              }
+            }
+            uiFacade.refresh();
+          }
+        });
+      }
+    }, CancelAction.EMPTY };
+
+    StringBuffer taskNames = new StringBuffer();
+    for (int i = 0; i < myTasks.length; i++) {
+      if (i > 0) {
+        taskNames.append(language.getText(i + 1 == myTasks.length ? "list.separator.last" : "list.separator"));
+      }
+      taskNames.append(myTasks[i].getName());
     }
 
-    public void show(final IGanttProject project, final UIFacade uiFacade) {
-        final GanttLanguage language = GanttLanguage.getInstance();
-        final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
-        final Action[] actions = new Action[] { new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), new Runnable() {
-                    @Override
-                    public void run() {
-                        taskPropertiesBean.getReturnTask();
-                        try {
-                            project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()
-                                    .run();
-                        } catch (TaskDependencyException e) {
-                            if (!GPLogger.log(e)) {
-                                e.printStackTrace();
-                            }
-                        }
-                        uiFacade.refresh();
-                    }
-                });
-            }
-        }, CancelAction.EMPTY };
-
-        StringBuffer taskNames = new StringBuffer();
-        for (int i = 0; i < myTasks.length; i++) {
-            if (i > 0) {
-                taskNames.append(language.getText(i + 1 == myTasks.length ? "list.separator.last" : "list.separator"));
-            }
-            taskNames.append(myTasks[i].getName());
-        }
-
-        final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
-        uiFacade.createDialog(taskPropertiesBean, actions, title).show();
-    }
+    final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
+    uiFacade.createDialog(taskPropertiesBean, actions, title).show();
+  }
 }

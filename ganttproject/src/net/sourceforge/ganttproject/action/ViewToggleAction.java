@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -30,31 +30,31 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
  * @author bard
  */
 public class ViewToggleAction extends GPAction {
-    private final Chart myChart;
+  private final Chart myChart;
 
-    private final GPView myView;
+  private final GPView myView;
 
-    private final GPViewManager myViewManager;
+  private final GPViewManager myViewManager;
 
-    public ViewToggleAction(Chart chart, GPViewManager viewManager, GPView view) {
-        myChart = chart;
-        myView = view;
-        myViewManager = viewManager;
-        updateAction();
-    }
+  public ViewToggleAction(Chart chart, GPViewManager viewManager, GPView view) {
+    myChart = chart;
+    myView = view;
+    myViewManager = viewManager;
+    updateAction();
+  }
 
-    @Override
-    protected String getLocalizedDescription() {
-        return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
-    }
+  @Override
+  protected String getLocalizedDescription() {
+    return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
+  }
 
-    @Override
-    protected String getLocalizedName() {
-        return myChart == null ? null : myChart.getName();
-    }
+  @Override
+  protected String getLocalizedName() {
+    return myChart == null ? null : myChart.getName();
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myViewManager.toggleVisible(myView);
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myViewManager.toggleVisible(myView);
+  }
 }

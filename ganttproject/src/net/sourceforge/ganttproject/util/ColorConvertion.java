@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.util;
 
 import java.awt.Color;
@@ -25,32 +25,32 @@ import net.sourceforge.ganttproject.GanttGraphicArea;
 
 public class ColorConvertion {
 
-    /** @return the color as hexadecimal version like #RRGGBB */
-    public static String getColor(Color color) {
-        String res = "#";
+  /** @return the color as hexadecimal version like #RRGGBB */
+  public static String getColor(Color color) {
+    String res = "#";
 
-        if (color.getRed() <= 15)
-            res += "0";
-        res += Integer.toHexString(color.getRed());
-        if (color.getGreen() <= 15)
-            res += "0";
-        res += Integer.toHexString(color.getGreen());
-        if (color.getBlue() <= 15)
-            res += "0";
-        res += Integer.toHexString(color.getBlue());
+    if (color.getRed() <= 15)
+      res += "0";
+    res += Integer.toHexString(color.getRed());
+    if (color.getGreen() <= 15)
+      res += "0";
+    res += Integer.toHexString(color.getGreen());
+    if (color.getBlue() <= 15)
+      res += "0";
+    res += Integer.toHexString(color.getBlue());
 
-        return res;
+    return res;
+  }
+
+  /** parse a string as hew and return the corresponding color. */
+  public static Color determineColor(String hexString) {
+    if (!Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString)) {
+      return GanttGraphicArea.taskDefaultColor;
     }
-
-    /** parse a string as hew and return the corresponding color. */
-    public static Color determineColor(String hexString) {
-        if (!Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString)) {
-            return GanttGraphicArea.taskDefaultColor;
-        }
-        int r, g, b;
-        r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();
-        g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();
-        b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
-        return new Color(r, g, b);
-    }
+    int r, g, b;
+    r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();
+    g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();
+    b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
+    return new Color(r, g, b);
+  }
 }

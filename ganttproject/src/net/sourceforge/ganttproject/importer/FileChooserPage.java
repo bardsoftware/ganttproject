@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.importer;
 
 import java.net.URL;
@@ -37,42 +37,42 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 class FileChooserPage extends FileChooserPageBase {
 
-    private final State myState;
+  private final State myState;
 
-    public FileChooserPage(WizardImpl wizardImpl, Preferences prefs, State state) {
-        super(wizardImpl, prefs, false);
-        myState = state;
-    }
+  public FileChooserPage(WizardImpl wizardImpl, Preferences prefs, State state) {
+    super(wizardImpl, prefs, false);
+    myState = state;
+  }
 
-    @Override
-    protected String getFileChooserTitle() {
-        return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
-    }
+  @Override
+  protected String getFileChooserTitle() {
+    return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
+  }
 
-    @Override
-    protected int getFileChooserSelectionMode() {
-        return JFileChooser.FILES_ONLY;
-    }
+  @Override
+  protected int getFileChooserSelectionMode() {
+    return JFileChooser.FILES_ONLY;
+  }
 
-    @Override
-    public String getTitle() {
-        return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
-    }
+  @Override
+  public String getTitle() {
+    return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
+  }
 
-    @Override
-    protected FileFilter createFileFilter() {
-        return new ExtensionBasedFileFilter(
-                myState.myImporter.getFileNamePattern(), myState.myImporter.getFileTypeDescription());
-    }
+  @Override
+  protected FileFilter createFileFilter() {
+    return new ExtensionBasedFileFilter(myState.myImporter.getFileNamePattern(),
+        myState.myImporter.getFileTypeDescription());
+  }
 
-    @Override
-    protected GPOptionGroup[] getOptionGroups() {
-        return myState.myImporter==null ? new GPOptionGroup[0] : myState.myImporter.getSecondaryOptions();
-    }
+  @Override
+  protected GPOptionGroup[] getOptionGroups() {
+    return myState.myImporter == null ? new GPOptionGroup[0] : myState.myImporter.getSecondaryOptions();
+  }
 
-    @Override
-    protected void onSelectedUrlChange(URL selectedUrl) {
-        myState.setUrl(selectedUrl);
-        super.onSelectedUrlChange(selectedUrl);
-    }
+  @Override
+  protected void onSelectedUrlChange(URL selectedUrl) {
+    myState.setUrl(selectedUrl);
+    super.onSelectedUrlChange(selectedUrl);
+  }
 }

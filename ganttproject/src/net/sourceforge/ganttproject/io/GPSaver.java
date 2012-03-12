@@ -10,6 +10,6 @@ import java.io.OutputStream;
  * @author bard
  */
 public interface GPSaver {
-    void save(OutputStream output) throws IOException;
+  void save(OutputStream output) throws IOException;
 
 }

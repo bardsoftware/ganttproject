@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
@@ -26,38 +26,39 @@ import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
 
 abstract class MouseInteractionBase {
-    protected Date myStartDate;
-    private final MouseInteraction.TimelineFacade myChartDateGrid;
+  protected Date myStartDate;
+  private final MouseInteraction.TimelineFacade myChartDateGrid;
 
-    protected MouseInteractionBase(Date startDate, MouseInteraction.TimelineFacade chartDateGrid) {
-        myStartDate = startDate;
-        myChartDateGrid = chartDateGrid;
-    }
+  protected MouseInteractionBase(Date startDate, MouseInteraction.TimelineFacade chartDateGrid) {
+    myStartDate = startDate;
+    myChartDateGrid = chartDateGrid;
+  }
 
-    protected TaskLength getLengthDiff(MouseEvent event) {
-        Date dateUnderX = myChartDateGrid.getDateAt(event.getX());
-        TaskLength result = myChartDateGrid.createTimeInterval(
-                myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(), myStartDate, dateUnderX);
-        return result;
-    }
+  protected TaskLength getLengthDiff(MouseEvent event) {
+    Date dateUnderX = myChartDateGrid.getDateAt(event.getX());
+    TaskLength result = myChartDateGrid.createTimeInterval(myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(),
+        myStartDate, dateUnderX);
+    return result;
+  }
 
-    protected TimelineFacade getChartDateGrid() {
-        return myChartDateGrid;
-    }
+  protected TimelineFacade getChartDateGrid() {
+    return myChartDateGrid;
+  }
 
-    /**
-     * Method to show the visible cues of the interaction
-     * 
-     * @param g is the graphics context 
-     */
-    public void paint(Graphics g) {
-    }
+  /**
+   * Method to show the visible cues of the interaction
+   * 
+   * @param g
+   *          is the graphics context
+   */
+  public void paint(Graphics g) {
+  }
 
-    protected void setStartDate(Date date) {
-        myStartDate = date;
-    }
+  protected void setStartDate(Date date) {
+    myStartDate = date;
+  }
 
-    protected Date getStartDate() {
-        return myStartDate;
-    }
+  protected Date getStartDate() {
+    return myStartDate;
+  }
 }

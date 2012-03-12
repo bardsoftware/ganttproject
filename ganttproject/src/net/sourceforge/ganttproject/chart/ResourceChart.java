@@ -9,5 +9,5 @@ import net.sourceforge.ganttproject.resource.HumanResource;
  * @author bard
  */
 public interface ResourceChart extends Chart {
-    boolean isExpanded(HumanResource resource);
+  boolean isExpanded(HumanResource resource);
 }

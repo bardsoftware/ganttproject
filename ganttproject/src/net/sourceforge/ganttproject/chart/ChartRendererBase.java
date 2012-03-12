@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -24,62 +24,63 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
  * @author bard
  */
 public class ChartRendererBase {
-    private int myHeight;
+  private int myHeight;
 
-    private ChartModel myChartModel;
+  private ChartModel myChartModel;
 
-    private final GraphicPrimitiveContainer myPrimitiveContainer;
+  private final GraphicPrimitiveContainer myPrimitiveContainer;
 
-    private boolean isEnabled = true;
+  private boolean isEnabled = true;
 
-    protected ChartRendererBase() {
-        myPrimitiveContainer = new GraphicPrimitiveContainer();
-    }
-    public ChartRendererBase(ChartModel model) {
-        this();
-        myChartModel = model;
-    }
+  protected ChartRendererBase() {
+    myPrimitiveContainer = new GraphicPrimitiveContainer();
+  }
 
-    public void setHeight(int height) {
-        myHeight = height;
-    }
+  public ChartRendererBase(ChartModel model) {
+    this();
+    myChartModel = model;
+  }
 
-    protected int getHeight() {
-        return myHeight;
-    }
+  public void setHeight(int height) {
+    myHeight = height;
+  }
 
-    protected int getWidth() {
-        return (int) getChartModel().getBounds().getWidth();
-    }
+  protected int getHeight() {
+    return myHeight;
+  }
 
-    protected ChartUIConfiguration getConfig() {
-        return getChartModel().getChartUIConfiguration();
-    }
+  protected int getWidth() {
+    return (int) getChartModel().getBounds().getWidth();
+  }
 
-    public GraphicPrimitiveContainer getPrimitiveContainer() {
-        return myPrimitiveContainer;
-    }
+  protected ChartUIConfiguration getConfig() {
+    return getChartModel().getChartUIConfiguration();
+  }
 
-    protected ChartModel getChartModel() {
-        return myChartModel;
-    }
+  public GraphicPrimitiveContainer getPrimitiveContainer() {
+    return myPrimitiveContainer;
+  }
 
-    protected GPCalendar getCalendar() {
-        return myChartModel.getTaskManager().getCalendar();
-    }
+  protected ChartModel getChartModel() {
+    return myChartModel;
+  }
 
-    public boolean isEnabled() {
-        return isEnabled;
-    }
+  protected GPCalendar getCalendar() {
+    return myChartModel.getTaskManager().getCalendar();
+  }
 
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
+  public boolean isEnabled() {
+    return isEnabled;
+  }
 
-    public void clear() {
-        getPrimitiveContainer().clear();
-    }
+  public void setEnabled(boolean enabled) {
+    isEnabled = enabled;
+  }
 
-    public void render() {
-    }
+  public void clear() {
+    getPrimitiveContainer().clear();
+  }
+
+  public void render() {
+  }
 }

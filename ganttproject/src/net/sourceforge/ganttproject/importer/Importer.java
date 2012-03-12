@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
@@ -27,15 +27,15 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public interface Importer {
-    String getFileTypeDescription();
+  String getFileTypeDescription();
 
-    String getFileNamePattern();
+  String getFileNamePattern();
 
-    GPOptionGroup[] getSecondaryOptions();
+  GPOptionGroup[] getSecondaryOptions();
 
-    void run(File selectedFile);
+  void run(File selectedFile);
 
-    String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.importer";
+  String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.importer";
 
-    void setContext(IGanttProject project, UIFacade uiFacade, Preferences pluginPreferences);
+  void setContext(IGanttProject project, UIFacade uiFacade, Preferences pluginPreferences);
 }

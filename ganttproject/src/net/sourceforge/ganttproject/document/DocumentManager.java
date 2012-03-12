@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
@@ -30,32 +30,41 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
  * @author bard
  */
 public interface DocumentManager {
-    Document newAutosaveDocument() throws IOException;
-    Document getLastAutosaveDocument(Document priorTo) throws IOException;
+  Document newAutosaveDocument() throws IOException;
 
-    Document getDocument(String path);
+  Document getLastAutosaveDocument(Document priorTo) throws IOException;
 
-    void addToRecentDocuments(Document document);
+  Document getDocument(String path);
 
-    Document getDocument(String path, String userName, String password);
+  void addToRecentDocuments(Document document);
 
-    void changeWorkingDirectory(File parentFile);
+  Document getDocument(String path, String userName, String password);
 
-    String getWorkingDirectory();
+  void changeWorkingDirectory(File parentFile);
 
-    GPOptionGroup getOptionGroup();
-    FTPOptions getFTPOptions();
-    GPOptionGroup[] getNetworkOptionGroups();
-    StringOption getLastWebDAVDocumentOption();
-    IntegerOption getWebDavLockTimeoutOption();
+  String getWorkingDirectory();
 
-    abstract class FTPOptions extends GPOptionGroup {
-        public FTPOptions(String id, GPOption<?>[] options) {
-            super(id, options);
-        }
-        public abstract StringOption getServerName();
-        public abstract StringOption getUserName();
-        public abstract StringOption getDirectoryName();
-        public abstract StringOption getPassword();
+  GPOptionGroup getOptionGroup();
+
+  FTPOptions getFTPOptions();
+
+  GPOptionGroup[] getNetworkOptionGroups();
+
+  StringOption getLastWebDAVDocumentOption();
+
+  IntegerOption getWebDavLockTimeoutOption();
+
+  abstract class FTPOptions extends GPOptionGroup {
+    public FTPOptions(String id, GPOption<?>[] options) {
+      super(id, options);
     }
+
+    public abstract StringOption getServerName();
+
+    public abstract StringOption getUserName();
+
+    public abstract StringOption getDirectoryName();
+
+    public abstract StringOption getPassword();
+  }
 }

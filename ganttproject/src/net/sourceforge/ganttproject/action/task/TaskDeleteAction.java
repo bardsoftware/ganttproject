@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
@@ -33,43 +33,43 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class TaskDeleteAction extends TaskActionBase {
 
-    public TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-            GanttTree2 tree) {
-        super("task.delete", taskManager, selectionManager, uiFacade, tree);
-    }
+  public TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+      GanttTree2 tree) {
+    super("task.delete", taskManager, selectionManager, uiFacade, tree);
+  }
 
-    private TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-            GanttTree2 tree, IconSize size) {
-        super("task.delete", taskManager, selectionManager, uiFacade, tree, size);
-    }
+  private TaskDeleteAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+      GanttTree2 tree, IconSize size) {
+    super("task.delete", taskManager, selectionManager, uiFacade, tree, size);
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new TaskDeleteAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree(), size);
-    }
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new TaskDeleteAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree(), size);
+  }
 
-    @Override
-    protected boolean isEnabled(List<Task> selection) {
-        return !selection.isEmpty();
-    }
+  @Override
+  protected boolean isEnabled(List<Task> selection) {
+    return !selection.isEmpty();
+  }
 
-    @Override
-    protected boolean askUserPermission(List<Task> selection) {
-        Choice choice = getUIFacade().showConfirmationDialog(getI18n("msg19"), getI18n("question"));
-        return choice == Choice.YES;
-    }
+  @Override
+  protected boolean askUserPermission(List<Task> selection) {
+    Choice choice = getUIFacade().showConfirmationDialog(getI18n("msg19"), getI18n("question"));
+    return choice == Choice.YES;
+  }
 
-    @Override
-    protected void run(List<Task> selection) throws Exception {
-        final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
-        getTree().stopEditing();
-        for (DefaultMutableTreeNode node : cdmtn) {
-            if (node != null && node instanceof TaskNode) {
-                Task task = (Task) node.getUserObject();
-                getTree().removeCurrentNode(node);
-                task.delete();
-            }
-        }
-        forwardScheduling();
+  @Override
+  protected void run(List<Task> selection) throws Exception {
+    final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
+    getTree().stopEditing();
+    for (DefaultMutableTreeNode node : cdmtn) {
+      if (node != null && node instanceof TaskNode) {
+        Task task = (Task) node.getUserObject();
+        getTree().removeCurrentNode(node);
+        task.delete();
+      }
     }
+    forwardScheduling();
+  }
 }

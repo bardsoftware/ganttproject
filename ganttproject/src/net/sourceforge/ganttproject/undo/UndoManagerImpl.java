@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.undo;
 
 import java.io.IOException;
@@ -33,118 +33,116 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 
 /**
  * UndoManager implementation, it manages the undoable edits in GanttProject
- *
+ * 
  * @author bard
  */
 public class UndoManagerImpl implements GPUndoManager {
-    private UndoableEditSupport myUndoEventDispatcher;
+  private UndoableEditSupport myUndoEventDispatcher;
 
-    private UndoManager mySwingUndoManager;
+  private UndoManager mySwingUndoManager;
 
-    private DocumentManager myDocumentManager;
+  private DocumentManager myDocumentManager;
 
-    private ParserFactory myParserFactory;
+  private ParserFactory myParserFactory;
 
-    private IGanttProject myProject;
+  private IGanttProject myProject;
 
-    private UndoableEditImpl swingEditImpl;
+  private UndoableEditImpl swingEditImpl;
 
-    public UndoManagerImpl(IGanttProject project, ParserFactory parserFactory,
-            DocumentManager documentManager) {
-        myProject = project;
-        myParserFactory = parserFactory;
-        myDocumentManager = documentManager;
-        mySwingUndoManager = new UndoManager();
-        myUndoEventDispatcher = new UndoableEditSupport();
+  public UndoManagerImpl(IGanttProject project, ParserFactory parserFactory, DocumentManager documentManager) {
+    myProject = project;
+    myParserFactory = parserFactory;
+    myDocumentManager = documentManager;
+    mySwingUndoManager = new UndoManager();
+    myUndoEventDispatcher = new UndoableEditSupport();
+  }
+
+  @Override
+  public void undoableEdit(String localizedName, Runnable editImpl) {
+
+    try {
+      swingEditImpl = new UndoableEditImpl(localizedName, editImpl, this);
+      mySwingUndoManager.addEdit(swingEditImpl);
+      fireUndoableEditHappened(swingEditImpl);
+    } catch (IOException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
     }
+  }
 
-    @Override
-    public void undoableEdit(String localizedName, Runnable editImpl) {
+  private void fireUndoableEditHappened(UndoableEditImpl swingEditImpl) {
+    myUndoEventDispatcher.postEdit(swingEditImpl);
+  }
 
-        try {
-            swingEditImpl = new UndoableEditImpl(localizedName, editImpl, this);
-            mySwingUndoManager.addEdit(swingEditImpl);
-            fireUndoableEditHappened(swingEditImpl);
-        } catch (IOException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-        }
+  private void fireUndoOrRedoHappened() {
+    UndoableEditListener[] listeners = myUndoEventDispatcher.getUndoableEditListeners();
+    for (int i = 0; i < listeners.length; i++) {
+      ((GPUndoListener) listeners[i]).undoOrRedoHappened();
     }
+  }
 
-    private void fireUndoableEditHappened(UndoableEditImpl swingEditImpl) {
-        myUndoEventDispatcher.postEdit(swingEditImpl);
-    }
+  DocumentManager getDocumentManager() {
+    return myDocumentManager;
+  }
 
-    private void fireUndoOrRedoHappened() {
-        UndoableEditListener[] listeners = myUndoEventDispatcher
-                .getUndoableEditListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            ((GPUndoListener) listeners[i]).undoOrRedoHappened();
-        }
-    }
+  protected ParserFactory getParserFactory() {
+    return myParserFactory;
+  }
 
-    DocumentManager getDocumentManager() {
-        return myDocumentManager;
-    }
+  IGanttProject getProject() {
+    return myProject;
+  }
 
-    protected ParserFactory getParserFactory() {
-        return myParserFactory;
-    }
+  @Override
+  public boolean canUndo() {
+    return mySwingUndoManager.canUndo();
+  }
 
-    IGanttProject getProject() {
-        return myProject;
-    }
+  @Override
+  public boolean canRedo() {
+    return mySwingUndoManager.canRedo();
+  }
 
-    @Override
-    public boolean canUndo() {
-        return mySwingUndoManager.canUndo();
-    }
+  @Override
+  public void undo() throws CannotUndoException {
+    mySwingUndoManager.undo();
+    fireUndoOrRedoHappened();
+  }
 
-    @Override
-    public boolean canRedo() {
-        return mySwingUndoManager.canRedo();
-    }
+  @Override
+  public void redo() throws CannotRedoException {
+    mySwingUndoManager.redo();
+    fireUndoOrRedoHappened();
+  }
 
-    @Override
-    public void undo() throws CannotUndoException {
-        mySwingUndoManager.undo();
-        fireUndoOrRedoHappened();
-    }
+  @Override
+  public String getUndoPresentationName() {
+    return mySwingUndoManager.getUndoPresentationName();
+  }
 
-    @Override
-    public void redo() throws CannotRedoException {
-        mySwingUndoManager.redo();
-        fireUndoOrRedoHappened();
-    }
+  @Override
+  public String getRedoPresentationName() {
+    return mySwingUndoManager.getRedoPresentationName();
+  }
 
-    @Override
-    public String getUndoPresentationName() {
-        return mySwingUndoManager.getUndoPresentationName();
-    }
+  @Override
+  public void addUndoableEditListener(GPUndoListener listener) {
+    myUndoEventDispatcher.addUndoableEditListener(listener);
+  }
 
-    @Override
-    public String getRedoPresentationName() {
-        return mySwingUndoManager.getRedoPresentationName();
-    }
+  @Override
+  public void removeUndoableEditListener(GPUndoListener listener) {
+    myUndoEventDispatcher.removeUndoableEditListener(listener);
+  }
 
-    @Override
-    public void addUndoableEditListener(GPUndoListener listener) {
-        myUndoEventDispatcher.addUndoableEditListener(listener);
+  @Override
+  public void die() {
+    if (swingEditImpl != null) {
+      swingEditImpl.die();
     }
-
-    @Override
-    public void removeUndoableEditListener(GPUndoListener listener) {
-        myUndoEventDispatcher.removeUndoableEditListener(listener);
+    if (mySwingUndoManager != null) {
+      mySwingUndoManager.discardAllEdits();
     }
-
-    @Override
-    public void die() {
-        if (swingEditImpl != null) {
-            swingEditImpl.die();
-        }
-        if (mySwingUndoManager != null) {
-            mySwingUndoManager.discardAllEdits();
-        }
-    }
+  }
 }

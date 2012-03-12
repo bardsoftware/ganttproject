@@ -15,133 +15,132 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * Finds the bounds of the given date range in the given list of offsets.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 class OffsetLookup {
-    static interface ComparatorBy<T> {
-        int compare(T point, int offsetIdx, List<Offset> offsets);
+  static interface ComparatorBy<T> {
+    int compare(T point, int offsetIdx, List<Offset> offsets);
+  }
+
+  static class ComparatorByStartDate implements ComparatorBy<Date> {
+    @Override
+    public int compare(Date point, int offsetIdx, List<Offset> offsets) {
+      return point.compareTo(offsets.get(offsetIdx).getOffsetStart());
+    }
+  }
+
+  static class ComparatorByEndDate implements ComparatorBy<Date> {
+    @Override
+    public int compare(Date point, int offsetIdx, List<Offset> offsets) {
+      return point.compareTo(offsets.get(offsetIdx).getOffsetEnd());
+    }
+  }
+
+  static final ComparatorBy<Date> BY_START_DATE = new ComparatorByStartDate();
+  static final ComparatorBy<Date> BY_END_DATE = new ComparatorByEndDate();
+
+  private <Type> int findOffset(Type point, ComparatorBy<Type> comparator, int start, int end, List<Offset> offsets) {
+    if (comparator.compare(point, end, offsets) > 0) {
+      return -end - 2;
+    }
+    if (comparator.compare(point, start, offsets) < 0) {
+      return start;
     }
 
-    static class ComparatorByStartDate implements ComparatorBy<Date> {
-        @Override
-        public int compare(Date point, int offsetIdx, List<Offset> offsets) {
-            return point.compareTo(offsets.get(offsetIdx).getOffsetStart());
-        }
+    for (int compare = comparator.compare(point, start, offsets); compare != 0; compare = comparator.compare(point,
+        start, offsets)) {
+      if (end == start) {
+        start = -start - 1;
+        break;
+      }
+      if (end < start) {
+        throw new IllegalStateException("end=" + end + " start=" + start + " date=" + point + " offset="
+            + offsets.get(start));
+      }
+      int diff = end - start;
+      if (compare == 1) {
+        start += diff == 1 ? 1 : diff / 2;
+      } else {
+        end = start;
+        start -= diff == 1 ? 1 : diff / 2;
+      }
     }
+    return start;
+  }
 
-    static class ComparatorByEndDate implements ComparatorBy<Date> {
-        @Override
-        public int compare(Date point, int offsetIdx, List<Offset> offsets) {
-            return point.compareTo(offsets.get(offsetIdx).getOffsetEnd());
-        }
+  int[] getBounds(Date startDate, Date endDate, List<Offset> offsets) {
+    int end = offsets.size() - 1;
+    int start = 0;
+
+    ComparatorByEndDate comparator = new ComparatorByEndDate();
+
+    if (startDate.compareTo(offsets.get(start).getOffsetEnd()) > 0) {
+      start = findOffset(startDate, comparator, start, end, offsets);
     }
-
-    static final ComparatorBy<Date> BY_START_DATE = new ComparatorByStartDate();
-    static final ComparatorBy<Date> BY_END_DATE = new ComparatorByEndDate();
-
-    private <Type> int findOffset(Type point, ComparatorBy<Type> comparator, int start, int end, List<Offset> offsets) {
-        if (comparator.compare(point, end, offsets) > 0) {
-            return -end - 2;
-        }
-        if (comparator.compare(point, start, offsets) < 0) {
-            return start;
-        }
-
-        for (int compare = comparator.compare(point, start, offsets); compare != 0; compare = comparator.compare(point, start, offsets)) {
-            if (end == start) {
-                start = -start - 1;
-                break;
-            }
-            if (end < start) {
-                throw new IllegalStateException("end="+end+" start="+start+" date="+point+" offset="+offsets.get(start));
-            }
-            int diff = end - start;
-            if (compare == 1) {
-                start += diff == 1 ? 1 : diff/2;
-            }
-            else {
-                end = start;
-                start -= diff == 1 ? 1 : diff/2;
-            }
-        }
-        return start;
+    if (start < 0) {
+      start = -start - 1;
     }
+    int leftX = start == offsets.size() ? offsets.get(start - 1).getOffsetPixels()
+        : offsets.get(start).getOffsetPixels();
 
-    int[] getBounds(Date startDate, Date endDate, List<Offset> offsets) {
-        int end = offsets.size()-1;
-        int start = 0;
-
-        ComparatorByEndDate comparator = new ComparatorByEndDate();
-
-        if (startDate.compareTo(offsets.get(start).getOffsetEnd()) > 0) {
-            start = findOffset(startDate, comparator, start, end, offsets);
-        }
-        if (start < 0) {
-            start = -start - 1;
-        }
-        int leftX = start == offsets.size() ?
-            offsets.get(start - 1).getOffsetPixels() : offsets.get(start).getOffsetPixels();
-
-        end = offsets.size()-1;
-        if (endDate.compareTo(offsets.get(end).getOffsetEnd()) < 0) {
-            end = findOffset(endDate, comparator, 0, end, offsets);
-        }
-        if (end < 0) {
-            end = -end - 1;
-        }
-        int rightX = end == offsets.size() ?
-            offsets.get(end - 1).getOffsetPixels() : offsets.get(end).getOffsetPixels();
-        return new int[] {leftX, rightX};
+    end = offsets.size() - 1;
+    if (endDate.compareTo(offsets.get(end).getOffsetEnd()) < 0) {
+      end = findOffset(endDate, comparator, 0, end, offsets);
     }
-
-    int lookupOffsetBy(Date date, List<Offset> offsets, ComparatorBy<Date> comparator) {
-        return findOffset(date, comparator, 0, offsets.size() - 1, offsets);
+    if (end < 0) {
+      end = -end - 1;
     }
+    int rightX = end == offsets.size() ? offsets.get(end - 1).getOffsetPixels() : offsets.get(end).getOffsetPixels();
+    return new int[] { leftX, rightX };
+  }
 
-    int lookupOffsetByStartDate(Date startDate, List<Offset> offsets) {
-        ComparatorByStartDate comparator = new ComparatorByStartDate();
-        return findOffset(startDate, comparator, 0, offsets.size() - 1, offsets);
-    }
+  int lookupOffsetBy(Date date, List<Offset> offsets, ComparatorBy<Date> comparator) {
+    return findOffset(date, comparator, 0, offsets.size() - 1, offsets);
+  }
 
-    int lookupOffsetByEndDate(Date endDate, List<Offset> offsets) {
-        ComparatorByEndDate comparator = new ComparatorByEndDate();
-        return findOffset(endDate, comparator, 0, offsets.size() - 1, offsets);
-    }
+  int lookupOffsetByStartDate(Date startDate, List<Offset> offsets) {
+    ComparatorByStartDate comparator = new ComparatorByStartDate();
+    return findOffset(startDate, comparator, 0, offsets.size() - 1, offsets);
+  }
 
-    static class ComparatorByPixels implements ComparatorBy<Integer> {
-        @Override
-        public int compare(Integer point, int offsetIdx, List<Offset> offsets) {
-            Offset offset = offsets.get(offsetIdx);
-            if (offset.getOffsetPixels() > point) {
-                return 1;
-            }
-            if (offsetIdx == offsets.size() - 1) {
-                return 0;
-            }
-            Offset rightOffset = offsets.get(offsetIdx + 1);
-            if (rightOffset.getOffsetPixels() > point) {
-                return 0;
-            }
-            return -1;
-        }
-    }
+  int lookupOffsetByEndDate(Date endDate, List<Offset> offsets) {
+    ComparatorByEndDate comparator = new ComparatorByEndDate();
+    return findOffset(endDate, comparator, 0, offsets.size() - 1, offsets);
+  }
 
-    Date lookupDateByPixels(int pixels, List<Offset> offsets) {
-        int offsetIdx = findOffset(pixels, new ComparatorByPixels(), 0, offsets.size() - 1, offsets);
-        if (offsetIdx < 0) {
-            offsetIdx = -offsetIdx - 1;
-        }
-        Offset offset = offsets.get(offsetIdx);
-        return offset.getOffsetStart();
+  static class ComparatorByPixels implements ComparatorBy<Integer> {
+    @Override
+    public int compare(Integer point, int offsetIdx, List<Offset> offsets) {
+      Offset offset = offsets.get(offsetIdx);
+      if (offset.getOffsetPixels() > point) {
+        return 1;
+      }
+      if (offsetIdx == offsets.size() - 1) {
+        return 0;
+      }
+      Offset rightOffset = offsets.get(offsetIdx + 1);
+      if (rightOffset.getOffsetPixels() > point) {
+        return 0;
+      }
+      return -1;
     }
+  }
+
+  Date lookupDateByPixels(int pixels, List<Offset> offsets) {
+    int offsetIdx = findOffset(pixels, new ComparatorByPixels(), 0, offsets.size() - 1, offsets);
+    if (offsetIdx < 0) {
+      offsetIdx = -offsetIdx - 1;
+    }
+    Offset offset = offsets.get(offsetIdx);
+    return offset.getOffsetStart();
+  }
 }

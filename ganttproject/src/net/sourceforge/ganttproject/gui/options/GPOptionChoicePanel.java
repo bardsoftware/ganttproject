@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -40,92 +40,88 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
  */
 public class GPOptionChoicePanel {
 
-    private ButtonGroup myExporterToggles;
+  private ButtonGroup myExporterToggles;
 
-    private AbstractButton[] myButtons;
+  private AbstractButton[] myButtons;
 
-    private JComponent[] myOptionComponents;
+  private JComponent[] myOptionComponents;
 
-    private int mySelectedIndex;
+  private int mySelectedIndex;
 
-    private String mySavedSelectedText;
+  private String mySavedSelectedText;
 
-    private OptionsPageBuilder myOptionPageBuilder = new OptionsPageBuilder();
+  private OptionsPageBuilder myOptionPageBuilder = new OptionsPageBuilder();
 
-    public Component getComponent(Action[] choiceChangeActions,
-            GPOptionGroup[] choiceOptions, int selectedGroupIndex) {
-        JComponent[] choiceComponents = new JComponent[choiceOptions.length];
-        for (int i = 0; i < choiceChangeActions.length; i++) {
-            GPOptionGroup nextOptions = choiceOptions[i];
-            JComponent nextOptionComponent = nextOptions == null ? new JPanel()
-                    : myOptionPageBuilder
-                            .buildPlanePage(new GPOptionGroup[] { nextOptions });
-            choiceComponents[i] = nextOptionComponent;
+  public Component getComponent(Action[] choiceChangeActions, GPOptionGroup[] choiceOptions, int selectedGroupIndex) {
+    JComponent[] choiceComponents = new JComponent[choiceOptions.length];
+    for (int i = 0; i < choiceChangeActions.length; i++) {
+      GPOptionGroup nextOptions = choiceOptions[i];
+      JComponent nextOptionComponent = nextOptions == null ? new JPanel()
+          : myOptionPageBuilder.buildPlanePage(new GPOptionGroup[] { nextOptions });
+      choiceComponents[i] = nextOptionComponent;
+    }
+    return getComponent(choiceChangeActions, choiceComponents, selectedGroupIndex);
+  }
+
+  public JComponent getComponent(Action[] choiceChangeActions, JComponent[] choiceComponents, int selectedGroupIndex) {
+    myButtons = new AbstractButton[choiceChangeActions.length];
+    myOptionComponents = new JComponent[choiceChangeActions.length];
+    // Box result = Box.createVerticalBox();
+    JPanel panelContainer = new JPanel(new SpringLayout());
+    myExporterToggles = new ButtonGroup();
+    for (int i = 0; i < choiceChangeActions.length; i++) {
+      final int selectedIndex = i;
+      final Action nextRealAction = choiceChangeActions[i];
+      Action nextWrapperAction = new AbstractAction(String.valueOf(nextRealAction.getValue(Action.NAME))) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          nextRealAction.actionPerformed(e);
+          updateSelectionUI(selectedIndex);
         }
-        return getComponent(choiceChangeActions, choiceComponents, selectedGroupIndex);
+      };
+      JRadioButton nextButton = new JRadioButton(nextWrapperAction);
+      nextButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      JPanel nextExporterPanel = new JPanel(new BorderLayout());
+      nextExporterPanel.add(nextButton, BorderLayout.NORTH);
+      myButtons[i] = nextButton;
+      myExporterToggles.add(nextButton);
+      JComponent nextOptionComponent = choiceComponents[i];
+      myOptionComponents[i] = nextOptionComponent;
+      nextOptionComponent.setBorder(BorderFactory.createEmptyBorder(0, 30, 20, 0));
+      nextExporterPanel.add(nextOptionComponent, BorderLayout.CENTER);
+      setEnabledTree(nextOptionComponent, false);
+      panelContainer.add(nextExporterPanel);
+      // if (i == 0) {
+      // nextButton.setSelected(true);
+      // }
     }
+    SpringUtilities.makeCompactGrid(panelContainer, myOptionComponents.length, 1, 0, 0, 5, 5);
+    setSelected(selectedGroupIndex);
 
-    public JComponent getComponent(Action[] choiceChangeActions, JComponent[] choiceComponents, int selectedGroupIndex) {
-        myButtons = new AbstractButton[choiceChangeActions.length];
-        myOptionComponents = new JComponent[choiceChangeActions.length];
-        //Box result = Box.createVerticalBox();
-        JPanel panelContainer = new JPanel(new SpringLayout());
-        myExporterToggles = new ButtonGroup();
-        for (int i = 0; i < choiceChangeActions.length; i++) {
-            final int selectedIndex = i;
-            final Action nextRealAction = choiceChangeActions[i];
-            Action nextWrapperAction = new AbstractAction(String
-                    .valueOf(nextRealAction.getValue(Action.NAME))) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    nextRealAction.actionPerformed(e);
-                    updateSelectionUI(selectedIndex);
-                }
-            };
-            JRadioButton nextButton = new JRadioButton(nextWrapperAction);
-            nextButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-            JPanel nextExporterPanel = new JPanel(new BorderLayout());
-            nextExporterPanel.add(nextButton, BorderLayout.NORTH);
-            myButtons[i] = nextButton;
-            myExporterToggles.add(nextButton);
-            JComponent nextOptionComponent = choiceComponents[i];
-            myOptionComponents[i] = nextOptionComponent;
-            nextOptionComponent.setBorder(BorderFactory.createEmptyBorder(
-                    0, 30, 20, 0));
-            nextExporterPanel.add(nextOptionComponent, BorderLayout.CENTER);
-            setEnabledTree(nextOptionComponent, false);
-            panelContainer.add(nextExporterPanel);
-//            if (i == 0) {
-//                nextButton.setSelected(true);
-//            }
-        }
-        SpringUtilities.makeCompactGrid(panelContainer, myOptionComponents.length, 1, 0, 0, 5, 5);
-        setSelected(selectedGroupIndex);
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(panelContainer, BorderLayout.NORTH);
+    return result;
 
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(panelContainer, BorderLayout.NORTH);
-        return result;
+  }
 
-    }
-    private void updateSelectionUI(int selectedIndex) {
-        AbstractButton prevSelected = myButtons[mySelectedIndex];
-        prevSelected.setText(mySavedSelectedText);
-        setEnabledTree(myOptionComponents[mySelectedIndex], false);
-        setSelected(selectedIndex);
-    }
+  private void updateSelectionUI(int selectedIndex) {
+    AbstractButton prevSelected = myButtons[mySelectedIndex];
+    prevSelected.setText(mySavedSelectedText);
+    setEnabledTree(myOptionComponents[mySelectedIndex], false);
+    setSelected(selectedIndex);
+  }
 
-    private void setSelected(int selectedIndex) {
-        AbstractButton newSelected = myButtons[selectedIndex];
-        mySavedSelectedText = newSelected.getText();
-        newSelected.setText("<html><body><b><u>" + mySavedSelectedText
-                + "</u></b></body></html>");
-        mySelectedIndex = selectedIndex;
-        newSelected.setSelected(true);
-        setEnabledTree(myOptionComponents[mySelectedIndex], true);
-    }
+  private void setSelected(int selectedIndex) {
+    AbstractButton newSelected = myButtons[selectedIndex];
+    mySavedSelectedText = newSelected.getText();
+    newSelected.setText("<html><body><b><u>" + mySavedSelectedText + "</u></b></body></html>");
+    mySelectedIndex = selectedIndex;
+    newSelected.setSelected(true);
+    setEnabledTree(myOptionComponents[mySelectedIndex], true);
+  }
 
-    private void setEnabledTree(JComponent root, boolean isEnabled) {
-    	UIUtil.setEnabledTree(root, isEnabled);
-    }
+  private void setEnabledTree(JComponent root, boolean isEnabled) {
+    UIUtil.setEnabledTree(root, isEnabled);
+  }
 
 }

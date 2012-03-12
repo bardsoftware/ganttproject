@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.awt.event.ActionEvent;
@@ -25,33 +25,34 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class TaskNewAction extends GPAction {
-    private final IGanttProject myProject;
+  private final IGanttProject myProject;
 
-    private final GPUndoManager myUndoManager;
+  private final GPUndoManager myUndoManager;
 
-    public TaskNewAction(IGanttProject project, GPUndoManager undoManager) {
-        this(project, undoManager, IconSize.MENU);
-    }
+  public TaskNewAction(IGanttProject project, GPUndoManager undoManager) {
+    this(project, undoManager, IconSize.MENU);
+  }
 
-    private TaskNewAction(IGanttProject project, GPUndoManager undoManager, IconSize size) {
-        super("task.new", size.asString());
-        myProject = project;
-        myUndoManager = undoManager;
-    }
+  private TaskNewAction(IGanttProject project, GPUndoManager undoManager, IconSize size) {
+    super("task.new", size.asString());
+    myProject = project;
+    myUndoManager = undoManager;
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new TaskNewAction(myProject, myUndoManager, size);
-    }
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new TaskNewAction(myProject, myUndoManager, size);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myUndoManager.undoableEdit(getLocalizedDescription(), new Runnable() {
-            @Override
-            public void run() {
-                // TODO all actions have their actual action inside, so move newTask code to here
-                myProject.newTask();
-            }
-        });
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myUndoManager.undoableEdit(getLocalizedDescription(), new Runnable() {
+      @Override
+      public void run() {
+        // TODO all actions have their actual action inside, so move newTask
+        // code to here
+        myProject.newTask();
+      }
+    });
+  }
 }

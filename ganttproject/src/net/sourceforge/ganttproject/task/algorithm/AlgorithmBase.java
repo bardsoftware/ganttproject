@@ -15,19 +15,19 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.algorithm;
 
 public class AlgorithmBase {
 
-    protected boolean isEnabled = true;
+  protected boolean isEnabled = true;
 
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    isEnabled = enabled;
+  }
 
-    protected boolean isEnabled() {
-        return isEnabled;
-    }
+  protected boolean isEnabled() {
+    return isEnabled;
+  }
 
 }

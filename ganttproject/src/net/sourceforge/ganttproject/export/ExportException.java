@@ -15,15 +15,15 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 public class ExportException extends Exception {
-    public ExportException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public ExportException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    public ExportException(String message) {
-        super(message);
-    }
+  public ExportException(String message) {
+    super(message);
+  }
 }

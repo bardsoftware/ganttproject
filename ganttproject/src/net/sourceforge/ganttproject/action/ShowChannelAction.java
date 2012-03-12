@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -26,52 +26,51 @@ import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 
 public class ShowChannelAction extends GPAction implements NotificationChannel.Listener {
-    private final NotificationChannel myChannel;
-    private final NotificationManager myManager;
+  private final NotificationChannel myChannel;
+  private final NotificationManager myManager;
 
-    public ShowChannelAction(NotificationManager manager, NotificationChannel channel) {
-        super("notification.channel." + channel.toString().toLowerCase() + ".label");
-        myChannel = channel;
-        myManager = manager;
-        myChannel.addListener(this);
-        updateState();
-    }
+  public ShowChannelAction(NotificationManager manager, NotificationChannel channel) {
+    super("notification.channel." + channel.toString().toLowerCase() + ".label");
+    myChannel = channel;
+    myManager = manager;
+    myChannel.addListener(this);
+    updateState();
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myManager.showNotification(myChannel);
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myManager.showNotification(myChannel);
+  }
 
-    @Override
-    protected String getLocalizedName() {
-        int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
-        String channelName = super.getLocalizedName();
-        return unreadCount == 0
-            ? MessageFormat.format(getI18n("notification.channel.clearformat"), channelName)
-            : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
-    }
+  @Override
+  protected String getLocalizedName() {
+    int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
+    String channelName = super.getLocalizedName();
+    return unreadCount == 0 ? MessageFormat.format(getI18n("notification.channel.clearformat"), channelName)
+        : MessageFormat.format(getI18n("notification.channel.unreadformat"), channelName, unreadCount);
+  }
 
-    private void updateState() {
-        if (myChannel.isEmpty() && myChannel.getDefaultNotification() == null) {
-            setEnabled(false);
-        } else {
-            setEnabled(true);
-        }
-        updateName();
+  private void updateState() {
+    if (myChannel.isEmpty() && myChannel.getDefaultNotification() == null) {
+      setEnabled(false);
+    } else {
+      setEnabled(true);
     }
+    updateName();
+  }
 
-    @Override
-    public void notificationAdded() {
-        updateState();
-    }
+  @Override
+  public void notificationAdded() {
+    updateState();
+  }
 
-    @Override
-    public void notificationRead(NotificationItem item) {
-        updateState();
-    }
+  @Override
+  public void notificationRead(NotificationItem item) {
+    updateState();
+  }
 
-    @Override
-    public void channelCleared() {
-        updateState();
-    }
+  @Override
+  public void channelCleared() {
+    updateState();
+  }
 }
