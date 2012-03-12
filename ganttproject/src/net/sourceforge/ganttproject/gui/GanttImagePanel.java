@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Dimension;
@@ -25,17 +25,17 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 public class GanttImagePanel extends JPanel {
-    private final ImageIcon image;
+  private final ImageIcon image;
 
-    public GanttImagePanel(ImageIcon image, int width, int height) {
-        super();
-        this.image = image;
-        setPreferredSize(new Dimension(width, height));
-    }
+  public GanttImagePanel(ImageIcon image, int width, int height) {
+    super();
+    this.image = image;
+    setPreferredSize(new Dimension(width, height));
+  }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        image.paintIcon(this, g, 0, 0);
-    }
+  @Override
+  public void paintComponent(Graphics g) {
+    image.paintIcon(this, g, 0, 0);
+  }
 
 }

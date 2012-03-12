@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.algorithm;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -24,5 +24,5 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public interface FindPossibleDependeesAlgorithm {
-    Task[] run(Task dependant);
+  Task[] run(Task dependant);
 }

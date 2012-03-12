@@ -12,15 +12,19 @@ import java.util.Date;
  * @author bard
  */
 public interface TimeUnitStack {
-    TimeUnit getDefaultTimeUnit();
+  TimeUnit getDefaultTimeUnit();
 
-    TimeUnitPair[] getTimeUnitPairs();
+  TimeUnitPair[] getTimeUnitPairs();
 
-    String getName();
+  String getName();
 
-    DateFormat[] getDateFormats();
-    DateFormat getTimeFormat();
-    TimeUnit findTimeUnit(String code);
-    String encode(TimeUnit timeUnit);
-    TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
+  DateFormat[] getDateFormats();
+
+  DateFormat getTimeFormat();
+
+  TimeUnit findTimeUnit(String code);
+
+  String encode(TimeUnit timeUnit);
+
+  TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
 }

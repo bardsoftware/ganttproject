@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
@@ -25,15 +25,15 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 
 public class ScrollToTodayAction extends GPAction {
-    private final TimelineChart myChart;
-    
-    public ScrollToTodayAction(TimelineChart chart) {
-        super("scroll.today");
-        myChart = chart;
-    }
+  private final TimelineChart myChart;
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myChart.setStartDate(new Date());
-    }
+  public ScrollToTodayAction(TimelineChart chart) {
+    super("scroll.today");
+    myChart = chart;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myChart.setStartDate(new Date());
+  }
 }

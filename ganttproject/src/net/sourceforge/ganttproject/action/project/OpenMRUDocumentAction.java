@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -33,39 +33,41 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  * specified listener.
  */
 public class OpenMRUDocumentAction extends GPAction {
-    private final Document myDocument;
-    private final IGanttProject myProject;
-    private final UIFacade myUIFacade;
-    private final ProjectUIFacade myProjectUIFacade;
+  private final Document myDocument;
+  private final IGanttProject myProject;
+  private final UIFacade myUIFacade;
+  private final ProjectUIFacade myProjectUIFacade;
 
-    // FIXME Keyboard shortcuts are not working... (because action is created dynamically?)
-    public OpenMRUDocumentAction(int index, Document document, IGanttProject project, UIFacade uiFacade,
-            ProjectUIFacade projectUIFacade) {
-        super("project.mru." + index);
-        myDocument = document;
-        myProject = project;
-        myUIFacade = uiFacade;
-        myProjectUIFacade = projectUIFacade;
+  // FIXME Keyboard shortcuts are not working... (because action is created
+  // dynamically?)
+  public OpenMRUDocumentAction(int index, Document document, IGanttProject project, UIFacade uiFacade,
+      ProjectUIFacade projectUIFacade) {
+    super("project.mru." + index);
+    myDocument = document;
+    myProject = project;
+    myUIFacade = uiFacade;
+    myProjectUIFacade = projectUIFacade;
 
-        // Now the muDocument field is set, the correct name can be found, so force updating the action
-        updateAction();
+    // Now the muDocument field is set, the correct name can be found, so force
+    // updating the action
+    updateAction();
+  }
+
+  @Override
+  protected String getLocalizedName() {
+    return myDocument == null ? "" : myDocument.getFileName();
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (myProjectUIFacade.ensureProjectSaved(myProject)) {
+      try {
+        myProjectUIFacade.openProject(myDocument, myProject);
+      } catch (DocumentException exception) {
+        myUIFacade.showErrorDialog(exception);
+      } catch (IOException exception) {
+        myUIFacade.showErrorDialog(exception);
+      }
     }
-
-    @Override
-    protected String getLocalizedName() {
-        return myDocument == null ? "" : myDocument.getFileName();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (myProjectUIFacade.ensureProjectSaved(myProject)) {
-            try {
-                myProjectUIFacade.openProject(myDocument, myProject);
-            } catch (DocumentException exception) {
-                myUIFacade.showErrorDialog(exception);
-            } catch (IOException exception) {
-                myUIFacade.showErrorDialog(exception);
-            }
-        }
-    }
+  }
 }

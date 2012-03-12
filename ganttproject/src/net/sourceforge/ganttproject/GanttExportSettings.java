@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.util.Date;
@@ -26,103 +26,102 @@ import net.sourceforge.ganttproject.task.Task;
 
 /** Class to store 3 boolean values */
 public class GanttExportSettings {
-    private Date startDate = null;
+  private Date startDate = null;
 
-    private Date endDate = null;
+  private Date endDate = null;
 
-    public boolean name, percent, depend, border3d, ok;
+  public boolean name, percent, depend, border3d, ok;
 
-    private boolean onlySelectedItems;
+  private boolean onlySelectedItems;
 
-    private List<Task> myVisibleTasks;
+  private List<Task> myVisibleTasks;
 
-    private int myRowCount;
+  private int myRowCount;
 
-    private int myWidth = -1;
+  private int myWidth = -1;
 
-    private ZoomState myZoomLevel;
+  private ZoomState myZoomLevel;
 
-    private boolean isCommandLineMode;
+  private boolean isCommandLineMode;
 
-    public GanttExportSettings() {
-        name = percent = depend = ok = true;
-        onlySelectedItems = false;
+  public GanttExportSettings() {
+    name = percent = depend = ok = true;
+    onlySelectedItems = false;
+  }
+
+  public GanttExportSettings(boolean bName, boolean bPercent, boolean bDepend, boolean b3dBorders) {
+    name = bName;
+    percent = bPercent;
+    depend = bDepend;
+    border3d = b3dBorders;
+    ok = true;
+    onlySelectedItems = false;
+  }
+
+  public void setOnlySelectedItem(boolean selected) {
+    onlySelectedItems = selected;
+  }
+
+  public boolean isOnlySelectedItem() {
+    return onlySelectedItems;
+  }
+
+  public void setStartDate(Date date) {
+    startDate = date;
+  }
+
+  public void setEndDate(Date date) {
+    endDate = date;
+  }
+
+  public Date getStartDate() {
+    return startDate;
+  }
+
+  public Date getEndDate() {
+    return endDate;
+  }
+
+  public void setVisibleTasks(List<Task> visibleTasks) {
+    myVisibleTasks = visibleTasks;
+    if (visibleTasks != null) {
+      myRowCount = visibleTasks.size();
     }
+  }
 
-    public GanttExportSettings(boolean bName, boolean bPercent,
-            boolean bDepend, boolean b3dBorders) {
-        name = bName;
-        percent = bPercent;
-        depend = bDepend;
-        border3d = b3dBorders;
-        ok = true;
-        onlySelectedItems = false;
-    }
+  public List<Task> getVisibleTasks() {
+    return myVisibleTasks;
+  }
 
-    public void setOnlySelectedItem(boolean selected){
-        onlySelectedItems = selected;
-    }
+  public int getRowCount() {
+    return myRowCount;
+  }
 
-    public boolean isOnlySelectedItem(){
-        return onlySelectedItems;
-    }
+  public void setRowCount(int rowCount) {
+    myRowCount = rowCount;
+  }
 
-    public void setStartDate(Date date) {
-        startDate = date;
-    }
+  public int getWidth() {
+    return myWidth;
+  }
 
-    public void setEndDate(Date date) {
-        endDate = date;
-    }
+  public void setWidth(int width) {
+    myWidth = width;
+  }
 
-    public Date getStartDate() {
-        return startDate;
-    }
+  public void setZoomLevel(ZoomState zoomLevel) {
+    myZoomLevel = zoomLevel;
+  }
 
-    public Date getEndDate() {
-        return endDate;
-    }
+  public ZoomState getZoomLevel() {
+    return myZoomLevel;
+  }
 
-    public void setVisibleTasks(List<Task> visibleTasks) {
-        myVisibleTasks = visibleTasks;
-        if (visibleTasks != null) {
-            myRowCount = visibleTasks.size();
-        }
-    }
+  public void setCommandLineMode(boolean value) {
+    isCommandLineMode = value;
+  }
 
-    public List<Task> getVisibleTasks() {
-        return myVisibleTasks;
-    }
-
-    public int getRowCount() {
-        return myRowCount;
-    }
-
-    public void setRowCount(int rowCount) {
-        myRowCount = rowCount;
-    }
-
-    public int getWidth() {
-        return myWidth;
-    }
-
-    public void setWidth(int width) {
-        myWidth = width;
-    }
-
-    public void setZoomLevel(ZoomState zoomLevel) {
-        myZoomLevel = zoomLevel;
-    }
-
-    public ZoomState getZoomLevel() {
-        return myZoomLevel;
-    }
-
-    public void setCommandLineMode(boolean value) {
-        isCommandLineMode = value;
-    }
-
-    public boolean isCommandLineMode() {
-        return isCommandLineMode;
-    }
+  public boolean isCommandLineMode() {
+    return isCommandLineMode;
+  }
 }

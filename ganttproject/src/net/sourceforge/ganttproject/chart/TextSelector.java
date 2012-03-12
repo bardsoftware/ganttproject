@@ -15,23 +15,23 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 public interface TextSelector {
-    Label[] getLabels(TextLengthCalculator textLengthCalculator);
+  Label[] getLabels(TextLengthCalculator textLengthCalculator);
 
-    class Default {
-        public static TextSelector singleChoice(final String text) {
-            return new TextSelector() {
-                @Override
-                public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
-                    return new Label[] { new Label(text, textLengthCalculator.getTextLength(text)) };
-                }
-            };
+  class Default {
+    public static TextSelector singleChoice(final String text) {
+      return new TextSelector() {
+        @Override
+        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          return new Label[] { new Label(text, textLengthCalculator.getTextLength(text)) };
         }
+      };
     }
+  }
 }

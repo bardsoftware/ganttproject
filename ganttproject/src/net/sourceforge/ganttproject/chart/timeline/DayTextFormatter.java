@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart.timeline;
 
 import java.text.MessageFormat;
@@ -24,28 +24,28 @@ import java.util.Date;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class DayTextFormatter extends CachingTextFormatter implements TimeFormatter {
-//    /** cache for holding formatted day names * */
-//    private final HashMap<Date, String> textCache = new HashMap<Date, String>();
+  // /** cache for holding formatted day names * */
+  // private final HashMap<Date, String> textCache = new HashMap<Date,
+  // String>();
 
-    @Override
-    protected TimeUnitText[] createTimeUnitText(Date adjustedLeft) {
-        return new TimeUnitText[] {
-                new TimeUnitText(MessageFormat.format("{0}", new Object[] { "" + adjustedLeft.getDate() }))
-        };
-    }
+  @Override
+  protected TimeUnitText[] createTimeUnitText(Date adjustedLeft) {
+    return new TimeUnitText[] { new TimeUnitText(MessageFormat.format("{0}",
+        new Object[] { "" + adjustedLeft.getDate() })) };
+  }
 
-//    public TimeUnitText format(TimeUnit timeUnit, Date baseDate) {
-//        String result = null;
-//        if (timeUnit instanceof DateFrameable) {
-//            Date adjustedLeft = ((DateFrameable) timeUnit).adjustLeft(baseDate);
-//            result = (String) textCache.get(adjustedLeft);
-//            if (result == null) {
-//                result = MessageFormat.format("{0}", new Object[] { ""
-//                        + adjustedLeft.getDate() });
-//                textCache.put(adjustedLeft, result);
-//            }
-//        }
-//        return new TimeUnitText(result);
-//    }
+  // public TimeUnitText format(TimeUnit timeUnit, Date baseDate) {
+  // String result = null;
+  // if (timeUnit instanceof DateFrameable) {
+  // Date adjustedLeft = ((DateFrameable) timeUnit).adjustLeft(baseDate);
+  // result = (String) textCache.get(adjustedLeft);
+  // if (result == null) {
+  // result = MessageFormat.format("{0}", new Object[] { ""
+  // + adjustedLeft.getDate() });
+  // textCache.put(adjustedLeft, result);
+  // }
+  // }
+  // return new TimeUnitText(result);
+  // }
 
 }

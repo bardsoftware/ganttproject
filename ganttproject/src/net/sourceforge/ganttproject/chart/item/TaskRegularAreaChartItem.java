@@ -10,9 +10,9 @@ import net.sourceforge.ganttproject.task.Task;
  */
 public class TaskRegularAreaChartItem extends ChartItem {
 
-    public TaskRegularAreaChartItem(Task task) {
-        super(task);
-        // TODO Auto-generated constructor stub
-    }
+  public TaskRegularAreaChartItem(Task task) {
+    super(task);
+    // TODO Auto-generated constructor stub
+  }
 
 }

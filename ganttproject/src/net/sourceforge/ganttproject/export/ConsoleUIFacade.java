@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
@@ -40,180 +40,180 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class ConsoleUIFacade implements UIFacade {
-    private final UIFacade myRealFacade;
+  private final UIFacade myRealFacade;
 
-    ConsoleUIFacade(UIFacade realFacade) {
-        myRealFacade = realFacade;
-    }
+  ConsoleUIFacade(UIFacade realFacade) {
+    myRealFacade = realFacade;
+  }
 
-    @Override
-    public ScrollingManager getScrollingManager() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public ScrollingManager getScrollingManager() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public ZoomManager getZoomManager() {
-        return myRealFacade.getZoomManager();
-    }
+  @Override
+  public ZoomManager getZoomManager() {
+    return myRealFacade.getZoomManager();
+  }
 
-    @Override
-    public ZoomActionSet getZoomActionSet() {
-        return myRealFacade.getZoomActionSet();
-    }
+  @Override
+  public ZoomActionSet getZoomActionSet() {
+    return myRealFacade.getZoomActionSet();
+  }
 
-    @Override
-    public Choice showConfirmationDialog(String message, String title) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public Choice showConfirmationDialog(String message, String title) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
-    }
+  @Override
+  public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
+  }
 
-    @Override
-    public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
-    }
+  @Override
+  public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
+  }
 
-    @Override
-    public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-        return null;
-    }
+  @Override
+  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+    return null;
+  }
 
-    @Override
-    public void setStatusText(String text) {
-    }
+  @Override
+  public void setStatusText(String text) {
+  }
 
-    @Override
-    public void showOptionDialog(int messageType, String message, Action[] actions) {
-        System.err.println("[ConsoleUIFacade]: " + message);
-    }
+  @Override
+  public void showOptionDialog(int messageType, String message, Action[] actions) {
+    System.err.println("[ConsoleUIFacade]: " + message);
+  }
 
-    @Override
-    public void showErrorDialog(String errorMessage) {
-        System.err.println("[ConsoleUIFacade] ERROR: " + errorMessage);
-    }
+  @Override
+  public void showErrorDialog(String errorMessage) {
+    System.err.println("[ConsoleUIFacade] ERROR: " + errorMessage);
+  }
 
-    @Override
-    public void showErrorDialog(Throwable e) {
-        System.err.println("[ConsoleUIFacade] ERROR: " + e.getMessage());
-        e.printStackTrace();
-    }
+  @Override
+  public void showErrorDialog(Throwable e) {
+    System.err.println("[ConsoleUIFacade] ERROR: " + e.getMessage());
+    e.printStackTrace();
+  }
 
-    @Override
-    public GanttChart getGanttChart() {
-        return myRealFacade.getGanttChart();
-    }
+  @Override
+  public GanttChart getGanttChart() {
+    return myRealFacade.getGanttChart();
+  }
 
-    @Override
-    public Chart getResourceChart() {
-        return myRealFacade.getResourceChart();
-    }
+  @Override
+  public Chart getResourceChart() {
+    return myRealFacade.getResourceChart();
+  }
 
-    @Override
-    public Chart getActiveChart() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public Chart getActiveChart() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public int getViewIndex() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+  @Override
+  public int getViewIndex() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 
-    @Override
-    public void setViewIndex(int viewIndex) {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void setViewIndex(int viewIndex) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public int getGanttDividerLocation() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+  @Override
+  public int getGanttDividerLocation() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 
-    @Override
-    public void setGanttDividerLocation(int location) {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void setGanttDividerLocation(int location) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public int getResourceDividerLocation() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+  @Override
+  public int getResourceDividerLocation() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 
-    @Override
-    public void setResourceDividerLocation(int location) {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void setResourceDividerLocation(int location) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public void refresh() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void refresh() {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public Frame getMainFrame() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public Frame getMainFrame() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public void setWorkbenchTitle(String title) {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void setWorkbenchTitle(String title) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public GPUndoManager getUndoManager() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public GPUndoManager getUndoManager() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public TaskTreeUIFacade getTaskTree() {
-        return myRealFacade.getTaskTree();
-    }
+  @Override
+  public TaskTreeUIFacade getTaskTree() {
+    return myRealFacade.getTaskTree();
+  }
 
-    @Override
-    public ResourceTreeUIFacade getResourceTree() {
-        return myRealFacade.getResourceTree();
-    }
+  @Override
+  public ResourceTreeUIFacade getResourceTree() {
+    return myRealFacade.getResourceTree();
+  }
 
-    @Override
-    public TaskSelectionContext getTaskSelectionContext() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public TaskSelectionContext getTaskSelectionContext() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public TaskSelectionManager getTaskSelectionManager() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public TaskSelectionManager getTaskSelectionManager() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public void setLookAndFeel(GanttLookAndFeelInfo laf) {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void setLookAndFeel(GanttLookAndFeelInfo laf) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public GPOptionGroup getOptions() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public GPOptionGroup getOptions() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public GanttLookAndFeelInfo getLookAndFeel() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public GanttLookAndFeelInfo getLookAndFeel() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public NotificationManager getNotificationManager() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public NotificationManager getNotificationManager() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

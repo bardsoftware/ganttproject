@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.search;
 
 import java.util.List;
@@ -24,20 +24,25 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
- * Interface of a pluggable search service. Given a search query, a search service should
- * be able to search for results and return {@link SearchResult} objects which are shown in
- * the search UI. When user selects some search result, a service should be able to
- * show the result somehow (e.g. make it visible and switch keyboard focus to the result).
- *
+ * Interface of a pluggable search service. Given a search query, a search
+ * service should be able to search for results and return {@link SearchResult}
+ * objects which are shown in the search UI. When user selects some search
+ * result, a service should be able to show the result somehow (e.g. make it
+ * visible and switch keyboard focus to the result).
+ * 
  * @author dbarashev (Dmitry Barashev)
- *
- * @param <SR> search result object type
- * @param <SO> target search object type
+ * 
+ * @param <SR>
+ *          search result object type
+ * @param <SO>
+ *          target search object type
  */
 public interface SearchService<SR extends SearchResult<SO>, SO> {
-    String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.search";
+  String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.search";
 
-    void init(IGanttProject project, UIFacade uiFacade);
-    List<SR> search(String query);
-    void select(List<SR> list);
+  void init(IGanttProject project, UIFacade uiFacade);
+
+  List<SR> search(String query);
+
+  void select(List<SR> list);
 }

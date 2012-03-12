@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
@@ -25,52 +25,50 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 
 public class TaskModelModificationListener extends TaskListenerAdapter {
-    private IGanttProject myGanttProject;
+  private IGanttProject myGanttProject;
 
-    TaskModelModificationListener(IGanttProject ganttProject) {
-        myGanttProject = ganttProject;
-    }
+  TaskModelModificationListener(IGanttProject ganttProject) {
+    myGanttProject = ganttProject;
+  }
 
-    @Override
-    public void taskScheduleChanged(TaskScheduleEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void taskScheduleChanged(TaskScheduleEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void dependencyAdded(TaskDependencyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void dependencyAdded(TaskDependencyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void dependencyRemoved(TaskDependencyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void dependencyRemoved(TaskDependencyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void taskAdded(TaskHierarchyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void taskAdded(TaskHierarchyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void taskRemoved(TaskHierarchyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void taskRemoved(TaskHierarchyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void taskMoved(TaskHierarchyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void taskMoved(TaskHierarchyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void taskPropertiesChanged(TaskPropertyEvent e) {
-        myGanttProject.setModified();
-    }
+  @Override
+  public void taskPropertiesChanged(TaskPropertyEvent e) {
+    myGanttProject.setModified();
+  }
 
-    @Override
-    public void taskProgressChanged(TaskPropertyEvent e) {
-        myGanttProject.setModified();
-        e.getTask().getManager().getAlgorithmCollection()
-                .getRecalculateTaskCompletionPercentageAlgorithm().run(
-                        e.getTask());
-    }
+  @Override
+  public void taskProgressChanged(TaskPropertyEvent e) {
+    myGanttProject.setModified();
+    e.getTask().getManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run(e.getTask());
+  }
 }

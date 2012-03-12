@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
@@ -27,27 +27,27 @@ import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class ScrollTimeIntervalAction extends GPAction {
-    private final ScrollingManager myScrollingManager;
-    private final int myInterval;
-    private final TaskManager myTaskManager;
-    private final ChartModel myChartModel;
+  private final ScrollingManager myScrollingManager;
+  private final int myInterval;
+  private final TaskManager myTaskManager;
+  private final ChartModel myChartModel;
 
-    public ScrollTimeIntervalAction(String name, int interval,
-            TaskManager taskManager, ChartModel chartModel, ScrollingManager scrollingManager) {
-        super(name);
-        myScrollingManager = scrollingManager;
-        myInterval = interval;
-        myTaskManager = taskManager;
-        myChartModel = chartModel;
-    }
+  public ScrollTimeIntervalAction(String name, int interval, TaskManager taskManager, ChartModel chartModel,
+      ScrollingManager scrollingManager) {
+    super(name);
+    myScrollingManager = scrollingManager;
+    myInterval = interval;
+    myTaskManager = taskManager;
+    myChartModel = chartModel;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myScrollingManager.scrollBy(createTimeInterval());
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myScrollingManager.scrollBy(createTimeInterval());
+  }
 
-    private TaskLength createTimeInterval() {
-        return myTaskManager.createLength(myChartModel.getBottomUnit(), myInterval);
-    }
+  private TaskLength createTimeInterval() {
+    return myTaskManager.createLength(myChartModel.getBottomUnit(), myInterval);
+  }
 
 }

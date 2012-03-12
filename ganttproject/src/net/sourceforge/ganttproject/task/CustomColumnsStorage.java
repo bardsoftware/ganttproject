@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -33,110 +33,106 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * TODO Remove the map Name->customColum to keep only the map Id -> CustomColumn
  * This class stores the CustomColumns.
- *
+ * 
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {
-    public static GanttLanguage language = GanttLanguage.getInstance();
+  public static GanttLanguage language = GanttLanguage.getInstance();
 
-    private static int nextId;
+  private static int nextId;
 
-    private final static String ID_PREFIX = "tpc";
-    private final List<CustomPropertyListener> myListeners = new ArrayList<CustomPropertyListener>();
-    private final Map<String, CustomColumn> mapIdCustomColum = new HashMap<String, CustomColumn>();
+  private final static String ID_PREFIX = "tpc";
+  private final List<CustomPropertyListener> myListeners = new ArrayList<CustomPropertyListener>();
+  private final Map<String, CustomColumn> mapIdCustomColum = new HashMap<String, CustomColumn>();
 
-    private final CustomColumnsManager myManager;
+  private final CustomColumnsManager myManager;
 
-    CustomColumnsStorage(CustomColumnsManager manager) {
-        myManager = manager;
+  CustomColumnsStorage(CustomColumnsManager manager) {
+    myManager = manager;
+  }
+
+  String createId() {
+    while (true) {
+      String id = ID_PREFIX + nextId++;
+      if (!mapIdCustomColum.containsKey(id)) {
+        return id;
+      }
     }
+  }
 
-    String createId() {
-        while (true) {
-            String id = ID_PREFIX + nextId++;
-            if (!mapIdCustomColum.containsKey(id)) {
-                return id;
-            }
-        }
-    }
+  public void reset() {
+    mapIdCustomColum.clear();
+    nextId = 0;
+  }
 
-    public void reset() {
-        mapIdCustomColum.clear();
-        nextId = 0;
-    }
+  public static void changeLanguage(GanttLanguage lang) {
+    language = lang;
+  }
 
-    public static void changeLanguage(GanttLanguage lang) {
-        language = lang;
-    }
+  public void addCustomColumn(CustomColumn col) {
+    assert !mapIdCustomColum.containsKey(col.getID()) : "column with id =" + col.getID()
+        + " already exists. All existing columns:\n" + getCustomColums();
+    mapIdCustomColum.put(col.getID(), col);
+    CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, col);
+    fireCustomColumnsChange(event);
+  }
 
-    public void addCustomColumn(CustomColumn col) {
-        assert !mapIdCustomColum.containsKey(col.getID())
-            : "column with id =" + col.getID() + " already exists. All existing columns:\n"
-                + getCustomColums();
-        mapIdCustomColum.put(col.getID(), col);
-        CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, col);
-        fireCustomColumnsChange(event);
-    }
+  public void removeCustomColumn(CustomPropertyDefinition column) {
+    CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);
+    fireCustomColumnsChange(event);
+    mapIdCustomColum.remove(column.getID());
+  }
 
-    public void removeCustomColumn(CustomPropertyDefinition column) {
-        CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);
-        fireCustomColumnsChange(event);
-        mapIdCustomColum.remove(column.getID());
-    }
+  public int getCustomColumnCount() {
+    return mapIdCustomColum.size();
+  }
 
-    public int getCustomColumnCount() {
-        return mapIdCustomColum.size();
-    }
+  public Collection<CustomColumn> getCustomColums() {
+    return mapIdCustomColum.values();
+  }
 
-    public Collection<CustomColumn> getCustomColums() {
-        return mapIdCustomColum.values();
-    }
+  public CustomColumn getCustomColumnByID(String id) {
+    return mapIdCustomColum.get(id);
+  }
 
-    public CustomColumn getCustomColumnByID(String id) {
-        return  mapIdCustomColum.get(id);
-    }
+  @Override
+  public String toString() {
+    return mapIdCustomColum.toString();
+  }
 
-    @Override
-    public String toString() {
-        return mapIdCustomColum.toString();
+  public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomColumnsStorage source) {
+    Map<CustomPropertyDefinition, CustomPropertyDefinition> result = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
+    for (CustomColumn thatColumn : source.getCustomColums()) {
+      CustomColumn thisColumn = new CustomColumn(myManager, thatColumn.getName(), thatColumn.getPropertyClass(),
+          thatColumn.getDefaultValue());
+      thisColumn.setId(createId());
+      addCustomColumn(thisColumn);
+      result.put(thatColumn, thisColumn);
     }
+    return result;
+  }
 
-    public Map<CustomPropertyDefinition,CustomPropertyDefinition> importData(
-            CustomColumnsStorage source) {
-        Map<CustomPropertyDefinition,CustomPropertyDefinition> result =
-                new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
-        for (CustomColumn thatColumn: source.getCustomColums()) {
-            CustomColumn thisColumn = new CustomColumn(
-                    myManager, thatColumn.getName(), thatColumn.getPropertyClass(),
-                    thatColumn.getDefaultValue());
-            thisColumn.setId(createId());
-            addCustomColumn(thisColumn);
-            result.put(thatColumn, thisColumn);
-        }
-        return result;
-    }
+  public void addCustomColumnsListener(CustomPropertyListener listener) {
+    myListeners.add(listener);
+  }
 
-    public void addCustomColumnsListener(CustomPropertyListener listener) {
-        myListeners.add(listener);
+  private void fireCustomColumnsChange(CustomPropertyEvent event) {
+    Iterator<CustomPropertyListener> it = myListeners.iterator();
+    while (it.hasNext()) {
+      CustomPropertyListener listener = it.next();
+      listener.customPropertyChange(event);
     }
+  }
 
-    private void fireCustomColumnsChange(CustomPropertyEvent event) {
-        Iterator<CustomPropertyListener> it = myListeners.iterator();
-        while (it.hasNext()) {
-            CustomPropertyListener listener = it.next();
-            listener.customPropertyChange(event);
-        }
-    }
+  void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+    CustomPropertyEvent e = new CustomPropertyEvent(event, def, oldDef);
+    fireCustomColumnsChange(e);
+  }
 
-    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
-        CustomPropertyEvent e = new CustomPropertyEvent(event, def, oldDef);
-        fireCustomColumnsChange(e);
-    }
-
-    void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
-        CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);
-        CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);
-        fireCustomColumnsChange(e);
-    }
+  void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
+    CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);
+    CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);
+    fireCustomColumnsChange(e);
+  }
 
 }

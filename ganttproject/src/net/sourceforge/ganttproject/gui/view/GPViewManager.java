@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.view;
 
 import javax.swing.Icon;
@@ -28,13 +28,21 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
  * @author bard
  */
 public interface GPViewManager {
-    public void createView(GPView view, Icon icon);
-    public GPAction getCopyAction();
-    public GPAction getCutAction();
-    public GPAction getPasteAction();
-    public ChartSelection getSelectedArtefacts();
-    public Chart getActiveChart();
-    public void activateNextView();
-    public void activatePrevView();
-    public void toggleVisible(GPView view);
+  public void createView(GPView view, Icon icon);
+
+  public GPAction getCopyAction();
+
+  public GPAction getCutAction();
+
+  public GPAction getPasteAction();
+
+  public ChartSelection getSelectedArtefacts();
+
+  public Chart getActiveChart();
+
+  public void activateNextView();
+
+  public void activatePrevView();
+
+  public void toggleVisible(GPView view);
 }

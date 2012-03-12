@@ -15,30 +15,30 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.util.collect;
 
 /**
  * @author Dmitry Barashev
  */
-public class Pair<F,S> {
-    private final F myFirst;
-    private final S mySecond;
+public class Pair<F, S> {
+  private final F myFirst;
+  private final S mySecond;
 
-    private Pair(F first, S second) {
-        myFirst = first;
-        mySecond = second;
-    }
+  private Pair(F first, S second) {
+    myFirst = first;
+    mySecond = second;
+  }
 
-    public F first() {
-        return myFirst;
-    }
+  public F first() {
+    return myFirst;
+  }
 
-    public S second() {
-        return mySecond;
-    }
+  public S second() {
+    return mySecond;
+  }
 
-    public static final <F,S> Pair<F,S> create(F first, S second) {
-        return new Pair<F, S>(first, second);
-    }
+  public static final <F, S> Pair<F, S> create(F first, S second) {
+    return new Pair<F, S>(first, second);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import java.util.List;
@@ -23,9 +23,11 @@ import java.util.List;
 import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskDependencySlice {
-    TaskDependency[] toArray();
+  TaskDependency[] toArray();
 
-    void clear();
-    void clear(List<Task> selection);
-    boolean hasLinks(List<Task> selection);
+  void clear();
+
+  void clear(List<Task> selection);
+
+  boolean hasLinks(List<Task> selection);
 }

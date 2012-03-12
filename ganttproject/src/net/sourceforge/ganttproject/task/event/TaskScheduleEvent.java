@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.event;
 
 import java.util.EventObject;
@@ -27,41 +27,40 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public class TaskScheduleEvent extends EventObject {
-    private final GanttCalendar myOldStartDate;
+  private final GanttCalendar myOldStartDate;
 
-    private final GanttCalendar myOldFinishDate;
+  private final GanttCalendar myOldFinishDate;
 
-    private final GanttCalendar myNewStartDate;
+  private final GanttCalendar myNewStartDate;
 
-    private final GanttCalendar myNewFinishDate;
+  private final GanttCalendar myNewFinishDate;
 
-    public TaskScheduleEvent(Task source, GanttCalendar oldStartDate,
-            GanttCalendar oldFinishDate, GanttCalendar newStartDate,
-            GanttCalendar newFinishDate) {
-        super(source);
-        myOldStartDate = oldStartDate;
-        myOldFinishDate = oldFinishDate;
-        myNewStartDate = newStartDate;
-        myNewFinishDate = newFinishDate;
-    }
+  public TaskScheduleEvent(Task source, GanttCalendar oldStartDate, GanttCalendar oldFinishDate,
+      GanttCalendar newStartDate, GanttCalendar newFinishDate) {
+    super(source);
+    myOldStartDate = oldStartDate;
+    myOldFinishDate = oldFinishDate;
+    myNewStartDate = newStartDate;
+    myNewFinishDate = newFinishDate;
+  }
 
-    public Task getTask() {
-        return (Task) getSource();
-    }
+  public Task getTask() {
+    return (Task) getSource();
+  }
 
-    public GanttCalendar getOldStartDate() {
-        return myOldStartDate;
-    }
+  public GanttCalendar getOldStartDate() {
+    return myOldStartDate;
+  }
 
-    public GanttCalendar getOldFinishDate() {
-        return myOldFinishDate;
-    }
+  public GanttCalendar getOldFinishDate() {
+    return myOldFinishDate;
+  }
 
-    public GanttCalendar getNewStartDate() {
-        return myNewStartDate;
-    }
+  public GanttCalendar getNewStartDate() {
+    return myNewStartDate;
+  }
 
-    public GanttCalendar getNewFinishDate() {
-        return myNewFinishDate;
-    }
+  public GanttCalendar getNewFinishDate() {
+    return myNewFinishDate;
+  }
 }

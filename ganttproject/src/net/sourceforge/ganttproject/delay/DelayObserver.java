@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.delay;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -24,5 +24,5 @@ import net.sourceforge.ganttproject.task.Task;
  * @author bbaranne
  */
 public interface DelayObserver {
-    public void setDelay(Task task, Delay delay);
+  public void setDelay(Task task, Delay delay);
 }

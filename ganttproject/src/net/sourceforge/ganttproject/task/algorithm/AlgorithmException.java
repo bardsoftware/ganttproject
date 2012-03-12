@@ -15,11 +15,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.algorithm;
 
 public class AlgorithmException extends Exception {
-    public AlgorithmException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public AlgorithmException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

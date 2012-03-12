@@ -9,28 +9,30 @@ import java.beans.PropertyChangeListener;
  * @author bard
  */
 public interface GPOption<T> {
-    T getValue();
+  T getValue();
 
-    void setValue(T value);
-    String getID();
+  void setValue(T value);
 
-    void lock();
+  String getID();
 
-    void commit();
+  void lock();
 
-    void rollback();
+  void commit();
 
-    String getPersistentValue();
+  void rollback();
 
-    void loadPersistentValue(String value);
+  String getPersistentValue();
 
-    boolean isChanged();
+  void loadPersistentValue(String value);
 
-    void addChangeValueListener(ChangeValueListener listener);
+  boolean isChanged();
 
-    boolean isWritable();
+  void addChangeValueListener(ChangeValueListener listener);
 
-    void addPropertyChangeListener(PropertyChangeListener listener);
-    void removePropertyChangeListener(PropertyChangeListener listener);
+  boolean isWritable();
+
+  void addPropertyChangeListener(PropertyChangeListener listener);
+
+  void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

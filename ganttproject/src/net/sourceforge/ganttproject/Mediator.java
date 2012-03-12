@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
@@ -29,67 +29,66 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 /**
  * This class allow the developer to get some useful references. - GanttProject
  * reference; - CustomColumnManager reference; - CustomColumnStorage reference.
- *
+ * 
  * @author bbaranne Mar 2, 2005
  */
 public class Mediator {
-    /**
-     * The unique GanttProject instance.
-     */
-    private static GanttProject ganttprojectSingleton = null;
+  /**
+   * The unique GanttProject instance.
+   */
+  private static GanttProject ganttprojectSingleton = null;
 
-    private static TaskSelectionManager taskSelectionManager = null;
+  private static TaskSelectionManager taskSelectionManager = null;
 
-    private static DelayManager delayManager = null;
+  private static DelayManager delayManager = null;
 
-    private static final PluginManager pluginManager = new PluginManager();
+  private static final PluginManager pluginManager = new PluginManager();
 
-    private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
+  private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
 
-    /**
-     * Registers the unique GanttProject instance.
-     *
-     * @param gp
-     *            The unique GanttProject instance.
-     */
-    public static void registerGanttProject(GanttProject gp) {
-        ganttprojectSingleton = gp;
-    }
+  /**
+   * Registers the unique GanttProject instance.
+   * 
+   * @param gp
+   *          The unique GanttProject instance.
+   */
+  public static void registerGanttProject(GanttProject gp) {
+    ganttprojectSingleton = gp;
+  }
 
-    public static void registerTaskSelectionManager(
-            TaskSelectionManager taskSelection) {
-        taskSelectionManager = taskSelection;
-    }
+  public static void registerTaskSelectionManager(TaskSelectionManager taskSelection) {
+    taskSelectionManager = taskSelection;
+  }
 
-    public static void registerDelayManager(DelayManager delayMgr) {
-        delayManager = delayMgr;
-    }
+  public static void registerDelayManager(DelayManager delayMgr) {
+    delayManager = delayMgr;
+  }
 
-    public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher){
-        changeValueDispatchers.add(dispatcher);
-    }
+  public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher) {
+    changeValueDispatchers.add(dispatcher);
+  }
 
-    /** @return The unique GanttProject instance. */
-    @Deprecated
-    public static GanttProject getGanttProjectSingleton() {
-        return ganttprojectSingleton;
-    }
+  /** @return The unique GanttProject instance. */
+  @Deprecated
+  public static GanttProject getGanttProjectSingleton() {
+    return ganttprojectSingleton;
+  }
 
-    @Deprecated
-    public static TaskSelectionManager getTaskSelectionManager() {
-        return taskSelectionManager;
-    }
+  @Deprecated
+  public static TaskSelectionManager getTaskSelectionManager() {
+    return taskSelectionManager;
+  }
 
-    @Deprecated
-    public static DelayManager getDelayManager() {
-        return delayManager;
-    }
+  @Deprecated
+  public static DelayManager getDelayManager() {
+    return delayManager;
+  }
 
-    public static PluginManager getPluginManager() {
-        return pluginManager;
-    }
+  public static PluginManager getPluginManager() {
+    return pluginManager;
+  }
 
-    public static List<ChangeValueDispatcher> getChangeValueDispatchers(){
-        return changeValueDispatchers;
-    }
+  public static List<ChangeValueDispatcher> getChangeValueDispatchers() {
+    return changeValueDispatchers;
+  }
 }

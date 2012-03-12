@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.image.RenderedImage;
@@ -29,34 +29,39 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 
 public interface Chart extends IAdaptable {
-    IGanttProject getProject();
+  IGanttProject getProject();
 
-    void init(IGanttProject project);
-    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor);
-    public RenderedImage getRenderedImage(GanttExportSettings settings);
+  void init(IGanttProject project);
 
-    public Date getStartDate();
-    void setStartDate(Date startDate);
-    public Date getEndDate();
+  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor);
 
-    void setDimensions(int height, int width);
+  public RenderedImage getRenderedImage(GanttExportSettings settings);
 
-    public String getName();
+  public Date getStartDate();
 
-    /** Repaints the chart */
-    public void reset();
+  void setStartDate(Date startDate);
 
-    public GPOptionGroup[] getOptionGroups();
+  public Date getEndDate();
 
-    public Chart createCopy();
+  void setDimensions(int height, int width);
 
-    public ChartSelection getSelection();
+  public String getName();
 
-    public IStatus canPaste(ChartSelection selection);
+  /** Repaints the chart */
+  public void reset();
 
-    public void paste(ChartSelection selection);
+  public GPOptionGroup[] getOptionGroups();
 
-    public void addSelectionListener(ChartSelectionListener listener);
-    public void removeSelectionListener(ChartSelectionListener listener);
+  public Chart createCopy();
+
+  public ChartSelection getSelection();
+
+  public IStatus canPaste(ChartSelection selection);
+
+  public void paste(ChartSelection selection);
+
+  public void addSelectionListener(ChartSelectionListener listener);
+
+  public void removeSelectionListener(ChartSelectionListener listener);
 
 }

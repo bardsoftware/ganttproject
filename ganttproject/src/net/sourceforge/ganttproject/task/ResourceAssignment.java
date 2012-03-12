@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -23,26 +23,26 @@ import net.sourceforge.ganttproject.roles.Role;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * 
  * @author bard Date: 05.02.2004
  */
 public interface ResourceAssignment {
-    Task getTask();
+  Task getTask();
 
-    HumanResource getResource();
+  HumanResource getResource();
 
-    float getLoad();
+  float getLoad();
 
-    void setLoad(float load);
+  void setLoad(float load);
 
-    /** Deletes this assignment */
-    void delete();
+  /** Deletes this assignment */
+  void delete();
 
-    void setCoordinator(boolean responsible);
+  void setCoordinator(boolean responsible);
 
-    boolean isCoordinator();
+  boolean isCoordinator();
 
-    Role getRoleForAssignment();
+  Role getRoleForAssignment();
 
-    void setRoleForAssignment(Role role);
+  void setRoleForAssignment(Role role);
 }

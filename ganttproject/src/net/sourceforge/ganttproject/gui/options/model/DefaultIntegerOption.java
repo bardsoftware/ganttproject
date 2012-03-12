@@ -15,27 +15,27 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options.model;
 
 public class DefaultIntegerOption extends GPAbstractOption<Integer> implements IntegerOption {
-    public DefaultIntegerOption(String id) {
-        this(id, 0);
-    }
+  public DefaultIntegerOption(String id) {
+    this(id, 0);
+  }
 
-    public DefaultIntegerOption(String id, Integer initialValue) {
-        super(id, initialValue);
-    }
+  public DefaultIntegerOption(String id, Integer initialValue) {
+    super(id, initialValue);
+  }
 
-    @Override
-    public String getPersistentValue() {
-        int value = getValue();
-        return String.valueOf(value);
-    }
+  @Override
+  public String getPersistentValue() {
+    int value = getValue();
+    return String.valueOf(value);
+  }
 
-    @Override
-    public void loadPersistentValue(String value) {
-        int intValue = Integer.parseInt(value);
-        setValue(intValue, true);
-    }
+  @Override
+  public void loadPersistentValue(String value) {
+    int intValue = Integer.parseInt(value);
+    setValue(intValue, true);
+  }
 }

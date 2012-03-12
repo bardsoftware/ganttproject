@@ -15,31 +15,39 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 public interface ProjectEventListener {
-    void projectModified();
-    void projectSaved();
-    void projectClosed();
-    void projectOpened();
-    void projectCreated();
+  void projectModified();
 
-    class Stub implements ProjectEventListener {
-        @Override
-        public void projectModified() {
-        }
-        @Override
-        public void projectSaved() {
-        }
-        @Override
-        public void projectClosed() {
-        }
-        @Override
-        public void projectOpened() {
-        }
-        @Override
-        public void projectCreated() {
-        }
+  void projectSaved();
+
+  void projectClosed();
+
+  void projectOpened();
+
+  void projectCreated();
+
+  class Stub implements ProjectEventListener {
+    @Override
+    public void projectModified() {
     }
+
+    @Override
+    public void projectSaved() {
+    }
+
+    @Override
+    public void projectClosed() {
+    }
+
+    @Override
+    public void projectOpened() {
+    }
+
+    @Override
+    public void projectCreated() {
+    }
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
@@ -31,40 +31,43 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
  * Move selected tasks down
  */
 public class TaskMoveDownAction extends TaskActionBase {
-    public TaskMoveDownAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade, GanttTree2 tree) {
-        super("task.move.down", taskManager, selectionManager, uiFacade, tree);
-    }
+  public TaskMoveDownAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
+      GanttTree2 tree) {
+    super("task.move.down", taskManager, selectionManager, uiFacade, tree);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "down_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "down_";
+  }
 
-    @Override
-    protected boolean isEnabled(List<Task> selection) {
-        if(selection.size() == 0) {
-            return false;
-        }
-        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-        for(Task task: selection) {
-            if(taskHierarchy.getNextSibling(task) == null) {
-                // task is the last child of the parent
-                return false;
-            }
-        }
-        return true;
+  @Override
+  protected boolean isEnabled(List<Task> selection) {
+    if (selection.size() == 0) {
+      return false;
     }
+    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    for (Task task : selection) {
+      if (taskHierarchy.getNextSibling(task) == null) {
+        // task is the last child of the parent
+        return false;
+      }
+    }
+    return true;
+  }
 
-    @Override
-    protected void run(List<Task> selection) throws Exception {
-        TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-        for(int i = selection.size() - 1; i >= 0; i--) {
-            Task task = selection.get(i);
-            Task parent = taskHierarchy.getContainer(task);
-            int index = taskHierarchy.getTaskIndex(task) + 1;
-            taskHierarchy.move(task, parent, index);
-        }
-        forwardScheduling();
-        // TODO Ideally this should get done by the move method as it modifies the document
-        getUIFacade().getGanttChart().getProject().setModified();
-    }}
+  @Override
+  protected void run(List<Task> selection) throws Exception {
+    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    for (int i = selection.size() - 1; i >= 0; i--) {
+      Task task = selection.get(i);
+      Task parent = taskHierarchy.getContainer(task);
+      int index = taskHierarchy.getTaskIndex(task) + 1;
+      taskHierarchy.move(task, parent, index);
+    }
+    forwardScheduling();
+    // TODO Ideally this should get done by the move method as it modifies the
+    // document
+    getUIFacade().getGanttChart().getProject().setModified();
+  }
+}

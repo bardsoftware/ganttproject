@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Rectangle;
@@ -38,133 +38,129 @@ import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.
- *
+ * 
  * @author bbaranne (Benoit Baranne) - original version
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
 public class GanttTreeTable extends GPTreeTableBase {
-    private final GanttTreeTableModel ttModel;
+  private final GanttTreeTableModel ttModel;
 
-    private final UIFacade myUIfacade;
+  private final UIFacade myUIfacade;
 
-    GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
-        super(project, uifacade, project.getTaskCustomColumnManager(), model);
-        this.ttModel = model;
-        myUIfacade = uifacade;
-        getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
-        initTreeTable();
+  GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
+    super(project, uifacade, project.getTaskCustomColumnManager(), model);
+    this.ttModel = model;
+    myUIfacade = uifacade;
+    getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
+    initTreeTable();
+  }
+
+  private UIFacade getUiFacade() {
+    return myUIfacade;
+  }
+
+  private static enum DefaultColumn {
+    TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)), PRIORITY(new TableHeaderUIFacade.ColumnStub(
+        "tpd1", null, false, -1, 50)), INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)), NAME(
+        new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)), BEGIN_DATE(new TableHeaderUIFacade.ColumnStub(
+        "tpd4", null, true, 1, 75)), END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 2, 75)), DURATION(
+        new TableHeaderUIFacade.ColumnStub("tpd6", null, false, -1, 50)), COMPLETION(
+        new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50)), COORDINATOR(
+        new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200)), PREDECESSORS(
+        new TableHeaderUIFacade.ColumnStub("tpd9", null, false, -1, 200)), ID(new TableHeaderUIFacade.ColumnStub(
+        "tpd10", null, false, -1, 20)), ;
+
+    private final Column myDelegate;
+
+    private DefaultColumn(TableHeaderUIFacade.Column delegate) {
+      myDelegate = delegate;
     }
 
-    private UIFacade getUiFacade() {
-        return myUIfacade;
+    Column getStub() {
+      return myDelegate;
     }
 
-    private static enum DefaultColumn {
-        TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)),
-        PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, false, -1, 50)),
-        INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)),
-        NAME(new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)),
-        BEGIN_DATE(new TableHeaderUIFacade.ColumnStub("tpd4", null, true, 1, 75)),
-        END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 2, 75)),
-        DURATION(new TableHeaderUIFacade.ColumnStub("tpd6", null, false, -1, 50)),
-        COMPLETION(new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50)),
-        COORDINATOR(new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200)),
-        PREDECESSORS(new TableHeaderUIFacade.ColumnStub("tpd9", null, false, -1, 200)),
-        ID(new TableHeaderUIFacade.ColumnStub("tpd10", null, false, -1, 20)),
-        ;
-
-        private final Column myDelegate;
-        private DefaultColumn(TableHeaderUIFacade.Column delegate) {
-            myDelegate = delegate;
-        }
-
-        Column getStub() {
-            return myDelegate;
-        }
-
-        static List<Column> getColumnStubs() {
-            List<Column> result = new ArrayList<Column>();
-            for (DefaultColumn dc : values()) {
-                result.add(dc.myDelegate);
-            }
-            return result;
-        }
+    static List<Column> getColumnStubs() {
+      List<Column> result = new ArrayList<Column>();
+      for (DefaultColumn dc : values()) {
+        result.add(dc.myDelegate);
+      }
+      return result;
     }
+  }
 
-    @Override
-    protected List<Column> getDefaultColumns() {
-        return DefaultColumn.getColumnStubs();
-    }
+  @Override
+  protected List<Column> getDefaultColumns() {
+    return DefaultColumn.getColumnStubs();
+  }
 
-    @Override
-    protected Chart getChart() {
+  @Override
+  protected Chart getChart() {
+    return myUIfacade.getGanttChart();
+  }
+
+  @Override
+  protected void doInit() {
+    super.doInit();
+    getTable().getColumnModel().addColumnModelListener((TableColumnModelListener) this.getTreeTableModel());
+    getTable().getModel().addTableModelListener(new ModelListener());
+    getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
+      @Override
+      protected TimelineChart getChart() {
         return myUIfacade.getGanttChart();
-    }
+      }
+    });
+  }
 
+  void centerViewOnSelectedCell() {
+    int row = getTable().getSelectedRow();
+    int col = getTable().getEditingColumn();
+    if (col == -1) {
+      col = getTable().getSelectedColumn();
+    }
+    Rectangle rect = getTable().getCellRect(row, col, true);
+    getHorizontalScrollBar().scrollRectToVisible(rect);
+    getScrollPane().getViewport().scrollRectToVisible(rect);
+  }
+
+  void setDelay(TaskNode taskNode, Delay delay) {
+    try {
+      int indexInfo = getTable().getColumnModel().getColumnIndex(GanttTreeTableModel.strColInfo);
+      indexInfo = getTable().convertColumnIndexToModel(indexInfo);
+      ttModel.setValueAt(delay, taskNode, indexInfo);
+    } catch (IllegalArgumentException e) {
+    }
+  }
+
+  /**
+   * This class repaints the GraphicArea and the table every time the table
+   * model has been modified. TODO Add the refresh functionality when available.
+   * 
+   * @author Benoit Baranne
+   */
+  private class ModelListener implements TableModelListener {
     @Override
-    protected void doInit() {
-        super.doInit();
-        getTable().getColumnModel().addColumnModelListener((TableColumnModelListener) this.getTreeTableModel());
-        getTable().getModel().addTableModelListener(new ModelListener());
-        getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
-            @Override
-            protected TimelineChart getChart() {
-                return myUIfacade.getGanttChart();
-            }
-        });
+    public void tableChanged(TableModelEvent e) {
+      getUiFacade().getGanttChart().reset();
     }
+  }
 
-    void centerViewOnSelectedCell() {
-        int row = getTable().getSelectedRow();
-        int col = getTable().getEditingColumn();
-        if (col == -1) {
-            col = getTable().getSelectedColumn();
-        }
-        Rectangle rect = getTable().getCellRect(row, col, true);
-        getHorizontalScrollBar().scrollRectToVisible(rect);
-        getScrollPane().getViewport().scrollRectToVisible(rect);
-    }
+  void editSelectedTask() {
+    TreePath selectedPath = getTree().getSelectionPath();
+    Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
+    TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
+    getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
+    cellEditor.requestFocus();
+  }
 
-    void setDelay(TaskNode taskNode, Delay delay) {
-        try {
-            int indexInfo = getTable().getColumnModel().getColumnIndex(GanttTreeTableModel.strColInfo);
-            indexInfo = getTable().convertColumnIndexToModel(indexInfo);
-            ttModel.setValueAt(delay, taskNode, indexInfo);
-        } catch (IllegalArgumentException e) {
-        }
-    }
-
-
-    /**
-     * This class repaints the GraphicArea and the table every time the table
-     * model has been modified.
-     * TODO Add the refresh functionality when available.
-     *
-     * @author Benoit Baranne
-     */
-    private class ModelListener implements TableModelListener {
-        @Override
-        public void tableChanged(TableModelEvent e) {
-            getUiFacade().getGanttChart().reset();
-        }
-    }
-
-    void editSelectedTask() {
-        TreePath selectedPath = getTree().getSelectionPath();
-        Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
-        TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
-        getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
-        cellEditor.requestFocus();
-    }
-
-    @Override
-    protected void onProjectCreated() {
-        super.onProjectCreated();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                getUiFacade().getGanttChart().reset();
-            }
-        });
-    }
+  @Override
+  protected void onProjectCreated() {
+    super.onProjectCreated();
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        getUiFacade().getGanttChart().reset();
+      }
+    });
+  }
 }

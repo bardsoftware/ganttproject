@@ -14,13 +14,13 @@ import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * 
  * @author bard
  */
 public interface DateFrameable {
-    Date adjustRight(Date baseDate);
+  Date adjustRight(Date baseDate);
 
-    Date adjustLeft(Date baseDate);
+  Date adjustLeft(Date baseDate);
 
-    Date jumpLeft(Date baseDate);
+  Date jumpLeft(Date baseDate);
 }

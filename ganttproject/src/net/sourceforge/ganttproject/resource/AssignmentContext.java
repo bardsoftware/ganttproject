@@ -15,11 +15,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.resource;
 
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 
 public interface AssignmentContext {
-    public ResourceAssignment[] getResourceAssignments();
+  public ResourceAssignment[] getResourceAssignments();
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.gantt;
 
 import java.awt.Cursor;
@@ -32,36 +32,37 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 
 class MouseMotionListenerImpl extends MouseMotionListenerBase {
-    private final ChartComponentBase myChartComponent;
-    private GanttChartController myChartController;
+  private final ChartComponentBase myChartComponent;
+  private GanttChartController myChartController;
 
-    public MouseMotionListenerImpl(GanttChartController chartImplementation, ChartModelImpl chartModel, UIFacade uiFacade, ChartComponentBase chartComponent) {
-        super(uiFacade, chartImplementation);
-        myChartController = chartImplementation;
-        myChartComponent = chartComponent;
+  public MouseMotionListenerImpl(GanttChartController chartImplementation, ChartModelImpl chartModel,
+      UIFacade uiFacade, ChartComponentBase chartComponent) {
+    super(uiFacade, chartImplementation);
+    myChartController = chartImplementation;
+    myChartComponent = chartComponent;
+  }
+
+  // Move the move on the area
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    ChartItem itemUnderPoint = myChartController.getChartItemUnderMousePoint(e.getX(), e.getY());
+    Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();
+    // System.err.println("[OldMouseMotionListenerImpl] mouseMoved:
+    // taskUnderPoint="+taskUnderPoint);
+    if (taskUnderPoint == null) {
+      myChartComponent.setDefaultCursor();
+    } else {
+      if (itemUnderPoint instanceof TaskBoundaryChartItem) {
+        Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
+            : GanttGraphicArea.E_RESIZE_CURSOR;
+        myChartComponent.setCursor(cursor);
+      }
+      // special cursor
+      else if (itemUnderPoint instanceof TaskProgressChartItem) {
+        myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
+      } else {
+        myChartComponent.setDefaultCursor();
+      }
     }
-    // Move the move on the area
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        ChartItem itemUnderPoint = myChartController.getChartItemUnderMousePoint(e.getX(), e.getY());
-        Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();
-        // System.err.println("[OldMouseMotionListenerImpl] mouseMoved:
-        // taskUnderPoint="+taskUnderPoint);
-        if (taskUnderPoint == null) {
-            myChartComponent.setDefaultCursor();
-        } else {
-            if (itemUnderPoint instanceof TaskBoundaryChartItem) {
-                Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint)
-                        .isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
-                        : GanttGraphicArea.E_RESIZE_CURSOR;
-                myChartComponent.setCursor(cursor);
-            }
-            // special cursor
-            else if (itemUnderPoint instanceof TaskProgressChartItem) {
-                myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
-            } else {
-                myChartComponent.setDefaultCursor();
-            }
-        }
-    }
+  }
 }

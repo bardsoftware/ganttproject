@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.event.ActionEvent;
@@ -28,27 +28,26 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.tableView.ColumnManagerPanel;
 
-
 public class ShowHideColumnsDialog {
 
-    private final UIFacade myUIfacade;
-    private final CustomPropertyManager myManager;
-    private final TableHeaderUIFacade myVisibleFields;
+  private final UIFacade myUIfacade;
+  private final CustomPropertyManager myManager;
+  private final TableHeaderUIFacade myVisibleFields;
 
-    public ShowHideColumnsDialog(UIFacade facade, TableHeaderUIFacade visibleFields, CustomPropertyManager manager) {
-        myUIfacade = facade;
-        myVisibleFields = visibleFields;
-        myManager = manager;
-    }
+  public ShowHideColumnsDialog(UIFacade facade, TableHeaderUIFacade visibleFields, CustomPropertyManager manager) {
+    myUIfacade = facade;
+    myVisibleFields = visibleFields;
+    myManager = manager;
+  }
 
-    public void show() {
-        final ColumnManagerPanel panel = new ColumnManagerPanel(myManager, myVisibleFields);
-        JComponent component = (JComponent) panel.createComponent();
-        myUIfacade.createDialog(component, new Action[] {new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                panel.commitCustomPropertyEdit();
-            }
-        }}, "Custom Fields Manager").show();
-    }
+  public void show() {
+    final ColumnManagerPanel panel = new ColumnManagerPanel(myManager, myVisibleFields);
+    JComponent component = (JComponent) panel.createComponent();
+    myUIfacade.createDialog(component, new Action[] { new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        panel.commitCustomPropertyEdit();
+      }
+    } }, "Custom Fields Manager").show();
+  }
 }

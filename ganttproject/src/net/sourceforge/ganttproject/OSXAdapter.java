@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.io.IOException;
@@ -28,71 +28,70 @@ import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 
 public class OSXAdapter extends ApplicationAdapter {
-    private static OSXAdapter osxAdapter;
-    private static com.apple.eawt.Application theApp;
-    private GanttProject myProj;
+  private static OSXAdapter osxAdapter;
+  private static com.apple.eawt.Application theApp;
+  private GanttProject myProj;
 
-    private OSXAdapter(GanttProject myProj) {
-        this.myProj = myProj;
+  private OSXAdapter(GanttProject myProj) {
+    this.myProj = myProj;
+  }
+
+  /**
+   * This method handles the case when a file in the Finder is dropped onto the
+   * app, or GanttProject is selected via the open-with menu option. The event
+   * argument contains the path of the file in either case.
+   */
+  @Override
+  public void handleOpenFile(ApplicationEvent event) {
+    String file;
+    Document myDocument;
+
+    if (myProj.getProjectUIFacade().ensureProjectSaved(myProj)) {
+      file = event.getFilename();
+      myDocument = myProj.getDocumentManager().getDocument(file);
+      try {
+        myProj.getProjectUIFacade().openProject(myDocument, myProj.getProject());
+      } catch (DocumentException e) {
+        myProj.getUIFacade().showErrorDialog(e);
+      } catch (IOException e) {
+        myProj.getUIFacade().showErrorDialog(e);
+      }
     }
+    event.setHandled(true);
+  }
 
-    /**
-     * This method handles the case when a file in the Finder is dropped onto
-     * the app, or GanttProject is selected via the open-with menu option. The
-     * event argument contains the path of the file in either case.
+  /** Handle the Mac OSX "about" menu option. */
+  @Override
+  public void handleAbout(ApplicationEvent event) {
+    AboutDialog2 abd = new AboutDialog2(myProj.getUIFacade());
+    abd.show();
+    // Indicate we've handled this event ourselves
+    event.setHandled(true);
+  }
+
+  /**
+   * Handles the quit menu option (defaults to command-q) the same way choosing
+   * Project->Quit does.
+   */
+  @Override
+  public void handleQuit(ApplicationEvent event) {
+    myProj.quitApplication();
+    /*
+     * Not a typo. Must set handled to false else the app will still quit even
+     * if we say "cancel" on confirmation.
      */
-    @Override
-    public void handleOpenFile(ApplicationEvent event) {
-        String file;
-        Document myDocument;
+    event.setHandled(false);
+  }
 
-        if (myProj.getProjectUIFacade().ensureProjectSaved(myProj)) {
-            file = event.getFilename();
-            myDocument = myProj.getDocumentManager().getDocument(file);
-            try {
-                myProj.getProjectUIFacade().openProject(myDocument,
-                        myProj.getProject());
-            } catch (DocumentException e) {
-                myProj.getUIFacade().showErrorDialog(e);
-            } catch (IOException e) {
-                myProj.getUIFacade().showErrorDialog(e);
-            }
-        }
-        event.setHandled(true);
+  public static void registerMacOSXApplication(GanttProject myProj) {
+    if (theApp == null) {
+      theApp = new com.apple.eawt.Application();
     }
 
-    /** Handle the Mac OSX "about" menu option. */
-    @Override
-    public void handleAbout(ApplicationEvent event) {
-        AboutDialog2 abd = new AboutDialog2(myProj.getUIFacade());
-        abd.show();
-        // Indicate we've handled this event ourselves
-        event.setHandled(true);
+    if (osxAdapter == null) {
+      osxAdapter = new OSXAdapter(myProj);
     }
 
-    /**
-     * Handles the quit menu option (defaults to command-q) the same way
-     * choosing Project->Quit does.
-     */
-    @Override
-    public void handleQuit(ApplicationEvent event) {
-        myProj.quitApplication();
-        /*
-         * Not a typo. Must set handled to false else the app will still quit
-         * even if we say "cancel" on confirmation.
-         */
-        event.setHandled(false);
-    }
-
-    public static void registerMacOSXApplication(GanttProject myProj) {
-        if (theApp == null) {
-            theApp = new com.apple.eawt.Application();
-        }
-
-        if (osxAdapter == null) {
-            osxAdapter = new OSXAdapter(myProj);
-        }
-
-        theApp.addApplicationListener(osxAdapter);
-    }
+    theApp.addApplicationListener(osxAdapter);
+  }
 }

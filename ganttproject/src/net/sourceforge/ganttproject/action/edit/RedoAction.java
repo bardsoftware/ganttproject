@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
@@ -30,52 +30,52 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public class RedoAction extends GPAction implements GPUndoListener {
-    private final GPUndoManager myUndoManager;
+  private final GPUndoManager myUndoManager;
 
-    public RedoAction(GPUndoManager undoManager) {
-        this(undoManager, IconSize.MENU);
-    }
+  public RedoAction(GPUndoManager undoManager) {
+    this(undoManager, IconSize.MENU);
+  }
 
-    private RedoAction(GPUndoManager undoManager, IconSize size) {
-        super("redo", size);
-        myUndoManager = undoManager;
-        myUndoManager.addUndoableEditListener(this);
-        setEnabled(myUndoManager.canRedo());
-    }
+  private RedoAction(GPUndoManager undoManager, IconSize size) {
+    super("redo", size);
+    myUndoManager = undoManager;
+    myUndoManager.addUndoableEditListener(this);
+    setEnabled(myUndoManager.canRedo());
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new RedoAction(myUndoManager, size);
-    }
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new RedoAction(myUndoManager, size);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myUndoManager.redo();
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myUndoManager.redo();
+  }
 
-    @Override
-    public void undoableEditHappened(UndoableEditEvent e) {
-        setEnabled(myUndoManager.canRedo());
-        updateAction();
-    }
+  @Override
+  public void undoableEditHappened(UndoableEditEvent e) {
+    setEnabled(myUndoManager.canRedo());
+    updateAction();
+  }
 
-    @Override
-    public void undoOrRedoHappened() {
-        setEnabled(myUndoManager.canRedo());
-        updateAction();
-    }
+  @Override
+  public void undoOrRedoHappened() {
+    setEnabled(myUndoManager.canRedo());
+    updateAction();
+  }
 
-    @Override
-    protected String getLocalizedName() {
-        if(myUndoManager == null || myUndoManager.canRedo() == false) {
-            return super.getLocalizedName();
-        }
-        // use name of reundoable action
-        return myUndoManager.getRedoPresentationName();
+  @Override
+  protected String getLocalizedName() {
+    if (myUndoManager == null || myUndoManager.canRedo() == false) {
+      return super.getLocalizedName();
     }
+    // use name of reundoable action
+    return myUndoManager.getRedoPresentationName();
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "redo_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "redo_";
+  }
 }

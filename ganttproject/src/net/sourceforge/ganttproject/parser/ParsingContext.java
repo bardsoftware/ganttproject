@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import java.util.HashSet;
@@ -26,31 +26,31 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.Task;
 
 public class ParsingContext {
-    private final Stack<Task> myStack = new Stack<Task>();
+  private final Stack<Task> myStack = new Stack<Task>();
 
-    boolean isStackEmpty() {
-        return myStack.isEmpty();
-    }
+  boolean isStackEmpty() {
+    return myStack.isEmpty();
+  }
 
-    public Task peekTask() {
-        return myStack.peek();
-    }
+  public Task peekTask() {
+    return myStack.peek();
+  }
 
-    public void pushTask(Task t) {
-        myStack.push(t);
-    }
+  public void pushTask(Task t) {
+    myStack.push(t);
+  }
 
-    Task popTask() {
-        return myStack.pop();
-    }
+  Task popTask() {
+    return myStack.pop();
+  }
 
-    void addTaskWithLegacyFixedStart(Task task) {
-        myFixedStartTasks.add(task);
-    }
+  void addTaskWithLegacyFixedStart(Task task) {
+    myFixedStartTasks.add(task);
+  }
 
-    Set<Task> getTasksWithLegacyFixedStart() {
-        return myFixedStartTasks;
-    }
+  Set<Task> getTasksWithLegacyFixedStart() {
+    return myFixedStartTasks;
+  }
 
-    private final Set<Task> myFixedStartTasks = new HashSet<Task>();
+  private final Set<Task> myFixedStartTasks = new HashSet<Task>();
 }

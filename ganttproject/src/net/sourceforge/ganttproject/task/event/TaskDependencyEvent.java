@@ -19,15 +19,14 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
  * Created by IntelliJ IDEA. User: bard
  */
 public class TaskDependencyEvent extends EventObject {
-    private final TaskDependency myDependency;
+  private final TaskDependency myDependency;
 
-    public TaskDependencyEvent(TaskDependencyCollection source,
-            TaskDependency dependency) {
-        super(source);
-        myDependency = dependency;
-    }
+  public TaskDependencyEvent(TaskDependencyCollection source, TaskDependency dependency) {
+    super(source);
+    myDependency = dependency;
+  }
 
-    public TaskDependency getDependency() {
-        return myDependency;
-    }
+  public TaskDependency getDependency() {
+    return myDependency;
+  }
 }

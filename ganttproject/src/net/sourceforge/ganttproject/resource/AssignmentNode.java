@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.resource;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -26,32 +26,32 @@ import net.sourceforge.ganttproject.task.Task;
 
 public class AssignmentNode extends DefaultMutableTreeNode {
 
-    private final ResourceAssignment resourceAssignment;
+  private final ResourceAssignment resourceAssignment;
 
-    public AssignmentNode(ResourceAssignment res) {
-        super(res);
-        resourceAssignment = res;
-    }
+  public AssignmentNode(ResourceAssignment res) {
+    super(res);
+    resourceAssignment = res;
+  }
 
-    public ResourceAssignment getAssignment() {
-        return resourceAssignment;
-    }
+  public ResourceAssignment getAssignment() {
+    return resourceAssignment;
+  }
 
-    public Role getRoleForAssigment() {
-        return resourceAssignment.getRoleForAssignment();
-    }
+  public Role getRoleForAssigment() {
+    return resourceAssignment.getRoleForAssignment();
+  }
 
-    public void setRoleForAssigment(Role role) {
-        resourceAssignment.setRoleForAssignment(role);
-    }
+  public void setRoleForAssigment(Role role) {
+    resourceAssignment.setRoleForAssignment(role);
+  }
 
-    public Task getTask() {
-        return resourceAssignment.getTask();
-    }
+  public Task getTask() {
+    return resourceAssignment.getTask();
+  }
 
-    @Override
-    public String toString() {
-        return resourceAssignment.getTask().getName();
-    }
+  @Override
+  public String toString() {
+    return resourceAssignment.getTask().getName();
+  }
 
 }

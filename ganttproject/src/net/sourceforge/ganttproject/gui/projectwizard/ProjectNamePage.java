@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.Component;
@@ -24,30 +24,30 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.options.ProjectSettingsPanel;
 
 public class ProjectNamePage implements WizardPage {
-    private final I18N myI18N;
+  private final I18N myI18N;
 
-    private final ProjectSettingsPanel myProjectSettingsPanel;
+  private final ProjectSettingsPanel myProjectSettingsPanel;
 
-    public ProjectNamePage(IGanttProject project, I18N i18n) {
-        myProjectSettingsPanel = new ProjectSettingsPanel(project);
-        myProjectSettingsPanel.initialize();
-        myI18N = i18n;
+  public ProjectNamePage(IGanttProject project, I18N i18n) {
+    myProjectSettingsPanel = new ProjectSettingsPanel(project);
+    myProjectSettingsPanel.initialize();
+    myI18N = i18n;
+  }
+
+  @Override
+  public String getTitle() {
+    return myI18N.getNewProjectWizardWindowTitle();
+  }
+
+  @Override
+  public Component getComponent() {
+    return myProjectSettingsPanel;
+  }
+
+  @Override
+  public void setActive(boolean active) {
+    if (!active) {
+      myProjectSettingsPanel.applyChanges(false);
     }
-
-    @Override
-    public String getTitle() {
-        return myI18N.getNewProjectWizardWindowTitle();
-    }
-
-    @Override
-    public Component getComponent() {
-        return myProjectSettingsPanel;
-    }
-
-    @Override
-    public void setActive(boolean active) {
-        if (!active) {
-            myProjectSettingsPanel.applyChanges(false);
-        }
-    }
+  }
 }

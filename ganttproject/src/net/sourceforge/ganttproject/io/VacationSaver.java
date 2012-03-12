@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.io;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -28,22 +28,21 @@ import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
 
 class VacationSaver extends SaverBase {
-    void save(IGanttProject project, TransformerHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        startElement("vacations", handler);
-        HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
-        for (int i = 0; i < resources.length; i++) {
-            HumanResource p = resources[i];
-            if (p.getDaysOff() != null)
-                for (int j = 0; j < p.getDaysOff().size(); j++) {
-                    GanttDaysOff gdo = (GanttDaysOff) p.getDaysOff()
-                            .getElementAt(j);
-                    addAttribute("start", gdo.getStart().toXMLString(), attrs);
-                    addAttribute("end", gdo.getFinish().toXMLString(), attrs);
-                    addAttribute("resourceid", p.getId(), attrs);
-                    emptyElement("vacation", attrs, handler);
-                }
+  void save(IGanttProject project, TransformerHandler handler) throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    startElement("vacations", handler);
+    HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
+    for (int i = 0; i < resources.length; i++) {
+      HumanResource p = resources[i];
+      if (p.getDaysOff() != null)
+        for (int j = 0; j < p.getDaysOff().size(); j++) {
+          GanttDaysOff gdo = (GanttDaysOff) p.getDaysOff().getElementAt(j);
+          addAttribute("start", gdo.getStart().toXMLString(), attrs);
+          addAttribute("end", gdo.getFinish().toXMLString(), attrs);
+          addAttribute("resourceid", p.getId(), attrs);
+          emptyElement("vacation", attrs, handler);
         }
-        endElement("vacations", handler);
     }
+    endElement("vacations", handler);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.window;
 
 import java.awt.BorderLayout;
@@ -37,72 +37,67 @@ import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 /**
  * Builds a main frame's content pane and creates an animation host for the
  * notification slider.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class ContentPaneBuilder {
-    private final GanttTabbedPane myTabbedPane;
-    private final GanttStatusBar myStatusBar;
-    private final JToolBar myToolBar;
-    private final AnimationHostImpl myAnimationHost = new AnimationHostImpl();
+  private final GanttTabbedPane myTabbedPane;
+  private final GanttStatusBar myStatusBar;
+  private final JToolBar myToolBar;
+  private final AnimationHostImpl myAnimationHost = new AnimationHostImpl();
 
-    public ContentPaneBuilder(JToolBar toolBar, GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
-        myTabbedPane = tabbedPane;
-        myStatusBar = statusBar;
-        myToolBar = toolBar;
+  public ContentPaneBuilder(JToolBar toolBar, GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
+    myTabbedPane = tabbedPane;
+    myStatusBar = statusBar;
+    myToolBar = toolBar;
+  }
+
+  public void build(Container contentPane) {
+    JPanel contentPanel = new JPanel(new BorderLayout());
+    contentPanel.add(myToolBar, BorderLayout.NORTH);
+    contentPanel.add(myTabbedPane, BorderLayout.CENTER);
+    contentPanel.add(myStatusBar, BorderLayout.SOUTH);
+    contentPane.add(contentPanel);
+  }
+
+  public class AnimationHostImpl implements AnimationView {
+    private BalloonTip myBalloon;
+    private Runnable myOnHide;
+
+    @Override
+    public boolean isReady() {
+      return myStatusBar.isShowing();
     }
 
-    public void build(Container contentPane) {
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(myToolBar, BorderLayout.NORTH);
-        contentPanel.add(myTabbedPane, BorderLayout.CENTER);
-        contentPanel.add(myStatusBar, BorderLayout.SOUTH);
-        contentPane.add(contentPanel);
+    @Override
+    public void setImage(BufferedImage image) {
     }
 
-    public class AnimationHostImpl implements AnimationView {
-        private BalloonTip myBalloon;
-        private Runnable myOnHide;
-
-        @Override
-        public boolean isReady() {
-            return myStatusBar.isShowing();
-        }
-
-        @Override
-        public void setImage(BufferedImage image) {
-        }
-
-        @Override
-        public void setHeight(int height) {
-        }
-
-        @Override
-        public void setComponent(JComponent component, JComponent owner, final Runnable onHide) {
-            myBalloon = new BalloonTip(
-                    owner,
-                    component,
-                    new EdgedBalloonStyle(Color.WHITE, Color.BLACK),
-                    BalloonTip.Orientation.LEFT_ABOVE,
-                    BalloonTip.AttachLocation.ALIGNED,
-                    30, 10, false);
-            myOnHide = onHide;
-            myBalloon.setVisible(true);
-        }
-
-        @Override
-        public void close() {
-            myBalloon.setVisible(false);
-            myOnHide.run();
-        }
-
-        @Override
-        public boolean isVisible() {
-            return myBalloon != null && myBalloon.isVisible();
-        }
+    @Override
+    public void setHeight(int height) {
     }
 
-    public NotificationComponent.AnimationView getAnimationHost() {
-        return myAnimationHost;
+    @Override
+    public void setComponent(JComponent component, JComponent owner, final Runnable onHide) {
+      myBalloon = new BalloonTip(owner, component, new EdgedBalloonStyle(Color.WHITE, Color.BLACK),
+          BalloonTip.Orientation.LEFT_ABOVE, BalloonTip.AttachLocation.ALIGNED, 30, 10, false);
+      myOnHide = onHide;
+      myBalloon.setVisible(true);
     }
+
+    @Override
+    public void close() {
+      myBalloon.setVisible(false);
+      myOnHide.run();
+    }
+
+    @Override
+    public boolean isVisible() {
+      return myBalloon != null && myBalloon.isVisible();
+    }
+  }
+
+  public NotificationComponent.AnimationView getAnimationHost() {
+    return myAnimationHost;
+  }
 }

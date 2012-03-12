@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
@@ -42,140 +42,135 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class FileChooserPage extends FileChooserPageBase {
 
-    private final State myState;
+  private final State myState;
 
-    private final IGanttProject myProject;
+  private final IGanttProject myProject;
 
-    private final GPOptionGroup myWebPublishingGroup;
+  private final GPOptionGroup myWebPublishingGroup;
 
-    FileChooserPage(State state, IGanttProject project, WizardImpl wizardImpl, Preferences prefs) {
-        super(wizardImpl, prefs, false);
-        myState = state;
-        myProject = project;
-        myWebPublishingGroup = new GPOptionGroup("exporter.webPublishing", new GPOption[]{state.getPublishInWebOption()});
-        myWebPublishingGroup.setTitled(false);
-    }
+  FileChooserPage(State state, IGanttProject project, WizardImpl wizardImpl, Preferences prefs) {
+    super(wizardImpl, prefs, false);
+    myState = state;
+    myProject = project;
+    myWebPublishingGroup = new GPOptionGroup("exporter.webPublishing", new GPOption[] { state.getPublishInWebOption() });
+    myWebPublishingGroup.setTitled(false);
+  }
 
-    @Override
-    protected String getFileChooserTitle() {
-        return GanttLanguage.getInstance().getText("selectFileToExport");
-    }
+  @Override
+  protected String getFileChooserTitle() {
+    return GanttLanguage.getInstance().getText("selectFileToExport");
+  }
 
-    @Override
-    public String getTitle() {
-        return GanttLanguage.getInstance().getText("selectFileToExport");
-    }
+  @Override
+  public String getTitle() {
+    return GanttLanguage.getInstance().getText("selectFileToExport");
+  }
 
-    @Override
-    protected void loadPreferences() {
-        super.loadPreferences();
-        if (getPreferences().get(PREF_SELECTED_FILE, null) == null) {
-            getChooser().setFile(proposeOutputFile(myProject, myState.getExporter()));
-        } else {
-            String proposedExtension = myState.getExporter().proposeFileExtension();
-            if(proposedExtension != null) {
-                File selectedFile = getChooser().getFile();
-                String fileName = selectedFile.getName();
-                int lastDot = fileName.lastIndexOf('.');
-                if (lastDot < 0) {
-                    // No extension available, add one
-                    fileName += ".";
-                    lastDot = selectedFile.getName().length();
-                }
-                String extension = fileName.substring(lastDot + 1);
-                if (!extension.equals(proposedExtension)) {
-                    getChooser().setFile(new File(selectedFile.getParent(), fileName.substring(0, lastDot+1) + proposedExtension));
-                }
-            }
+  @Override
+  protected void loadPreferences() {
+    super.loadPreferences();
+    if (getPreferences().get(PREF_SELECTED_FILE, null) == null) {
+      getChooser().setFile(proposeOutputFile(myProject, myState.getExporter()));
+    } else {
+      String proposedExtension = myState.getExporter().proposeFileExtension();
+      if (proposedExtension != null) {
+        File selectedFile = getChooser().getFile();
+        String fileName = selectedFile.getName();
+        int lastDot = fileName.lastIndexOf('.');
+        if (lastDot < 0) {
+          // No extension available, add one
+          fileName += ".";
+          lastDot = selectedFile.getName().length();
         }
+        String extension = fileName.substring(lastDot + 1);
+        if (!extension.equals(proposedExtension)) {
+          getChooser().setFile(
+              new File(selectedFile.getParent(), fileName.substring(0, lastDot + 1) + proposedExtension));
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void onSelectedUrlChange(URL selectedUrl) {
+    myState.setUrl(selectedUrl);
+    super.onSelectedUrlChange(selectedUrl);
+  }
+
+  @Override
+  protected IStatus onSelectedFileChange(File file) {
+    if (file.exists() && !file.canWrite()) {
+      return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to file", null);
+    }
+    if (!file.exists() && !file.getParentFile().canWrite()) {
+      return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to directory", null);
+    }
+    IStatus result = new Status(IStatus.OK, "foo", IStatus.OK, "", null);
+    String proposedExtension = myState.getExporter().proposeFileExtension();
+    if (proposedExtension != null) {
+      if (false == file.getName().toLowerCase().endsWith(proposedExtension)) {
+        result = new Status(IStatus.OK, "foo", IStatus.OK, MessageFormat.format("Note that the extension is not {0}",
+            new Object[] { proposedExtension }), null);
+      }
+    }
+    IStatus setStatus = setSelectedFile(file);
+    return setStatus.isOK() ? result : setStatus;
+  }
+
+  @Override
+  protected Component createSecondaryOptionsPanel() {
+    Component customUI = myState.getExporter().getCustomOptionsUI();
+    return customUI == null ? super.createSecondaryOptionsPanel() : customUI;
+  }
+
+  static File proposeOutputFile(IGanttProject project, Exporter exporter) {
+    String proposedExtension = exporter.proposeFileExtension();
+    if (proposedExtension == null) {
+      return null;
     }
 
-    @Override
-    protected void onSelectedUrlChange(URL selectedUrl) {
-        myState.setUrl(selectedUrl);
-        super.onSelectedUrlChange(selectedUrl);
+    File result = null;
+    Document projectDocument = project.getDocument();
+    if (projectDocument != null) {
+      File localFile = new File(projectDocument.getFilePath());
+      if (localFile.exists()) {
+        String name = localFile.getAbsolutePath();
+        int lastDot = name.lastIndexOf('.');
+        name = name.substring(0, lastDot) + "." + proposedExtension;
+        result = new File(name);
+      } else {
+        File directory = localFile.getParentFile();
+        if (directory.exists()) {
+          result = new File(directory, project.getProjectName() + "." + proposedExtension);
+        }
+      }
     }
-
-    @Override
-    protected IStatus onSelectedFileChange(File file) {
-        if (file.exists() && !file.canWrite()) {
-            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to file", null);
-        }
-        if (!file.exists() && !file.getParentFile().canWrite()) {
-            return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to directory", null);
-        }
-        IStatus result = new Status(IStatus.OK, "foo", IStatus.OK, "", null);
-        String proposedExtension = myState.getExporter().proposeFileExtension();
-        if(proposedExtension != null) {
-            if (false == file.getName().toLowerCase().endsWith(proposedExtension)) {
-                result = new Status(
-                    IStatus.OK, "foo", IStatus.OK,
-                    MessageFormat.format("Note that the extension is not {0}",
-                                         new Object[] {proposedExtension}),
-                    null);
-            }
-        }
-        IStatus setStatus = setSelectedFile(file);
-        return setStatus.isOK() ? result : setStatus;
+    if (result == null) {
+      File userHome = new File(System.getProperty("user.home"));
+      result = new File(userHome, project.getProjectName() + "." + proposedExtension);
     }
+    return result;
+  }
 
-    @Override
-    protected Component createSecondaryOptionsPanel() {
-        Component customUI = myState.getExporter().getCustomOptionsUI();
-        return customUI == null ? super.createSecondaryOptionsPanel() : customUI;
+  @Override
+  protected FileFilter createFileFilter() {
+    return new ExtensionBasedFileFilter(myState.getExporter().getFileNamePattern(),
+        myState.getExporter().getFileTypeDescription());
+  }
+
+  @Override
+  protected GPOptionGroup[] getOptionGroups() {
+    GPOptionGroup[] exporterOptions = null;
+    if (myState.getExporter() != null) {
+      List<GPOptionGroup> options = myState.getExporter().getSecondaryOptions();
+      exporterOptions = options == null ? null : options.toArray(new GPOptionGroup[0]);
     }
-
-    static File proposeOutputFile(IGanttProject project, Exporter exporter) {
-        String proposedExtension = exporter.proposeFileExtension();
-        if (proposedExtension == null) {
-            return null;
-        }
-
-        File result = null;
-        Document projectDocument = project.getDocument();
-        if (projectDocument != null) {
-            File localFile = new File(projectDocument.getFilePath());
-            if (localFile.exists()) {
-                String name = localFile.getAbsolutePath();
-                int lastDot = name.lastIndexOf('.');
-                name = name.substring(0, lastDot) + "." + proposedExtension;
-                result = new File(name);
-            } else {
-                File directory = localFile.getParentFile();
-                if (directory.exists()) {
-                    result = new File(directory, project.getProjectName() + "."
-                            + proposedExtension);
-                }
-            }
-        }
-        if (result == null) {
-            File userHome = new File(System.getProperty("user.home"));
-            result = new File(userHome, project.getProjectName() + "."
-                    + proposedExtension);
-        }
-        return result;
+    if (exporterOptions == null) {
+      return new GPOptionGroup[] { myWebPublishingGroup };
     }
-
-    @Override
-    protected FileFilter createFileFilter() {
-        return new ExtensionBasedFileFilter(
-                myState.getExporter().getFileNamePattern(), myState.getExporter()
-                        .getFileTypeDescription());
-    }
-
-    @Override
-    protected GPOptionGroup[] getOptionGroups() {
-        GPOptionGroup[] exporterOptions = null;
-        if (myState.getExporter()!=null) {
-            List<GPOptionGroup> options = myState.getExporter().getSecondaryOptions();
-            exporterOptions = options == null ? null : options.toArray(new GPOptionGroup[0]);
-        }
-        if (exporterOptions==null) {
-            return new GPOptionGroup[] {myWebPublishingGroup};
-        }
-        GPOptionGroup[] result = new GPOptionGroup[exporterOptions.length+1];
-        result[0] = myWebPublishingGroup;
-        System.arraycopy(exporterOptions, 0, result, 1, exporterOptions.length);
-        return result;
-    }
+    GPOptionGroup[] result = new GPOptionGroup[exporterOptions.length + 1];
+    result[0] = myWebPublishingGroup;
+    System.arraycopy(exporterOptions, 0, result, 1, exporterOptions.length);
+    return result;
+  }
 }

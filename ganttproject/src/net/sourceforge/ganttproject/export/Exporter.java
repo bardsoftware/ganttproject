@@ -17,24 +17,24 @@ import org.osgi.service.prefs.Preferences;
  * @author bard
  */
 public interface Exporter {
-    String getFileTypeDescription();
+  String getFileTypeDescription();
 
-    GPOptionGroup getOptions();
+  GPOptionGroup getOptions();
 
-    List<GPOptionGroup> getSecondaryOptions();
+  List<GPOptionGroup> getSecondaryOptions();
 
-    String getFileNamePattern();
+  String getFileNamePattern();
 
-    void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception;
+  void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception;
 
-    // File proposeOutputFile(IGanttProject project);
-    String proposeFileExtension();
+  // File proposeOutputFile(IGanttProject project);
+  String proposeFileExtension();
 
-    String[] getFileExtensions();
+  String[] getFileExtensions();
 
-    String[] getCommandLineKeys();
+  String[] getCommandLineKeys();
 
-    void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs);
+  void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs);
 
-    Component getCustomOptionsUI();
+  Component getCustomOptionsUI();
 }

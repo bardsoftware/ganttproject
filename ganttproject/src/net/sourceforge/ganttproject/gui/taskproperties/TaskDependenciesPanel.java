@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.awt.event.ActionEvent;
@@ -40,104 +40,94 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstra
 
 /**
  * UI component in a task properties dialog: a table with task predecessors
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskDependenciesPanel {
-    private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[] {
-        new FinishStartConstraintImpl(), new FinishFinishConstraintImpl(),
-        new StartFinishConstraintImpl(), new StartStartConstraintImpl() };
+  private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[] {
+      new FinishStartConstraintImpl(), new FinishFinishConstraintImpl(), new StartFinishConstraintImpl(),
+      new StartStartConstraintImpl() };
 
-    private static TaskDependency.Hardness[] HARDNESS = new TaskDependency.Hardness[] {
-        TaskDependency.Hardness.STRONG, TaskDependency.Hardness.RUBBER
+  private static TaskDependency.Hardness[] HARDNESS = new TaskDependency.Hardness[] { TaskDependency.Hardness.STRONG,
+      TaskDependency.Hardness.RUBBER };
+
+  private Task myTask;
+  private DependencyTableModel myModel;
+  private JTable myTable;
+
+  private JTable getTable() {
+    return myTable;
+  }
+
+  public JPanel getComponent() {
+    myModel = new DependencyTableModel(myTask);
+    myTable = new JTable(myModel);
+    UIUtil.setupTableUI(myTable);
+    setUpPredecessorComboColumn(DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()), getTable());
+    CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()),
+        CONSTRAINTS);
+    CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()), HARDNESS);
+    AbstractTableAndActionsComponent<TaskDependency> tableAndActions = new AbstractTableAndActionsComponent<TaskDependency>(
+        getTable()) {
+      @Override
+      protected void onAddEvent() {
+        getTable().editCellAt(myModel.getRowCount() - 1, DependencyTableModel.MyColumn.TASK_NAME.ordinal());
+      }
+
+      @Override
+      protected void onDeleteEvent() {
+        myModel.delete(getTable().getSelectedRows());
+      }
+
+      @Override
+      protected void onSelectionChanged() {
+      }
     };
 
-    private Task myTask;
-    private DependencyTableModel myModel;
-    private JTable myTable;
+    return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+  }
 
-    private JTable getTable() {
-        return myTable;
+  public void init(Task task) {
+    myTask = task;
+  }
+
+  public void commit() {
+    if (myTable.isEditing()) {
+      myTable.getCellEditor().stopCellEditing();
+    }
+    myModel.commit();
+  }
+
+  private Task getTask() {
+    return myTask;
+  }
+
+  protected void setUpPredecessorComboColumn(TableColumn predecessorColumn, final JTable predecessorTable) {
+    final JComboBox comboBox = new JComboBox();
+    Task[] possiblePredecessors = getTaskManager().getAlgorithmCollection().getFindPossibleDependeesAlgorithm().run(
+        getTask());
+    for (int i = 0; i < possiblePredecessors.length; i++) {
+      Task next = possiblePredecessors[i];
+      comboBox.addItem(new DependencyTableModel.TaskComboItem(next));
     }
 
-    public JPanel getComponent() {
-        myModel = new DependencyTableModel(myTask);
-        myTable = new JTable(myModel);
-        UIUtil.setupTableUI(myTable);
-        setUpPredecessorComboColumn(
-                DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()),
-                getTable());
-        CommonPanel.setupComboBoxEditor(
-                DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()),
-                CONSTRAINTS);
-        CommonPanel.setupComboBoxEditor(
-                DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()),
-                HARDNESS);
-        AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
-            new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
-                @Override
-                protected void onAddEvent() {
-                    getTable().editCellAt(
-                            myModel.getRowCount() - 1, DependencyTableModel.MyColumn.TASK_NAME.ordinal());
-                }
-
-                @Override
-                protected void onDeleteEvent() {
-                    myModel.delete(getTable().getSelectedRows());
-                }
-
-                @Override
-                protected void onSelectionChanged() {
-                }
-        };
-
-        return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
-    }
-
-    public void init(Task task) {
-        myTask = task;
-    }
-
-    public void commit() {
-        if (myTable.isEditing()) {
-            myTable.getCellEditor().stopCellEditing();
+    comboBox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (predecessorTable.getEditingRow() != -1) {
+          DependencyTableModel.TaskComboItem selectedItem = (DependencyTableModel.TaskComboItem) comboBox.getSelectedItem();
+          if (selectedItem != null) {
+            predecessorTable.setValueAt(selectedItem, predecessorTable.getEditingRow(), 0);
+            predecessorTable.setValueAt(TaskDependenciesPanel.CONSTRAINTS[0], predecessorTable.getEditingRow(), 2);
+          }
         }
-        myModel.commit();
-    }
+      }
+    });
+    comboBox.setEditable(false);
+    predecessorColumn.setCellEditor(new DefaultCellEditor(comboBox));
+  }
 
-    private Task getTask() {
-        return myTask;
-    }
-
-    protected void setUpPredecessorComboColumn(TableColumn predecessorColumn, final JTable predecessorTable) {
-        final JComboBox comboBox = new JComboBox();
-        Task[] possiblePredecessors = getTaskManager().getAlgorithmCollection()
-                .getFindPossibleDependeesAlgorithm().run(getTask());
-        for (int i = 0; i < possiblePredecessors.length; i++) {
-            Task next = possiblePredecessors[i];
-            comboBox.addItem(new DependencyTableModel.TaskComboItem(next));
-        }
-
-        comboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (predecessorTable.getEditingRow() != -1) {
-                    DependencyTableModel.TaskComboItem selectedItem =
-                        (DependencyTableModel.TaskComboItem) comboBox.getSelectedItem();
-                    if (selectedItem != null) {
-                        predecessorTable.setValueAt(selectedItem,
-                                predecessorTable.getEditingRow(), 0);
-                        predecessorTable.setValueAt(TaskDependenciesPanel.CONSTRAINTS[0],
-                                predecessorTable.getEditingRow(), 2);
-                    }
-                }
-            }
-        });
-        comboBox.setEditable(false);
-        predecessorColumn.setCellEditor(new DefaultCellEditor(comboBox));
-    }
-
-    private TaskManager getTaskManager() {
-        return getTask().getManager();
-    }
+  private TaskManager getTaskManager() {
+    return getTask().getManager();
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.delay;
 
 import java.util.ArrayList;
@@ -39,134 +39,141 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 /**
  * The DelayManager manages delays. It has all DelayObservers and notify each of
  * them when a delay has be calculated.
- *
+ * 
  * @author bbaranne
- *
+ * 
  */
 public class DelayManager implements GPUndoListener {
 
-    private boolean ourCriticProcess = false;
+  private boolean ourCriticProcess = false;
 
-    private Date myToday;
+  private Date myToday;
 
-    private List<DelayObserver> myObservers;
+  private List<DelayObserver> myObservers;
 
-    private TaskManager myTaskManager;
+  private TaskManager myTaskManager;
 
-    private Task myRootTask;
+  private Task myRootTask;
 
-    private GanttTree2 myTree;
+  private GanttTree2 myTree;
 
-    public DelayManager(TaskManager taskManager, GPUndoManager undoManager, GanttTree2 tree) {
-        myObservers = new ArrayList<DelayObserver>();
-        myTaskManager = taskManager;
-        myRootTask = taskManager.getRootTask();
-        myTree = tree;
-        myTaskManager.addTaskListener(new TaskListenerImpl());
-        undoManager.addUndoableEditListener(this);
+  public DelayManager(TaskManager taskManager, GPUndoManager undoManager, GanttTree2 tree) {
+    myObservers = new ArrayList<DelayObserver>();
+    myTaskManager = taskManager;
+    myRootTask = taskManager.getRootTask();
+    myTree = tree;
+    myTaskManager.addTaskListener(new TaskListenerImpl());
+    undoManager.addUndoableEditListener(this);
+  }
+
+  public void addObserver(DelayObserver observer) {
+    myObservers.add(observer);
+  }
+
+  public void removeObserver(DelayObserver observer) {
+    myObservers.remove(observer);
+  }
+
+  public void fireDelayObservation() {
+    // System.err.println("fireDelayObservation");
+    myToday = new Date();
+    if (ourCriticProcess) {
+      ourCriticProcess = false;
+      myTaskManager.processCriticalPath(myRootTask);
+
+      ArrayList<Task> projectTasks = new ArrayList<Task>();
+      for (Task t : myTaskManager.getTasks()) {
+        if (t.isProjectTask()) {
+          projectTasks.add(t);
+        }
+      }
+      for (Task t : projectTasks) {
+        myTaskManager.processCriticalPath(t);
+      }
     }
-
-    public void addObserver(DelayObserver observer) {
-        myObservers.add(observer);
+    Iterator<Task> itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
+    while (itTasks.hasNext()) {
+      Task task = itTasks.next();
+      Delay delay = calculateDelay(task);
+      Iterator<DelayObserver> itObservers = myObservers.iterator();
+      while (itObservers.hasNext()) {
+        DelayObserver observer = itObservers.next();
+        observer.setDelay(task, delay);
+        // System.out.println("delay " + delay.getType() +
+        // " (critical = "+delay.CRITICAL+")");
+      }
     }
+  }
 
-    public void removeObserver(DelayObserver observer) {
-        myObservers.remove(observer);
-    }
+  /**
+   * The delay is calculated as follow : The reference date is today. The check
+   * is performed on the end date of the task. There could be a delay only if
+   * percentage completion is not equal to 100%. If task end date < today &&
+   * completion < 100 there is a delay. The delay is critical is the task is
+   * critical.
+   * 
+   * @param t
+   *          The task.
+   * @return The calculated delay
+   */
+  private Delay calculateDelay(Task t) {
+    Delay res = Delay.getDelay(Delay.NONE);
+    int completionPercentage = t.getCompletionPercentage();
+    if (t.isMilestone() || completionPercentage == 100)
+      return res;
+    Date endDate = t.getEnd().getTime();
+    if (endDate.before(myToday))
+      if (t.isCritical())
+        res.setType(Delay.CRITICAL);
+      else
+        res.setType(Delay.NORMAL);
+    return res;
+  }
 
-    public void fireDelayObservation() {
-        // System.err.println("fireDelayObservation");
-        myToday = new Date();
-        if (ourCriticProcess) {
-            ourCriticProcess = false;
-            myTaskManager.processCriticalPath(myRootTask);
-
-            ArrayList<Task> projectTasks = new ArrayList<Task>();
-            for (Task t : myTaskManager.getTasks()) {
-                if (t.isProjectTask()) {
-                    projectTasks.add(t);
-                }
-            }
-            for (Task t : projectTasks) {
-                myTaskManager.processCriticalPath(t);
-            }
-        }
-        Iterator<Task> itTasks = Arrays.asList(myTaskManager.getTasks()).iterator();
-        while (itTasks.hasNext()) {
-            Task task = itTasks.next();
-            Delay delay = calculateDelay(task);
-            Iterator<DelayObserver> itObservers = myObservers.iterator();
-            while (itObservers.hasNext()) {
-                DelayObserver observer = itObservers.next();
-                observer.setDelay(task, delay);
-//                System.out.println("delay " + delay.getType() + " (critical = "+delay.CRITICAL+")");
-            }
-        }
-    }
-
-    /**
-     * The delay is calculated as follow : The reference date is today. The
-     * check is performed on the end date of the task. There could be a delay
-     * only if percentage completion is not equal to 100%. If task end date <
-     * today && completion < 100 there is a delay. The delay is critical is the
-     * task is critical.
-     *
-     * @param t
-     *            The task.
-     * @return The calculated delay
-     */
-    private Delay calculateDelay(Task t) {
-        Delay res = Delay.getDelay(Delay.NONE);
-        int completionPercentage = t.getCompletionPercentage();
-        if (t.isMilestone() || completionPercentage == 100)
-            return res;
-        Date endDate = t.getEnd().getTime();
-        if (endDate.before(myToday))
-            if (t.isCritical())
-                res.setType(Delay.CRITICAL);
-            else
-                res.setType(Delay.NORMAL);
-        return res;
-    }
-
-    private class TaskListenerImpl extends TaskListenerAdapter {
-        @Override
-        public void taskScheduleChanged(TaskScheduleEvent e) {
-            if (!e.getNewFinishDate().equals(e.getOldFinishDate())) {
-                fireDelayObservation();
-            }
-        }
-        @Override
-        public void dependencyAdded(TaskDependencyEvent e) {
-            fireDelayObservation();
-        }
-        @Override
-        public void dependencyRemoved(TaskDependencyEvent e) {
-            fireDelayObservation();
-        }
-        @Override
-        public void taskAdded(TaskHierarchyEvent e) {
-            fireDelayObservation();
-        }
-        @Override
-        public void taskRemoved(TaskHierarchyEvent e) {
-            fireDelayObservation();
-        }
-        @Override
-        public void taskProgressChanged(TaskPropertyEvent e) {
-            fireDelayObservation();
-        }
-    }
+  private class TaskListenerImpl extends TaskListenerAdapter {
     @Override
-    public void undoOrRedoHappened() {
-//        System.out.println("undoOrRedoHappened");
-        ourCriticProcess = true;
+    public void taskScheduleChanged(TaskScheduleEvent e) {
+      if (!e.getNewFinishDate().equals(e.getOldFinishDate())) {
         fireDelayObservation();
-
+      }
     }
 
     @Override
-    public void undoableEditHappened(UndoableEditEvent arg0) {
-        // TODO Auto-generated method stub
+    public void dependencyAdded(TaskDependencyEvent e) {
+      fireDelayObservation();
     }
+
+    @Override
+    public void dependencyRemoved(TaskDependencyEvent e) {
+      fireDelayObservation();
+    }
+
+    @Override
+    public void taskAdded(TaskHierarchyEvent e) {
+      fireDelayObservation();
+    }
+
+    @Override
+    public void taskRemoved(TaskHierarchyEvent e) {
+      fireDelayObservation();
+    }
+
+    @Override
+    public void taskProgressChanged(TaskPropertyEvent e) {
+      fireDelayObservation();
+    }
+  }
+
+  @Override
+  public void undoOrRedoHappened() {
+    // System.out.println("undoOrRedoHappened");
+    ourCriticProcess = true;
+    fireDelayObservation();
+
+  }
+
+  @Override
+  public void undoableEditHappened(UndoableEditEvent arg0) {
+    // TODO Auto-generated method stub
+  }
 }

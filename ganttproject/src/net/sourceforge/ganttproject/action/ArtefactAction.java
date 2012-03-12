@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -30,61 +30,61 @@ import javax.swing.Action;
  * Depending on the visible chart, the name, description and action will change
  */
 public class ArtefactAction extends GPAction implements ActionStateChangedListener {
-    private final ActiveActionProvider myProvider;
-    private final Action[] myDelegates;
+  private final ActiveActionProvider myProvider;
+  private final Action[] myDelegates;
 
-    public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, Action[] delegates) {
-        super(name, iconSize.asString());
-        myProvider = provider;
-        for (Action delegate : delegates) {
-            delegate.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("enabled".equals(evt.getPropertyName())) {
-                        actionStateChanged();
-                    }
-                }
-            });
+  public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, Action[] delegates) {
+    super(name, iconSize.asString());
+    myProvider = provider;
+    for (Action delegate : delegates) {
+      delegate.addPropertyChangeListener(new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+          if ("enabled".equals(evt.getPropertyName())) {
+            actionStateChanged();
+          }
         }
-        myDelegates = delegates;
-        // Make action state equal to active delegate action state
-        actionStateChanged();
+      });
     }
+    myDelegates = delegates;
+    // Make action state equal to active delegate action state
+    actionStateChanged();
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new ArtefactAction(getID(), size, myProvider, myDelegates);
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new ArtefactAction(getID(), size, myProvider, myDelegates);
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    AbstractAction activeAction = myProvider.getActiveAction();
+    activeAction.actionPerformed(e);
+  }
+
+  @Override
+  protected String getLocalizedName() {
+    if (myProvider == null) {
+      return super.getLocalizedName();
     }
+    GPAction activeAction = (GPAction) myProvider.getActiveAction();
+    return activeAction.getLocalizedName();
+  };
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        AbstractAction activeAction = myProvider.getActiveAction();
-        activeAction.actionPerformed(e);
+  @Override
+  protected String getLocalizedDescription() {
+    if (myProvider == null) {
+      return super.getLocalizedDescription();
     }
+    GPAction activeAction = (GPAction) myProvider.getActiveAction();
+    return activeAction.getLocalizedDescription();
+  };
 
-    @Override
-    protected String getLocalizedName() {
-        if(myProvider == null) {
-            return super.getLocalizedName();
-        }
-        GPAction activeAction = (GPAction) myProvider.getActiveAction();
-        return activeAction.getLocalizedName();
-    };
-
-    @Override
-    protected String getLocalizedDescription() {
-        if(myProvider == null) {
-            return super.getLocalizedDescription();
-        }
-        GPAction activeAction = (GPAction) myProvider.getActiveAction();
-        return activeAction.getLocalizedDescription();
-    };
-
-    @Override
-    public void actionStateChanged() {
-        // State of a delegate action has been changed, so update out state as well
-        GPAction activeAction = (GPAction) myProvider.getActiveAction();
-        setEnabled(activeAction.isEnabled());
-        putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
-    }
+  @Override
+  public void actionStateChanged() {
+    // State of a delegate action has been changed, so update out state as well
+    GPAction activeAction = (GPAction) myProvider.getActiveAction();
+    setEnabled(activeAction.isEnabled());
+    putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+  }
 }

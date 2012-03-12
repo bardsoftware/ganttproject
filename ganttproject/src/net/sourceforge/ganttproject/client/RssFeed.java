@@ -15,30 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.client;
 
 import java.util.ArrayList;
 import java.util.List;
 
 class RssFeed {
-    static class Item {
-        final String title;
-        final String body;
+  static class Item {
+    final String title;
+    final String body;
 
-        Item(String title, String body) {
-            this.title = title;
-            this.body = body;
-        }
+    Item(String title, String body) {
+      this.title = title;
+      this.body = body;
     }
+  }
 
-    private final List<Item> myItems = new ArrayList<Item>();
+  private final List<Item> myItems = new ArrayList<Item>();
 
-    void addItem(String title, String body) {
-        myItems.add(new Item(title, body));
-    }
+  void addItem(String title, String body) {
+    myItems.add(new Item(title, body));
+  }
 
-    List<Item> getItems() {
-        return myItems;
-    }
+  List<Item> getItems() {
+    return myItems;
+  }
 }

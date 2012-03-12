@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Component;
@@ -58,230 +58,232 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import org.eclipse.core.runtime.IStatus;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
-    private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+  private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 
-    private final IGanttProject myProject;
+  private final IGanttProject myProject;
 
-    private final ZoomManager myZoomManager;
+  private final ZoomManager myZoomManager;
 
-    private MouseWheelListenerBase myMouseWheelListener;
+  private MouseWheelListenerBase myMouseWheelListener;
 
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private final ViewChartOptionsDialogAction myOptionsDialogAction;
+  private final ViewChartOptionsDialogAction myOptionsDialogAction;
 
-    public ChartComponentBase(IGanttProject project, UIFacade uiFacade,
-            ZoomManager zoomManager) {
-        myProject = project;
-        myUIFacade = uiFacade;
-        myZoomManager = zoomManager;
+  public ChartComponentBase(IGanttProject project, UIFacade uiFacade, ZoomManager zoomManager) {
+    myProject = project;
+    myUIFacade = uiFacade;
+    myZoomManager = zoomManager;
 
-        myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
+    myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
 
-        myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
+    myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
+  }
+
+  @Override
+  public void init(IGanttProject project) {
+    // Skip as we already have a project instance.
+  }
+
+  protected void initMouseListeners() {
+    addMouseListener(getMouseListener());
+    addMouseMotionListener(getMouseMotionListener());
+    addMouseWheelListener(myMouseWheelListener);
+  }
+
+  @Override
+  public Object getAdapter(Class adapter) {
+    if (Component.class.isAssignableFrom(adapter)) {
+      return this;
     }
+    return null;
+  }
 
-    @Override
-    public void init(IGanttProject project) {
-        // Skip as we already have a project instance.
-    }
+  public abstract ChartViewState getViewState();
 
-    protected void initMouseListeners() {
-        addMouseListener(getMouseListener());
-        addMouseMotionListener(getMouseMotionListener());
-        addMouseWheelListener(myMouseWheelListener);
-    }
+  public ZoomListener getZoomListener() {
+    return getImplementation();
+  }
 
-    @Override
-    public Object getAdapter(Class adapter) {
-        if (Component.class.isAssignableFrom(adapter)) {
-            return this;
-        }
-        return null;
-    }
+  public ZoomManager getZoomManager() {
+    return myZoomManager;
+  }
 
-    public abstract ChartViewState getViewState();
+  @Override
+  public GPOptionGroup[] getOptionGroups() {
+    return getChartModel().getChartOptionGroups();
+  }
 
-    public ZoomListener getZoomListener() {
-        return getImplementation();
-    }
+  @Override
+  public Chart createCopy() {
+    return new AbstractChartImplementation(myProject, getUIFacade(), getChartModel().createCopy(), this);
+  }
 
-    public ZoomManager getZoomManager(){
-        return myZoomManager;
-    }
+  @Override
+  public ChartSelection getSelection() {
+    return getImplementation().getSelection();
+  }
 
-    @Override
-    public GPOptionGroup[] getOptionGroups() {
-        return getChartModel().getChartOptionGroups();
-    }
+  @Override
+  public IStatus canPaste(ChartSelection selection) {
+    return getImplementation().canPaste(selection);
+  }
 
-    @Override
-    public Chart createCopy() {
-        return new AbstractChartImplementation(myProject, getUIFacade(), getChartModel().createCopy(), this);
-    }
+  @Override
+  public void paste(ChartSelection selection) {
+    getImplementation().paste(selection);
+  }
 
-    @Override
-    public ChartSelection getSelection() {
-        return getImplementation().getSelection();
-    }
+  @Override
+  public void addSelectionListener(ChartSelectionListener listener) {
+    getImplementation().addSelectionListener(listener);
+  }
 
-    @Override
-    public IStatus canPaste(ChartSelection selection) {
-        return getImplementation().canPaste(selection);
-    }
+  @Override
+  public void removeSelectionListener(ChartSelectionListener listener) {
+    getImplementation().removeSelectionListener(listener);
+  }
 
-    @Override
-    public void paste(ChartSelection selection) {
-        getImplementation().paste(selection);
-    }
+  protected abstract GPTreeTableBase getTreeTable();
 
-    @Override
-    public void addSelectionListener(ChartSelectionListener listener) {
-        getImplementation().addSelectionListener(listener);
-    }
-    @Override
-    public void removeSelectionListener(ChartSelectionListener listener) {
-        getImplementation().removeSelectionListener(listener);
-    }
+  protected UIFacade getUIFacade() {
+    return myUIFacade;
+  }
 
-    protected abstract GPTreeTableBase getTreeTable();
+  protected TaskManager getTaskManager() {
+    return myProject.getTaskManager();
+  }
 
-    protected UIFacade getUIFacade() {
-        return myUIFacade;
-    }
+  protected TimeUnitStack getTimeUnitStack() {
+    return myProject.getTimeUnitStack();
+  }
 
-    protected TaskManager getTaskManager() {
-        return myProject.getTaskManager();
-    }
+  protected UIConfiguration getUIConfiguration() {
+    return myProject.getUIConfiguration();
+  }
 
-    protected TimeUnitStack getTimeUnitStack() {
-        return myProject.getTimeUnitStack();
-    }
+  public void setDefaultCursor() {
+    setCursor(DEFAULT_CURSOR);
+  }
 
-    protected UIConfiguration getUIConfiguration() {
-        return myProject.getUIConfiguration();
-    }
+  public Action getOptionsDialogAction() {
+    return myOptionsDialogAction;
+  }
 
-    public void setDefaultCursor() {
-        setCursor(DEFAULT_CURSOR);
-    }
+  @Override
+  public ChartModel getModel() {
+    return getChartModel();
+  }
 
-    public Action getOptionsDialogAction() {
-        return myOptionsDialogAction;
-    }
+  @Override
+  public ChartUIConfiguration getStyle() {
+    return getChartModel().getChartUIConfiguration();
+  }
 
-    @Override
-    public ChartModel getModel() {
-        return getChartModel();
-    }
+  protected abstract ChartModelBase getChartModel();
 
-    @Override
-    public ChartUIConfiguration getStyle() {
-        return getChartModel().getChartUIConfiguration();
-    }
+  protected abstract MouseListener getMouseListener();
 
-    protected abstract ChartModelBase getChartModel();
+  protected abstract MouseMotionListener getMouseMotionListener();
 
-    protected abstract MouseListener getMouseListener();
+  // protected abstract MouseWheelListener getMouseWheelListener();
 
-    protected abstract MouseMotionListener getMouseMotionListener();
+  protected abstract AbstractChartImplementation getImplementation();
 
-    // protected abstract MouseWheelListener getMouseWheelListener();
+  @Override
+  public Date getStartDate() {
+    return getImplementation().getStartDate();
+  }
 
-    protected abstract AbstractChartImplementation getImplementation();
+  @Override
+  public void setStartDate(Date startDate) {
+    getImplementation().setStartDate(startDate);
+    repaint();
+  }
 
-    @Override
-    public Date getStartDate() {
-        return getImplementation().getStartDate();
-    }
+  @Override
+  public IGanttProject getProject() {
+    return myProject;
+  }
 
-    @Override
-    public void setStartDate(Date startDate) {
-        getImplementation().setStartDate(startDate);
-        repaint();
-    }
+  @Override
+  public Date getEndDate() {
+    return getImplementation().getEndDate();
+  }
 
-    @Override
-    public IGanttProject getProject() {
-        return myProject;
-    }
+  @Override
+  public void scrollBy(TaskLength duration) {
+    getImplementation().scrollBy(duration);
+    repaint();
+  }
 
-    @Override
-    public Date getEndDate() {
-        return getImplementation().getEndDate();
-    }
+  @Override
+  public void setStartOffset(int pixels) {
+    getImplementation().setStartOffset(pixels);
+    repaint();
+  }
 
-    @Override
-    public void scrollBy(TaskLength duration) {
-        getImplementation().scrollBy(duration);
-        repaint();
-    }
+  @Override
+  public void setDimensions(int height, int width) {
+    getImplementation().setDimensions(height, width);
+  }
 
-    @Override
-    public void setStartOffset(int pixels) {
-        getImplementation().setStartOffset(pixels);
-        repaint();
-    }
+  @Override
+  public void setBottomUnit(TimeUnit bottomUnit) {
+    getImplementation().setBottomUnit(bottomUnit);
+  }
 
-    @Override
-    public void setDimensions(int height, int width) {
-        getImplementation().setDimensions(height, width);
-    }
+  @Override
+  public void setTopUnit(TimeUnit topUnit) {
+    getImplementation().setTopUnit(topUnit);
+  }
 
-    @Override
-    public void setBottomUnit(TimeUnit bottomUnit) {
-        getImplementation().setBottomUnit(bottomUnit);
-    }
-    @Override
-    public void setTopUnit(TimeUnit topUnit) {
-        getImplementation().setTopUnit(topUnit);
-    }
+  @Override
+  public void setBottomUnitWidth(int width) {
+    getImplementation().setBottomUnitWidth(width);
+  }
 
-    @Override
-    public void setBottomUnitWidth(int width) {
-        getImplementation().setBottomUnitWidth(width);
-    }
-//    public void paintChart(Graphics g) {
-//        getImplementation().paintChart(g);
-//    }
-    @Override
-    public void addRenderer(ChartRendererBase renderer) {
-        getImplementation().addRenderer(renderer);
-    }
+  // public void paintChart(Graphics g) {
+  // getImplementation().paintChart(g);
+  // }
+  @Override
+  public void addRenderer(ChartRendererBase renderer) {
+    getImplementation().addRenderer(renderer);
+  }
 
-    @Override
-    public void resetRenderers() {
-        getImplementation().resetRenderers();
-    }
+  @Override
+  public void resetRenderers() {
+    getImplementation().resetRenderers();
+  }
 
-    /** draw the panel */
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        getChartModel().setBounds(getSize());
-        getImplementation().paintChart(g);
-    }
+  /** draw the panel */
+  @Override
+  public void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    getChartModel().setBounds(getSize());
+    getImplementation().paintChart(g);
+  }
 
-    public MouseInteraction newScrollViewInteraction(MouseEvent e) {
-        return new ScrollViewInteraction(e, new TimelineFacadeImpl(getChartModel(), getTaskManager()));
-    }
+  public MouseInteraction newScrollViewInteraction(MouseEvent e) {
+    return new ScrollViewInteraction(e, new TimelineFacadeImpl(getChartModel(), getTaskManager()));
+  }
 
-    @Override
-    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-        getImplementation().buildImage(settings, imageVisitor);
-    }
+  @Override
+  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+    getImplementation().buildImage(settings, imageVisitor);
+  }
 
-    @Override
-    public RenderedImage getRenderedImage(GanttExportSettings settings) {
-        return getImplementation().getRenderedImage(settings);
-    }
+  @Override
+  public RenderedImage getRenderedImage(GanttExportSettings settings) {
+    return getImplementation().getRenderedImage(settings);
+  }
 
-    @Override
-    public void reset() {
-        repaint();
-    }
+  @Override
+  public void reset() {
+    repaint();
+  }
 
-    public Action[] getPopupMenuActions() {
-        return new Action[0];
-    }
+  public Action[] getPopupMenuActions() {
+    return new Action[0];
+  }
 }

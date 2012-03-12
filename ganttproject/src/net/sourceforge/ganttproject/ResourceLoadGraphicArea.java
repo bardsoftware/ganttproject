@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Color;
@@ -51,186 +51,188 @@ import org.eclipse.core.runtime.Status;
 /**
  * Class for the graphic part of the soft
  */
-public class ResourceLoadGraphicArea extends ChartComponentBase implements
-        ResourceChart {
-    /** The main application */
-    private final GanttProject appli;
+public class ResourceLoadGraphicArea extends ChartComponentBase implements ResourceChart {
+  /** The main application */
+  private final GanttProject appli;
 
-    private final ChartModelResource myChartModel;
+  private final ChartModelResource myChartModel;
 
-    private final ChartViewState myViewState;
+  private final ChartViewState myViewState;
 
-    private final ResourceTreeUIFacade myTreeUi;
+  private final ResourceTreeUIFacade myTreeUi;
 
-    public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
-        super(app.getProject(), app.getUIFacade(), zoomManager);
-        myTreeUi = treeUi;
-        this.setBackground(Color.WHITE);
-        myChartModel = new ChartModelResource(getTaskManager(),
-                app.getHumanResourceManager(),
-                getTimeUnitStack(), getUIConfiguration(), (ResourceChart) this);
-        myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
-        myViewState = new ChartViewState(this, app.getUIFacade());
-        app.getUIFacade().getZoomManager().addZoomListener(myViewState);
-        appli = app;
-        initMouseListeners();
-    }
+  public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
+    super(app.getProject(), app.getUIFacade(), zoomManager);
+    myTreeUi = treeUi;
+    this.setBackground(Color.WHITE);
+    myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
+        getUIConfiguration(), (ResourceChart) this);
+    myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
+    myViewState = new ChartViewState(this, app.getUIFacade());
+    app.getUIFacade().getZoomManager().addZoomListener(myViewState);
+    appli = app;
+    initMouseListeners();
+  }
 
-    /** @return the preferred size of the panel. */
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(465, 600);
-    }
+  /** @return the preferred size of the panel. */
+  @Override
+  public Dimension getPreferredSize() {
+    return new Dimension(465, 600);
+  }
 
-    protected int getRowHeight() {
-        return appli.getResourcePanel().getRowHeight();
-    }
+  protected int getRowHeight() {
+    return appli.getResourcePanel().getRowHeight();
+  }
 
-    public void drawGPVersion(Graphics g) {
-        g.setColor(Color.black);
-        g.setFont(Fonts.GP_VERSION_FONT);
-        g.drawString("GanttProject (" + GanttProject.version + ")", 3,
-                getHeight() - 8);
-    }
+  public void drawGPVersion(Graphics g) {
+    g.setColor(Color.black);
+    g.setFont(Fonts.GP_VERSION_FONT);
+    g.drawString("GanttProject (" + GanttProject.version + ")", 3, getHeight() - 8);
+  }
 
-    @Override
-    protected GPTreeTableBase getTreeTable() {
-        return appli.getResourcePanel().getResourceTreeTable();
-    }
+  @Override
+  protected GPTreeTableBase getTreeTable() {
+    return appli.getResourcePanel().getResourceTreeTable();
+  }
 
-    @Override
-    public String getName() {
-        return GanttLanguage.getInstance().getText("resourcesChart");
-    }
+  @Override
+  public String getName() {
+    return GanttLanguage.getInstance().getText("resourcesChart");
+  }
 
-    @Override
-    protected ChartModelBase getChartModel() {
-        return myChartModel;
-    }
+  @Override
+  protected ChartModelBase getChartModel() {
+    return myChartModel;
+  }
 
-    @Override
-    protected MouseListener getMouseListener() {
-        if (myMouseListener == null) {
-            myMouseListener = new MouseListenerBase(getUIFacade(), this, getImplementation()) {
-                @Override
-                protected Action[] getPopupMenuActions() {
-                    return new Action[] { getOptionsDialogAction()};
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    String text = MouseUtil.toString(e);
-                    super.mousePressed(e);
-
-                    if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
-                        startScrollView(e);
-                        return;
-                    }
-                }
-            };
-        }
-        return myMouseListener;
-    }
-
-    @Override
-    protected MouseMotionListener getMouseMotionListener() {
-        if (myMouseMotionListener == null) {
-            myMouseMotionListener = new MouseMotionListenerBase(getUIFacade(), getImplementation());
-        }
-        return myMouseMotionListener;
-    }
-
-    @Override
-    protected AbstractChartImplementation getImplementation() {
-        if (myChartImplementation == null) {
-            myChartImplementation = new ResourcechartImplementation(getProject(), getUIFacade(), myChartModel, this);
-        }
-        return myChartImplementation;
-    }
-
-    @Override
-    public boolean isExpanded(HumanResource resource) {
-        return true;
-    }
-
-    private MouseMotionListener myMouseMotionListener;
-
-    private MouseListener myMouseListener;
-
-    private AbstractChartImplementation myChartImplementation;
-
-    private class ResourcechartImplementation extends AbstractChartImplementation {
-
-        public ResourcechartImplementation(
-                IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel, ChartComponentBase chartComponent) {
-            super(project, uiFacade, chartModel, chartComponent);
-        }
+  @Override
+  protected MouseListener getMouseListener() {
+    if (myMouseListener == null) {
+      myMouseListener = new MouseListenerBase(getUIFacade(), this, getImplementation()) {
         @Override
-        public void paintChart(Graphics g) {
-            synchronized (ChartModelBase.STATIC_MUTEX) {
-                // LaboPM
-                // ResourceLoadGraphicArea.super.paintComponent(g);
-                if (isShowing()) {
-                    myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(
-                        appli.getResourcePanel(), appli.getResourcePanel().getTreeTable().getTable()));
-                }
-                myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-                myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
-                myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
-                myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-                //myChartModel.paint(g);
-                super.paintChart(g);
-            }
-        }
-        @Override
-        public ChartSelection getSelection() {
-            ChartSelectionImpl result = new ChartSelectionImpl() {
-                @Override
-                public boolean isEmpty() {
-                    return appli.getResourcePanel().getSelectedNodes().length == 0;
-                }
-                @Override
-                public void startCopyClipboardTransaction() {
-                    super.startCopyClipboardTransaction();
-                    appli.getResourcePanel().copySelection();
-                }
-
-                @Override
-                public void startMoveClipboardTransaction() {
-                    super.startMoveClipboardTransaction();
-                    appli.getResourcePanel().cutSelection();
-                }
-            };
-            return result;
-        }
-        @Override
-        public IStatus canPaste(ChartSelection selection) {
-            return Status.OK_STATUS;
-        }
-        @Override
-        public void paste(ChartSelection selection) {
-            appli.getResourcePanel().pasteSelection();
+        protected Action[] getPopupMenuActions() {
+          return new Action[] { getOptionsDialogAction() };
         }
 
         @Override
-        public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-            int rowCount = getResourceManager().getResources().size();
-            for (HumanResource hr : getResourceManager().getResources()) {
-                if (myTreeUi.isExpanded(hr)) {
-                    rowCount += hr.getAssignments().length;
-                }
-            }
-            settings.setRowCount(rowCount);
-            super.buildImage(settings, imageVisitor);
+        public void mousePressed(MouseEvent e) {
+          String text = MouseUtil.toString(e);
+          super.mousePressed(e);
+
+          if (text.equals(GPAction.getKeyStrokeText("mouse.drag.chart"))) {
+            startScrollView(e);
+            return;
+          }
         }
+      };
+    }
+    return myMouseListener;
+  }
+
+  @Override
+  protected MouseMotionListener getMouseMotionListener() {
+    if (myMouseMotionListener == null) {
+      myMouseMotionListener = new MouseMotionListenerBase(getUIFacade(), getImplementation());
+    }
+    return myMouseMotionListener;
+  }
+
+  @Override
+  protected AbstractChartImplementation getImplementation() {
+    if (myChartImplementation == null) {
+      myChartImplementation = new ResourcechartImplementation(getProject(), getUIFacade(), myChartModel, this);
+    }
+    return myChartImplementation;
+  }
+
+  @Override
+  public boolean isExpanded(HumanResource resource) {
+    return true;
+  }
+
+  private MouseMotionListener myMouseMotionListener;
+
+  private MouseListener myMouseListener;
+
+  private AbstractChartImplementation myChartImplementation;
+
+  private class ResourcechartImplementation extends AbstractChartImplementation {
+
+    public ResourcechartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
+        ChartComponentBase chartComponent) {
+      super(project, uiFacade, chartModel, chartComponent);
     }
 
     @Override
-    public ChartViewState getViewState() {
-        return myViewState;
+    public void paintChart(Graphics g) {
+      synchronized (ChartModelBase.STATIC_MUTEX) {
+        // LaboPM
+        // ResourceLoadGraphicArea.super.paintComponent(g);
+        if (isShowing()) {
+          myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(appli.getResourcePanel(),
+              appli.getResourcePanel().getTreeTable().getTable()));
+        }
+        myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
+        myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
+        myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
+        myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
+        // myChartModel.paint(g);
+        super.paintChart(g);
+      }
     }
 
-    private HumanResourceManager getResourceManager() {
-        return appli.getHumanResourceManager();
+    @Override
+    public ChartSelection getSelection() {
+      ChartSelectionImpl result = new ChartSelectionImpl() {
+        @Override
+        public boolean isEmpty() {
+          return appli.getResourcePanel().getSelectedNodes().length == 0;
+        }
+
+        @Override
+        public void startCopyClipboardTransaction() {
+          super.startCopyClipboardTransaction();
+          appli.getResourcePanel().copySelection();
+        }
+
+        @Override
+        public void startMoveClipboardTransaction() {
+          super.startMoveClipboardTransaction();
+          appli.getResourcePanel().cutSelection();
+        }
+      };
+      return result;
     }
+
+    @Override
+    public IStatus canPaste(ChartSelection selection) {
+      return Status.OK_STATUS;
+    }
+
+    @Override
+    public void paste(ChartSelection selection) {
+      appli.getResourcePanel().pasteSelection();
+    }
+
+    @Override
+    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+      int rowCount = getResourceManager().getResources().size();
+      for (HumanResource hr : getResourceManager().getResources()) {
+        if (myTreeUi.isExpanded(hr)) {
+          rowCount += hr.getAssignments().length;
+        }
+      }
+      settings.setRowCount(rowCount);
+      super.buildImage(settings, imageVisitor);
+    }
+  }
+
+  @Override
+  public ChartViewState getViewState() {
+    return myViewState;
+  }
+
+  private HumanResourceManager getResourceManager() {
+    return appli.getHumanResourceManager();
+  }
 }

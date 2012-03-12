@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -40,89 +40,89 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 abstract class ChartTabContentPanel {
-    private JSplitPane mySplitPane;
-    private final List<Component> myPanels = new ArrayList<Component>();
-    private final UIFacade myUiFacade;
+  private JSplitPane mySplitPane;
+  private final List<Component> myPanels = new ArrayList<Component>();
+  private final UIFacade myUiFacade;
 
-    protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
-        NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
-        ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
-        addChartPanel(zoomingPanel.getComponent());
-        addChartPanel(navigationPanel.getComponent());
-        myUiFacade = workbenchFacade;
+  protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
+    NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
+    ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
+    addChartPanel(zoomingPanel.getComponent());
+    addChartPanel(navigationPanel.getComponent());
+    myUiFacade = workbenchFacade;
+  }
+
+  protected JComponent createContentComponent() {
+    JPanel tabContentPanel = new JPanel(new BorderLayout());
+    JPanel left = new JPanel(new BorderLayout());
+    Box treeHeader = Box.createVerticalBox();
+    Component buttonPanel = createButtonPanel();
+    treeHeader.add(buttonPanel);
+    treeHeader.add(new GanttImagePanel(AbstractChartImplementation.LOGO, 300,
+        AbstractChartImplementation.LOGO.getIconHeight()));
+    left.add(treeHeader, BorderLayout.NORTH);
+
+    left.add(getTreeComponent(), BorderLayout.CENTER);
+    Dimension minSize = new Dimension(0, 0);
+    left.setMinimumSize(minSize);
+
+    JPanel right = new JPanel(new BorderLayout());
+    right.add(createChartPanels(), BorderLayout.NORTH);
+    right.setBackground(new Color(0.93f, 0.93f, 0.93f));
+    right.add(getChartComponent(), BorderLayout.CENTER);
+    right.setMinimumSize(minSize);
+
+    mySplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    if (GanttLanguage.getInstance().getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
+      mySplitPane.setLeftComponent(left);
+      mySplitPane.setRightComponent(right);
+      mySplitPane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+      mySplitPane.setDividerLocation((int) left.getPreferredSize().getWidth());
+    } else {
+      mySplitPane.setRightComponent(left);
+      mySplitPane.setLeftComponent(right);
+      mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
+      mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
     }
+    mySplitPane.setOneTouchExpandable(true);
+    mySplitPane.resetToPreferredSizes();
+    tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
+    return tabContentPanel;
+  }
 
-    protected JComponent createContentComponent() {
-        JPanel tabContentPanel = new JPanel(new BorderLayout());
-        JPanel left = new JPanel(new BorderLayout());
-        Box treeHeader = Box.createVerticalBox();
-        Component buttonPanel = createButtonPanel();
-        treeHeader.add(buttonPanel);
-        treeHeader.add(new GanttImagePanel(AbstractChartImplementation.LOGO, 300, AbstractChartImplementation.LOGO.getIconHeight()));
-        left.add(treeHeader, BorderLayout.NORTH);
+  protected abstract Component getChartComponent();
 
-        left.add(getTreeComponent(), BorderLayout.CENTER);
-        Dimension minSize = new Dimension(0, 0);
-        left.setMinimumSize(minSize);
+  protected abstract Component getTreeComponent();
 
-        JPanel right = new JPanel(new BorderLayout());
-        right.add(createChartPanels(), BorderLayout.NORTH);
-        right.setBackground(new Color(0.93f, 0.93f, 0.93f));
-        right.add(getChartComponent(), BorderLayout.CENTER);
-        right.setMinimumSize(minSize);
+  protected abstract Component createButtonPanel();
 
-        mySplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        if (GanttLanguage.getInstance().getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT) {
-            mySplitPane.setLeftComponent(left);
-            mySplitPane.setRightComponent(right);
-            mySplitPane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-            mySplitPane.setDividerLocation((int) left.getPreferredSize().getWidth());
-        } else {
-            mySplitPane.setRightComponent(left);
-            mySplitPane.setLeftComponent(right);
-            mySplitPane.setDividerLocation(
-                    (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
-            mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        }
-        mySplitPane.setOneTouchExpandable(true);
-        mySplitPane.resetToPreferredSizes();
-        tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
-        return tabContentPanel;
+  protected int getDividerLocation() {
+    return mySplitPane.getDividerLocation();
+  }
+
+  protected void setDividerLocation(int location) {
+    mySplitPane.setDividerLocation(location);
+  }
+
+  private Component createChartPanels() {
+    JPanel result = new JPanel(new BorderLayout());
+
+    Box panelsBox = Box.createHorizontalBox();
+    for (Component panel : myPanels) {
+      panelsBox.add(panel);
+      panelsBox.add(Box.createHorizontalStrut(10));
     }
+    result.add(panelsBox, BorderLayout.WEST);
+    result.setBackground(new Color(0.93f, 0.93f, 0.93f));
 
-    protected abstract Component getChartComponent();
+    return result;
+  }
 
-    protected abstract Component getTreeComponent();
+  protected void addChartPanel(Component panel) {
+    myPanels.add(panel);
+  }
 
-    protected abstract Component createButtonPanel();
-
-    protected int getDividerLocation() {
-        return mySplitPane.getDividerLocation();
-    }
-
-    protected void setDividerLocation(int location) {
-        mySplitPane.setDividerLocation(location);
-    }
-
-    private Component createChartPanels() {
-        JPanel result = new JPanel(new BorderLayout());
-
-        Box panelsBox = Box.createHorizontalBox();
-        for (Component panel : myPanels) {
-            panelsBox.add(panel);
-            panelsBox.add(Box.createHorizontalStrut(10));
-        }
-        result.add(panelsBox, BorderLayout.WEST);
-        result.setBackground(new Color(0.93f, 0.93f, 0.93f));
-
-        return result;
-    }
-
-    protected void addChartPanel(Component panel) {
-        myPanels.add(panel);
-    }
-
-    protected UIFacade getUiFacade() {
-        return myUiFacade;
-    }
+  protected UIFacade getUiFacade() {
+    return myUiFacade;
+  }
 }

@@ -15,21 +15,21 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.hierarchy;
 
 import net.sourceforge.ganttproject.task.Task;
 
 public class TaskHierarchyManagerImpl {
-    private TaskHierarchyItem myRootItem = new TaskHierarchyItem(null, null);
+  private TaskHierarchyItem myRootItem = new TaskHierarchyItem(null, null);
 
-    public TaskHierarchyItem getRootItem() {
-        return myRootItem;
-    }
+  public TaskHierarchyItem getRootItem() {
+    return myRootItem;
+  }
 
-    public TaskHierarchyItem createItem(Task task) {
-        TaskHierarchyItem result = new TaskHierarchyItem(task, myRootItem);
-        return result;
-    }
+  public TaskHierarchyItem createItem(Task task) {
+    TaskHierarchyItem result = new TaskHierarchyItem(task, myRootItem);
+    return result;
+  }
 
 }

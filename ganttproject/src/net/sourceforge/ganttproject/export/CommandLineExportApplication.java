@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import java.io.File;
@@ -37,86 +37,87 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
 
 public class CommandLineExportApplication {
-    public static class Args {
-        @Parameter(names = "-export", description = "Export format")
-        public String exporter;
+  public static class Args {
+    @Parameter(names = "-export", description = "Export format")
+    public String exporter;
 
-        @Parameter(names = "-zoom", description = "Zoom scale to use in the exported charts")
-        public Integer zooming = 3;
+    @Parameter(names = "-zoom", description = "Zoom scale to use in the exported charts")
+    public Integer zooming = 3;
 
-        @Parameter(names = {"-o", "-out"}, description = "Output file name", converter = FileConverter.class)
-        public File outputFile;
+    @Parameter(names = { "-o", "-out" }, description = "Output file name", converter = FileConverter.class)
+    public File outputFile;
+  }
+
+  private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
+
+  private final Args myArgs = new Args();
+
+  public CommandLineExportApplication() {
+    for (Exporter exporter : PluginManager.getExporters()) {
+      List<String> keys = Arrays.asList(exporter.getCommandLineKeys());
+      for (String key : keys) {
+        myFlag2exporter.put(key, exporter);
+      }
+    }
+  }
+
+  public Collection<String> getCommandLineFlags() {
+    return myFlag2exporter.keySet();
+  }
+
+  public Args getArguments() {
+    return myArgs;
+  }
+
+  public boolean export(GanttProject.Args mainArgs) {
+    if (myArgs.exporter == null || mainArgs.file == null || mainArgs.file.isEmpty()) {
+      return false;
+    }
+    Exporter exporter = myFlag2exporter.get(myArgs.exporter);
+    if (exporter == null) {
+      return false;
     }
 
-    private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
-
-    private final Args myArgs = new Args();
-
-    public CommandLineExportApplication() {
-        for (Exporter exporter : PluginManager.getExporters()) {
-            List<String> keys = Arrays.asList(exporter.getCommandLineKeys());
-            for (String key : keys) {
-                myFlag2exporter.put(key, exporter);
-            }
-        }
+    GanttProject project = new GanttProject(false);
+    project.openStartupDocument(mainArgs.file.get(0));
+    ConsoleUIFacade consoleUI = new ConsoleUIFacade(project.getUIFacade());
+    File inputFile = new File(mainArgs.file.get(0));
+    if (false == inputFile.exists()) {
+      consoleUI.showErrorDialog("File " + mainArgs.file + " does not exist.");
+      return true;
+    }
+    if (false == inputFile.canRead()) {
+      consoleUI.showErrorDialog("File " + mainArgs.file + " is not readable.");
+      return true;
     }
 
-    public Collection<String> getCommandLineFlags() {
-        return myFlag2exporter.keySet();
-    }
+    Job.getJobManager().setProgressProvider(null);
+    File outputFile = myArgs.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)
+        : myArgs.outputFile;
 
-    public Args getArguments() {
-        return myArgs;
-    }
-
-    public boolean export(GanttProject.Args mainArgs) {
-        if (myArgs.exporter == null || mainArgs.file == null || mainArgs.file.isEmpty()) {
-            return false;
-        }
-        Exporter exporter = myFlag2exporter.get(myArgs.exporter);
-        if (exporter == null) {
-            return false;
-        }
-
-        GanttProject project = new GanttProject(false);
-        project.openStartupDocument(mainArgs.file.get(0));
-        ConsoleUIFacade consoleUI = new ConsoleUIFacade(project.getUIFacade());
-        File inputFile = new File(mainArgs.file.get(0));
-        if (false==inputFile.exists()) {
-            consoleUI.showErrorDialog("File "+mainArgs.file+" does not exist.");
-            return true;
-        }
-        if (false==inputFile.canRead()) {
-            consoleUI.showErrorDialog("File "+mainArgs.file+" is not readable.");
-            return true;
-        }
-
-        Job.getJobManager().setProgressProvider(null);
-        File outputFile = myArgs.outputFile == null
-            ?  FileChooserPage.proposeOutputFile(project, exporter) : myArgs.outputFile;
-
-        System.err.println("[CommandLineExportApplication] export(): exporting with "+exporter);
-        Preferences prefs = new PluginPreferencesImpl(null, "");
-        prefs.putInt("zoom", myArgs.zooming);
-        prefs.put("exportRange",
-            DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
+    System.err.println("[CommandLineExportApplication] export(): exporting with " + exporter);
+    Preferences prefs = new PluginPreferencesImpl(null, "");
+    prefs.putInt("zoom", myArgs.zooming);
+    prefs.put(
+        "exportRange",
+        DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
-        prefs.putBoolean("commandLine", true);
-        exporter.setContext(project, consoleUI, prefs);
-        if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
-            ((ExportFileWizardImpl.LegacyOptionsClient)exporter).setOptions(project.getGanttOptions());
-        }
-        try {
-            ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
-                @Override
-                public void run(File[] exportedFiles) {
-                    System.exit(0);
-                }
-            };
-            exporter.run(outputFile, finalizationJob);
-        } catch (Exception e) {
-            consoleUI.showErrorDialog(e);
-        }
-        return true;
+    prefs.putBoolean("commandLine", true);
+    exporter.setContext(project, consoleUI, prefs);
+    if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
+      ((ExportFileWizardImpl.LegacyOptionsClient) exporter).setOptions(project.getGanttOptions());
     }
+    try {
+      ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
+        @Override
+        public void run(File[] exportedFiles) {
+          System.exit(0);
+        }
+      };
+      exporter.run(outputFile, finalizationJob);
+    } catch (Exception e) {
+      consoleUI.showErrorDialog(e);
+    }
+    return true;
+  }
 }

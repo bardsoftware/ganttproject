@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import javax.swing.event.TreeModelEvent;
@@ -23,43 +23,43 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 
 class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelListener {
-    boolean isValid;
+  boolean isValid;
 
-    public FacadeInvalidator(TreeModel treeModel) {
-        isValid = false;
-        treeModel.addTreeModelListener(this);
-    }
+  public FacadeInvalidator(TreeModel treeModel) {
+    isValid = false;
+    treeModel.addTreeModelListener(this);
+  }
 
-    boolean isValid() {
-        return isValid;
-    }
+  boolean isValid() {
+    return isValid;
+  }
 
-    void reset() {
-        isValid = true;
-    }
+  void reset() {
+    isValid = true;
+  }
 
-    @Override
-    public void treeNodesChanged(TreeModelEvent e) {
-        isValid = false;
-    }
+  @Override
+  public void treeNodesChanged(TreeModelEvent e) {
+    isValid = false;
+  }
 
-    @Override
-    public void treeNodesInserted(TreeModelEvent e) {
-        isValid = false;
-    }
+  @Override
+  public void treeNodesInserted(TreeModelEvent e) {
+    isValid = false;
+  }
 
-    @Override
-    public void treeNodesRemoved(TreeModelEvent e) {
-        isValid = false;
-    }
+  @Override
+  public void treeNodesRemoved(TreeModelEvent e) {
+    isValid = false;
+  }
 
-    @Override
-    public void treeStructureChanged(TreeModelEvent e) {
-        isValid = false;
-    }
+  @Override
+  public void treeStructureChanged(TreeModelEvent e) {
+    isValid = false;
+  }
 
-    @Override
-    public void projectClosed() {
-        isValid = false;
-    }
+  @Override
+  public void projectClosed() {
+    isValid = false;
+  }
 }

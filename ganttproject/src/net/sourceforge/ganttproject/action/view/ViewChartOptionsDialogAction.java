@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.view;
 
 import java.awt.Component;
@@ -37,56 +37,56 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
  * Action to show the options dialog for {@code myChart}.
  */
 public class ViewChartOptionsDialogAction extends GPAction {
-    private final UIFacade myUIFacade;
-    private final ChartComponentBase myChart;
+  private final UIFacade myUIFacade;
+  private final ChartComponentBase myChart;
 
-    public ViewChartOptionsDialogAction(ChartComponentBase chart, UIFacade uifacade) {
-        super("chart.options");
-        myUIFacade = uifacade;
-        myChart = chart;
-    }
+  public ViewChartOptionsDialogAction(ChartComponentBase chart, UIFacade uifacade) {
+    super("chart.options");
+    myUIFacade = uifacade;
+    myChart = chart;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        for (GPOptionGroup group : myChart.getOptionGroups()) {
-            group.lock();
-        }
-        final OkAction okAction = new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                commit();
-            }
-        };
-        final CancelAction cancelAction = new CancelAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                rollback();
-            }
-        };
-        myUIFacade.createDialog(createDialogComponent(), new Action[] { okAction, cancelAction }, "").show();
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    for (GPOptionGroup group : myChart.getOptionGroups()) {
+      group.lock();
     }
+    final OkAction okAction = new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        commit();
+      }
+    };
+    final CancelAction cancelAction = new CancelAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        rollback();
+      }
+    };
+    myUIFacade.createDialog(createDialogComponent(), new Action[] { okAction, cancelAction }, "").show();
+  }
 
-    private void commit() {
-        for (GPOptionGroup group : myChart.getOptionGroups()) {
-            group.commit();
-        }
+  private void commit() {
+    for (GPOptionGroup group : myChart.getOptionGroups()) {
+      group.commit();
     }
+  }
 
-    private void rollback() {
-        for (GPOptionGroup group : myChart.getOptionGroups()) {
-            group.rollback();
-        }
+  private void rollback() {
+    for (GPOptionGroup group : myChart.getOptionGroups()) {
+      group.rollback();
     }
+  }
 
-    private Component createDialogComponent() {
-        OptionsPageBuilder builder = new OptionsPageBuilder();
-        JComponent comp = builder.buildPage(myChart.getOptionGroups(), "ganttChart");
-        comp.setBorder(new EmptyBorder(5, 5, 5, 5));
-        return comp;
-    }
+  private Component createDialogComponent() {
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+    JComponent comp = builder.buildPage(myChart.getOptionGroups(), "ganttChart");
+    comp.setBorder(new EmptyBorder(5, 5, 5, 5));
+    return comp;
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "chartOptions_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "chartOptions_";
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.util;
 
 import java.awt.event.InputEvent;
@@ -25,27 +25,27 @@ import java.awt.event.MouseEvent;
  * @author dbarashev (Dmitry Barashev)
  */
 public class MouseUtil {
-    public static String toString(MouseEvent e) {
-        int modifiers = e.getModifiersEx();
-        StringBuilder buf = new StringBuilder();
-        append(buf, modifiers, InputEvent.META_DOWN_MASK, "Meta");
-        append(buf, modifiers, InputEvent.CTRL_DOWN_MASK, "Ctrl");
-        append(buf, modifiers, InputEvent.ALT_DOWN_MASK, "Alt");
-        append(buf, modifiers, InputEvent.SHIFT_DOWN_MASK, "Shift");
-        append(buf, modifiers, InputEvent.ALT_GRAPH_DOWN_MASK, "Alt Graph");
-        append(buf, modifiers, InputEvent.BUTTON1_DOWN_MASK, "Button1");
-        append(buf, modifiers, InputEvent.BUTTON2_DOWN_MASK, "Button2");
-        append(buf, modifiers, InputEvent.BUTTON3_DOWN_MASK, "Button3");
-        return buf.toString().trim();
-    }
+  public static String toString(MouseEvent e) {
+    int modifiers = e.getModifiersEx();
+    StringBuilder buf = new StringBuilder();
+    append(buf, modifiers, InputEvent.META_DOWN_MASK, "Meta");
+    append(buf, modifiers, InputEvent.CTRL_DOWN_MASK, "Ctrl");
+    append(buf, modifiers, InputEvent.ALT_DOWN_MASK, "Alt");
+    append(buf, modifiers, InputEvent.SHIFT_DOWN_MASK, "Shift");
+    append(buf, modifiers, InputEvent.ALT_GRAPH_DOWN_MASK, "Alt Graph");
+    append(buf, modifiers, InputEvent.BUTTON1_DOWN_MASK, "Button1");
+    append(buf, modifiers, InputEvent.BUTTON2_DOWN_MASK, "Button2");
+    append(buf, modifiers, InputEvent.BUTTON3_DOWN_MASK, "Button3");
+    return buf.toString().trim();
+  }
 
-    private static void append(StringBuilder builder, int modifiers, int mask, String text) {
-        if ((modifiers & mask) == 0) {
-            return;
-        }
-        if (builder.length() > 0) {
-            builder.append('+');
-        }
-        builder.append(text);
+  private static void append(StringBuilder builder, int modifiers, int mask, String text) {
+    if ((modifiers & mask) == 0) {
+      return;
     }
+    if (builder.length() > 0) {
+      builder.append('+');
+    }
+    builder.append(text);
+  }
 }

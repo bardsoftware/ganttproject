@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.io.BufferedReader;
@@ -37,148 +37,134 @@ import java.util.logging.Logger;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
 
-
 public class GPLogger {
-    private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
-    private static Handler ourHandler;
-    private static UIFacade ourUIFacade;
-    private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
-    private static String ourLogFileName;
+  private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
+  private static Handler ourHandler;
+  private static UIFacade ourUIFacade;
+  private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
+  private static String ourLogFileName;
 
-    static {
-        ourHandler = new ConsoleHandler();
-        ourLogger.addHandler(ourHandler);
-        ourLogger.setLevel(Level.ALL);
-        ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+  static {
+    ourHandler = new ConsoleHandler();
+    ourLogger.addHandler(ourHandler);
+    ourLogger.setLevel(Level.ALL);
+    ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+  }
+
+  public static boolean log(Throwable e) {
+    if (ourUIFacade != null) {
+      ourUIFacade.showErrorDialog(e);
+      return true;
     }
+    return logToLogger(e);
+  }
 
-    public static boolean log(Throwable e) {
-        if (ourUIFacade != null) {
-            ourUIFacade.showErrorDialog(e);
-            return true;
+  public static boolean logToLogger(String message) {
+    if (ourHandler == null) {
+      return false;
+    }
+    ourLogger.log(Level.WARNING, message);
+    return true;
+  }
+
+  public static boolean logToLogger(Throwable e) {
+    if (ourHandler == null) {
+      return false;
+    }
+    ourLogger.log(Level.WARNING, e.getMessage(), e);
+    return true;
+  }
+
+  public static void log(String message) {
+    ourLogger.log(Level.INFO, message);
+  }
+
+  public static Logger getLogger(Object o) {
+    assert o != null;
+    return getLogger(o.getClass());
+  }
+
+  public static Logger getLogger(Class<?> clazz) {
+    Logger logger = ourClass_Logger.get(clazz);
+    if (logger == null) {
+      logger = Logger.getLogger(clazz.getName());
+      logger.addHandler(ourHandler);
+      ourClass_Logger.put(clazz, logger);
+    }
+    return logger;
+  }
+
+  public static void setUIFacade(UIFacade uifacade) {
+    ourUIFacade = uifacade;
+  }
+
+  public static void setLogFile(String logFileName) {
+    try {
+      Handler fileHandler = new FileHandler(logFileName, true);
+      fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
+      ourLogger.removeHandler(ourHandler);
+      ourLogger.addHandler(fileHandler);
+      ourHandler = fileHandler;
+      ourLogFileName = logFileName;
+    } catch (SecurityException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void readConfiguration(URL configuration) throws IOException {
+    InputStream input = configuration.openStream();
+    LogManager.getLogManager().readConfiguration(input);
+  }
+
+  public static String readLog() {
+    if (ourLogFileName != null) {
+      ourHandler.flush();
+      File f = new File(ourLogFileName);
+      try {
+        if (!f.exists()) {
+          return "Log file not found at " + f.getAbsolutePath()
+              + " Check that you have appropriate access permissions for writing and reading this file";
         }
-        return logToLogger(e);
-    }
-
-    public static boolean logToLogger(String message) {
-        if (ourHandler == null) {
-            return false;
+        if (!f.canRead()) {
+          return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
         }
-        ourLogger.log(Level.WARNING, message);
-        return true;
-    }
-
-    public static boolean logToLogger(Throwable e) {
-        if (ourHandler == null) {
-            return false;
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        StringBuilder buffer = new StringBuilder(f.getAbsolutePath());
+        buffer.append("\n\n");
+        for (String s = reader.readLine(); s != null; s = reader.readLine()) {
+          buffer.append(s).append("\n");
         }
-        ourLogger.log(Level.WARNING, e.getMessage(), e);
-        return true;
+        return buffer.toString();
+      } catch (FileNotFoundException e) {
+        log(e);
+        return "Log file not found at " + f.getAbsolutePath()
+            + " Check that you have appropriate access permissions for writing and reading this file";
+      } catch (IOException e) {
+        log(e);
+        return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
+      }
+    }
+    return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
+  }
+
+  private static String[] SYSTEM_PROPERTIES = new String[] { "java.class.path", "java.home", "java.io.tmpdir",
+      "java.runtime.version", "java.vendor", "java.vm.name", "java.vm.vendor", "java.vm.version", "os.arch", "os.name",
+      "os.version", "sun.java.command", "user.country", "user.dir", "user.home", "user.language", "user.timezone" };
+
+  public static void logSystemInformation() {
+    try {
+      StringBuilder result = new StringBuilder();
+      for (String name : SYSTEM_PROPERTIES) {
+        result.append(name).append(": ").append(System.getProperty(name)).append("\n");
+      }
+
+      System.err.println(result.toString());
+    } catch (AccessControlException e) {
+      // This can happen when running in a sandbox (Java WebStart)
+      System.err.println(e + ": " + e.getMessage());
     }
 
-    public static void log(String message) {
-        ourLogger.log(Level.INFO, message);
-    }
-
-    public static Logger getLogger(Object o) {
-        assert o!=null;
-        return getLogger(o.getClass());
-    }
-
-    public static Logger getLogger(Class<?> clazz) {
-        Logger logger = ourClass_Logger.get(clazz);
-        if (logger == null) {
-            logger = Logger.getLogger(clazz.getName());
-            logger.addHandler(ourHandler);
-            ourClass_Logger.put(clazz, logger);
-        }
-        return logger;
-    }
-
-    public static void setUIFacade(UIFacade uifacade) {
-        ourUIFacade = uifacade;
-    }
-
-    public static void setLogFile(String logFileName) {
-        try {
-            Handler fileHandler = new FileHandler(logFileName, true);
-            fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
-            ourLogger.removeHandler(ourHandler);
-            ourLogger.addHandler(fileHandler);
-            ourHandler = fileHandler;
-            ourLogFileName = logFileName;
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void readConfiguration(URL configuration) throws IOException {
-        InputStream input = configuration.openStream();
-        LogManager.getLogManager().readConfiguration(input);
-    }
-
-    public static String readLog() {
-        if (ourLogFileName != null) {
-            ourHandler.flush();
-            File f = new File(ourLogFileName);
-            try {
-                if (!f.exists()) {
-                    return "Log file not found at " + f.getAbsolutePath() + " Check that you have appropriate access permissions for writing and reading this file";
-                }
-                if (!f.canRead()) {
-                    return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
-                }
-                BufferedReader reader = new BufferedReader(new FileReader(f));
-                StringBuilder buffer = new StringBuilder(f.getAbsolutePath());
-                buffer.append("\n\n");
-                for (String s = reader.readLine(); s != null; s = reader.readLine()) {
-                    buffer.append(s).append("\n");
-                }
-                return buffer.toString();
-            } catch (FileNotFoundException e) {
-                log(e);
-                return "Log file not found at " + f.getAbsolutePath() + " Check that you have appropriate access permissions for writing and reading this file";
-            } catch (IOException e) {
-                log(e);
-                return "Can't read log file. Try reading it manually from " + f.getAbsolutePath();
-            }
-        }
-        return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
-    }
-
-    private static String[] SYSTEM_PROPERTIES = new String[] {
-        "java.class.path",
-        "java.home",
-        "java.io.tmpdir",
-        "java.runtime.version",
-        "java.vendor",
-        "java.vm.name",
-        "java.vm.vendor",
-        "java.vm.version",
-        "os.arch",
-        "os.name",
-        "os.version",
-        "sun.java.command",
-        "user.country",
-        "user.dir",
-        "user.home",
-        "user.language",
-        "user.timezone"
-    };
-    public static void logSystemInformation() {
-        try {
-            StringBuilder result = new StringBuilder();
-            for (String name : SYSTEM_PROPERTIES) {
-                result.append(name).append(": ").append(System.getProperty(name)).append("\n");
-            }
-
-            System.err.println(result.toString());
-        } catch (AccessControlException e) {
-            // This can happen when running in a sandbox (Java WebStart)
-            System.err.println(e + ": " + e.getMessage());
-        }
-
-    }
+  }
 }

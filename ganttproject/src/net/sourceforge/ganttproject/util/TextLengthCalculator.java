@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.util;
 
 /**
@@ -23,15 +23,15 @@ package net.sourceforge.ganttproject.util;
  */
 public interface TextLengthCalculator {
 
-    /** @return the length of the text */
-    int getTextLength(String text);
+  /** @return the length of the text */
+  int getTextLength(String text);
 
-    /** @return the height of the text */
-    int getTextHeight(String text);
+  /** @return the height of the text */
+  int getTextHeight(String text);
 
-    /**
-     * @return the state of the object. Depending on internal settings a unique
-     *         state is returned
-     */
-    Object getState();
+  /**
+   * @return the state of the object. Depending on internal settings a unique
+   *         state is returned
+   */
+  Object getState();
 }

@@ -26,43 +26,45 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
  * Base class for task and resource search services.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
- *
- * @param <SR> search result object type
- * @param <SO> target search object type
+ * 
+ * @param <SR>
+ *          search result object type
+ * @param <SO>
+ *          target search object type
  */
 abstract class SearchServiceBase<SR extends SearchResult<SO>, SO> implements SearchService<SR, SO> {
-    private final int myViewIndex;
-    private IGanttProject myProject;
-    private TreeUiFacade<SO> myTreeUiFacade;
-    private UIFacade myUiFacade;
+  private final int myViewIndex;
+  private IGanttProject myProject;
+  private TreeUiFacade<SO> myTreeUiFacade;
+  private UIFacade myUiFacade;
 
-    protected SearchServiceBase(int viewIndex) {
-        myViewIndex = viewIndex;
-    }
+  protected SearchServiceBase(int viewIndex) {
+    myViewIndex = viewIndex;
+  }
 
-    protected void init(IGanttProject project, TreeUiFacade<SO> treeUiFacade, UIFacade uiFacade) {
-        myProject = project;
-        myTreeUiFacade = treeUiFacade;
-        myUiFacade = uiFacade;
-    }
+  protected void init(IGanttProject project, TreeUiFacade<SO> treeUiFacade, UIFacade uiFacade) {
+    myProject = project;
+    myTreeUiFacade = treeUiFacade;
+    myUiFacade = uiFacade;
+  }
 
-    protected static boolean isNotEmptyAndContains(String doc, String query) {
-        return doc != null && doc.toLowerCase().contains(query);
-    }
+  protected static boolean isNotEmptyAndContains(String doc, String query) {
+    return doc != null && doc.toLowerCase().contains(query);
+  }
 
-    protected IGanttProject getProject() {
-        return myProject;
-    }
+  protected IGanttProject getProject() {
+    return myProject;
+  }
 
-    @Override
-    public void select(List<SR> results) {
-        myTreeUiFacade.clearSelection();
-        for (SearchResult<SO> r : results) {
-            myTreeUiFacade.setSelected(r.getObject(), false);
-        }
-        myUiFacade.setViewIndex(myViewIndex);
-        myTreeUiFacade.getTreeComponent().requestFocusInWindow();
+  @Override
+  public void select(List<SR> results) {
+    myTreeUiFacade.clearSelection();
+    for (SearchResult<SO> r : results) {
+      myTreeUiFacade.setSelected(r.getObject(), false);
     }
+    myUiFacade.setViewIndex(myViewIndex);
+    myTreeUiFacade.getTreeComponent().requestFocusInWindow();
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.print;
 
 import java.awt.image.RenderedImage;
@@ -32,26 +32,25 @@ import net.sourceforge.ganttproject.chart.Chart;
 
 public class PrintManager {
 
-    public static void printChart(Chart chart, GanttExportSettings settings) {
-        RenderedImage image = chart.getRenderedImage(settings);
+  public static void printChart(Chart chart, GanttExportSettings settings) {
+    RenderedImage image = chart.getRenderedImage(settings);
 
-        PrinterJob printJob = PrinterJob.getPrinterJob();
+    PrinterJob printJob = PrinterJob.getPrinterJob();
 
-        printJob.setPrintable(new GanttPrintable(image,
-                GanttPrintable.REDUCE_FACTOR_DEFAULT));
+    printJob.setPrintable(new GanttPrintable(image, GanttPrintable.REDUCE_FACTOR_DEFAULT));
 
-        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
-        attr.add(MediaSizeName.ISO_A4);
-        attr.add(OrientationRequested.LANDSCAPE);
+    PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+    attr.add(MediaSizeName.ISO_A4);
+    attr.add(OrientationRequested.LANDSCAPE);
 
-        if (printJob.printDialog(attr)) {
-            try {
-                printJob.print(attr);
-            } catch (Exception e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
+    if (printJob.printDialog(attr)) {
+      try {
+        printJob.print(attr);
+      } catch (Exception e) {
+        if (!GPLogger.log(e)) {
+          e.printStackTrace(System.err);
         }
+      }
     }
+  }
 }

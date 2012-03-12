@@ -12,23 +12,23 @@ import javax.swing.UIManager.LookAndFeelInfo;
  */
 public class GanttLookAndFeelInfo extends LookAndFeelInfo {
 
-    protected String toString;
+  protected String toString;
 
-    public GanttLookAndFeelInfo(String name, String className) {
-        super(name, className);
-        toString = name;
-    }
+  public GanttLookAndFeelInfo(String name, String className) {
+    super(name, className);
+    toString = name;
+  }
 
-    public GanttLookAndFeelInfo(LookAndFeelInfo info) {
-        this(info.getName(), info.getClassName());
-    }
+  public GanttLookAndFeelInfo(LookAndFeelInfo info) {
+    this(info.getName(), info.getClassName());
+  }
 
-    /**
-     * returns the name of the LookAndFeel
-     */
-    @Override
-    public String toString() {
-        return toString;
-    }
+  /**
+   * returns the name of the LookAndFeel
+   */
+  @Override
+  public String toString() {
+    return toString;
+  }
 
 }

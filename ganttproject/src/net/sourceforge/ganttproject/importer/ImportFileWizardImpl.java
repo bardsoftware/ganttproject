@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
@@ -35,64 +35,59 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
  * @author bard
  */
 public class ImportFileWizardImpl extends WizardImpl {
-    private final State myState;
+  private final State myState;
 
-    private static List<Importer> ourImporters;
+  private static List<Importer> ourImporters;
 
-    public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
-        super(uiFacade, language.getText("importWizard.dialog.title"));
-        myState = new State();
-        if (ourImporters == null) {
-            ourImporters = getImporters();
-        }
-        for (Importer importer : ourImporters) {
-            importer.setContext(project, uiFacade, options.getPluginPreferences());
-        }
-        addPage(new ImporterChooserPage(ourImporters, myState));
-        addPage(new FileChooserPage(
-                this,
-                options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/import"),
-                myState));
+  public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
+    super(uiFacade, language.getText("importWizard.dialog.title"));
+    myState = new State();
+    if (ourImporters == null) {
+      ourImporters = getImporters();
+    }
+    for (Importer importer : ourImporters) {
+      importer.setContext(project, uiFacade, options.getPluginPreferences());
+    }
+    addPage(new ImporterChooserPage(ourImporters, myState));
+    addPage(new FileChooserPage(this, options.getPluginPreferences().node(
+        "/instance/net.sourceforge.ganttproject/import"), myState));
+  }
+
+  private static List<Importer> getImporters() {
+    return PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
+  }
+
+  @Override
+  protected void onOkPressed() {
+    super.onOkPressed();
+    if ("file".equals(myState.getUrl().getProtocol())) {
+      try {
+        String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
+        myState.myImporter.run(new File(path));
+      } catch (UnsupportedEncodingException e) {
+        GPLogger.log(e);
+      }
+    } else {
+      getUIFacade().showErrorDialog(new Exception("You are not supposed to see this. Please report this bug."));
+    }
+  }
+
+  @Override
+  protected boolean canFinish() {
+    return myState.myImporter != null && myState.getUrl() != null && "file".equals(myState.getUrl().getProtocol());
+  }
+
+  static class State {
+    Importer myImporter;
+
+    private URL myUrl;
+
+    public void setUrl(URL url) {
+      myUrl = url;
     }
 
-    private static List<Importer> getImporters() {
-        return PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
+    public URL getUrl() {
+      return myUrl;
     }
-
-    @Override
-    protected void onOkPressed() {
-        super.onOkPressed();
-        if ("file".equals(myState.getUrl().getProtocol())) {
-            try {
-                String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
-                myState.myImporter.run(new File(path));
-            } catch (UnsupportedEncodingException e) {
-                GPLogger.log(e);
-            }
-        }
-        else {
-            getUIFacade().showErrorDialog(new Exception("You are not supposed to see this. Please report this bug."));
-        }
-    }
-
-    @Override
-    protected boolean canFinish() {
-        return myState.myImporter != null
-            && myState.getUrl() != null
-            && "file".equals(myState.getUrl().getProtocol());
-    }
-
-    static class State {
-        Importer myImporter;
-
-        private URL myUrl;
-
-        public void setUrl(URL url) {
-            myUrl = url;
-        }
-
-        public URL getUrl() {
-            return myUrl;
-        }
-    }
+  }
 }

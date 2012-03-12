@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -25,20 +25,20 @@ import net.sourceforge.ganttproject.action.GPAction;
 
 public class PrintAction extends GPAction {
 
-    private final GanttProject myMainFrame;
+  private final GanttProject myMainFrame;
 
-    PrintAction(GanttProject mainFrame) {
-        super("project.print");
-        myMainFrame = mainFrame;
-    }
+  PrintAction(GanttProject mainFrame) {
+    super("project.print");
+    myMainFrame = mainFrame;
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "print_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "print_";
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myMainFrame.printProject();
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myMainFrame.printProject();
+  }
 }

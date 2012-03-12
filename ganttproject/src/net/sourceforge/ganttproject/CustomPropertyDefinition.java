@@ -15,22 +15,31 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import org.eclipse.core.runtime.IStatus;
 
 public interface CustomPropertyDefinition {
-    CustomPropertyClass getPropertyClass();
-    IStatus canSetPropertyClass(CustomPropertyClass propertyClass);
-    IStatus setPropertyClass(CustomPropertyClass propertyClass);
-    Class<?> getType();
-    String getTypeAsString();
-    String getID();
-    Object getDefaultValue();
-    String getName();
-    void setName(String name);
+  CustomPropertyClass getPropertyClass();
 
-    String getDefaultValueAsString();
-    void setDefaultValueAsString(String value);
+  IStatus canSetPropertyClass(CustomPropertyClass propertyClass);
+
+  IStatus setPropertyClass(CustomPropertyClass propertyClass);
+
+  Class<?> getType();
+
+  String getTypeAsString();
+
+  String getID();
+
+  Object getDefaultValue();
+
+  String getName();
+
+  void setName(String name);
+
+  String getDefaultValueAsString();
+
+  void setDefaultValueAsString(String value);
 }

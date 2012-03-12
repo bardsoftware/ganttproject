@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import javax.swing.AbstractAction;
@@ -30,73 +30,74 @@ import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
 public class ResourceActionSet {
-    private final ResourceNewAction myResourceNewAction;
+  private final ResourceNewAction myResourceNewAction;
 
-    private final ResourceDeleteAction myResourceDeleteAction;
+  private final ResourceDeleteAction myResourceDeleteAction;
 
-    private final ResourcePropertiesAction myResourcePropertiesAction;
+  private final ResourcePropertiesAction myResourcePropertiesAction;
 
-    private final ResourceMoveUpAction myResourceMoveUpAction;
+  private final ResourceMoveUpAction myResourceMoveUpAction;
 
-    private final ResourceMoveDownAction myResourceMoveDownAction;
+  private final ResourceMoveDownAction myResourceMoveDownAction;
 
-    private final ResourceSendMailAction myResourceSendMailAction;
+  private final ResourceSendMailAction myResourceSendMailAction;
 
-    private final ResourceImportAction myResourceImportAction;
+  private final ResourceImportAction myResourceImportAction;
 
-    private final AssignmentDeleteAction myAssignmentDelete;
+  private final AssignmentDeleteAction myAssignmentDelete;
 
-    private AbstractAction[] myActions;
+  private AbstractAction[] myActions;
 
-    public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext, GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
-        HumanResourceManager manager = projectFrame.getHumanResourceManager();
-        myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
-        myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);
-        myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);
-        myResourceMoveUpAction = new ResourceMoveUpAction(table);
-        myResourceMoveDownAction = new ResourceMoveDownAction(table);
-        myResourceSendMailAction = new ResourceSendMailAction(table);
-        myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(), projectFrame
-                .getRoleManager(), projectFrame);
-        myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
+  public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext,
+      GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
+    HumanResourceManager manager = projectFrame.getHumanResourceManager();
+    myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
+    myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);
+    myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);
+    myResourceMoveUpAction = new ResourceMoveUpAction(table);
+    myResourceMoveDownAction = new ResourceMoveDownAction(table);
+    myResourceSendMailAction = new ResourceSendMailAction(table);
+    myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(),
+        projectFrame.getRoleManager(), projectFrame);
+    myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
+  }
+
+  public AbstractAction[] getActions() {
+    if (myActions == null) {
+      myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
     }
+    return myActions;
+  }
 
-    public AbstractAction[] getActions() {
-        if (myActions == null) {
-            myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
-        }
-        return myActions;
-    }
+  public ResourceNewAction getResourceNewAction() {
+    return myResourceNewAction;
+  }
 
-    public ResourceNewAction getResourceNewAction() {
-        return myResourceNewAction;
-    }
+  public ResourceDeleteAction getResourceDeleteAction() {
+    return myResourceDeleteAction;
+  }
 
-    public ResourceDeleteAction getResourceDeleteAction() {
-        return myResourceDeleteAction;
-    }
+  public ResourcePropertiesAction getResourcePropertiesAction() {
+    return myResourcePropertiesAction;
+  }
 
-    public ResourcePropertiesAction getResourcePropertiesAction() {
-        return myResourcePropertiesAction;
-    }
+  public ResourceMoveUpAction getResourceMoveUpAction() {
+    return myResourceMoveUpAction;
+  }
 
-    public ResourceMoveUpAction getResourceMoveUpAction() {
-        return myResourceMoveUpAction;
-    }
+  public ResourceMoveDownAction getResourceMoveDownAction() {
+    return myResourceMoveDownAction;
+  }
 
-    public ResourceMoveDownAction getResourceMoveDownAction() {
-        return myResourceMoveDownAction;
-    }
+  public ResourceSendMailAction getResourceSendMailAction() {
+    return myResourceSendMailAction;
+  }
 
-    public ResourceSendMailAction getResourceSendMailAction() {
-        return myResourceSendMailAction;
-    }
+  public ResourceImportAction getResourceImportAction() {
+    return myResourceImportAction;
+  }
 
-    public ResourceImportAction getResourceImportAction() {
-        return myResourceImportAction;
-    }
-
-    public AssignmentDeleteAction getAssignmentDelete() {
-        return myAssignmentDelete;
-    }
+  public AssignmentDeleteAction getAssignmentDelete() {
+    return myAssignmentDelete;
+  }
 }

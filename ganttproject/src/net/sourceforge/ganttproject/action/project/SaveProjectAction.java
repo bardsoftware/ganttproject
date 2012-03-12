@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -25,56 +25,56 @@ import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
 
 class SaveProjectAction extends GPAction implements ProjectEventListener {
-    private final GanttProject myMainFrame;
+  private final GanttProject myMainFrame;
 
-    SaveProjectAction(GanttProject mainFrame) {
-        this(mainFrame, IconSize.MENU);
-    }
+  SaveProjectAction(GanttProject mainFrame) {
+    this(mainFrame, IconSize.MENU);
+  }
 
-    private SaveProjectAction(GanttProject mainFrame, IconSize size) {
-        super("project.save", size);
-        myMainFrame = mainFrame;
-        mainFrame.addProjectEventListener(this);
-        setEnabled(false);
-    }
+  private SaveProjectAction(GanttProject mainFrame, IconSize size) {
+    super("project.save", size);
+    myMainFrame = mainFrame;
+    mainFrame.addProjectEventListener(this);
+    setEnabled(false);
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new SaveProjectAction(myMainFrame, size);
-    }
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new SaveProjectAction(myMainFrame, size);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "save_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "save_";
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myMainFrame.saveProject();
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myMainFrame.saveProject();
+  }
 
-    @Override
-    public void projectModified() {
-        setEnabled(true);
-    }
+  @Override
+  public void projectModified() {
+    setEnabled(true);
+  }
 
-    @Override
-    public void projectSaved() {
-        setEnabled(false);
-    }
+  @Override
+  public void projectSaved() {
+    setEnabled(false);
+  }
 
-    @Override
-    public void projectClosed() {
-        setEnabled(false);
-    }
+  @Override
+  public void projectClosed() {
+    setEnabled(false);
+  }
 
-    @Override
-    public void projectCreated() {
-        setEnabled(false);
-    }
+  @Override
+  public void projectCreated() {
+    setEnabled(false);
+  }
 
-    @Override
-    public void projectOpened() {
-        setEnabled(false);
-    }
+  @Override
+  public void projectOpened() {
+    setEnabled(false);
+  }
 }

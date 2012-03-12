@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -31,43 +31,43 @@ import net.sourceforge.ganttproject.util.StringUtils;
  * Action that deletes the assignment of a task to a resource
  */
 public class AssignmentDeleteAction extends GPAction {
-    private final AssignmentContext myContext;
+  private final AssignmentContext myContext;
 
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    public AssignmentDeleteAction(AssignmentContext context, UIFacade uiFadade) {
-        super("assignment.delete");
-        myContext = context;
-        myUIFacade = uiFadade;
+  public AssignmentDeleteAction(AssignmentContext context, UIFacade uiFadade) {
+    super("assignment.delete");
+    myContext = context;
+    myUIFacade = uiFadade;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    final ResourceAssignment[] context = myContext.getResourceAssignments();
+    if (context != null && context.length > 0) {
+      Choice choice = myUIFacade.showConfirmationDialog(getI18n("msg23") + " " + StringUtils.getDisplayNames(context)
+          + "?", getI18n("warning"));
+      if (choice == Choice.YES) {
+        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+          @Override
+          public void run() {
+            deleteAssignments(context);
+            myUIFacade.refresh();
+          }
+        });
+      }
     }
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        final ResourceAssignment[] context = myContext.getResourceAssignments();
-        if (context != null && context.length > 0) {
-            Choice choice = myUIFacade.showConfirmationDialog(getI18n("msg23") + " "
-                    + StringUtils.getDisplayNames(context) + "?", getI18n("warning"));
-            if (choice == Choice.YES) {
-                myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-                    @Override
-                    public void run() {
-                        deleteAssignments(context);
-                        myUIFacade.refresh();
-                    }
-                });
-            }
-        }
+  private void deleteAssignments(ResourceAssignment[] context) {
+    for (ResourceAssignment ra : context) {
+      ra.delete();
+      ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
     }
+  }
 
-    private void deleteAssignments(ResourceAssignment[] context) {
-        for (ResourceAssignment ra : context) {
-            ra.delete();
-            ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
-        }
-    }
-
-    @Override
-    protected String getIconFilePrefix() {
-        return "delete_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "delete_";
+  }
 }
