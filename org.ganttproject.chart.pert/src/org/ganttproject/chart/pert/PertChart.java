@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.ganttproject.chart.pert;
 
 import java.util.Date;
@@ -33,71 +33,71 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public abstract class PertChart extends JPanel implements Chart {
-    /** Task manager used to build PERT chart. It provides data. */
-    protected TaskManager myTaskManager;
+  /** Task manager used to build PERT chart. It provides data. */
+  protected TaskManager myTaskManager;
 
-    public PertChart() {
-    }
+  public PertChart() {
+  }
 
-    @Override
-    public void init(IGanttProject project) {
-        myTaskManager = project.getTaskManager();
-    }
+  @Override
+  public void init(IGanttProject project) {
+    myTaskManager = project.getTaskManager();
+  }
 
-    @Override
-    public abstract String getName();
+  @Override
+  public abstract String getName();
 
-    /** Builds PERT chart. */
-    protected abstract void buildPertChart();
+  /** Builds PERT chart. */
+  protected abstract void buildPertChart();
 
-    /** This method in not supported by this Chart. */
-    @Override
-    public Date getStartDate() {
-        throw new UnsupportedOperationException();
-    }
+  /** This method in not supported by this Chart. */
+  @Override
+  public Date getStartDate() {
+    throw new UnsupportedOperationException();
+  }
 
-    /** This method in not supported by this Chart. */
-    @Override
-    public Date getEndDate() {
-        throw new UnsupportedOperationException();
-    }
+  /** This method in not supported by this Chart. */
+  @Override
+  public Date getEndDate() {
+    throw new UnsupportedOperationException();
+  }
 
-    /** Sets the task manager. */
-    public void setTaskManager(TaskManager taskManager) {
-        myTaskManager = taskManager;
-    }
+  /** Sets the task manager. */
+  public void setTaskManager(TaskManager taskManager) {
+    myTaskManager = taskManager;
+  }
 
-    @Override
-    public GPOptionGroup[] getOptionGroups() {
-        return null;
-    }
+  @Override
+  public GPOptionGroup[] getOptionGroups() {
+    return null;
+  }
 
-    @Override
-    public Chart createCopy() {
-        return null;
-    }
+  @Override
+  public Chart createCopy() {
+    return null;
+  }
 
-    @Override
-    public ChartSelection getSelection() {
-        return ChartSelection.EMPTY;
-    }
+  @Override
+  public ChartSelection getSelection() {
+    return ChartSelection.EMPTY;
+  }
 
-    @Override
-    public IStatus canPaste(ChartSelection selection) {
-        return Status.CANCEL_STATUS;
-    }
+  @Override
+  public IStatus canPaste(ChartSelection selection) {
+    return Status.CANCEL_STATUS;
+  }
 
-    @Override
-    public void paste(ChartSelection selection) {
-    }
+  @Override
+  public void paste(ChartSelection selection) {
+  }
 
-    @Override
-    public void addSelectionListener(ChartSelectionListener listener) {
-        // No listeners are implemented
-    }
+  @Override
+  public void addSelectionListener(ChartSelectionListener listener) {
+    // No listeners are implemented
+  }
 
-    @Override
-    public void removeSelectionListener(ChartSelectionListener listener) {
-        // No listeners are implemented
-    }
+  @Override
+  public void removeSelectionListener(ChartSelectionListener listener) {
+    // No listeners are implemented
+  }
 }
