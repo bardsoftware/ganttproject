@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
@@ -39,84 +39,86 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface TaskManager {
-    Task[] getTasks();
+  Task[] getTasks();
 
-    public Task getRootTask();
+  public Task getRootTask();
 
-    void projectOpened();
+  void projectOpened();
 
-    public void projectClosed();
+  public void projectClosed();
 
-    public GanttTask getTask(int taskId);
+  public GanttTask getTask(int taskId);
 
-    public void registerTask(Task task);
+  public void registerTask(Task task);
 
-    public GanttTask createTask();
+  public GanttTask createTask();
 
-    public GanttTask createTask(int taskId);
+  public GanttTask createTask(int taskId);
 
-    String encode(TaskLength duration);
-    TaskLength createLength(String lengthAsString);
+  String encode(TaskLength duration);
 
-    public TaskLength createLength(long length);
+  TaskLength createLength(String lengthAsString);
 
-    TaskLength createLength(TimeUnit unit, float length);
+  public TaskLength createLength(long length);
 
-    public TaskLength createLength(TimeUnit timeUnit, Date startDate,
-            Date endDate);
+  TaskLength createLength(TimeUnit unit, float length);
 
-    Date shift(Date original, TaskLength duration);
-    TaskDependencyCollection getDependencyCollection();
+  public TaskLength createLength(TimeUnit timeUnit, Date startDate, Date endDate);
 
-    AlgorithmCollection getAlgorithmCollection();
+  Date shift(Date original, TaskLength duration);
 
-    TaskDependencyConstraint createConstraint(int constraintID);
-    TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
-    GPCalendar getCalendar();
+  TaskDependencyCollection getDependencyCollection();
 
-    TaskContainmentHierarchyFacade getTaskHierarchy();
+  AlgorithmCollection getAlgorithmCollection();
 
-    void addTaskListener(TaskListener listener);
+  TaskDependencyConstraint createConstraint(int constraintID);
 
-    public class Access {
-        public static TaskManager newInstance(
-                TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
-                TaskManagerConfig config) {
-            return new TaskManagerImpl(containmentFacadeFactory, config);
-        }
+  TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
+
+  GPCalendar getCalendar();
+
+  TaskContainmentHierarchyFacade getTaskHierarchy();
+
+  void addTaskListener(TaskListener listener);
+
+  public class Access {
+    public static TaskManager newInstance(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
+        TaskManagerConfig config) {
+      return new TaskManagerImpl(containmentFacadeFactory, config);
     }
+  }
 
-    public TaskLength getProjectLength();
+  public TaskLength getProjectLength();
 
-    public int getTaskCount();
+  public int getTaskCount();
 
-    public Date getProjectStart();
-    public Date getProjectEnd();
-    int getProjectCompletion();
+  public Date getProjectStart();
 
-    public TaskManager emptyClone();
+  public Date getProjectEnd();
 
-    public Map<Task, Task> importData(
-            TaskManager taskManager, Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping);
+  int getProjectCompletion();
 
-    public void importAssignments(TaskManager importedTaskManager,
-            HumanResourceManager hrManager, Map<Task, Task> original2importedTask,
-            Map<HumanResource, HumanResource> original2importedResource);
+  public TaskManager emptyClone();
 
-    /**
-     * Processes the critical path finding on <code>root</code> tasks.
-     *
-     * @param root
-     *            The root of the tasks to consider in the critical path
-     *            finding.
-     */
-    public void processCriticalPath(Task root);
+  public Map<Task, Task> importData(TaskManager taskManager,
+      Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping);
 
-    public void deleteTask(Task tasktoRemove);
+  public void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
+      Map<Task, Task> original2importedTask, Map<HumanResource, HumanResource> original2importedResource);
 
-    CustomPropertyManager getCustomPropertyManager();
+  /**
+   * Processes the critical path finding on <code>root</code> tasks.
+   * 
+   * @param root
+   *          The root of the tasks to consider in the critical path finding.
+   */
+  public void processCriticalPath(Task root);
 
-    StringOption getTaskNamePrefixOption();
+  public void deleteTask(Task tasktoRemove);
 
-    EnumerationOption getDependencyHardnessOption();
+  CustomPropertyManager getCustomPropertyManager();
+
+  StringOption getTaskNamePrefixOption();
+
+  EnumerationOption getDependencyHardnessOption();
 }

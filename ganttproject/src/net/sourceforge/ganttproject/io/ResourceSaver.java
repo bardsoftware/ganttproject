@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.io;
 
 import java.util.List;
@@ -31,65 +31,67 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 
 class ResourceSaver extends SaverBase {
-    void save(IGanttProject project, TransformerHandler handler) throws SAXException {
-        final AttributesImpl attrs = new AttributesImpl();
-        startElement("resources", handler);
-        saveCustomColumnDefinitions(project, handler);
-        HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
-        for (int i = 0; i < resources.length; i++) {
-            HumanResource p = resources[i];
-            addAttribute("id", p.getId(), attrs);
-            addAttribute("name", p.getName(), attrs);
-            addAttribute("function", p.getRole().getPersistentID(), attrs);
-            addAttribute("contacts", p.getMail(), attrs);
-            addAttribute("phone", p.getPhone(), attrs);
-            startElement("resource", attrs, handler);
-            {
-                saveCustomProperties(project, p, handler);
-            }
-            endElement("resource", handler);
-        }
-        endElement("resources", handler);
+  void save(IGanttProject project, TransformerHandler handler) throws SAXException {
+    final AttributesImpl attrs = new AttributesImpl();
+    startElement("resources", handler);
+    saveCustomColumnDefinitions(project, handler);
+    HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
+    for (int i = 0; i < resources.length; i++) {
+      HumanResource p = resources[i];
+      addAttribute("id", p.getId(), attrs);
+      addAttribute("name", p.getName(), attrs);
+      addAttribute("function", p.getRole().getPersistentID(), attrs);
+      addAttribute("contacts", p.getMail(), attrs);
+      addAttribute("phone", p.getPhone(), attrs);
+      startElement("resource", attrs, handler);
+      {
+        saveCustomProperties(project, p, handler);
+      }
+      endElement("resource", handler);
     }
+    endElement("resources", handler);
+  }
 
-    private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler) throws SAXException {
-        //CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
-        AttributesImpl attrs = new AttributesImpl();
-        List<CustomProperty> properties = resource.getCustomProperties();
-        for (int i=0; i<properties.size(); i++) {
-            CustomProperty nextProperty = properties.get(i);
-            CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
-            assert nextProperty != null
-                : "WTF? null property in properties=" + properties;
-            assert nextDefinition != null
-                : "WTF? null property definition for property=" + i + "(value=" + nextProperty.getValueAsString() + ")";
-            if (nextProperty.getValue()!=null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
-                addAttribute("definition-id", nextDefinition.getID(), attrs);
-                addAttribute("value", nextProperty.getValueAsString(), attrs);
-                emptyElement("custom-property", attrs, handler);
-            }
-        }
+  private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler)
+      throws SAXException {
+    // CustomPropertyManager customPropsManager =
+    // project.getHumanResourceManager().getCustomPropertyManager();
+    AttributesImpl attrs = new AttributesImpl();
+    List<CustomProperty> properties = resource.getCustomProperties();
+    for (int i = 0; i < properties.size(); i++) {
+      CustomProperty nextProperty = properties.get(i);
+      CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
+      assert nextProperty != null : "WTF? null property in properties=" + properties;
+      assert nextDefinition != null : "WTF? null property definition for property=" + i + "(value="
+          + nextProperty.getValueAsString() + ")";
+      if (nextProperty.getValue() != null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
+        addAttribute("definition-id", nextDefinition.getID(), attrs);
+        addAttribute("value", nextProperty.getValueAsString(), attrs);
+        emptyElement("custom-property", attrs, handler);
+      }
     }
+  }
 
-    private void saveCustomColumnDefinitions(IGanttProject project, TransformerHandler handler) throws SAXException {
-        CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
-        List<CustomPropertyDefinition> definitions = customPropsManager.getDefinitions();
-//        HumanResourceManager hrManager = (HumanResourceManager) project.getHumanResourceManager();
-//        Map customFields = hrManager.getCustomFields();
-//        if (customFields.size()==0) {
-//            return;
-//        }
-        final AttributesImpl attrs = new AttributesImpl();
-        //startElement("custom-properties-definition", handler);
-        for (int i=0; i<definitions.size(); i++) {
-            //ResourceColumn nextField = (ResourceColumn) fields.next();
-            CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) definitions.get(i);
-            addAttribute("id", nextDefinition.getID(), attrs);
-            addAttribute("name", nextDefinition.getName(), attrs);
-            addAttribute("type", nextDefinition.getTypeAsString(), attrs);
-            addAttribute("default-value", nextDefinition.getDefaultValueAsString(), attrs);
-            emptyElement("custom-property-definition", attrs, handler);
-        }
-        //endElement("custom-properties-definition", handler);
+  private void saveCustomColumnDefinitions(IGanttProject project, TransformerHandler handler) throws SAXException {
+    CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();
+    List<CustomPropertyDefinition> definitions = customPropsManager.getDefinitions();
+    // HumanResourceManager hrManager = (HumanResourceManager)
+    // project.getHumanResourceManager();
+    // Map customFields = hrManager.getCustomFields();
+    // if (customFields.size()==0) {
+    // return;
+    // }
+    final AttributesImpl attrs = new AttributesImpl();
+    // startElement("custom-properties-definition", handler);
+    for (int i = 0; i < definitions.size(); i++) {
+      // ResourceColumn nextField = (ResourceColumn) fields.next();
+      CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) definitions.get(i);
+      addAttribute("id", nextDefinition.getID(), attrs);
+      addAttribute("name", nextDefinition.getName(), attrs);
+      addAttribute("type", nextDefinition.getTypeAsString(), attrs);
+      addAttribute("default-value", nextDefinition.getDefaultValueAsString(), attrs);
+      emptyElement("custom-property-definition", attrs, handler);
     }
+    // endElement("custom-properties-definition", handler);
+  }
 }

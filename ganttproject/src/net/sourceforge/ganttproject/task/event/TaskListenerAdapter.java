@@ -15,47 +15,47 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.event;
 
 /**
  * Created by IntelliJ IDEA. User: bard
  */
 public abstract class TaskListenerAdapter implements TaskListener {
-    @Override
-    public void taskScheduleChanged(TaskScheduleEvent e) {
-    }
+  @Override
+  public void taskScheduleChanged(TaskScheduleEvent e) {
+  }
 
-    @Override
-    public void dependencyAdded(TaskDependencyEvent e) {
-    }
+  @Override
+  public void dependencyAdded(TaskDependencyEvent e) {
+  }
 
-    @Override
-    public void dependencyRemoved(TaskDependencyEvent e) {
-    }
+  @Override
+  public void dependencyRemoved(TaskDependencyEvent e) {
+  }
 
-    @Override
-    public void taskAdded(TaskHierarchyEvent e) {
-    }
+  @Override
+  public void taskAdded(TaskHierarchyEvent e) {
+  }
 
-    @Override
-    public void taskRemoved(TaskHierarchyEvent e) {
-    }
+  @Override
+  public void taskRemoved(TaskHierarchyEvent e) {
+  }
 
-    @Override
-    public void taskMoved(TaskHierarchyEvent e) {
-    }
+  @Override
+  public void taskMoved(TaskHierarchyEvent e) {
+  }
 
-    @Override
-    public void taskPropertiesChanged(TaskPropertyEvent e) {
-    }
+  @Override
+  public void taskPropertiesChanged(TaskPropertyEvent e) {
+  }
 
-    @Override
-    public void taskProgressChanged(TaskPropertyEvent e) {
-    }
+  @Override
+  public void taskProgressChanged(TaskPropertyEvent e) {
+  }
 
-    @Override
-    public void taskModelReset() {
-    }
+  @Override
+  public void taskModelReset() {
+  }
 
 }

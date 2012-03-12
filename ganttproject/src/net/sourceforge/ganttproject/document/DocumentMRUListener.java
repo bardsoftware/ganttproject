@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.document;
 
 import java.util.Collection;
@@ -24,6 +24,6 @@ import java.util.Collection;
  * Listener for Most Recent Used related things
  */
 public interface DocumentMRUListener {
-    /** Fired when the MRU list is changed */
-    void mruListChanged(Collection<Document> newMRUList);
+  /** Fired when the MRU list is changed */
+  void mruListChanged(Collection<Document> newMRUList);
 }

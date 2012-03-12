@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Collections;
@@ -28,43 +28,57 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 public interface ChartSelection {
-    boolean isEmpty();
-    List<Task> getTasks();
-    List<HumanResource> getHumanResources();
-    IStatus isDeletable();
-    void startCopyClipboardTransaction();
-    void startMoveClipboardTransaction();
-    void cancelClipboardTransaction();
-    void commitClipboardTransaction();
+  boolean isEmpty();
 
-    ChartSelection EMPTY = new ChartSelection() {
-        @Override
-        public void startMoveClipboardTransaction() {
-        }
-        @Override
-        public void startCopyClipboardTransaction() {
-        }
-        @Override
-        public boolean isEmpty() {
-            return true;
-        }
-        @Override
-        public IStatus isDeletable() {
-            return Status.CANCEL_STATUS;
-        }
-        @Override
-        public List<Task> getTasks() {
-            return Collections.emptyList();
-        }
-        @Override
-        public List<HumanResource> getHumanResources() {
-            return Collections.emptyList();
-        }
-        @Override
-        public void commitClipboardTransaction() {
-        }
-        @Override
-        public void cancelClipboardTransaction() {
-        }
-    };
+  List<Task> getTasks();
+
+  List<HumanResource> getHumanResources();
+
+  IStatus isDeletable();
+
+  void startCopyClipboardTransaction();
+
+  void startMoveClipboardTransaction();
+
+  void cancelClipboardTransaction();
+
+  void commitClipboardTransaction();
+
+  ChartSelection EMPTY = new ChartSelection() {
+    @Override
+    public void startMoveClipboardTransaction() {
+    }
+
+    @Override
+    public void startCopyClipboardTransaction() {
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return true;
+    }
+
+    @Override
+    public IStatus isDeletable() {
+      return Status.CANCEL_STATUS;
+    }
+
+    @Override
+    public List<Task> getTasks() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public List<HumanResource> getHumanResources() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public void commitClipboardTransaction() {
+    }
+
+    @Override
+    public void cancelClipboardTransaction() {
+    }
+  };
 }

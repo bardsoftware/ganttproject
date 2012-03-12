@@ -9,13 +9,13 @@ import net.sourceforge.ganttproject.task.Task;
  * @author bard
  */
 public class ChartItem {
-    private final Task myTask;
+  private final Task myTask;
 
-    protected ChartItem(Task task) {
-        myTask = task;
-    }
+  protected ChartItem(Task task) {
+    myTask = task;
+  }
 
-    public Task getTask() {
-        return myTask;
-    }
+  public Task getTask() {
+    return myTask;
+  }
 }

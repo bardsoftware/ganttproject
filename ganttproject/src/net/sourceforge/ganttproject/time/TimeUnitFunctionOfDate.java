@@ -14,9 +14,9 @@ import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * 
  * @author bard
  */
 public interface TimeUnitFunctionOfDate extends TimeUnit {
-    public TimeUnit createTimeUnit(Date date);
+  public TimeUnit createTimeUnit(Date date);
 }

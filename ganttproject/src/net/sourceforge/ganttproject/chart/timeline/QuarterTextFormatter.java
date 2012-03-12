@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.timeline;
 
 import java.util.Calendar;
@@ -24,20 +24,19 @@ import java.util.Date;
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
-public class QuarterTextFormatter extends CachingTextFormatter implements
-        TimeFormatter {
-    private final Calendar myCalendar;
+public class QuarterTextFormatter extends CachingTextFormatter implements TimeFormatter {
+  private final Calendar myCalendar;
 
-    QuarterTextFormatter() {
-        myCalendar = CalendarFactory.newCalendar();
-    }
+  QuarterTextFormatter() {
+    myCalendar = CalendarFactory.newCalendar();
+  }
 
-    @Override
-    protected TimeUnitText[] createTimeUnitText(Date startDate) {
-        myCalendar.setTime(startDate);
-        int month = myCalendar.get(Calendar.MONTH);
-        int quarter = month / 4 + 1;
-        String shortText = "Q" + quarter;
-        return new TimeUnitText[] {new TimeUnitText(shortText)};
-    }
+  @Override
+  protected TimeUnitText[] createTimeUnitText(Date startDate) {
+    myCalendar.setTime(startDate);
+    int month = myCalendar.get(Calendar.MONTH);
+    int quarter = month / 4 + 1;
+    String shortText = "Q" + quarter;
+    return new TimeUnitText[] { new TimeUnitText(shortText) };
+  }
 }

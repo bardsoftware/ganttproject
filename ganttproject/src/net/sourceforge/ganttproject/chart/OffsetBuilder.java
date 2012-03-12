@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
@@ -25,73 +25,74 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 public interface OffsetBuilder {
-    public static abstract class Factory {
-        protected TimeUnit myTopUnit;
-        protected TimeUnit myBottomUnit;
-        protected Date myStartDate;
-        protected Date myEndDate;
-        protected int myEndOffset;
-        protected int myAtomicUnitWidth;
-        protected float myWeekendDecreaseFactor;
-        protected GPCalendar myCalendar;
-        protected int myRightMarginTimeUnits;
-        protected Date myViewportStartDate;
+  public static abstract class Factory {
+    protected TimeUnit myTopUnit;
+    protected TimeUnit myBottomUnit;
+    protected Date myStartDate;
+    protected Date myEndDate;
+    protected int myEndOffset;
+    protected int myAtomicUnitWidth;
+    protected float myWeekendDecreaseFactor;
+    protected GPCalendar myCalendar;
+    protected int myRightMarginTimeUnits;
+    protected Date myViewportStartDate;
 
-        protected Factory() {
-        }
-
-        public Factory withTopUnit(TimeUnit topUnit) {
-            myTopUnit = topUnit;
-            return this;
-        }
-
-        public Factory withBottomUnit(TimeUnit bottomUnit) {
-            myBottomUnit = bottomUnit;
-            return this;
-        }
-
-        public Factory withStartDate(Date startDate) {
-            myStartDate = startDate;
-            return this;
-        }
-
-        public Factory withViewportStartDate(Date viewportStartDate) {
-            myViewportStartDate = viewportStartDate;
-            return this;
-        }
-
-        public Factory withEndDate(Date endDate) {
-            myEndDate = endDate;
-            return this;
-        }
-
-        public Factory withEndOffset(int endOffset) {
-            myEndOffset = endOffset;
-            return this;
-        }
-
-        public Factory withAtomicUnitWidth(int atomicUnitWidth) {
-            myAtomicUnitWidth = atomicUnitWidth;
-            return this;
-        }
-
-        Factory withWeekendDecreaseFactor(float weekendDecreaseFactor) {
-            myWeekendDecreaseFactor = weekendDecreaseFactor;
-            return this;
-        }
-
-        Factory withCalendar(GPCalendar calendar) {
-            myCalendar = calendar;
-            return this;
-        }
-
-        Factory withRightMargin(int rightMarginTimeUnits) {
-            myRightMarginTimeUnits = rightMarginTimeUnits;
-            return this;
-        }
-
-        public abstract OffsetBuilder build();
+    protected Factory() {
     }
-    void constructOffsets(List<Offset> topUnitOffsets, OffsetList bottomUnitOffsets);
+
+    public Factory withTopUnit(TimeUnit topUnit) {
+      myTopUnit = topUnit;
+      return this;
+    }
+
+    public Factory withBottomUnit(TimeUnit bottomUnit) {
+      myBottomUnit = bottomUnit;
+      return this;
+    }
+
+    public Factory withStartDate(Date startDate) {
+      myStartDate = startDate;
+      return this;
+    }
+
+    public Factory withViewportStartDate(Date viewportStartDate) {
+      myViewportStartDate = viewportStartDate;
+      return this;
+    }
+
+    public Factory withEndDate(Date endDate) {
+      myEndDate = endDate;
+      return this;
+    }
+
+    public Factory withEndOffset(int endOffset) {
+      myEndOffset = endOffset;
+      return this;
+    }
+
+    public Factory withAtomicUnitWidth(int atomicUnitWidth) {
+      myAtomicUnitWidth = atomicUnitWidth;
+      return this;
+    }
+
+    Factory withWeekendDecreaseFactor(float weekendDecreaseFactor) {
+      myWeekendDecreaseFactor = weekendDecreaseFactor;
+      return this;
+    }
+
+    Factory withCalendar(GPCalendar calendar) {
+      myCalendar = calendar;
+      return this;
+    }
+
+    Factory withRightMargin(int rightMarginTimeUnits) {
+      myRightMarginTimeUnits = rightMarginTimeUnits;
+      return this;
+    }
+
+    public abstract OffsetBuilder build();
+  }
+
+  void constructOffsets(List<Offset> topUnitOffsets, OffsetList bottomUnitOffsets);
 
 }

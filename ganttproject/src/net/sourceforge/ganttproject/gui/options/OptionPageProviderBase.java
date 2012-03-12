@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -33,72 +33,73 @@ import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class OptionPageProviderBase implements OptionPageProvider {
-    private String myPageID;
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
+  private String myPageID;
+  private IGanttProject myProject;
+  private UIFacade myUiFacade;
 
-    protected OptionPageProviderBase(String pageID) {
-        myPageID = pageID;
+  protected OptionPageProviderBase(String pageID) {
+    myPageID = pageID;
+  }
+
+  @Override
+  public String getPageID() {
+    return myPageID;
+  }
+
+  @Override
+  public boolean hasCustomComponent() {
+    return false;
+  }
+
+  @Override
+  public Component buildPageComponent() {
+    return null;
+  }
+
+  @Override
+  public void init(IGanttProject project, UIFacade uiFacade) {
+    myProject = project;
+    myUiFacade = uiFacade;
+  }
+
+  @Override
+  public void commit() {
+    for (GPOptionGroup optionGroup : getOptionGroups()) {
+      optionGroup.commit();
     }
+  }
 
-    @Override
-    public String getPageID() {
-        return myPageID;
-    }
+  @Override
+  public abstract GPOptionGroup[] getOptionGroups();
 
-    @Override
-    public boolean hasCustomComponent() {
-        return false;
-    }
+  protected IGanttProject getProject() {
+    return myProject;
+  }
 
-    @Override
-    public Component buildPageComponent() {
-        return null;
-    }
+  protected UIFacade getUiFacade() {
+    return myUiFacade;
+  }
 
-    @Override
-    public void init(IGanttProject project, UIFacade uiFacade) {
-        myProject = project;
-        myUiFacade = uiFacade;
-    }
+  @Override
+  public String toString() {
+    return GanttLanguage.getInstance().getText(
+        new OptionsPageBuilder.I18N().getCanonicalOptionPageLabelKey(getPageID()));
+  }
 
-    @Override
-    public void commit() {
-        for (GPOptionGroup optionGroup : getOptionGroups()) {
-            optionGroup.commit();
-        }
-    }
+  protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
+    JPanel result = new JPanel(new BorderLayout());
+    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    result.add(TopPanel.create(title, description), BorderLayout.NORTH);
+    contentComponent.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0),
+        contentComponent.getBorder()));
+    JScrollPane scrollPane = new JScrollPane(contentComponent);
+    scrollPane.setBorder(BorderFactory.createEmptyBorder());
+    result.add(scrollPane, BorderLayout.NORTH);
+    return result;
+  }
 
-    @Override
-    public abstract GPOptionGroup[] getOptionGroups();
-
-    protected IGanttProject getProject() {
-        return myProject;
-    }
-
-    protected UIFacade getUiFacade() {
-        return myUiFacade;
-    }
-
-    @Override
-    public String toString() {
-        return GanttLanguage.getInstance().getText(new OptionsPageBuilder.I18N().getCanonicalOptionPageLabelKey(getPageID()));
-    }
-
-    protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
-        JPanel result = new JPanel(new BorderLayout());
-        result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        result.add(TopPanel.create(title, description), BorderLayout.NORTH);
-        contentComponent.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(5, 0, 0, 0), contentComponent.getBorder()));
-        JScrollPane scrollPane = new JScrollPane(contentComponent);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        result.add(scrollPane, BorderLayout.NORTH);
-        return result;
-    }
-
-    protected String getCanonicalPageTitle() {
-        return GanttLanguage.getInstance().getText(
-            new OptionsPageBuilder.I18N().getCanonicalOptionPageTitleKey(getPageID()));
-    }
+  protected String getCanonicalPageTitle() {
+    return GanttLanguage.getInstance().getText(
+        new OptionsPageBuilder.I18N().getCanonicalOptionPageTitleKey(getPageID()));
+  }
 }

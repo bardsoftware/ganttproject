@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.zoom;
 
 import java.awt.event.ActionEvent;
@@ -29,28 +29,28 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
  * @author bard
  */
 public class ZoomOutAction extends GPAction implements ZoomListener {
-    private final ZoomManager myZoomManager;
+  private final ZoomManager myZoomManager;
 
-    public ZoomOutAction(ZoomManager zoomManager) {
-        super("zoom.out");
-        myZoomManager = zoomManager;
-        myZoomManager.addZoomListener(this);
-    }
+  public ZoomOutAction(ZoomManager zoomManager) {
+    super("zoom.out");
+    myZoomManager = zoomManager;
+    myZoomManager.addZoomListener(this);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent arg0) {
-        if (myZoomManager.canZoomOut()) {
-            myZoomManager.zoomOut();
-        }
+  @Override
+  public void actionPerformed(ActionEvent arg0) {
+    if (myZoomManager.canZoomOut()) {
+      myZoomManager.zoomOut();
     }
+  }
 
-    @Override
-    public void zoomChanged(ZoomEvent e) {
-        setEnabled(myZoomManager.canZoomOut());
-    }
+  @Override
+  public void zoomChanged(ZoomEvent e) {
+    setEnabled(myZoomManager.canZoomOut());
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "zoomm_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "zoomm_";
+  }
 }

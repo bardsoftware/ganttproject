@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.calendar.walker;
 
 import java.util.Date;
@@ -27,41 +27,43 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * Abstract iterator-like class for walking forward over the calendar timeline
  * doing steps of the specified size. It takes into account calendar working and
  * non-working time.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public abstract class ForwardTimeWalker {
-    private final GPCalendar myCalendar;
-    private final TimeUnit myTimeUnit;
+  private final GPCalendar myCalendar;
+  private final TimeUnit myTimeUnit;
 
-    protected ForwardTimeWalker(GPCalendar calendar, TimeUnit timeUnit) {
-        myCalendar = calendar;
-        myTimeUnit = timeUnit;
+  protected ForwardTimeWalker(GPCalendar calendar, TimeUnit timeUnit) {
+    myCalendar = calendar;
+    myTimeUnit = timeUnit;
+  }
+
+  protected TimeUnit getTimeUnit() {
+    return myTimeUnit;
+  }
+
+  abstract protected boolean isMoving();
+
+  public void walk(Date startDate) {
+    Date unitStart = myTimeUnit.adjustLeft(startDate);
+    while (isMoving()) {
+      boolean isWeekendState = myCalendar.isNonWorkingDay(unitStart);
+      if (isWeekendState) {
+        Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);
+        assert workingUnitStart.after(unitStart);
+        processNonWorkingTime(unitStart, workingUnitStart);
+        unitStart = workingUnitStart;
+        continue;
+      } else {
+        Date nextUnitStart = myTimeUnit.adjustRight(unitStart);
+        processWorkingTime(unitStart, nextUnitStart);
+        unitStart = nextUnitStart;
+      }
     }
+  }
 
-    protected TimeUnit getTimeUnit() {
-        return myTimeUnit;
-    }
-    abstract protected boolean isMoving();
+  protected abstract void processWorkingTime(Date intervalStart, Date nextIntervalStart);
 
-    public void walk(Date startDate) {
-        Date unitStart = myTimeUnit.adjustLeft(startDate);
-        while (isMoving()) {
-            boolean isWeekendState = myCalendar.isNonWorkingDay(unitStart);
-            if (isWeekendState) {
-                Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);
-                assert workingUnitStart.after(unitStart);
-                processNonWorkingTime(unitStart, workingUnitStart);
-                unitStart = workingUnitStart;
-                continue;
-            } else {
-                Date nextUnitStart = myTimeUnit.adjustRight(unitStart);
-                processWorkingTime(unitStart, nextUnitStart);
-                unitStart = nextUnitStart;
-            }
-        }
-    }
-    protected abstract void processWorkingTime(Date intervalStart, Date nextIntervalStart);
-
-    protected abstract void processNonWorkingTime(Date intervalStart, Date workingIntervalStart);
+  protected abstract void processNonWorkingTime(Date intervalStart, Date workingIntervalStart);
 }

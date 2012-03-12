@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -28,50 +28,48 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
  * Base class for actions doing open/save from/to cloud.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 abstract class CloudProjectActionBase extends GPAction {
-    private final DocumentManager myDocumentManager;
-    private final UIFacade myUiFacade;
+  private final DocumentManager myDocumentManager;
+  private final UIFacade myUiFacade;
 
-    protected CloudProjectActionBase(String key, UIFacade uiFacade, DocumentManager documentManager) {
-        super(key);
-        myUiFacade = uiFacade;
-        myDocumentManager = documentManager;
-    }
+  protected CloudProjectActionBase(String key, UIFacade uiFacade, DocumentManager documentManager) {
+    super(key);
+    myUiFacade = uiFacade;
+    myDocumentManager = documentManager;
+  }
 
-    protected Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
-        Document document = project.getDocument();
-        GanttURLChooser uc = new GanttURLChooser(myUiFacade,
-            (null != document) ? document.getURI().toString() : myDocumentManager.getLastWebDAVDocumentOption().getValue(),
-            (null != document) ? document.getUsername() : null,
-            (null != document) ? document.getPassword() : null,
-            myDocumentManager.getWebDavLockTimeoutOption().getValue());
-        uc.show(isOpenUrl);
-        if (uc.getChoice() == UIFacade.Choice.OK) {
-            if (!sameDocument(document, uc)) {
-                document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
-            }
-            myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
-            if (uc.isTimeoutEnabled()) {
-                HttpDocument.setLockDAVMinutes(uc.getTimeout());
-                myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-            } else {
-                HttpDocument.setLockDAVMinutes(-1);
-            }
-        }
-        else {
-            document = null;
-        }
-        return document;
+  protected Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
+    Document document = project.getDocument();
+    GanttURLChooser uc = new GanttURLChooser(myUiFacade, (null != document) ? document.getURI().toString()
+        : myDocumentManager.getLastWebDAVDocumentOption().getValue(), (null != document) ? document.getUsername()
+        : null, (null != document) ? document.getPassword() : null,
+        myDocumentManager.getWebDavLockTimeoutOption().getValue());
+    uc.show(isOpenUrl);
+    if (uc.getChoice() == UIFacade.Choice.OK) {
+      if (!sameDocument(document, uc)) {
+        document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
+      }
+      myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
+      if (uc.isTimeoutEnabled()) {
+        HttpDocument.setLockDAVMinutes(uc.getTimeout());
+        myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
+      } else {
+        HttpDocument.setLockDAVMinutes(-1);
+      }
+    } else {
+      document = null;
     }
+    return document;
+  }
 
-    private static boolean sameDocument(Document document, GanttURLChooser uc) {
-        if (document == null) {
-            return false;
-        }
-        return document.getURI().toString().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
-            && document.getPassword().equals(uc.getPassword());
+  private static boolean sameDocument(Document document, GanttURLChooser uc) {
+    if (document == null) {
+      return false;
     }
+    return document.getURI().toString().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
+        && document.getPassword().equals(uc.getPassword());
+  }
 }

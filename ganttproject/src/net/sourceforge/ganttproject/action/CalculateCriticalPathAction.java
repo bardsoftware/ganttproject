@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -25,49 +25,49 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class CalculateCriticalPathAction extends GPAction {
-    private final TaskManager myTaskManager;
+  private final TaskManager myTaskManager;
 
-    private final static String ICON_PREFIX_ON = "criticalPathOn_";
+  private final static String ICON_PREFIX_ON = "criticalPathOn_";
 
-    private final static String ICON_PREFIX_OFF = "criticalPathOff_";
+  private final static String ICON_PREFIX_OFF = "criticalPathOff_";
 
-    private final UIConfiguration myUIConfiguration;
+  private final UIConfiguration myUIConfiguration;
 
-    private final UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-    public CalculateCriticalPathAction(TaskManager taskManager, UIConfiguration uiConfiguration, UIFacade uiFacade) {
-        super("criticalPath.toggle");
-        myTaskManager = taskManager;
-        myUIConfiguration = uiConfiguration;
-        myUiFacade = uiFacade;
+  public CalculateCriticalPathAction(TaskManager taskManager, UIConfiguration uiConfiguration, UIFacade uiFacade) {
+    super("criticalPath.toggle");
+    myTaskManager = taskManager;
+    myUIConfiguration = uiConfiguration;
+    myUiFacade = uiFacade;
+  }
+
+  @Override
+  protected String getIconFilePrefix() {
+    return isOn() ? ICON_PREFIX_ON : ICON_PREFIX_OFF;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    setOn(!isOn());
+    updateAction();
+    if (isOn()) {
+      myTaskManager.processCriticalPath(myTaskManager.getRootTask());
     }
+    myUiFacade.refresh();
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return isOn() ? ICON_PREFIX_ON : ICON_PREFIX_OFF;
-    }
+  private void setOn(boolean on) {
+    myUIConfiguration.setCriticalPathOn(on);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        setOn(!isOn());
-        updateAction();
-        if (isOn()) {
-            myTaskManager.processCriticalPath(myTaskManager.getRootTask());
-        }
-        myUiFacade.refresh();
-    }
+  private boolean isOn() {
+    return myUIConfiguration == null ? false : myUIConfiguration.isCriticalPathOn();
+  }
 
-    private void setOn(boolean on) {
-        myUIConfiguration.setCriticalPathOn(on);
-    }
-
-    private boolean isOn() {
-        return myUIConfiguration == null ? false : myUIConfiguration.isCriticalPathOn();
-    }
-
-    @Override
-    public String getID() {
-        // Override ID, so the text will change depending on the state
-        return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
-    }
+  @Override
+  public String getID() {
+    // Override ID, so the text will change depending on the state
+    return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
+  }
 }

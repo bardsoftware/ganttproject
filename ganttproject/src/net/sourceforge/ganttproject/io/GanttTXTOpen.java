@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.io;
 
 import java.io.BufferedReader;
@@ -27,37 +27,36 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class GanttTXTOpen {
-    private final TaskManager myTaskManager;
+  private final TaskManager myTaskManager;
 
-    public GanttTXTOpen(TaskManager taskManager) {
-        myTaskManager = taskManager;
-    }
+  public GanttTXTOpen(TaskManager taskManager) {
+    myTaskManager = taskManager;
+  }
 
-    /** Load tasks list from a text file. */
-    public boolean load(File f) {
-        try {
-            // Open a stream
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(f)));
+  /** Load tasks list from a text file. */
+  public boolean load(File f) {
+    try {
+      // Open a stream
+      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
 
-            while (br.ready()) {
-                // Read each lines
-                String sTaskName = br.readLine();
+      while (br.ready()) {
+        // Read each lines
+        String sTaskName = br.readLine();
 
-                // The test is used to skip the white line (with no text)
-                if (!sTaskName.equals("")) {
-                    // Create the task
-                    GanttTask task = myTaskManager.createTask();
-                    task.setName(sTaskName);
-                    task.setLength(1);
-                    myTaskManager.registerTask(task);
-                    myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
-                }
-            }
-
-        } catch (Exception e) {
-            return false;
+        // The test is used to skip the white line (with no text)
+        if (!sTaskName.equals("")) {
+          // Create the task
+          GanttTask task = myTaskManager.createTask();
+          task.setName(sTaskName);
+          task.setLength(1);
+          myTaskManager.registerTask(task);
+          myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
         }
-        return true;
+      }
+
+    } catch (Exception e) {
+      return false;
     }
+    return true;
+  }
 }

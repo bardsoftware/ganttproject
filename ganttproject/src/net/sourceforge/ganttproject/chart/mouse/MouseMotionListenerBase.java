@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseEvent;
@@ -25,24 +25,25 @@ import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class MouseMotionListenerBase extends MouseMotionAdapter {
-    private UIFacade myUiFacade;
-    private AbstractChartImplementation myChartImplementation;
+  private UIFacade myUiFacade;
+  private AbstractChartImplementation myChartImplementation;
 
-    public MouseMotionListenerBase(UIFacade uiFacade, AbstractChartImplementation chartImplementation) {
-        myUiFacade = uiFacade;
-        myChartImplementation = chartImplementation;
-    }
+  public MouseMotionListenerBase(UIFacade uiFacade, AbstractChartImplementation chartImplementation) {
+    myUiFacade = uiFacade;
+    myChartImplementation = chartImplementation;
+  }
 
-    protected UIFacade getUIFacade() {
-        return myUiFacade;
+  protected UIFacade getUIFacade() {
+    return myUiFacade;
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    super.mouseDragged(e);
+    MouseInteraction activeInteraction = myChartImplementation.getActiveInteraction();
+    if (activeInteraction != null) {
+      activeInteraction.apply(e);
+      myChartImplementation.reset();
     }
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        super.mouseDragged(e);
-        MouseInteraction activeInteraction = myChartImplementation.getActiveInteraction();
-        if (activeInteraction != null) {
-            activeInteraction.apply(e);
-            myChartImplementation.reset();
-        }
-    }
+  }
 }

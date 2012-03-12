@@ -8,17 +8,17 @@ import java.util.Date;
  * @author bard
  */
 public interface TaskActivity {
-    Date getStart();
+  Date getStart();
 
-    Date getEnd();
+  Date getEnd();
 
-    TaskLength getDuration();
+  TaskLength getDuration();
 
-    float getIntensity();
+  float getIntensity();
 
-    Task getTask();
+  Task getTask();
 
-    boolean isFirst();
+  boolean isFirst();
 
-    boolean isLast();
+  boolean isLast();
 }

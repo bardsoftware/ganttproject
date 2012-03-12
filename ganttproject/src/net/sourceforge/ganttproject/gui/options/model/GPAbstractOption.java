@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options.model;
 
 import java.beans.PropertyChangeListener;
@@ -26,106 +26,107 @@ import java.util.List;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
-    private final String myID;
+  private final String myID;
 
-    private List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
+  private List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
 
-    private PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
+  private PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
 
-    private boolean isWritable = true;
+  private boolean isWritable = true;
 
-    private T myValue;
-    private T myInitialValue;
+  private T myValue;
+  private T myInitialValue;
 
-    protected GPAbstractOption(String id) {
-        this(id, null);
+  protected GPAbstractOption(String id) {
+    this(id, null);
+  }
+
+  protected GPAbstractOption(String id, T initialValue) {
+    myID = id;
+    myInitialValue = initialValue;
+    myValue = initialValue;
+  }
+
+  @Override
+  public String getID() {
+    return myID;
+  }
+
+  @Override
+  public T getValue() {
+    return myValue;
+  }
+
+  @Override
+  public void setValue(T value) {
+    setValue(value, false);
+  }
+
+  protected T getInitialValue() {
+    return myInitialValue;
+  }
+
+  protected void setValue(T value, boolean resetInitial) {
+    if (resetInitial) {
+      myInitialValue = value;
     }
+    ChangeValueEvent event = new ChangeValueEvent(getID(), myValue, value);
+    myValue = value;
+    fireChangeValueEvent(event);
+  }
 
-    protected GPAbstractOption(String id, T initialValue) {
-        myID = id;
-        myInitialValue = initialValue;
-        myValue = initialValue;
+  @Override
+  public boolean isChanged() {
+    if (myInitialValue == null) {
+      return myValue != null;
     }
+    return !myInitialValue.equals(myValue);
+  }
 
-    @Override
-    public String getID() {
-        return myID;
-    }
+  @Override
+  public void lock() {
+  }
 
-    @Override
-    public T getValue() {
-        return myValue;
-    }
+  @Override
+  public void commit() {
+  }
 
-    @Override
-    public void setValue(T value) {
-        setValue(value, false);
-    }
+  @Override
+  public void rollback() {
+  }
 
-    protected T getInitialValue() {
-        return myInitialValue;
-    }
+  @Override
+  public void addChangeValueListener(ChangeValueListener listener) {
+    myListeners.add(listener);
+  }
 
-    protected void setValue(T value, boolean resetInitial) {
-        if (resetInitial) {
-            myInitialValue = value;
-        }
-        ChangeValueEvent event = new ChangeValueEvent(getID(), myValue, value);
-        myValue = value;
-        fireChangeValueEvent(event);
+  protected void fireChangeValueEvent(ChangeValueEvent event) {
+    for (ChangeValueListener listener : myListeners) {
+      listener.changeValue(event);
     }
+  }
 
-    @Override
-    public boolean isChanged() {
-        if (myInitialValue == null) {
-            return myValue != null;
-        }
-        return !myInitialValue.equals(myValue);
-    }
+  @Override
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    myPropertyChangeSupport.addPropertyChangeListener(listener);
+  }
 
-    @Override
-    public void lock() {
-    }
+  @Override
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    myPropertyChangeSupport.removePropertyChangeListener(listener);
+  }
 
-    @Override
-    public void commit() {
-    }
+  @Override
+  public boolean isWritable() {
+    return isWritable;
+  }
 
-    @Override
-    public void rollback() {
-    }
+  public void setWritable(boolean isWritable) {
+    this.isWritable = isWritable;
+    myPropertyChangeSupport.firePropertyChange("isWritable", Boolean.valueOf(!isWritable), Boolean.valueOf(isWritable));
+  }
 
-    @Override
-    public void addChangeValueListener(ChangeValueListener listener) {
-        myListeners.add(listener);
-    }
-
-    protected void fireChangeValueEvent(ChangeValueEvent event) {
-        for (ChangeValueListener listener : myListeners) {
-            listener.changeValue(event);
-        }
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        myPropertyChangeSupport.addPropertyChangeListener(listener);
-    }
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        myPropertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean isWritable() {
-        return isWritable;
-    }
-
-    public void setWritable(boolean isWritable) {
-        this.isWritable = isWritable;
-        myPropertyChangeSupport.firePropertyChange("isWritable", Boolean.valueOf(!isWritable), Boolean.valueOf(isWritable));
-    }
-
-    protected static String i18n(String key) {
-        return GanttLanguage.getInstance().getText(key);
-    }
+  protected static String i18n(String key) {
+    return GanttLanguage.getInstance().getText(key);
+  }
 }

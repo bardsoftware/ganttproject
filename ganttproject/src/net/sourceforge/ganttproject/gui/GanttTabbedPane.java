@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -27,32 +27,30 @@ import javax.swing.JTabbedPane;
 
 public class GanttTabbedPane extends JTabbedPane {
 
-    private Map<Component, Object> myUserObjectsMap = new HashMap<Component, Object>();
+  private Map<Component, Object> myUserObjectsMap = new HashMap<Component, Object>();
 
-    public GanttTabbedPane() {
-        super();
-    }
+  public GanttTabbedPane() {
+    super();
+  }
 
-    public void addTab(String title, Component component, Object userObject) {
-        super.addTab(title, component);
-        myUserObjectsMap.put(component, userObject);
-    }
+  public void addTab(String title, Component component, Object userObject) {
+    super.addTab(title, component);
+    myUserObjectsMap.put(component, userObject);
+  }
 
-    public void addTab(String title, Icon icon, Component component,
-            Object userObject) {
-        super.addTab(title, icon, component);
-        myUserObjectsMap.put(component, userObject);
-    }
+  public void addTab(String title, Icon icon, Component component, Object userObject) {
+    super.addTab(title, icon, component);
+    myUserObjectsMap.put(component, userObject);
+  }
 
-    public void addTab(String title, Icon icon, Component component,
-            String tip, Object userObject) {
-        super.addTab(title, icon, component, tip);
-        myUserObjectsMap.put(component, userObject);
-    }
+  public void addTab(String title, Icon icon, Component component, String tip, Object userObject) {
+    super.addTab(title, icon, component, tip);
+    myUserObjectsMap.put(component, userObject);
+  }
 
-    public Object getSelectedUserObject() {
-        Object selectedComp = this.getSelectedComponent();
-        return myUserObjectsMap.get(selectedComp);
-    }
+  public Object getSelectedUserObject() {
+    Object selectedComp = this.getSelectedComponent();
+    return myUserObjectsMap.get(selectedComp);
+  }
 
 }

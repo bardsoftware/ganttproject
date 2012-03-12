@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.view;
 
 import javax.swing.Icon;
@@ -27,66 +27,65 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 
 /**
  * Controller which hides/shows view tab.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 class ViewHolder implements ChartSelectionListener, GanttLanguage.Listener {
-    private final GanttTabbedPane myTabs;
+  private final GanttTabbedPane myTabs;
 
-    private int myIndex;
+  private int myIndex;
 
-    private boolean isVisible;
+  private boolean isVisible;
 
-    private final Icon myIcon;
+  private final Icon myIcon;
 
-    private final ViewManagerImpl myManager;
+  private final ViewManagerImpl myManager;
 
-    private final GPView myView;
+  private final GPView myView;
 
-    ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, GPView view, Icon icon) {
-        myManager = manager;
-        myTabs = tabs;
-        myView = view;
-        myIcon = icon;
-        GanttLanguage.getInstance().addListener(this);
-        assert myView!=null;
+  ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, GPView view, Icon icon) {
+    myManager = manager;
+    myTabs = tabs;
+    myView = view;
+    myIcon = icon;
+    GanttLanguage.getInstance().addListener(this);
+    assert myView != null;
+  }
+
+  void setActive(boolean active) {
+    if (active) {
+      myView.getChart().addSelectionListener(this);
+    } else {
+      myView.getChart().removeSelectionListener(this);
     }
+  }
 
-    void setActive(boolean active) {
-        if (active) {
-            myView.getChart().addSelectionListener(this);
-        }
-        else {
-            myView.getChart().removeSelectionListener(this);
-        }
+  void setVisible(boolean isVisible) {
+    if (isVisible) {
+      String tabName = myView.getChart().getName();
+      myTabs.addTab(tabName, myIcon, myView.getViewComponent(), tabName, myView);
+      myTabs.setSelectedComponent(myView.getViewComponent());
+      myIndex = myTabs.getSelectedIndex();
+
+    } else {
+      myTabs.remove(myIndex);
     }
+    this.isVisible = isVisible;
+  }
 
-    void setVisible(boolean isVisible) {
-        if (isVisible) {
-            String tabName = myView.getChart().getName();
-            myTabs.addTab(tabName, myIcon, myView.getViewComponent(), tabName, myView);
-            myTabs.setSelectedComponent(myView.getViewComponent());
-            myIndex = myTabs.getSelectedIndex();
+  boolean isVisible() {
+    return isVisible;
+  }
 
-        } else {
-            myTabs.remove(myIndex);
-        }
-        this.isVisible = isVisible;
+  @Override
+  public void selectionChanged() {
+    myManager.updateActions();
+  }
+
+  @Override
+  public void languageChanged(Event event) {
+    if (isVisible()) {
+      myTabs.setTitleAt(myIndex, myView.getChart().getName());
     }
-
-    boolean isVisible() {
-        return isVisible;
-    }
-
-    @Override
-    public void selectionChanged() {
-        myManager.updateActions();
-    }
-
-    @Override
-    public void languageChanged(Event event) {
-        if(isVisible()) {
-            myTabs.setTitleAt(myIndex, myView.getChart().getName());
-        }
-    }
+  }
 }

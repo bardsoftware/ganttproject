@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -31,57 +31,57 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /** Abstract class for the Options panels */
 public abstract class GeneralOptionPanel extends JPanel {
 
-    protected static final GanttLanguage language = GanttLanguage.getInstance();
+  protected static final GanttLanguage language = GanttLanguage.getInstance();
 
-    /** General vertical box. */
-    protected Box vb = Box.createVerticalBox();
+  /** General vertical box. */
+  protected Box vb = Box.createVerticalBox();
 
-    private String myTitle;
+  private String myTitle;
 
-    private String myComment;
+  private String myComment;
 
-    public GeneralOptionPanel(String title, String comment) {
-        super();
-        setLayout(new BorderLayout());
-        add(vb, BorderLayout.CENTER);
-        myTitle = title;
-        myComment = comment;
-    }
+  public GeneralOptionPanel(String title, String comment) {
+    super();
+    setLayout(new BorderLayout());
+    add(vb, BorderLayout.CENTER);
+    myTitle = title;
+    myComment = comment;
+  }
 
-    public Component getComponent() {
-        return this;
-    }
+  public Component getComponent() {
+    return this;
+  }
 
-    /**
-     * This method checks if options panel has value that got changed changed.
-     * And ask the user to commit changes if askForApply is true.
-     *
-     * @returns true when there were changes which needed to be committed
-     */
-    public abstract boolean applyChanges(boolean askForApply);
+  /**
+   * This method checks if options panel has value that got changed changed. And
+   * ask the user to commit changes if askForApply is true.
+   * 
+   * @returns true when there were changes which needed to be committed
+   */
+  public abstract boolean applyChanges(boolean askForApply);
 
-    /** Initialize the component. */
-    public abstract void initialize();
+  /** Initialize the component. */
+  public abstract void initialize();
 
-    /** This method asks the user for saving the changes. */
-    public boolean askForApplyChanges() {
-        return (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(language.getText("msg20"),
-                language.getText("question")));
-    }
+  /** This method asks the user for saving the changes. */
+  public boolean askForApplyChanges() {
+    return (UIFacade.Choice.YES == getUIFacade().showConfirmationDialog(language.getText("msg20"),
+        language.getText("question")));
+  }
 
-    public String getTitle() {
-        return myTitle;
-    }
+  public String getTitle() {
+    return myTitle;
+  }
 
-    public String getComment() {
-        return myComment;
-    }
+  public String getComment() {
+    return myComment;
+  }
 
-    private UIFacade getUIFacade() {
-        return Mediator.getGanttProjectSingleton().getUIFacade();
-    }
+  private UIFacade getUIFacade() {
+    return Mediator.getGanttProjectSingleton().getUIFacade();
+  }
 
-    public void rollback() {
-        initialize();
-    }
+  public void rollback() {
+    initialize();
+  }
 }

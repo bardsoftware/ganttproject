@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.task;
 
 import java.awt.event.ActionEvent;
@@ -33,102 +33,107 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener, ActionDelegate {
-    private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
-    private final TaskManager myTaskManager;
-    private final UIFacade myUIFacade;
-    private final TaskSelectionManager mySelectionManager;
-    private final GanttTree2 myTree;
-    private List<Task> mySelection;
+  private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
+  private final TaskManager myTaskManager;
+  private final UIFacade myUIFacade;
+  private final TaskSelectionManager mySelectionManager;
+  private final GanttTree2 myTree;
+  private List<Task> mySelection;
 
-    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
-            UIFacade uiFacade, GanttTree2 tree) {
-        this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);
-    }
-    protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
-            UIFacade uiFacade, GanttTree2 tree, IconSize size) {
-        super(name, size);
-        myTaskManager = taskManager;
-        mySelectionManager = selectionManager;
-        myUIFacade = uiFacade;
-        myTree = tree;
-        selectionManager.addSelectionListener(this);
-        selectionChanged(selectionManager.getSelectedTasks());
-    }
+  protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+      UIFacade uiFacade, GanttTree2 tree) {
+    this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);
+  }
 
-    @Override
-    public void addStateChangedListener(ActionStateChangedListener l) {
-        myListeners.add(l);
-    }
+  protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+      UIFacade uiFacade, GanttTree2 tree, IconSize size) {
+    super(name, size);
+    myTaskManager = taskManager;
+    mySelectionManager = selectionManager;
+    myUIFacade = uiFacade;
+    myTree = tree;
+    selectionManager.addSelectionListener(this);
+    selectionChanged(selectionManager.getSelectedTasks());
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        final List<Task> selection = new ArrayList<Task>(mySelection);
-        if(isEnabled() && askUserPermission(selection)) {
-            myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        TaskActionBase.this.run(selection);
-                    } catch (Exception e) {
-                        getUIFacade().showErrorDialog(e);
-                    }
-                }
-            });
+  @Override
+  public void addStateChangedListener(ActionStateChangedListener l) {
+    myListeners.add(l);
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    final List<Task> selection = new ArrayList<Task>(mySelection);
+    if (isEnabled() && askUserPermission(selection)) {
+      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+        @Override
+        public void run() {
+          try {
+            TaskActionBase.this.run(selection);
+          } catch (Exception e) {
+            getUIFacade().showErrorDialog(e);
+          }
         }
+      });
     }
+  }
 
-    /**
-     * @param selection of tasks for which permission is required
-     * @return true if the operation is accepted by the user
-     */
-    protected boolean askUserPermission(List<Task> selection) {
-        // Accept operation by default
-        return true;
+  /**
+   * @param selection
+   *          of tasks for which permission is required
+   * @return true if the operation is accepted by the user
+   */
+  protected boolean askUserPermission(List<Task> selection) {
+    // Accept operation by default
+    return true;
+  }
+
+  @Override
+  public void selectionChanged(List<Task> currentSelection) {
+    setEnabled(isEnabled(currentSelection));
+    mySelection = currentSelection;
+  }
+
+  @Override
+  public void setEnabled(boolean newValue) {
+    super.setEnabled(newValue);
+    for (ActionStateChangedListener l : myListeners) {
+      l.actionStateChanged();
     }
+  }
 
-    @Override
-    public void selectionChanged(List<Task> currentSelection) {
-        setEnabled(isEnabled(currentSelection));
-        mySelection = currentSelection;
-    }
+  @Override
+  public void userInputConsumerChanged(Object newConsumer) {
+  }
 
-    @Override
-    public void setEnabled(boolean newValue) {
-        super.setEnabled(newValue);
-        for(ActionStateChangedListener l: myListeners) {
-            l.actionStateChanged();
-        }
-    }
+  protected TaskManager getTaskManager() {
+    return myTaskManager;
+  }
 
-    @Override
-    public void userInputConsumerChanged(Object newConsumer) {
-    }
+  protected TaskSelectionManager getSelectionManager() {
+    return mySelectionManager;
+  }
 
-    protected TaskManager getTaskManager() {
-        return myTaskManager;
-    }
+  protected UIFacade getUIFacade() {
+    return myUIFacade;
+  }
 
-    protected TaskSelectionManager getSelectionManager() {
-        return mySelectionManager;
-    }
+  protected GanttTree2 getTree() {
+    return myTree;
+  }
 
-    protected UIFacade getUIFacade() {
-        return myUIFacade;
-    }
+  protected void forwardScheduling() throws TaskDependencyException {
+    // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if
+    // this indeed is the case
+    // // TODO Find out which chart is opened and only reset that one (maybe add
+    // a resetChart to UIFacade?)
+    // myUIFacade.getGanttChart().reset();
+    // myUIFacade.getResourceChart().reset();
+    myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+    getUIFacade().getTaskTree().getTreeComponent().repaint();
+  }
 
-    protected GanttTree2 getTree() {
-        return myTree;
-    }
+  protected abstract boolean isEnabled(List<Task> selection);
 
-    protected void forwardScheduling() throws TaskDependencyException {
-        // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if this indeed is the case
-//        // TODO Find out which chart is opened and only reset that one (maybe add a resetChart to UIFacade?)
-//        myUIFacade.getGanttChart().reset();
-//        myUIFacade.getResourceChart().reset();
-        myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        getUIFacade().getTaskTree().getTreeComponent().repaint();
-    }
-
-    protected abstract boolean isEnabled(List<Task> selection);
-    protected abstract void run(List<Task> selection) throws Exception ;
+  protected abstract void run(List<Task> selection) throws Exception;
 }

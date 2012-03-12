@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
@@ -29,18 +29,23 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public interface MouseInteraction {
-    void apply(MouseEvent event);
+  void apply(MouseEvent event);
 
-    void finish();
+  void finish();
 
-    void paint(Graphics g);
+  void paint(Graphics g);
 
-    static interface TimelineFacade {
-        ScrollingSession createScrollingSession(int xpos);
-        Date getDateAt(int x);
-        TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
-        TimeUnitStack getTimeUnitStack();
-        GPCalendar getCalendar();
-        Date getEndDateAt(int i);
-    }
+  static interface TimelineFacade {
+    ScrollingSession createScrollingSession(int xpos);
+
+    Date getDateAt(int x);
+
+    TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
+
+    TimeUnitStack getTimeUnitStack();
+
+    GPCalendar getCalendar();
+
+    Date getEndDateAt(int i);
+  }
 }

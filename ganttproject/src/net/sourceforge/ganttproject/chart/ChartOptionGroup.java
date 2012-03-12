@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
@@ -24,18 +24,17 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 class ChartOptionGroup extends GPOptionGroup {
 
-    private OptionEventDispatcher myEventDispatcher;
+  private OptionEventDispatcher myEventDispatcher;
 
-    public ChartOptionGroup(String id, GPOption[] options,
-            ChartModelImpl.OptionEventDispatcher eventDispatcher) {
-        super(id, options);
-        myEventDispatcher = eventDispatcher;
-    }
+  public ChartOptionGroup(String id, GPOption[] options, ChartModelImpl.OptionEventDispatcher eventDispatcher) {
+    super(id, options);
+    myEventDispatcher = eventDispatcher;
+  }
 
-    @Override
-    public void commit() {
-        super.commit();
-        myEventDispatcher.optionsChanged();
-    }
+  @Override
+  public void commit() {
+    super.commit();
+    myEventDispatcher.optionsChanged();
+  }
 
 }

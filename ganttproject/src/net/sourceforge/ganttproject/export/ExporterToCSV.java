@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
@@ -34,67 +34,67 @@ import org.osgi.service.prefs.Preferences;
 
 public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptionsClient {
 
-    private static String[] FILE_EXTENSIONS = new String[] {"csv"};
-    private IGanttProject myProject;
-    private GanttOptions myOptions;
+  private static String[] FILE_EXTENSIONS = new String[] { "csv" };
+  private IGanttProject myProject;
+  private GanttOptions myOptions;
 
-    @Override
-    public String getFileTypeDescription() {
-        return GanttLanguage.getInstance().getText("impex.csv.description");
-    }
+  @Override
+  public String getFileTypeDescription() {
+    return GanttLanguage.getInstance().getText("impex.csv.description");
+  }
 
-    @Override
-    public GPOptionGroup getOptions() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public GPOptionGroup getOptions() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public List<GPOptionGroup> getSecondaryOptions() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  @Override
+  public List<GPOptionGroup> getSecondaryOptions() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    @Override
-    public Component getCustomOptionsUI() {
-        return null;
-    }
+  @Override
+  public Component getCustomOptionsUI() {
+    return null;
+  }
 
-    @Override
-    public String getFileNamePattern() {
-        return ExporterToCSV.FILE_EXTENSIONS[0];
-    }
+  @Override
+  public String getFileNamePattern() {
+    return ExporterToCSV.FILE_EXTENSIONS[0];
+  }
 
-    @Override
-    public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-        outputFile.createNewFile();
-        GanttCSVExport legacyExporter = new GanttCSVExport(myProject, myOptions.getCSVOptions());
-        legacyExporter.save(new FileOutputStream(outputFile));
-        finalizationJob.run(new File[] {outputFile});
-    }
+  @Override
+  public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
+    outputFile.createNewFile();
+    GanttCSVExport legacyExporter = new GanttCSVExport(myProject, myOptions.getCSVOptions());
+    legacyExporter.save(new FileOutputStream(outputFile));
+    finalizationJob.run(new File[] { outputFile });
+  }
 
-    @Override
-    public String proposeFileExtension() {
-        return ExporterToCSV.FILE_EXTENSIONS[0];
-    }
+  @Override
+  public String proposeFileExtension() {
+    return ExporterToCSV.FILE_EXTENSIONS[0];
+  }
 
-    @Override
-    public String[] getFileExtensions() {
-        return ExporterToCSV.FILE_EXTENSIONS;
-    }
+  @Override
+  public String[] getFileExtensions() {
+    return ExporterToCSV.FILE_EXTENSIONS;
+  }
 
-    @Override
-    public String[] getCommandLineKeys() {
-        return ExporterToCSV.FILE_EXTENSIONS;
-    }
+  @Override
+  public String[] getCommandLineKeys() {
+    return ExporterToCSV.FILE_EXTENSIONS;
+  }
 
-    @Override
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-        myProject = project;
-    }
+  @Override
+  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
+    myProject = project;
+  }
 
-    @Override
-    public void setOptions(GanttOptions options) {
-        myOptions = options;
-    }
+  @Override
+  public void setOptions(GanttOptions options) {
+    myOptions = options;
+  }
 }

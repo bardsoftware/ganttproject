@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -24,13 +24,12 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public class TaskDependencySliceAsDependee extends TaskDependencySliceImpl {
-    @Override
-    public TaskDependency[] toArray() {
-        return getDependencyCollection().getDependenciesAsDependee(getTask());
-    }
+  @Override
+  public TaskDependency[] toArray() {
+    return getDependencyCollection().getDependenciesAsDependee(getTask());
+  }
 
-    public TaskDependencySliceAsDependee(Task task,
-            TaskDependencyCollection dependencyCollection) {
-        super(task, dependencyCollection);
-    }
+  public TaskDependencySliceAsDependee(Task task, TaskDependencyCollection dependencyCollection) {
+    super(task, dependencyCollection);
+  }
 }

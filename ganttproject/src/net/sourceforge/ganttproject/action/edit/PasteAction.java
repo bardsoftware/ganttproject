@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
@@ -26,27 +26,27 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
-    private final GPViewManager myViewmanager;
+  private final GPViewManager myViewmanager;
 
-    public PasteAction(GPViewManager viewManager) {
-        super("paste");
-        myViewmanager = viewManager;
-    }
+  public PasteAction(GPViewManager viewManager) {
+    super("paste");
+    myViewmanager = viewManager;
+  }
 
-    private PasteAction(GPViewManager viewmanager, IconSize size) {
-        super("paste", size);
-        myViewmanager = viewmanager;
-    }
+  private PasteAction(GPViewManager viewmanager, IconSize size) {
+    super("paste", size);
+    myViewmanager = viewmanager;
+  }
 
-    @Override
-    public GPAction withIcon(IconSize size) {
-        return new PasteAction(myViewmanager, size);
-    }
+  @Override
+  public GPAction withIcon(IconSize size) {
+    return new PasteAction(myViewmanager, size);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        ChartSelection selection = myViewmanager.getSelectedArtefacts();
-        myViewmanager.getActiveChart().paste(selection);
-        selection.commitClipboardTransaction();
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    ChartSelection selection = myViewmanager.getSelectedArtefacts();
+    myViewmanager.getActiveChart().paste(selection);
+    selection.commitClipboardTransaction();
+  }
 }

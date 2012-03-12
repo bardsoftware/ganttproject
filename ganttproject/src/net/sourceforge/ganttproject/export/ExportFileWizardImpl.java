@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import java.io.File;
@@ -39,106 +39,99 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
  */
 public class ExportFileWizardImpl extends WizardImpl {
 
-    private final IGanttProject myProject;
+  private final IGanttProject myProject;
 
-    private final GanttOptions myOptions;
+  private final GanttOptions myOptions;
 
-    private final State myState;
+  private final State myState;
 
-    private static Exporter ourLastSelectedExporter;
-    private static List<Exporter> ourExporters;
+  private static Exporter ourLastSelectedExporter;
+  private static List<Exporter> ourExporters;
 
-    public ExportFileWizardImpl(UIFacade uiFacade,
-            IGanttProject project, GanttOptions options) {
-        super(uiFacade, language.getText("exportWizard.dialog.title"));
-        myProject = project;
-        myOptions = options;
-        myState = new State();
-        if (ourExporters == null) {
-            ourExporters = PluginManager.getExporters();
-        }
-        myState.setExporter(ourLastSelectedExporter == null ?
-                ourExporters.get(0) : ourLastSelectedExporter);
-        for (Exporter e : ourExporters) {
-            e.setContext(project, uiFacade, myOptions.getPluginPreferences());
-            if (e instanceof LegacyOptionsClient) {
-                ((LegacyOptionsClient)e).setOptions(myOptions);
-            }
-        }
-        addPage(new ExporterChooserPage(ourExporters, myState));
-        addPage(new FileChooserPage(
-                myState,
-                myProject,
-                this,
-                options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/export")));
+  public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
+    super(uiFacade, language.getText("exportWizard.dialog.title"));
+    myProject = project;
+    myOptions = options;
+    myState = new State();
+    if (ourExporters == null) {
+      ourExporters = PluginManager.getExporters();
     }
+    myState.setExporter(ourLastSelectedExporter == null ? ourExporters.get(0) : ourLastSelectedExporter);
+    for (Exporter e : ourExporters) {
+      e.setContext(project, uiFacade, myOptions.getPluginPreferences());
+      if (e instanceof LegacyOptionsClient) {
+        ((LegacyOptionsClient) e).setOptions(myOptions);
+      }
+    }
+    addPage(new ExporterChooserPage(ourExporters, myState));
+    addPage(new FileChooserPage(myState, myProject, this, options.getPluginPreferences().node(
+        "/instance/net.sourceforge.ganttproject/export")));
+  }
 
+  @Override
+  protected boolean canFinish() {
+    return myState.getExporter() != null && myState.myUrl != null && "file".equals(myState.getUrl().getProtocol());
+  }
+
+  @Override
+  protected void onOkPressed() {
+    super.onOkPressed();
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
+          if ("file".equals(myState.getUrl().getProtocol())) {
+            String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
+            myState.getExporter().run(new File(path), finalizationJob);
+          }
+        } catch (Exception e) {
+          GPLogger.log(e);
+        }
+      }
+    });
+  }
+
+  private class ExportFinalizationJobImpl implements ExportFinalizationJob {
     @Override
-    protected boolean canFinish() {
-        return myState.getExporter() != null
-            && myState.myUrl != null
-            && "file".equals(myState.getUrl().getProtocol());
+    public void run(File[] exportedFiles) {
+      if (myState.getPublishInWebOption().isChecked() && exportedFiles.length > 0) {
+        WebPublisher publisher = new WebPublisher();
+        publisher.run(exportedFiles, myProject.getDocumentManager().getFTPOptions());
+      }
+    }
+  }
+
+  static class State {
+    private Exporter myExporter;
+
+    private final BooleanOption myPublishInWebOption = new DefaultBooleanOption("exporter.publishInWeb");
+
+    private URL myUrl;
+
+    void setExporter(Exporter exporter) {
+      myExporter = exporter;
+      ExportFileWizardImpl.ourLastSelectedExporter = exporter;
     }
 
-    @Override
-    protected void onOkPressed() {
-        super.onOkPressed();
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                try {
-                    ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
-                    if ("file".equals(myState.getUrl().getProtocol())) {
-                        String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
-                        myState.getExporter().run(new File(path), finalizationJob);
-                    }
-                } catch (Exception e) {
-                    GPLogger.log(e);
-                }
-            }
-        });
+    Exporter getExporter() {
+      return myExporter;
     }
 
-    private class ExportFinalizationJobImpl implements ExportFinalizationJob {
-        @Override
-        public void run(File[] exportedFiles) {
-            if (myState.getPublishInWebOption().isChecked() && exportedFiles.length>0) {
-                WebPublisher publisher = new WebPublisher();
-                publisher.run(exportedFiles, myProject.getDocumentManager().getFTPOptions());
-            }
-        }
+    BooleanOption getPublishInWebOption() {
+      return myPublishInWebOption;
     }
 
-    static class State {
-        private Exporter myExporter;
-
-        private final BooleanOption myPublishInWebOption = new DefaultBooleanOption("exporter.publishInWeb");
-
-        private URL myUrl;
-
-        void setExporter(Exporter exporter) {
-            myExporter = exporter;
-            ExportFileWizardImpl.ourLastSelectedExporter = exporter;
-        }
-
-        Exporter getExporter() {
-            return myExporter;
-        }
-
-        BooleanOption getPublishInWebOption() {
-            return myPublishInWebOption;
-        }
-
-        void setUrl(URL url) {
-            myUrl = url;
-        }
-
-        public URL getUrl() {
-            return myUrl;
-        }
+    void setUrl(URL url) {
+      myUrl = url;
     }
 
-    interface LegacyOptionsClient {
-        void setOptions(GanttOptions options);
+    public URL getUrl() {
+      return myUrl;
     }
+  }
+
+  interface LegacyOptionsClient {
+    void setOptions(GanttOptions options);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.List;
@@ -24,102 +24,124 @@ import java.util.List;
  * @author bard
  */
 public interface TaskContainmentHierarchyFacade {
-    Task[] getNestedTasks(Task container);
-    Task[] getDeepNestedTasks(Task container);
+  Task[] getNestedTasks(Task container);
 
-    boolean hasNestedTasks(Task container);
+  Task[] getDeepNestedTasks(Task container);
 
-    Task getRootTask();
+  boolean hasNestedTasks(Task container);
 
-    Task getContainer(Task nestedTask);
+  Task getRootTask();
 
-    /** @return the previous sibling or null if task is the first child of the parent task */
-    Task getPreviousSibling(Task nestedTask);
+  Task getContainer(Task nestedTask);
 
-    /** @return the next sibling or null if task is the last child of the parent task */
-    Task getNextSibling(Task task);
+  /**
+   * @return the previous sibling or null if task is the first child of the
+   *         parent task
+   */
+  Task getPreviousSibling(Task nestedTask);
 
-    /** @return the index of the nestedTask with respect of its siblings */
-    int getTaskIndex(Task nestedTask);
+  /**
+   * @return the next sibling or null if task is the last child of the parent
+   *         task
+   */
+  Task getNextSibling(Task task);
 
-    /** Move whatMove to whereMove, added as a child at the end */
-    void move(Task whatMove, Task whereMove);
+  /** @return the index of the nestedTask with respect of its siblings */
+  int getTaskIndex(Task nestedTask);
 
-    /** Move whatMove to whereMove, added as a child at index */
-    void move(Task whatMove, Task whereMove, int index);
+  /** Move whatMove to whereMove, added as a child at the end */
+  void move(Task whatMove, Task whereMove);
 
-    boolean areUnrelated(Task dependant, Task dependee);
+  /** Move whatMove to whereMove, added as a child at index */
+  void move(Task whatMove, Task whereMove, int index);
 
-    int getDepth(Task task);
+  boolean areUnrelated(Task dependant, Task dependee);
 
-    int compareDocumentOrder(Task next, Task dependeeTask);
-    List<Task> getTasksInDocumentOrder();
+  int getDepth(Task task);
 
-    boolean contains(Task task);
+  int compareDocumentOrder(Task next, Task dependeeTask);
 
-    interface Factory {
-        TaskContainmentHierarchyFacade createFacede();
+  List<Task> getTasksInDocumentOrder();
+
+  boolean contains(Task task);
+
+  interface Factory {
+    TaskContainmentHierarchyFacade createFacede();
+  }
+
+  TaskContainmentHierarchyFacade STUB = new TaskContainmentHierarchyFacade() {
+    @Override
+    public Task[] getNestedTasks(Task container) {
+      return new Task[0];
     }
 
-    TaskContainmentHierarchyFacade STUB = new TaskContainmentHierarchyFacade() {
-        @Override
-        public Task[] getNestedTasks(Task container) {
-            return new Task[0];
-        }
-        @Override
-        public Task[] getDeepNestedTasks(Task container) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-        @Override
-        public boolean hasNestedTasks(Task container) {
-            return false;
-        }
-        @Override
-        public Task getRootTask() {
-            return null;
-        }
-        @Override
-        public Task getContainer(Task nestedTask) {
-            return null;
-        }
-        @Override
-        public Task getPreviousSibling(Task nestedTask) {
-            return null;
-        }
-        @Override
-        public Task getNextSibling(Task nestedTask) {
-            return null;
-        }
-        @Override
-        public int getTaskIndex(Task nestedTask) {
-            return 0;
-        }
-        @Override
-        public void move(Task whatMove, Task whereMove) {
-        }
-        @Override
-        public void move(Task whatMove, Task whereMove, int index) {
-        }
-        @Override
-        public boolean areUnrelated(Task dependant, Task dependee) {
-            return false;
-        }
-        @Override
-        public int getDepth(Task task) {
-            return 0;
-        }
-        @Override
-        public int compareDocumentOrder(Task next, Task dependeeTask) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public boolean contains(Task task) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public List<Task> getTasksInDocumentOrder() {
-            throw new UnsupportedOperationException();
-        }
-    };
+    @Override
+    public Task[] getDeepNestedTasks(Task container) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public boolean hasNestedTasks(Task container) {
+      return false;
+    }
+
+    @Override
+    public Task getRootTask() {
+      return null;
+    }
+
+    @Override
+    public Task getContainer(Task nestedTask) {
+      return null;
+    }
+
+    @Override
+    public Task getPreviousSibling(Task nestedTask) {
+      return null;
+    }
+
+    @Override
+    public Task getNextSibling(Task nestedTask) {
+      return null;
+    }
+
+    @Override
+    public int getTaskIndex(Task nestedTask) {
+      return 0;
+    }
+
+    @Override
+    public void move(Task whatMove, Task whereMove) {
+    }
+
+    @Override
+    public void move(Task whatMove, Task whereMove, int index) {
+    }
+
+    @Override
+    public boolean areUnrelated(Task dependant, Task dependee) {
+      return false;
+    }
+
+    @Override
+    public int getDepth(Task task) {
+      return 0;
+    }
+
+    @Override
+    public int compareDocumentOrder(Task next, Task dependeeTask) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean contains(Task task) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Task> getTasksInDocumentOrder() {
+      throw new UnsupportedOperationException();
+    }
+  };
 }

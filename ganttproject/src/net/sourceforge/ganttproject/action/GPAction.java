@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
@@ -44,243 +44,246 @@ import net.sourceforge.ganttproject.util.PropertiesUtil;
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
-    public enum IconSize {
-        NO_ICON(null), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
+  public enum IconSize {
+    NO_ICON(null), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
 
-        private final String mySize;
+    private final String mySize;
 
-        IconSize(String size) {
-            mySize = size;
-        }
-
-        public String asString() {
-            return mySize;
-        }
-    }
-    public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-
-    /** Location of the icon files */
-    public static final String ICON_FILE_DIRECTORY = "/icons";
-
-    protected boolean iconVisible = true;
-
-    private Icon myIcon = null;
-
-    private final String myName;
-
-    private KeyStroke myKeyStroke;
-
-    private static Properties ourKeyboardProperties;
-
-    private static Properties ourIconProperties;
-
-    private static GanttLanguage language = GanttLanguage.getInstance();
-
-    protected GPAction() {
-        this(null);
+    IconSize(String size) {
+      mySize = size;
     }
 
-    public GPAction(String name) {
-        // TODO use icon size given in options as default size
-        this(name, "16");
+    public String asString() {
+      return mySize;
     }
+  }
 
-    protected GPAction(String name, String iconSize) {
-        super(name);
-        myName = name;
-        if (iconSize != null) {
-            updateIcon(iconSize);
-        }
-        updateName();
-        updateTooltip();
-        language.addListener(this);
-        if(name != null) {
-            myKeyStroke = getKeyStroke(name);
-            putValue(Action.ACCELERATOR_KEY, myKeyStroke);
-        }
+  public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
+  /** Location of the icon files */
+  public static final String ICON_FILE_DIRECTORY = "/icons";
+
+  protected boolean iconVisible = true;
+
+  private Icon myIcon = null;
+
+  private final String myName;
+
+  private KeyStroke myKeyStroke;
+
+  private static Properties ourKeyboardProperties;
+
+  private static Properties ourIconProperties;
+
+  private static GanttLanguage language = GanttLanguage.getInstance();
+
+  protected GPAction() {
+    this(null);
+  }
+
+  public GPAction(String name) {
+    // TODO use icon size given in options as default size
+    this(name, "16");
+  }
+
+  protected GPAction(String name, String iconSize) {
+    super(name);
+    myName = name;
+    if (iconSize != null) {
+      updateIcon(iconSize);
     }
-
-    protected GPAction(String name, IconSize size) {
-        this(name, size.asString());
+    updateName();
+    updateTooltip();
+    language.addListener(this);
+    if (name != null) {
+      myKeyStroke = getKeyStroke(name);
+      putValue(Action.ACCELERATOR_KEY, myKeyStroke);
     }
+  }
 
-    public GPAction withIcon(IconSize size) {
-        final GPAction result = new GPAction(myName, size) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                GPAction.this.actionPerformed(e);
-            }
+  protected GPAction(String name, IconSize size) {
+    this(name, size.asString());
+  }
 
-            @Override
-            public boolean isEnabled() {
-                return GPAction.this.isEnabled();
-            }
+  public GPAction withIcon(IconSize size) {
+    final GPAction result = new GPAction(myName, size) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        GPAction.this.actionPerformed(e);
+      }
 
-        };
-        addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                result.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-            }
-        });
-        return result;
+      @Override
+      public boolean isEnabled() {
+        return GPAction.this.isEnabled();
+      }
+
+    };
+    addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        result.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+      }
+    });
+    return result;
+  }
+
+  public KeyStroke getKeyStroke() {
+    return myKeyStroke;
+  }
+
+  public Icon getIconOnMouseOver() {
+    return (Icon) getValue(Action.SMALL_ICON);
+  }
+
+  private void updateIcon(String iconSize) {
+    Icon icon = createIcon(iconSize);
+    if (icon != null) {
+      putValue(Action.SMALL_ICON, icon);
+      myIcon = icon;
     }
+  }
 
-    public KeyStroke getKeyStroke() {
-        return myKeyStroke;
+  protected final Icon createIcon(String iconSize) {
+    if (iconSize == null || false == iconVisible) {
+      return null;
     }
-
-    public Icon getIconOnMouseOver() {
-        return (Icon) getValue(Action.SMALL_ICON);
+    String customIcon = getCustomIconPath();
+    String resourcePath;
+    if (customIcon == null) {
+      resourcePath = MessageFormat.format("{0}/{1}{2}.gif", ICON_FILE_DIRECTORY, getIconFilePrefix(), iconSize);
+    } else {
+      resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, customIcon);
     }
+    URL resource = getClass().getResource(resourcePath);
+    return resource == null ? null : new ImageIcon(resource);
+  }
 
-    private void updateIcon(String iconSize) {
-        Icon icon = createIcon(iconSize);
-        if (icon != null) {
-            putValue(Action.SMALL_ICON, icon);
-            myIcon = icon;
-        }
+  /**
+   * @return translation of "ID.description" if available, otherwise translation
+   *         of "ID"
+   */
+  protected String getLocalizedDescription() {
+    if (getID() == null) {
+      return null;
     }
-
-    protected final Icon createIcon(String iconSize) {
-        if (iconSize == null || false == iconVisible) {
-            return null;
-        }
-        String customIcon = getCustomIconPath();
-        String resourcePath;
-        if (customIcon == null) {
-            resourcePath = MessageFormat.format("{0}/{1}{2}.gif", ICON_FILE_DIRECTORY, getIconFilePrefix(), iconSize);
-        } else {
-            resourcePath = MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, customIcon);
-        }
-        URL resource = getClass().getResource(resourcePath);
-        return resource == null ? null : new ImageIcon(resource);
+    String description = getI18n(getID() + ".description");
+    if (description == null) {
+      description = language.correctLabel(getLocalizedName());
     }
+    return description == null ? "" : description;
+  }
 
-    /** @return translation of "ID.description" if available, otherwise translation of "ID" */
-    protected String getLocalizedDescription() {
-        if(getID() == null) {
-            return null;
-        }
-        String description = getI18n(getID() + ".description");
-        if(description == null) {
-            description = language.correctLabel(getLocalizedName());
-        }
-        return description == null ? "" : description;
+  /** @return translation of ID */
+  protected String getLocalizedName() {
+    return getID() == null ? null : getI18n(getID());
+  }
+
+  public String getID() {
+    return myName;
+  }
+
+  protected String getActionName() {
+    String name = getLocalizedDescription();
+    return name == null ? "" : language.correctLabel(name);
+  }
+
+  protected static String getI18n(String key) {
+    return language.getText(key);
+  }
+
+  protected String getIconFilePrefix() {
+    return null;
+  }
+
+  protected final void setIconVisible(boolean isVisible) {
+    iconVisible = isVisible;
+    putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
+  }
+
+  protected final void updateName() {
+    String localizedName = getLocalizedName();
+    if (localizedName == null) {
+      localizedName = String.valueOf(getValue(Action.NAME));
     }
-
-    /** @return translation of ID */
-    protected String getLocalizedName() {
-        return getID() == null ? null : getI18n(getID());
+    if (localizedName != null) {
+      int bucksPos = localizedName.indexOf('$');
+      if (bucksPos >= 0) {
+        // Get name without the $ in it
+        localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();
+      }
+      putValue(Action.NAME, localizedName);
+      if (bucksPos >= 0) {
+        // Activate mnemonic key
+        putValue(Action.MNEMONIC_KEY, new Integer(Character.toLowerCase(localizedName.charAt(bucksPos))));
+      }
     }
+  }
 
-    public String getID() {
-        return myName;
+  /**
+   * Updates the action. Can be called when external influences resulted in
+   * changed action name and/or description
+   */
+  public void updateAction() {
+    updateName();
+    updateTooltip();
+  }
+
+  protected void updateTooltip() {
+    putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
+  }
+
+  public void isIconVisible(boolean isNull) {
+    setIconVisible(isNull);
+  }
+
+  @Override
+  public void languageChanged(Event event) {
+    updateAction();
+  }
+
+  private String getCustomIconPath() {
+    if (getID() == null) {
+      return null;
     }
-
-    protected String getActionName() {
-        String name = getLocalizedDescription();
-        return name == null ? "" : language.correctLabel(name);
+    if (ourIconProperties == null) {
+      ourIconProperties = new Properties();
+      PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
     }
+    return (String) ourIconProperties.get(getID());
+  }
 
-    protected static String getI18n(String key) {
-        return language.getText(key);
+  public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {
+    String text = getKeyStrokeText(keystrokeID);
+    if (text == null) {
+      return Collections.emptyList();
     }
-
-    protected String getIconFilePrefix() {
-        return null;
+    List<KeyStroke> result = new ArrayList<KeyStroke>();
+    for (String ksText : text.split(",")) {
+      result.add(KeyStroke.getKeyStroke(ksText));
     }
+    return result;
+  }
 
-    protected final void setIconVisible(boolean isVisible) {
-        iconVisible = isVisible;
-        putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
+  public static KeyStroke getKeyStroke(String keystrokeID) {
+    String keystrokeText = getKeyStrokeText(keystrokeID);
+    return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
+  }
+
+  public static String getKeyStrokeText(String keystrokeID) {
+    if (ourKeyboardProperties == null) {
+      ourKeyboardProperties = new Properties();
+      PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
+      PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
     }
+    return (String) ourKeyboardProperties.get(keystrokeID);
+  }
 
-    protected final void updateName() {
-        String localizedName = getLocalizedName();
-        if (localizedName == null) {
-            localizedName = String.valueOf(getValue(Action.NAME));
-        }
-        if (localizedName != null) {
-            int bucksPos = localizedName.indexOf('$');
-            if (bucksPos >= 0) {
-                // Get name without the $ in it
-                localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();
-            }
-            putValue(Action.NAME, localizedName);
-            if (bucksPos >= 0) {
-                // Activate mnemonic key
-                putValue(Action.MNEMONIC_KEY, new Integer(Character.toLowerCase(localizedName.charAt(bucksPos))));
-            }
-        }
-    }
-
-    /**
-     * Updates the action. Can be called when external influences resulted in
-     * changed action name and/or description
-     */
-    public void updateAction() {
-        updateName();
-        updateTooltip();
-    }
-
-    protected void updateTooltip() {
-        putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
-    }
-
-    public void isIconVisible(boolean isNull) {
-        setIconVisible(isNull);
-    }
-
-    @Override
-    public void languageChanged(Event event) {
-        updateAction();
-    }
-
-    private String getCustomIconPath() {
-        if (getID() == null) {
-            return null;
-        }
-        if (ourIconProperties == null) {
-            ourIconProperties = new Properties();
-            PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
-        }
-        return (String) ourIconProperties.get(getID());
-    }
-
-    public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {
-        String text = getKeyStrokeText(keystrokeID);
-        if (text == null) {
-            return Collections.emptyList();
-        }
-        List<KeyStroke> result = new ArrayList<KeyStroke>();
-        for (String ksText : text.split(",")) {
-            result.add(KeyStroke.getKeyStroke(ksText));
-        }
-        return result;
-    }
-
-    public static KeyStroke getKeyStroke(String keystrokeID) {
-        String keystrokeText = getKeyStrokeText(keystrokeID);
-        return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
-    }
-
-    public static String getKeyStrokeText(String keystrokeID) {
-        if (ourKeyboardProperties == null) {
-            ourKeyboardProperties = new Properties();
-            PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
-            PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
-        }
-        return (String) ourKeyboardProperties.get(keystrokeID);
-    }
-
-
-    public static GPAction createVoidAction(String key) {
-        return new GPAction(key) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // No action
-            }
-        };
-    }
+  public static GPAction createVoidAction(String key) {
+    return new GPAction(key) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // No action
+      }
+    };
+  }
 }

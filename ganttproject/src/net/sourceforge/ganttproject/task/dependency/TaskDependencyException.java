@@ -15,25 +15,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 /**
  * Created by IntelliJ IDEA. User: bard
  */
 public class TaskDependencyException extends Exception {
-    public TaskDependencyException() {
-    }
+  public TaskDependencyException() {
+  }
 
-    public TaskDependencyException(String message) {
-        super(message);
-    }
+  public TaskDependencyException(String message) {
+    super(message);
+  }
 
-    public TaskDependencyException(Throwable cause) {
-        super(cause);
-    }
+  public TaskDependencyException(Throwable cause) {
+    super(cause);
+  }
 
-    public TaskDependencyException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public TaskDependencyException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

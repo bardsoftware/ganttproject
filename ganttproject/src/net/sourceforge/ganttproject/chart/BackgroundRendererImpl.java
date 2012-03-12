@@ -15,28 +15,29 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 
 public class BackgroundRendererImpl extends ChartRendererBase {
 
-    public BackgroundRendererImpl() {
+  public BackgroundRendererImpl() {
 
-    }
-    public BackgroundRendererImpl(ChartModel model) {
-        super(model);
-    }
+  }
 
-    public GraphicPrimitiveContainer paint() {
-        return getPrimitiveContainer();
-    }
+  public BackgroundRendererImpl(ChartModel model) {
+    super(model);
+  }
 
-    @Override
-    public void render() {
-        getPrimitiveContainer().clear();
-        GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer().createRectangle(0, 0, getWidth(), getHeight());
-        r.setBackgroundColor(Color.WHITE);
-    }
+  public GraphicPrimitiveContainer paint() {
+    return getPrimitiveContainer();
+  }
+
+  @Override
+  public void render() {
+    getPrimitiveContainer().clear();
+    GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer().createRectangle(0, 0, getWidth(), getHeight());
+    r.setBackgroundColor(Color.WHITE);
+  }
 }

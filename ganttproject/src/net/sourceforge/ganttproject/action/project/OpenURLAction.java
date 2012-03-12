@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -29,32 +29,32 @@ import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class OpenURLAction extends CloudProjectActionBase {
-    private final ProjectUIFacade myProjectUiFacade;
-    private final IGanttProject myProject;
+  private final ProjectUIFacade myProjectUiFacade;
+  private final IGanttProject myProject;
 
-    OpenURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
-        super("project.open.url", uiFacade, project.getDocumentManager());
-        myProject = project;
-        myProjectUiFacade = projectUiFacade;
-    }
+  OpenURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
+    super("project.open.url", uiFacade, project.getDocumentManager());
+    myProject = project;
+    myProjectUiFacade = projectUiFacade;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (myProjectUiFacade.ensureProjectSaved(myProject)) {
-            try {
-                openRemoteProject(myProject);
-            } catch (IOException e1) {
-                GPLogger.log(e1);
-            } catch (DocumentException e1) {
-                GPLogger.log(e1);
-            }
-        }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (myProjectUiFacade.ensureProjectSaved(myProject)) {
+      try {
+        openRemoteProject(myProject);
+      } catch (IOException e1) {
+        GPLogger.log(e1);
+      } catch (DocumentException e1) {
+        GPLogger.log(e1);
+      }
     }
+  }
 
-    public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {
-        final Document document = showURLDialog(project, true);
-        if (document != null) {
-            myProjectUiFacade.openProject(document, project);
-        }
+  public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {
+    final Document document = showURLDialog(project, true);
+    if (document != null) {
+      myProjectUiFacade.openProject(document, project);
     }
+  }
 }

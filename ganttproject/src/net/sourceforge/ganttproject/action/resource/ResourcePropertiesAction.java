@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -27,30 +27,31 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
 public class ResourcePropertiesAction extends ResourceAction {
-    private final IGanttProject myProject;
-    private final UIFacade myUIFacade;
+  private final IGanttProject myProject;
+  private final UIFacade myUIFacade;
 
-    public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
-        this(project, context, uiFacade, IconSize.MENU);
-    }
+  public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
+    this(project, context, uiFacade, IconSize.MENU);
+  }
 
-    private ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade, IconSize size) {
-        super("resource.properties", null, context, size);
-        myProject = project;
-        myUIFacade = uiFacade;
-        setEnabled(hasResources());
-    }
+  private ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade, IconSize size) {
+    super("resource.properties", null, context, size);
+    myProject = project;
+    myUIFacade = uiFacade;
+    setEnabled(hasResources());
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent arg0) {
-        HumanResource[] selectedResources = getSelection();
-        if (selectedResources.length > 0) {
-            // TODO Allow to edit multiple resources (instead of [0])
-            GanttDialogPerson dp = new GanttDialogPerson(myProject.getResourceCustomPropertyManager(), myUIFacade, selectedResources[0]);
-            dp.setVisible(true);
-            if (dp.result()) {
-                myProject.setModified(true);
-            }
-        }
+  @Override
+  public void actionPerformed(ActionEvent arg0) {
+    HumanResource[] selectedResources = getSelection();
+    if (selectedResources.length > 0) {
+      // TODO Allow to edit multiple resources (instead of [0])
+      GanttDialogPerson dp = new GanttDialogPerson(myProject.getResourceCustomPropertyManager(), myUIFacade,
+          selectedResources[0]);
+      dp.setVisible(true);
+      if (dp.result()) {
+        myProject.setModified(true);
+      }
     }
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
@@ -25,20 +25,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ImporterFromTxtFile extends ImporterBase implements Importer {
 
-    @Override
-    public String getFileNamePattern() {
-        return "txt";
-    }
+  @Override
+  public String getFileNamePattern() {
+    return "txt";
+  }
 
-    @Override
-    public String getFileTypeDescription() {
-        return GanttLanguage.getInstance().getText("textFiles");
-    }
+  @Override
+  public String getFileTypeDescription() {
+    return GanttLanguage.getInstance().getText("textFiles");
+  }
 
-    @Override
-    public void run(File selectedFile) {
-        GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
-        opener.load(selectedFile);
-    }
+  @Override
+  public void run(File selectedFile) {
+    GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
+    opener.load(selectedFile);
+  }
 
 }

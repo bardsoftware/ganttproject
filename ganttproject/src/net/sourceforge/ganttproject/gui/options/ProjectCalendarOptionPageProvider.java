@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
@@ -50,167 +50,166 @@ import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 
 /**
  * Provides project calendar settings page in the settings dialog.
- *
+ * 
  * @author Dmitry Barashev
  */
 public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
-    private WeekendsSettingsPanel myWeekendsPanel;
-    private DefaultDateOption myProjectStartOption;
-    private JRadioButton myMoveAllTasks;
-    private JRadioButton myMoveStartingTasks;
-    private JLabel myMoveDurationLabel;
-    private Box myMoveOptionsPanel;
-    private JPanel myMoveStrategyPanelWrapper;
-    private Date myProjectStart;
-    public ProjectCalendarOptionPageProvider() {
-        super("project.calendar");
-    }
-    @Override
-    public GPOptionGroup[] getOptionGroups() {
-        return new GPOptionGroup[0];
-    }
-    @Override
-    public boolean hasCustomComponent() {
-        return true;
-    }
-    @Override
-    public Component buildPageComponent() {
-        final GanttLanguage i18n = GanttLanguage.getInstance();
-        Box result = Box.createVerticalBox();
+  private WeekendsSettingsPanel myWeekendsPanel;
+  private DefaultDateOption myProjectStartOption;
+  private JRadioButton myMoveAllTasks;
+  private JRadioButton myMoveStartingTasks;
+  private JLabel myMoveDurationLabel;
+  private Box myMoveOptionsPanel;
+  private JPanel myMoveStrategyPanelWrapper;
+  private Date myProjectStart;
 
-        myWeekendsPanel = new WeekendsSettingsPanel(getProject());
-        myWeekendsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        myWeekendsPanel.initialize();
-        result.add(myWeekendsPanel);
+  public ProjectCalendarOptionPageProvider() {
+    super("project.calendar");
+  }
 
-        result.add(Box.createVerticalStrut(15));
+  @Override
+  public GPOptionGroup[] getOptionGroups() {
+    return new GPOptionGroup[0];
+  }
 
-        myProjectStart = getProject().getTaskManager().getProjectStart();
-        myProjectStartOption = new DefaultDateOption("project.startDate", myProjectStart) {
-            private TaskLength getMoveDuration() {
-                return getProject().getTaskManager().createLength(
-                    getProject().getTimeUnitStack().getDefaultTimeUnit(), getInitialValue(), getValue());
-            }
-            @Override
-            public void setValue(Date value) {
-                super.setValue(value);
-                TaskLength moveDuration = getMoveDuration();
-                if (moveDuration.getLength() != 0) {
-                    updateMoveOptions(moveDuration);
-                }
-            }
+  @Override
+  public boolean hasCustomComponent() {
+    return true;
+  }
 
-            @Override
-            public void commit() {
-                super.commit();
-                if (!isChanged()) {
-                    return;
-                }
-                try {
-                    moveProject(getMoveDuration());
-                } catch (AlgorithmException e) {
-                    getUiFacade().showErrorDialog(e);
-                }
-            }
-        };
+  @Override
+  public Component buildPageComponent() {
+    final GanttLanguage i18n = GanttLanguage.getInstance();
+    Box result = Box.createVerticalBox();
 
-        myMoveOptionsPanel = Box.createVerticalBox();
-        myMoveOptionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    myWeekendsPanel = new WeekendsSettingsPanel(getProject());
+    myWeekendsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    myWeekendsPanel.initialize();
+    result.add(myWeekendsPanel);
 
-        Box dateComponent = Box.createHorizontalBox();
-        OptionsPageBuilder builder = new OptionsPageBuilder();
-        dateComponent.add(new JLabel(i18n.getText(builder.getI18N().getCanonicalOptionLabelKey(myProjectStartOption))));
-        dateComponent.add(Box.createHorizontalStrut(3));
-        dateComponent.add(builder.createDateComponent(myProjectStartOption));
-        dateComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
-        myMoveOptionsPanel.add(dateComponent);
-        myMoveOptionsPanel.add(Box.createVerticalStrut(5));
+    result.add(Box.createVerticalStrut(15));
 
-        myMoveStrategyPanelWrapper = new JPanel(new BorderLayout()) {
-            @Override
-            public void paint(Graphics g) {
-                if (isEnabled()) {
-                    super.paint(g);
-                    return;
-                }
-                final BufferedImage buf = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-                super.paint(buf.getGraphics());
-                final float[] my_kernel = {
-                    0.0625f, 0.125f, 0.0625f, 0.125f, 0.25f, 0.125f,
-                    0.0625f, 0.125f, 0.0625f  };
-                final ConvolveOp op = new ConvolveOp(new Kernel(3, 3, my_kernel), ConvolveOp.EDGE_NO_OP, null);
-                Image img = op.filter(buf, null);
-                g.drawImage(img, 0, 0, null);
-            }
-        };
-        myMoveStrategyPanelWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+    myProjectStart = getProject().getTaskManager().getProjectStart();
+    myProjectStartOption = new DefaultDateOption("project.startDate", myProjectStart) {
+      private TaskLength getMoveDuration() {
+        return getProject().getTaskManager().createLength(getProject().getTimeUnitStack().getDefaultTimeUnit(),
+            getInitialValue(), getValue());
+      }
 
-        myMoveAllTasks = new JRadioButton(i18n.getText("project.calendar.moveAll.label"));
-        myMoveAllTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        myMoveStartingTasks = new JRadioButton(MessageFormat.format(
-            i18n.getText("project.calendar.moveSome.label"),
-            i18n.formatDate(new GanttCalendar(myProjectStart))));
-        myMoveStartingTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        ButtonGroup moveGroup = new ButtonGroup();
-        moveGroup.add(myMoveAllTasks);
-        moveGroup.add(myMoveStartingTasks);
-        moveGroup.setSelected(myMoveAllTasks.getModel(), true);
-
-        Box moveStrategyPanel = Box.createVerticalBox();
-        myMoveDurationLabel = new JLabel();
-        myMoveDurationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        moveStrategyPanel.add(myMoveDurationLabel);
-        moveStrategyPanel.add(myMoveAllTasks);
-        moveStrategyPanel.add(myMoveStartingTasks);
-
-        myMoveStrategyPanelWrapper.add(moveStrategyPanel, BorderLayout.CENTER);
-        myMoveOptionsPanel.add(Box.createVerticalStrut(3));
-        myMoveOptionsPanel.add(myMoveStrategyPanelWrapper);
-
-        UIUtil.createTitle(myMoveOptionsPanel, i18n.getText("project.calendar.move.title"));
-        result.add(myMoveOptionsPanel);
-
-        updateMoveOptions(getProject().getTaskManager().createLength(0));
-        return OptionPageProviderBase.wrapContentComponent(
-            result, myWeekendsPanel.getTitle(), null);
-    }
-
-    protected void updateMoveOptions(TaskLength moveDuration) {
+      @Override
+      public void setValue(Date value) {
+        super.setValue(value);
+        TaskLength moveDuration = getMoveDuration();
         if (moveDuration.getLength() != 0) {
-            String moveLabel = MessageFormat.format(
-                GanttLanguage.getInstance().getText("project.calendar.moveDuration.label"),
-                moveDuration.getLength(),
-                getProject().getTimeUnitStack().encode(moveDuration.getTimeUnit()));
-            myMoveDurationLabel.setText(moveLabel);
-            UIUtil.setEnabledTree(myMoveStrategyPanelWrapper, true);
-        } else {
-            UIUtil.setEnabledTree(myMoveStrategyPanelWrapper, false);
+          updateMoveOptions(moveDuration);
         }
-    }
+      }
 
-    protected void moveProject(TaskLength moveDuration) throws AlgorithmException {
-        TaskManager taskManager = getProject().getTaskManager();
-        ShiftTaskTreeAlgorithm shiftTaskTreeAlgorithm =
-            taskManager.getAlgorithmCollection().getShiftTaskTreeAlgorithm();
-        if (myMoveAllTasks.isSelected()) {
-            shiftTaskTreeAlgorithm.run(taskManager.getRootTask(), moveDuration, ShiftTaskTreeAlgorithm.DEEP);
-        } else if (myMoveStartingTasks.isSelected()) {
-            List<Task> moveScope = new ArrayList<Task>();
-            TaskContainmentHierarchyFacade taskTree = taskManager.getTaskHierarchy();
-            for (Task t : taskManager.getTasks()) {
-                if (t.getStart().getTime().equals(myProjectStart) && !taskTree.hasNestedTasks(t)) {
-                    moveScope.add(t);
-                }
-            }
-            shiftTaskTreeAlgorithm.run(moveScope, moveDuration, ShiftTaskTreeAlgorithm.SHALLOW);
+      @Override
+      public void commit() {
+        super.commit();
+        if (!isChanged()) {
+          return;
         }
-    }
+        try {
+          moveProject(getMoveDuration());
+        } catch (AlgorithmException e) {
+          getUiFacade().showErrorDialog(e);
+        }
+      }
+    };
 
-    @Override
-    public void commit() {
-        myWeekendsPanel.applyChanges(false);
-        myProjectStartOption.commit();
+    myMoveOptionsPanel = Box.createVerticalBox();
+    myMoveOptionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    Box dateComponent = Box.createHorizontalBox();
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+    dateComponent.add(new JLabel(i18n.getText(builder.getI18N().getCanonicalOptionLabelKey(myProjectStartOption))));
+    dateComponent.add(Box.createHorizontalStrut(3));
+    dateComponent.add(builder.createDateComponent(myProjectStartOption));
+    dateComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
+    myMoveOptionsPanel.add(dateComponent);
+    myMoveOptionsPanel.add(Box.createVerticalStrut(5));
+
+    myMoveStrategyPanelWrapper = new JPanel(new BorderLayout()) {
+      @Override
+      public void paint(Graphics g) {
+        if (isEnabled()) {
+          super.paint(g);
+          return;
+        }
+        final BufferedImage buf = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        super.paint(buf.getGraphics());
+        final float[] my_kernel = { 0.0625f, 0.125f, 0.0625f, 0.125f, 0.25f, 0.125f, 0.0625f, 0.125f, 0.0625f };
+        final ConvolveOp op = new ConvolveOp(new Kernel(3, 3, my_kernel), ConvolveOp.EDGE_NO_OP, null);
+        Image img = op.filter(buf, null);
+        g.drawImage(img, 0, 0, null);
+      }
+    };
+    myMoveStrategyPanelWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    myMoveAllTasks = new JRadioButton(i18n.getText("project.calendar.moveAll.label"));
+    myMoveAllTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    myMoveStartingTasks = new JRadioButton(MessageFormat.format(i18n.getText("project.calendar.moveSome.label"),
+        i18n.formatDate(new GanttCalendar(myProjectStart))));
+    myMoveStartingTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    ButtonGroup moveGroup = new ButtonGroup();
+    moveGroup.add(myMoveAllTasks);
+    moveGroup.add(myMoveStartingTasks);
+    moveGroup.setSelected(myMoveAllTasks.getModel(), true);
+
+    Box moveStrategyPanel = Box.createVerticalBox();
+    myMoveDurationLabel = new JLabel();
+    myMoveDurationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    moveStrategyPanel.add(myMoveDurationLabel);
+    moveStrategyPanel.add(myMoveAllTasks);
+    moveStrategyPanel.add(myMoveStartingTasks);
+
+    myMoveStrategyPanelWrapper.add(moveStrategyPanel, BorderLayout.CENTER);
+    myMoveOptionsPanel.add(Box.createVerticalStrut(3));
+    myMoveOptionsPanel.add(myMoveStrategyPanelWrapper);
+
+    UIUtil.createTitle(myMoveOptionsPanel, i18n.getText("project.calendar.move.title"));
+    result.add(myMoveOptionsPanel);
+
+    updateMoveOptions(getProject().getTaskManager().createLength(0));
+    return OptionPageProviderBase.wrapContentComponent(result, myWeekendsPanel.getTitle(), null);
+  }
+
+  protected void updateMoveOptions(TaskLength moveDuration) {
+    if (moveDuration.getLength() != 0) {
+      String moveLabel = MessageFormat.format(
+          GanttLanguage.getInstance().getText("project.calendar.moveDuration.label"), moveDuration.getLength(),
+          getProject().getTimeUnitStack().encode(moveDuration.getTimeUnit()));
+      myMoveDurationLabel.setText(moveLabel);
+      UIUtil.setEnabledTree(myMoveStrategyPanelWrapper, true);
+    } else {
+      UIUtil.setEnabledTree(myMoveStrategyPanelWrapper, false);
     }
+  }
+
+  protected void moveProject(TaskLength moveDuration) throws AlgorithmException {
+    TaskManager taskManager = getProject().getTaskManager();
+    ShiftTaskTreeAlgorithm shiftTaskTreeAlgorithm = taskManager.getAlgorithmCollection().getShiftTaskTreeAlgorithm();
+    if (myMoveAllTasks.isSelected()) {
+      shiftTaskTreeAlgorithm.run(taskManager.getRootTask(), moveDuration, ShiftTaskTreeAlgorithm.DEEP);
+    } else if (myMoveStartingTasks.isSelected()) {
+      List<Task> moveScope = new ArrayList<Task>();
+      TaskContainmentHierarchyFacade taskTree = taskManager.getTaskHierarchy();
+      for (Task t : taskManager.getTasks()) {
+        if (t.getStart().getTime().equals(myProjectStart) && !taskTree.hasNestedTasks(t)) {
+          moveScope.add(t);
+        }
+      }
+      shiftTaskTreeAlgorithm.run(moveScope, moveDuration, ShiftTaskTreeAlgorithm.SHALLOW);
+    }
+  }
+
+  @Override
+  public void commit() {
+    myWeekendsPanel.applyChanges(false);
+    myProjectStartOption.commit();
+  }
 }

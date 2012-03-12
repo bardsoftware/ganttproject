@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -28,134 +28,138 @@ import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 
 /**
  * This class manages the selected tasks.
- *
+ * 
  * @author bbaranne
  */
 public class TaskSelectionManager implements TaskSelectionContext {
-    public interface Listener {
-        void selectionChanged(List<Task> currentSelection);
-        void userInputConsumerChanged(Object newConsumer);
-    }
-    /**
-     * List of the selected tasks.
-     */
-    private final List<Task> selectedTasks = new ArrayList<Task>();
-    private final List<Listener> myListeners = new ArrayList<Listener>();
-    private Object myUserInputConsumer;
-    /**
-     * Creates an instance of TaskSelectionManager
-     */
-    public TaskSelectionManager() {
-    }
+  public interface Listener {
+    void selectionChanged(List<Task> currentSelection);
 
-    public void setUserInputConsumer(Object consumer) {
-        if (consumer!=myUserInputConsumer) {
-            fireUserInputConsumerChanged();
-        }
-        myUserInputConsumer = consumer;
-    }
+    void userInputConsumerChanged(Object newConsumer);
+  }
 
-    /**
-     * Adds <code>task</code> to the selected tasks.
-     *
-     * @param task
-     *            A task to add to the selected tasks.
-     */
-    public void addTask(Task task) {
-        if (!selectedTasks.contains(task)) {
-            selectedTasks.add(task);
-            fireSelectionChanged();
-        }
-    }
+  /**
+   * List of the selected tasks.
+   */
+  private final List<Task> selectedTasks = new ArrayList<Task>();
+  private final List<Listener> myListeners = new ArrayList<Listener>();
+  private Object myUserInputConsumer;
 
-    /**
-     * Removes <code>task</code> from the selected tasks;
-     *
-     * @param task
-     *            A task to remove from the selected tasks.
-     */
-    public void removeTask(Task task) {
-        if (selectedTasks.contains(task)) {
-            selectedTasks.remove(task);
-            fireSelectionChanged();
-        }
-    }
+  /**
+   * Creates an instance of TaskSelectionManager
+   */
+  public TaskSelectionManager() {
+  }
 
-    /**
-     * @param task
-     *            The task to test.
-     * @return <code>true</code> if <code>task</code> is selected,
-     *         <code>false</code> otherwise.
-     */
-    public boolean isTaskSelected(Task task) {
-        return selectedTasks.contains(task);
+  public void setUserInputConsumer(Object consumer) {
+    if (consumer != myUserInputConsumer) {
+      fireUserInputConsumerChanged();
     }
+    myUserInputConsumer = consumer;
+  }
 
-    /** @return The selected tasks list. */
-    @Override
-    public List<Task> getSelectedTasks() {
-        return Collections.unmodifiableList(selectedTasks);
+  /**
+   * Adds <code>task</code> to the selected tasks.
+   * 
+   * @param task
+   *          A task to add to the selected tasks.
+   */
+  public void addTask(Task task) {
+    if (!selectedTasks.contains(task)) {
+      selectedTasks.add(task);
+      fireSelectionChanged();
     }
+  }
 
-    /** @return The earliest start date. */
-    public Date getEarliestStart() {
-        Date res = null;
-        Iterator<Task> it = selectedTasks.iterator();
-        while (it.hasNext()) {
+  /**
+   * Removes <code>task</code> from the selected tasks;
+   * 
+   * @param task
+   *          A task to remove from the selected tasks.
+   */
+  public void removeTask(Task task) {
+    if (selectedTasks.contains(task)) {
+      selectedTasks.remove(task);
+      fireSelectionChanged();
+    }
+  }
 
-            Task task = it.next();
-            Date d = task.getStart().getTime();
-            if (res == null) {
-                res = d;
-                continue;
-            }
-            if (d.before(res))
-                res = d;
-        }
-        return res;
-    }
+  /**
+   * @param task
+   *          The task to test.
+   * @return <code>true</code> if <code>task</code> is selected,
+   *         <code>false</code> otherwise.
+   */
+  public boolean isTaskSelected(Task task) {
+    return selectedTasks.contains(task);
+  }
 
-    /** @return The latest end date. */
-    public Date getLatestEnd() {
-        Date res = null;
-        Iterator<Task> it = selectedTasks.iterator();
-        while (it.hasNext()) {
-            Task task = it.next();
-            Date d = task.getEnd().getTime();
-            if (res == null) {
-                res = d;
-                continue;
-            }
-            if (d.after(res))
-                res = d;
-        }
-        return res;
-    }
+  /** @return The selected tasks list. */
+  @Override
+  public List<Task> getSelectedTasks() {
+    return Collections.unmodifiableList(selectedTasks);
+  }
 
-    /** Clears the selected tasks list. */
-    public void clear() {
-        selectedTasks.clear();
-        fireSelectionChanged();
-    }
+  /** @return The earliest start date. */
+  public Date getEarliestStart() {
+    Date res = null;
+    Iterator<Task> it = selectedTasks.iterator();
+    while (it.hasNext()) {
 
-    public void addSelectionListener(Listener listener) {
-        myListeners.add(listener);
+      Task task = it.next();
+      Date d = task.getStart().getTime();
+      if (res == null) {
+        res = d;
+        continue;
+      }
+      if (d.before(res))
+        res = d;
     }
+    return res;
+  }
 
-    public void removeSelectionListener(Listener listener) {
-        myListeners.remove(listener);
+  /** @return The latest end date. */
+  public Date getLatestEnd() {
+    Date res = null;
+    Iterator<Task> it = selectedTasks.iterator();
+    while (it.hasNext()) {
+      Task task = it.next();
+      Date d = task.getEnd().getTime();
+      if (res == null) {
+        res = d;
+        continue;
+      }
+      if (d.after(res))
+        res = d;
     }
+    return res;
+  }
 
-    public void fireSelectionChanged() {
-        for (int i=0; i<myListeners.size(); i++) {
-            Listener next = myListeners.get(i);
-            next.selectionChanged(Collections.unmodifiableList(selectedTasks));
-        }
+  /** Clears the selected tasks list. */
+  public void clear() {
+    selectedTasks.clear();
+    fireSelectionChanged();
+  }
+
+  public void addSelectionListener(Listener listener) {
+    myListeners.add(listener);
+  }
+
+  public void removeSelectionListener(Listener listener) {
+    myListeners.remove(listener);
+  }
+
+  public void fireSelectionChanged() {
+    for (int i = 0; i < myListeners.size(); i++) {
+      Listener next = myListeners.get(i);
+      next.selectionChanged(Collections.unmodifiableList(selectedTasks));
     }
-    private void fireUserInputConsumerChanged() {
-        for (int i=0; i<myListeners.size(); i++) {
-            Listener next = myListeners.get(i);
-            next.userInputConsumerChanged(myUserInputConsumer);
-        }
+  }
+
+  private void fireUserInputConsumerChanged() {
+    for (int i = 0; i < myListeners.size(); i++) {
+      Listener next = myListeners.get(i);
+      next.userInputConsumerChanged(myUserInputConsumer);
     }
+  }
 }

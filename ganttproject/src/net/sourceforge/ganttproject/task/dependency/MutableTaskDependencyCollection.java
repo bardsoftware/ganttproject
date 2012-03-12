@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -24,13 +24,12 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public interface MutableTaskDependencyCollection {
-    void clear();
+  void clear();
 
-    TaskDependency createDependency(Task dependant, Task dependee)
-            throws TaskDependencyException;
+  TaskDependency createDependency(Task dependant, Task dependee) throws TaskDependencyException;
 
-    TaskDependency createDependency(Task dependant, Task dependee,
-            TaskDependencyConstraint constraint) throws TaskDependencyException;
+  TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
+      throws TaskDependencyException;
 
-    void deleteDependency(TaskDependency dependency);
+  void deleteDependency(TaskDependency dependency);
 }

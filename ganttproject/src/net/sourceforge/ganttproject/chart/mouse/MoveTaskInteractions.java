@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseEvent;
@@ -30,62 +30,62 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgori
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class MoveTaskInteractions extends MouseInteractionBase implements MouseInteraction {
-    private final List<Task> myTasks;
+  private final List<Task> myTasks;
 
-    private final List<TaskMutator> myMutators;
+  private final List<TaskMutator> myMutators;
 
-    private final UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-    private final RecalculateTaskScheduleAlgorithm myTaskScheduleAlgorithm;
+  private final RecalculateTaskScheduleAlgorithm myTaskScheduleAlgorithm;
 
-    public MoveTaskInteractions(MouseEvent e, List<Task> tasks, TimelineFacade chartDateGrid,
-            UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
-        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
-        myUiFacade = uiFacade;
-        myTasks = tasks;
-        myTaskScheduleAlgorithm = taskScheduleAlgorithm;
-        myMutators = new ArrayList<TaskMutator>(tasks.size());
-        for (Task t : tasks) {
-            myMutators.add(t.createMutator());
-        }
+  public MoveTaskInteractions(MouseEvent e, List<Task> tasks, TimelineFacade chartDateGrid, UIFacade uiFacade,
+      RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
+    super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
+    myUiFacade = uiFacade;
+    myTasks = tasks;
+    myTaskScheduleAlgorithm = taskScheduleAlgorithm;
+    myMutators = new ArrayList<TaskMutator>(tasks.size());
+    for (Task t : tasks) {
+      myMutators.add(t.createMutator());
     }
+  }
 
-    @Override
-    public void apply(MouseEvent event) {
-        TaskLength currentInterval = getLengthDiff(event);
-        if (currentInterval.getLength() != 0) {
-            for (TaskMutator mutator : myMutators) {
-                mutator.shift(currentInterval);
-            }
-            setStartDate(getChartDateGrid().getDateAt(event.getX()));
-        }
+  @Override
+  public void apply(MouseEvent event) {
+    TaskLength currentInterval = getLengthDiff(event);
+    if (currentInterval.getLength() != 0) {
+      for (TaskMutator mutator : myMutators) {
+        mutator.shift(currentInterval);
+      }
+      setStartDate(getChartDateGrid().getDateAt(event.getX()));
     }
+  }
 
-    @Override
-    public void finish() {
-        for (TaskMutator mutator : myMutators) {
-            mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-        }
-        myUiFacade.getUndoManager().undoableEdit("Task moved", new Runnable() {
-            @Override
-            public void run() {
-                doFinish();
-            }
-        });
+  @Override
+  public void finish() {
+    for (TaskMutator mutator : myMutators) {
+      mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
     }
+    myUiFacade.getUndoManager().undoableEdit("Task moved", new Runnable() {
+      @Override
+      public void run() {
+        doFinish();
+      }
+    });
+  }
 
-    private void doFinish() {
-        for (TaskMutator mutator : myMutators) {
-            mutator.commit();
-        }
-        try {
-            myTaskScheduleAlgorithm.run();
-        } catch (TaskDependencyException e) {
-            myUiFacade.showErrorDialog(e);
-        }
-        for (Task t : myTasks) {
-            t.applyThirdDateConstraint();
-        }
-        myUiFacade.getActiveChart().reset();
+  private void doFinish() {
+    for (TaskMutator mutator : myMutators) {
+      mutator.commit();
     }
+    try {
+      myTaskScheduleAlgorithm.run();
+    } catch (TaskDependencyException e) {
+      myUiFacade.showErrorDialog(e);
+    }
+    for (Task t : myTasks) {
+      t.applyThirdDateConstraint();
+    }
+    myUiFacade.getActiveChart().reset();
+  }
 }

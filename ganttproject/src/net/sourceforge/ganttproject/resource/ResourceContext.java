@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.resource;
 
 /**
@@ -25,10 +25,10 @@ package net.sourceforge.ganttproject.resource;
  * management (e.g. listen mouse events); This interface may be implemented,
  * e.g., by tables, trees and other UI components which allow to select
  * something
- *
+ * 
  * @author dbarashev
  */
 public interface ResourceContext {
-    /** @return Resources selected at the moment */
-    public HumanResource[] getResources();
+  /** @return Resources selected at the moment */
+  public HumanResource[] getResources();
 }

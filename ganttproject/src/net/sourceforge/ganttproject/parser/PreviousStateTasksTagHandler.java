@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import java.io.IOException;
@@ -34,77 +34,74 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author nbohn
  */
 public class PreviousStateTasksTagHandler extends DefaultHandler implements TagHandler {
-    private String myName = "";
+  private String myName = "";
 
-    private GanttPreviousState previousState;
+  private GanttPreviousState previousState;
 
-    private final List<GanttPreviousState> myPreviousStates;
+  private final List<GanttPreviousState> myPreviousStates;
 
-    private ArrayList<GanttPreviousStateTask> tasks = new ArrayList<GanttPreviousStateTask>();
+  private ArrayList<GanttPreviousStateTask> tasks = new ArrayList<GanttPreviousStateTask>();
 
+  public PreviousStateTasksTagHandler() {
+    this(null);
+  }
 
-    public PreviousStateTasksTagHandler() {
-        this(null);
+  public PreviousStateTasksTagHandler(List<GanttPreviousState> previousStates) {
+    myPreviousStates = previousStates;
+  }
+
+  @Override
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+    if (qName.equals("previous-tasks")) {
+      setName(attrs.getValue("name"));
+      tasks = new ArrayList<GanttPreviousStateTask>();
+    } else if (qName.equals("previous-task")) {
+      loadPreviousTask(attrs);
     }
+  }
 
-    public PreviousStateTasksTagHandler(List<GanttPreviousState> previousStates) {
-        myPreviousStates = previousStates;
-    }
-
-    @Override
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) {
-        if (qName.equals("previous-tasks")) {
-            setName(attrs.getValue("name"));
-            tasks = new ArrayList<GanttPreviousStateTask>();
-        } else if (qName.equals("previous-task")) {
-            loadPreviousTask(attrs);
+  @Override
+  public void endElement(String namespaceURI, String sName, String qName) {
+    if (qName.equals("previous-tasks") && myPreviousStates != null) {
+      try {
+        previousState = new GanttPreviousState(myName, tasks);
+        previousState.init();
+        previousState.saveFile();
+        myPreviousStates.add(previousState);
+      } catch (IOException e) {
+        if (!GPLogger.log(e)) {
+          e.printStackTrace(System.err);
         }
+      }
     }
+  }
 
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
-        if (qName.equals("previous-tasks") && myPreviousStates != null) {
-            try {
-                previousState = new GanttPreviousState(myName, tasks);
-                previousState.init();
-                previousState.saveFile();
-                myPreviousStates.add(previousState);
-            } catch (IOException e) {
-                if (!GPLogger.log(e)) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        }
-    }
+  private void setName(String name) {
+    myName = name;
+  }
 
-    private void setName(String name) {
-        myName = name;
-    }
+  private void loadPreviousTask(Attributes attrs) {
 
-    private void loadPreviousTask(Attributes attrs) {
+    String id = attrs.getValue("id");
 
-        String id = attrs.getValue("id");
+    boolean meeting = Boolean.parseBoolean(attrs.getValue("meeting"));
 
-        boolean meeting = Boolean.parseBoolean(attrs.getValue("meeting"));
+    String start = attrs.getValue("start");
 
-        String start = attrs.getValue("start");
+    String duration = attrs.getValue("duration");
 
-        String duration = attrs.getValue("duration");
+    boolean nested = Boolean.parseBoolean(attrs.getValue("super"));
 
-        boolean nested = Boolean.parseBoolean(attrs.getValue("super"));
+    GanttPreviousStateTask task = new GanttPreviousStateTask(new Integer(id).intValue(),
+        GanttCalendar.parseXMLDate(start), new Integer(duration).intValue(), meeting, nested);
+    tasks.add(task);
+  }
 
-        GanttPreviousStateTask task = new GanttPreviousStateTask(
-                new Integer(id).intValue(), GanttCalendar.parseXMLDate(start),
-                new Integer(duration).intValue(), meeting, nested);
-        tasks.add(task);
-    }
+  public String getName() {
+    return myName;
+  }
 
-    public String getName() {
-        return myName;
-    }
-
-    public ArrayList<GanttPreviousStateTask> getTasks() {
-        return tasks;
-    }
+  public ArrayList<GanttPreviousStateTask> getTasks() {
+    return tasks;
+  }
 }

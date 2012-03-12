@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
@@ -30,45 +30,45 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 
 public class OptionPageProviderPanel {
-    private OptionPageProvider myProvider;
-    private GPOptionGroup[] myGroups;
+  private OptionPageProvider myProvider;
+  private GPOptionGroup[] myGroups;
 
-    public OptionPageProviderPanel(OptionPageProvider provider, IGanttProject project, UIFacade uiFacade) {
-        myProvider = provider;
-        provider.init(project, uiFacade);
-        myGroups = myProvider.getOptionGroups();
+  public OptionPageProviderPanel(OptionPageProvider provider, IGanttProject project, UIFacade uiFacade) {
+    myProvider = provider;
+    provider.init(project, uiFacade);
+    myGroups = myProvider.getOptionGroups();
+  }
+
+  public Component getComponent() {
+    JComponent providerComponent;
+    if (myProvider.hasCustomComponent()) {
+      providerComponent = (JComponent) myProvider.buildPageComponent();
+    } else {
+      OptionsPageBuilder builder = new OptionsPageBuilder();
+      providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
     }
+    providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
+    JScrollPane result = new JScrollPane(providerComponent);
+    return result;
+  }
 
-    public Component getComponent() {
-        JComponent providerComponent;
-        if (myProvider.hasCustomComponent()) {
-            providerComponent = (JComponent) myProvider.buildPageComponent();
-        } else {
-            OptionsPageBuilder builder = new OptionsPageBuilder();
-            providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
-        }
-        providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
-        JScrollPane result = new JScrollPane(providerComponent);
-        return result;
+  // public boolean applyChanges(boolean askForApply) {
+  // for (int i=0; i<myGroups.length; i++) {
+  // myGroups[i].commit();
+  // }
+  // return true;
+  // }
+
+  public void initialize() {
+    for (int i = 0; i < myGroups.length; i++) {
+      myGroups[i].lock();
     }
+  }
 
-//    public boolean applyChanges(boolean askForApply) {
-//        for (int i=0; i<myGroups.length; i++) {
-//            myGroups[i].commit();
-//        }
-//        return true;
-//    }
-
-    public void initialize() {
-        for (int i = 0; i < myGroups.length; i++) {
-            myGroups[i].lock();
-        }
-    }
-
-//    public void rollback() {
-//        for (int i=0; i<myGroups.length; i++) {
-//            myGroups[i].rollback();
-//            myGroups[i].lock();
-//        }
-//    }
+  // public void rollback() {
+  // for (int i=0; i<myGroups.length; i++) {
+  // myGroups[i].rollback();
+  // myGroups[i].lock();
+  // }
+  // }
 }

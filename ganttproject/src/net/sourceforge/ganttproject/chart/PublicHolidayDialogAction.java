@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Component;
@@ -42,45 +42,42 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  */
 public class PublicHolidayDialogAction extends AbstractAction {
 
-    private IGanttProject myProject;
+  private IGanttProject myProject;
 
-    private UIFacade myUIFacade;
+  private UIFacade myUIFacade;
 
-    static GanttLanguage language = GanttLanguage.getInstance();
+  static GanttLanguage language = GanttLanguage.getInstance();
 
-    public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
-        super(language.getCorrectedLabel("editPublicHolidays"));
-        myProject = project;
-        myUIFacade = uiFacade;
-        this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource(
-                "/icons/holidays_16.gif")));
-    }
+  public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
+    super(language.getCorrectedLabel("editPublicHolidays"));
+    myProject = project;
+    myUIFacade = uiFacade;
+    this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource("/icons/holidays_16.gif")));
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent arg0) {
-        final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
-        Component dialogContent = dialog.getContentPane();
-        myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateHolidays(dialog.getHolidays());
-                myProject.setModified();
-                try {
-                    myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                } catch (TaskDependencyException e1) {
-                    GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE,
-                            "Exception after changing holidays", e1);
-                }
-                myUIFacade.getActiveChart().reset();
-            }
-        }, CancelAction.EMPTY }, "").show();
-    }
-
-    private void updateHolidays(List<GanttCalendar> holidays) {
-        myProject.getActiveCalendar().clearPublicHolidays();
-        for (GanttCalendar holiday : holidays) {
-            myProject.getActiveCalendar().setPublicHoliDayType(
-                    holiday.getTime());
+  @Override
+  public void actionPerformed(ActionEvent arg0) {
+    final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
+    Component dialogContent = dialog.getContentPane();
+    myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        updateHolidays(dialog.getHolidays());
+        myProject.setModified();
+        try {
+          myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        } catch (TaskDependencyException e1) {
+          GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
         }
+        myUIFacade.getActiveChart().reset();
+      }
+    }, CancelAction.EMPTY }, "").show();
+  }
+
+  private void updateHolidays(List<GanttCalendar> holidays) {
+    myProject.getActiveCalendar().clearPublicHolidays();
+    for (GanttCalendar holiday : holidays) {
+      myProject.getActiveCalendar().setPublicHoliDayType(holiday.getTime());
     }
+  }
 }

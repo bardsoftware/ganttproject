@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Container;
@@ -32,57 +32,56 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 public class SettingsDialog2 extends AbstractPagesDialog {
-    private static List<OptionPageProvider> ourProviders;
-    private final List<OptionPageProvider> myProviders = new ArrayList<OptionPageProvider>();
+  private static List<OptionPageProvider> ourProviders;
+  private final List<OptionPageProvider> myProviders = new ArrayList<OptionPageProvider>();
 
-    static {
-        ourProviders = PluginManager.getExtensions(
-                "net.sourceforge.ganttproject.OptionPageProvider", OptionPageProvider.class);
-    }
+  static {
+    ourProviders = PluginManager.getExtensions("net.sourceforge.ganttproject.OptionPageProvider",
+        OptionPageProvider.class);
+  }
 
-    public SettingsDialog2(IGanttProject project, UIFacade uifacade, String pageOrderKey) {
-        super("settings.app", uifacade, getPages(pageOrderKey, project, uifacade));
-        for (OptionPageProvider p : ourProviders) {
-            if (isPageVisible(p.getPageID())) {
-                p.init(project, uifacade);
-                myProviders.add(p);
-            }
-        }
+  public SettingsDialog2(IGanttProject project, UIFacade uifacade, String pageOrderKey) {
+    super("settings.app", uifacade, getPages(pageOrderKey, project, uifacade));
+    for (OptionPageProvider p : ourProviders) {
+      if (isPageVisible(p.getPageID())) {
+        p.init(project, uifacade);
+        myProviders.add(p);
+      }
     }
+  }
 
-    @Override
-    protected void onOk() {
-        for (OptionPageProvider p : myProviders) {
-            p.commit();
-        }
+  @Override
+  protected void onOk() {
+    for (OptionPageProvider p : myProviders) {
+      p.commit();
     }
+  }
 
-    private static List<ListItem> getPages(String pageOrderKey, IGanttProject project, UIFacade uiFacade) {
-        return getListItems(ourProviders, pageOrderKey, project, uiFacade);
-    }
+  private static List<ListItem> getPages(String pageOrderKey, IGanttProject project, UIFacade uiFacade) {
+    return getListItems(ourProviders, pageOrderKey, project, uiFacade);
+  }
 
-    private static List<ListItem> getListItems(
-            List<OptionPageProvider> providers, String pageOrderKey, IGanttProject project, UIFacade uiFacade) {
-        Map<String, OptionPageProvider> pageId_provider = new HashMap<String, OptionPageProvider>();
-        for (OptionPageProvider p : providers) {
-            pageId_provider.put(p.getPageID(), p);
-        }
-        List<ListItem> items = new ArrayList<ListItem>();
-        String[] listConfig = GanttLanguage.getInstance().getText(pageOrderKey).split(",");
-        for (String pageName : listConfig) {
-            ListItem li;
-            if (pageName.startsWith("pageGroup.")) {
-                li = new ListItem(true, pageName,
-                        GanttLanguage.getInstance().correctLabel(GanttLanguage.getInstance().getText(pageName)),
-                        null);
-            } else {
-                OptionPageProvider p = pageId_provider.get(pageName);
-                assert p != null : "OptionPageProvider with pageID=" + pageName + " not found";
-                li = new ListItem(false, p.getPageID(), p.toString(),
-                    (Container)new OptionPageProviderPanel(p, project, uiFacade).getComponent());
-            }
-            items.add(li);
-        }
-        return items;
+  private static List<ListItem> getListItems(List<OptionPageProvider> providers, String pageOrderKey,
+      IGanttProject project, UIFacade uiFacade) {
+    Map<String, OptionPageProvider> pageId_provider = new HashMap<String, OptionPageProvider>();
+    for (OptionPageProvider p : providers) {
+      pageId_provider.put(p.getPageID(), p);
     }
+    List<ListItem> items = new ArrayList<ListItem>();
+    String[] listConfig = GanttLanguage.getInstance().getText(pageOrderKey).split(",");
+    for (String pageName : listConfig) {
+      ListItem li;
+      if (pageName.startsWith("pageGroup.")) {
+        li = new ListItem(true, pageName, GanttLanguage.getInstance().correctLabel(
+            GanttLanguage.getInstance().getText(pageName)), null);
+      } else {
+        OptionPageProvider p = pageId_provider.get(pageName);
+        assert p != null : "OptionPageProvider with pageID=" + pageName + " not found";
+        li = new ListItem(false, p.getPageID(), p.toString(), (Container) new OptionPageProviderPanel(p, project,
+            uiFacade).getComponent());
+      }
+      items.add(li);
+    }
+    return items;
+  }
 }

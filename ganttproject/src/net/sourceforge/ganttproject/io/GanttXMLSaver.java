@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.io;
 
 import java.io.IOException;
@@ -44,136 +44,134 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 public class GanttXMLSaver extends SaverBase implements GPSaver {
 
-    private static final String VERSION = "2.0";
+  private static final String VERSION = "2.0";
 
-    private final IGanttProject myProject;
+  private final IGanttProject myProject;
 
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private GanttTree2 tree;
+  private GanttTree2 tree;
 
-    private GanttGraphicArea area;
+  private GanttGraphicArea area;
 
-    /** The constructor */
-    public GanttXMLSaver(IGanttProject project, GanttTree2 tree,
-            GanttResourcePanel peop, GanttGraphicArea area, UIFacade uiFacade) {
-        this.tree = tree;
-        this.area = area;
-        myProject = project;
-        myUIFacade = uiFacade;
+  /** The constructor */
+  public GanttXMLSaver(IGanttProject project, GanttTree2 tree, GanttResourcePanel peop, GanttGraphicArea area,
+      UIFacade uiFacade) {
+    this.tree = tree;
+    this.area = area;
+    myProject = project;
+    myUIFacade = uiFacade;
+  }
+
+  @Override
+  public void save(OutputStream stream) throws IOException {
+    try {
+      AttributesImpl attrs = new AttributesImpl();
+      StreamResult result = new StreamResult(stream);
+      TransformerHandler handler = createHandler(result);
+      handler.startDocument();
+      addAttribute("name", getProject().getProjectName(), attrs);
+      addAttribute("company", getProject().getOrganization(), attrs);
+      addAttribute("webLink", getProject().getWebLink(), attrs);
+      addAttribute("view-date", new GanttCalendar(area.getStartDate()).toXMLString(), attrs);
+      addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
+      // TODO for GP 2.0: move view configurations into <view> tag (see
+      // ViewSaver)
+      addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
+      addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
+      addAttribute("version", VERSION, attrs);
+      startElement("project", attrs, handler);
+      //
+      cdataElement("description", getProject().getDescription(), attrs, handler);
+
+      saveViews(handler);
+      emptyComment(handler);
+      saveCalendar(handler);
+      saveTasks(handler);
+      saveResources(handler);
+      saveAssignments(handler);
+      saveVacations(handler);
+      saveGanttChartView(handler);
+      saveHistory(handler);
+      saveRoles(handler);
+      endElement("project", handler);
+      handler.endDocument();
+
+      stream.close();
+    } catch (Throwable e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
+      IOException propagatedException = new IOException("Failed to save the project file");
+      propagatedException.initCause(e);
+      throw propagatedException;
     }
+  }
 
-    @Override
-    public void save(OutputStream stream) throws IOException {
-        try {
-            AttributesImpl attrs = new AttributesImpl();
-            StreamResult result = new StreamResult(stream);
-            TransformerHandler handler = createHandler(result);
-            handler.startDocument();
-            addAttribute("name", getProject().getProjectName(), attrs);
-            addAttribute("company", getProject().getOrganization(), attrs);
-            addAttribute("webLink", getProject().getWebLink(), attrs);
-            addAttribute("view-date", new GanttCalendar(area
-                    .getStartDate()).toXMLString(), attrs);
-            addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
-            //TODO for GP 2.0: move view configurations into <view> tag (see ViewSaver)
-            addAttribute("gantt-divider-location", ""
-                    + myUIFacade.getGanttDividerLocation(), attrs);
-            addAttribute("resource-divider-location", ""
-                    + myUIFacade.getResourceDividerLocation(), attrs);
-            addAttribute("version", VERSION, attrs);
-            startElement("project", attrs, handler);
-            //
-            cdataElement("description", getProject().getDescription(), attrs, handler);
+  private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
+    List<GanttPreviousState> history = ((GanttProject) myProject).getBaselines();
+    new HistorySaver().save(history, handler);
+  }
 
-            saveViews(handler);
-            emptyComment(handler);
-            saveCalendar(handler);
-            saveTasks(handler);
-            saveResources(handler);
-            saveAssignments(handler);
-            saveVacations(handler);
-            saveGanttChartView(handler);
-            saveHistory(handler);
-            saveRoles(handler);
-            endElement("project", handler);
-            handler.endDocument();
+  private void saveGanttChartView(TransformerHandler handler) throws SAXException {
+    new GanttChartViewSaver().save(tree.getVisibleFields(), handler);
+  }
 
-            stream.close();
-        } catch (Throwable e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-            IOException propagatedException  = new IOException("Failed to save the project file");
-            propagatedException.initCause(e);
-            throw propagatedException;
-        }
+  private void saveVacations(TransformerHandler handler) throws SAXException {
+    new VacationSaver().save(getProject(), handler);
+  }
+
+  private void saveResources(TransformerHandler handler) throws SAXException {
+    new ResourceSaver().save(getProject(), handler);
+  }
+
+  private void saveViews(TransformerHandler handler) throws SAXException {
+    new ViewSaver().save(getUIFacade(), handler);
+  }
+
+  private void saveCalendar(TransformerHandler handler) throws SAXException {
+    new CalendarSaver().save(getProject(), handler);
+  }
+
+  private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
+    new TaskSaver().save(getProject(), handler, area.getTaskColor());
+  }
+
+  private void saveAssignments(TransformerHandler handler) throws SAXException {
+    new AssignmentSaver().save(getProject(), handler);
+  }
+
+  private void saveRoles(TransformerHandler handler) throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    RoleManager roleManager = getProject().getRoleManager();
+    RoleSet[] roleSets = roleManager.getRoleSets();
+    for (int i = 0; i < roleSets.length; i++) {
+      RoleSet next = roleSets[i];
+      if (next.isEnabled()) {
+        addAttribute("roleset-name", next.getName(), attrs);
+        emptyElement("roles", attrs, handler);
+      }
     }
-
-    private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-        List<GanttPreviousState> history = ((GanttProject) myProject).getBaselines();
-        new HistorySaver().save(history, handler);
+    //
+    RoleSet projectRoleSet = roleManager.getProjectRoleSet();
+    if (!projectRoleSet.isEmpty()) {
+      startElement("roles", attrs, handler);
+      Role[] projectRoles = projectRoleSet.getRoles();
+      for (int i = 0; i < projectRoles.length; i++) {
+        Role next = projectRoles[i];
+        addAttribute("id", next.getPersistentID(), attrs);
+        addAttribute("name", next.getName(), attrs);
+        emptyElement("role", attrs, handler);
+      }
+      endElement("roles", handler);
     }
+  }
 
-    private void saveGanttChartView(TransformerHandler handler) throws SAXException {
-        new GanttChartViewSaver().save(tree.getVisibleFields(), handler);
-    }
+  IGanttProject getProject() {
+    return myProject;
+  }
 
-    private void saveVacations(TransformerHandler handler) throws SAXException {
-        new VacationSaver().save(getProject(), handler);
-    }
-
-    private void saveResources(TransformerHandler handler) throws SAXException {
-        new ResourceSaver().save(getProject(), handler);
-    }
-
-    private void saveViews(TransformerHandler handler) throws SAXException {
-        new ViewSaver().save(getUIFacade(), handler);
-    }
-
-    private void saveCalendar(TransformerHandler handler) throws SAXException {
-        new CalendarSaver().save(getProject(), handler);
-    }
-
-    private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
-        new TaskSaver().save(getProject(), handler, area.getTaskColor());
-    }
-
-    private void saveAssignments(TransformerHandler handler) throws SAXException {
-        new AssignmentSaver().save(getProject(), handler);
-    }
-    private void saveRoles(TransformerHandler handler) throws SAXException {
-        AttributesImpl attrs = new AttributesImpl();
-        RoleManager roleManager = getProject().getRoleManager();
-        RoleSet[] roleSets = roleManager.getRoleSets();
-        for (int i = 0; i < roleSets.length; i++) {
-            RoleSet next = roleSets[i];
-            if (next.isEnabled()) {
-                addAttribute("roleset-name", next.getName(), attrs);
-                emptyElement("roles", attrs, handler);
-            }
-        }
-        //
-        RoleSet projectRoleSet = roleManager.getProjectRoleSet();
-        if (!projectRoleSet.isEmpty()) {
-            startElement("roles", attrs, handler);
-            Role[] projectRoles = projectRoleSet.getRoles();
-            for (int i = 0; i < projectRoles.length; i++) {
-                Role next = projectRoles[i];
-                addAttribute("id", next.getPersistentID(), attrs);
-                addAttribute("name", next.getName(), attrs);
-                emptyElement("role", attrs, handler);
-            }
-            endElement("roles", handler);
-        }
-    }
-
-
-    IGanttProject getProject() {
-        return myProject;
-    }
-
-    UIFacade getUIFacade() {
-        return myUIFacade;
-    }
+  UIFacade getUIFacade() {
+    return myUIFacade;
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.calendar;
 
 import java.io.IOException;
@@ -44,148 +44,146 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author nbohn
  */
 public class XMLCalendarOpen {
-    public static class MyException extends Exception {
-        MyException(Throwable cause) {
-            super(cause);
+  public static class MyException extends Exception {
+    MyException(Throwable cause) {
+      super(cause);
+    }
+  }
+
+  private List<URL> myCalendarResources = new ArrayList<URL>();
+  private String myCalendarLabels[];
+
+  private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
+
+  private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
+
+  boolean load(InputStream inputStream) throws MyException {
+    // Use an instance of ourselves as the SAX event handler
+    DefaultHandler handler = new GanttXMLParser();
+
+    // Use the default (non-validating) parser
+    SAXParserFactory factory = SAXParserFactory.newInstance();
+
+    try {
+      SAXParser saxParser = factory.newSAXParser();
+      saxParser.parse(inputStream, handler);
+    } catch (ParserConfigurationException e) {
+      throw new MyException(e);
+    } catch (SAXException e) {
+      throw new MyException(e);
+    } catch (IOException e) {
+      throw new MyException(e);
+    }
+    return true;
+  }
+
+  void addTagHandler(TagHandler handler) {
+    myTagHandlers.add(handler);
+  }
+
+  void addParsingListener(ParsingListener listener) {
+    myListeners.add(listener);
+  }
+
+  private TagHandler getDefaultTagHandler() {
+    return new DefaultTagHandler();
+  }
+
+  private class DefaultTagHandler implements TagHandler {
+    private String name;
+
+    @Override
+    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+      if (attrs != null) {
+        String eName = qName; // element name
+        for (int i = 0; i < attrs.getLength(); i++) {
+          String aName = attrs.getLocalName(i); // Attr name
+          if ("".equals(aName)) {
+            aName = attrs.getQName(i);
+          }
+          if (eName.equals("calendar")) {
+            if (aName.equals("name")) {
+              name = attrs.getValue(i);
+            } else if (aName.equals("type")) {
+            }
+          }
         }
+      }
     }
 
-    private List<URL> myCalendarResources = new ArrayList<URL>();
-    private String myCalendarLabels[];
+    @Override
+    public void endElement(String namespaceURI, String sName, String qName) {
+    }
 
-    private ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
+    public String getName() {
+      return name;
+    }
+  }
 
-    private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
+  private class GanttXMLParser extends DefaultHandler {
+    // ===========================================================
+    // SAX DocumentHandler methods
+    // ===========================================================
 
-    boolean load(InputStream inputStream) throws MyException {
-        // Use an instance of ourselves as the SAX event handler
-        DefaultHandler handler = new GanttXMLParser();
+    @Override
+    public void endDocument() throws SAXException {
+      for (int i = 0; i < myListeners.size(); i++) {
+        ParsingListener l = myListeners.get(i);
+        l.parsingFinished();
+      }
+    }
 
-        // Use the default (non-validating) parser
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-
+    @Override
+    public void startElement(String namespaceURI, String sName, // simple
+        // name
+        String qName, // qualified name
+        Attributes attrs) throws SAXException {
+      for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers.hasNext();) {
+        TagHandler next = handlers.next();
         try {
-            SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(inputStream, handler);
-        } catch (ParserConfigurationException e) {
-            throw new MyException(e);
-        } catch (SAXException e) {
-            throw new MyException(e);
+          next.startElement(namespaceURI, sName, qName, attrs);
+        } catch (FileFormatException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    @Override
+    public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
+      for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers.hasNext();) {
+        TagHandler next = handlers.next();
+        next.endElement(namespaceURI, sName, qName);
+      }
+    }
+  }
+
+  public void setCalendars() throws MyException {
+    myCalendarResources.clear();
+    DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
+    addTagHandler(th);
+    IConfigurationElement[] calendarExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor(
+        GPCalendar.EXTENSION_POINT_ID);
+    myCalendarLabels = new String[calendarExtensions.length];
+    for (int i = 0; i < calendarExtensions.length; i++) {
+      Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespaceIdentifier());
+      URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
+      if (calendarUrl != null) {
+        try {
+          load(calendarUrl.openStream());
         } catch (IOException e) {
-            throw new MyException(e);
+          throw new MyException(e);
         }
-        return true;
+        myCalendarLabels[i] = th.getName();
+        myCalendarResources.add(calendarUrl);
+      }
     }
+  }
 
-    void addTagHandler(TagHandler handler) {
-        myTagHandlers.add(handler);
-    }
+  public URL[] getCalendarResources() {
+    return myCalendarResources.toArray(new URL[0]);
+  }
 
-    void addParsingListener(ParsingListener listener) {
-        myListeners.add(listener);
-    }
-
-    private TagHandler getDefaultTagHandler() {
-        return new DefaultTagHandler();
-    }
-
-    private class DefaultTagHandler implements TagHandler {
-        private String name;
-
-        @Override
-        public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-            if (attrs != null) {
-                String eName = qName; // element name
-                for (int i = 0; i < attrs.getLength(); i++) {
-                    String aName = attrs.getLocalName(i); // Attr name
-                    if ("".equals(aName)) {
-                        aName = attrs.getQName(i);
-                    }
-                    if (eName.equals("calendar")) {
-                        if (aName.equals("name")) {
-                            name = attrs.getValue(i);
-                        } else if (aName.equals("type")) {
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String namespaceURI, String sName, String qName) {
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    private class GanttXMLParser extends DefaultHandler {
-        // ===========================================================
-        // SAX DocumentHandler methods
-        // ===========================================================
-
-        @Override
-        public void endDocument() throws SAXException {
-            for (int i = 0; i < myListeners.size(); i++) {
-                ParsingListener l = myListeners.get(i);
-                l.parsingFinished();
-            }
-        }
-
-        @Override
-        public void startElement(String namespaceURI, String sName, // simple
-                // name
-                String qName, // qualified name
-                Attributes attrs) throws SAXException {
-            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
-                    .hasNext();) {
-                TagHandler next = handlers.next();
-                try {
-                    next.startElement(namespaceURI, sName, qName, attrs);
-                } catch (FileFormatException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String namespaceURI, String sName, String qName)
-                throws SAXException {
-            for (Iterator<TagHandler> handlers = myTagHandlers.iterator(); handlers
-                    .hasNext();) {
-                TagHandler next = handlers.next();
-                next.endElement(namespaceURI, sName, qName);
-            }
-        }
-    }
-
-    public void setCalendars() throws MyException  {
-        myCalendarResources.clear();
-        DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
-        addTagHandler(th);
-        IConfigurationElement[] calendarExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor(GPCalendar.EXTENSION_POINT_ID);
-        myCalendarLabels = new String[calendarExtensions.length];
-        for (int i = 0; i < calendarExtensions.length; i++) {
-            Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespaceIdentifier());
-            URL calendarUrl = nextBundle.getResource(calendarExtensions[i].getAttribute("resource-url"));
-            if (calendarUrl != null) {
-                try {
-                    load(calendarUrl.openStream());
-                } catch (IOException e) {
-                    throw new MyException(e);
-                }
-                myCalendarLabels[i] = th.getName();
-                myCalendarResources.add(calendarUrl);
-            }
-        }
-    }
-
-    public URL[] getCalendarResources() {
-        return myCalendarResources.toArray(new URL[0]);
-    }
-
-    public String[] getLabels() {
-        return myCalendarLabels;
-    }
+  public String[] getLabels() {
+    return myCalendarLabels;
+  }
 }

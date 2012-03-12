@@ -11,17 +11,17 @@ import net.sourceforge.ganttproject.task.TaskLength;
  * @author bard
  */
 public interface ScrollingListener {
-    /**
-     * Scrolls the view by a number of days
-     *
-     * @param duration
-     *            are the number of days to scroll. If days < 0 it scrolls to
-     *            the right otherwise to the left.
-     */
-    void scrollBy(TaskLength duration);
+  /**
+   * Scrolls the view by a number of days
+   * 
+   * @param duration
+   *          are the number of days to scroll. If days < 0 it scrolls to the
+   *          right otherwise to the left.
+   */
+  void scrollBy(TaskLength duration);
 
-    /** Scrolls the view to the given Date */
-    void scrollTo(Date date);
+  /** Scrolls the view to the given Date */
+  void scrollTo(Date date);
 
-    void scrollBy(int pixels);
+  void scrollBy(int pixels);
 }

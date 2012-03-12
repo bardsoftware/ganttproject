@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
@@ -32,66 +32,64 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgori
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase {
-    private TaskInteractionHintRenderer myLastNotes;
+  private TaskInteractionHintRenderer myLastNotes;
 
-    private final Task myTask;
+  private final Task myTask;
 
-    private final UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-    private final RecalculateTaskScheduleAlgorithm myTaskScheduleAlgorithm;
+  private final RecalculateTaskScheduleAlgorithm myTaskScheduleAlgorithm;
 
-    protected ChangeTaskBoundaryInteraction(
-            Date startDate, Task task, TimelineFacade chartDateGrid,
-            UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
-        super(startDate, chartDateGrid);
-        myTask = task;
-        myUiFacade = uiFacade;
-        myTaskScheduleAlgorithm = taskScheduleAlgorithm;
+  protected ChangeTaskBoundaryInteraction(Date startDate, Task task, TimelineFacade chartDateGrid, UIFacade uiFacade,
+      RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
+    super(startDate, chartDateGrid);
+    myTask = task;
+    myUiFacade = uiFacade;
+    myTaskScheduleAlgorithm = taskScheduleAlgorithm;
+  }
+
+  protected void updateTooltip(MouseEvent e) {
+    if (myLastNotes == null) {
+      myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
     }
+    myLastNotes.setString(getNotesText());
+    myLastNotes.setX(e.getX());
+  }
 
-    protected void updateTooltip(MouseEvent e) {
-        if (myLastNotes == null) {
-            myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
-        }
-        myLastNotes.setString(getNotesText());
-        myLastNotes.setX(e.getX());
+  protected Task getTask() {
+    return myTask;
+  }
+
+  public void finish(final TaskMutator mutator) {
+    mutator.setIsolationLevel(TaskMutator.READ_UNCOMMITED);
+    myUiFacade.getUndoManager().undoableEdit("Task boundary changed", new Runnable() {
+      @Override
+      public void run() {
+        doFinish(mutator);
+      }
+    });
+  }
+
+  private void doFinish(TaskMutator mutator) {
+    mutator.commit();
+    myLastNotes = null;
+    try {
+      myTaskScheduleAlgorithm.run();
+    } catch (TaskDependencyException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
+      myUiFacade.showErrorDialog(e);
     }
+    myUiFacade.getActiveChart().reset();
+  }
 
-    protected Task getTask() {
-        return myTask;
+  @Override
+  public void paint(Graphics g) {
+    if (myLastNotes != null) {
+      myLastNotes.paint(g);
     }
+  }
 
-    public void finish(final TaskMutator mutator) {
-        mutator.setIsolationLevel(TaskMutator.READ_UNCOMMITED);
-        myUiFacade.getUndoManager().undoableEdit("Task boundary changed",
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        doFinish(mutator);
-                    }
-                });
-    }
-
-    private void doFinish(TaskMutator mutator) {
-        mutator.commit();
-        myLastNotes = null;
-        try {
-            myTaskScheduleAlgorithm.run();
-        } catch (TaskDependencyException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-            myUiFacade.showErrorDialog(e);
-        }
-        myUiFacade.getActiveChart().reset();
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        if (myLastNotes != null) {
-            myLastNotes.paint(g);
-        }
-    }
-
-    protected abstract String getNotesText();
+  protected abstract String getNotesText();
 }

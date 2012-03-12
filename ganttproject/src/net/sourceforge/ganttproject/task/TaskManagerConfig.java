@@ -21,13 +21,13 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * Created by IntelliJ IDEA. User: bard
  */
 public interface TaskManagerConfig {
-    Color getDefaultColor();
+  Color getDefaultColor();
 
-    GPCalendar getCalendar();
+  GPCalendar getCalendar();
 
-    TimeUnitStack getTimeUnitStack();
+  TimeUnitStack getTimeUnitStack();
 
-    HumanResourceManager getResourceManager();
+  HumanResourceManager getResourceManager();
 
-    URL getProjectDocumentURL();
+  URL getProjectDocumentURL();
 }

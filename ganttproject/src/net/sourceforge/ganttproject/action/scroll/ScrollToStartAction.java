@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
@@ -27,19 +27,20 @@ import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class ScrollToStartAction extends GPAction {
-    private final TimelineChart myChart;
-    private final TaskManager myTaskManager;
-    private final TaskLength myCorrectionInterval;
-    
-    public ScrollToStartAction(IGanttProject project, TimelineChart chart) {
-        super("scroll.start");
-        myChart = chart;
-        myTaskManager = project.getTaskManager();
-        myCorrectionInterval = project.getTaskManager().createLength(-1);
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myChart.setStartDate(myTaskManager.getProjectStart());
-        myChart.scrollBy(myCorrectionInterval);
-    }
+  private final TimelineChart myChart;
+  private final TaskManager myTaskManager;
+  private final TaskLength myCorrectionInterval;
+
+  public ScrollToStartAction(IGanttProject project, TimelineChart chart) {
+    super("scroll.start");
+    myChart = chart;
+    myTaskManager = project.getTaskManager();
+    myCorrectionInterval = project.getTaskManager().createLength(-1);
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myChart.setStartDate(myTaskManager.getProjectStart());
+    myChart.scrollBy(myCorrectionInterval);
+  }
 }

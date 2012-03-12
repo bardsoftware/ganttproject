@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import net.sourceforge.ganttproject.GPLogger;
@@ -30,70 +30,69 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * Panel to edit the weekend settings
- *
+ * 
  * @author Maarten Bezemer
  */
 public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
-    private final IGanttProject project;
+  private final IGanttProject project;
 
-    private WeekendConfigurationPage weekendConfigurationPanel;
+  private WeekendConfigurationPage weekendConfigurationPanel;
 
-    private GPCalendar calendar;
+  private GPCalendar calendar;
 
-    public WeekendsSettingsPanel(IGanttProject project) {
-        super(language.getCorrectedLabel("weekends"), language
-                .getText("settingsWeekends"));
+  public WeekendsSettingsPanel(IGanttProject project) {
+    super(language.getCorrectedLabel("weekends"), language.getText("settingsWeekends"));
 
-        this.project = project;
-        calendar = new WeekendCalendarImpl();
+    this.project = project;
+    calendar = new WeekendCalendarImpl();
 
-        weekendConfigurationPanel = null;
+    weekendConfigurationPanel = null;
+  }
+
+  @Override
+  public boolean applyChanges(boolean askForApply) {
+    weekendConfigurationPanel.setActive(false);
+    GPCalendar projectCalendar = project.getActiveCalendar();
+    boolean hasChange = weekendConfigurationPanel.isChanged();
+    for (int i = 1; !hasChange && i < 8; i++) {
+      if (calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
+        hasChange = true;
+      }
+    }
+    for (int i = 1; i < 8; i++) {
+      projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
+    }
+    if (hasChange) {
+      // Update tasks for the new weekends
+      // By setting their end dates to null it gets recalculated
+      for (Task task : project.getTaskManager().getTasks()) {
+        task.setEnd(null);
+      }
+      projectCalendar.setPublicHolidays(calendar.getPublicHolidaysUrl());
+      projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
+      try {
+        TaskManager taskManager = project.getTaskManager();
+        taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+        taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
+      } catch (TaskDependencyException e) {
+        GPLogger.log(e);
+      }
+    }
+    return hasChange;
+  }
+
+  // TODO It would be nicer to just update the checkboxes,
+  // but WeekendConfigurationPage does not allow it ATM
+  @Override
+  public void initialize() {
+    if (weekendConfigurationPanel != null) {
+      vb.remove(weekendConfigurationPanel.getComponent());
     }
 
-    @Override
-    public boolean applyChanges(boolean askForApply) {
-        weekendConfigurationPanel.setActive(false);
-        GPCalendar projectCalendar = project.getActiveCalendar();
-        boolean hasChange = weekendConfigurationPanel.isChanged();
-        for(int i = 1; !hasChange && i < 8; i++) {
-            if(calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
-                hasChange = true;
-            }
-        }
-        for(int i = 1; i < 8; i++) {
-            projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
-        }
-        if (hasChange) {
-            // Update tasks for the new weekends
-            // By setting their end dates to null it gets recalculated
-            for(Task task : project.getTaskManager().getTasks()) {
-                task.setEnd(null);
-            }
-            projectCalendar.setPublicHolidays(calendar.getPublicHolidaysUrl());
-            projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
-            try {
-                TaskManager taskManager = project.getTaskManager();
-                taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-                taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
-            } catch (TaskDependencyException e) {
-                GPLogger.log(e);
-            }
-        }
-        return hasChange;
-    }
-
-    // TODO It would be nicer to just update the checkboxes,
-    //      but WeekendConfigurationPage does not allow it ATM
-    @Override
-    public void initialize() {
-        if(weekendConfigurationPanel != null) {
-            vb.remove(weekendConfigurationPanel.getComponent());
-        }
-
-        // Make a copy of the WeekDayTypes
-        calendar = project.getActiveCalendar().copy();
-        weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, true);
-        vb.add(weekendConfigurationPanel.getComponent());
-    }
+    // Make a copy of the WeekDayTypes
+    calendar = project.getActiveCalendar().copy();
+    weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), project, true);
+    vb.add(weekendConfigurationPanel.getComponent());
+  }
 }

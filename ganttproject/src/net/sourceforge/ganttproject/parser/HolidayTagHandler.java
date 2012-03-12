@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -27,63 +27,59 @@ import org.xml.sax.Attributes;
  * @author nbohn
  */
 public class HolidayTagHandler implements TagHandler, ParsingListener {
-    private final GPCalendar myCalendar;
+  private final GPCalendar myCalendar;
 
-    public HolidayTagHandler(GPCalendar calendar) {
-        myCalendar = calendar;
-        myCalendar.clearPublicHolidays();
+  public HolidayTagHandler(GPCalendar calendar) {
+    myCalendar = calendar;
+    myCalendar.clearPublicHolidays();
+  }
+
+  /**
+   * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
+   *      String, String)
+   */
+  @Override
+  public void endElement(String namespaceURI, String sName, String qName) {
+  }
+
+  /**
+   * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
+   *      String, String, Attributes)
+   */
+  @Override
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+    if (qName.equals("date")) {
+      loadHoliday(attrs);
+    }
+  }
+
+  private void loadHoliday(Attributes atts) {
+    try {
+      String yearAsString = atts.getValue("year");
+      String monthAsString = atts.getValue("month");
+      String dateAsString = atts.getValue("date");
+      int month = Integer.parseInt(monthAsString);
+      int date = Integer.parseInt(dateAsString);
+      if (yearAsString.equals("")) {
+        myCalendar.setPublicHoliDayType(month, date);
+      } else {
+        int year = Integer.parseInt(yearAsString);
+        myCalendar.setPublicHoliDayType(new GanttCalendar(year, month - 1, date).getTime());
+      }
+    } catch (NumberFormatException e) {
+      System.out.println("ERROR in parsing XML File year is not numeric: " + e.toString());
+      return;
     }
 
-    /**
-     * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
-     *      String, String)
-     */
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
-    }
+  }
 
-    /**
-     * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
-     *      String, String, Attributes)
-     */
-    @Override
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) {
-        if (qName.equals("date")) {
-            loadHoliday(attrs);
-        }
-    }
+  @Override
+  public void parsingStarted() {
+    // TODO Auto-generated method stub
+  }
 
-    private void loadHoliday(Attributes atts) {
-        try {
-            String yearAsString = atts.getValue("year");
-            String monthAsString = atts.getValue("month");
-            String dateAsString = atts.getValue("date");
-            int month = Integer.parseInt(monthAsString);
-            int date = Integer.parseInt(dateAsString);
-            if (yearAsString.equals("")) {
-                myCalendar.setPublicHoliDayType(month, date);
-            } else {
-                int year = Integer.parseInt(yearAsString);
-                myCalendar.setPublicHoliDayType(
-                        new GanttCalendar(year, month - 1, date).getTime());
-            }
-        } catch (NumberFormatException e) {
-            System.out
-                    .println("ERROR in parsing XML File year is not numeric: "
-                            + e.toString());
-            return;
-        }
-
-    }
-
-    @Override
-    public void parsingStarted() {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void parsingFinished() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  public void parsingFinished() {
+    // TODO Auto-generated method stub
+  }
 }

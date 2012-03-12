@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
@@ -29,148 +29,155 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
  * Project task definition
- *
+ * 
  * @author bard
  */
 public interface Task extends MutableTask {
-    /** Available task priorities */
-    public enum Priority {
-        LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");
+  /** Available task priorities */
+  public enum Priority {
+    LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");
 
-        private final String myPersistentValue;
+    private final String myPersistentValue;
 
-        private Priority(String persistentValue) {
-            myPersistentValue = persistentValue;
-        }
-        /** @return the Priority value for the given integer value, or DEFAULT_PRIORITY if unknown */
-        public static Priority getPriority(int value) {
-            for (Task.Priority p: Task.Priority.values()) {
-                if (p.ordinal() == value) {
-                    return p;
-                }
-            }
-            return DEFAULT_PRIORITY;
-        }
-
-        public String getPersistentValue() {
-            return myPersistentValue;
-        }
-
-        /** @return the priority as a lower-case String */
-        public String getLowerString() {
-            return this.toString().toLowerCase();
-        }
-
-        /** @return the key to get the I18n value for the priority */
-        public String getI18nKey() {
-            return "priority." + getLowerString();
-        }
-
-        /**
-         * @return the path to the icon representing the priority
-         */
-        public String getIconPath() {
-            return "/icons/task_" + getLowerString() + ".gif";
-        }
-        public static Priority fromPersistentValue(String priority) {
-            for (Priority p : values()) {
-                if (p.getPersistentValue().equals(priority)) {
-                    return p;
-                }
-            }
-            return Priority.NORMAL;
-        }
+    private Priority(String persistentValue) {
+      myPersistentValue = persistentValue;
     }
 
-    /** Default priority (for new tasks) */
-    public static final Priority DEFAULT_PRIORITY = Priority.NORMAL;
+    /**
+     * @return the Priority value for the given integer value, or
+     *         DEFAULT_PRIORITY if unknown
+     */
+    public static Priority getPriority(int value) {
+      for (Task.Priority p : Task.Priority.values()) {
+        if (p.ordinal() == value) {
+          return p;
+        }
+      }
+      return DEFAULT_PRIORITY;
+    }
 
-    TaskMutator createMutator();
-    TaskMutator createMutatorFixingDuration();
-    // main properties
-    int getTaskID();
+    public String getPersistentValue() {
+      return myPersistentValue;
+    }
 
-    String getName();
+    /** @return the priority as a lower-case String */
+    public String getLowerString() {
+      return this.toString().toLowerCase();
+    }
 
-    boolean isMilestone();
-
-    Priority getPriority();
-
-    TaskActivity[] getActivities();
-
-    GanttCalendar getStart();
-
-    GanttCalendar getEnd();
-
-    TaskLength getDuration();
-
-    TaskLength translateDuration(TaskLength duration);
-
-    int getCompletionPercentage();
-
-    ShapePaint getShape();
+    /** @return the key to get the I18n value for the priority */
+    public String getI18nKey() {
+      return "priority." + getLowerString();
+    }
 
     /**
-     * @return a color representing this Task (could be a custom color, milestone
-     *         color, super task color or default color)
+     * @return the path to the icon representing the priority
      */
-    Color getColor();
+    public String getIconPath() {
+      return "/icons/task_" + getLowerString() + ".gif";
+    }
 
-    String getNotes();
+    public static Priority fromPersistentValue(String priority) {
+      for (Priority p : values()) {
+        if (p.getPersistentValue().equals(priority)) {
+          return p;
+        }
+      }
+      return Priority.NORMAL;
+    }
+  }
 
-    boolean getExpand();
+  /** Default priority (for new tasks) */
+  public static final Priority DEFAULT_PRIORITY = Priority.NORMAL;
 
-    //
-    // relationships with other entities
-    GanttTaskRelationship[] getPredecessors();
+  TaskMutator createMutator();
 
-    GanttTaskRelationship[] getSuccessors();
+  TaskMutator createMutatorFixingDuration();
 
-    // HumanResource[] getAssignedHumanResources();
-    ResourceAssignment[] getAssignments();
+  // main properties
+  int getTaskID();
 
-    TaskDependencySlice getDependencies();
+  String getName();
 
-    TaskDependencySlice getDependenciesAsDependant();
+  boolean isMilestone();
 
-    TaskDependencySlice getDependenciesAsDependee();
+  Priority getPriority();
 
-    ResourceAssignmentCollection getAssignmentCollection();
+  TaskActivity[] getActivities();
 
-    //
-    Task getSupertask();
+  GanttCalendar getStart();
 
-    Task[] getNestedTasks();
+  GanttCalendar getEnd();
 
-    void move(Task targetSupertask);
+  TaskLength getDuration();
 
-    void delete();
+  TaskLength translateDuration(TaskLength duration);
 
-    TaskManager getManager();
+  int getCompletionPercentage();
 
-    Task unpluggedClone();
+  ShapePaint getShape();
 
-    // Color DEFAULT_COLOR = new Color( 140, 182, 206); not used
+  /**
+   * @return a color representing this Task (could be a custom color, milestone
+   *         color, super task color or default color)
+   */
+  Color getColor();
 
-    CustomColumnsValues getCustomValues();
+  String getNotes();
 
-    boolean isCritical();
+  boolean getExpand();
 
-    GanttCalendar getThird();
+  //
+  // relationships with other entities
+  GanttTaskRelationship[] getPredecessors();
 
-    void applyThirdDateConstraint();
+  GanttTaskRelationship[] getSuccessors();
 
-    int getThirdDateConstraint();
+  // HumanResource[] getAssignedHumanResources();
+  ResourceAssignment[] getAssignments();
 
-    void setThirdDate(GanttCalendar thirdDate);
+  TaskDependencySlice getDependencies();
 
-    void setThirdDateConstraint(int dateConstraint);
+  TaskDependencySlice getDependenciesAsDependant();
 
-    TaskInfo getTaskInfo();
+  TaskDependencySlice getDependenciesAsDependee();
 
-    boolean isProjectTask ();
+  ResourceAssignmentCollection getAssignmentCollection();
 
-    boolean isSupertask();
+  //
+  Task getSupertask();
 
-    List<Document> getAttachments();
+  Task[] getNestedTasks();
+
+  void move(Task targetSupertask);
+
+  void delete();
+
+  TaskManager getManager();
+
+  Task unpluggedClone();
+
+  // Color DEFAULT_COLOR = new Color( 140, 182, 206); not used
+
+  CustomColumnsValues getCustomValues();
+
+  boolean isCritical();
+
+  GanttCalendar getThird();
+
+  void applyThirdDateConstraint();
+
+  int getThirdDateConstraint();
+
+  void setThirdDate(GanttCalendar thirdDate);
+
+  void setThirdDateConstraint(int dateConstraint);
+
+  TaskInfo getTaskInfo();
+
+  boolean isProjectTask();
+
+  boolean isSupertask();
+
+  List<Document> getAttachments();
 }

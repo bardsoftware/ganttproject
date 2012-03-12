@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.util.Collection;
@@ -35,29 +35,30 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 /**
  * Menu that shows the Most Recently Used documents. It is a regular menu,
  * except is implements the DocumentsMRUListener interface. When it is added to
- * the DocumentsMRU listeners the menu is kept up to date with the MRU list.
- * The automatically added menu items open their corresponding document when clicked.
+ * the DocumentsMRU listeners the menu is kept up to date with the MRU list. The
+ * automatically added menu items open their corresponding document when
+ * clicked.
  */
 public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
-    private final IGanttProject myProject;
-    private final UIFacade myUIFacade;
-    private final ProjectUIFacade myProjectUIFacade;
+  private final IGanttProject myProject;
+  private final UIFacade myUIFacade;
+  private final ProjectUIFacade myProjectUIFacade;
 
-    public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade, String key) {
-        super(GPAction.createVoidAction(key));
-        myProject = project;
-        myUIFacade = uiFacade;
-        myProjectUIFacade = projectUIFacade;
-    }
+  public ProjectMRUMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade, String key) {
+    super(GPAction.createVoidAction(key));
+    myProject = project;
+    myUIFacade = uiFacade;
+    myProjectUIFacade = projectUIFacade;
+  }
 
-    @Override
-    public void mruListChanged(Collection<Document> newMRUList) {
-        removeAll();
-        int index = 0;
-        for(Document doc : newMRUList) {
-            index++;
-            Action a = new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade);
-            add(new JMenuItem(a));
-        }
+  @Override
+  public void mruListChanged(Collection<Document> newMRUList) {
+    removeAll();
+    int index = 0;
+    for (Document doc : newMRUList) {
+      index++;
+      Action a = new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade);
+      add(new JMenuItem(a));
     }
+  }
 }

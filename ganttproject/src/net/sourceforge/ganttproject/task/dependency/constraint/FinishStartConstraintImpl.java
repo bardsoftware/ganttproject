@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency.constraint;
 
 import java.util.Date;
@@ -33,69 +33,60 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
  * Dependant task starts not earlier than dependee finishes Created by IntelliJ
  * IDEA. User: bard
  */
-public class FinishStartConstraintImpl extends ConstraintImpl implements
-        TaskDependencyConstraint {
-    public FinishStartConstraintImpl() {
-        super(GanttTaskRelationship.FS, GanttLanguage.getInstance().getText(
-                "finishstart"));
+public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
+  public FinishStartConstraintImpl() {
+    super(GanttTaskRelationship.FS, GanttLanguage.getInstance().getText("finishstart"));
+  }
+
+  @Override
+  public TaskDependencyConstraint.Collision getCollision() {
+    TaskDependencyConstraint.Collision result = null;
+    Task dependee = getDependency().getDependee();
+    Task dependant = getDependency().getDependant();
+    GanttCalendar dependeeEnd = dependee.getEnd().clone();
+    // GanttCalendar dependeeEnd = dependee.getEnd();
+    GanttCalendar dependantStart = dependant.getStart();
+
+    addDelay(dependeeEnd);
+    // int difference = getDependency().getDifference();
+    GanttCalendar comparisonDate = dependantStart.clone();
+    // comparisonDate.add(difference);
+
+    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependeeEnd.compareTo(comparisonDate) > 0
+        : dependeeEnd.compareTo(comparisonDate) != 0;
+    // new Exception("[FinishStartConstraint] isActive="+isActive+"
+    // dependdee="+dependee+" end="+dependeeEnd+"
+    // start="+dependantStart).printStackTrace();
+    result = new TaskDependencyConstraint.DefaultCollision(dependeeEnd,
+        TaskDependencyConstraint.Collision.START_LATER_VARIATION, isActive);
+    return result;
+  }
+
+  @Override
+  public Collision getBackwardCollision(Date dependantStart) {
+    if (dependantStart == null) {
+      System.err.println();
     }
+    Task dependee = getDependency().getDependee();
+    GanttCalendar dependeeEnd = dependee.getEnd().clone();
 
-    @Override
-    public TaskDependencyConstraint.Collision getCollision() {
-        TaskDependencyConstraint.Collision result = null;
-        Task dependee = getDependency().getDependee();
-        Task dependant = getDependency().getDependant();
-        GanttCalendar dependeeEnd = dependee.getEnd().clone();
-        // GanttCalendar dependeeEnd = dependee.getEnd();
-        GanttCalendar dependantStart = dependant.getStart();
+    Date barrier = shift(dependantStart, -getDependency().getDifference());
+    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependeeEnd.getTime().compareTo(
+        barrier) > 0
+        : dependeeEnd.getTime().compareTo(barrier) != 0;
 
-        addDelay(dependeeEnd);
-//        int difference = getDependency().getDifference();
-        GanttCalendar comparisonDate = dependantStart.clone();
-//        comparisonDate.add(difference);
+    return new TaskDependencyConstraint.DefaultCollision(new GanttCalendar(barrier),
+        TaskDependencyConstraint.Collision.START_EARLIER_VARIATION, isActive);
+  }
 
-        boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ?
-                dependeeEnd.compareTo(comparisonDate) > 0
-                : dependeeEnd.compareTo(comparisonDate) != 0;
-        // new Exception("[FinishStartConstraint] isActive="+isActive+"
-        // dependdee="+dependee+" end="+dependeeEnd+"
-        // start="+dependantStart).printStackTrace();
-        result = new TaskDependencyConstraint.DefaultCollision(
-                dependeeEnd,
-                TaskDependencyConstraint.Collision.START_LATER_VARIATION,
-                isActive);
-        return result;
-    }
-
-    @Override
-    public Collision getBackwardCollision(Date dependantStart) {
-        if (dependantStart==null) {
-            System.err.println();
-        }
-        Task dependee = getDependency().getDependee();
-        GanttCalendar dependeeEnd = dependee.getEnd().clone();
-
-        Date barrier = shift(dependantStart, -getDependency().getDifference());
-        boolean isActive = getDependency().getHardness()==TaskDependency.Hardness.RUBBER ?
-                dependeeEnd.getTime().compareTo(barrier) > 0
-                : dependeeEnd.getTime().compareTo(barrier) != 0;
-
-        return new TaskDependencyConstraint.DefaultCollision(
-                new GanttCalendar(barrier),
-                TaskDependencyConstraint.Collision.START_EARLIER_VARIATION,
-                isActive);
-    }
-
-    @Override
-    public ActivityBinding getActivityBinding() {
-        TaskActivity[] dependantActivities = getDependency().getDependant()
-                .getActivities();
-        TaskActivity[] dependeeActivities = getDependency().getDependee()
-                .getActivities();
-        TaskActivity theDependant = dependantActivities[0];
-        TaskActivity theDependee = dependeeActivities[dependeeActivities.length - 1];
-        return new DependencyActivityBindingImpl(theDependant, theDependee,
-                new Date[] { theDependant.getStart(), theDependee.getEnd() });
-    }
+  @Override
+  public ActivityBinding getActivityBinding() {
+    TaskActivity[] dependantActivities = getDependency().getDependant().getActivities();
+    TaskActivity[] dependeeActivities = getDependency().getDependee().getActivities();
+    TaskActivity theDependant = dependantActivities[0];
+    TaskActivity theDependee = dependeeActivities[dependeeActivities.length - 1];
+    return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getStart(),
+        theDependee.getEnd() });
+  }
 
 }

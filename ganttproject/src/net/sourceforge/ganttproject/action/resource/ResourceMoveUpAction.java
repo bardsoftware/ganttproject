@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.awt.event.ActionEvent;
@@ -27,27 +27,27 @@ import net.sourceforge.ganttproject.ResourceTreeTable;
 import net.sourceforge.ganttproject.action.GPAction;
 
 public class ResourceMoveUpAction extends GPAction implements TreeSelectionListener {
-    private final ResourceTreeTable myTable;
+  private final ResourceTreeTable myTable;
 
-    public ResourceMoveUpAction(ResourceTreeTable table) {
-        super("resource.move.up");
-        myTable = table;
-        setEnabled(false);        
-        table.getTree().getSelectionModel().addTreeSelectionListener(this);
-    }
-    
-    @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        setEnabled(myTable.canMoveSelectionUp());
-    }
+  public ResourceMoveUpAction(ResourceTreeTable table) {
+    super("resource.move.up");
+    myTable = table;
+    setEnabled(false);
+    table.getTree().getSelectionModel().addTreeSelectionListener(this);
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "up_";
-    }
+  @Override
+  public void valueChanged(TreeSelectionEvent e) {
+    setEnabled(myTable.canMoveSelectionUp());
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-         myTable.upResource();
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "up_";
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myTable.upResource();
+  }
 }

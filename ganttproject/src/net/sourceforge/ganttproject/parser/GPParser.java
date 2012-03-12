@@ -10,14 +10,14 @@ import java.io.InputStream;
  * @author bard
  */
 public interface GPParser {
-    boolean load(InputStream inStream) throws IOException;
+  boolean load(InputStream inStream) throws IOException;
 
-    void addTagHandler(TagHandler handler);
+  void addTagHandler(TagHandler handler);
 
-    void addParsingListener(ParsingListener listener);
+  void addParsingListener(ParsingListener listener);
 
-    TagHandler getDefaultTagHandler();
+  TagHandler getDefaultTagHandler();
 
-    ParsingContext getContext();
+  ParsingContext getContext();
 
 }

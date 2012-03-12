@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
@@ -28,17 +28,17 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  * Creates a panel containing buttons of the zoom actions
  */
 public class ZoomingPanel {
-    private final TimelineChart myChart;
-    private final UIFacade myUIFacade;
+  private final TimelineChart myChart;
+  private final UIFacade myUIFacade;
 
-    public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
-        myChart = chart;
-        myUIFacade = uiFacade;
-    }
+  public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {
+    myChart = chart;
+    myUIFacade = uiFacade;
+  }
 
-    public Component getComponent() {
-        ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
-        return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
-                zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
-    }
+  public Component getComponent() {
+    ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
+    return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
+        zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
+  }
 }

@@ -9,7 +9,7 @@ import net.sourceforge.ganttproject.task.Task;
  * @author bard
  */
 public class TaskProgressChartItem extends ChartItem {
-    public TaskProgressChartItem(Task task) {
-        super(task);
-    }
+  public TaskProgressChartItem(Task task) {
+    super(task);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -26,26 +26,33 @@ import net.sourceforge.ganttproject.action.GPAction;
  * @author dbarashev (Dmitry Barashev)
  */
 public interface TreeUiFacade<T> {
-    Component getTreeComponent();
-    TableHeaderUIFacade getVisibleFields();
+  Component getTreeComponent();
 
-    boolean isVisible(T modelElement);
-    boolean isExpanded(T modelElement);
-    void setExpanded(T modelElement);
+  TableHeaderUIFacade getVisibleFields();
 
-    /**
-     * Modifies the selected node(s) of the tree
-     *
-     * @param clear when true, it first clears the previous selection. When
-     *            false the current selection gets extended
-     * @param modelElement to be selected
-     */
-    void setSelected(T modelElement, boolean clear);
+  boolean isVisible(T modelElement);
 
-    /** Clears the current selection */
-    void clearSelection();
+  boolean isExpanded(T modelElement);
 
-    GPAction getNewAction();
-    GPAction getPropertiesAction();
-    GPAction getDeleteAction();
+  void setExpanded(T modelElement);
+
+  /**
+   * Modifies the selected node(s) of the tree
+   * 
+   * @param clear
+   *          when true, it first clears the previous selection. When false the
+   *          current selection gets extended
+   * @param modelElement
+   *          to be selected
+   */
+  void setSelected(T modelElement, boolean clear);
+
+  /** Clears the current selection */
+  void clearSelection();
+
+  GPAction getNewAction();
+
+  GPAction getPropertiesAction();
+
+  GPAction getDeleteAction();
 }

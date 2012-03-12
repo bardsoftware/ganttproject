@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart.timeline;
 
 import java.util.Date;
@@ -24,5 +24,5 @@ import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public interface TimeFormatter {
-    TimeUnitText[] format(TimeUnit timeUnit, Date baseDate);
+  TimeUnitText[] format(TimeUnit timeUnit, Date baseDate);
 }

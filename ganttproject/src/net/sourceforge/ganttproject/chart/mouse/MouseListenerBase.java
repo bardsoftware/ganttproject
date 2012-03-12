@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Cursor;
@@ -31,63 +31,62 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.util.MouseUtil;
 
 public class MouseListenerBase extends MouseAdapter {
-    private UIFacade myUiFacade;
-    private ChartComponentBase myChartComponent;
-    private AbstractChartImplementation myChartImplementation;
+  private UIFacade myUiFacade;
+  private ChartComponentBase myChartComponent;
+  private AbstractChartImplementation myChartImplementation;
 
-    protected MouseListenerBase(
-            UIFacade uiFacade, ChartComponentBase chartComponent, AbstractChartImplementation chartImplementation) {
-        assert uiFacade != null && chartComponent != null && chartImplementation != null;
-        myUiFacade = uiFacade;
-        myChartComponent = chartComponent;
-        myChartImplementation = chartImplementation;
+  protected MouseListenerBase(UIFacade uiFacade, ChartComponentBase chartComponent,
+      AbstractChartImplementation chartImplementation) {
+    assert uiFacade != null && chartComponent != null && chartImplementation != null;
+    myUiFacade = uiFacade;
+    myChartComponent = chartComponent;
+    myChartImplementation = chartImplementation;
+  }
+
+  protected UIFacade getUIFacade() {
+    return myUiFacade;
+  }
+
+  protected void showPopupMenu(MouseEvent e) {
+    Action[] actions = getPopupMenuActions();
+    if (actions.length > 0) {
+      getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
     }
+  }
 
-    protected UIFacade getUIFacade() {
-        return myUiFacade;
+  protected void startScrollView(MouseEvent e) {
+    myChartImplementation.beginScrollViewInteraction(e);
+    myChartComponent.requestFocus();
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    String text = MouseUtil.toString(e);
+    if (e.isPopupTrigger() || text.equals(GPAction.getKeyStrokeText("mouse.contextMenu"))) {
+      showPopupMenu(e);
+      return;
     }
+  }
 
-    protected void showPopupMenu(MouseEvent e) {
-        Action[] actions = getPopupMenuActions();
-        if (actions.length > 0) {
-            getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
-        }
-    }
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    super.mouseReleased(e);
+    myChartImplementation.finishInteraction();
+    myChartComponent.reset();
+    myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
 
-    protected void startScrollView(MouseEvent e) {
-        myChartImplementation.beginScrollViewInteraction(e);
-        myChartComponent.requestFocus();
-    }
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    myChartComponent.setDefaultCursor();
+  }
 
+  @Override
+  public void mouseExited(MouseEvent e) {
+    myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        String text = MouseUtil.toString(e);
-        if (e.isPopupTrigger() || text.equals(GPAction.getKeyStrokeText("mouse.contextMenu"))) {
-            showPopupMenu(e);
-            return;
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        super.mouseReleased(e);
-        myChartImplementation.finishInteraction();
-        myChartComponent.reset();
-        myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        myChartComponent.setDefaultCursor();
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
-
-    protected Action[] getPopupMenuActions() {
-        return new Action[0];
-    }
+  protected Action[] getPopupMenuActions() {
+    return new Action[0];
+  }
 }

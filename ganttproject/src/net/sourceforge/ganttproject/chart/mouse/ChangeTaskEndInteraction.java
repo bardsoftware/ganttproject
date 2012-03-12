@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseEvent;
@@ -28,34 +28,33 @@ import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 
-public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction
-        implements MouseInteraction {
-    private TaskMutator myMutator;
-    private WorkingUnitCounter myCounter;
+public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction implements MouseInteraction {
+  private TaskMutator myMutator;
+  private WorkingUnitCounter myCounter;
 
-    public ChangeTaskEndInteraction(TaskBoundaryChartItem taskBoundary,
-            TimelineFacade chartDateGrid, UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
-        super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask(),
-            chartDateGrid, uiFacade, taskScheduleAlgorithm);
-        myMutator = getTask().createMutator();
-        myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
-    }
+  public ChangeTaskEndInteraction(TaskBoundaryChartItem taskBoundary, TimelineFacade chartDateGrid, UIFacade uiFacade,
+      RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
+    super(taskBoundary.getTask().getStart().getTime(), taskBoundary.getTask(), chartDateGrid, uiFacade,
+        taskScheduleAlgorithm);
+    myMutator = getTask().createMutator();
+    myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
+  }
 
-    @Override
-    public void apply(MouseEvent event) {
-        Date dateUnderX = getChartDateGrid().getDateAt(event.getX());
-        TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
-        myMutator.setDuration(newDuration);
-        updateTooltip(event);
-    }
+  @Override
+  public void apply(MouseEvent event) {
+    Date dateUnderX = getChartDateGrid().getDateAt(event.getX());
+    TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
+    myMutator.setDuration(newDuration);
+    updateTooltip(event);
+  }
 
-    @Override
-    protected String getNotesText() {
-        return getTask().getEnd().toString();
-    }
+  @Override
+  protected String getNotesText() {
+    return getTask().getEnd().toString();
+  }
 
-    @Override
-    public void finish() {
-        super.finish(myMutator);
-    }
+  @Override
+  public void finish() {
+    super.finish(myMutator);
+  }
 }

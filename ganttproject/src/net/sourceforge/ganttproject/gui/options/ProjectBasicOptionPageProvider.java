@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
@@ -23,32 +23,32 @@ import java.awt.Component;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public class ProjectBasicOptionPageProvider extends OptionPageProviderBase {
-    private ProjectSettingsPanel mySettingsPanel;
+  private ProjectSettingsPanel mySettingsPanel;
 
-    public ProjectBasicOptionPageProvider() {
-        super("project.basic");
-    }
+  public ProjectBasicOptionPageProvider() {
+    super("project.basic");
+  }
 
-    @Override
-    public GPOptionGroup[] getOptionGroups() {
-        return new GPOptionGroup[0];
-    }
+  @Override
+  public GPOptionGroup[] getOptionGroups() {
+    return new GPOptionGroup[0];
+  }
 
-    @Override
-    public boolean hasCustomComponent() {
-        return true;
-    }
+  @Override
+  public boolean hasCustomComponent() {
+    return true;
+  }
 
-    @Override
-    public Component buildPageComponent() {
-        mySettingsPanel = new ProjectSettingsPanel(getProject());
-        mySettingsPanel.initialize();
-        return OptionPageProviderBase.wrapContentComponent(mySettingsPanel, mySettingsPanel.getTitle(), mySettingsPanel
-                .getComment());
-    }
+  @Override
+  public Component buildPageComponent() {
+    mySettingsPanel = new ProjectSettingsPanel(getProject());
+    mySettingsPanel.initialize();
+    return OptionPageProviderBase.wrapContentComponent(mySettingsPanel, mySettingsPanel.getTitle(),
+        mySettingsPanel.getComment());
+  }
 
-    @Override
-    public void commit() {
-        mySettingsPanel.applyChanges(false);
-    }
+  @Override
+  public void commit() {
+    mySettingsPanel.applyChanges(false);
+  }
 }

@@ -15,20 +15,20 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.roles;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * 
  * @author bard Date: 25.01.2004
  */
 public interface Role {
-    int getID();
+  int getID();
 
-    String getName();
+  String getName();
 
-    void setName(String name);
+  void setName(String name);
 
-    String getPersistentID();
+  String getPersistentID();
 }

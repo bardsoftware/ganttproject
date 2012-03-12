@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import java.util.HashMap;
@@ -37,159 +37,150 @@ import org.xml.sax.Attributes;
 
 /** Class to parse the attribute of resources handler */
 public class ResourceTagHandler implements TagHandler, ParsingListener {
-    private final CustomPropertyManager myCustomPropertyManager;
+  private final CustomPropertyManager myCustomPropertyManager;
 
-    private HumanResource myCurrentResource;
+  private HumanResource myCurrentResource;
 
-    private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
+  private final HashMap<HumanResource, String> myLateResource2roleBinding = new HashMap<HumanResource, String>();
 
-    private final HumanResourceManager myResourceManager;
+  private final HumanResourceManager myResourceManager;
 
-    private final RoleManager myRoleManager;
+  private final RoleManager myRoleManager;
 
-    public ResourceTagHandler(HumanResourceManager resourceManager,
-            RoleManager roleManager, CustomPropertyManager resourceCustomPropertyManager) {
-        myResourceManager = resourceManager;
-        myCustomPropertyManager =resourceCustomPropertyManager;
-        // myResourceManager.clear(); //CleanUP the old stuff
-        myRoleManager = roleManager;
+  public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
+      CustomPropertyManager resourceCustomPropertyManager) {
+    myResourceManager = resourceManager;
+    myCustomPropertyManager = resourceCustomPropertyManager;
+    // myResourceManager.clear(); //CleanUP the old stuff
+    myRoleManager = roleManager;
+  }
+
+  /**
+   * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
+   *      String, String)
+   */
+  @Override
+  public void endElement(String namespaceURI, String sName, String qName) {
+
+  }
+
+  /**
+   * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
+   *      String, String, Attributes)
+   */
+  @Override
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+
+    if (qName.equals("resource")) {
+      loadResource(attrs);
+    }
+    if ("custom-property".equals(qName)) {
+      assert myCurrentResource != null;
+      loadCustomProperty(attrs);
+    }
+    if ("custom-property-definition".equals(qName)) {
+      loadCustomPropertyDefinition(attrs);
+    }
+  }
+
+  private void loadCustomProperty(Attributes attrs) {
+    String id = attrs.getValue("definition-id");
+    String value = attrs.getValue("value");
+    List<CustomPropertyDefinition> definitions = myCustomPropertyManager.getDefinitions();
+    for (int i = 0; i < definitions.size(); i++) {
+      CustomPropertyDefinition nextDefinition = definitions.get(i);
+      if (id.equals(nextDefinition.getID())) {
+        myCurrentResource.addCustomProperty(nextDefinition, value);
+        break;
+      }
+    }
+  }
+
+  private void loadCustomPropertyDefinition(Attributes attrs) {
+    String id = attrs.getValue("id");
+    String name = attrs.getValue("name");
+    String type = attrs.getValue("type");
+    String defaultValue = attrs.getValue("default-value");
+    myCustomPropertyManager.createDefinition(id, type, name, defaultValue);
+  }
+
+  /** Las a resources */
+  private void loadResource(Attributes atts) {
+    final HumanResource hr;
+
+    try {
+      String id = atts.getValue("id");
+      if (id == null) {
+        hr = getResourceManager().newHumanResource();
+        hr.setName(atts.getValue("name"));
+        getResourceManager().add(hr);
+      } else {
+        hr = getResourceManager().create(atts.getValue("name"), Integer.parseInt(id));
+      }
+      myCurrentResource = hr;
+    } catch (NumberFormatException e) {
+      System.out.println("ERROR in parsing XML File id is not numeric: " + e.toString());
+      return;
     }
 
-    /**
-     * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
-     *      String, String)
-     */
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
-
+    hr.setMail(atts.getValue("contacts"));
+    hr.setPhone(atts.getValue("phone"));
+    try {
+      String roleID = atts.getValue("function");
+      myLateResource2roleBinding.put(hr, roleID);
+      // hr.setFunction(Integer.parseInt());
+    } catch (NumberFormatException e) {
+      System.out.println("ERROR in parsing XML File function id is not numeric: " + e.toString());
     }
+  }
 
-    /**
-     * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
-     *      String, String, Attributes)
-     */
-    @Override
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) {
+  private HumanResourceManager getResourceManager() {
+    return myResourceManager;
+  }
 
-        if (qName.equals("resource")) {
-            loadResource(attrs);
+  // private GanttPeoplePanel myPeople;
+
+  private Role findRole(String persistentIDasString) {
+    //
+    RolePersistentID persistentID = new RolePersistentID(persistentIDasString);
+    String rolesetName = persistentID.getRoleSetID();
+    int roleID = persistentID.getRoleID();
+    RoleSet roleSet;
+    if (rolesetName == null) {
+      roleSet = myRoleManager.getProjectRoleSet();
+      if (roleSet.findRole(roleID) == null) {
+        if (roleID <= 10 && roleID > 2) {
+          roleSet = myRoleManager.getRoleSet(RoleSet.SOFTWARE_DEVELOPMENT);
+          roleSet.setEnabled(true);
+        } else if (roleID <= 2) {
+          roleSet = myRoleManager.getRoleSet(RoleSet.DEFAULT);
         }
-        if ("custom-property".equals(qName)) {
-            assert myCurrentResource!=null;
-            loadCustomProperty(attrs);
-        }
-        if ("custom-property-definition".equals(qName)) {
-            loadCustomPropertyDefinition(attrs);
-        }
+      }
+    } else {
+      roleSet = myRoleManager.getRoleSet(rolesetName);
     }
+    Role result = roleSet.findRole(roleID);
+    return result;
+  }
 
-    private void loadCustomProperty(Attributes attrs) {
-        String id = attrs.getValue("definition-id");
-        String value = attrs.getValue("value");
-        List<CustomPropertyDefinition> definitions = myCustomPropertyManager.getDefinitions();
-        for (int i=0; i<definitions.size(); i++) {
-            CustomPropertyDefinition nextDefinition = definitions.get(i);
-            if (id.equals(nextDefinition.getID())) {
-                myCurrentResource.addCustomProperty(nextDefinition, value);
-                break;
-            }
-        }
+  @Override
+  public void parsingStarted() {
+  }
+
+  @Override
+  public void parsingFinished() {
+    // System.err.println("[ResourceTagHandler] parsingFinished():");
+    for (Iterator<Entry<HumanResource, String>> lateBindingEntries = myLateResource2roleBinding.entrySet().iterator(); lateBindingEntries.hasNext();) {
+      Map.Entry<HumanResource, String> nextEntry = lateBindingEntries.next();
+      String persistentID = nextEntry.getValue();
+      Role nextRole = findRole(persistentID);
+      if (nextRole != null) {
+        lateBindingEntries.remove();
+        nextEntry.getKey().setRole(nextRole);
+      }
     }
-
-    private void loadCustomPropertyDefinition(Attributes attrs) {
-        String id = attrs.getValue("id");
-        String name = attrs.getValue("name");
-        String type = attrs.getValue("type");
-        String defaultValue = attrs.getValue("default-value");
-        myCustomPropertyManager.createDefinition(id, type, name, defaultValue);
+    if (!myLateResource2roleBinding.isEmpty()) {
+      System.err.println("[ResourceTagHandler] parsingFinished(): not found roles:\n" + myLateResource2roleBinding);
     }
-
-    /** Las a resources */
-    private void loadResource(Attributes atts) {
-        final HumanResource hr;
-
-        try {
-            String id = atts.getValue("id");
-            if (id == null) {
-                hr = getResourceManager().newHumanResource();
-                hr.setName(atts.getValue("name"));
-                getResourceManager().add(hr);
-            } else {
-                hr = getResourceManager().create(atts.getValue("name"), Integer.parseInt(id));
-            }
-            myCurrentResource = hr;
-        } catch (NumberFormatException e) {
-            System.out.println("ERROR in parsing XML File id is not numeric: "
-                    + e.toString());
-            return;
-        }
-
-        hr.setMail(atts.getValue("contacts"));
-        hr.setPhone(atts.getValue("phone"));
-        try {
-            String roleID = atts.getValue("function");
-            myLateResource2roleBinding.put(hr, roleID);
-            // hr.setFunction(Integer.parseInt());
-        } catch (NumberFormatException e) {
-            System.out
-                    .println("ERROR in parsing XML File function id is not numeric: "
-                            + e.toString());
-        }
-    }
-
-    private HumanResourceManager getResourceManager() {
-        return myResourceManager;
-    }
-
-    // private GanttPeoplePanel myPeople;
-
-    private Role findRole(String persistentIDasString) {
-        //
-        RolePersistentID persistentID = new RolePersistentID(
-                persistentIDasString);
-        String rolesetName = persistentID.getRoleSetID();
-        int roleID = persistentID.getRoleID();
-        RoleSet roleSet;
-        if (rolesetName == null) {
-            roleSet = myRoleManager.getProjectRoleSet();
-            if (roleSet.findRole(roleID) == null) {
-                if (roleID <= 10 && roleID > 2) {
-                    roleSet = myRoleManager
-                            .getRoleSet(RoleSet.SOFTWARE_DEVELOPMENT);
-                    roleSet.setEnabled(true);
-                } else if (roleID <= 2) {
-                    roleSet = myRoleManager.getRoleSet(RoleSet.DEFAULT);
-                }
-            }
-        } else {
-            roleSet = myRoleManager.getRoleSet(rolesetName);
-        }
-        Role result = roleSet.findRole(roleID);
-        return result;
-    }
-
-    @Override
-    public void parsingStarted() {
-    }
-
-    @Override
-    public void parsingFinished() {
-        // System.err.println("[ResourceTagHandler] parsingFinished():");
-        for (Iterator<Entry<HumanResource, String>> lateBindingEntries = myLateResource2roleBinding
-                .entrySet().iterator(); lateBindingEntries.hasNext();) {
-            Map.Entry<HumanResource, String> nextEntry = lateBindingEntries.next();
-            String persistentID = nextEntry.getValue();
-            Role nextRole = findRole(persistentID);
-            if (nextRole != null) {
-                lateBindingEntries.remove();
-                nextEntry.getKey().setRole(nextRole);
-            }
-        }
-        if (!myLateResource2roleBinding.isEmpty()) {
-            System.err
-                    .println("[ResourceTagHandler] parsingFinished(): not found roles:\n"
-                            + myLateResource2roleBinding);
-        }
-    }
+  }
 }
