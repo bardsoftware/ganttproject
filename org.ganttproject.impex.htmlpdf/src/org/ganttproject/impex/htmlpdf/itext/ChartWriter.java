@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf.itext;
 
 import java.awt.Color;
@@ -39,88 +39,89 @@ import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 
 /**
  * Provides functions for writing charts to PDF writer.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 class ChartWriter implements ChartImageVisitor {
-    private final Document myDoc;
-    private final TimelineChart myChart;
-    private final GanttExportSettings myExportSettings;
-    private final PdfWriter myWriter;
-    private final TTFontCache myFontCache;
+  private final Document myDoc;
+  private final TimelineChart myChart;
+  private final GanttExportSettings myExportSettings;
+  private final PdfWriter myWriter;
+  private final TTFontCache myFontCache;
 
-    private float myScale;
-    private float myYShift;
-    private PdfTemplate myTemplate;
-    private Graphics2D myGraphics;
-    private final String myCharset;
-    private final FontSubstitutionModel mySubstitutions;
+  private float myScale;
+  private float myYShift;
+  private PdfTemplate myTemplate;
+  private Graphics2D myGraphics;
+  private final String myCharset;
+  private final FontSubstitutionModel mySubstitutions;
 
-    ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings,
-            TTFontCache fontCache, FontSubstitutionModel substitutionModel, String charset) {
-        myChart = chart;
-        myWriter = writer;
-        myDoc = doc;
-        myExportSettings = exportSettings;
-        myFontCache = fontCache;
-        myCharset = charset;
-        mySubstitutions = substitutionModel;
+  ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings,
+      TTFontCache fontCache, FontSubstitutionModel substitutionModel, String charset) {
+    myChart = chart;
+    myWriter = writer;
+    myDoc = doc;
+    myExportSettings = exportSettings;
+    myFontCache = fontCache;
+    myCharset = charset;
+    mySubstitutions = substitutionModel;
+  }
+
+  protected ChartModel getModel() {
+    return myChart.getModel();
+  }
+
+  void write() {
+    setupChart(myExportSettings);
+    myChart.buildImage(myExportSettings, this);
+    myGraphics.dispose();
+    myWriter.getDirectContent().addTemplate(myTemplate, myScale, 0, 0, myScale, myDoc.leftMargin(), myYShift);
+  }
+
+  private Graphics2D getGraphics(ChartDimensions d) {
+    if (myGraphics == null) {
+      myTemplate = myWriter.getDirectContent().createTemplate(d.getFullWidth(), d.getChartHeight());
+      Rectangle page = myDoc.getPageSize();
+      final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
+      final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
+
+      final float xscale = width / d.getFullWidth();
+      final float yscale = height / d.getChartHeight();
+      myScale = Math.min(xscale, yscale);
+      myYShift = height - d.getChartHeight() * myScale + myDoc.bottomMargin();
+      myGraphics = myTemplate.createGraphics(d.getFullWidth(), d.getChartHeight(),
+          myFontCache.getFontMapper(mySubstitutions, myCharset));
+      myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
+    return myGraphics;
+  }
 
-    protected ChartModel getModel() {
-        return myChart.getModel();
-    }
-    void write() {
-        setupChart(myExportSettings);
-        myChart.buildImage(myExportSettings, this);
-        myGraphics.dispose();
-        myWriter.getDirectContent().addTemplate(myTemplate, myScale, 0, 0, myScale, myDoc.leftMargin(), myYShift);
-    }
+  protected void setupChart(GanttExportSettings settings) {
+    // myChart.gmyModel.setBounds(myModel.getMaxBounds());
+  }
 
-    private Graphics2D getGraphics(ChartDimensions d) {
-        if (myGraphics == null) {
-            myTemplate = myWriter.getDirectContent().createTemplate(d.getFullWidth(), d.getChartHeight());
-            Rectangle page = myDoc.getPageSize();
-            final float width = page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin();
-            final float height = page.getHeight() - myDoc.bottomMargin() - myDoc.topMargin();
+  @Override
+  public void acceptLogo(ChartDimensions d, Image logo) {
+    Graphics2D g = getGraphics(d);
+    g.setBackground(Color.WHITE);
+    g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
+    g.drawImage(logo, 0, 0, null);
+  }
 
-            final float xscale = width/d.getFullWidth();
-            final float yscale = height/d.getChartHeight();
-            myScale = Math.min(xscale, yscale);
-            myYShift = height - d.getChartHeight() * myScale + myDoc.bottomMargin();
-            myGraphics = myTemplate.createGraphics(d.getFullWidth(), d.getChartHeight(),
-                    myFontCache.getFontMapper(mySubstitutions, myCharset));
-            myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
-        return myGraphics;
-    }
+  @Override
+  public void acceptTable(ChartDimensions d, Component header, Component table) {
+    Graphics2D g = getGraphics(d);
+    g.translate(0, d.getLogoHeight());
+    header.print(g);
 
-    protected void setupChart(GanttExportSettings settings) {
-        //myChart.gmyModel.setBounds(myModel.getMaxBounds());
-    }
+    g.translate(0, d.getTableHeaderHeight());
+    table.print(g);
+  }
 
-    @Override
-    public void acceptLogo(ChartDimensions d, Image logo) {
-        Graphics2D g = getGraphics(d);
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
-        g.drawImage(logo, 0, 0, null);
-    }
-
-    @Override
-    public void acceptTable(ChartDimensions d, Component header, Component table) {
-        Graphics2D g = getGraphics(d);
-        g.translate(0, d.getLogoHeight());
-        header.print(g);
-
-        g.translate(0, d.getTableHeaderHeight());
-        table.print(g);
-    }
-
-    @Override
-    public void acceptChart(ChartDimensions d, ChartModel model) {
-        Graphics2D g = getGraphics(d);
-        g.translate(d.getTreeWidth(), - d.getLogoHeight() - d.getTableHeaderHeight());
-        model.paint(g);
-    }
+  @Override
+  public void acceptChart(ChartDimensions d, ChartModel model) {
+    Graphics2D g = getGraphics(d);
+    g.translate(d.getTreeWidth(), -d.getLogoHeight() - d.getTableHeaderHeight());
+    model.paint(g);
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -26,38 +26,38 @@ import org.osgi.service.prefs.Preferences;
 
 /**
  * Simple base class for the rendering engines.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class AbstractEngine {
-    private IGanttProject myProject;
-    private UIFacade myUiFacade;
-    private Preferences myPreferences;
+  private IGanttProject myProject;
+  private UIFacade myUiFacade;
+  private Preferences myPreferences;
 
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
-        myProject = project;
-        myUiFacade = uiFacade;
-        myPreferences = preferences;
-    }
+  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
+    myProject = project;
+    myUiFacade = uiFacade;
+    myPreferences = preferences;
+  }
 
-    protected UIFacade getUiFacade() {
-        return myUiFacade;
-    }
+  protected UIFacade getUiFacade() {
+    return myUiFacade;
+  }
 
-    protected IGanttProject getProject() {
-        return myProject;
-    }
+  protected IGanttProject getProject() {
+    return myProject;
+  }
 
-    protected Preferences getPreferences() {
-        return myPreferences;
-    }
+  protected Preferences getPreferences() {
+    return myPreferences;
+  }
 
-    protected Chart getGanttChart() {
-        return myUiFacade.getGanttChart();
-    }
+  protected Chart getGanttChart() {
+    return myUiFacade.getGanttChart();
+  }
 
-    protected Chart getResourceChart() {
-        return myUiFacade.getResourceChart();
-    }
+  protected Chart getResourceChart() {
+    return myUiFacade.getResourceChart();
+  }
 
 }

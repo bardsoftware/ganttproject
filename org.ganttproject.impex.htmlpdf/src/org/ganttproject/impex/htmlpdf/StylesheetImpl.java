@@ -15,33 +15,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf;
 
 import java.net.URL;
 
 public class StylesheetImpl implements Stylesheet {
-    private final String myLocalizedName;
-    private final URL myURL;
+  private final String myLocalizedName;
+  private final URL myURL;
 
-    protected StylesheetImpl(URL stylesheetURL, String localizedName) {
-        assert stylesheetURL != null;
-        myURL = stylesheetURL;
-        myLocalizedName = localizedName;
-    }
+  protected StylesheetImpl(URL stylesheetURL, String localizedName) {
+    assert stylesheetURL != null;
+    myURL = stylesheetURL;
+    myLocalizedName = localizedName;
+  }
 
-    @Override
-    public String getLocalizedName() {
-        return myLocalizedName;
-    }
+  @Override
+  public String getLocalizedName() {
+    return myLocalizedName;
+  }
 
-    @Override
-    public String toString() {
-        return getLocalizedName();
-    }
+  @Override
+  public String toString() {
+    return getLocalizedName();
+  }
 
-    @Override
-    public URL getUrl() {
-        return myURL;
-    }
+  @Override
+  public URL getUrl() {
+    return myURL;
+  }
 }

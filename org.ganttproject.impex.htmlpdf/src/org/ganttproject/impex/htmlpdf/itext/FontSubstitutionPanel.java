@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf.itext;
 
 import java.awt.Color;
@@ -40,116 +40,120 @@ import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstituti
 
 public class FontSubstitutionPanel {
 
-    private FontSubstitutionModel myModel;
-    private JComboBox myFamiliesComboBox;
-    private JLabel myMessage;
+  private FontSubstitutionModel myModel;
+  private JComboBox myFamiliesComboBox;
+  private JLabel myMessage;
 
-    public FontSubstitutionPanel(FontSubstitutionModel fontConfigurationModel) {
-        myModel = fontConfigurationModel;
-    }
+  public FontSubstitutionPanel(FontSubstitutionModel fontConfigurationModel) {
+    myModel = fontConfigurationModel;
+  }
 
-    public Component getComponent() {
-        TableModel tableModel = new AbstractTableModel() {
-            @Override
-            public int getColumnCount() {
-                return 2;
-            }
-            @Override
-            public int getRowCount() {
-                return myModel.getSubstitutions().size();
-            }
-            @Override
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                FontSubstitution substitution = getSubstitution(rowIndex);
-                switch (columnIndex) {
-                case 0:
-                    return substitution.myOriginalFamily;
-                case 1:
-                    return substitution.getSubstitutionFamily();
-                default:
-                    assert false;
-                    throw new IllegalStateException();
-                }
-            }
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return columnIndex == 1;
-            }
-            @Override
-            public void setValueAt(Object value, int rowIndex, int columnIndex) {
-                assert columnIndex == 1;
-                assert value instanceof String;
-                getSubstitution(rowIndex).setSubstitutionFamily((String)value);
-                updateFontStatusMessage();
-            }
-            @Override
-            public String getColumnName(int column) {
-                switch (column) {
-                case 0:
-                    return "Theme font";
-                case 1:
-                    return "Substitution";
-                default:
-                    assert false;
-                    throw new IllegalStateException();
-                }
-            }
-        };
-        JTable table = new JXTable(tableModel);
-        table.setRowHeight(30);
-        UIUtil.setupTableUI(table);
+  public Component getComponent() {
+    TableModel tableModel = new AbstractTableModel() {
+      @Override
+      public int getColumnCount() {
+        return 2;
+      }
 
-        class CellRendererImpl implements TableCellRenderer {
-            private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+      @Override
+      public int getRowCount() {
+        return myModel.getSubstitutions().size();
+      }
 
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                    boolean hasFocus, int row, int column) {
-                 JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(
-                         table, value, isSelected, hasFocus, row, column);
-                 FontSubstitution substitution = getSubstitution(row);
-                 if (!substitution.isResolved() || column==0) {
-                     result.setFont(result.getFont().deriveFont(16f));
-                 } else {
-                     result.setFont(substitution.getSubstitutionFont().deriveFont(16f));
-                 }
-                 if (substitution.isResolved()) {
-                     result.setForeground(Color.BLACK);
-                 } else {
-                     result.setForeground(Color.RED);
-                 }
-                 return result;
-            }
+      @Override
+      public Object getValueAt(int rowIndex, int columnIndex) {
+        FontSubstitution substitution = getSubstitution(rowIndex);
+        switch (columnIndex) {
+        case 0:
+          return substitution.myOriginalFamily;
+        case 1:
+          return substitution.getSubstitutionFamily();
+        default:
+          assert false;
+          throw new IllegalStateException();
         }
+      }
 
-        myFamiliesComboBox = new JComboBox(myModel.getAvailableSubstitutionFamilies().toArray(new String[0]));
-        table.getColumnModel().getColumn(0).setCellRenderer(new CellRendererImpl());
+      @Override
+      public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return columnIndex == 1;
+      }
 
-        table.getColumnModel().getColumn(1).setCellRenderer(new CellRendererImpl());
-        table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(myFamiliesComboBox));
-        table.getTableHeader().setVisible(true);
+      @Override
+      public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        assert columnIndex == 1;
+        assert value instanceof String;
+        getSubstitution(rowIndex).setSubstitutionFamily((String) value);
+        updateFontStatusMessage();
+      }
 
-        myMessage = new JLabel(getMessageText());
-        myMessage.setAlignmentX(0);
-        Box result = Box.createVerticalBox();
-        result.add(myMessage);
-        result.add(Box.createVerticalStrut(5));
-        result.add(new JScrollPane(table));
+      @Override
+      public String getColumnName(int column) {
+        switch (column) {
+        case 0:
+          return "Theme font";
+        case 1:
+          return "Substitution";
+        default:
+          assert false;
+          throw new IllegalStateException();
+        }
+      }
+    };
+    JTable table = new JXTable(tableModel);
+    table.setRowHeight(30);
+    UIUtil.setupTableUI(table);
+
+    class CellRendererImpl implements TableCellRenderer {
+      private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+
+      @Override
+      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+          int row, int column) {
+        JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+            row, column);
+        FontSubstitution substitution = getSubstitution(row);
+        if (!substitution.isResolved() || column == 0) {
+          result.setFont(result.getFont().deriveFont(16f));
+        } else {
+          result.setFont(substitution.getSubstitutionFont().deriveFont(16f));
+        }
+        if (substitution.isResolved()) {
+          result.setForeground(Color.BLACK);
+        } else {
+          result.setForeground(Color.RED);
+        }
         return result;
+      }
     }
 
-    private void updateFontStatusMessage() {
-        myMessage.setText(getMessageText());
-    }
+    myFamiliesComboBox = new JComboBox(myModel.getAvailableSubstitutionFamilies().toArray(new String[0]));
+    table.getColumnModel().getColumn(0).setCellRenderer(new CellRendererImpl());
 
-    private String getMessageText() {
-        return myModel.hasUnresolvedFonts() ?
-                "<html><p><b>Some fonts used in the selected theme have not been found</b></p>"
-                + "<p>You may define substitutions in the table</p></html>"
-                : "<html>All fonts have been found.</html>";
-    }
+    table.getColumnModel().getColumn(1).setCellRenderer(new CellRendererImpl());
+    table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(myFamiliesComboBox));
+    table.getTableHeader().setVisible(true);
 
-    private FontSubstitution getSubstitution(int row) {
-        return myModel.getSubstitution(row);
-    }
+    myMessage = new JLabel(getMessageText());
+    myMessage.setAlignmentX(0);
+    Box result = Box.createVerticalBox();
+    result.add(myMessage);
+    result.add(Box.createVerticalStrut(5));
+    result.add(new JScrollPane(table));
+    return result;
+  }
+
+  private void updateFontStatusMessage() {
+    myMessage.setText(getMessageText());
+  }
+
+  private String getMessageText() {
+    return myModel.hasUnresolvedFonts() ? "<html><p><b>Some fonts used in the selected theme have not been found</b></p>"
+        + "<p>You may define substitutions in the table</p></html>"
+        : "<html>All fonts have been found.</html>";
+  }
+
+  private FontSubstitution getSubstitution(int row) {
+    return myModel.getSubstitution(row);
+  }
 }

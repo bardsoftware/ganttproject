@@ -7,6 +7,7 @@ import java.net.URL;
 
 public interface Stylesheet {
 
-    String getLocalizedName();
-    URL getUrl();
+  String getLocalizedName();
+
+  URL getUrl();
 }

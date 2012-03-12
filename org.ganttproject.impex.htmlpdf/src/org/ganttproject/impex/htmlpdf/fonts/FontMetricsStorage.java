@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package org.ganttproject.impex.htmlpdf.fonts;
 
 import java.io.UnsupportedEncodingException;
@@ -30,25 +30,23 @@ import net.sourceforge.ganttproject.GPLogger;
  * @author bard
  */
 public class FontMetricsStorage {
-    public URI getFontMetricsURI(TTFFileExt ttfFile) {
-        URI result = null;
-        String fontName = ttfFile.getFile().getName();
-        String resourceName = "font-metrics/" + fontName + ".xml";
-        URL resourceUrl = getClass().getClassLoader().getResource(resourceName);
+  public URI getFontMetricsURI(TTFFileExt ttfFile) {
+    URI result = null;
+    String fontName = ttfFile.getFile().getName();
+    String resourceName = "font-metrics/" + fontName + ".xml";
+    URL resourceUrl = getClass().getClassLoader().getResource(resourceName);
 
-        try {
-            result = resourceUrl == null ?
-                    null :
-                    new URI(URLEncoder.encode(resourceUrl.toString(), "utf-8"));
-        } catch (URISyntaxException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-        } catch (UnsupportedEncodingException e) {
-            if (!GPLogger.log(e)) {
-                e.printStackTrace(System.err);
-            }
-        }
-        return result;
+    try {
+      result = resourceUrl == null ? null : new URI(URLEncoder.encode(resourceUrl.toString(), "utf-8"));
+    } catch (URISyntaxException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
+    } catch (UnsupportedEncodingException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
     }
+    return result;
+  }
 }
