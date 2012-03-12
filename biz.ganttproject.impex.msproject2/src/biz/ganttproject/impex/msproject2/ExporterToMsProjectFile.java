@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package biz.ganttproject.impex.msproject2;
 
 import java.awt.Component;
@@ -45,119 +45,117 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class ExporterToMsProjectFile implements Exporter {
 
-    private static final String[] FILE_FORMAT_IDS = new String[] {
-            "impex.msproject.fileformat.mpx",
-            "impex.msproject.fileformat.mspdi" };
+  private static final String[] FILE_FORMAT_IDS = new String[] { "impex.msproject.fileformat.mpx",
+      "impex.msproject.fileformat.mspdi" };
 
-    private static final String[] FILE_EXTENSIONS = new String[] { "mpx","xml" };
+  private static final String[] FILE_EXTENSIONS = new String[] { "mpx", "xml" };
 
-    private String myFileFormat = FILE_FORMAT_IDS[0];
+  private String myFileFormat = FILE_FORMAT_IDS[0];
 
-    private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat", FILE_FORMAT_IDS) {
-        @Override
-        public void commit() {
-            super.commit();
-            ExporterToMsProjectFile.this.myFileFormat = getValue();
-        }
-    };
-
-    private LocaleOption myLanguageOption = new LocaleOption();
-
-    private GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject",
-            new GPOption[] { myFileFormatOption });
-
-    private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
-
-    private IGanttProject myProject;
-
-    public ExporterToMsProjectFile() {
-        myOptions.setTitled(false);
-        myMPXOptions.setTitled(false);
-        myFileFormatOption.lock();
-        myFileFormatOption.setValue(FILE_FORMAT_IDS[0]);
-        myFileFormatOption.commit();
-    }
-
+  private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat",
+      FILE_FORMAT_IDS) {
     @Override
-    public String getFileTypeDescription() {
-        return GanttLanguage.getInstance().getText("impex.msproject.description");
+    public void commit() {
+      super.commit();
+      ExporterToMsProjectFile.this.myFileFormat = getValue();
     }
+  };
 
-    @Override
-    public GPOptionGroup getOptions() {
-        return myOptions;
+  private LocaleOption myLanguageOption = new LocaleOption();
+
+  private GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject", new GPOption[] { myFileFormatOption });
+
+  private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
+
+  private IGanttProject myProject;
+
+  public ExporterToMsProjectFile() {
+    myOptions.setTitled(false);
+    myMPXOptions.setTitled(false);
+    myFileFormatOption.lock();
+    myFileFormatOption.setValue(FILE_FORMAT_IDS[0]);
+    myFileFormatOption.commit();
+  }
+
+  @Override
+  public String getFileTypeDescription() {
+    return GanttLanguage.getInstance().getText("impex.msproject.description");
+  }
+
+  @Override
+  public GPOptionGroup getOptions() {
+    return myOptions;
+  }
+
+  @Override
+  public List<GPOptionGroup> getSecondaryOptions() {
+    return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions)
+        : Collections.<GPOptionGroup> emptyList();
+  }
+
+  @Override
+  public Component getCustomOptionsUI() {
+    return null;
+  }
+
+  @Override
+  public String getFileNamePattern() {
+    return myFileFormat;
+  }
+
+  @Override
+  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
+    myProject = project;
+    myLanguageOption = new LocaleOption();
+    myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
+    myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
+  }
+
+  @Override
+  public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
+    ProjectFile outProject = new ProjectFileExporter(myProject).run();
+    ProjectWriter writer = createProjectWriter();
+    writer.write(outProject, outputFile);
+    finalizationJob.run(new File[] { outputFile });
+  }
+
+  private ProjectWriter createProjectWriter() {
+    if (FILE_FORMAT_IDS[0].equals(myFileFormat)) {
+      MPXWriter result = new MPXWriter();
+      if (myLanguageOption.getSelectedLocale() != null) {
+        result.setLocale(myLanguageOption.getSelectedLocale());
+      }
+      return result;
     }
-
-    @Override
-    public List<GPOptionGroup> getSecondaryOptions() {
-        return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions) : Collections.<GPOptionGroup>emptyList();
+    if (FILE_FORMAT_IDS[1].equals(myFileFormat)) {
+      return new MSPDIWriter();
     }
+    assert false : "Should not be here";
+    return null;
+  }
 
-    @Override
-    public Component getCustomOptionsUI() {
-        return null;
+  @Override
+  public String proposeFileExtension() {
+    return getSelectedFormatExtension();
+  }
+
+  private String getSelectedFormatExtension() {
+    for (int i = 0; i < FILE_FORMAT_IDS.length; i++) {
+      if (myFileFormat.equals(FILE_FORMAT_IDS[i])) {
+        return FILE_EXTENSIONS[i];
+      }
     }
+    throw new IllegalStateException("Selected format=" + myFileFormat + " has not been found in known formats:"
+        + Arrays.asList(FILE_FORMAT_IDS));
+  }
 
+  @Override
+  public String[] getFileExtensions() {
+    return FILE_EXTENSIONS;
+  }
 
-    @Override
-    public String getFileNamePattern() {
-        return myFileFormat;
-    }
-
-    @Override
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-        myProject = project;
-        myLanguageOption = new LocaleOption();
-        myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] {myLanguageOption});
-        myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
-    }
-
-    @Override
-    public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-        ProjectFile outProject = new ProjectFileExporter(myProject).run();
-        ProjectWriter writer = createProjectWriter();
-        writer.write(outProject, outputFile);
-        finalizationJob.run(new File[] { outputFile });
-    }
-
-    private ProjectWriter createProjectWriter() {
-        if (FILE_FORMAT_IDS[0].equals(myFileFormat)) {
-            MPXWriter result = new MPXWriter();
-            if (myLanguageOption.getSelectedLocale() != null) {
-                result.setLocale(myLanguageOption.getSelectedLocale());
-            }
-            return result;
-        }
-        if (FILE_FORMAT_IDS[1].equals(myFileFormat)) {
-            return new MSPDIWriter();
-        }
-        assert false : "Should not be here";
-        return null;
-    }
-
-    @Override
-    public String proposeFileExtension() {
-        return getSelectedFormatExtension();
-    }
-
-    private String getSelectedFormatExtension() {
-        for (int i = 0; i < FILE_FORMAT_IDS.length; i++) {
-            if (myFileFormat.equals(FILE_FORMAT_IDS[i])) {
-                return FILE_EXTENSIONS[i];
-            }
-        }
-        throw new IllegalStateException("Selected format=" + myFileFormat
-                + " has not been found in known formats:"
-                + Arrays.asList(FILE_FORMAT_IDS));
-    }
-
-    @Override
-    public String[] getFileExtensions() {
-        return FILE_EXTENSIONS;
-    }
-
-    @Override
-    public String[] getCommandLineKeys() {
-        return getFileExtensions();
-    }
+  @Override
+  public String[] getCommandLineKeys() {
+    return getFileExtensions();
+  }
 }

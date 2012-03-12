@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package biz.ganttproject.impex.msproject2;
 
 import java.util.Arrays;
@@ -26,33 +26,33 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class LocaleOption extends DefaultEnumerationOption<Object> {
-    private static final Locale[] LOCALES;
-    private static final String[] LOCALE_DISPLAY_NAMES;
+  private static final Locale[] LOCALES;
+  private static final String[] LOCALE_DISPLAY_NAMES;
 
-    static {
-        MPXWriter writer = new MPXWriter();
-        LOCALES = writer.getSupportedLocales();
-        LOCALE_DISPLAY_NAMES = new String[LOCALES.length];
-        for (int i = 0; i < LOCALES.length; i++) {
-            LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());
-        }
-        Arrays.sort(LOCALE_DISPLAY_NAMES);
+  static {
+    MPXWriter writer = new MPXWriter();
+    LOCALES = writer.getSupportedLocales();
+    LOCALE_DISPLAY_NAMES = new String[LOCALES.length];
+    for (int i = 0; i < LOCALES.length; i++) {
+      LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());
     }
+    Arrays.sort(LOCALE_DISPLAY_NAMES);
+  }
 
-    LocaleOption() {
-        super("impex.msproject.mpx.language", LOCALE_DISPLAY_NAMES);
-    }
+  LocaleOption() {
+    super("impex.msproject.mpx.language", LOCALE_DISPLAY_NAMES);
+  }
 
-    Locale getSelectedLocale() {
-        for (Locale l : LOCALES) {
-            if (l.getDisplayLanguage(GanttLanguage.getInstance().getLocale()).equals(getValue())) {
-                return l;
-            }
-        }
-        return null;
+  Locale getSelectedLocale() {
+    for (Locale l : LOCALES) {
+      if (l.getDisplayLanguage(GanttLanguage.getInstance().getLocale()).equals(getValue())) {
+        return l;
+      }
     }
+    return null;
+  }
 
-    void setSelectedLocale(Locale locale) {
-        setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
-    }
+  void setSelectedLocale(Locale locale) {
+    setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));
+  }
 }
