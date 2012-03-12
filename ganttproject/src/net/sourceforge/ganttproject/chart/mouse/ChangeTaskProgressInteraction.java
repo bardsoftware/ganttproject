@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
@@ -28,72 +28,70 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
 
-public class ChangeTaskProgressInteraction extends MouseInteractionBase implements
-        MouseInteraction {
-    private final TaskProgressChartItem myTaskProgrssItem;
+public class ChangeTaskProgressInteraction extends MouseInteractionBase implements MouseInteraction {
+  private final TaskProgressChartItem myTaskProgrssItem;
 
-    private final TaskMutator myMutator;
+  private final TaskMutator myMutator;
 
-    private TaskInteractionHintRenderer myLastNotes;
+  private TaskInteractionHintRenderer myLastNotes;
 
-    private final WorkingUnitCounter myCounter;
+  private final WorkingUnitCounter myCounter;
 
-    private UIFacade myUiFacade;
+  private UIFacade myUiFacade;
 
-    private ChangeTaskProgressRuler myChangeScale;
+  private ChangeTaskProgressRuler myChangeScale;
 
-    private int myStartPixel;
+  private int myStartPixel;
 
-    public ChangeTaskProgressInteraction(MouseEvent e,
-            TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid, TaskChartModelFacade taskFacade, UIFacade uiFacade) {
-        super(taskProgress.getTask().getStart().getTime(), chartDateGrid);
-        myStartPixel = e.getX();
-        myUiFacade = uiFacade;
-        myTaskProgrssItem = taskProgress;
-        myMutator = myTaskProgrssItem.getTask().createMutator();
-        myChangeScale = new ChangeTaskProgressRuler(taskProgress.getTask(), taskFacade);
-        myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
+  public ChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid,
+      TaskChartModelFacade taskFacade, UIFacade uiFacade) {
+    super(taskProgress.getTask().getStart().getTime(), chartDateGrid);
+    myStartPixel = e.getX();
+    myUiFacade = uiFacade;
+    myTaskProgrssItem = taskProgress;
+    myMutator = myTaskProgrssItem.getTask().createMutator();
+    myChangeScale = new ChangeTaskProgressRuler(taskProgress.getTask(), taskFacade);
+    myCounter = new WorkingUnitCounter(getChartDateGrid().getCalendar(), getTask().getDuration().getTimeUnit());
+  }
+
+  private Task getTask() {
+    return myTaskProgrssItem.getTask();
+  }
+
+  @Override
+  public void apply(MouseEvent event) {
+    int newProgress = myChangeScale.getProgress(event.getX());
+    if (newProgress > 100) {
+      newProgress = 100;
     }
-
-    private Task getTask() {
-        return myTaskProgrssItem.getTask();
+    if (newProgress < 0) {
+      newProgress = 0;
     }
+    myMutator.setCompletionPercentage(newProgress);
+    myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
+  }
 
-    @Override
-    public void apply(MouseEvent event) {
-        int newProgress = myChangeScale.getProgress(event.getX());
-        if (newProgress > 100) {
-            newProgress = 100;
-        }
-        if (newProgress < 0) {
-            newProgress = 0;
-        }
-        myMutator.setCompletionPercentage(newProgress);
-        myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
-    }
+  @Override
+  public void finish() {
+    myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
+    myUiFacade.getUndoManager().undoableEdit("Task progress changed", new Runnable() {
+      @Override
+      public void run() {
+        doFinish(myMutator);
+      }
+    });
+    myUiFacade.getActiveChart().reset();
+  }
 
-    @Override
-    public void finish() {
-        myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-        myUiFacade.getUndoManager().undoableEdit("Task progress changed",
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        doFinish(myMutator);
-                    }
-                });
-        myUiFacade.getActiveChart().reset();
-    }
+  private void doFinish(TaskMutator mutator) {
+    mutator.commit();
+    myLastNotes = null;
+  }
 
-    private void doFinish(TaskMutator mutator) {
-        mutator.commit();
-        myLastNotes = null;
+  @Override
+  public void paint(Graphics g) {
+    if (myLastNotes != null) {
+      myLastNotes.paint(g);
     }
-
-    @Override
-    public void paint(Graphics g) {
-        if (myLastNotes != null) {
-            myLastNotes.paint(g);
-        }
-    }
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -24,17 +24,17 @@ import net.sourceforge.ganttproject.GanttCalendar;
  * @author bard Date: 27.01.2004
  */
 public interface TaskMutator extends MutableTask {
-    int READ_UNCOMMITED = 0;
+  int READ_UNCOMMITED = 0;
 
-    int READ_COMMITED = 1;
+  int READ_COMMITED = 1;
 
-    void setIsolationLevel(int level);
+  void setIsolationLevel(int level);
 
-    void commit();
+  void commit();
 
-    void shift(float unitCount);
+  void shift(float unitCount);
 
-    int getCompletionPercentage();
+  int getCompletionPercentage();
 
-    void setThird(GanttCalendar third, int thirdDateConstraint);
+  void setThird(GanttCalendar third, int thirdDateConstraint);
 }

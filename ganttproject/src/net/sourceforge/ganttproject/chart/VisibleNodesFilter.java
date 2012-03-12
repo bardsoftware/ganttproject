@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.ArrayList;
@@ -32,29 +32,26 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard
  */
 public class VisibleNodesFilter {
-    public List<Task> getVisibleNodes(JTree jtree, int minHeight,
-            int maxHeight, int nodeHeight) {
-        List<DefaultMutableTreeNode> preorderedNodes = Collections.list(((DefaultMutableTreeNode) jtree
-                .getModel().getRoot()).preorderEnumeration());
-        List<Task> result = new ArrayList<Task>();
-        int currentHeight = 0;
-        for (int i = 1; i < preorderedNodes.size(); i++) {
-            DefaultMutableTreeNode nextNode = preorderedNodes.get(i);
-            if (false==nextNode.getUserObject() instanceof Task) {
-                continue;
-            }
-            if ((currentHeight+nodeHeight) > minHeight
-                    && jtree.isVisible(new TreePath(nextNode.getPath()))) {
-                result.add((Task) nextNode.getUserObject());
-            }
-            if (jtree.isVisible(new TreePath(nextNode.getPath()))) {
-                currentHeight += nodeHeight;
-            }
-            if(currentHeight > minHeight + maxHeight) {
-                break;
-            }
-        }
-        return result;
+  public List<Task> getVisibleNodes(JTree jtree, int minHeight, int maxHeight, int nodeHeight) {
+    List<DefaultMutableTreeNode> preorderedNodes = Collections.list(((DefaultMutableTreeNode) jtree.getModel().getRoot()).preorderEnumeration());
+    List<Task> result = new ArrayList<Task>();
+    int currentHeight = 0;
+    for (int i = 1; i < preorderedNodes.size(); i++) {
+      DefaultMutableTreeNode nextNode = preorderedNodes.get(i);
+      if (false == nextNode.getUserObject() instanceof Task) {
+        continue;
+      }
+      if ((currentHeight + nodeHeight) > minHeight && jtree.isVisible(new TreePath(nextNode.getPath()))) {
+        result.add((Task) nextNode.getUserObject());
+      }
+      if (jtree.isVisible(new TreePath(nextNode.getPath()))) {
+        currentHeight += nodeHeight;
+      }
+      if (currentHeight > minHeight + maxHeight) {
+        break;
+      }
     }
+    return result;
+  }
 
 }

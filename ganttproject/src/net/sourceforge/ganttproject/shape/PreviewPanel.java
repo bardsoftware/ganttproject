@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.shape;
 
 /*
@@ -32,39 +32,37 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 public class PreviewPanel extends JPanel {
-    protected ShapePaint pattern = ShapeConstants.DEFAULT;
+  protected ShapePaint pattern = ShapeConstants.DEFAULT;
 
-    public PreviewPanel() {
-        setOpaque(true);
-        setBorder(BorderFactory.createCompoundBorder(BorderFactory
-                .createTitledBorder("Preview"), BorderFactory
-                .createEmptyBorder(0, 4, 8, 4)));
-        setPreferredSize(new Dimension(70, 70));
-    }
+  public PreviewPanel() {
+    setOpaque(true);
+    setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Preview"),
+        BorderFactory.createEmptyBorder(0, 4, 8, 4)));
+    setPreferredSize(new Dimension(70, 70));
+  }
 
-    public ShapePaint getPattern() {
-        return new ShapePaint(pattern, getForeground(), getBackground());
-    }
+  public ShapePaint getPattern() {
+    return new ShapePaint(pattern, getForeground(), getBackground());
+  }
 
-    public void setPattern(ShapePaint pattern) {
-        this.pattern = pattern;
-    }
+  public void setPattern(ShapePaint pattern) {
+    this.pattern = pattern;
+  }
 
-    @Override
-    public void paintComponent(Graphics gc) {
-        Graphics2D g = (Graphics2D) gc;
-        int w = getSize().width;
-        int h = getSize().height;
-        g.setColor(getParent().getBackground());
-        g.fillRect(0, 0, w, h);
-        if (pattern == null)
-            return;
-        Insets insets = getInsets();
-        Rectangle rect = new Rectangle(insets.left, insets.top, w
-                - (insets.left + insets.right), h
-                - (insets.top + insets.bottom));
-        g.setPaint(new ShapePaint(pattern, getForeground(), getBackground()));
-        g.fill(rect);
+  @Override
+  public void paintComponent(Graphics gc) {
+    Graphics2D g = (Graphics2D) gc;
+    int w = getSize().width;
+    int h = getSize().height;
+    g.setColor(getParent().getBackground());
+    g.fillRect(0, 0, w, h);
+    if (pattern == null)
+      return;
+    Insets insets = getInsets();
+    Rectangle rect = new Rectangle(insets.left, insets.top, w - (insets.left + insets.right), h
+        - (insets.top + insets.bottom));
+    g.setPaint(new ShapePaint(pattern, getForeground(), getBackground()));
+    g.fill(rect);
 
-    }
+  }
 }

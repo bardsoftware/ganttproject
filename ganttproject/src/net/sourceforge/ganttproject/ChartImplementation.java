@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Graphics;
@@ -32,34 +32,30 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.task.Task;
 
 public interface ChartImplementation extends ZoomListener {
-        void paintChart(Graphics g);
+  void paintChart(Graphics g);
 
-        //void paintComponent(Graphics g, List<Task> visibleTasks);
+  // void paintComponent(Graphics g, List<Task> visibleTasks);
 
-        MouseListener getMouseListener();
+  MouseListener getMouseListener();
 
-        MouseMotionListener getMouseMotionListener();
+  MouseMotionListener getMouseMotionListener();
 
-        void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
-                TaskBoundaryChartItem taskBoundary);
+  void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary);
 
-        MouseInteraction getActiveInteraction();
+  MouseInteraction getActiveInteraction();
 
-        void beginChangeTaskStartInteraction(MouseEvent e,
-                TaskBoundaryChartItem taskBoundary);
+  void beginChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary);
 
-        MouseInteraction finishInteraction();
+  MouseInteraction finishInteraction();
 
-        void beginChangeTaskProgressInteraction(MouseEvent e,
-                TaskProgressChartItem item);
+  void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem item);
 
-        void beginDrawDependencyInteraction(MouseEvent initiatingEvent,
-                TaskRegularAreaChartItem taskArea);
+  void beginDrawDependencyInteraction(MouseEvent initiatingEvent, TaskRegularAreaChartItem taskArea);
 
-//        void beginMoveTaskInteraction(MouseEvent e, Task task);
+  // void beginMoveTaskInteraction(MouseEvent e, Task task);
 
-        void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
+  void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
 
-        void beginScrollViewInteraction(MouseEvent e);
+  void beginScrollViewInteraction(MouseEvent e);
 
-    }
+}

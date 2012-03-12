@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.language;
 
 import java.text.DateFormat;
@@ -27,51 +27,51 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 
 public class ShortDateFormatOption extends DefaultStringOption {
-    private SimpleDateFormat myDateFormat;
+  private SimpleDateFormat myDateFormat;
 
-    public ShortDateFormatOption() {
-        super("ui.dateFormat.short");
+  public ShortDateFormatOption() {
+    super("ui.dateFormat.short");
 
-        // Set initial locale
-        setSelectedLocale(null);
+    // Set initial locale
+    setSelectedLocale(null);
+  }
+
+  @Override
+  public void setValue(String value) {
+    try {
+      myDateFormat = new SimpleDateFormat(value);
+      super.setValue(value);
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException();
     }
+  }
 
-    @Override
-    public void setValue(String value) {
-        try {
-            myDateFormat = new SimpleDateFormat(value);
-            super.setValue(value);
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException();
-        }
-    }
+  @Override
+  public void loadPersistentValue(String value) {
+    super.loadPersistentValue(value);
+    GanttLanguage.getInstance().setShortDateFormat(myDateFormat);
+  }
 
-    @Override
-    public void loadPersistentValue(String value) {
-        super.loadPersistentValue(value);
-        GanttLanguage.getInstance().setShortDateFormat(myDateFormat);
-    }
+  @Override
+  public void commit() {
+    super.commit();
+    GanttLanguage.getInstance().setShortDateFormat(myDateFormat);
+  }
 
-    @Override
-    public void commit() {
-        super.commit();
-        GanttLanguage.getInstance().setShortDateFormat(myDateFormat);
+  public void setSelectedLocale(Locale locale) {
+    if (locale == null) {
+      // Find default locale
+      locale = GanttLanguage.getInstance().getLocale();
     }
+    myDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
+    super.setValue(myDateFormat.toPattern(), true);
+  }
 
-    public void setSelectedLocale(Locale locale) {
-        if(locale == null) {
-            // Find default locale
-            locale = GanttLanguage.getInstance().getLocale();
-        }
-        myDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-        super.setValue(myDateFormat.toPattern(), true);
-    }
+  public DateFormat getSelectedValue() {
+    return myDateFormat;
+  }
 
-    public DateFormat getSelectedValue() {
-        return myDateFormat;
-    }
-
-    public String formatDate(Date date) {
-        return myDateFormat.format(date);
-    }
+  public String formatDate(Date date) {
+    return myDateFormat.format(date);
+  }
 }

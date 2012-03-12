@@ -15,22 +15,22 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 public class FileFormatException extends Exception {
-    public FileFormatException() {
-    }
+  public FileFormatException() {
+  }
 
-    public FileFormatException(String message) {
-        super(message);
-    }
+  public FileFormatException(String message) {
+    super(message);
+  }
 
-    public FileFormatException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public FileFormatException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    public FileFormatException(Throwable cause) {
-        super(cause);
-    }
+  public FileFormatException(Throwable cause) {
+    super(cause);
+  }
 }

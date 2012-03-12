@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.export;
 
 import net.sourceforge.ganttproject.AbstractChartImplementation;
@@ -23,44 +23,44 @@ import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 
 public class ChartDimensions {
-    private final int logoHeight;
-    private final int treeHeight;
-    private final int tableHeaderHeight;
-    private final int treeWidth;
-    private int chartWidth;
+  private final int logoHeight;
+  private final int treeHeight;
+  private final int tableHeaderHeight;
+  private final int treeWidth;
+  private int chartWidth;
 
-    ChartDimensions(GanttExportSettings settings, GPTreeTableBase treeTable) {
-        logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
-        treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
-        tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
-        treeWidth = treeTable.getTable().getWidth();
-    }
+  ChartDimensions(GanttExportSettings settings, GPTreeTableBase treeTable) {
+    logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
+    treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
+    tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
+    treeWidth = treeTable.getTable().getWidth();
+  }
 
-    public int getChartHeight() {
-        return treeHeight + tableHeaderHeight + logoHeight;
-    }
+  public int getChartHeight() {
+    return treeHeight + tableHeaderHeight + logoHeight;
+  }
 
-    public void setChartWidth(int chartWidth) {
-        this.chartWidth = chartWidth;
-    }
+  public void setChartWidth(int chartWidth) {
+    this.chartWidth = chartWidth;
+  }
 
-    public int getChartWidth() {
-        return chartWidth;
-    }
+  public int getChartWidth() {
+    return chartWidth;
+  }
 
-    public int getTreeWidth() {
-        return treeWidth;
-    }
+  public int getTreeWidth() {
+    return treeWidth;
+  }
 
-    public int getLogoHeight() {
-        return logoHeight;
-    }
+  public int getLogoHeight() {
+    return logoHeight;
+  }
 
-    public int getTableHeaderHeight() {
-        return tableHeaderHeight;
-    }
+  public int getTableHeaderHeight() {
+    return tableHeaderHeight;
+  }
 
-    public int getFullWidth() {
-        return chartWidth + treeWidth;
-    }
+  public int getFullWidth() {
+    return chartWidth + treeWidth;
+  }
 }

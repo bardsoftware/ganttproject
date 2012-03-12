@@ -15,24 +15,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.options.model;
 
 public class DefaultStringOption extends GPAbstractOption<String> implements StringOption {
-    public DefaultStringOption(String id) {
-        super(id);
-    }
-    public DefaultStringOption(String id, String initialValue) {
-        super(id, initialValue);
-    }
+  public DefaultStringOption(String id) {
+    super(id);
+  }
 
-    @Override
-    public String getPersistentValue() {
-        return getValue();
-    }
+  public DefaultStringOption(String id, String initialValue) {
+    super(id, initialValue);
+  }
 
-    @Override
-    public void loadPersistentValue(String value) {
-        setValue(value);
-    }
+  @Override
+  public String getPersistentValue() {
+    return getValue();
+  }
+
+  @Override
+  public void loadPersistentValue(String value) {
+    setValue(value);
+  }
 }

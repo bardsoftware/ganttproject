@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.List;
@@ -23,61 +23,64 @@ import java.util.List;
 import net.sourceforge.ganttproject.chart.ChartModelBase.OffsetBuilderImpl;
 
 /**
- * Holds offset lists and provides a unified way to reset them all at once
- * and to rebuild them again.
- *
+ * Holds offset lists and provides a unified way to reset them all at once and
+ * to rebuild them again.
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 class OffsetManager {
-    static interface OffsetBuilderFactory {
-        OffsetBuilder createTopAndBottomUnitBuilder();
-        OffsetBuilderImpl createAtomUnitBuilder();
-    }
+  static interface OffsetBuilderFactory {
+    OffsetBuilder createTopAndBottomUnitBuilder();
 
-    private final OffsetList myTopUnitOffsets = new OffsetList();
-    private final OffsetList myBottomUnitOffsets = new OffsetList();
-    private final OffsetList myDefaultUnitOffsets = new OffsetList();
-    private final OffsetBuilderFactory myFactory;
-    private boolean isReset = true;
+    OffsetBuilderImpl createAtomUnitBuilder();
+  }
 
-    OffsetManager(OffsetBuilderFactory factory) {
-        myFactory = factory;
-    }
+  private final OffsetList myTopUnitOffsets = new OffsetList();
+  private final OffsetList myBottomUnitOffsets = new OffsetList();
+  private final OffsetList myDefaultUnitOffsets = new OffsetList();
+  private final OffsetBuilderFactory myFactory;
+  private boolean isReset = true;
 
-    void reset() {
-        isReset = true;
-    }
+  OffsetManager(OffsetBuilderFactory factory) {
+    myFactory = factory;
+  }
 
-    void constructOffsets() {
-        myTopUnitOffsets.clear();
-        myBottomUnitOffsets.clear();
-        myDefaultUnitOffsets.clear();
-        myFactory.createTopAndBottomUnitBuilder().constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
-        // this is a hack which prevents an eternal loop of calling constructOffsets.
-        // The matter is that atom unit builder calls getEndDate() which in turn calls
-        // constructOffsets()
-        isReset = false;
-        myFactory.createAtomUnitBuilder().constructBottomOffsets(myDefaultUnitOffsets, 0);
-    }
+  void reset() {
+    isReset = true;
+  }
 
-    public List<Offset> getTopUnitOffsets() {
-        if (isReset) {
-            constructOffsets();
-        }
-        return myTopUnitOffsets;
-    }
+  void constructOffsets() {
+    myTopUnitOffsets.clear();
+    myBottomUnitOffsets.clear();
+    myDefaultUnitOffsets.clear();
+    myFactory.createTopAndBottomUnitBuilder().constructOffsets(myTopUnitOffsets, myBottomUnitOffsets);
+    // this is a hack which prevents an eternal loop of calling
+    // constructOffsets.
+    // The matter is that atom unit builder calls getEndDate() which in turn
+    // calls
+    // constructOffsets()
+    isReset = false;
+    myFactory.createAtomUnitBuilder().constructBottomOffsets(myDefaultUnitOffsets, 0);
+  }
 
-    public OffsetList getBottomUnitOffsets() {
-        if (isReset) {
-            constructOffsets();
-        }
-        return myBottomUnitOffsets;
+  public List<Offset> getTopUnitOffsets() {
+    if (isReset) {
+      constructOffsets();
     }
+    return myTopUnitOffsets;
+  }
 
-    public OffsetList getAtomUnitOffsets() {
-        if (isReset) {
-            constructOffsets();
-        }
-        return myDefaultUnitOffsets;
+  public OffsetList getBottomUnitOffsets() {
+    if (isReset) {
+      constructOffsets();
     }
+    return myBottomUnitOffsets;
+  }
+
+  public OffsetList getAtomUnitOffsets() {
+    if (isReset) {
+      constructOffsets();
+    }
+    return myDefaultUnitOffsets;
+  }
 }

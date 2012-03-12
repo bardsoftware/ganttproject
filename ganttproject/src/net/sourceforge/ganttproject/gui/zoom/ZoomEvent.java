@@ -11,14 +11,14 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
  * @author bard
  */
 public class ZoomEvent extends EventObject {
-    private ZoomState myNewZoomState;
+  private ZoomState myNewZoomState;
 
-    ZoomEvent(ZoomManager manager, ZoomState newZoomState) {
-        super(manager);
-        myNewZoomState = newZoomState;
-    }
+  ZoomEvent(ZoomManager manager, ZoomState newZoomState) {
+    super(manager);
+    myNewZoomState = newZoomState;
+  }
 
-    public ZoomState getNewZoomState() {
-        return myNewZoomState;
-    }
+  public ZoomState getNewZoomState() {
+    return myNewZoomState;
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -23,20 +23,20 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 /**
  * @author bard
  */
-public interface ResourceAssignmentCollection extends
-        MutableResourceAssignmentCollection {
-    ResourceAssignment[] getAssignments();
+public interface ResourceAssignmentCollection extends MutableResourceAssignmentCollection {
+  ResourceAssignment[] getAssignments();
 
-    ResourceAssignment getAssignment(HumanResource resource);
+  ResourceAssignment getAssignment(HumanResource resource);
 
-    ResourceAssignmentMutator createMutator();
+  ResourceAssignmentMutator createMutator();
 
-    HumanResource getCoordinator();
-    void clear();
+  HumanResource getCoordinator();
+
+  void clear();
 }
 
 interface MutableResourceAssignmentCollection {
-    ResourceAssignment addAssignment(HumanResource resource);
+  ResourceAssignment addAssignment(HumanResource resource);
 
-    void deleteAssignment(HumanResource resource);
+  void deleteAssignment(HumanResource resource);
 }

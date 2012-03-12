@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
@@ -29,74 +29,72 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 /**
  * This class has to be used to add or remove new custom columns. It will
  * perform the changes to the linked treetable.
- *
+ * 
  * @author bbaranne (Benoit Baranne) Mar 4, 2005
  */
 public class CustomColumnsManager implements CustomPropertyManager {
-    private final CustomColumnsStorage myStorage;
+  private final CustomColumnsStorage myStorage;
 
-    public CustomColumnsManager() {
-        myStorage = new CustomColumnsStorage(this);
-    }
+  public CustomColumnsManager() {
+    myStorage = new CustomColumnsStorage(this);
+  }
 
-    private void addNewCustomColumn(CustomColumn customColumn) {
-        assert customColumn!=null;
-        myStorage.addCustomColumn(customColumn);
-    }
+  private void addNewCustomColumn(CustomColumn customColumn) {
+    assert customColumn != null;
+    myStorage.addCustomColumn(customColumn);
+  }
 
-    @Override
-    public void addListener(CustomPropertyListener listener) {
-        myStorage.addCustomColumnsListener(listener);
-    }
+  @Override
+  public void addListener(CustomPropertyListener listener) {
+    myStorage.addCustomColumnsListener(listener);
+  }
 
-    @Override
-    public List<CustomPropertyDefinition> getDefinitions() {
-        return new ArrayList<CustomPropertyDefinition>(myStorage.getCustomColums());
-    }
+  @Override
+  public List<CustomPropertyDefinition> getDefinitions() {
+    return new ArrayList<CustomPropertyDefinition>(myStorage.getCustomColums());
+  }
 
-    @Override
-    public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
-            String defaultValueAsString) {
-        CustomPropertyDefinition stub =
-            CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString, defaultValueAsString);
-        CustomColumn result = new CustomColumn(this, name, stub.getPropertyClass(), stub.getDefaultValue());
-        result.setId(id);
-        addNewCustomColumn(result);
-        return result;
-    }
+  @Override
+  public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
+      String defaultValueAsString) {
+    CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString,
+        defaultValueAsString);
+    CustomColumn result = new CustomColumn(this, name, stub.getPropertyClass(), stub.getDefaultValue());
+    result.setId(id);
+    addNewCustomColumn(result);
+    return result;
+  }
 
-    @Override
-    public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
-        return createDefinition(myStorage.createId(), typeAsString, colName, defValue);
-    }
+  @Override
+  public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
+    return createDefinition(myStorage.createId(), typeAsString, colName, defValue);
+  }
 
-    @Override
-    public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(
-            CustomPropertyManager source) {
-        return myStorage.importData(((CustomColumnsManager)source).myStorage);
-    }
+  @Override
+  public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomPropertyManager source) {
+    return myStorage.importData(((CustomColumnsManager) source).myStorage);
+  }
 
+  @Override
+  public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
+    return myStorage.getCustomColumnByID(id);
+  }
 
-    @Override
-    public CustomPropertyDefinition getCustomPropertyDefinition(String id) {
-        return myStorage.getCustomColumnByID(id);
-    }
+  @Override
+  public void deleteDefinition(CustomPropertyDefinition def) {
+    myStorage.removeCustomColumn(def);
+  }
 
-    @Override
-    public void deleteDefinition(CustomPropertyDefinition def) {
-        myStorage.removeCustomColumn(def);
-    }
+  void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+    myStorage.fireDefinitionChanged(event, def, oldDef);
+  }
 
-    void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
-        myStorage.fireDefinitionChanged(event, def, oldDef);
-    }
+  void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
+    myStorage.fireDefinitionChanged(def, oldName);
+  }
 
-    void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
-        myStorage.fireDefinitionChanged(def, oldName);
-    }
-
-    @Override
-    public void reset() {
-        myStorage.reset();
-    }
+  @Override
+  public void reset() {
+    myStorage.reset();
+  }
 }

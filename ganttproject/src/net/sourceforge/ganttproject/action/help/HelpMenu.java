@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.help;
 
 import java.awt.event.ActionEvent;
@@ -44,124 +44,124 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Collection of actions from Help menu.
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class HelpMenu {
 
-    private final AboutAction myAboutAction;
-    private final ViewLogAction myViewLogAction;
-    private final RecoverLastProjectAction myRecoverAction;
+  private final AboutAction myAboutAction;
+  private final ViewLogAction myViewLogAction;
+  private final RecoverLastProjectAction myRecoverAction;
 
-    public HelpMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
-        myAboutAction = new AboutAction(uiFacade);
-        myViewLogAction = new ViewLogAction(uiFacade);
-        myRecoverAction = new RecoverLastProjectAction(project, uiFacade, projectUiFacade);
-    }
-    public JMenu createMenu() {
-        JMenu result = new JMenu(GPAction.createVoidAction("help"));
-        result.add(myAboutAction);
-        result.add(myViewLogAction);
-        result.add(myRecoverAction);
-        return result;
-    }
+  public HelpMenu(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
+    myAboutAction = new AboutAction(uiFacade);
+    myViewLogAction = new ViewLogAction(uiFacade);
+    myRecoverAction = new RecoverLastProjectAction(project, uiFacade, projectUiFacade);
+  }
 
-    private static class AboutAction extends GPAction {
-        private final UIFacade myUiFacade;
+  public JMenu createMenu() {
+    JMenu result = new JMenu(GPAction.createVoidAction("help"));
+    result.add(myAboutAction);
+    result.add(myViewLogAction);
+    result.add(myRecoverAction);
+    return result;
+  }
 
-        AboutAction(UIFacade uifacade) {
-            super("about");
-            myUiFacade = uifacade;
-        }
+  private static class AboutAction extends GPAction {
+    private final UIFacade myUiFacade;
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            AboutDialog2 agp = new AboutDialog2(myUiFacade);
-            agp.show();
-        }
+    AboutAction(UIFacade uifacade) {
+      super("about");
+      myUiFacade = uifacade;
     }
 
-    private static class ViewLogAction extends GPAction {
-        private final UIFacade myUiFacade;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      AboutDialog2 agp = new AboutDialog2(myUiFacade);
+      agp.show();
+    }
+  }
 
-        ViewLogAction(UIFacade uiFacade) {
-            super("viewLog");
-            myUiFacade = uiFacade;
-        }
+  private static class ViewLogAction extends GPAction {
+    private final UIFacade myUiFacade;
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ViewLogDialog.show(myUiFacade);
-        }
+    ViewLogAction(UIFacade uiFacade) {
+      super("viewLog");
+      myUiFacade = uiFacade;
     }
 
-    private static class RecoverLastProjectAction extends GPAction {
-        private final UIFacade myUiFacade;
-        private final DocumentManager myDocumentManager;
-        private final IGanttProject myProject;
-        private final ProjectUIFacade myProjectUiFacade;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      ViewLogDialog.show(myUiFacade);
+    }
+  }
 
-        RecoverLastProjectAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
-            super("help.recover");
-            myProject = project;
-            myUiFacade = uiFacade;
-            myDocumentManager = project.getDocumentManager();
-            myProjectUiFacade = projectUiFacade;
+  private static class RecoverLastProjectAction extends GPAction {
+    private final UIFacade myUiFacade;
+    private final DocumentManager myDocumentManager;
+    private final IGanttProject myProject;
+    private final ProjectUIFacade myProjectUiFacade;
+
+    RecoverLastProjectAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
+      super("help.recover");
+      myProject = project;
+      myUiFacade = uiFacade;
+      myDocumentManager = project.getDocumentManager();
+      myProjectUiFacade = projectUiFacade;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      try {
+        final Document lastAutosaveDocument = myDocumentManager.getLastAutosaveDocument(null);
+        if (lastAutosaveDocument != null) {
+          runAction(lastAutosaveDocument);
         }
+      } catch (IOException e) {
+        GPLogger.log(new RuntimeException("Failed to read autosave documents", e));
+      }
+    }
 
+    private void runAction(final Document autosaveDocument) {
+      OkAction ok = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            try {
-                final Document lastAutosaveDocument = myDocumentManager.getLastAutosaveDocument(null);
-                if (lastAutosaveDocument != null) {
-                    runAction(lastAutosaveDocument);
-                }
-            } catch (IOException e) {
+          recover(autosaveDocument);
+        }
+      };
+      CancelAction skip = new CancelAction("help.recover.skip") {
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+          SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              Document prevAutosaveDocument = null;
+              try {
+                prevAutosaveDocument = myDocumentManager.getLastAutosaveDocument(autosaveDocument);
+              } catch (IOException e) {
                 GPLogger.log(new RuntimeException("Failed to read autosave documents", e));
+              }
+              if (prevAutosaveDocument != null) {
+                runAction(prevAutosaveDocument);
+              }
             }
+          });
         }
-
-        private void runAction(final Document autosaveDocument) {
-            OkAction ok = new OkAction() {
-                @Override
-                public void actionPerformed(ActionEvent arg0) {
-                    recover(autosaveDocument);
-                }
-            };
-            CancelAction skip = new CancelAction("help.recover.skip") {
-                @Override
-                public void actionPerformed(ActionEvent arg0) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            Document prevAutosaveDocument = null;
-                            try {
-                                prevAutosaveDocument = myDocumentManager.getLastAutosaveDocument(autosaveDocument);
-                            } catch (IOException e) {
-                                GPLogger.log(new RuntimeException("Failed to read autosave documents", e));
-                            }
-                            if (prevAutosaveDocument != null) {
-                                runAction(prevAutosaveDocument);
-                            }
-                        }
-                    });
-                }
-            };
-            File f = new File(autosaveDocument.getFilePath());
-            myUiFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE,
-                    GanttLanguage.getInstance().formatText(
-                            "help.recover.autosaveInfo",
-                            f.getName(), new Date(f.lastModified()), f.length()),
-                    new Action[] {ok, skip, CancelAction.CLOSE});
-        }
-        protected void recover(Document recoverDocument) {
-            try {
-                myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject);
-            } catch (Throwable e) {
-                GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
-            }
-        }
+      };
+      File f = new File(autosaveDocument.getFilePath());
+      myUiFacade.showOptionDialog(
+          JOptionPane.INFORMATION_MESSAGE,
+          GanttLanguage.getInstance().formatText("help.recover.autosaveInfo", f.getName(), new Date(f.lastModified()),
+              f.length()), new Action[] { ok, skip, CancelAction.CLOSE });
     }
 
+    protected void recover(Document recoverDocument) {
+      try {
+        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject);
+      } catch (Throwable e) {
+        GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
+      }
+    }
+  }
 
 }

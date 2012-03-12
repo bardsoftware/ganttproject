@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
@@ -30,37 +30,37 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
 public class ScrollToSelectionAction extends GPAction implements TaskSelectionManager.Listener {
-    private final TimelineChart myChart;
-    private List<Task> mySelectedTasks;
-    
-    public ScrollToSelectionAction(UIFacade uiFacade, TimelineChart chart) {
-        super("scroll.selection");
-        myChart = chart;
-        mySelectedTasks = Collections.emptyList();
-        uiFacade.getTaskSelectionManager().addSelectionListener(this);
-    }
+  private final TimelineChart myChart;
+  private List<Task> mySelectedTasks;
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (mySelectedTasks.isEmpty()) {
-            return;
-        }
-        Date earliestStartDate = null;
-        for (Task selectedTask : mySelectedTasks) {
-            if (earliestStartDate == null || earliestStartDate.after(selectedTask.getStart().getTime())) {
-                earliestStartDate = selectedTask.getStart().getTime();
-            }
-        }
-        myChart.setStartDate(earliestStartDate);
-    }
+  public ScrollToSelectionAction(UIFacade uiFacade, TimelineChart chart) {
+    super("scroll.selection");
+    myChart = chart;
+    mySelectedTasks = Collections.emptyList();
+    uiFacade.getTaskSelectionManager().addSelectionListener(this);
+  }
 
-    @Override
-    public void selectionChanged(List<Task> currentSelection) {
-        mySelectedTasks = currentSelection;
-        setEnabled(!currentSelection.isEmpty());
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (mySelectedTasks.isEmpty()) {
+      return;
     }
+    Date earliestStartDate = null;
+    for (Task selectedTask : mySelectedTasks) {
+      if (earliestStartDate == null || earliestStartDate.after(selectedTask.getStart().getTime())) {
+        earliestStartDate = selectedTask.getStart().getTime();
+      }
+    }
+    myChart.setStartDate(earliestStartDate);
+  }
 
-    @Override
-    public void userInputConsumerChanged(Object newConsumer) {
-    }
+  @Override
+  public void selectionChanged(List<Task> currentSelection) {
+    mySelectedTasks = currentSelection;
+    setEnabled(!currentSelection.isEmpty());
+  }
+
+  @Override
+  public void userInputConsumerChanged(Object newConsumer) {
+  }
 }

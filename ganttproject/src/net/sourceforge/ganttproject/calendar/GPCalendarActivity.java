@@ -9,9 +9,9 @@ import java.util.Date;
  * @author bard
  */
 public interface GPCalendarActivity {
-    Date getStart();
+  Date getStart();
 
-    Date getEnd();
+  Date getEnd();
 
-    boolean isWorkingTime();
+  boolean isWorkingTime();
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
@@ -25,28 +25,26 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 
 public class TaskActivitiesAlgorithm {
-    private final GPCalendar myCalendar;
+  private final GPCalendar myCalendar;
 
-    public TaskActivitiesAlgorithm(GPCalendar calendar) {
-        myCalendar = calendar;
-    }
+  public TaskActivitiesAlgorithm(GPCalendar calendar) {
+    myCalendar = calendar;
+  }
 
-    public void recalculateActivities(Task task, List<TaskActivity> output, Date startDate, Date endDate) {
-        output.clear();
-        List<GPCalendarActivity> activities = myCalendar.getActivities(startDate, endDate);
-        for (int i = 0; i < activities.size(); i++) {
-            GPCalendarActivity activity = activities.get(i);
-            TaskActivity nextTaskActivity;
-            if (activity.isWorkingTime()) {
-                nextTaskActivity = new TaskActivityImpl(
-                    task, activity.getStart(), activity.getEnd());
-            } else if (i > 0 && i + 1 < activities.size()) {
-                nextTaskActivity = new TaskActivityImpl(
-                    task, activity.getStart(), activity.getEnd(), 0);
-            } else {
-                continue;
-            }
-            output.add(nextTaskActivity);
-        }
+  public void recalculateActivities(Task task, List<TaskActivity> output, Date startDate, Date endDate) {
+    output.clear();
+    List<GPCalendarActivity> activities = myCalendar.getActivities(startDate, endDate);
+    for (int i = 0; i < activities.size(); i++) {
+      GPCalendarActivity activity = activities.get(i);
+      TaskActivity nextTaskActivity;
+      if (activity.isWorkingTime()) {
+        nextTaskActivity = new TaskActivityImpl(task, activity.getStart(), activity.getEnd());
+      } else if (i > 0 && i + 1 < activities.size()) {
+        nextTaskActivity = new TaskActivityImpl(task, activity.getStart(), activity.getEnd(), 0);
+      } else {
+        continue;
+      }
+      output.add(nextTaskActivity);
     }
+  }
 }

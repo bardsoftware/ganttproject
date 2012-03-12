@@ -7,37 +7,36 @@ package net.sourceforge.ganttproject.time;
  * @author bard
  */
 public class TimeUnitPair {
-    private final TimeUnit myBottomTimeUnit;
+  private final TimeUnit myBottomTimeUnit;
 
-    private final TimeUnit myTopTimeUnit;
+  private final TimeUnit myTopTimeUnit;
 
-    private final TimeUnitStack myTimeUnitStack;
+  private final TimeUnitStack myTimeUnitStack;
 
-    /** Used scale for this TimeUnit */
-    private final int myDefaultUnitWidth;
+  /** Used scale for this TimeUnit */
+  private final int myDefaultUnitWidth;
 
-    public TimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit,
-            TimeUnitStack timeUnitStack, int defaultUnitWidth) {
-        myTopTimeUnit = topUnit;
-        myBottomTimeUnit = bottomUnit;
-        myTimeUnitStack = timeUnitStack;
-        myDefaultUnitWidth = defaultUnitWidth;
-    }
+  public TimeUnitPair(TimeUnit topUnit, TimeUnit bottomUnit, TimeUnitStack timeUnitStack, int defaultUnitWidth) {
+    myTopTimeUnit = topUnit;
+    myBottomTimeUnit = bottomUnit;
+    myTimeUnitStack = timeUnitStack;
+    myDefaultUnitWidth = defaultUnitWidth;
+  }
 
-    public TimeUnit getTopTimeUnit() {
-        return myTopTimeUnit;
-    }
+  public TimeUnit getTopTimeUnit() {
+    return myTopTimeUnit;
+  }
 
-    public TimeUnit getBottomTimeUnit() {
-        return myBottomTimeUnit;
-    }
+  public TimeUnit getBottomTimeUnit() {
+    return myBottomTimeUnit;
+  }
 
-    public TimeUnitStack getTimeUnitStack() {
-        return myTimeUnitStack;
-    }
+  public TimeUnitStack getTimeUnitStack() {
+    return myTimeUnitStack;
+  }
 
-    /** @return the scale for this TimeUnit */
-    public int getDefaultUnitWidth() {
-        return myDefaultUnitWidth;
-    }
+  /** @return the scale for this TimeUnit */
+  public int getDefaultUnitWidth() {
+    return myDefaultUnitWidth;
+  }
 }

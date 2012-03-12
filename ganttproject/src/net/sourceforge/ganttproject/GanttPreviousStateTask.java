@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.util.Calendar;
@@ -27,56 +27,54 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
  */
 public class GanttPreviousStateTask {
 
-    private int myId;
+  private int myId;
 
-    private GanttCalendar myStart;
+  private GanttCalendar myStart;
 
-    private int myDuration;
+  private int myDuration;
 
-    private boolean isMilestone;
+  private boolean isMilestone;
 
-    private boolean hasNested;
+  private boolean hasNested;
 
-    public GanttPreviousStateTask(int id, GanttCalendar start, int duration,
-            boolean isMilestone, boolean hasNested) {
-        myId = id;
-        myStart = start;
-        myDuration = duration;
-        this.isMilestone = isMilestone;
-        this.hasNested = hasNested;
+  public GanttPreviousStateTask(int id, GanttCalendar start, int duration, boolean isMilestone, boolean hasNested) {
+    myId = id;
+    myStart = start;
+    myDuration = duration;
+    this.isMilestone = isMilestone;
+    this.hasNested = hasNested;
+  }
+
+  public int getId() {
+    return myId;
+  }
+
+  public GanttCalendar getStart() {
+    return myStart;
+  }
+
+  public GanttCalendar getEnd(GPCalendar calendar) {
+    int duration = myDuration;
+    GanttCalendar end = myStart.newAdd(Calendar.DATE, myDuration);
+    for (int i = 0; i < duration; i++) {
+      if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
+        end.add(Calendar.DATE, 1);
+        duration++;
+      }
     }
+    return end;
+  }
 
-    public int getId() {
-        return myId;
-    }
+  public int getDuration() {
+    return myDuration;
+  }
 
-    public GanttCalendar getStart() {
-        return myStart;
-    }
+  public boolean isMilestone() {
+    return isMilestone;
+  }
 
-    public GanttCalendar getEnd(GPCalendar calendar) {
-        int duration = myDuration;
-        GanttCalendar end = myStart.newAdd(Calendar.DATE, myDuration);
-        for (int i = 0; i < duration; i++) {
-            if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
-                end.add(Calendar.DATE, 1);
-                duration++;
-            }
-        }
-        return end;
-    }
-
-    public int getDuration() {
-        return myDuration;
-    }
-
-    public boolean isMilestone() {
-        return isMilestone;
-    }
-
-    public boolean hasNested() {
-        return hasNested;
-    }
-
+  public boolean hasNested() {
+    return hasNested;
+  }
 
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.undo;
 
 import javax.swing.undo.CannotRedoException;
@@ -25,23 +25,23 @@ import javax.swing.undo.CannotUndoException;
  * @author bard
  */
 public interface GPUndoManager {
-    void undoableEdit(String localizedName, Runnable runnableEdit);
+  void undoableEdit(String localizedName, Runnable runnableEdit);
 
-    boolean canUndo();
+  boolean canUndo();
 
-    boolean canRedo();
+  boolean canRedo();
 
-    void undo() throws CannotUndoException;
+  void undo() throws CannotUndoException;
 
-    void redo() throws CannotRedoException;
+  void redo() throws CannotRedoException;
 
-    String getUndoPresentationName();
+  String getUndoPresentationName();
 
-    String getRedoPresentationName();
+  String getRedoPresentationName();
 
-    void addUndoableEditListener(GPUndoListener listener);
+  void addUndoableEditListener(GPUndoListener listener);
 
-    void removeUndoableEditListener(GPUndoListener listener);
+  void removeUndoableEditListener(GPUndoListener listener);
 
-    void die();
+  void die();
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 /**
@@ -57,133 +57,132 @@ import javax.swing.SwingConstants;
  */
 public class TestGanttRolloverButton extends JButton {
 
-    private int myAutoRepeatMilliseconds;
-    
-    private boolean myTextHidden = false;
+  private int myAutoRepeatMilliseconds;
 
-    public TestGanttRolloverButton() {
-        setBorderPainted(false);
-        setMargin(new Insets(0, 0, 0, 0));
+  private boolean myTextHidden = false;
 
-        addMouseListener(new MouseOverHandler());
-        addMouseListener(new AutoRepeatHandler());
-        setHorizontalTextPosition(SwingConstants.CENTER);
-        setVerticalTextPosition(SwingConstants.BOTTOM);
-        setRolloverEnabled(true);
+  public TestGanttRolloverButton() {
+    setBorderPainted(false);
+    setMargin(new Insets(0, 0, 0, 0));
+
+    addMouseListener(new MouseOverHandler());
+    addMouseListener(new AutoRepeatHandler());
+    setHorizontalTextPosition(SwingConstants.CENTER);
+    setVerticalTextPosition(SwingConstants.BOTTOM);
+    setRolloverEnabled(true);
+  }
+
+  public TestGanttRolloverButton(Action action) {
+    this();
+    setAction(action);
+    Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
+    if (smallIcon != null) {
+      setIcon(smallIcon);
+      setTextHidden(true);
     }
+  }
 
-    public TestGanttRolloverButton(Action action) {
-        this();
-        setAction(action);
-        Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
-        if (smallIcon != null) {
-            setIcon(smallIcon);
-            setTextHidden(true);
-        }
+  public TestGanttRolloverButton(Icon icon) {
+    this();
+    setIcon(icon);
+  }
+
+  public void setAutoRepeatMousePressedEvent(int milliseconds) {
+    myAutoRepeatMilliseconds = milliseconds;
+  }
+
+  public void setIconHidden(boolean isHidden) {
+  }
+
+  public void setTextHidden(boolean isHidden) {
+    myTextHidden = isHidden;
+    if (isHidden) {
+      setText("");
+    } else {
+      Action action = getAction();
+      if (action != null) {
+        setText(String.valueOf(action.getValue(Action.NAME)));
+      }
     }
+  };
 
-    public TestGanttRolloverButton(Icon icon) {
-        this();
-        setIcon(icon);
+  @Override
+  public void setIcon(Icon icon) {
+    if (icon != null) {
+      setRolloverIcon(icon);
     }
+    super.setIcon(icon);
+  }
 
-    public void setAutoRepeatMousePressedEvent(int milliseconds) {
-        myAutoRepeatMilliseconds = milliseconds;
+  @Override
+  public void setText(String text) {
+    // Only set/update text if no icon is present
+    if (myTextHidden) {
+      super.setText("");
+    } else {
+      super.setText(text);
     }
+  }
 
-    public void setIconHidden(boolean isHidden) {
+  public void setDefaultIcon(Icon iconOn) {
+    setIcon(iconOn);
+  }
+
+  class MouseOverHandler extends MouseAdapter {
+    @Override
+    public void mouseEntered(MouseEvent e) {
+      if (isEnabled()) {
+        setBorderPainted(true);
+      }
     }
-
-    public void setTextHidden(boolean isHidden) {
-        myTextHidden = isHidden;
-        if (isHidden) {
-            setText("");
-        } else {
-            Action action = getAction();
-            if (action != null) {
-                setText(String.valueOf(action.getValue(Action.NAME)));
-            }
-        }
-    };
 
     @Override
-    public void setIcon(Icon icon) {
-        if (icon != null) {
-            setRolloverIcon(icon);
-        }
-        super.setIcon(icon);
+    public void mouseExited(MouseEvent e) {
+      setBorderPainted(false);
+    }
+  }
+
+  class AutoRepeatHandler extends MouseAdapter {
+    private Worker myWorker;
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+      if (myAutoRepeatMilliseconds > 0) {
+        myWorker = new Worker(e);
+        myWorker.start();
+      }
     }
 
     @Override
-    public void setText(String text) {
-        // Only set/update text if no icon is present
-        if(myTextHidden) {
-            super.setText("");
-        } else {
-            super.setText(text);
-        }
+    public void mouseReleased(MouseEvent e) {
+      if (myWorker != null) {
+        myWorker.interrupt();
+        myWorker = null;
+      }
     }
-    
-    public void setDefaultIcon(Icon iconOn) {
-        setIcon(iconOn);
-    }
+  }
 
-    class MouseOverHandler extends MouseAdapter {
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            if (isEnabled()) {
-                setBorderPainted(true);
-            }
-        }
+  class Worker extends Thread {
+    private ActionEvent myEvent;
 
-        @Override
-        public void mouseExited(MouseEvent e) {
-            setBorderPainted(false);
-        }
+    Worker(MouseEvent e) {
+      myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getActionCommand(),
+          EventQueue.getMostRecentEventTime(), e.getModifiers());
     }
 
-    class AutoRepeatHandler extends MouseAdapter {
-        private Worker myWorker;
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            if (myAutoRepeatMilliseconds > 0) {
-                myWorker = new Worker(e);
-                myWorker.start();
-            }
+    @Override
+    public void run() {
+      while (true) {
+        try {
+          Thread.sleep(myAutoRepeatMilliseconds);
+        } catch (InterruptedException e) {
+          break;
         }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            if (myWorker != null) {
-                myWorker.interrupt();
-                myWorker = null;
-            }
+        if (isInterrupted()) {
+          break;
         }
+        getAction().actionPerformed(myEvent);
+      }
     }
-
-    class Worker extends Thread {
-        private ActionEvent myEvent;
-
-        Worker(MouseEvent e) {
-            myEvent = new ActionEvent(
-                this, ActionEvent.ACTION_PERFORMED, getActionCommand(), EventQueue.getMostRecentEventTime(),
-                e.getModifiers());
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(myAutoRepeatMilliseconds);
-                } catch (InterruptedException e) {
-                    break;
-                }
-                if (isInterrupted()) {
-                    break;
-                }
-                getAction().actionPerformed(myEvent);
-            }
-        }
-    }
+  }
 }

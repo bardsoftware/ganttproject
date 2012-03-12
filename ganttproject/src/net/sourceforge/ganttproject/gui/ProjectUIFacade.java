@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.io.IOException;
@@ -26,12 +26,17 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public interface ProjectUIFacade {
-    void saveProject(IGanttProject project);
-    void saveProjectAs(IGanttProject project);
-    public boolean ensureProjectSaved(IGanttProject project);
-    void openProject(IGanttProject project) throws IOException, DocumentException;
-    void openProject(Document document, IGanttProject project) throws IOException, DocumentException;
+  void saveProject(IGanttProject project);
 
-    void createProject(IGanttProject project);
-    GPOptionGroup getOptionGroup();
+  void saveProjectAs(IGanttProject project);
+
+  public boolean ensureProjectSaved(IGanttProject project);
+
+  void openProject(IGanttProject project) throws IOException, DocumentException;
+
+  void openProject(Document document, IGanttProject project) throws IOException, DocumentException;
+
+  void createProject(IGanttProject project);
+
+  GPOptionGroup getOptionGroup();
 }

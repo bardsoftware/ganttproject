@@ -17,48 +17,48 @@ import net.sourceforge.ganttproject.time.DateFrameable;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * 
  * @author bard
  */
 public class FramerImpl implements DateFrameable {
-    private final int myCalendarField;
+  private final int myCalendarField;
 
-    public FramerImpl(int calendarField) {
-        myCalendarField = calendarField;
-    }
+  public FramerImpl(int calendarField) {
+    myCalendarField = calendarField;
+  }
 
-    @Override
-    public Date adjustRight(Date baseDate) {
-        Calendar c = CalendarFactory.newCalendar();
-        c.setTime(baseDate);
-        clearFields(c);
-        c.add(myCalendarField, 1);
-        return c.getTime();
-    }
+  @Override
+  public Date adjustRight(Date baseDate) {
+    Calendar c = CalendarFactory.newCalendar();
+    c.setTime(baseDate);
+    clearFields(c);
+    c.add(myCalendarField, 1);
+    return c.getTime();
+  }
 
-    private void clearFields(Calendar c) {
-        for (int i = myCalendarField + 1; i <= Calendar.MILLISECOND; i++) {
-            c.clear(i);
-        }
+  private void clearFields(Calendar c) {
+    for (int i = myCalendarField + 1; i <= Calendar.MILLISECOND; i++) {
+      c.clear(i);
     }
+  }
 
-    @Override
-    public Date adjustLeft(Date baseDate) {
-        Calendar c = CalendarFactory.newCalendar();
-        c.setTime(baseDate);
-        clearFields(c);
-        // Date beforeClear = c.getTime();
-        // if (beforeClear.compareTo(c.getTime())==0) {
-        //     c.add(Calendar.MILLISECOND, -1);
-        // }
-        return c.getTime();
-    }
+  @Override
+  public Date adjustLeft(Date baseDate) {
+    Calendar c = CalendarFactory.newCalendar();
+    c.setTime(baseDate);
+    clearFields(c);
+    // Date beforeClear = c.getTime();
+    // if (beforeClear.compareTo(c.getTime())==0) {
+    // c.add(Calendar.MILLISECOND, -1);
+    // }
+    return c.getTime();
+  }
 
-    @Override
-    public Date jumpLeft(Date baseDate) {
-        Calendar c = CalendarFactory.newCalendar();
-        c.setTime(baseDate);
-        c.add(myCalendarField, -1);
-        return c.getTime();
-    }
+  @Override
+  public Date jumpLeft(Date baseDate) {
+    Calendar c = CalendarFactory.newCalendar();
+    c.setTime(baseDate);
+    c.add(myCalendarField, -1);
+    return c.getTime();
+  }
 }

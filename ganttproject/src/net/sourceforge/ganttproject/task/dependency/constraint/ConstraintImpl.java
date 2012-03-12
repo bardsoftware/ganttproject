@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency.constraint;
 
 import java.util.Date;
@@ -27,68 +27,67 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 /**
  * @author bard
  */
-public abstract class ConstraintImpl implements Cloneable{
-    private final int myID;
+public abstract class ConstraintImpl implements Cloneable {
+  private final int myID;
 
-    private final String myName;
+  private final String myName;
 
-    private TaskDependency myDependency;
+  private TaskDependency myDependency;
 
-    public ConstraintImpl(int myID, String myName) {
-        this.myID = myID;
-        this.myName = myName;
+  public ConstraintImpl(int myID, String myName) {
+    this.myID = myID;
+    this.myName = myName;
+  }
+
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    return super.clone();
+  }
+
+  protected TaskDependency getDependency() {
+    return myDependency;
+  }
+
+  public void setTaskDependency(TaskDependency dependency) {
+    myDependency = dependency;
+  }
+
+  public String getName() {
+    return myName;
+  }
+
+  public int getID() {
+    return myID;
+  }
+
+  @Override
+  public String toString() {
+    return getName();
+  }
+
+  protected void shift(GanttCalendar calendar, int shift) {
+    if (shift != 0) {
+      Date shifted = shift(calendar.getTime(), shift);
+      calendar.setTime(shifted);
     }
+  }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+  protected Date shift(Date date, int shift) {
+    if (shift == 0) {
+      // No shifting is required
+      return date;
     }
+    return myDependency.getDependant().getManager().getCalendar().shiftDate(date,
+        myDependency.getDependant().getManager().createLength(shift));
+  }
 
-    protected TaskDependency getDependency() {
-        return myDependency;
-    }
+  protected void addDelay(GanttCalendar calendar) {
+    shift(calendar, myDependency.getDifference());
+  }
 
-    public void setTaskDependency(TaskDependency dependency) {
-        myDependency = dependency;
-    }
+  public TaskDependencyConstraint.Collision getBackwardCollision(Date dependantStart) {
+    return null;
+  }
 
-    public String getName() {
-        return myName;
-    }
-
-    public int getID() {
-        return myID;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    protected void shift(GanttCalendar calendar, int shift) {
-        if (shift != 0) {
-            Date shifted = shift(calendar.getTime(), shift);
-            calendar.setTime(shifted);
-        }
-    }
-
-    protected Date shift(Date date, int shift) {
-        if (shift == 0) {
-            // No shifting is required
-            return date;
-        }
-        return myDependency.getDependant().getManager().getCalendar().shiftDate(
-                    date,
-                    myDependency.getDependant().getManager().createLength(shift));
-    }
-
-    protected void addDelay(GanttCalendar calendar) {
-        shift(calendar, myDependency.getDifference());
-    }
-
-    public TaskDependencyConstraint.Collision getBackwardCollision(Date dependantStart) {
-        return null;
-    }
-
-    public abstract TaskDependencyConstraint.Collision getCollision();
+  public abstract TaskDependencyConstraint.Collision getCollision();
 }

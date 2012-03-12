@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.ArrayList;
@@ -42,209 +42,195 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  */
 public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
 
-    private SortedMap<Integer, List<TaskDependency>> myDistance2dependencyList = new TreeMap<Integer, List<TaskDependency>>();
+  private SortedMap<Integer, List<TaskDependency>> myDistance2dependencyList = new TreeMap<Integer, List<TaskDependency>>();
 
-    private Set<Task> myModifiedTasks = new HashSet<Task>();
+  private Set<Task> myModifiedTasks = new HashSet<Task>();
 
-    private final AdjustTaskBoundsAlgorithm myAdjuster;
+  private final AdjustTaskBoundsAlgorithm myAdjuster;
 
-    private int myEntranceCounter;
+  private int myEntranceCounter;
 
-    private boolean isRunning;
+  private boolean isRunning;
 
-    public RecalculateTaskScheduleAlgorithm(AdjustTaskBoundsAlgorithm adjuster) {
-        myAdjuster = adjuster;
+  public RecalculateTaskScheduleAlgorithm(AdjustTaskBoundsAlgorithm adjuster) {
+    myAdjuster = adjuster;
+  }
+
+  public void run(Task changedTask) throws TaskDependencyException {
+    if (!isEnabled()) {
+      return;
     }
+    isRunning = true;
+    myEntranceCounter++;
+    buildDistanceGraph(changedTask);
+    fulfilDependencies();
+    myDistance2dependencyList.clear();
+    myModifiedTasks.add(changedTask);
+    myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
+    myDistance2dependencyList.clear();
+    myModifiedTasks.clear();
+    myEntranceCounter--;
 
-    public void run(Task changedTask) throws TaskDependencyException {
-        if (!isEnabled()) {
-            return;
-        }
-        isRunning = true;
-        myEntranceCounter++;
-        buildDistanceGraph(changedTask);
-        fulfilDependencies();
-        myDistance2dependencyList.clear();
-        myModifiedTasks.add(changedTask);
-        myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
-        myDistance2dependencyList.clear();
-        myModifiedTasks.clear();
-        myEntranceCounter--;
+    isRunning = false;
+  }
 
-        isRunning = false;
+  public void run(Set<Task> taskSet) throws TaskDependencyException {
+    if (!isEnabled()) {
+      return;
     }
-
-    public void run(Set<Task> taskSet) throws TaskDependencyException {
-        if (!isEnabled()) {
-            return;
-        }
-        isRunning = true;
-        myEntranceCounter++;
-        for (Iterator<Task> tasks = taskSet.iterator(); tasks.hasNext();) {
-            Task nextTask = tasks.next();
-            buildDistanceGraph(nextTask);
-            fulfilDependencies();
-            myDistance2dependencyList.clear();
-            myModifiedTasks.add(nextTask);
-        }
-        myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
-        myDistance2dependencyList.clear();
-        myModifiedTasks.clear();
-        myEntranceCounter--;
-
-        isRunning = false;
+    isRunning = true;
+    myEntranceCounter++;
+    for (Iterator<Task> tasks = taskSet.iterator(); tasks.hasNext();) {
+      Task nextTask = tasks.next();
+      buildDistanceGraph(nextTask);
+      fulfilDependencies();
+      myDistance2dependencyList.clear();
+      myModifiedTasks.add(nextTask);
     }
+    myAdjuster.run(myModifiedTasks.toArray(new Task[0]));
+    myDistance2dependencyList.clear();
+    myModifiedTasks.clear();
+    myEntranceCounter--;
 
-    public void run() throws TaskDependencyException {
-        if (!isEnabled()) {
-            return;
-        }
-        myDistance2dependencyList.clear();
-        isRunning = true;
-        TaskContainmentHierarchyFacade facade = createContainmentFacade();
-        Set<Task> independentTasks = new HashSet<Task>();
-        traverse(facade, facade.getRootTask(), independentTasks);
-        for (Iterator<Task> it = independentTasks.iterator(); it.hasNext();) {
-            Task next = it.next();
-            buildDistanceGraph(next);
-        }
-        fulfilDependencies();
-        myDistance2dependencyList.clear();
-        isRunning = false;
+    isRunning = false;
+  }
+
+  public void run() throws TaskDependencyException {
+    if (!isEnabled()) {
+      return;
     }
-
-    public boolean isRunning() {
-        return isRunning;
+    myDistance2dependencyList.clear();
+    isRunning = true;
+    TaskContainmentHierarchyFacade facade = createContainmentFacade();
+    Set<Task> independentTasks = new HashSet<Task>();
+    traverse(facade, facade.getRootTask(), independentTasks);
+    for (Iterator<Task> it = independentTasks.iterator(); it.hasNext();) {
+      Task next = it.next();
+      buildDistanceGraph(next);
     }
+    fulfilDependencies();
+    myDistance2dependencyList.clear();
+    isRunning = false;
+  }
 
-    private void traverse(TaskContainmentHierarchyFacade facade, Task root,
-            Set<Task> independentTasks) {
-        TaskDependency[] asDependant = root.getDependenciesAsDependant()
-                .toArray();
-        if (asDependant.length == 0) {
-            independentTasks.add(root);
-        }
-        for (Task nestedTask : facade.getNestedTasks(root)) {
-            traverse(facade, nestedTask, independentTasks);
-        }
+  public boolean isRunning() {
+    return isRunning;
+  }
+
+  private void traverse(TaskContainmentHierarchyFacade facade, Task root, Set<Task> independentTasks) {
+    TaskDependency[] asDependant = root.getDependenciesAsDependant().toArray();
+    if (asDependant.length == 0) {
+      independentTasks.add(root);
     }
-
-    private void fulfilDependencies() throws TaskDependencyException {
-        for (Map.Entry<Integer, List<TaskDependency>> distance : myDistance2dependencyList.entrySet()) {
-            List<TaskDependency> dependenciesList = distance.getValue();
-            for (TaskDependency dependency : dependenciesList) {
-                TaskDependencyConstraint constraint = dependency.getConstraint();
-                TaskDependencyConstraint.Collision collision = constraint.getCollision();
-                if (collision.isActive()) {
-                    fulfilConstraints(dependency);
-                    dependency.getDependant().applyThirdDateConstraint();
-                }
-            }
-        }
+    for (Task nestedTask : facade.getNestedTasks(root)) {
+      traverse(facade, nestedTask, independentTasks);
     }
+  }
 
-    private void fulfilConstraints(TaskDependency dependency)
-            throws TaskDependencyException {
-        Task dependant = dependency.getDependant();
-        TaskDependency[] depsAsDependant = dependant
-                .getDependenciesAsDependant().toArray();
-        if (depsAsDependant.length > 0) {
-            ArrayList<GanttCalendar> startLaterVariations = new ArrayList<GanttCalendar>();
-            ArrayList<GanttCalendar> startEarlierVariations = new ArrayList<GanttCalendar>();
-            ArrayList<GanttCalendar> noVariations = new ArrayList<GanttCalendar>();
-
-            for (TaskDependency depAsDependant : depsAsDependant) {
-                TaskDependencyConstraint.Collision nextCollision = depAsDependant
-                        .getConstraint().getCollision();
-                GanttCalendar acceptableStart = nextCollision.getAcceptableStart();
-                switch (nextCollision.getVariation()) {
-                case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
-                    startEarlierVariations.add(acceptableStart);
-                    break;
-                case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
-                    startLaterVariations.add(acceptableStart);
-                    break;
-                case TaskDependencyConstraint.Collision.NO_VARIATION:
-                    noVariations.add(acceptableStart);
-                    break;
-                }
-            }
-            if (noVariations.size() > 1) {
-                throw new TaskDependencyException("Failed to fulfill constraints of task="
-                        + dependant + ". There are " + noVariations.size()
-                        + " constraints which don't allow for task start variation");
-            }
-
-            Collections.sort(startEarlierVariations, GanttCalendar.COMPARATOR);
-            Collections.sort(startLaterVariations, GanttCalendar.COMPARATOR);
-
-            GanttCalendar solution;
-            GanttCalendar earliestStart = startEarlierVariations.size() == 0
-                    ? null : startEarlierVariations.get(0);
-            GanttCalendar latestStart = startLaterVariations.size() >= 0
-                    ? startLaterVariations.get(startLaterVariations.size() - 1) : null;
-            if (earliestStart == null && latestStart == null) {
-                solution = dependant.getStart();
-            } else {
-                if (earliestStart == null && latestStart != null) {
-                    earliestStart = latestStart;
-                } else if (earliestStart != null && latestStart == null) {
-                    latestStart = earliestStart;
-                }
-                if (earliestStart.compareTo(latestStart) < 0) {
-                    throw new TaskDependencyException(
-                            "Failed to fulfill constraints of task="
-                                    + dependant);
-                }
-            }
-            if (noVariations.size() > 0) {
-                GanttCalendar notVariableStart = noVariations.get(0);
-                if (notVariableStart.compareTo(earliestStart) < 0
-                        || notVariableStart.compareTo(latestStart) > 0) {
-                    throw new TaskDependencyException(
-                            "Failed to fulfill constraints of task="
-                                    + dependant);
-                }
-                solution = notVariableStart;
-            } else {
-                solution = latestStart;
-            }
-
-            modifyTaskStart(dependant, solution);
+  private void fulfilDependencies() throws TaskDependencyException {
+    for (Map.Entry<Integer, List<TaskDependency>> distance : myDistance2dependencyList.entrySet()) {
+      List<TaskDependency> dependenciesList = distance.getValue();
+      for (TaskDependency dependency : dependenciesList) {
+        TaskDependencyConstraint constraint = dependency.getConstraint();
+        TaskDependencyConstraint.Collision collision = constraint.getCollision();
+        if (collision.isActive()) {
+          fulfilConstraints(dependency);
+          dependency.getDependant().applyThirdDateConstraint();
         }
+      }
     }
+  }
 
-    private void modifyTaskStart(Task task, GanttCalendar newStart) {
-        TaskMutator mutator = task.createMutatorFixingDuration();
-        mutator.setStart(newStart);
-        mutator.commit();
-        myModifiedTasks.add(task);
-    }
+  private void fulfilConstraints(TaskDependency dependency) throws TaskDependencyException {
+    Task dependant = dependency.getDependant();
+    TaskDependency[] depsAsDependant = dependant.getDependenciesAsDependant().toArray();
+    if (depsAsDependant.length > 0) {
+      ArrayList<GanttCalendar> startLaterVariations = new ArrayList<GanttCalendar>();
+      ArrayList<GanttCalendar> startEarlierVariations = new ArrayList<GanttCalendar>();
+      ArrayList<GanttCalendar> noVariations = new ArrayList<GanttCalendar>();
 
-    private void buildDistanceGraph(Task changedTask) {
-        TaskDependency[] depsAsDependee = changedTask
-                .getDependenciesAsDependee().toArray();
-        buildDistanceGraph(depsAsDependee, 1);
-    }
-
-    private void buildDistanceGraph(TaskDependency[] deps, int distance) {
-        if (deps.length == 0) {
-            return;
+      for (TaskDependency depAsDependant : depsAsDependant) {
+        TaskDependencyConstraint.Collision nextCollision = depAsDependant.getConstraint().getCollision();
+        GanttCalendar acceptableStart = nextCollision.getAcceptableStart();
+        switch (nextCollision.getVariation()) {
+        case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
+          startEarlierVariations.add(acceptableStart);
+          break;
+        case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
+          startLaterVariations.add(acceptableStart);
+          break;
+        case TaskDependencyConstraint.Collision.NO_VARIATION:
+          noVariations.add(acceptableStart);
+          break;
         }
-        Integer key = new Integer(distance);
-        List<TaskDependency> depsList = myDistance2dependencyList.get(key);
-        if (depsList == null) {
-            depsList = new ArrayList<TaskDependency>();
-            myDistance2dependencyList.put(key, depsList);
-        }
-        depsList.addAll(Arrays.asList(deps));
-        for (TaskDependency dep : deps) {
-            Task dependant = dep.getDependant();
-            TaskDependency[] nextStepDeps = dependant
-                    .getDependenciesAsDependee().toArray();
-            buildDistanceGraph(nextStepDeps, ++distance);
-        }
-    }
+      }
+      if (noVariations.size() > 1) {
+        throw new TaskDependencyException("Failed to fulfill constraints of task=" + dependant + ". There are "
+            + noVariations.size() + " constraints which don't allow for task start variation");
+      }
 
-    protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
+      Collections.sort(startEarlierVariations, GanttCalendar.COMPARATOR);
+      Collections.sort(startLaterVariations, GanttCalendar.COMPARATOR);
+
+      GanttCalendar solution;
+      GanttCalendar earliestStart = startEarlierVariations.size() == 0 ? null : startEarlierVariations.get(0);
+      GanttCalendar latestStart = startLaterVariations.size() >= 0 ? startLaterVariations.get(startLaterVariations.size() - 1)
+          : null;
+      if (earliestStart == null && latestStart == null) {
+        solution = dependant.getStart();
+      } else {
+        if (earliestStart == null && latestStart != null) {
+          earliestStart = latestStart;
+        } else if (earliestStart != null && latestStart == null) {
+          latestStart = earliestStart;
+        }
+        if (earliestStart.compareTo(latestStart) < 0) {
+          throw new TaskDependencyException("Failed to fulfill constraints of task=" + dependant);
+        }
+      }
+      if (noVariations.size() > 0) {
+        GanttCalendar notVariableStart = noVariations.get(0);
+        if (notVariableStart.compareTo(earliestStart) < 0 || notVariableStart.compareTo(latestStart) > 0) {
+          throw new TaskDependencyException("Failed to fulfill constraints of task=" + dependant);
+        }
+        solution = notVariableStart;
+      } else {
+        solution = latestStart;
+      }
+
+      modifyTaskStart(dependant, solution);
+    }
+  }
+
+  private void modifyTaskStart(Task task, GanttCalendar newStart) {
+    TaskMutator mutator = task.createMutatorFixingDuration();
+    mutator.setStart(newStart);
+    mutator.commit();
+    myModifiedTasks.add(task);
+  }
+
+  private void buildDistanceGraph(Task changedTask) {
+    TaskDependency[] depsAsDependee = changedTask.getDependenciesAsDependee().toArray();
+    buildDistanceGraph(depsAsDependee, 1);
+  }
+
+  private void buildDistanceGraph(TaskDependency[] deps, int distance) {
+    if (deps.length == 0) {
+      return;
+    }
+    Integer key = new Integer(distance);
+    List<TaskDependency> depsList = myDistance2dependencyList.get(key);
+    if (depsList == null) {
+      depsList = new ArrayList<TaskDependency>();
+      myDistance2dependencyList.put(key, depsList);
+    }
+    depsList.addAll(Arrays.asList(deps));
+    for (TaskDependency dep : deps) {
+      Task dependant = dep.getDependant();
+      TaskDependency[] nextStepDeps = dependant.getDependenciesAsDependee().toArray();
+      buildDistanceGraph(nextStepDeps, ++distance);
+    }
+  }
+
+  protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
 }

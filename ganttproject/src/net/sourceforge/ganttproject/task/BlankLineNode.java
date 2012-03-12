@@ -15,16 +15,16 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class BlankLineNode extends DefaultMutableTreeNode {
 
-    public static final String BLANK_LINE = "";
+  public static final String BLANK_LINE = "";
 
-    public BlankLineNode(){
-        super(BLANK_LINE);
-    }
+  public BlankLineNode() {
+    super(BLANK_LINE);
+  }
 }

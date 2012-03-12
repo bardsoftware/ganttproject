@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.resource;
 
 import java.util.ArrayList;
@@ -33,44 +33,44 @@ import net.sourceforge.ganttproject.resource.ResourceContext;
  * Action base for resource related actions
  */
 abstract class ResourceAction extends GPAction implements ActionDelegate {
-    private final HumanResourceManager myManager;
-    private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
-    private final ResourceContext myContext;
+  private final HumanResourceManager myManager;
+  private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
+  private final ResourceContext myContext;
 
-    public ResourceAction(String name, HumanResourceManager hrManager) {
-        this(name, hrManager, null, IconSize.NO_ICON);
-    }
+  public ResourceAction(String name, HumanResourceManager hrManager) {
+    this(name, hrManager, null, IconSize.NO_ICON);
+  }
 
-    protected ResourceAction(String name, HumanResourceManager hrManager, ResourceContext context, IconSize size) {
-        super(name, size.asString());
-        myManager = hrManager;
-        myContext = context;
-    }
+  protected ResourceAction(String name, HumanResourceManager hrManager, ResourceContext context, IconSize size) {
+    super(name, size.asString());
+    myManager = hrManager;
+    myContext = context;
+  }
 
-    @Override
-    public void addStateChangedListener(ActionStateChangedListener l) {
-        myListeners.add(l);
-    }
+  @Override
+  public void addStateChangedListener(ActionStateChangedListener l) {
+    myListeners.add(l);
+  }
 
-    protected HumanResourceManager getManager() {
-        return myManager;
-    }
+  protected HumanResourceManager getManager() {
+    return myManager;
+  }
 
-    protected boolean hasResources() {
-        HumanResource[] selection = myContext.getResources();
-        return selection != null && selection.length > 0;
-    }
+  protected boolean hasResources() {
+    HumanResource[] selection = myContext.getResources();
+    return selection != null && selection.length > 0;
+  }
 
-    protected HumanResource[] getSelection() {
-        HumanResource[] selection = myContext.getResources();
-        return selection == null ? new HumanResource[0] : selection;
-    }
+  protected HumanResource[] getSelection() {
+    HumanResource[] selection = myContext.getResources();
+    return selection == null ? new HumanResource[0] : selection;
+  }
 
-    @Override
-    public void setEnabled(boolean newValue) {
-        super.setEnabled(newValue);
-        for(ActionStateChangedListener l: myListeners) {
-            l.actionStateChanged();
-        }
+  @Override
+  public void setEnabled(boolean newValue) {
+    super.setEnabled(newValue);
+    for (ActionStateChangedListener l : myListeners) {
+      l.actionStateChanged();
     }
+  }
 }

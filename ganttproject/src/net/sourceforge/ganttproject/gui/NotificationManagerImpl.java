@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.GridLayout;
@@ -31,112 +31,116 @@ import net.sourceforge.ganttproject.action.ShowChannelAction;
 import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
 public class NotificationManagerImpl implements NotificationManager {
-    private final AnimationView myAnimationView;
-    private NotificationChannel myFirstChannel;
-    private final Runnable myOnReadyCommand;
+  private final AnimationView myAnimationView;
+  private NotificationChannel myFirstChannel;
+  private final Runnable myOnReadyCommand;
 
-    public NotificationManagerImpl(AnimationView animationView, Runnable onReady) {
-        myAnimationView = animationView;
-        myOnReadyCommand = onReady;
+  public NotificationManagerImpl(AnimationView animationView, Runnable onReady) {
+    myAnimationView = animationView;
+    myOnReadyCommand = onReady;
+  }
+
+  @Override
+  public void showNotification(final NotificationChannel channel) {
+    if (channel.getItems().isEmpty() && channel.getDefaultNotification() == null) {
+      return;
     }
+    if (!myAnimationView.isReady()) {
+      if (myFirstChannel == null) {
+        myFirstChannel = channel;
+      }
+      return;
+    }
+    if (myAnimationView.isVisible()) {
+      return;
+    }
+    NotificationComponent nc = new NotificationComponent(channel, myAnimationView);
+    channel.setVisible(true);
+    nc.processItems();
+    myAnimationView.setComponent(nc.getComponent(), channel.getButton(), new Runnable() {
+      @Override
+      public void run() {
+        channel.getButton().setBackground(channel.getNormalColor());
+      }
+    });
+  }
 
-    @Override
-    public void showNotification(final NotificationChannel channel) {
-        if (channel.getItems().isEmpty() && channel.getDefaultNotification() == null) {
-            return;
-        }
-        if (!myAnimationView.isReady()) {
-            if (myFirstChannel == null) {
-                myFirstChannel = channel;
-            }
-            return;
-        }
-        if (myAnimationView.isVisible()) {
-            return;
-        }
-        NotificationComponent nc = new NotificationComponent(channel, myAnimationView);
-        channel.setVisible(true);
-        nc.processItems();
-        myAnimationView.setComponent(nc.getComponent(), channel.getButton(), new Runnable() {
-            @Override
-            public void run() {
-                channel.getButton().setBackground(channel.getNormalColor());
-            }
+  public void showPending() {
+    if (myFirstChannel != null) {
+      showNotification(myFirstChannel);
+    }
+  }
+
+  JComponent getChannelButtons() {
+    final JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
+    TestGanttRolloverButton rssButton = new TestGanttRolloverButton(
+        new ShowChannelAction(this, NotificationChannel.RSS));
+
+    NotificationChannel.RSS.setButton(rssButton);
+    result.add(rssButton);
+
+    TestGanttRolloverButton errorButton = new TestGanttRolloverButton(new ShowChannelAction(this,
+        NotificationChannel.ERROR));
+    NotificationChannel.ERROR.setButton(errorButton);
+    result.add(errorButton);
+    result.addComponentListener(new ComponentListener() {
+      @Override
+      public void componentShown(ComponentEvent e) {
+      }
+
+      @Override
+      public void componentResized(ComponentEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            showPending();
+            myOnReadyCommand.run();
+          }
         });
-    }
+        result.removeComponentListener(this);
+      }
 
-    public void showPending() {
-        if (myFirstChannel != null) {
-            showNotification(myFirstChannel);
+      @Override
+      public void componentMoved(ComponentEvent e) {
+      }
+
+      @Override
+      public void componentHidden(ComponentEvent e) {
+      }
+    });
+
+    return result;
+  }
+
+  @Override
+  public void addNotifications(final NotificationChannel channel, Collection<NotificationItem> items) {
+    channel.addNotifications(items);
+    if (!channel.isVisible()) {
+      boolean hasVisibleChannel = false;
+      for (NotificationChannel ch : NotificationChannel.values()) {
+        hasVisibleChannel |= ch.isVisible();
+      }
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          channel.saveNormalColor();
+          channel.getButton().setBackground(channel.getColor());
+          showNotification(channel);
         }
-    }
-
-    JComponent getChannelButtons() {
-        final JPanel result = new JPanel(new GridLayout(1, 2, 3, 0));
-        TestGanttRolloverButton rssButton = new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.RSS));
-
-        NotificationChannel.RSS.setButton(rssButton);
-        result.add(rssButton);
-
-        TestGanttRolloverButton errorButton =
-            new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.ERROR));
-        NotificationChannel.ERROR.setButton(errorButton);
-        result.add(errorButton);
-        result.addComponentListener(new ComponentListener() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-            }
-            @Override
-            public void componentResized(ComponentEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        showPending();
-                        myOnReadyCommand.run();
-                    }
-                });
-                result.removeComponentListener(this);
-            }
-            @Override
-            public void componentMoved(ComponentEvent e) {
-            }
-            @Override
-            public void componentHidden(ComponentEvent e) {
-            }
+      });
+      if (!hasVisibleChannel) {
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            showNotification(channel);
+          }
         });
-
-        return result;
+      }
     }
+  }
 
-    @Override
-    public void addNotifications(final NotificationChannel channel, Collection<NotificationItem> items) {
-        channel.addNotifications(items);
-        if (!channel.isVisible()) {
-            boolean hasVisibleChannel = false;
-            for (NotificationChannel ch : NotificationChannel.values()) {
-                hasVisibleChannel |= ch.isVisible();
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    channel.saveNormalColor();
-                    channel.getButton().setBackground(channel.getColor());
-                    showNotification(channel);
-                }
-            });
-            if (!hasVisibleChannel) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        showNotification(channel);
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public void hideNotification() {
-        myAnimationView.close();
-    }
+  @Override
+  public void hideNotification() {
+    myAnimationView.close();
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.calendar.walker;
 
 import java.util.Date;
@@ -26,50 +26,50 @@ import net.sourceforge.ganttproject.task.TaskLengthImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
- * This class walks forward and counts the number of steps which start
- * at working time.
- *
+ * This class walks forward and counts the number of steps which start at
+ * working time.
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class WorkingUnitCounter extends ForwardTimeWalker {
-    private Date myEndDate;
-    private boolean isMoving = true;
-    private int myWorkingUnitCounter;
-    private int myNonWorkingUnitCounter;
+  private Date myEndDate;
+  private boolean isMoving = true;
+  private int myWorkingUnitCounter;
+  private int myNonWorkingUnitCounter;
 
-    public WorkingUnitCounter(GPCalendar calendar, TimeUnit timeUnit) {
-        super(calendar, timeUnit);
-    }
+  public WorkingUnitCounter(GPCalendar calendar, TimeUnit timeUnit) {
+    super(calendar, timeUnit);
+  }
 
-    @Override
-    protected boolean isMoving() {
-        return isMoving;
-    }
+  @Override
+  protected boolean isMoving() {
+    return isMoving;
+  }
 
-    @Override
-    protected void processNonWorkingTime(Date intervalStart, Date workingIntervalStart) {
-        myNonWorkingUnitCounter++;
-        isMoving = workingIntervalStart.before(myEndDate);
-    }
+  @Override
+  protected void processNonWorkingTime(Date intervalStart, Date workingIntervalStart) {
+    myNonWorkingUnitCounter++;
+    isMoving = workingIntervalStart.before(myEndDate);
+  }
 
-    @Override
-    protected void processWorkingTime(Date intervalStart, Date nextIntervalStart) {
-        myWorkingUnitCounter++;
-        isMoving = nextIntervalStart.before(myEndDate);
-    }
+  @Override
+  protected void processWorkingTime(Date intervalStart, Date nextIntervalStart) {
+    myWorkingUnitCounter++;
+    isMoving = nextIntervalStart.before(myEndDate);
+  }
 
-    public TaskLength getNonWorkingTime() {
-        return new TaskLengthImpl(getTimeUnit(), myNonWorkingUnitCounter);
-    }
+  public TaskLength getNonWorkingTime() {
+    return new TaskLengthImpl(getTimeUnit(), myNonWorkingUnitCounter);
+  }
 
-    public TaskLength run(Date startDate, Date endDate) {
-        assert startDate != null : "null start date";
-        assert endDate != null : "null end date";
-        isMoving = true;
-        myNonWorkingUnitCounter = 0;
-        myWorkingUnitCounter = 0;
-        myEndDate = endDate;
-        walk(startDate);
-        return new TaskLengthImpl(getTimeUnit(), myWorkingUnitCounter);
-    }
+  public TaskLength run(Date startDate, Date endDate) {
+    assert startDate != null : "null start date";
+    assert endDate != null : "null end date";
+    isMoving = true;
+    myNonWorkingUnitCounter = 0;
+    myWorkingUnitCounter = 0;
+    myEndDate = endDate;
+    walk(startDate);
+    return new TaskLengthImpl(getTimeUnit(), myWorkingUnitCounter);
+  }
 }

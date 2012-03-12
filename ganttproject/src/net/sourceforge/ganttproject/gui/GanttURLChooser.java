@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 
 package net.sourceforge.ganttproject.gui;
 
@@ -40,135 +40,135 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Dialog for Open/Save file from/to WebDAV resource.
- *
+ * 
  * @author Dmitry Barashev (major rewrite).
  * @author Alexandre Thomas (initial version).
  */
 public class GanttURLChooser {
-    private JTextField urlField;
+  private JTextField urlField;
 
-    private JTextField userNameField;
+  private JTextField userNameField;
 
-    private JPasswordField passwordField;
+  private JPasswordField passwordField;
 
-    private static final GanttLanguage language = GanttLanguage.getInstance();
+  private static final GanttLanguage language = GanttLanguage.getInstance();
 
-    private final UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-    private String myUrl;
+  private String myUrl;
 
-    private String myUsername;
+  private String myUsername;
 
-    private String myPassword;
+  private String myPassword;
 
-    private Choice myChoice;
+  private Choice myChoice;
 
-    private JCheckBox lockCheckbox;
+  private JCheckBox lockCheckbox;
 
-    private GTextField myLockTimeout;
+  private GTextField myLockTimeout;
 
-    private int myTimeout;
+  private int myTimeout;
 
-    protected boolean isTimeoutEnabled;
+  protected boolean isTimeoutEnabled;
 
-    public GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
-        myUiFacade = uiFacade;
-        myUrl = url;
-        myUsername = username;
-        myPassword = password;
-        myTimeout = timeout;
-        myChoice = UIFacade.Choice.CANCEL;
+  public GanttURLChooser(UIFacade uiFacade, String url, String username, String password, int timeout) {
+    myUiFacade = uiFacade;
+    myUrl = url;
+    myUsername = username;
+    myPassword = password;
+    myTimeout = timeout;
+    myChoice = UIFacade.Choice.CANCEL;
+  }
+
+  public void show(boolean isOpenUrl) {
+    JPanel panel = new JPanel(new SpringLayout());
+
+    panel.add(new JLabel(language.getText("fileFromServer")));
+    String sDefaultURL = "http://ganttproject.sourceforge.net/tmp/testGantt.xml";
+    urlField = new JTextField((null != myUrl) ? myUrl : sDefaultURL);
+    panel.add(urlField);
+
+    panel.add(new JLabel(language.getText("userName")));
+    userNameField = new JTextField(myUsername);
+    panel.add(userNameField);
+
+    panel.add(new JLabel(language.getText("password")));
+    passwordField = new JPasswordField(myPassword);
+    panel.add(passwordField);
+
+    panel.add(new JPanel());
+    panel.add(new JPanel());
+
+    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
+    lockCheckbox = new JCheckBox();
+    lockCheckbox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        myLockTimeout.setEnabled(lockCheckbox.isSelected());
+      }
+    });
+    panel.add(lockCheckbox);
+
+    panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
+    myLockTimeout = new GTextField();
+    myLockTimeout.setPattern(GTextField.PATTERN_INTEGER);
+    if (myTimeout >= 0) {
+      myLockTimeout.setText(String.valueOf(myTimeout));
+      lockCheckbox.setSelected(true);
+    } else {
+      lockCheckbox.setSelected(false);
     }
+    panel.add(myLockTimeout);
+    SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 3, 3);
 
-    public void show(boolean isOpenUrl) {
-        JPanel panel = new JPanel(new SpringLayout());
-
-        panel.add(new JLabel(language.getText("fileFromServer")));
-        String sDefaultURL = "http://ganttproject.sourceforge.net/tmp/testGantt.xml";
-        urlField = new JTextField((null != myUrl) ? myUrl : sDefaultURL);
-        panel.add(urlField);
-
-        panel.add(new JLabel(language.getText("userName")));
-        userNameField = new JTextField(myUsername);
-        panel.add(userNameField);
-
-        panel.add(new JLabel(language.getText("password")));
-        passwordField = new JPasswordField(myPassword);
-        panel.add(passwordField);
-
-        panel.add(new JPanel());
-        panel.add(new JPanel());
-
-        panel.add(new JLabel(language.getText("webdav.lockResource.label")));
-        lockCheckbox = new JCheckBox();
-        lockCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                myLockTimeout.setEnabled(lockCheckbox.isSelected());
-            }
-        });
-        panel.add(lockCheckbox);
-
-        panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
-        myLockTimeout = new GTextField();
-        myLockTimeout.setPattern(GTextField.PATTERN_INTEGER);
-        if (myTimeout >= 0) {
-            myLockTimeout.setText(String.valueOf(myTimeout));
-            lockCheckbox.setSelected(true);
+    panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    OkAction okAction = new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        myUrl = urlField.getText();
+        myUsername = userNameField.getText();
+        myPassword = new String(passwordField.getPassword());
+        myChoice = UIFacade.Choice.OK;
+        isTimeoutEnabled = lockCheckbox.isSelected();
+        if (isTimeoutEnabled) {
+          String timeoutString = myLockTimeout.getText().trim();
+          try {
+            myTimeout = Integer.parseInt(timeoutString);
+          } catch (NumberFormatException e) {
+            GPLogger.log(e);
+            myTimeout = 0;
+            isTimeoutEnabled = false;
+          }
         } else {
-            lockCheckbox.setSelected(false);
+          myTimeout = 0;
         }
-        panel.add(myLockTimeout);
-        SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 3, 3);
+      }
+    };
+    myUiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY },
+        language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
+  }
 
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        OkAction okAction = new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                myUrl = urlField.getText();
-                myUsername = userNameField.getText();
-                myPassword = new String(passwordField.getPassword());
-                myChoice = UIFacade.Choice.OK;
-                isTimeoutEnabled = lockCheckbox.isSelected();
-                if (isTimeoutEnabled) {
-                    String timeoutString = myLockTimeout.getText().trim();
-                    try {
-                        myTimeout = Integer.parseInt(timeoutString);
-                    } catch (NumberFormatException e) {
-                        GPLogger.log(e);
-                        myTimeout = 0;
-                        isTimeoutEnabled = false;
-                    }
-                } else {
-                    myTimeout = 0;
-                }
-            }
-        };
-        myUiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY },
-                language.getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
-    }
+  public UIFacade.Choice getChoice() {
+    return myChoice;
+  }
 
-    public UIFacade.Choice getChoice() {
-        return myChoice;
-    }
+  public String getUsername() {
+    return myUsername;
+  }
 
-    public String getUsername() {
-        return myUsername;
-    }
+  public String getUrl() {
+    return myUrl;
+  }
 
-    public String getUrl() {
-        return myUrl;
-    }
+  public String getPassword() {
+    return myPassword;
+  }
 
-    public String getPassword() {
-        return myPassword;
-    }
+  public int getTimeout() {
+    return myTimeout;
+  }
 
-    public int getTimeout() {
-        return myTimeout;
-    }
-
-    public boolean isTimeoutEnabled() {
-        return isTimeoutEnabled;
-    }
+  public boolean isTimeoutEnabled() {
+    return isTimeoutEnabled;
+  }
 }

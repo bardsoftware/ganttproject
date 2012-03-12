@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -25,27 +25,27 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 
 class ProjectPropertiesAction extends GPAction {
-    private final GanttProject myMainFrame;
+  private final GanttProject myMainFrame;
 
-    ProjectPropertiesAction(GanttProject mainFrame) {
-        super("project.properties");
-        myMainFrame = mainFrame;
-    }
+  ProjectPropertiesAction(GanttProject mainFrame) {
+    super("project.properties");
+    myMainFrame = mainFrame;
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "properties_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "properties_";
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        myMainFrame.getUIFacade().getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
-            @Override
-            public void run() {
-                SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame
-                        .getUIFacade(), "settings.project.pageOrder");
-                settingsDialog.show();
-            }
-        });
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    myMainFrame.getUIFacade().getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
+      @Override
+      public void run() {
+        SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame.getUIFacade(),
+            "settings.project.pageOrder");
+        settingsDialog.show();
+      }
+    });
+  }
 }

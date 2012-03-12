@@ -13,33 +13,32 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
  */
 class DependencyActivityBindingImpl implements TaskDependency.ActivityBinding {
 
-    private final TaskActivity myDependeeActivity;
+  private final TaskActivity myDependeeActivity;
 
-    private final TaskActivity myDependantActivity;
+  private final TaskActivity myDependantActivity;
 
-    private final Date[] myAlignedBounds;
+  private final Date[] myAlignedBounds;
 
-    DependencyActivityBindingImpl(TaskActivity dependantActivity,
-            TaskActivity dependeeActivity, Date[] alignedBounds) {
-        myDependantActivity = dependantActivity;
-        myDependeeActivity = dependeeActivity;
-        myAlignedBounds = alignedBounds;
+  DependencyActivityBindingImpl(TaskActivity dependantActivity, TaskActivity dependeeActivity, Date[] alignedBounds) {
+    myDependantActivity = dependantActivity;
+    myDependeeActivity = dependeeActivity;
+    myAlignedBounds = alignedBounds;
 
-    }
+  }
 
-    @Override
-    public TaskActivity getDependantActivity() {
-        return myDependantActivity;
-    }
+  @Override
+  public TaskActivity getDependantActivity() {
+    return myDependantActivity;
+  }
 
-    @Override
-    public TaskActivity getDependeeActivity() {
-        return myDependeeActivity;
-    }
+  @Override
+  public TaskActivity getDependeeActivity() {
+    return myDependeeActivity;
+  }
 
-    @Override
-    public Date[] getAlignedBounds() {
-        return myAlignedBounds;
-    }
+  @Override
+  public Date[] getAlignedBounds() {
+    return myAlignedBounds;
+  }
 
 }

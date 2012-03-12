@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseEvent;
@@ -27,35 +27,35 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 
-public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction
-        implements MouseInteraction {
-    private TaskMutator myMutator;
+public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction implements MouseInteraction {
+  private TaskMutator myMutator;
 
-    public ChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary,
-        TimelineFacade chartDateGrid, UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
+  public ChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary, TimelineFacade chartDateGrid,
+      UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
 
-        super(taskBoundary.getTask().getEnd().getTime(), taskBoundary.getTask(), chartDateGrid, uiFacade, taskScheduleAlgorithm);
-        myMutator = getTask().createMutator();
+    super(taskBoundary.getTask().getEnd().getTime(), taskBoundary.getTask(), chartDateGrid, uiFacade,
+        taskScheduleAlgorithm);
+    myMutator = getTask().createMutator();
+  }
+
+  @Override
+  public void apply(MouseEvent e) {
+    Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
+    if (!dateUnderX.equals(getStartDate())) {
+      myMutator.setStart(new GanttCalendar(dateUnderX));
+      getTask().applyThirdDateConstraint();
     }
+    updateTooltip(e);
+  }
 
-    @Override
-    public void apply(MouseEvent e) {
-        Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
-        if (!dateUnderX.equals(getStartDate())) {
-            myMutator.setStart(new GanttCalendar(dateUnderX));
-            getTask().applyThirdDateConstraint();
-        }
-        updateTooltip(e);
-    }
+  @Override
+  public void finish() {
+    super.finish(myMutator);
+    getTask().applyThirdDateConstraint();
+  }
 
-    @Override
-    public void finish() {
-        super.finish(myMutator);
-        getTask().applyThirdDateConstraint();
-    }
-
-    @Override
-    protected String getNotesText() {
-        return getTask().getStart().toString();
-    }
+  @Override
+  protected String getNotesText() {
+    return getTask().getStart().toString();
+  }
 }

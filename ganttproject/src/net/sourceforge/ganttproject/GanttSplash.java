@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -34,58 +34,56 @@ import net.sourceforge.ganttproject.gui.DialogAligner;
 
 public class GanttSplash extends JFrame {
 
-    private JLabel mySplashComponent;
+  private JLabel mySplashComponent;
 
-    public GanttSplash() {
-        super("GanttProject Start");
+  public GanttSplash() {
+    super("GanttProject Start");
 
-        ImageIcon splashImage = new ImageIcon(getClass().getResource(
-                "/icons/splash.png"));
-        mySplashComponent = new JLabel(splashImage) {
-            @Override
-            public void paint(Graphics g) {
-                super.paint(g);
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                Font font = Fonts.SPLASH_FONT;
-                g2.setFont(font);
+    ImageIcon splashImage = new ImageIcon(getClass().getResource("/icons/splash.png"));
+    mySplashComponent = new JLabel(splashImage) {
+      @Override
+      public void paint(Graphics g) {
+        super.paint(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        Font font = Fonts.SPLASH_FONT;
+        g2.setFont(font);
 
-                drawTextWithShadow(g2, GPVersion.PRAHA, 65, 80);
-                //drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
-            }
-        };
+        drawTextWithShadow(g2, GPVersion.PRAHA, 65, 80);
+        // drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
+      }
+    };
+  }
+
+  private void drawTextWithShadow(Graphics2D graphics, String text, int xpos, int ypos) {
+    graphics.setColor(Color.GRAY);
+    graphics.drawString(text, xpos, ypos);
+  }
+
+  @Override
+  public void setVisible(boolean b) {
+    if (b) {
+      getContentPane().add(mySplashComponent, BorderLayout.CENTER);
+      pack();
+      DialogAligner.center(this);
     }
+    super.setVisible(b);
+  }
 
-    private void drawTextWithShadow(Graphics2D graphics, String text, int xpos, int ypos) {
-        graphics.setColor(Color.GRAY);
-        graphics.drawString(text, xpos , ypos);
-    }
-    @Override
-    public void setVisible(boolean b) {
-        if (b) {
-            getContentPane().add(mySplashComponent, BorderLayout.CENTER);
-            pack();
-            DialogAligner.center(this);
-        }
-        super.setVisible(b);
-    }
+  @Override
+  protected void frameInit() {
+    super.frameInit();
+    ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
+    setIconImage(icon.getImage()); // set the ganttproject icon
+    setUndecorated(true);
+  }
 
-    @Override
-    protected void frameInit() {
-        super.frameInit();
-        ImageIcon icon = new ImageIcon(getClass().getResource(
-                "/icons/ganttproject.png"));
-        setIconImage(icon.getImage()); // set the ganttproject icon
-        setUndecorated(true);
-    }
+  public void close() {
+    setVisible(false);
+    dispose();
+  }
 
-    public void close() {
-        setVisible(false);
-        dispose();
-    }
-
-    public JLabel getSplashComponent() {
-        return mySplashComponent;
-    }
+  public JLabel getSplashComponent() {
+    return mySplashComponent;
+  }
 }

@@ -10,14 +10,14 @@ import net.sourceforge.ganttproject.task.Task;
  */
 public class TaskBoundaryChartItem extends ChartItem {
 
-    private final boolean isStart;
+  private final boolean isStart;
 
-    public TaskBoundaryChartItem(Task task, boolean isStart) {
-        super(task);
-        this.isStart = isStart;
-    }
+  public TaskBoundaryChartItem(Task task, boolean isStart) {
+    super(task);
+    this.isStart = isStart;
+  }
 
-    public boolean isStartBoundary() {
-        return isStart;
-    }
+  public boolean isStartBoundary() {
+    return isStart;
+  }
 }

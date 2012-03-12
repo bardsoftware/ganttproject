@@ -15,26 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.util.ArrayList;
 
 public class OffsetList extends ArrayList<Offset> {
-    private int myStartPx;
-    void setStartPx(int startPx) {
-        myStartPx = startPx;
-    }
-    public int getStartPx() {
-        return myStartPx;
-    }
-    public int getEndPx() {
-        return get(size()-1).getOffsetPixels();
-    }
-    @Override
-    public void clear() {
-        super.clear();
-        myStartPx = 0;
-    }
+  private int myStartPx;
+
+  void setStartPx(int startPx) {
+    myStartPx = startPx;
+  }
+
+  public int getStartPx() {
+    return myStartPx;
+  }
+
+  public int getEndPx() {
+    return get(size() - 1).getOffsetPixels();
+  }
+
+  @Override
+  public void clear() {
+    super.clear();
+    myStartPx = 0;
+  }
 
 }

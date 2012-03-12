@@ -27,30 +27,30 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 
 /** Search service for resources */
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
-    static class MySearchResult extends SearchResult<HumanResource> {
-        public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
-            super("Resource: " + hr.getName(), "", "", hr, searchService);
-        }
+  static class MySearchResult extends SearchResult<HumanResource> {
+    public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
+      super("Resource: " + hr.getName(), "", "", hr, searchService);
     }
+  }
 
-    public ResourceSearchService() {
-        super(UIFacade.RESOURCES_INDEX);
-    }
+  public ResourceSearchService() {
+    super(UIFacade.RESOURCES_INDEX);
+  }
 
-    @Override
-    public List<MySearchResult> search(String query) {
-        query = query.toLowerCase();
-        List<MySearchResult> results = new ArrayList<MySearchResult>();
-        for (HumanResource hr : getProject().getHumanResourceManager().getResources()) {
-            if (isNotEmptyAndContains(hr.getName(), query)) {
-                results.add(new MySearchResult(hr, this));
-            }
-        }
-        return results;
+  @Override
+  public List<MySearchResult> search(String query) {
+    query = query.toLowerCase();
+    List<MySearchResult> results = new ArrayList<MySearchResult>();
+    for (HumanResource hr : getProject().getHumanResourceManager().getResources()) {
+      if (isNotEmptyAndContains(hr.getName(), query)) {
+        results.add(new MySearchResult(hr, this));
+      }
     }
+    return results;
+  }
 
-    @Override
-    public void init(IGanttProject project, UIFacade uiFacade) {
-        super.init(project, uiFacade.getResourceTree(), uiFacade);
-    }
+  @Override
+  public void init(IGanttProject project, UIFacade uiFacade) {
+    super.init(project, uiFacade.getResourceTree(), uiFacade);
+  }
 }

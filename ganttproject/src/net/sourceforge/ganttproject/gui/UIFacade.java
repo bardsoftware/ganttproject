@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
@@ -37,89 +37,99 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
  * @author bard
  */
 public interface UIFacade {
-    public interface Dialog {
-        void show();
-        void hide();
-        void layout();
-        void center(Centering centering);
-    }
+  public interface Dialog {
+    void show();
 
-    public enum Centering { SCREEN, WINDOW };
-    public enum Choice { YES, NO, CANCEL, OK };
+    void hide();
 
-    public static final int GANTT_INDEX = 0;
+    void layout();
 
-    public static final int RESOURCES_INDEX = 1;
+    void center(Centering centering);
+  }
 
-    ScrollingManager getScrollingManager();
+  public enum Centering {
+    SCREEN, WINDOW
+  };
 
-    ZoomManager getZoomManager();
+  public enum Choice {
+    YES, NO, CANCEL, OK
+  };
 
-    /** @returns an object containing the zoom related actions */
-    ZoomActionSet getZoomActionSet();
+  public static final int GANTT_INDEX = 0;
 
-    GPUndoManager getUndoManager();
+  public static final int RESOURCES_INDEX = 1;
 
-    void setLookAndFeel(GanttLookAndFeelInfo laf);
-    GanttLookAndFeelInfo getLookAndFeel();
+  ScrollingManager getScrollingManager();
 
-    Choice showConfirmationDialog(String message, String title);
+  ZoomManager getZoomManager();
 
-    void showPopupMenu(Component invoker, Action[] actions, int x, int y);
+  /** @returns an object containing the zoom related actions */
+  ZoomActionSet getZoomActionSet();
 
-    void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y);
+  GPUndoManager getUndoManager();
 
-    void showOptionDialog(int messageType, String message, Action[] actions);
+  void setLookAndFeel(GanttLookAndFeelInfo laf);
 
-    Dialog createDialog(Component content, Action[] buttonActions, String title);
+  GanttLookAndFeelInfo getLookAndFeel();
 
-    void setStatusText(String text);
+  Choice showConfirmationDialog(String message, String title);
 
-    void showErrorDialog(String errorMessage);
+  void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
-    /**
-     * Shows the given exception in an error dialog and also puts it into the
-     * log file
-     *
-     * @param e
-     *            the exception to show (and log)
-     */
-    void showErrorDialog(Throwable e);
+  void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y);
 
-    NotificationManager getNotificationManager();
+  void showOptionDialog(int messageType, String message, Action[] actions);
 
-    GanttChart getGanttChart();
+  Dialog createDialog(Component content, Action[] buttonActions, String title);
 
-    Chart getResourceChart();
+  void setStatusText(String text);
 
-    Chart getActiveChart();
+  void showErrorDialog(String errorMessage);
 
-    /** @return the index of the displayed tab. */
-    int getViewIndex();
+  /**
+   * Shows the given exception in an error dialog and also puts it into the log
+   * file
+   * 
+   * @param e
+   *          the exception to show (and log)
+   */
+  void showErrorDialog(Throwable e);
 
-    void setViewIndex(int viewIndex);
+  NotificationManager getNotificationManager();
 
-    int getGanttDividerLocation();
+  GanttChart getGanttChart();
 
-    void setGanttDividerLocation(int location);
+  Chart getResourceChart();
 
-    int getResourceDividerLocation();
+  Chart getActiveChart();
 
-    void setResourceDividerLocation(int location);
+  /** @return the index of the displayed tab. */
+  int getViewIndex();
 
-    /** Refreshes the UI (ie repaints all tasks in the chart) */
-    void refresh();
+  void setViewIndex(int viewIndex);
 
-    Frame getMainFrame();
+  int getGanttDividerLocation();
 
-    void setWorkbenchTitle(String title);
+  void setGanttDividerLocation(int location);
 
-    TaskTreeUIFacade getTaskTree();
+  int getResourceDividerLocation();
 
-    ResourceTreeUIFacade getResourceTree();
+  void setResourceDividerLocation(int location);
 
-    TaskSelectionManager getTaskSelectionManager();
-    TaskSelectionContext getTaskSelectionContext();
+  /** Refreshes the UI (ie repaints all tasks in the chart) */
+  void refresh();
 
-    GPOptionGroup getOptions();
+  Frame getMainFrame();
+
+  void setWorkbenchTitle(String title);
+
+  TaskTreeUIFacade getTaskTree();
+
+  ResourceTreeUIFacade getResourceTree();
+
+  TaskSelectionManager getTaskSelectionManager();
+
+  TaskSelectionContext getTaskSelectionContext();
+
+  GPOptionGroup getOptions();
 }

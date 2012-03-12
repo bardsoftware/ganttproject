@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.io.IOException;
@@ -36,68 +36,72 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 /**
  * This interface represents a project as a logical business entity, without any
  * UI (except some configuration options :)
- *
+ * 
  * @author bard
  */
 public interface IGanttProject {
 
-    String getProjectName();
+  String getProjectName();
 
-    void setProjectName(String projectName);
+  void setProjectName(String projectName);
 
-    String getDescription();
+  String getDescription();
 
-    void setDescription(String description);
+  void setDescription(String description);
 
-    String getOrganization();
+  String getOrganization();
 
-    void setOrganization(String organization);
+  void setOrganization(String organization);
 
-    String getWebLink();
+  String getWebLink();
 
-    void setWebLink(String webLink);
+  void setWebLink(String webLink);
 
-    /**
-     * Creates a new task and performs all necessary initialization procedures
-     * such as changing properties of parent task, adjusting schedule, etc.
-     */
-    Task newTask();
+  /**
+   * Creates a new task and performs all necessary initialization procedures
+   * such as changing properties of parent task, adjusting schedule, etc.
+   */
+  Task newTask();
 
-    UIConfiguration getUIConfiguration();
+  UIConfiguration getUIConfiguration();
 
-    HumanResourceManager getHumanResourceManager();
+  HumanResourceManager getHumanResourceManager();
 
-    RoleManager getRoleManager();
+  RoleManager getRoleManager();
 
-    TaskManager getTaskManager();
+  TaskManager getTaskManager();
 
-    TaskContainmentHierarchyFacade getTaskContainment();
+  TaskContainmentHierarchyFacade getTaskContainment();
 
-    GPCalendar getActiveCalendar();
+  GPCalendar getActiveCalendar();
 
-    TimeUnitStack getTimeUnitStack();
+  TimeUnitStack getTimeUnitStack();
 
-    void setModified();
-    void setModified(boolean modified);
+  void setModified();
 
-    void close();
+  void setModified(boolean modified);
 
-    Document getDocument();
-    void setDocument(Document document);
-    DocumentManager getDocumentManager();
+  void close();
 
-    void addProjectEventListener(ProjectEventListener listener);
-    void removeProjectEventListener(ProjectEventListener listener);
+  Document getDocument();
 
-    boolean isModified();
+  void setDocument(Document document);
 
-    void open(Document document) throws IOException, DocumentException;
+  DocumentManager getDocumentManager();
 
-    CustomPropertyManager getResourceCustomPropertyManager();
+  void addProjectEventListener(ProjectEventListener listener);
 
-    CustomPropertyManager getTaskCustomColumnManager();
+  void removeProjectEventListener(ProjectEventListener listener);
 
-    //CustomColumnsStorage getCustomColumnsStorage();
+  boolean isModified();
 
-    List<GanttPreviousState> getBaselines();
+  void open(Document document) throws IOException, DocumentException;
+
+  CustomPropertyManager getResourceCustomPropertyManager();
+
+  CustomPropertyManager getTaskCustomColumnManager();
+
+  // CustomColumnsStorage getCustomColumnsStorage();
+
+  List<GanttPreviousState> getBaselines();
 }

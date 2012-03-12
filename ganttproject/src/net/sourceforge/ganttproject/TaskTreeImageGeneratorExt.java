@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.Dimension;
@@ -73,16 +73,16 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
 
     List<Column> columns = new ArrayList<Column>();
     for (int i = 0; i < dispCols.getSize(); i++) {
-        Column c = dispCols.getField(i);
-        if (c.isVisible()) {
-            columns.add(c);
-        }
+      Column c = dispCols.getField(i);
+      if (c.isVisible()) {
+        columns.add(c);
+      }
     }
     Collections.sort(columns, new Comparator<Column>() {
-        @Override
-        public int compare(Column left, Column right) {
-            return left.getOrder() - right.getOrder();
-        }
+      @Override
+      public int compare(Column left, Column right) {
+        return left.getOrder() - right.getOrder();
+      }
     });
     // The primary loop works based on the "Order" value of each
     // column entry because the column number does not correspond to
@@ -156,7 +156,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
   private static void paintIcon(Graphics g, ImageIcon icon, PaintState paintState, int xpos, int widthLimit) {
     if (icon != null) {
       g.drawImage(icon.getImage(), xpos + (widthLimit - icon.getIconWidth()) / 2, paintState.y
-              + (paintState.rowHeight - icon.getIconHeight()) / 2, icon.getImageObserver());
+          + (paintState.rowHeight - icon.getIconHeight()) / 2, icon.getImageObserver());
     }
   }
 }

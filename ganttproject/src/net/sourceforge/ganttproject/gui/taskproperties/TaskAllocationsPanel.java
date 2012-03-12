@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import javax.swing.JPanel;
@@ -29,61 +29,59 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 /**
- * UI component in a task properties dialog: a table with resources assigned to a task.
- *
+ * UI component in a task properties dialog: a table with resources assigned to
+ * a task.
+ * 
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
-    private ResourcesTableModel myModel;
-    private final HumanResourceManager myHRManager;
-    private final RoleManager myRoleManager;
-    private final Task myTask;
+  private ResourcesTableModel myModel;
+  private final HumanResourceManager myHRManager;
+  private final RoleManager myRoleManager;
+  private final Task myTask;
 
-    private JTable myTable;
+  private JTable myTable;
 
-    public TaskAllocationsPanel(Task task, HumanResourceManager hrManager,  RoleManager roleMgr) {
-        myHRManager = hrManager;
-        myRoleManager = roleMgr;
-        myTask = task;
+  public TaskAllocationsPanel(Task task, HumanResourceManager hrManager, RoleManager roleMgr) {
+    myHRManager = hrManager;
+    myRoleManager = roleMgr;
+    myTask = task;
+  }
+
+  private JTable getTable() {
+    return myTable;
+  }
+
+  public JPanel getComponent() {
+    myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
+    myTable = new JTable(myModel);
+    UIUtil.setupTableUI(getTable());
+    CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getResources().toArray());
+    CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(4), myRoleManager.getEnabledRoles());
+
+    AbstractTableAndActionsComponent<TaskDependency> tableAndActions = new AbstractTableAndActionsComponent<TaskDependency>(
+        getTable()) {
+      @Override
+      protected void onAddEvent() {
+        getTable().editCellAt(myModel.getRowCount() - 1, 1);
+      }
+
+      @Override
+      protected void onDeleteEvent() {
+        myModel.delete(getTable().getSelectedRows());
+      }
+
+      @Override
+      protected void onSelectionChanged() {
+      }
+    };
+    return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+  }
+
+  public void commit() {
+    if (myTable.isEditing()) {
+      myTable.getCellEditor().stopCellEditing();
     }
-
-    private JTable getTable() {
-        return myTable;
-    }
-    public JPanel getComponent() {
-        myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
-        myTable = new JTable(myModel);
-        UIUtil.setupTableUI(getTable());
-        CommonPanel.setupComboBoxEditor(
-                getTable().getColumnModel().getColumn(1),
-                myHRManager.getResources().toArray());
-        CommonPanel.setupComboBoxEditor(
-                getTable().getColumnModel().getColumn(4),
-                myRoleManager.getEnabledRoles());
-
-        AbstractTableAndActionsComponent<TaskDependency> tableAndActions =
-            new AbstractTableAndActionsComponent<TaskDependency>(getTable()) {
-                @Override
-                protected void onAddEvent() {
-                    getTable().editCellAt(myModel.getRowCount() - 1, 1);
-                }
-
-                @Override
-                protected void onDeleteEvent() {
-                    myModel.delete(getTable().getSelectedRows());
-                }
-
-                @Override
-                protected void onSelectionChanged() {
-                }
-        };
-        return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
-    }
-
-    public void commit() {
-        if (myTable.isEditing()) {
-            myTable.getCellEditor().stopCellEditing();
-        }
-        myModel.commit();
-    }
+    myModel.commit();
+  }
 }

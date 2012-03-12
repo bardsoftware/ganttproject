@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.edit;
 
 import java.awt.event.ActionEvent;
@@ -25,20 +25,20 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class RefreshViewAction extends GPAction {
 
-    private UIFacade myUIFacade;
+  private UIFacade myUIFacade;
 
-    public RefreshViewAction(UIFacade uiFacade) {
-        super("refresh");
-        myUIFacade = uiFacade;
-    }
+  public RefreshViewAction(UIFacade uiFacade) {
+    super("refresh");
+    myUIFacade = uiFacade;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent ae) {
-        myUIFacade.refresh();
-    }
+  @Override
+  public void actionPerformed(ActionEvent ae) {
+    myUIFacade.refresh();
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "refresh_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "refresh_";
+  }
 }

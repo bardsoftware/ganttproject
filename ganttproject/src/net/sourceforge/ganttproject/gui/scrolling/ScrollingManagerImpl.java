@@ -9,44 +9,44 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.task.TaskLength;
 
-
 /**
  * @author bard
  */
 public class ScrollingManagerImpl implements ScrollingManager {
 
-    public ScrollingManagerImpl() {
-    }
+  public ScrollingManagerImpl() {
+  }
 
-    @Override
-    public void scrollBy(TaskLength duration) {
-        for (ScrollingListener l : myListeners) {
-            l.scrollBy(duration);
-        }
+  @Override
+  public void scrollBy(TaskLength duration) {
+    for (ScrollingListener l : myListeners) {
+      l.scrollBy(duration);
     }
-    @Override
-    public void scrollBy(int pixels) {
-        for (ScrollingListener l : myListeners) {
-            l.scrollBy(pixels);
-        }
-    }
+  }
 
-    @Override
-    public void scrollTo(Date date) {
-        for (ScrollingListener l : myListeners) {
-            l.scrollTo(date);
-        }
+  @Override
+  public void scrollBy(int pixels) {
+    for (ScrollingListener l : myListeners) {
+      l.scrollBy(pixels);
     }
+  }
 
-    @Override
-    public void addScrollingListener(ScrollingListener listener) {
-        myListeners.add(listener);
+  @Override
+  public void scrollTo(Date date) {
+    for (ScrollingListener l : myListeners) {
+      l.scrollTo(date);
     }
+  }
 
-    @Override
-    public void removeScrollingListener(ScrollingListener listener) {
-        myListeners.remove(listener);
-    }
+  @Override
+  public void addScrollingListener(ScrollingListener listener) {
+    myListeners.add(listener);
+  }
 
-    List<ScrollingListener> myListeners = new ArrayList<ScrollingListener>();
+  @Override
+  public void removeScrollingListener(ScrollingListener listener) {
+    myListeners.remove(listener);
+  }
+
+  List<ScrollingListener> myListeners = new ArrayList<ScrollingListener>();
 }

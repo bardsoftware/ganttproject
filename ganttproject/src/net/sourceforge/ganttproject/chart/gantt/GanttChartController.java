@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.gantt;
 
 import java.awt.Graphics;
@@ -68,189 +68,175 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
-    private final TaskManager myTaskManager;
-    private final ChartModelImpl myChartModel;
-    private final ChartViewState myChartViewState;
-    private final GanttTree2 myTree;
-    private final MouseListenerImpl myMouseListener;
-    private final MouseMotionListenerImpl myMouseMotionListener;
+  private final TaskManager myTaskManager;
+  private final ChartModelImpl myChartModel;
+  private final ChartViewState myChartViewState;
+  private final GanttTree2 myTree;
+  private final MouseListenerImpl myMouseListener;
+  private final MouseMotionListenerImpl myMouseMotionListener;
 
-    public GanttChartController(
-            IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel, ChartComponentBase chartComponent,
-            GanttTree2 tree, ChartViewState chartViewState) {
-        super(project, uiFacade, chartModel, chartComponent);
-        myTree = tree;
-        myChartViewState = chartViewState;
-        myTaskManager = project.getTaskManager();
-        myChartModel = chartModel;
-        myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
-        myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
-    }
+  public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
+      ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState) {
+    super(project, uiFacade, chartModel, chartComponent);
+    myTree = tree;
+    myChartViewState = chartViewState;
+    myTaskManager = project.getTaskManager();
+    myChartModel = chartModel;
+    myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
+    myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
+  }
 
-    private TaskManager getTaskManager() {
-        return myTaskManager;
-    }
+  private TaskManager getTaskManager() {
+    return myTaskManager;
+  }
 
-    private ChartViewState getViewState() {
-        return myChartViewState;
-    }
+  private ChartViewState getViewState() {
+    return myChartViewState;
+  }
 
-    @Override
-    public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent,
-            TaskBoundaryChartItem taskBoundary) {
-        setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(super.getChartModel(),
-                getTaskManager()), getUIFacade(), getTaskManager().getAlgorithmCollection()
-                .getRecalculateTaskScheduleAlgorithm()));
-        setCursor(GanttGraphicArea.E_RESIZE_CURSOR);
-    }
+  @Override
+  public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
+    setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(super.getChartModel(),
+        getTaskManager()), getUIFacade(),
+        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+    setCursor(GanttGraphicArea.E_RESIZE_CURSOR);
+  }
 
-    @Override
-    public void beginChangeTaskStartInteraction(MouseEvent e,
-            TaskBoundaryChartItem taskBoundary) {
-        setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary,
-            new TimelineFacadeImpl(getChartModel(), getTaskManager()),
-            getUIFacade(),
-            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
-        setCursor(GanttGraphicArea.W_RESIZE_CURSOR);
-    }
+  @Override
+  public void beginChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary) {
+    setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary, new TimelineFacadeImpl(getChartModel(),
+        getTaskManager()), getUIFacade(),
+        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+    setCursor(GanttGraphicArea.W_RESIZE_CURSOR);
+  }
 
-    @Override
-    public void beginChangeTaskProgressInteraction(MouseEvent e,
-            TaskProgressChartItem taskProgress) {
-        setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress,
-            new TimelineFacadeImpl(getChartModel(), getTaskManager()),
-            new TaskChartModelFacade() {
-                @Override
-                public List<Rectangle> getTaskRectangles(Task t) {
-                    List<Rectangle> result = new ArrayList<Rectangle>();
-                    for (TaskActivity activity : t.getActivities()) {
-                        GraphicPrimitive graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
-                        assert graphicPrimitive != null;
-                        assert graphicPrimitive instanceof Rectangle;
-                        result.add((Rectangle)graphicPrimitive);
-                    }
-                    return result;
-                }
-            },
-            getUIFacade()));
-        setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
-    }
-
-    @Override
-    public void beginDrawDependencyInteraction(
-            MouseEvent initiatingEvent, TaskRegularAreaChartItem taskArea) {
-        setActiveInteraction(new DrawDependencyInteraction(initiatingEvent, taskArea,
-            new TimelineFacadeImpl(getChartModel(), getTaskManager()),
-            new DrawDependencyInteraction.ChartModelFacade() {
-                @Override
-                public Task findTaskUnderMousePointer(int xpos, int ypos) {
-                    ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-                    return chartItem == null ? null : chartItem.getTask();
-                }
-
-                @Override
-                public Hardness getDefaultHardness() {
-                    return TaskDependency.Hardness.parse(myChartModel.getDependencyHardnessOption().getValue());
-                }
-            },
-            getUIFacade(),
-            getTaskManager().getDependencyCollection()));
-
-    }
-
-    @Override
-    public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
-        setActiveInteraction(new MoveTaskInteractions(e, tasks,
-            new TimelineFacadeImpl(getChartModel(), getTaskManager()),
-            getUIFacade(),
-            getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
-    }
-
-    @Override
-    public void paintChart(Graphics g) {
-        synchronized(ChartModelBase.STATIC_MUTEX) {
-            //GanttGraphicArea.super.paintComponent(g);
-            ChartModel model = myChartModel;
-            model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-            model.setRowHeight(myTree.getRowHeight());
-            model.setTopTimeUnit(getViewState().getTopTimeUnit());
-            model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-            VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
-            List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
-            model.setVisibleTasks(visibleTasks);
-            model.paint(g);
-            if (getActiveInteraction() != null) {
-                getActiveInteraction().paint(g);
-            }
+  @Override
+  public void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress) {
+    setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress, new TimelineFacadeImpl(getChartModel(),
+        getTaskManager()), new TaskChartModelFacade() {
+      @Override
+      public List<Rectangle> getTaskRectangles(Task t) {
+        List<Rectangle> result = new ArrayList<Rectangle>();
+        for (TaskActivity activity : t.getActivities()) {
+          GraphicPrimitive graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
+          assert graphicPrimitive != null;
+          assert graphicPrimitive instanceof Rectangle;
+          result.add((Rectangle) graphicPrimitive);
         }
-    }
-
-    @Override
-    public MouseListener getMouseListener() {
-        return myMouseListener;
-    }
-
-    @Override
-    public MouseMotionListener getMouseMotionListener() {
-        return myMouseMotionListener;
-    }
-
-    @Override
-    public IStatus canPaste(ChartSelection selection) {
-        return Status.OK_STATUS;
-    }
-
-    @Override
-    public ChartSelection getSelection() {
-        ChartSelectionImpl result = new ChartSelectionImpl() {
-            @Override
-            public boolean isEmpty() {
-                return myTree.getSelectedNodes().length == 0;
-            }
-            @Override
-            public void startCopyClipboardTransaction() {
-                super.startCopyClipboardTransaction();
-                myTree.copySelectedNode();
-            }
-            @Override
-            public void startMoveClipboardTransaction() {
-                super.startMoveClipboardTransaction();
-                myTree.cutSelectedNode();
-            }
-        };
         return result;
-    }
+      }
+    }, getUIFacade()));
+    setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
+  }
 
-    @Override
-    public void paste(ChartSelection selection) {
-        myTree.pasteNode();
-    }
-
-    public Task findTaskUnderPointer(int xpos, int ypos) {
+  @Override
+  public void beginDrawDependencyInteraction(MouseEvent initiatingEvent, TaskRegularAreaChartItem taskArea) {
+    setActiveInteraction(new DrawDependencyInteraction(initiatingEvent, taskArea, new TimelineFacadeImpl(
+        getChartModel(), getTaskManager()), new DrawDependencyInteraction.ChartModelFacade() {
+      @Override
+      public Task findTaskUnderMousePointer(int xpos, int ypos) {
         ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
         return chartItem == null ? null : chartItem.getTask();
-    }
+      }
 
-    public ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
-        ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-        return result;
-    }
+      @Override
+      public Hardness getDefaultHardness() {
+        return TaskDependency.Hardness.parse(myChartModel.getDependencyHardnessOption().getValue());
+      }
+    }, getUIFacade(), getTaskManager().getDependencyCollection()));
 
-    @Override
-    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-        final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
-        List<Task> visibleTasks = ImmutableList.copyOf(
-                Collections2.filter(
-                        ImmutableList.copyOf(getTaskManager().getTasks()),
-                        new Predicate<Task>() {
-                            @Override
-                            public boolean apply(Task input) {
-                                return taskTree.isVisible(input);
-                            }
-                        }));
-        settings.setVisibleTasks(visibleTasks);
-        super.buildImage(settings, imageVisitor);
-    }
+  }
 
+  @Override
+  public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
+    setActiveInteraction(new MoveTaskInteractions(e, tasks, new TimelineFacadeImpl(getChartModel(), getTaskManager()),
+        getUIFacade(), getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+  }
+
+  @Override
+  public void paintChart(Graphics g) {
+    synchronized (ChartModelBase.STATIC_MUTEX) {
+      // GanttGraphicArea.super.paintComponent(g);
+      ChartModel model = myChartModel;
+      model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
+      model.setRowHeight(myTree.getRowHeight());
+      model.setTopTimeUnit(getViewState().getTopTimeUnit());
+      model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
+      VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
+      List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
+      model.setVisibleTasks(visibleTasks);
+      model.paint(g);
+      if (getActiveInteraction() != null) {
+        getActiveInteraction().paint(g);
+      }
+    }
+  }
+
+  @Override
+  public MouseListener getMouseListener() {
+    return myMouseListener;
+  }
+
+  @Override
+  public MouseMotionListener getMouseMotionListener() {
+    return myMouseMotionListener;
+  }
+
+  @Override
+  public IStatus canPaste(ChartSelection selection) {
+    return Status.OK_STATUS;
+  }
+
+  @Override
+  public ChartSelection getSelection() {
+    ChartSelectionImpl result = new ChartSelectionImpl() {
+      @Override
+      public boolean isEmpty() {
+        return myTree.getSelectedNodes().length == 0;
+      }
+
+      @Override
+      public void startCopyClipboardTransaction() {
+        super.startCopyClipboardTransaction();
+        myTree.copySelectedNode();
+      }
+
+      @Override
+      public void startMoveClipboardTransaction() {
+        super.startMoveClipboardTransaction();
+        myTree.cutSelectedNode();
+      }
+    };
+    return result;
+  }
+
+  @Override
+  public void paste(ChartSelection selection) {
+    myTree.pasteNode();
+  }
+
+  public Task findTaskUnderPointer(int xpos, int ypos) {
+    ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
+    return chartItem == null ? null : chartItem.getTask();
+  }
+
+  public ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
+    ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
+    return result;
+  }
+
+  @Override
+  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+    final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
+    List<Task> visibleTasks = ImmutableList.copyOf(Collections2.filter(
+        ImmutableList.copyOf(getTaskManager().getTasks()), new Predicate<Task>() {
+          @Override
+          public boolean apply(Task input) {
+            return taskTree.isVisible(input);
+          }
+        }));
+    settings.setVisibleTasks(visibleTasks);
+    super.buildImage(settings, imageVisitor);
+  }
 
 }

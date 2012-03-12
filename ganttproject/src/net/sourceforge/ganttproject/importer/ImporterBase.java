@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.importer;
 
 import org.osgi.service.prefs.Preferences;
@@ -27,56 +27,57 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class ImporterBase {
-    private final String myID;
-    private UIFacade myUiFacade;
-    private IGanttProject myProject;
-    /**
-     * Do not remove: to be used when latest import locations get stored in
-     * preferences
-     */
-    private Preferences myPrefs;
+  private final String myID;
+  private UIFacade myUiFacade;
+  private IGanttProject myProject;
+  /**
+   * Do not remove: to be used when latest import locations get stored in
+   * preferences
+   */
+  private Preferences myPrefs;
 
-    protected ImporterBase() {
-        myID = "";
-    }
-    protected ImporterBase(String id) {
-        myID = id;
-    }
+  protected ImporterBase() {
+    myID = "";
+  }
 
-    public String getFileTypeDescription() {
-        if (myID.length() == 0) {
-            return null;
-        }
-        return GanttLanguage.getInstance().getText(myID);
-    }
+  protected ImporterBase(String id) {
+    myID = id;
+  }
 
-    public String getFileNamePattern() {
-        return null;
+  public String getFileTypeDescription() {
+    if (myID.length() == 0) {
+      return null;
     }
+    return GanttLanguage.getInstance().getText(myID);
+  }
 
-    public GPOptionGroup[] getSecondaryOptions() {
-        GPOption[] options = getOptions();
-        if (options == null) {
-            return new GPOptionGroup[0];
-        }
-        return new GPOptionGroup[] {new GPOptionGroup("importer." + myID, options)};
-    }
+  public String getFileNamePattern() {
+    return null;
+  }
 
-    protected GPOption[] getOptions() {
-        return null;
+  public GPOptionGroup[] getSecondaryOptions() {
+    GPOption[] options = getOptions();
+    if (options == null) {
+      return new GPOptionGroup[0];
     }
+    return new GPOptionGroup[] { new GPOptionGroup("importer." + myID, options) };
+  }
 
-    public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
-        myProject = project;
-        myUiFacade = uiFacade;
-        myPrefs = preferences;
-    }
+  protected GPOption[] getOptions() {
+    return null;
+  }
 
-    protected UIFacade getUiFacade() {
-        return myUiFacade;
-    }
+  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
+    myProject = project;
+    myUiFacade = uiFacade;
+    myPrefs = preferences;
+  }
 
-    protected IGanttProject getProject() {
-        return myProject;
-    }
+  protected UIFacade getUiFacade() {
+    return myUiFacade;
+  }
+
+  protected IGanttProject getProject() {
+    return myProject;
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.event;
 
 import java.util.EventListener;
@@ -25,21 +25,21 @@ import java.util.EventListener;
  */
 public interface TaskListener extends EventListener {
 
-    void taskScheduleChanged(TaskScheduleEvent e);
+  void taskScheduleChanged(TaskScheduleEvent e);
 
-    void dependencyAdded(TaskDependencyEvent e);
+  void dependencyAdded(TaskDependencyEvent e);
 
-    void dependencyRemoved(TaskDependencyEvent e);
+  void dependencyRemoved(TaskDependencyEvent e);
 
-    void taskAdded(TaskHierarchyEvent e);
+  void taskAdded(TaskHierarchyEvent e);
 
-    void taskRemoved(TaskHierarchyEvent e);
+  void taskRemoved(TaskHierarchyEvent e);
 
-    void taskMoved(TaskHierarchyEvent e);
+  void taskMoved(TaskHierarchyEvent e);
 
-    void taskPropertiesChanged(TaskPropertyEvent e);
+  void taskPropertiesChanged(TaskPropertyEvent e);
 
-    void taskProgressChanged(TaskPropertyEvent e);
+  void taskProgressChanged(TaskPropertyEvent e);
 
-    void taskModelReset();
+  void taskModelReset();
 }

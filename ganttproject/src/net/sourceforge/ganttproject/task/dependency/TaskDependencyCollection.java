@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.task.dependency;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -24,20 +24,19 @@ import net.sourceforge.ganttproject.task.Task;
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 15:42:21 To
  * change this template use File | Settings | File Templates.
  */
-public interface TaskDependencyCollection extends
-        MutableTaskDependencyCollection {
+public interface TaskDependencyCollection extends MutableTaskDependencyCollection {
 
-    // void addDependency(TaskDependency dep) throws TaskDependencyException;
-    // void removeDependency(TaskDependency dep);
-    TaskDependency[] getDependencies();
+  // void addDependency(TaskDependency dep) throws TaskDependencyException;
+  // void removeDependency(TaskDependency dep);
+  TaskDependency[] getDependencies();
 
-    TaskDependency[] getDependencies(Task task);
+  TaskDependency[] getDependencies(Task task);
 
-    TaskDependency[] getDependenciesAsDependant(Task dependant);
+  TaskDependency[] getDependenciesAsDependant(Task dependant);
 
-    TaskDependency[] getDependenciesAsDependee(Task dependee);
+  TaskDependency[] getDependenciesAsDependee(Task dependee);
 
-    TaskDependencyCollectionMutator createMutator();
+  TaskDependencyCollectionMutator createMutator();
 
-    boolean canCreateDependency(Task myDependant, Task dependee);
+  boolean canCreateDependency(Task myDependant, Task dependee);
 }

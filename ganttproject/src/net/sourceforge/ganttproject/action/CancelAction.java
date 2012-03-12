@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action;
 
 import java.awt.event.ActionEvent;
@@ -26,22 +26,22 @@ import java.awt.event.ActionEvent;
  * adds additional/special functionalities for this action
  */
 public class CancelAction extends GPAction {
-    /** CancelAction which does not do anything */
-    public final static CancelAction EMPTY = new CancelAction();
+  /** CancelAction which does not do anything */
+  public final static CancelAction EMPTY = new CancelAction();
 
-    public static final CancelAction CLOSE = new CancelAction("close");
+  public static final CancelAction CLOSE = new CancelAction("close");
 
-    public CancelAction() {
-        this("cancel");
-    }
+  public CancelAction() {
+    this("cancel");
+  }
 
-    /** For concealed CancelActions (with a different text) */
-    public CancelAction(String key) {
-        super(key);
-    }
+  /** For concealed CancelActions (with a different text) */
+  public CancelAction(String key) {
+    super(key);
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Do nothing, as cancel mostly does nothing
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    // Do nothing, as cancel mostly does nothing
+  }
 }

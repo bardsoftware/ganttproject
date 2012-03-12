@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -45,144 +45,142 @@ import net.sourceforge.ganttproject.task.TaskManager;
  */
 
 public class GanttTaskRelationship {
-    public static final int SS = 1; // start to start
+  public static final int SS = 1; // start to start
 
-    public static final int FS = 2; // Finish to start
+  public static final int FS = 2; // Finish to start
 
-    public static final int FF = 3; // Finish to finish
+  public static final int FF = 3; // Finish to finish
 
-    public static final int SF = 4; // start to finish
+  public static final int SF = 4; // start to finish
 
-    private int predecessorTaskID = -1;
+  private int predecessorTaskID = -1;
 
-    private int successorTaskID = -1;
+  private int successorTaskID = -1;
 
-    private int relationshipType;
+  private int relationshipType;
 
-    private int difference;
+  private int difference;
 
-    private final TaskManager myTaskManager;
+  private final TaskManager myTaskManager;
 
-    public GanttTaskRelationship() {
-        this(null);
+  public GanttTaskRelationship() {
+    this(null);
+  }
+
+  public GanttTaskRelationship(TaskManager taskManager) {
+    myTaskManager = taskManager;
+  }
+
+  public GanttTaskRelationship(int predecessorTaskID, int successorTaskID, int relationshipType, int difference,
+      TaskManager taskManager) {
+    this(taskManager);
+    this.predecessorTaskID = predecessorTaskID;
+    this.successorTaskID = successorTaskID;
+    this.relationshipType = relationshipType;
+    this.difference = difference;
+  }
+
+  /** @return the predecessor task */
+  public GanttTask getPredecessorTask() {
+    if (predecessorTaskID != -1) {
+      return getManager().getTask(predecessorTaskID);
     }
+    return null;
+  }
 
-    public GanttTaskRelationship(TaskManager taskManager) {
-        myTaskManager = taskManager;
-    }
+  /** @return the predecessor task ID or -1 if there is no such ID */
+  public int getPredecessorTaskID() {
+    return predecessorTaskID;
+  }
 
-    public GanttTaskRelationship(int predecessorTaskID, int successorTaskID,
-            int relationshipType, int difference, TaskManager taskManager) {
-        this(taskManager);
-        this.predecessorTaskID = predecessorTaskID;
-        this.successorTaskID = successorTaskID;
-        this.relationshipType = relationshipType;
-        this.difference = difference;
-    }
+  /** set the predecessor task by GanttTask object */
+  public void setPredecessorTask(Task predecessorTask) {
+    this.predecessorTaskID = predecessorTask.getTaskID();
+  }
 
-    /** @return the predecessor task */
-    public GanttTask getPredecessorTask() {
-        if (predecessorTaskID != -1) {
-            return getManager().getTask(predecessorTaskID);
-        }
-        return null;
-    }
+  /**
+   * set the predecessor task ID by integer
+   * 
+   * @param predecessorTaskID
+   *          ID of predecessor task
+   */
+  public void setPredecessorTask(int predecessorTaskID) {
+    this.predecessorTaskID = predecessorTaskID;
+  }
 
-    /** @return the predecessor task ID or -1 if there is no such ID */
-    public int getPredecessorTaskID() {
-        return predecessorTaskID;
+  /** @return the successor task */
+  public Task getSuccessorTask() {
+    if (successorTaskID != -1) {
+      return getManager().getTask(successorTaskID);
     }
+    return null;
+  }
 
-    /** set the predecessor task by GanttTask object */
-    public void setPredecessorTask(Task predecessorTask) {
-        this.predecessorTaskID = predecessorTask.getTaskID();
-    }
+  /** @return id of successor task */
+  public int getSuccessorTaskID() {
+    return successorTaskID;
+  }
 
-    /**
-     * set the predecessor task ID by integer
-     *
-     * @param predecessorTaskID
-     *            ID of predecessor task
-     */
-    public void setPredecessorTask(int predecessorTaskID) {
-        this.predecessorTaskID = predecessorTaskID;
-    }
+  /**
+   * set the successor task by GanttTask object
+   * 
+   * @param successorTask
+   *          GanttTask object of successor
+   */
+  public void setSuccessorTask(Task successorTask) {
+    this.successorTaskID = successorTask.getTaskID();
+  }
 
-    /** @return the successor task */
-    public Task getSuccessorTask() {
-        if (successorTaskID != -1) {
-            return getManager().getTask(successorTaskID);
-        }
-        return null;
-    }
+  /**
+   * set the successor task ID by the integer
+   * 
+   * @param seccessorTaskID
+   *          id of the successor
+   */
+  public void setSuccessorTask(int seccessorTaskID) {
+    this.successorTaskID = seccessorTaskID;
+  }
 
-    /** @return id of successor task */
-    public int getSuccessorTaskID() {
-        return successorTaskID;
-    }
+  /** @return the relationship type */
+  public int getRelationshipType() {
+    return relationshipType;
+  }
 
-    /**
-     * set the successor task by GanttTask object
-     *
-     * @param successorTask
-     *            GanttTask object of successor
-     */
-    public void setSuccessorTask(Task successorTask) {
-        this.successorTaskID = successorTask.getTaskID();
-    }
+  /** @return the difference */
+  public int getDifference() {
+    return difference;
+  }
 
-    /**
-     * set the successor task ID by the integer
-     *
-     * @param seccessorTaskID
-     *            id of the successor
-     */
-    public void setSuccessorTask(int seccessorTaskID) {
-        this.successorTaskID = seccessorTaskID;
-    }
+  /** set the relationship type */
+  public void setRelationshipType(int relationshipType) {
+    this.relationshipType = relationshipType;
+  }
 
-    /** @return the relationship type */
-    public int getRelationshipType() {
-        return relationshipType;
-    }
+  public boolean equals(GanttTaskRelationship compareRel) {
+    return relationshipType == compareRel.relationshipType && predecessorTaskID == compareRel.predecessorTaskID
+        && successorTaskID == compareRel.successorTaskID;
+  }
 
-    /** @return the difference */
-    public int getDifference() {
-        return difference;
-    }
+  @Override
+  public Object clone() {
+    GanttTaskRelationship copyRel = new GanttTaskRelationship(myTaskManager);
+    copyRel.relationshipType = relationshipType;
+    copyRel.predecessorTaskID = predecessorTaskID;
+    copyRel.successorTaskID = successorTaskID;
+    return copyRel;
+  }
 
-    /** set the relationship type */
-    public void setRelationshipType(int relationshipType) {
-        this.relationshipType = relationshipType;
-    }
+  @Override
+  public String toString() {
+    String res = "Relation ";
+    res += (relationshipType == SS) ? "(SS) " : (relationshipType == SF) ? "(SF) " : (relationshipType == FS) ? "(FS) "
+        : "(FF) ";
+    res += getSuccessorTask() + " (" + getSuccessorTaskID() + ") " + getPredecessorTask() + " ("
+        + getPredecessorTaskID() + ")";
+    return res;
+  }
 
-    public boolean equals(GanttTaskRelationship compareRel) {
-        return relationshipType == compareRel.relationshipType
-                && predecessorTaskID == compareRel.predecessorTaskID
-                && successorTaskID == compareRel.successorTaskID;
-    }
-
-    @Override
-    public Object clone() {
-        GanttTaskRelationship copyRel = new GanttTaskRelationship(myTaskManager);
-        copyRel.relationshipType = relationshipType;
-        copyRel.predecessorTaskID = predecessorTaskID;
-        copyRel.successorTaskID = successorTaskID;
-        return copyRel;
-    }
-
-    @Override
-    public String toString() {
-        String res = "Relation ";
-        res += (relationshipType == SS) ? "(SS) "
-                : (relationshipType == SF) ? "(SF) "
-                        : (relationshipType == FS) ? "(FS) " : "(FF) ";
-        res += getSuccessorTask() + " (" + getSuccessorTaskID() + ") "
-                + getPredecessorTask() + " (" + getPredecessorTaskID() + ")";
-        return res;
-    }
-
-    private TaskManager getManager() {
-        return myTaskManager;
-    }
+  private TaskManager getManager() {
+    return myTaskManager;
+  }
 }

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.event.MouseWheelEvent;
@@ -24,34 +24,34 @@ import java.awt.event.MouseWheelListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 
 public class MouseWheelListenerBase implements MouseWheelListener {
-    private final ZoomManager myZoomManager;
+  private final ZoomManager myZoomManager;
 
-    public MouseWheelListenerBase(ZoomManager zoomManager) {
-        myZoomManager = zoomManager;
-    }
+  public MouseWheelListenerBase(ZoomManager zoomManager) {
+    myZoomManager = zoomManager;
+  }
 
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (isRotationUp(e)) {
-            fireZoomIn();
-        } else {
-            fireZoomOut();
-        }
+  @Override
+  public void mouseWheelMoved(MouseWheelEvent e) {
+    if (isRotationUp(e)) {
+      fireZoomIn();
+    } else {
+      fireZoomOut();
     }
+  }
 
-    private void fireZoomIn() {
-        if (myZoomManager.canZoomIn()) {
-            myZoomManager.zoomIn();
-        }
+  private void fireZoomIn() {
+    if (myZoomManager.canZoomIn()) {
+      myZoomManager.zoomIn();
     }
+  }
 
-    private void fireZoomOut() {
-        if (myZoomManager.canZoomOut()) {
-            myZoomManager.zoomOut();
-        }
+  private void fireZoomOut() {
+    if (myZoomManager.canZoomOut()) {
+      myZoomManager.zoomOut();
     }
+  }
 
-    private boolean isRotationUp(MouseWheelEvent e) {
-        return e.getWheelRotation() < 0;
-    }
+  private boolean isRotationUp(MouseWheelEvent e) {
+    return e.getWheelRotation() < 0;
+  }
 }

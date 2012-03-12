@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.export;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
@@ -31,29 +31,26 @@ import net.sourceforge.ganttproject.chart.Chart;
  */
 @Deprecated
 public class DeprecatedProjectExportData {
-    public final String myFilename;
+  public final String myFilename;
 
-    final Chart myGanttChart;
+  final Chart myGanttChart;
 
-    final Chart myResourceChart;
+  final Chart myResourceChart;
 
-    final GanttExportSettings myExportOptions;
+  final GanttExportSettings myExportOptions;
 
-    final String myXslFoScript;
+  final String myXslFoScript;
 
-    final IGanttProject myProject;
+  final IGanttProject myProject;
 
-    public DeprecatedProjectExportData(IGanttProject project,
-            final String myFilename, final Chart myGanttChart,
-            final Chart myResourceChart,
-            final GanttExportSettings myExportOptions,
-            final String myXslFoScript) {
-        super();
-        this.myProject = project;
-        this.myFilename = myFilename;
-        this.myGanttChart = myGanttChart;
-        this.myResourceChart = myResourceChart;
-        this.myExportOptions = myExportOptions;
-        this.myXslFoScript = myXslFoScript;
-    }
+  public DeprecatedProjectExportData(IGanttProject project, final String myFilename, final Chart myGanttChart,
+      final Chart myResourceChart, final GanttExportSettings myExportOptions, final String myXslFoScript) {
+    super();
+    this.myProject = project;
+    this.myFilename = myFilename;
+    this.myGanttChart = myGanttChart;
+    this.myResourceChart = myResourceChart;
+    this.myExportOptions = myExportOptions;
+    this.myXslFoScript = myXslFoScript;
+  }
 }

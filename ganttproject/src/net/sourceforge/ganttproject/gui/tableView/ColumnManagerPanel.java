@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.tableView;
 
 import java.awt.BorderLayout;
@@ -57,360 +57,369 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public class ColumnManagerPanel {
-    private IsVisibleOption myIsVisibleOption = new IsVisibleOption();
-    private NameOption myNameOption = new NameOption();
-    private DefaultValueOption myEnableDefaultValueOption = new DefaultValueOption();
-    private PropertyClassOption myType = new PropertyClassOption();
-    private GPOption myDefaultValueOption;
+  private IsVisibleOption myIsVisibleOption = new IsVisibleOption();
+  private NameOption myNameOption = new NameOption();
+  private DefaultValueOption myEnableDefaultValueOption = new DefaultValueOption();
+  private PropertyClassOption myType = new PropertyClassOption();
+  private GPOption myDefaultValueOption;
 
-    private JPanel panelDefaultValue = null;
+  private JPanel panelDefaultValue = null;
 
-    private CardLayout cardLayoutDefaultValue = null;
-    private final CustomPropertyManager myManager;
-    private final TableHeaderUIFacade myVisibleFields;
-    private JComponent myFields;
+  private CardLayout cardLayoutDefaultValue = null;
+  private final CustomPropertyManager myManager;
+  private final TableHeaderUIFacade myVisibleFields;
+  private JComponent myFields;
 
-    public ColumnManagerPanel(CustomPropertyManager columnManager, TableHeaderUIFacade visibleFields) {
-        myManager = columnManager;
-        myVisibleFields = visibleFields;
-    }
+  public ColumnManagerPanel(CustomPropertyManager columnManager, TableHeaderUIFacade visibleFields) {
+    myManager = columnManager;
+    myVisibleFields = visibleFields;
+  }
 
-    public void commitCustomPropertyEdit() {
-        myIsVisibleOption.commit();
-        myNameOption.commit();
-        myEnableDefaultValueOption.commit();
-        myType.commit();
-    }
+  public void commitCustomPropertyEdit() {
+    myIsVisibleOption.commit();
+    myNameOption.commit();
+    myEnableDefaultValueOption.commit();
+    myType.commit();
+  }
 
-    public Component createComponent() {
-        List<CustomPropertyDefinition> emptyList = Collections.emptyList();
-        List<CustomPropertyDefinition> defs = new ArrayList<CustomPropertyDefinition>();
-        createDefaultFieldDefinitions(
-               myVisibleFields, myManager.getDefinitions(), defs);
-        defs.addAll(myManager.getDefinitions());
-        EditableList<CustomPropertyDefinition> props = new EditableList<CustomPropertyDefinition>(
-                defs, emptyList) {
-            @Override
-            protected boolean isEditable(CustomPropertyDefinition t) {
-                return ColumnManagerPanel.this.isEditable(t);
-            }
-            @Override
-            protected String getStringValue(CustomPropertyDefinition value) {
-                return value.getName();
-            }
-            @Override
-            protected CustomPropertyDefinition createPrototype(Object editValue) {
-                return new DefaultCustomPropertyDefinition(String.valueOf(editValue));
-            }
-            @Override
-            protected CustomPropertyDefinition createValue(CustomPropertyDefinition prototype) {
-                final CustomPropertyDefinition def = myManager.createDefinition(
-                    CustomPropertyClass.TEXT.getID(), prototype.getName(), null);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        myVisibleFields.add(def.getID(), -1, -1);
-                        getTableComponent().requestFocus();
-                        setSelectedDefinition(def);
-                    }
-                });
-                return def;
-            }
-            @Override
-            protected void deleteValue(CustomPropertyDefinition value) {
-                myManager.deleteDefinition(value);
-            }
-            @Override
-            protected CustomPropertyDefinition updateValue(
-                    CustomPropertyDefinition newValue, CustomPropertyDefinition curValue) {
-                curValue.setName(newValue.getName());
-                return curValue;
-            }
-            @Override
-            protected Component getTableCellRendererComponent(
-                    DefaultTableCellRenderer defaultRenderer, CustomPropertyDefinition def,
-                    boolean isSelected, boolean hasFocus, int row) {
-                StringBuffer value = new StringBuffer("<html>");
-                Column column = myIsVisibleOption.findColumn(def);
-                if (column!=null && !column.isVisible()) {
-                    value.append("<font color=#999999>{0}</font>");
-                } else {
-                    value.append("{0}");
-                }
-                value.append("</html>");
-                defaultRenderer.setText(MessageFormat.format(value.toString(), getStringValue(def)));
-                return defaultRenderer;
-            }
-        };
+  public Component createComponent() {
+    List<CustomPropertyDefinition> emptyList = Collections.emptyList();
+    List<CustomPropertyDefinition> defs = new ArrayList<CustomPropertyDefinition>();
+    createDefaultFieldDefinitions(myVisibleFields, myManager.getDefinitions(), defs);
+    defs.addAll(myManager.getDefinitions());
+    EditableList<CustomPropertyDefinition> props = new EditableList<CustomPropertyDefinition>(defs, emptyList) {
+      @Override
+      protected boolean isEditable(CustomPropertyDefinition t) {
+        return ColumnManagerPanel.this.isEditable(t);
+      }
 
-        class ShowHideSelectionAction extends GPAction implements SelectionListener<CustomPropertyDefinition> {
-            private boolean isShow;
-            private List<CustomPropertyDefinition> mySelection;
-            public ShowHideSelectionAction(boolean isShow, String name) {
-                super(name);
-                this.isShow = isShow;
-            }
+      @Override
+      protected String getStringValue(CustomPropertyDefinition value) {
+        return value.getName();
+      }
 
-            @Override
-            public void selectionChanged(List<CustomPropertyDefinition> selection) {
-                mySelection = selection;
-            }
+      @Override
+      protected CustomPropertyDefinition createPrototype(Object editValue) {
+        return new DefaultCustomPropertyDefinition(String.valueOf(editValue));
+      }
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (CustomPropertyDefinition def: mySelection) {
-                    myIsVisibleOption.setVisible(def, isShow);
-                }
-            }
-        }
-        props.getTableAndActions().addAction(new ShowHideSelectionAction(true, "customPropertyDialog.showSelected"));
-        props.getTableAndActions().addAction(new ShowHideSelectionAction(false, "customPropertyDialog.hideSelected"));
-        myIsVisibleOption.setVisibleFields(myVisibleFields);
-        ChangeValueListener defaultValuePanelEnabler = new ChangeValueListener() {
-            @Override
-            public void changeValue(ChangeValueEvent event) {
-                setDefaultValuePanelEnabled(myEnableDefaultValueOption.isChecked());
-            }
-        };
-        myEnableDefaultValueOption.addChangeValueListener(defaultValuePanelEnabler);
-        myType.addChangeValueListener(defaultValuePanelEnabler);
-        myFields = getFieldsComponent();
-        ListAndFieldsPanel<CustomPropertyDefinition> listAndFields =
-            new ListAndFieldsPanel<CustomPropertyDefinition>(props, myFields);
-        props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
-            @Override
-            public void selectionChanged(List<CustomPropertyDefinition> selection) {
-                if (selection.size()!=1) {
-                    UIUtil.setEnabledTree(myFields, false);
-                }
-                else {
-                    commitCustomPropertyEdit();
-                    CustomPropertyDefinition selectedElement = selection.get(0);
-                    setSelectedDefinition(selectedElement);
-                }
-            }
+      @Override
+      protected CustomPropertyDefinition createValue(CustomPropertyDefinition prototype) {
+        final CustomPropertyDefinition def = myManager.createDefinition(CustomPropertyClass.TEXT.getID(),
+            prototype.getName(), null);
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            myVisibleFields.add(def.getID(), -1, -1);
+            getTableComponent().requestFocus();
+            setSelectedDefinition(def);
+          }
         });
-        return listAndFields.getComponent();
+        return def;
+      }
+
+      @Override
+      protected void deleteValue(CustomPropertyDefinition value) {
+        myManager.deleteDefinition(value);
+      }
+
+      @Override
+      protected CustomPropertyDefinition updateValue(CustomPropertyDefinition newValue,
+          CustomPropertyDefinition curValue) {
+        curValue.setName(newValue.getName());
+        return curValue;
+      }
+
+      @Override
+      protected Component getTableCellRendererComponent(DefaultTableCellRenderer defaultRenderer,
+          CustomPropertyDefinition def, boolean isSelected, boolean hasFocus, int row) {
+        StringBuffer value = new StringBuffer("<html>");
+        Column column = myIsVisibleOption.findColumn(def);
+        if (column != null && !column.isVisible()) {
+          value.append("<font color=#999999>{0}</font>");
+        } else {
+          value.append("{0}");
+        }
+        value.append("</html>");
+        defaultRenderer.setText(MessageFormat.format(value.toString(), getStringValue(def)));
+        return defaultRenderer;
+      }
+    };
+
+    class ShowHideSelectionAction extends GPAction implements SelectionListener<CustomPropertyDefinition> {
+      private boolean isShow;
+      private List<CustomPropertyDefinition> mySelection;
+
+      public ShowHideSelectionAction(boolean isShow, String name) {
+        super(name);
+        this.isShow = isShow;
+      }
+
+      @Override
+      public void selectionChanged(List<CustomPropertyDefinition> selection) {
+        mySelection = selection;
+      }
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        for (CustomPropertyDefinition def : mySelection) {
+          myIsVisibleOption.setVisible(def, isShow);
+        }
+      }
+    }
+    props.getTableAndActions().addAction(new ShowHideSelectionAction(true, "customPropertyDialog.showSelected"));
+    props.getTableAndActions().addAction(new ShowHideSelectionAction(false, "customPropertyDialog.hideSelected"));
+    myIsVisibleOption.setVisibleFields(myVisibleFields);
+    ChangeValueListener defaultValuePanelEnabler = new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        setDefaultValuePanelEnabled(myEnableDefaultValueOption.isChecked());
+      }
+    };
+    myEnableDefaultValueOption.addChangeValueListener(defaultValuePanelEnabler);
+    myType.addChangeValueListener(defaultValuePanelEnabler);
+    myFields = getFieldsComponent();
+    ListAndFieldsPanel<CustomPropertyDefinition> listAndFields = new ListAndFieldsPanel<CustomPropertyDefinition>(
+        props, myFields);
+    props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
+      @Override
+      public void selectionChanged(List<CustomPropertyDefinition> selection) {
+        if (selection.size() != 1) {
+          UIUtil.setEnabledTree(myFields, false);
+        } else {
+          commitCustomPropertyEdit();
+          CustomPropertyDefinition selectedElement = selection.get(0);
+          setSelectedDefinition(selectedElement);
+        }
+      }
+    });
+    return listAndFields.getComponent();
+  }
+
+  private void setSelectedDefinition(CustomPropertyDefinition selected) {
+    UIUtil.setEnabledTree(myFields, isEditable(selected));
+    myNameOption.reloadValue(selected);
+    myType.reloadValue(selected);
+    myEnableDefaultValueOption.reloadValue(selected);
+    myIsVisibleOption.reloadValue(selected);
+
+  }
+
+  private void createDefaultFieldDefinitions(TableHeaderUIFacade tableHeader,
+      List<CustomPropertyDefinition> customFields, List<CustomPropertyDefinition> output) {
+    LinkedHashMap<String, Column> name2column = new LinkedHashMap<String, Column>();
+    for (int i = 0; i < tableHeader.getSize(); i++) {
+      Column column = tableHeader.getField(i);
+      name2column.put(column.getName(), column);
+    }
+    for (CustomPropertyDefinition def : customFields) {
+      name2column.remove(def.getName());
+    }
+    for (Column column : name2column.values()) {
+      output.add(new DefaultCustomPropertyDefinition(column.getName()));
+    }
+  }
+
+  protected boolean isEditable(CustomPropertyDefinition def) {
+    return myManager.getCustomPropertyDefinition(def.getID()) != null;
+  }
+
+  protected void setDefaultValuePanelEnabled(boolean enabled) {
+    UIUtil.setEnabledTree(panelDefaultValue, enabled);
+  }
+
+  private JComponent getFieldsComponent() {
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+    {
+      cardLayoutDefaultValue = new CardLayout();
+      panelDefaultValue = new JPanel(cardLayoutDefaultValue);
+      myType.setUIControls(cardLayoutDefaultValue, panelDefaultValue);
     }
 
-    private void setSelectedDefinition(CustomPropertyDefinition selected) {
-        UIUtil.setEnabledTree(myFields, isEditable(selected));
-        myNameOption.reloadValue(selected);
-        myType.reloadValue(selected);
-        myEnableDefaultValueOption.reloadValue(selected);
-        myIsVisibleOption.reloadValue(selected);
+    Component optionsComponent = builder.createGroupComponent(null, myNameOption, myType);
 
-    }
-    private void createDefaultFieldDefinitions(
-            TableHeaderUIFacade tableHeader, List<CustomPropertyDefinition> customFields,
-            List<CustomPropertyDefinition> output) {
-        LinkedHashMap<String,Column> name2column = new LinkedHashMap<String, Column>();
-        for (int i=0; i<tableHeader.getSize(); i++) {
-            Column column = tableHeader.getField(i);
-            name2column.put(column.getName(), column);
-        }
-        for (CustomPropertyDefinition def: customFields) {
-            name2column.remove(def.getName());
-        }
-        for (Column column: name2column.values()) {
-            output.add(new DefaultCustomPropertyDefinition(column.getName()));
-        }
-    }
+    Box result = Box.createVerticalBox();
+    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    // result.setLayout(new BorderLayout());
+    result.add(optionsComponent);
+    result.add(Box.createVerticalStrut(10));
+    GPOptionGroup defaultValueGroup = new GPOptionGroup("customPropertyDialog.defaultValue",
+        new GPOption[] { myEnableDefaultValueOption });
+    defaultValueGroup.setTitled(false);
+    result.add(builder.createGroupComponent(defaultValueGroup, myEnableDefaultValueOption));
+    result.add(panelDefaultValue);
+    setDefaultValuePanelEnabled(false);
+    return result;
+  }
 
-    protected boolean isEditable(CustomPropertyDefinition def) {
-        return myManager.getCustomPropertyDefinition(def.getID())!=null;
+  class IsVisibleOption extends DefaultBooleanOption {
+    private TableHeaderUIFacade myVisibleFields;
+    private Column myColumn;
+
+    IsVisibleOption() {
+      super("customPropertyDialog.isVisible");
     }
 
-    protected void setDefaultValuePanelEnabled(boolean enabled) {
-        UIUtil.setEnabledTree(panelDefaultValue, enabled);
+    public void setVisibleFields(TableHeaderUIFacade visibleFields) {
+      myVisibleFields = visibleFields;
     }
 
-    private JComponent getFieldsComponent() {
-        OptionsPageBuilder builder = new OptionsPageBuilder();
-        {
-            cardLayoutDefaultValue = new CardLayout();
-            panelDefaultValue = new JPanel(cardLayoutDefaultValue);
-            myType.setUIControls(cardLayoutDefaultValue, panelDefaultValue);
-        }
-
-        Component optionsComponent = builder.createGroupComponent(null,
-            myNameOption, myType);
-
-        Box result = Box.createVerticalBox();
-        result.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        //result.setLayout(new BorderLayout());
-        result.add(optionsComponent);
-        result.add(Box.createVerticalStrut(10));
-        GPOptionGroup defaultValueGroup = new GPOptionGroup(
-            "customPropertyDialog.defaultValue", new GPOption[] {myEnableDefaultValueOption});
-        defaultValueGroup.setTitled(false);
-        result.add(builder.createGroupComponent(defaultValueGroup, myEnableDefaultValueOption));
-        result.add(panelDefaultValue);
-        setDefaultValuePanelEnabled(false);
-        return result;
+    public void reloadValue(CustomPropertyDefinition selectedElement) {
+      myColumn = findColumn(selectedElement);
+      assert myColumn != null;
+      setValue(myColumn.isVisible(), true);
     }
 
-    class IsVisibleOption extends DefaultBooleanOption {
-        private TableHeaderUIFacade myVisibleFields;
-        private Column myColumn;
-
-        IsVisibleOption() {
-            super("customPropertyDialog.isVisible");
-        }
-
-        public void setVisibleFields(TableHeaderUIFacade visibleFields) {
-            myVisibleFields = visibleFields;
-        }
-        public void reloadValue(CustomPropertyDefinition selectedElement) {
-            myColumn = findColumn(selectedElement);
-            assert myColumn!=null;
-            setValue(myColumn.isVisible(), true);
-        }
-
-        @Override
-        public void commit() {
-            if (isChanged()) {
-                super.commit();
-                myColumn.setVisible(isChecked());
-            }
-        }
-
-        void setVisible(CustomPropertyDefinition def, boolean isVisible) {
-            Column column = findColumn(def);
-            if (column!=null) {
-                column.setVisible(isVisible);
-            }
-        }
-
-        Column findColumn(CustomPropertyDefinition def) {
-            for (int i=0; i<myVisibleFields.getSize(); i++) {
-                Column nextColumn = myVisibleFields.getField(i);
-                if (nextColumn.getName().equals(def.getName())) {
-                    return nextColumn;
-                }
-            }
-            return null;
-        }
+    @Override
+    public void commit() {
+      if (isChanged()) {
+        super.commit();
+        myColumn.setVisible(isChecked());
+      }
     }
 
-    class NameOption extends DefaultStringOption {
-        CustomPropertyDefinition myDefinition;
-        NameOption() {
-            super("customPropertyDialog.name");
-        }
-
-        public void reloadValue(CustomPropertyDefinition selectedElement) {
-            myDefinition = selectedElement;
-            setValue(myDefinition.getName(), true);
-        }
-
-        @Override
-        public void commit() {
-            if (isChanged()) {
-                super.commit();
-                myDefinition.setName(getValue());
-            }
-        }
+    void setVisible(CustomPropertyDefinition def, boolean isVisible) {
+      Column column = findColumn(def);
+      if (column != null) {
+        column.setVisible(isVisible);
+      }
     }
 
-    class DefaultValueOption extends DefaultBooleanOption {
-        CustomPropertyDefinition myDefinition;
-        DefaultValueOption() {
-            super("customPropertyDialog.defaultValue");
+    Column findColumn(CustomPropertyDefinition def) {
+      for (int i = 0; i < myVisibleFields.getSize(); i++) {
+        Column nextColumn = myVisibleFields.getField(i);
+        if (nextColumn.getName().equals(def.getName())) {
+          return nextColumn;
         }
+      }
+      return null;
+    }
+  }
 
-        @Override
-        public void setValue(Boolean value) {
-            super.setValue(value);
-            UIUtil.setEnabledTree(panelDefaultValue, value);
-        }
+  class NameOption extends DefaultStringOption {
+    CustomPropertyDefinition myDefinition;
 
-        @Override
-        public void commit() {
-            if (isChanged()) {
-                super.commit();
-                if (!getValue()) {
-                    myDefinition.setDefaultValueAsString(null);
-                }
-            }
-        }
-
-        public void reloadValue(CustomPropertyDefinition selectedElement) {
-            myDefinition = selectedElement;
-            setValue(myDefinition.getDefaultValue()!=null, true);
-        }
+    NameOption() {
+      super("customPropertyDialog.name");
     }
 
-    class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClass> {
-        private CardLayout myCardLayout;
-        private JPanel myCardPanel;
-//        private Map<CustomPropertyClass, Component> myDefaultValueEditors =
-//            new HashMap<CustomPropertyClass, Component>();
-        private CustomPropertyDefinition myDefinition;
-        private CustomPropertyDefinition myDefinitionRO;
-
-        public PropertyClassOption() {
-            super("taskProperties.customColumn.type", CustomPropertyClass.values());
-        }
-        @Override
-        protected String objectToString(CustomPropertyClass value) {
-            return value.getDisplayName();
-        }
-
-        @Override
-        protected void setValue(String value, boolean resetInitial) {
-            CustomPropertyClass propertyClass = getCustomPropertyClass(value);
-            myDefinition.setPropertyClass(propertyClass);
-//            Component defaultValueEditor = myDefaultValueEditors.get(propertyClass);
-//            System.err.println("property class option setValue: class=" + propertyClass + " defaultValueEditor=" + defaultValueEditor);
-//            if (defaultValueEditor == null) {
-                myDefaultValueOption = CustomPropertyDefaultValueAdapter.createDefaultValueOption(propertyClass, myDefinition);
-                OptionsPageBuilder builder = new OptionsPageBuilder();
-                Component defaultValueEditor = builder.createOptionComponent(null, myDefaultValueOption);
-                JPanel defaultValuePanel = new JPanel(new BorderLayout());
-                defaultValuePanel.add(defaultValueEditor, BorderLayout.NORTH);
-//                myDefaultValueEditors.put(propertyClass, defaultValuePanel);
-                myCardPanel.add(defaultValuePanel, propertyClass.getDisplayName());
-//            }
-
-            myCardLayout.show(myCardPanel, value);
-
-            super.setValue(value, resetInitial);
-        }
-
-        @Override
-        public void commit() {
-            if (isChanged()) {
-                super.commit();
-                myDefinitionRO.setPropertyClass(getCustomPropertyClass(getValue()));
-            }
-            if (myEnableDefaultValueOption.getValue()
-                    && myDefaultValueOption != null && myDefaultValueOption.isChanged()) {
-                myDefaultValueOption.commit();
-                myDefinitionRO.setDefaultValueAsString(myDefinition.getDefaultValueAsString());
-            }
-        }
-
-        private CustomPropertyClass getCustomPropertyClass(String value) {
-            CustomPropertyClass newPropertyClass = null;
-            for (CustomPropertyClass propertyClass : CustomPropertyClass.values()) {
-                if (propertyClass.getDisplayName().equals(value)) {
-                    newPropertyClass = propertyClass;
-                    break;
-                }
-            }
-            assert newPropertyClass!=null;
-            return newPropertyClass;
-        }
-        void setUIControls(CardLayout layout, JPanel panel) {
-            myCardLayout = layout;
-            myCardPanel = panel;
-        }
-        public void reloadValue(CustomPropertyDefinition def) {
-            myDefinitionRO = def;
-            myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
-            setValue(def.getPropertyClass().getDisplayName(), true);
-        }
+    public void reloadValue(CustomPropertyDefinition selectedElement) {
+      myDefinition = selectedElement;
+      setValue(myDefinition.getName(), true);
     }
+
+    @Override
+    public void commit() {
+      if (isChanged()) {
+        super.commit();
+        myDefinition.setName(getValue());
+      }
+    }
+  }
+
+  class DefaultValueOption extends DefaultBooleanOption {
+    CustomPropertyDefinition myDefinition;
+
+    DefaultValueOption() {
+      super("customPropertyDialog.defaultValue");
+    }
+
+    @Override
+    public void setValue(Boolean value) {
+      super.setValue(value);
+      UIUtil.setEnabledTree(panelDefaultValue, value);
+    }
+
+    @Override
+    public void commit() {
+      if (isChanged()) {
+        super.commit();
+        if (!getValue()) {
+          myDefinition.setDefaultValueAsString(null);
+        }
+      }
+    }
+
+    public void reloadValue(CustomPropertyDefinition selectedElement) {
+      myDefinition = selectedElement;
+      setValue(myDefinition.getDefaultValue() != null, true);
+    }
+  }
+
+  class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClass> {
+    private CardLayout myCardLayout;
+    private JPanel myCardPanel;
+    // private Map<CustomPropertyClass, Component> myDefaultValueEditors =
+    // new HashMap<CustomPropertyClass, Component>();
+    private CustomPropertyDefinition myDefinition;
+    private CustomPropertyDefinition myDefinitionRO;
+
+    public PropertyClassOption() {
+      super("taskProperties.customColumn.type", CustomPropertyClass.values());
+    }
+
+    @Override
+    protected String objectToString(CustomPropertyClass value) {
+      return value.getDisplayName();
+    }
+
+    @Override
+    protected void setValue(String value, boolean resetInitial) {
+      CustomPropertyClass propertyClass = getCustomPropertyClass(value);
+      myDefinition.setPropertyClass(propertyClass);
+      // Component defaultValueEditor =
+      // myDefaultValueEditors.get(propertyClass);
+      // System.err.println("property class option setValue: class=" +
+      // propertyClass + " defaultValueEditor=" + defaultValueEditor);
+      // if (defaultValueEditor == null) {
+      myDefaultValueOption = CustomPropertyDefaultValueAdapter.createDefaultValueOption(propertyClass, myDefinition);
+      OptionsPageBuilder builder = new OptionsPageBuilder();
+      Component defaultValueEditor = builder.createOptionComponent(null, myDefaultValueOption);
+      JPanel defaultValuePanel = new JPanel(new BorderLayout());
+      defaultValuePanel.add(defaultValueEditor, BorderLayout.NORTH);
+      // myDefaultValueEditors.put(propertyClass, defaultValuePanel);
+      myCardPanel.add(defaultValuePanel, propertyClass.getDisplayName());
+      // }
+
+      myCardLayout.show(myCardPanel, value);
+
+      super.setValue(value, resetInitial);
+    }
+
+    @Override
+    public void commit() {
+      if (isChanged()) {
+        super.commit();
+        myDefinitionRO.setPropertyClass(getCustomPropertyClass(getValue()));
+      }
+      if (myEnableDefaultValueOption.getValue() && myDefaultValueOption != null && myDefaultValueOption.isChanged()) {
+        myDefaultValueOption.commit();
+        myDefinitionRO.setDefaultValueAsString(myDefinition.getDefaultValueAsString());
+      }
+    }
+
+    private CustomPropertyClass getCustomPropertyClass(String value) {
+      CustomPropertyClass newPropertyClass = null;
+      for (CustomPropertyClass propertyClass : CustomPropertyClass.values()) {
+        if (propertyClass.getDisplayName().equals(value)) {
+          newPropertyClass = propertyClass;
+          break;
+        }
+      }
+      assert newPropertyClass != null;
+      return newPropertyClass;
+    }
+
+    void setUIControls(CardLayout layout, JPanel panel) {
+      myCardLayout = layout;
+      myCardPanel = panel;
+    }
+
+    public void reloadValue(CustomPropertyDefinition def) {
+      myDefinitionRO = def;
+      myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
+      setValue(def.getPropertyClass().getDisplayName(), true);
+    }
+  }
 
 }

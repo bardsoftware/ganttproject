@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
@@ -31,24 +31,24 @@ import net.sourceforge.ganttproject.importer.ImportFileWizardImpl;
  */
 public class ProjectImportAction extends GPAction {
 
-    private final UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-    private final GanttProject myProject;
+  private final GanttProject myProject;
 
-    public ProjectImportAction(UIFacade uiFacade, GanttProject project) {
-        super("project.import");
-        myUIFacade = uiFacade;
-        myProject = project;
-    }
+  public ProjectImportAction(UIFacade uiFacade, GanttProject project) {
+    super("project.import");
+    myUIFacade = uiFacade;
+    myProject = project;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        WizardImpl wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
-        wizard.show();
-    }
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    WizardImpl wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
+    wizard.show();
+  }
 
-    @Override
-    protected String getIconFilePrefix() {
-        return "import_";
-    }
+  @Override
+  protected String getIconFilePrefix() {
+    return "import_";
+  }
 }

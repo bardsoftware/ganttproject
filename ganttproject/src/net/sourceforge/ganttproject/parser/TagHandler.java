@@ -15,16 +15,16 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.parser;
 
 import org.xml.sax.Attributes;
 
 public interface TagHandler {
-    /** Method when start to parse an attribute */
-    public void startElement(String namespaceURI, String sName, String qName,
-            Attributes attrs) throws FileFormatException;
+  /** Method when start to parse an attribute */
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
+      throws FileFormatException;
 
-    /** Method when finish to parse an attribute */
-    public void endElement(String namespaceURI, String sName, String qName);
+  /** Method when finish to parse an attribute */
+  public void endElement(String namespaceURI, String sName, String qName);
 }

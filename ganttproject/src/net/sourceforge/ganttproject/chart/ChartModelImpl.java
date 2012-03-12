@@ -38,298 +38,282 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  */
 public class ChartModelImpl extends ChartModelBase {
 
-    private List<Task> myVisibleTasks;
+  private List<Task> myVisibleTasks;
 
-    private final TaskRendererImpl2 myTaskRendererImpl;
+  private final TaskRendererImpl2 myTaskRendererImpl;
 
-    private TaskManager taskManager;
+  private TaskManager taskManager;
 
-    //private boolean isPreviousState = false;
+  // private boolean isPreviousState = false;
 
-    private int rowHeight = 20;
+  private int rowHeight = 20;
 
-    private final ColorOption myTaskDefaultColorOption;
+  private final ColorOption myTaskDefaultColorOption;
 
-    private final GPOptionGroup myTaskDefaultsOptions;
+  private final GPOptionGroup myTaskDefaultsOptions;
 
-    private final ColorOption myTaskAheadOfScheduleColor;
-    private final ColorOption myTaskBehindScheduleColor;
-    private final ColorOption myTaskOnScheduleColor;
+  private final ColorOption myTaskAheadOfScheduleColor;
+  private final ColorOption myTaskBehindScheduleColor;
+  private final ColorOption myTaskOnScheduleColor;
 
-    private final ChartOptionGroup myStateDiffOptions;
+  private final ChartOptionGroup myStateDiffOptions;
 
-    private Set<Task> myHiddenTasks;
+  private Set<Task> myHiddenTasks;
 
-    private List<GanttPreviousStateTask> myBaseline;
+  private List<GanttPreviousStateTask> myBaseline;
 
-    public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack,
-            final UIConfiguration projectConfig) {
-        super(taskManager, timeUnitStack, projectConfig);
-        this.taskManager = taskManager;
-        myTaskRendererImpl = new TaskRendererImpl2(this);
-        getRenderers().add(myTaskRendererImpl);
+  public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
+    super(taskManager, timeUnitStack, projectConfig);
+    this.taskManager = taskManager;
+    myTaskRendererImpl = new TaskRendererImpl2(this);
+    getRenderers().add(myTaskRendererImpl);
 
-        class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
-            private NewTaskColorOption() {
-                super("taskDefaultColor");
-            }
-            @Override
-            public String getTagName() {
-                return "colors";
-            }
+    class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
+      private NewTaskColorOption() {
+        super("taskDefaultColor");
+      }
 
-            @Override
-            public String getAttributeName() {
-                return "tasks";
-            }
+      @Override
+      public String getTagName() {
+        return "colors";
+      }
 
-            @Override
-            public void loadValue(String legacyValue) {
-                lock();
-                loadPersistentValue(legacyValue);
-                commit();
-            }
-            @Override
-            public void commit() {
-                super.commit();
-                projectConfig.setTaskColor(getValue());
-            }
+      @Override
+      public String getAttributeName() {
+        return "tasks";
+      }
 
-        };
-        {
-            myTaskAheadOfScheduleColor = new DefaultColorOption(
-                    "ganttChartStateDiffColors.taskAheadOfScheduleColor") {
-                @Override
-                public void commit() {
-                    super.commit();
-                    projectConfig.setEarlierPreviousTaskColor(getValue());
-                }
-            };
-            myTaskAheadOfScheduleColor.lock();
-            myTaskAheadOfScheduleColor.setValue(new Color(50, 229, 50));
-            myTaskAheadOfScheduleColor.commit();
-            //
-            myTaskBehindScheduleColor = new DefaultColorOption(
-                    "ganttChartStateDiffColors.taskBehindScheduleColor") {
-                @Override
-                public void commit() {
-                    super.commit();
-                    projectConfig.setLaterPreviousTaskColor(getValue());
-                }
-            };
-            myTaskBehindScheduleColor.lock();
-            myTaskBehindScheduleColor.setValue(new Color(229, 50, 50));
-            myTaskBehindScheduleColor.commit();
-            //
-            myTaskOnScheduleColor = new DefaultColorOption(
-                    "ganttChartStateDiffColors.taskOnScheduleColor") {
-                @Override
-                public void commit() {
-                    super.commit();
-                    projectConfig.setPreviousTaskColor(getValue());
-                }
-            };
-            myTaskOnScheduleColor.lock();
-            myTaskOnScheduleColor.setValue(Color.LIGHT_GRAY);
-            myTaskOnScheduleColor.commit();
-            //
-            myStateDiffOptions = new ChartOptionGroup(
-                    "ganttChartStateDiffColors", new GPOption[] {
-                            myTaskOnScheduleColor, myTaskAheadOfScheduleColor,
-                            myTaskBehindScheduleColor },
-                    getOptionEventDispatcher());
+      @Override
+      public void loadValue(String legacyValue) {
+        lock();
+        loadPersistentValue(legacyValue);
+        commit();
+      }
+
+      @Override
+      public void commit() {
+        super.commit();
+        projectConfig.setTaskColor(getValue());
+      }
+
+    }
+    ;
+    {
+      myTaskAheadOfScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskAheadOfScheduleColor") {
+        @Override
+        public void commit() {
+          super.commit();
+          projectConfig.setEarlierPreviousTaskColor(getValue());
         }
-
-
-        myTaskDefaultColorOption = new NewTaskColorOption();
-        myTaskDefaultsOptions = new GPOptionGroup(
-            "ganttChartDefaults", new GPOption[] {
-                taskManager.getTaskNamePrefixOption(),
-                myTaskDefaultColorOption,
-                getTaskManager().getDependencyHardnessOption()});
-        myTaskDefaultsOptions.setI18Nkey(
-            new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(getTaskManager().getDependencyHardnessOption()),
-            "hardness");
-        myTaskDefaultsOptions.setI18Nkey(
-                OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
-                "hardness.strong");
-        myTaskDefaultsOptions.setI18Nkey(
-                OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Rubber"),
-                "hardness.rubber");
-
+      };
+      myTaskAheadOfScheduleColor.lock();
+      myTaskAheadOfScheduleColor.setValue(new Color(50, 229, 50));
+      myTaskAheadOfScheduleColor.commit();
+      //
+      myTaskBehindScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskBehindScheduleColor") {
+        @Override
+        public void commit() {
+          super.commit();
+          projectConfig.setLaterPreviousTaskColor(getValue());
+        }
+      };
+      myTaskBehindScheduleColor.lock();
+      myTaskBehindScheduleColor.setValue(new Color(229, 50, 50));
+      myTaskBehindScheduleColor.commit();
+      //
+      myTaskOnScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskOnScheduleColor") {
+        @Override
+        public void commit() {
+          super.commit();
+          projectConfig.setPreviousTaskColor(getValue());
+        }
+      };
+      myTaskOnScheduleColor.lock();
+      myTaskOnScheduleColor.setValue(Color.LIGHT_GRAY);
+      myTaskOnScheduleColor.commit();
+      //
+      myStateDiffOptions = new ChartOptionGroup("ganttChartStateDiffColors", new GPOption[] { myTaskOnScheduleColor,
+          myTaskAheadOfScheduleColor, myTaskBehindScheduleColor }, getOptionEventDispatcher());
     }
 
-    @Override
-    public void setVisibleTasks(List<Task> visibleTasks) {
-        myVisibleTasks = visibleTasks;
-    }
+    myTaskDefaultColorOption = new NewTaskColorOption();
+    myTaskDefaultsOptions = new GPOptionGroup("ganttChartDefaults",
+        new GPOption[] { taskManager.getTaskNamePrefixOption(), myTaskDefaultColorOption,
+            getTaskManager().getDependencyHardnessOption() });
+    myTaskDefaultsOptions.setI18Nkey(
+        new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(getTaskManager().getDependencyHardnessOption()),
+        "hardness");
+    myTaskDefaultsOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Strong"),
+        "hardness.strong");
+    myTaskDefaultsOptions.setI18Nkey(OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey("Rubber"),
+        "hardness.rubber");
 
-    public void setExplicitlyHiddenTasks(Set<Task> hiddenTasks) {
-        myHiddenTasks = hiddenTasks;
-    }
+  }
 
-    public ChartItem getChartItemWithCoordinates(int x, int y) {
-        ChartItem result = findTaskProgressItem(x, y);
+  @Override
+  public void setVisibleTasks(List<Task> visibleTasks) {
+    myVisibleTasks = visibleTasks;
+  }
+
+  public void setExplicitlyHiddenTasks(Set<Task> hiddenTasks) {
+    myHiddenTasks = hiddenTasks;
+  }
+
+  public ChartItem getChartItemWithCoordinates(int x, int y) {
+    ChartItem result = findTaskProgressItem(x, y);
+    if (result == null) {
+      result = findTaskBoundaryItem(x, y);
+    }
+    return result;
+  }
+
+  private ChartItem findTaskProgressItem(int x, int y) {
+    ChartItem result = null;
+    GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(0).getPrimitive(
+        x, 4, y/* - getChartUIConfiguration().getHeaderHeight() */, 0);
+    if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
+      GraphicPrimitiveContainer.Rectangle rect = (GraphicPrimitiveContainer.Rectangle) primitive;
+      if ("task.progress.end".equals(primitive.getStyle()) && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
+        result = new TaskProgressChartItem((Task) primitive.getModelObject());
+      }
+    }
+    return result;
+  }
+
+  public GraphicPrimitiveContainer.GraphicPrimitive getGraphicPrimitive(Object modelObject) {
+    for (ChartRendererBase renderer : getRenderers()) {
+      GraphicPrimitiveContainer.GraphicPrimitive result = renderer.getPrimitiveContainer().getPrimitive(modelObject);
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  private ChartItem findTaskBoundaryItem(int x, int y) {
+    ChartItem result = null;
+    GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
+    if (primitive == null) {
+      primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y);
+    }
+    if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
+      GraphicPrimitiveContainer.Rectangle rect = (Rectangle) primitive;
+      TaskActivity activity = (TaskActivity) primitive.getModelObject();
+      if (activity != null) {
+        if (activity.isFirst() && rect.myLeftX - 2 <= x && rect.myLeftX + 2 >= x) {
+          result = new TaskBoundaryChartItem(activity.getTask(), true);
+        }
+        if (result == null && activity.isLast() && rect.myLeftX + rect.myWidth - 2 <= x
+            && rect.myLeftX + rect.myWidth + 2 >= x) {
+          result = new TaskBoundaryChartItem(activity.getTask(), false);
+        }
         if (result == null) {
-            result = findTaskBoundaryItem(x, y);
+          result = new TaskRegularAreaChartItem(activity.getTask());
         }
-        return result;
+      }
     }
+    return result;
+  }
 
-    private ChartItem findTaskProgressItem(int x, int y) {
-        ChartItem result = null;
-        GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl
-                .getPrimitiveContainer().getLayer(0).getPrimitive(x, 4,
-                        y/* - getChartUIConfiguration().getHeaderHeight()*/, 0);
-        if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
-            GraphicPrimitiveContainer.Rectangle rect = (GraphicPrimitiveContainer.Rectangle) primitive;
-            if ("task.progress.end".equals(primitive.getStyle())
-                    && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-                result = new TaskProgressChartItem((Task) primitive.getModelObject());
-            }
-        }
-        return result;
+  // public java.awt.Rectangle getBoundingRectangle(Task task) {
+  // java.awt.Rectangle result = null;
+  // TaskActivity[] activities = task.getActivities();
+  // for (int i = 0; i < activities.length; i++) {
+  // GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
+  // .getPrimitive(activities[i]);
+  // if (nextRectangle != null) {
+  // java.awt.Rectangle nextAwtRectangle = new java.awt.Rectangle(
+  // nextRectangle.myLeftX, nextRectangle.myTopY,
+  // nextRectangle.myWidth, nextRectangle.myHeight);
+  // if (result == null) {
+  // result = nextAwtRectangle;
+  // } else {
+  // result = result.union(nextAwtRectangle);
+  // }
+  // }
+  // }
+  // return result;
+  // }
+
+  // GraphicPrimitiveContainer.Rectangle[] getTaskActivityRectangles(Task task)
+  // {
+  // List<Rectangle> result = new ArrayList<Rectangle>();
+  // TaskActivity[] activities = task.getActivities();
+  // for (int i = 0; i < activities.length; i++) {
+  // GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
+  // .getPrimitive(activities[i]);
+  // if (nextRectangle!=null) {
+  // result.add(nextRectangle);
+  // }
+  // }
+  // return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
+  // }
+
+  List<Task> getVisibleTasks() {
+    return myVisibleTasks == null ? Collections.<Task> emptyList() : myVisibleTasks;
+  }
+
+  TaskContainmentHierarchyFacade getTaskContainment() {
+    return myTaskManager.getTaskHierarchy();
+  }
+
+  @Override
+  public int calculateRowHeight() {
+    rowHeight = myTaskRendererImpl.calculateRowHeight();
+    if (myBaseline != null) {
+      rowHeight = rowHeight + 8;
     }
+    return rowHeight;
+  }
 
-    public GraphicPrimitiveContainer.GraphicPrimitive getGraphicPrimitive(Object modelObject) {
-        for (ChartRendererBase renderer : getRenderers()) {
-            GraphicPrimitiveContainer.GraphicPrimitive result =
-                renderer.getPrimitiveContainer().getPrimitive(modelObject);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
+  // @Override
+  // protected int getRowCount() {
+  // return getTaskManager().getTaskCount();
+  // }
 
-    private ChartItem findTaskBoundaryItem(int x, int y) {
-        ChartItem result = null;
-        GraphicPrimitiveContainer.GraphicPrimitive primitive =
-            myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
-        if (primitive==null) {
-            primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y);
-        }
-        if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
-            GraphicPrimitiveContainer.Rectangle rect = (Rectangle) primitive;
-            TaskActivity activity = (TaskActivity) primitive.getModelObject();
-            if (activity != null) {
-                if (activity.isFirst() && rect.myLeftX - 2 <= x
-                        && rect.myLeftX + 2 >= x) {
-                    result = new TaskBoundaryChartItem(activity.getTask(), true);
-                }
-                if (result == null && activity.isLast()
-                        && rect.myLeftX + rect.myWidth - 2 <= x
-                        && rect.myLeftX + rect.myWidth + 2 >= x) {
-                    result = new TaskBoundaryChartItem(activity.getTask(),
-                            false);
-                }
-                if (result == null) {
-                    result = new TaskRegularAreaChartItem(activity.getTask());
-                }
-            }
-        }
-        return result;
-    }
+  @Override
+  public TaskManager getTaskManager() {
+    return taskManager;
+  }
 
-//    public java.awt.Rectangle getBoundingRectangle(Task task) {
-//        java.awt.Rectangle result = null;
-//        TaskActivity[] activities = task.getActivities();
-//        for (int i = 0; i < activities.length; i++) {
-//            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
-//                    .getPrimitive(activities[i]);
-//            if (nextRectangle != null) {
-//                java.awt.Rectangle nextAwtRectangle = new java.awt.Rectangle(
-//                        nextRectangle.myLeftX, nextRectangle.myTopY,
-//                        nextRectangle.myWidth, nextRectangle.myHeight);
-//                if (result == null) {
-//                    result = nextAwtRectangle;
-//                } else {
-//                    result = result.union(nextAwtRectangle);
-//                }
-//            }
-//        }
-//        return result;
-//    }
+  int getRowHeight() {
+    return rowHeight;
+  }
 
-//    GraphicPrimitiveContainer.Rectangle[] getTaskActivityRectangles(Task task) {
-//        List<Rectangle> result = new ArrayList<Rectangle>();
-//        TaskActivity[] activities = task.getActivities();
-//        for (int i = 0; i < activities.length; i++) {
-//            GraphicPrimitiveContainer.Rectangle nextRectangle = myTaskRendererImpl
-//                    .getPrimitive(activities[i]);
-//            if (nextRectangle!=null) {
-//                result.add(nextRectangle);
-//            }
-//        }
-//        return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
-//    }
+  @Override
+  public GPOptionGroup[] getChartOptionGroups() {
+    GPOptionGroup[] superGroups = super.getChartOptionGroups();
+    GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
+    List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
+    result.add(myTaskDefaultsOptions);
+    result.addAll(Arrays.asList(superGroups));
+    result.addAll(Arrays.asList(rendererGroups));
+    result.add(myStateDiffOptions);
+    return result.toArray(new GPOptionGroup[result.size()]);
+  }
 
-    List<Task> getVisibleTasks() {
-        return myVisibleTasks == null ? Collections.<Task>emptyList() : myVisibleTasks;
-    }
+  public int setBaseline(List<GanttPreviousStateTask> tasks) {
+    myBaseline = tasks;
+    return (calculateRowHeight());
+  }
 
-    TaskContainmentHierarchyFacade getTaskContainment() {
-        return myTaskManager.getTaskHierarchy();
-    }
+  List<GanttPreviousStateTask> getBaseline() {
+    return myBaseline;
+  }
 
-    @Override
-    public int calculateRowHeight() {
-        rowHeight = myTaskRendererImpl.calculateRowHeight();
-        if (myBaseline != null) {
-            rowHeight = rowHeight + 8;
-        }
-        return rowHeight;
-    }
+  @Override
+  public ChartModelBase createCopy() {
+    ChartModelBase result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
+    super.setupCopy(result);
+    result.setVisibleTasks(getVisibleTasks());
+    return result;
+  }
 
-//    @Override
-//    protected int getRowCount() {
-//        return getTaskManager().getTaskCount();
-//    }
+  public boolean isExplicitlyHidden(Task task) {
+    return myHiddenTasks == null ? false : myHiddenTasks.contains(task);
+  }
 
-    @Override
-    public TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    int getRowHeight() {
-        return rowHeight;
-    }
-
-    @Override
-    public GPOptionGroup[] getChartOptionGroups() {
-        GPOptionGroup[] superGroups = super.getChartOptionGroups();
-        GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
-        List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
-        result.add(myTaskDefaultsOptions);
-        result.addAll(Arrays.asList(superGroups));
-        result.addAll(Arrays.asList(rendererGroups));
-        result.add(myStateDiffOptions);
-        return result.toArray(new GPOptionGroup[result.size()]);
-    }
-
-
-    public int setBaseline(List<GanttPreviousStateTask> tasks) {
-        myBaseline = tasks;
-        return (calculateRowHeight());
-    }
-
-    List<GanttPreviousStateTask> getBaseline() {
-        return myBaseline;
-    }
-
-    @Override
-    public ChartModelBase createCopy() {
-        ChartModelBase result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
-        super.setupCopy(result);
-        result.setVisibleTasks(getVisibleTasks());
-        return result;
-    }
-
-    public boolean isExplicitlyHidden(Task task) {
-        return myHiddenTasks==null ? false : myHiddenTasks.contains(task);
-    }
-
-    public EnumerationOption getDependencyHardnessOption() {
-        return getTaskManager().getDependencyHardnessOption();
-    }
+  public EnumerationOption getDependencyHardnessOption() {
+    return getTaskManager().getDependencyHardnessOption();
+  }
 }

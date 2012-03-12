@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
@@ -54,218 +54,222 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
- *
+ * 
  * @author dbarashev (Dmitry Barashev)
- *
+ * 
  * @param <ModelObject>
  * @param <TreeTableClass>
  * @param <TreeTableModelClass>
  */
 public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPTreeTableBase, TreeTableModelClass extends DefaultTreeTableModel>
-        extends JPanel implements TreeUiFacade<ModelObject> {
-    private final TreeTableClass myTreeTable;
-    private final TreeTableModelClass myTreeTableModel;
-    private GPAction myNewAction;
-    private GPAction myPropertiesAction;
-    private GPAction myDeleteAction;
+    extends JPanel implements TreeUiFacade<ModelObject> {
+  private final TreeTableClass myTreeTable;
+  private final TreeTableModelClass myTreeTableModel;
+  private GPAction myNewAction;
+  private GPAction myPropertiesAction;
+  private GPAction myDeleteAction;
 
-    private class ExpandCollapseAction extends GPAction {
-        ExpandCollapseAction() {
-            super("tree.expand");
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            TreePath currentSelection = getTree().getSelectionPath();
-            if (currentSelection != null) {
-                if (getTree().isCollapsed(currentSelection)) {
-                    getTree().expandPath(currentSelection);
-                } else {
-                    getTree().collapsePath(currentSelection);
-                }
-            }
-        }
+  private class ExpandCollapseAction extends GPAction {
+    ExpandCollapseAction() {
+      super("tree.expand");
     }
-    public TreeTableContainer(Pair<TreeTableClass, TreeTableModelClass> tableAndModel) {
-        super(new BorderLayout());
-        myTreeTableModel = tableAndModel.second();
-        myTreeTable = tableAndModel.first();
-        myTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
 
-        myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
-        ExpandCollapseAction expandAction = new ExpandCollapseAction();
-        for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
-            UIUtil.pushAction(myTreeTable, false, ks, expandAction);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      TreePath currentSelection = getTree().getSelectionPath();
+      if (currentSelection != null) {
+        if (getTree().isCollapsed(currentSelection)) {
+          getTree().expandPath(currentSelection);
+        } else {
+          getTree().collapsePath(currentSelection);
         }
-        this.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        getTreeTable().getTable().requestFocusInWindow();
-                    }
-                });
-            }
+      }
+    }
+  }
+
+  public TreeTableContainer(Pair<TreeTableClass, TreeTableModelClass> tableAndModel) {
+    super(new BorderLayout());
+    myTreeTableModel = tableAndModel.second();
+    myTreeTable = tableAndModel.first();
+    myTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
+
+    myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
+    ExpandCollapseAction expandAction = new ExpandCollapseAction();
+    for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
+      UIUtil.pushAction(myTreeTable, false, ks, expandAction);
+    }
+    this.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusGained(FocusEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            getTreeTable().getTable().requestFocusInWindow();
+          }
         });
-        MouseListener ml = new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                handlePopupTrigger(e);
-            }
+      }
+    });
+    MouseListener ml = new MouseAdapter() {
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        handlePopupTrigger(e);
+      }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                handlePopupTrigger(e);
-            }
+      @Override
+      public void mousePressed(MouseEvent e) {
+        handlePopupTrigger(e);
+      }
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                    TreePath selPath = getTree().getPathForLocation(e.getX(), e.getY());
-                    if (selPath != null) {
-                        e.consume();
-                        getPropertiesAction().actionPerformed(null);
-                    }
-                } else  {
-                    handlePopupTrigger(e);
-                }
-            }
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+          TreePath selPath = getTree().getPathForLocation(e.getX(), e.getY());
+          if (selPath != null) {
+            e.consume();
+            getPropertiesAction().actionPerformed(null);
+          }
+        } else {
+          handlePopupTrigger(e);
+        }
+      }
 
-        };
-        getTreeTable().addMouseListener(ml);
-        getTree().addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                onSelectionChanged(Arrays.asList(getSelectedNodes()));
-            }
-        });
+    };
+    getTreeTable().addMouseListener(ml);
+    getTree().addTreeSelectionListener(new TreeSelectionListener() {
+      @Override
+      public void valueChanged(TreeSelectionEvent e) {
+        onSelectionChanged(Arrays.asList(getSelectedNodes()));
+      }
+    });
+  }
+
+  protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+  }
+
+  protected abstract void handlePopupTrigger(MouseEvent e);
+
+  protected JTree getTree() {
+    return getTreeTable().getTree();
+  }
+
+  protected TreeTableClass getTreeTable() {
+    return myTreeTable;
+  }
+
+  protected TreeTableModelClass getTreeModel() {
+    return myTreeTableModel;
+  }
+
+  @Override
+  public Component getTreeComponent() {
+    return this;
+  }
+
+  @Override
+  public TableHeaderUIFacade getVisibleFields() {
+    return myTreeTable.getVisibleFields();
+  }
+
+  @Override
+  public boolean isExpanded(ModelObject modelObject) {
+    DefaultMutableTreeNode treeNode = getNode(modelObject);
+    return treeNode == null ? false : !myTreeTable.getTree().isCollapsed(new TreePath(treeNode.getPath()));
+  }
+
+  @Override
+  public void setExpanded(ModelObject modelObject) {
+    DefaultMutableTreeNode treeNode = getNode(modelObject);
+    if (treeNode != null) {
+      myTreeTable.getTree().expandPath(new TreePath(treeNode.getPath()));
     }
+  }
 
-    protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+  @Override
+  public boolean isVisible(ModelObject modelObject) {
+    DefaultMutableTreeNode node = getNode(modelObject);
+    if (node == null) {
+      return false;
     }
+    return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
+  }
 
-    protected abstract void handlePopupTrigger(MouseEvent e);
+  public int getRowHeight() {
+    return myTreeTable.getTable().getRowHeight();
+  }
 
-    protected JTree getTree() {
-        return getTreeTable().getTree();
+  protected DefaultMutableTreeNode getNode(ModelObject modelObject) {
+    for (Enumeration<TreeNode> nodes = getRootNode().preorderEnumeration(); nodes.hasMoreElements();) {
+      DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
+      if (nextNode.getUserObject() != null && nextNode.getUserObject().equals(modelObject)) {
+        return nextNode;
+      }
     }
+    return null;
+  }
 
-    protected TreeTableClass getTreeTable() {
-        return myTreeTable;
+  protected DefaultMutableTreeNode getSelectedNode() {
+    TreePath currentSelection = getTree().getSelectionPath();
+    return (currentSelection == null) ? null : (DefaultMutableTreeNode) currentSelection.getLastPathComponent();
+  }
+
+  public DefaultMutableTreeNode[] getSelectedNodes() {
+    TreePath[] currentSelection = getTree().getSelectionPaths();
+
+    if (currentSelection == null || currentSelection.length == 0) {
+      return new DefaultMutableTreeNode[0];
     }
-
-    protected TreeTableModelClass getTreeModel() {
-        return myTreeTableModel;
+    DefaultMutableTreeNode[] result = new DefaultMutableTreeNode[currentSelection.length];
+    for (int i = 0; i < currentSelection.length; i++) {
+      result[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
     }
+    return result;
+  }
 
+  protected abstract DefaultMutableTreeNode getRootNode();
+
+  protected abstract Chart getChart();
+
+  private class ChartUpdater implements TreeModelListener {
+    @Override
+    public void treeNodesChanged(TreeModelEvent e) {
+      getChart().reset();
+    }
 
     @Override
-    public Component getTreeComponent() {
-        return this;
+    public void treeNodesInserted(TreeModelEvent e) {
+      getChart().reset();
     }
 
     @Override
-    public TableHeaderUIFacade getVisibleFields() {
-        return myTreeTable.getVisibleFields();
+    public void treeNodesRemoved(TreeModelEvent e) {
+      getChart().reset();
     }
 
     @Override
-    public boolean isExpanded(ModelObject modelObject) {
-        DefaultMutableTreeNode treeNode = getNode(modelObject);
-        return treeNode == null ? false : !myTreeTable.getTree().isCollapsed(new TreePath(treeNode.getPath()));
+    public void treeStructureChanged(TreeModelEvent e) {
+      getChart().reset();
     }
+  }
 
-    @Override
-    public void setExpanded(ModelObject modelObject) {
-        DefaultMutableTreeNode treeNode = getNode(modelObject);
-        if (treeNode != null) {
-            myTreeTable.getTree().expandPath(new TreePath(treeNode.getPath()));
-        }
-    }
+  @Override
+  public GPAction getNewAction() {
+    return myNewAction;
+  }
 
-    @Override
-    public boolean isVisible(ModelObject modelObject) {
-        DefaultMutableTreeNode node = getNode(modelObject);
-        if (node == null) {
-            return false;
-        }
-        return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
-    }
+  @Override
+  public GPAction getPropertiesAction() {
+    return myPropertiesAction;
+  }
 
-    public int getRowHeight() {
-        return myTreeTable.getTable().getRowHeight();
-    }
+  @Override
+  public GPAction getDeleteAction() {
+    return myDeleteAction;
+  }
 
-    protected DefaultMutableTreeNode getNode(ModelObject modelObject) {
-        for (Enumeration<TreeNode> nodes = getRootNode().preorderEnumeration(); nodes.hasMoreElements();) {
-            DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
-            if (nextNode.getUserObject() != null && nextNode.getUserObject().equals(modelObject)) {
-                return nextNode;
-            }
-        }
-        return null;
-    }
-
-    protected DefaultMutableTreeNode getSelectedNode() {
-        TreePath currentSelection = getTree().getSelectionPath();
-        return (currentSelection == null) ? null :
-            (DefaultMutableTreeNode) currentSelection.getLastPathComponent();
-    }
-
-    public DefaultMutableTreeNode[] getSelectedNodes() {
-        TreePath[] currentSelection = getTree().getSelectionPaths();
-
-        if (currentSelection == null || currentSelection.length == 0) {
-            return new DefaultMutableTreeNode[0];
-        }
-        DefaultMutableTreeNode[] result = new DefaultMutableTreeNode[currentSelection.length];
-        for (int i = 0; i < currentSelection.length; i++) {
-            result[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
-        }
-        return result;
-    }
-
-    protected abstract DefaultMutableTreeNode getRootNode();
-    protected abstract Chart getChart();
-
-    private class ChartUpdater implements TreeModelListener {
-        @Override
-        public void treeNodesChanged(TreeModelEvent e) {
-            getChart().reset();
-        }
-        @Override
-        public void treeNodesInserted(TreeModelEvent e) {
-            getChart().reset();
-        }
-        @Override
-        public void treeNodesRemoved(TreeModelEvent e) {
-            getChart().reset();
-        }
-        @Override
-        public void treeStructureChanged(TreeModelEvent e) {
-            getChart().reset();
-        }
-    }
-
-
-    @Override
-    public GPAction getNewAction() {
-        return myNewAction;
-    }
-    @Override
-    public GPAction getPropertiesAction() {
-        return myPropertiesAction;
-    }
-    @Override
-    public GPAction getDeleteAction() {
-        return myDeleteAction;
-    }
-
-    protected void setArtefactActions(GPAction newAction, GPAction propertiesAction, GPAction deleteAction) {
-        myNewAction = newAction;
-        myPropertiesAction = propertiesAction;
-        myDeleteAction = deleteAction;
-    }
+  protected void setArtefactActions(GPAction newAction, GPAction propertiesAction, GPAction deleteAction) {
+    myNewAction = newAction;
+    myPropertiesAction = propertiesAction;
+    myDeleteAction = deleteAction;
+  }
 }

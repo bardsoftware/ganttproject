@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 package net.sourceforge.ganttproject.chart.overview;
 
 import java.awt.Component;
@@ -32,32 +32,28 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class NavigationPanel {
-    private final TimelineChart myChart;
-    private final IGanttProject myProject;
+  private final TimelineChart myChart;
+  private final IGanttProject myProject;
 
-    private final AbstractAction[] myScrollActions;
-    private final AbstractAction myScrollBackAction;
-    private final AbstractAction myScrollForwardAction;
+  private final AbstractAction[] myScrollActions;
+  private final AbstractAction myScrollBackAction;
+  private final AbstractAction myScrollForwardAction;
 
-    public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade uiFacade) {
-        myProject = project;
-        myChart = chart;
-        myScrollActions = new AbstractAction[] { new ScrollToStartAction(myProject, myChart),
-                new ScrollToTodayAction(myChart), new ScrollToEndAction(myProject, myChart),
-                new ScrollToSelectionAction(uiFacade, myChart) };
-        myScrollBackAction = new ScrollTimeIntervalAction("scroll.back", -1,
-                myProject.getTaskManager(), chart.getModel(), uiFacade.getScrollingManager());
-        myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", 1,
-                myProject.getTaskManager(), chart.getModel(), uiFacade.getScrollingManager());
-    }
+  public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade uiFacade) {
+    myProject = project;
+    myChart = chart;
+    myScrollActions = new AbstractAction[] { new ScrollToStartAction(myProject, myChart),
+        new ScrollToTodayAction(myChart), new ScrollToEndAction(myProject, myChart),
+        new ScrollToSelectionAction(uiFacade, myChart) };
+    myScrollBackAction = new ScrollTimeIntervalAction("scroll.back", -1, myProject.getTaskManager(), chart.getModel(),
+        uiFacade.getScrollingManager());
+    myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", 1, myProject.getTaskManager(),
+        chart.getModel(), uiFacade.getScrollingManager());
+  }
 
-    public Component getComponent() {
-        return new ToolbarBuilder()
-            .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
-            .addComboBox(myScrollActions, myScrollActions[1])
-            .addButton(myScrollBackAction)
-            .addButton(myScrollForwardAction)
-            .build();
-    }
+  public Component getComponent() {
+    return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addComboBox(
+        myScrollActions, myScrollActions[1]).addButton(myScrollBackAction).addButton(myScrollForwardAction).build();
+  }
 
 }
