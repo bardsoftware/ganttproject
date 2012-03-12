@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.ganttproject.impex.htmlpdf.itext;
 
 import java.util.List;
@@ -23,6 +23,7 @@ import java.util.List;
 import org.ganttproject.impex.htmlpdf.Stylesheet;
 
 public interface ITextStylesheet extends Stylesheet {
-    List<String> getFontFamilies();
-    void setFontSubstitutionModel(FontSubstitutionModel mySubstitutionModel);
+  List<String> getFontFamilies();
+
+  void setFontSubstitutionModel(FontSubstitutionModel mySubstitutionModel);
 }
