@@ -111,24 +111,33 @@
 		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
 		</ant>		
-		<ant antfile="../org.ganttproject.impex.msproject/build.xml" target="copy-src" inheritall="false">
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
 		</ant>		
 		<mkdir dir="${src.dir}/ganttproject-builder"/>
 		<copy todir="${src.dir}/ganttproject-builder">
 			<fileset dir=".">
+				<include name="deb/**"/>
+        <include name="lib/**"/>
+        <include name="src/**"/>
+        <include name="build-deb.xml"/>
+        <include name="build-deb.properties"/>
 				<include name="build.xml"/>
 				<include name="build.public.properties"/>
 				<include name="build.private.properties"/>
-				<include name="ganttproject.bat"/>
-				<include name="install-linux.sh"/>
-				<include name="ganttproject.desktop"/>
+				<include name="formatter.xml"/>
+        <include name="ganttproject_16.ico"/>
 				<include name="ganttproject_32_2.ico"/>
-				<include name="ganttproject.command"/>
+				<include name="ganttproject"/>
+				<include name="ganttproject.bat"/>
+				<include name="ganttproject.desktop"/>
 				<include name="ganttproject-eclipsito-config.xml"/>
-				<include name="ganttproject-webstart-config.xml"/>
+        <include name="ganttproject.exe"/>
 				<include name="ganttproject.jnlp"/>
+        <include name="ganttproject.nsi"/>
+				<include name="ganttproject-webstart-config.xml"/>
 				<include name="HouseBuildingSample.gan"/>
+        <include name="LICENSE"/>
 				<include name=".project"/>
 			</fileset>
 		</copy>
