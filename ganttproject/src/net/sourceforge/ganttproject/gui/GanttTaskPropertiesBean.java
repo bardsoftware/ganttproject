@@ -31,6 +31,7 @@ import java.util.Calendar;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -40,6 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -179,6 +181,15 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private TaskMutator mutator;
 
+  /** Radio button to lock the start field */
+  private JRadioButton startLock;
+
+  /** Radio button to lock the end field */
+  private JRadioButton endLock;
+
+  /** Radio button to lock the duration field */
+  private JRadioButton durationLock;
+
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     this.selectedTasks = selectedTasks;
     setInitialValues(selectedTasks[0]);
@@ -210,16 +221,24 @@ public class GanttTaskPropertiesBean extends JPanel {
       propertiesPanel.add(checkBox.second());
     }
     addEmptyRow(propertiesPanel);
+
+    // Begin date
     propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
+    Box startBox = Box.createHorizontalBox();
     myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
       }
     });
-    propertiesPanel.add(myStartDatePicker);
+    startBox.add(myStartDatePicker);
+    startLock = new JRadioButton(language.getText("lockField"));
+    startBox.add(startLock);
+    propertiesPanel.add(startBox);
 
+    // End date
     propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
+    Box endBox = Box.createHorizontalBox();
     myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -228,9 +247,14 @@ public class GanttTaskPropertiesBean extends JPanel {
         setEnd(c, false);
       }
     });
-    propertiesPanel.add(myEndDatePicker);
+    endBox.add(myEndDatePicker);
+    endLock = new JRadioButton(language.getText("lockField"));
+    endBox.add(endLock);
+    propertiesPanel.add(endBox);
 
+    // Duration
     propertiesPanel.add(new JLabel(language.getText("length")));
+    Box durationBox = Box.createHorizontalBox();
     durationField1 = new JTextField(8);
     durationField1.setName("length");
     durationField1.addFocusListener(new FocusListener() {
@@ -243,7 +267,20 @@ public class GanttTaskPropertiesBean extends JPanel {
       public void focusGained(FocusEvent e) {
       }
     });
-    propertiesPanel.add(durationField1);
+    durationBox.add(durationField1);
+    durationLock = new JRadioButton(language.getText("lockField"));
+    durationBox.add(durationLock);
+    propertiesPanel.add(durationBox);
+
+    // Group radio buttons
+    ButtonGroup group = new ButtonGroup();
+    group.add(startLock);
+    group.add(endLock);
+    group.add(durationLock);
+
+    // Enable lock start by default
+    // TODO It is nicer to remember the previous used lock
+    startLock.setSelected(true);
 
     Box extraConstraintBox = Box.createHorizontalBox();
     thirdDateComboBox = new JComboBox();
@@ -610,10 +647,17 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
     durationField1.setText(String.valueOf(length));
 
-    // Calculate the end date for the given length
-    myUnpluggedClone.setStart(myStart);
-    myUnpluggedClone.setDuration(myUnpluggedClone.getManager().createLength(length));
-    setEnd(myUnpluggedClone.getEnd(), false);
+    if(endLock.isSelected()) {
+      // Calculate the start date for the given length
+      myStart = myEnd.clone();
+      myStart.add(Calendar.DATE, -1 * getLength());
+      myStartDatePicker.setDate(myStart.getTime());
+    } else {
+      // Calculate the end date for the given length
+      myEnd = myStart.clone();
+      myEnd.add(Calendar.DATE, 1 * getLength());
+      myEndDatePicker.setDate(myEnd.getTime());
+    }
   }
 
   private String getNotes() {
@@ -652,11 +696,12 @@ public class GanttTaskPropertiesBean extends JPanel {
     if (test == true) {
       return;
     }
-    if (myStart.compareTo(myEnd) < 0) {
+    if(endLock.isSelected()) {
+      // End is locked, so adjust duration
       adjustLength();
     } else {
       myEnd = myStart.clone();
-      myEnd.add(Calendar.DATE, taskLength);
+      myEnd.add(Calendar.DATE, getLength() - 1);
       myEndDatePicker.setDate(myEnd.getTime());
     }
   }
@@ -667,11 +712,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     if (test == true) {
       return;
     }
-    if (myStart.compareTo(myEnd) < 0) {
+    if (startLock.isSelected()) {
+      // Start is locked, so adjust duration
       adjustLength();
     } else {
       myStart = myEnd.clone();
       myStart.add(Calendar.DATE, -1 * getLength());
+      myStartDatePicker.setDate(myStart.getTime());
     }
   }
 
@@ -685,7 +732,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     myUnpluggedClone.setStart(this.myStart);
     myUnpluggedClone.setEnd(this.myEnd);
     length = myUnpluggedClone.getDuration().getLength();
-    durationField1.setText(String.valueOf(length));
+    if(length > 0) {
+      durationField1.setText(String.valueOf(length));
+    } else {
+      // Start is bigger than end Date, so set length to 1 and adjust the non-locked field
+      // TODO It would be nice if the user is notified of the illegal date he selected
+      changeLength(1);
+    }
   }
 
   private void setInitialValues(GanttTask task) {
@@ -735,7 +788,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   /**
    * Creates a milestone, a project task or no checkbox depending on the
    * selected task
-   * 
+   *
    * @return the created checkbox or null
    */
   private Pair<String, JCheckBox> constructCheckBox() {
