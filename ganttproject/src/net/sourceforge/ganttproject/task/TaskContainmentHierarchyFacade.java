@@ -66,7 +66,7 @@ public interface TaskContainmentHierarchyFacade {
   boolean contains(Task task);
 
   interface Factory {
-    TaskContainmentHierarchyFacade createFacede();
+    TaskContainmentHierarchyFacade createFacade();
   }
 
   TaskContainmentHierarchyFacade STUB = new TaskContainmentHierarchyFacade() {
