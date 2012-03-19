@@ -142,27 +142,29 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private JPanel secondRowPanelNotes;
 
-  private String taskWebLink;
+  private String originalName;
 
-  private boolean taskIsMilestone;
+  private String originalWebLink;
 
-  private GanttCalendar taskStartDate;
+  private boolean originalIsMilestone;
 
-  private GanttCalendar taskThirdDate;
+  private GanttCalendar originalStartDate;
 
-  private int taskThirdDateConstraint;
+  private GanttCalendar originalEndDate;
 
-  private boolean taskIsProjectTask;
+  private GanttCalendar originalThirdDate;
 
-  private int taskLength;
+  private int originalThirdDateConstraint;
 
-  private String taskNotes;
+  private boolean originalIsProjectTask;
 
-  private int taskCompletionPercentage;
+  private String originalNotes;
 
-  private Task.Priority taskPriority;
+  private int originalCompletionPercentage;
 
-  private ShapePaint taskShape;
+  private Task.Priority originalPriority;
+
+  private ShapePaint originalShape;
 
   private CustomColumnsPanel myCustomColumnPanel = null;
 
@@ -179,8 +181,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private final IGanttProject myProject;
   private final UIFacade myUIfacade;
 
-  private TaskMutator mutator;
-
   /** Radio button to lock the start field */
   private JRadioButton startLock;
 
@@ -192,14 +192,14 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     this.selectedTasks = selectedTasks;
-    setInitialValues(selectedTasks[0]);
+    storeOriginalValues(selectedTasks[0]);
     myHumanResourceManager = project.getHumanResourceManager();
     myRoleManager = project.getRoleManager();
     myTaskManager = project.getTaskManager();
     myProject = project;
     myUIfacade = uifacade;
     init();
-    setSelectedTask();
+    setSelectedTaskProperties();
   }
 
   private static void addEmptyRow(JPanel form) {
@@ -497,108 +497,105 @@ public class GanttTaskPropertiesBean extends JPanel {
     tabbedPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 0));
   }
 
-  // TODO The name of the method is very confusing... Rename to applySettings
-  // and remove return value?
-  public Task[] getReturnTask() {
-    GanttTask[] returnTask = new GanttTask[selectedTasks.length];
-
+  /** Apply the modified properties to the selected Tasks */
+  public void applySettings() {
     for (int i = 0; i < selectedTasks.length; i++) {
-      returnTask[i] = selectedTasks[i];
-
-      mutator = selectedTasks[0].createMutator();
-      mutator.setName(getTaskName()); // getName()
+      // TODO The originalXXX values should not be used,
+      // but the original values should be read from each processed task to
+      // determine whether the value has been changed
+      TaskMutator mutator = selectedTasks[i].createMutator();
+      if (originalName == null || !originalName.equals(getTaskName())) {
+        mutator.setName(getTaskName());
+      }
       mutator.setProjectTask(false);
-      if (this.taskWebLink != null && !this.taskWebLink.equals(getWebLink())) {
-        returnTask[i].setWebLink(getWebLink()); // getName()
+      if (originalWebLink == null || !originalWebLink.equals(getWebLink())) {
+        mutator.setWebLink(getWebLink());
       }
       if (mileStoneCheckBox1 != null) {
-        if (this.taskIsMilestone != isMilestone()) {
+        if (originalIsMilestone != isMilestone()) {
           mutator.setMilestone(isMilestone());
         }
       } else if (projectTaskCheckBox1 != null) {
-        if (this.taskIsProjectTask != isProjectTask()) {
+        if (originalIsProjectTask != isProjectTask()) {
           mutator.setProjectTask(isProjectTask());
         }
       }
-      if (!this.taskStartDate.equals(getStart())) {
+      if (!originalStartDate.equals(getStart())) {
         mutator.setStart(getStart());
       }
-      if (this.taskThirdDate == null && getThird() != null || this.taskThirdDate != null && getThird() == null
-          || this.taskThirdDate != null && !this.taskThirdDate.equals(getThird())
-          || this.taskThirdDateConstraint != getThirdDateConstraint()) {
+      if (!originalEndDate.equals(getEnd())) {
+        mutator.setEnd(getEnd());
+      }
+      if (originalThirdDate == null && getThird() != null || originalThirdDate != null && getThird() == null
+          || originalThirdDate != null && !originalThirdDate.equals(getThird())
+          || originalThirdDateConstraint != getThirdDateConstraint()) {
         mutator.setThird(getThird(), getThirdDateConstraint());
       }
 
       if (getLength() > 0) {
-        mutator.setDuration(returnTask[i].getManager().createLength(getLength()));
+        mutator.setDuration(selectedTasks[i].getManager().createLength(getLength()));
       }
-      if (!this.taskNotes.equals(getNotes())) {
-        returnTask[i].setNotes(getNotes());
+      if (!originalNotes.equals(getNotes())) {
+        mutator.setNotes(getNotes());
       }
-      if (this.taskCompletionPercentage != getPercentComplete()) {
+      if (originalCompletionPercentage != getPercentComplete()) {
         mutator.setCompletionPercentage(getPercentComplete());
       }
-      if (this.taskPriority != getPriority()) {
-        returnTask[i].setPriority(getPriority());
+      if (this.originalPriority != getPriority()) {
+        mutator.setPriority(getPriority());
       }
       if (isColorChanged) {
-        returnTask[i].setColor(colorButton.getBackground());
+        mutator.setColor(colorButton.getBackground());
       }
-      if (this.taskShape == null && shapeComboBox.getSelectedIndex() != 0 || this.taskShape != null
-          && !this.taskShape.equals(shapeComboBox.getSelectedPaint())) {
-        returnTask[i].setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
-            returnTask[i].getColor()));
-      }
-      if (returnTask[i].getShape() != null) {
-        returnTask[i].setShape(new ShapePaint(returnTask[i].getShape(), Color.white, returnTask[i].getColor()));
+      if (this.originalShape == null && shapeComboBox.getSelectedIndex() != 0 || originalShape != null
+          && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
+        mutator.setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
+            colorButton.getBackground()));
       }
 
       mutator.commit();
       myDependenciesPanel.commit();
       myAllocationsPanel.commit();
-      returnTask[i].applyThirdDateConstraint();
     }
-
-    return returnTask;
   }
 
-  private void setSelectedTask() {
-    nameField1.setText(selectedTasks[0].getName());
+  private void setSelectedTaskProperties() {
+    myUnpluggedClone = selectedTasks[0].unpluggedClone();
+
+    nameField1.setText(originalName);
 
     setName(selectedTasks[0].toString());
 
-    durationField1.setText(String.valueOf(selectedTasks[0].getLength()));
+    percentCompleteSlider.setValue(new Integer(originalCompletionPercentage));
+    priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
-    percentCompleteSlider.setValue(new Integer(selectedTasks[0].getCompletionPercentage()));
-    priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority().ordinal());
+    setStart(originalStartDate.clone(), true);
+    setEnd(originalEndDate.clone(), false);
 
-    setStart(selectedTasks[0].getStart().clone(), true);
-    setEnd(selectedTasks[0].getEnd().clone(), true);
-    if (selectedTasks[0].getThird() != null) {
-      setThird(selectedTasks[0].getThird().clone(), true);
+    if (originalThirdDate != null) {
+      setThird(originalThirdDate.clone(), true);
     }
-    thirdDateComboBox.setSelectedIndex(selectedTasks[0].getThirdDateConstraint());
+    thirdDateComboBox.setSelectedIndex(originalThirdDateConstraint);
 
     if (mileStoneCheckBox1 != null) {
-      mileStoneCheckBox1.setSelected(selectedTasks[0].isMilestone());
+      mileStoneCheckBox1.setSelected(originalIsMilestone);
     } else if (projectTaskCheckBox1 != null) {
-      projectTaskCheckBox1.setSelected(selectedTasks[0].isProjectTask());
+      projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
     enableMilestoneUnfriendlyControls(!isMilestone());
 
-    tfWebLink.setText(selectedTasks[0].getWebLink());
+    tfWebLink.setText(originalWebLink);
 
     if (selectedTasks[0].shapeDefined()) {
       for (int j = 0; j < ShapeConstants.PATTERN_LIST.length; j++) {
-        if (selectedTasks[0].getShape().equals(ShapeConstants.PATTERN_LIST[j])) {
+        if (originalShape.equals(ShapeConstants.PATTERN_LIST[j])) {
           shapeComboBox.setSelectedIndex(j);
           break;
         }
       }
     }
 
-    noteAreaNotes.setText(selectedTasks[0].getNotes());
-    myUnpluggedClone = selectedTasks[0].unpluggedClone();
+    noteAreaNotes.setText(originalNotes);
   }
 
   private void enableMilestoneUnfriendlyControls(boolean enable) {
@@ -647,7 +644,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
     durationField1.setText(String.valueOf(length));
 
-    if(endLock.isSelected()) {
+    if (endLock.isSelected()) {
       // Calculate the start date for the given length
       myStart = myEnd.clone();
       myStart.add(Calendar.DATE, -1 * getLength());
@@ -686,6 +683,10 @@ public class GanttTaskPropertiesBean extends JPanel {
     return myStart;
   }
 
+  private GanttCalendar getEnd() {
+    return myEnd;
+  }
+
   private GanttCalendar getThird() {
     return myThird;
   }
@@ -696,7 +697,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     if (test == true) {
       return;
     }
-    if(endLock.isSelected()) {
+    if (endLock.isSelected()) {
       // End is locked, so adjust duration
       adjustLength();
     } else {
@@ -722,37 +723,40 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
   }
 
-  private void setThird(GanttCalendar third, boolean test) {
+  private void setThird(GanttCalendar third, @SuppressWarnings("unused") boolean test) {
     myThird = third;
     myThirdDatePicker.setDate(myThird.getTime());
   }
 
   private void adjustLength() {
     int length;
-    myUnpluggedClone.setStart(this.myStart);
-    myUnpluggedClone.setEnd(this.myEnd);
+    myUnpluggedClone.setStart(myStart);
+    myUnpluggedClone.setEnd(myEnd);
     length = myUnpluggedClone.getDuration().getLength();
-    if(length > 0) {
+    if (length > 0) {
       durationField1.setText(String.valueOf(length));
     } else {
-      // Start is bigger than end Date, so set length to 1 and adjust the non-locked field
-      // TODO It would be nice if the user is notified of the illegal date he selected
+      // Start is bigger than end Date, so set length to 1 and adjust the
+      // non-locked field
+      // TODO It would be nice if the user is notified of the illegal date he
+      // selected
       changeLength(1);
     }
   }
 
-  private void setInitialValues(GanttTask task) {
-    taskWebLink = task.getWebLink();
-    taskIsMilestone = task.isMilestone();
-    taskStartDate = task.getStart();
-    taskLength = task.getLength();
-    taskNotes = task.getNotes();
-    taskCompletionPercentage = task.getCompletionPercentage();
-    taskPriority = task.getPriority();
-    taskShape = task.getShape();
-    taskThirdDate = task.getThird();
-    taskThirdDateConstraint = task.getThirdDateConstraint();
-    taskIsProjectTask = task.isProjectTask();
+  private void storeOriginalValues(GanttTask task) {
+    originalName = task.getName();
+    originalWebLink = task.getWebLink();
+    originalIsMilestone = task.isMilestone();
+    originalStartDate = task.getStart();
+    originalEndDate = task.getEnd();
+    originalNotes = task.getNotes();
+    originalCompletionPercentage = task.getCompletionPercentage();
+    originalPriority = task.getPriority();
+    originalShape = task.getShape();
+    originalThirdDate = task.getThird();
+    originalThirdDateConstraint = task.getThirdDateConstraint();
+    originalIsProjectTask = task.isProjectTask();
   }
 
   private boolean canBeProjectTask(Task testedTask, TaskContainmentHierarchyFacade taskHierarchy) {
