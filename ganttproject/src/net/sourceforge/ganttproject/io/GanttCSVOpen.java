@@ -24,7 +24,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -35,12 +38,15 @@ import net.sourceforge.ganttproject.task.TaskManager;
 /**
  * Handles opening CSV files.
  *
- * Currently, the class assumes that the fields are in the same order as
- * GanttProject exports them:
- *
- * ID,Name,Begin date,End date,Duration,Completion,Web Link,Resources,Notes
+ * A mapping is used to find the correct CSV field that belong to a known Task
+ * attribute
  */
 public class GanttCSVOpen {
+  /** List of known (and supported) Task attributes */
+  public enum TaskFields {
+    NAME, BEGIN_DATE, END_DATE, WEB_LINK, NOTES
+  }
+
   private final TaskManager myTaskManager;
 
   private final File myFile;
@@ -52,6 +58,12 @@ public class GanttCSVOpen {
 
   /** When true, a series to separator characters are processed as one */
   private boolean allowMultipleSeparators = false;
+
+  /**
+   * Map containing a relation between the known task attributes and the fields
+   * in the CSV file
+   */
+  private Map<TaskFields, Integer> fieldsMap = null;
 
   public GanttCSVOpen(File file, TaskManager taskManager) {
     myFile = file;
@@ -72,9 +84,6 @@ public class GanttCSVOpen {
       // First read header (and ignore for now)
       getHeader(br);
 
-      // TODO Check what header fields are present,
-      // and use them for the correct mapping while reading the tasks
-
       // Read lines unit the stream is at its end
       while (br.ready()) {
         String line = br.readLine();
@@ -85,11 +94,30 @@ public class GanttCSVOpen {
           if (fields != null && fields.size() == 9) {
             // Create the task
             GanttTask task = myTaskManager.createTask();
-            task.setName(fields.get(1));
-            task.setStart(new GanttCalendar(language.parseDate(fields.get(2))));
-            task.setEnd(new GanttCalendar(language.parseDate(fields.get(3))));
-            task.setWebLink(fields.get(6));
-            task.setNotes(fields.get(8));
+            // and fill in the mapped fields
+            for (Entry<TaskFields, Integer> entry : fieldsMap.entrySet()) {
+              Integer fieldIndex = entry.getValue();
+              switch (entry.getKey()) {
+              case NAME:
+                task.setName(fields.get(fieldIndex));
+                break;
+              case BEGIN_DATE:
+                task.setStart(new GanttCalendar(language.parseDate(fields.get(fieldIndex))));
+                break;
+              case END_DATE:
+                task.setEnd(new GanttCalendar(language.parseDate(fields.get(fieldIndex))));
+                break;
+              case WEB_LINK:
+                task.setWebLink(fields.get(fieldIndex));
+                break;
+              case NOTES:
+                task.setNotes(fields.get(fieldIndex));
+                break;
+              default:
+                // Should not happen, although it is not too serious...
+                GPLogger.log("Found unknown task field: " + entry.getKey());
+              }
+            }
             myTaskManager.registerTask(task);
             myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
           } else {
@@ -108,6 +136,8 @@ public class GanttCSVOpen {
    * Reads the header and returns the fields. It also:
    * <ul>
    * <li>tries to find the correct separator char if it is not yet set</li>
+   * <li>tries to find a mapping between the fields in the CSV file and the
+   * known/supported task attributes</li>
    * </ul>
    * </p>
    * <p>
@@ -138,8 +168,25 @@ public class GanttCSVOpen {
         setSeparator(',');
       }
     }
-    // TODO try to find a mapping between known Task fields and the fields in the header
-    return splitLine(header);
+
+    List<String> fields = splitLine(header);
+    if (getFieldsMap().size() == 0) {
+      // Determine/guess the required mapping
+
+      for (TaskFields knownField : TaskFields.values()) {
+        String fieldName = knownField.name().toLowerCase().replace('_', ' ');
+        for (int i = 0; i < fields.size(); i++) {
+          String testFieldName = fields.get(i).toLowerCase();
+          if (testFieldName.equals(fieldName)) {
+            // Found a match to a known field!
+            fieldsMap.put(knownField, i);
+            // No need to check other fields
+            break;
+          }
+        }
+      }
+    }
+    return fields;
   }
 
   /**
@@ -148,6 +195,17 @@ public class GanttCSVOpen {
    */
   public char getSeparetor() {
     return separator;
+  }
+
+  /**
+   * @return the mapping of the CSV fields. (So it could be used to manually
+   *         override the found mapping)
+   */
+  public Map<TaskFields, Integer> getFieldsMap() {
+    if (fieldsMap == null) {
+      fieldsMap = new HashMap<TaskFields, Integer>();
+    }
+    return fieldsMap;
   }
 
   /** Sets (override) the field separator to use */
