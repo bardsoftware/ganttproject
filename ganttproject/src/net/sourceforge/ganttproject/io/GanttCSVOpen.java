@@ -47,8 +47,11 @@ public class GanttCSVOpen {
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
 
-  /** Separator byte used in the CSV file */
-  private byte separator = ',';
+  /** Separator character used to parse the CSV file */
+  private char separator = 0;
+
+  /** When true, a series to separator characters are processed as one */
+  private boolean allowMultipleSeparators = false;
 
   public GanttCSVOpen(File file, TaskManager taskManager) {
     myFile = file;
@@ -101,8 +104,16 @@ public class GanttCSVOpen {
   }
 
   /**
-   * Reads the header and returns the fields. This method assumes that the
-   * BufferedReader is still at the begin of the file!
+   * <p>
+   * Reads the header and returns the fields. It also:
+   * <ul>
+   * <li>tries to find the correct separator char if it is not yet set</li>
+   * </ul>
+   * </p>
+   * <p>
+   * <em>Note:</em> This method assumes that the BufferedReader is still at the
+   * begin of the file!
+   * </p>
    *
    * @param br
    *          BufferedReader to read the header from
@@ -112,14 +123,44 @@ public class GanttCSVOpen {
    */
   public List<String> getHeader(BufferedReader br) throws IOException {
     final String header = br.readLine();
-    // TODO Determine separator char used in this CSV file
+    if (separator == 0) {
+      // Try to determine separator char used in this CSV file
+      // This simple method check which known separator char is encountered
+      // first...
+      int firstComma = findFirst(header, ',');
+      int firstSpace = findFirst(header, ' ');
+      int firstTab = findFirst(header, '\t');
+      if (firstSpace < firstComma && firstSpace < firstTab) {
+        setSeparator(' ');
+      } else if (firstTab < firstComma && firstTab < firstSpace) {
+        setSeparator('\t');
+      } else {
+        setSeparator(',');
+      }
+    }
+    // TODO try to find a mapping between known Task fields and the fields in the header
     return splitLine(header);
+  }
+
+  /**
+   * @returns the separator char that is (going to be) used, or 0 if it is not
+   *          set yet
+   */
+  public char getSeparetor() {
+    return separator;
+  }
+
+  /** Sets (override) the field separator to use */
+  public void setSeparator(char separator) {
+    this.separator = separator;
+    allowMultipleSeparators = separator == ' ' || separator == '\t';
   }
 
   private List<String> splitLine(String line) {
     boolean sQuoteOpen = false;
     boolean dQuoteOpen = false;
     boolean previousSlash = false;
+    boolean previousSeparator = false;
 
     final List<String> result = new ArrayList<String>();
     StringBuilder field = new StringBuilder();
@@ -145,16 +186,27 @@ public class GanttCSVOpen {
         previousSlash = true;
         continue;
       }
-      if (b == separator && !dQuoteOpen && !sQuoteOpen) {
+      if (b == separator && !dQuoteOpen && !sQuoteOpen && (!allowMultipleSeparators || !previousSeparator)) {
         // End of field!
         result.add(field.toString().trim());
         field = new StringBuilder();
+        previousSeparator = true;
         continue;
       }
 
       // Add byte to field string
       field.append(b);
+      previousSeparator = false;
     }
     return result;
+  }
+
+  /** @return the first index of c in str, or str length if not found */
+  private int findFirst(String str, char c) {
+    int index = str.indexOf(c);
+    if (index == -1) {
+      return str.length();
+    }
+    return index;
   }
 }
