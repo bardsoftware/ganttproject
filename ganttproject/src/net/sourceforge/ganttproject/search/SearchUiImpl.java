@@ -76,22 +76,12 @@ public class SearchUiImpl implements SearchUi {
   class PopupSearchCallback implements SearchCallback {
     private SearchDialog myDialog = new SearchDialog(project, uiFacade);
     private JTextField searchBox;
-    private JList list;
+    private JList list = new JList();
+    private Runnable onSelect;
+    private Runnable onDismiss;
 
-    @Override
-    public void accept(final List<SearchResult<?>> results) {
-      if (results.isEmpty()) {
-        return;
-      }
-      list = new JList(results.toArray(new SearchResult[0]));
+    public PopupSearchCallback() {
       list.setBorder(BorderFactory.createEmptyBorder());
-      JScrollPane scrollPane = new JScrollPane(list);
-      scrollPane.setBorder(BorderFactory.createEmptyBorder());
-      final JPopupMenu popup = new JPopupMenu();
-      popup.add(scrollPane);
-      popup.show(searchBox, 0, searchBox.getHeight());
-      list.requestFocusInWindow();
-      list.setSelectedIndex(0);
       list.addKeyListener(new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -99,11 +89,10 @@ public class SearchUiImpl implements SearchUi {
           case KeyEvent.VK_ENTER:
             e.consume();
             e.setKeyCode(0);
-            onSelect(popup, results);
+            onSelect.run();
             break;
           case KeyEvent.VK_ESCAPE:
-            searchBox.requestFocusInWindow();
-            list = null;
+            onDismiss.run();
             break;
           }
         }
@@ -111,17 +100,42 @@ public class SearchUiImpl implements SearchUi {
       list.addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
+          onSelect.run();
+        }
+      });
+    }
+    @Override
+    public void accept(final List<SearchResult<?>> results) {
+      if (results.isEmpty()) {
+        return;
+      }
+      list.setListData(results.toArray(new SearchResult[0]));
+      JScrollPane scrollPane = new JScrollPane(list);
+      scrollPane.setBorder(BorderFactory.createEmptyBorder());
+      final JPopupMenu popup = new JPopupMenu();
+      popup.add(scrollPane);
+      popup.show(searchBox, 0, searchBox.getHeight());
+      list.requestFocusInWindow();
+      list.setSelectedIndex(0);
+      onSelect = new Runnable() {
+        @Override
+        public void run() {
           onSelect(popup, results);
         }
-
-      });
+      };
+      onDismiss = new Runnable() {
+        @Override
+        public void run() {
+          popup.setVisible(false);
+          searchBox.requestFocusInWindow();
+        }
+      };
     }
 
     private void onSelect(JPopupMenu popup, List<SearchResult<?>> results) {
       popup.setVisible(false);
       SearchResult selectedValue = results.get(list.getSelectedIndex());
       selectedValue.getSearchService().select(Collections.singletonList(selectedValue));
-      list = null;
     }
 
     void setSearchBox(JTextField searchBox) {
@@ -129,7 +143,7 @@ public class SearchUiImpl implements SearchUi {
       searchBox.addKeyListener(new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
-          if (e.getKeyCode() == KeyEvent.VK_ENTER && PopupSearchCallback.this.searchBox.isFocusOwner() && list == null) {
+          if (e.getKeyCode() == KeyEvent.VK_ENTER && PopupSearchCallback.this.searchBox.isFocusOwner()) {
             runSearch();
           }
         }
@@ -143,6 +157,9 @@ public class SearchUiImpl implements SearchUi {
       });
     }
 
+    void dismissPopup() {
+
+    }
     protected void runSearch() {
       myDialog.runSearch(searchBox.getText(), this);
     }
