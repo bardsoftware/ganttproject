@@ -67,7 +67,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class ProjectFileExporter {
@@ -101,18 +101,22 @@ class ProjectFileExporter {
     exportHolidays(calendar);
   }
 
+  private boolean isWorkingDay(int day) {
+    return getCalendar().getOnlyShowWeekends() || getCalendar().getWeekDayType(day) == DayType.WORKING;
+  }
+
   private void exportWeekends(ProjectCalendar calendar) {
     ProjectCalendarHours workingDayHours = calendar.getCalendarHours(Day.MONDAY);
-    calendar.setWorkingDay(Day.MONDAY, getCalendar().getWeekDayType(Calendar.MONDAY) == DayType.WORKING);
-    calendar.setWorkingDay(Day.TUESDAY, getCalendar().getWeekDayType(Calendar.TUESDAY) == DayType.WORKING);
-    calendar.setWorkingDay(Day.WEDNESDAY, getCalendar().getWeekDayType(Calendar.WEDNESDAY) == DayType.WORKING);
-    calendar.setWorkingDay(Day.THURSDAY, getCalendar().getWeekDayType(Calendar.THURSDAY) == DayType.WORKING);
-    calendar.setWorkingDay(Day.FRIDAY, getCalendar().getWeekDayType(Calendar.FRIDAY) == DayType.WORKING);
-    calendar.setWorkingDay(Day.SATURDAY, getCalendar().getWeekDayType(Calendar.SATURDAY) == DayType.WORKING);
+    calendar.setWorkingDay(Day.MONDAY, isWorkingDay(Calendar.MONDAY));
+    calendar.setWorkingDay(Day.TUESDAY, isWorkingDay(Calendar.TUESDAY));
+    calendar.setWorkingDay(Day.WEDNESDAY, isWorkingDay(Calendar.WEDNESDAY));
+    calendar.setWorkingDay(Day.THURSDAY, isWorkingDay(Calendar.THURSDAY));
+    calendar.setWorkingDay(Day.FRIDAY, isWorkingDay(Calendar.FRIDAY));
+    calendar.setWorkingDay(Day.SATURDAY, isWorkingDay(Calendar.SATURDAY));
     if (calendar.isWorkingDay(Day.SATURDAY)) {
       copyHours(workingDayHours, calendar.addCalendarHours(Day.SATURDAY));
     }
-    calendar.setWorkingDay(Day.SUNDAY, getCalendar().getWeekDayType(Calendar.SUNDAY) == DayType.WORKING);
+    calendar.setWorkingDay(Day.SUNDAY, isWorkingDay(Calendar.SUNDAY));
     if (calendar.isWorkingDay(Day.SUNDAY)) {
       copyHours(workingDayHours, calendar.addCalendarHours(Day.SUNDAY));
     }
