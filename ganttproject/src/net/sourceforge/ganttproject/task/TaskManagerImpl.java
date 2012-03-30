@@ -752,7 +752,7 @@ public class TaskManagerImpl implements TaskManager {
     // }
 
     @Override
-    public TaskContainmentHierarchyFacade createFacede() {
+    public TaskContainmentHierarchyFacade createFacade() {
       return new FacadeImpl();
     }
   }
@@ -760,7 +760,7 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public TaskContainmentHierarchyFacade getTaskHierarchy() {
     // if (myTaskContainment==null) {
-    return myFacadeFactory.createFacede();
+    return myFacadeFactory.createFacade();
     // }
     // return myTaskContainment;
   }
