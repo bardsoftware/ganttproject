@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * TODO Remove the map Name->customColum to keep only the map Id -> CustomColumn
  * This class stores the CustomColumns.
- * 
+ *
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {
@@ -43,7 +44,7 @@ public class CustomColumnsStorage {
 
   private final static String ID_PREFIX = "tpc";
   private final List<CustomPropertyListener> myListeners = new ArrayList<CustomPropertyListener>();
-  private final Map<String, CustomColumn> mapIdCustomColum = new HashMap<String, CustomColumn>();
+  private final Map<String, CustomColumn> mapIdCustomColum = new LinkedHashMap<String, CustomColumn>();
 
   private final CustomColumnsManager myManager;
 
