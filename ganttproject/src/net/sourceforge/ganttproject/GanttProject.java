@@ -238,7 +238,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     TaskManagerConfig taskConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(new TaskContainmentHierarchyFacade.Factory() {
       @Override
-      public TaskContainmentHierarchyFacade createFacede() {
+      public TaskContainmentHierarchyFacade createFacade() {
         return GanttProject.this.getTaskContainment();
       }
     }, taskConfig);
