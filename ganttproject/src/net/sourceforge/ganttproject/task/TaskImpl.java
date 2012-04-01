@@ -778,6 +778,16 @@ public class TaskImpl implements Task {
     }
 
     @Override
+    public void setWebLink(final String webLink) {
+      myCommands.add(new Runnable() {
+        @Override
+        public void run() {
+          TaskImpl.this.setWebLink(webLink);
+        }
+      });
+    }
+
+    @Override
     public void setNotes(final String notes) {
       myCommands.add(new Runnable() {
         @Override
@@ -1052,7 +1062,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special shape is defined for this task.
-   * 
+   *
    * @return true, if this task has its own shape defined.
    */
   public boolean shapeDefined() {
@@ -1061,7 +1071,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special color is defined for this task.
-   * 
+   *
    * @return true, if this task has its own color defined.
    */
   public boolean colorDefined() {
