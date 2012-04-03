@@ -528,7 +528,8 @@ class ProjectFileImporter {
     }
     WorkingUnitCounter unitCounter = new WorkingUnitCounter(getNativeCalendar(),
         myNativeProject.getTimeUnitStack().getDefaultTimeUnit());
-    TaskLength workingDuration = unitCounter.run(t.getStart(), t.getFinish());
+    Date taskFinish = myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustRight(t.getFinish());
+    TaskLength workingDuration = unitCounter.run(t.getStart(), taskFinish);
     TaskLength nonWorkingDuration = unitCounter.getNonWorkingTime();
     return Pair.create(workingDuration, nonWorkingDuration);
   }
