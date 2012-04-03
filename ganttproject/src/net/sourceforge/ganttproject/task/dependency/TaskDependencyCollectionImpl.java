@@ -320,7 +320,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   }
 
   protected TaskContainmentHierarchyFacade getTaskHierarchy() {
-    return myTaskHierarchyFactory.createFacede();
+    return myTaskHierarchyFactory.createFacade();
   }
 
 }
