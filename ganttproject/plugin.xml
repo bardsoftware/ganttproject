@@ -30,9 +30,6 @@
       <library name="lib/core/jcommander-1.17.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/jdnc-modifBen.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/core/jdom-1.0.jar">
          <export name="*"/>
       </library>
@@ -40,6 +37,9 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/swingx-1.6.3.jar">
          <export name="*"/>
       </library>
       <library name="data/resources/">

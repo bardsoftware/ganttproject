@@ -12,10 +12,10 @@
         <pathelement location="${plugin.src.dir}/lib/core/eclipsito.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/jcommander-1.17.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jdnc-modifBen.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/jdom-1.0.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/jgoodies-common-1.1.1.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/jgoodies-looks-2.4.0.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/swingx-1.6.3.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
