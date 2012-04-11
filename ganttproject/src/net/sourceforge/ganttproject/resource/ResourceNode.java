@@ -18,12 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+
+import java.util.List;
+
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+
+import com.beust.jcommander.internal.Lists;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.roles.Role;
 
-public class ResourceNode extends DefaultMutableTreeNode {
+public class ResourceNode extends DefaultMutableTreeTableNode {
 
   private static final long serialVersionUID = 3834033541318392117L;
 
@@ -99,5 +105,15 @@ public class ResourceNode extends DefaultMutableTreeNode {
       res = rn.getUserObject() != null && rn.getUserObject().equals(this.getUserObject());
     }
     return res;
+  }
+
+  public void removeAllChildren() {
+    List<MutableTreeTableNode> children = Lists.newArrayList();
+    for (int i = 0; i < getChildCount(); i++) {
+      children.add((MutableTreeTableNode) getChildAt(i));
+    }
+    for (MutableTreeTableNode child : children) {
+      remove(child);
+    }
   }
 }

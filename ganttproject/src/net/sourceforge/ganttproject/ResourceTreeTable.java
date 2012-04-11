@@ -27,10 +27,11 @@ import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.jdesktop.swing.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -100,11 +101,11 @@ public class ResourceTreeTable extends GPTreeTableBase {
     getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
     setTreeTableModel(model);
     initTreeTable();
-    myResourceTreeModel.setSelectionModel(getTree().getSelectionModel());
+    myResourceTreeModel.setSelectionModel(getTreeSelectionModel());
   }
 
-  public boolean isVisible(DefaultMutableTreeNode node) {
-    return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
+  public boolean isVisible(DefaultMutableTreeTableNode node) {
+    return getTreeTable().isVisible(TreeUtil.createPath(node));
   }
 
   @Override
@@ -153,24 +154,24 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   /** @return the list of the selected nodes. */
   @Deprecated
-  public DefaultMutableTreeNode[] getSelectedNodes() {
-    TreePath[] currentSelection = getTreeTable().getTree().getSelectionPaths();
+  public DefaultMutableTreeTableNode[] getSelectedNodes() {
+    TreePath[] currentSelection = getTreeSelectionModel().getSelectionPaths();
 
     if (currentSelection == null || currentSelection.length == 0) {
-      return new DefaultMutableTreeNode[0];
+      return new DefaultMutableTreeTableNode[0];
     }
-    DefaultMutableTreeNode[] dmtnselected = new DefaultMutableTreeNode[currentSelection.length];
+    DefaultMutableTreeTableNode[] dmtnselected = new DefaultMutableTreeTableNode[currentSelection.length];
 
     for (int i = 0; i < currentSelection.length; i++) {
-      dmtnselected[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
+      dmtnselected[i] = (DefaultMutableTreeTableNode) currentSelection[i].getLastPathComponent();
     }
     return dmtnselected;
   }
 
   public boolean isExpanded(HumanResource hr) {
-    ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel()).exists(hr);
+    ResourceNode node = ((ResourceTreeTableModel) getTreeTableModel()).getNodeForResource(hr);
     if (node != null) {
-      return getTreeTable().isExpanded(new TreePath(node.getPath()));
+      return getTreeTable().isExpanded(TreeUtil.createPath(node));
     }
     return false;
   }
@@ -188,12 +189,12 @@ public class ResourceTreeTable extends GPTreeTableBase {
   }
 
   public boolean canMoveSelectionUp() {
-    final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
+    final DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes.length != 1) {
       return false;
     }
-    DefaultMutableTreeNode selectedNode = selectedNodes[0];
-    DefaultMutableTreeNode previousSibling = selectedNode.getPreviousSibling();
+    DefaultMutableTreeTableNode selectedNode = selectedNodes[0];
+    TreeNode previousSibling = TreeUtil.getPrevSibling(selectedNode);
     if (previousSibling == null) {
       return false;
     }
@@ -202,31 +203,31 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   /** Move selected resource up */
   public void upResource() {
-    final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
+    final DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes.length != 1) {
       return;
     }
-    DefaultMutableTreeNode selectedNode = selectedNodes[0];
-    DefaultMutableTreeNode previousSibling = selectedNode.getPreviousSibling();
+    DefaultMutableTreeTableNode selectedNode = selectedNodes[0];
+    TreeNode previousSibling = TreeUtil.getPrevSibling(selectedNode);
     if (previousSibling == null) {
       return;
     }
     if (selectedNode instanceof ResourceNode) {
       HumanResource people = (HumanResource) selectedNode.getUserObject();
       myResourceTreeModel.moveUp(people);
-      getTree().setSelectionPath(new TreePath(selectedNode.getPath()));
+      getTreeSelectionModel().setSelectionPath(TreeUtil.createPath(selectedNode));
     } else if (selectedNode instanceof AssignmentNode) {
-      swapAssignents(selectedNode, previousSibling);
+      swapAssignents((AssignmentNode)selectedNode, (AssignmentNode)previousSibling);
     }
   }
 
   public boolean canMoveSelectionDown() {
-    final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
+    final DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes.length != 1) {
       return false;
     }
-    DefaultMutableTreeNode selectedNode = selectedNodes[0];
-    DefaultMutableTreeNode nextSibling = selectedNode.getNextSibling();
+    DefaultMutableTreeTableNode selectedNode = selectedNodes[0];
+    TreeNode nextSibling = TreeUtil.getNextSibling(selectedNode);
     if (nextSibling == null) {
       return false;
     }
@@ -235,28 +236,27 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   /** Move the selected resource down */
   public void downResource() {
-    final DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
+    final DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes.length == 0) {
       return;
     }
-    DefaultMutableTreeNode selectedNode = selectedNodes[0];
-    DefaultMutableTreeNode nextSibling = selectedNode.getNextSibling();
+    DefaultMutableTreeTableNode selectedNode = selectedNodes[0];
+    TreeNode nextSibling = TreeUtil.getNextSibling(selectedNode);
     if (nextSibling == null) {
       return;
     }
     if (selectedNode instanceof ResourceNode) {
       HumanResource people = (HumanResource) selectedNode.getUserObject();
       myResourceTreeModel.moveDown(people);
-      getTree().setSelectionPath(new TreePath(selectedNode.getPath()));
+      getTreeSelectionModel().setSelectionPath(TreeUtil.createPath(selectedNode));
     } else if (selectedNode instanceof AssignmentNode) {
-      swapAssignents(selectedNode, nextSibling);
+      swapAssignents((AssignmentNode)selectedNode, (AssignmentNode)nextSibling);
     }
   }
 
-  void swapAssignents(DefaultMutableTreeNode selected, DefaultMutableTreeNode sibling) {
-    ResourceAssignment selectedAssignment = ((AssignmentNode) selected).getAssignment();
-    assert sibling instanceof AssignmentNode;
-    ResourceAssignment previousAssignment = ((AssignmentNode) sibling).getAssignment();
+  void swapAssignents(AssignmentNode selected, AssignmentNode sibling) {
+    ResourceAssignment selectedAssignment = selected.getAssignment();
+    ResourceAssignment previousAssignment = sibling.getAssignment();
     selectedAssignment.getResource().swapAssignments(selectedAssignment, previousAssignment);
   }
 }
