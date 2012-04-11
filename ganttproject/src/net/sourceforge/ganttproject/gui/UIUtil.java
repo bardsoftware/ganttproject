@@ -36,7 +36,10 @@ import javax.swing.border.Border;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.decorator.HighlighterFactory;
+
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -112,6 +115,10 @@ public abstract class UIUtil {
     table.setRowHeight(table.getFontMetrics(font).getHeight() + 5);
   }
 
+  public static void setupHighlighters(JXTable table) {
+    table.setHighlighters(HighlighterFactory.createAlternateStriping(Color.WHITE, Color.ORANGE.brighter()));
+
+  }
   public static void setupTableUI(JTable table) {
     setupTableUI(table, 10);
   }
@@ -124,14 +131,7 @@ public abstract class UIUtil {
     JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
     result.addActionListener(listener);
-
-    // Set the date format to the (user defined) short format
-    // Note: there is a setFormats() method available in newer library version,
-    // which might more convenient than setDateFormatterFactory()
-    DateFormatter shortFormatter = new DateFormatter(GanttLanguage.getInstance().getShortDateFormat());
-    DateFormatter longFormatter = new DateFormatter(GanttLanguage.getInstance().getLongDateFormat());
-    DefaultFormatterFactory factory = new DefaultFormatterFactory(longFormatter, longFormatter, shortFormatter);
-    result.setDateFormatterFactory(factory);
+    result.setFormats(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
     return result;
   }
 
