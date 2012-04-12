@@ -20,14 +20,16 @@ package net.sourceforge.ganttproject.task;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+
 import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
  * This class is used to describe the hierarchy of the tasks.
- * 
+ *
  * @author bbaranne (Benoit Baranne)
  */
-public class TaskNode extends DefaultMutableTreeNode {
+public class TaskNode extends DefaultMutableTreeTableNode {
   /**
    * The reference task
    */
@@ -35,7 +37,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Creates an instance of TaskNode with the given task as reference.
-   * 
+   *
    * @param t
    *          Task of reference.
    */
@@ -51,7 +53,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Sets the name of the task.
-   * 
+   *
    * @param newName
    *          The name to be set.
    */
@@ -66,7 +68,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Sets the start date of the task.
-   * 
+   *
    * @param startDate
    *          The start date of the task to be set.
    */
@@ -83,7 +85,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Sets the end date of the task.
-   * 
+   *
    * @param endDate
    *          The end date of the task to be set.
    */
@@ -100,7 +102,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Sets the duration of the task.
-   * 
+   *
    * @param length
    *          The duration to be set.
    */
@@ -117,7 +119,7 @@ public class TaskNode extends DefaultMutableTreeNode {
 
   /**
    * Sets the completion percentage of the task.
-   * 
+   *
    * @param percentage
    *          The percentage to be set.
    */

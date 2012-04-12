@@ -33,7 +33,7 @@ public class ResourceMoveUpAction extends GPAction implements TreeSelectionListe
     super("resource.move.up");
     myTable = table;
     setEnabled(false);
-    table.getTree().getSelectionModel().addTreeSelectionListener(this);
+    table.getTree().getTreeSelectionModel().addTreeSelectionListener(this);
   }
 
   @Override

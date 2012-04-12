@@ -508,7 +508,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
     setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
     setLeafIcon(icon);
-    getTreeTable().getParent().setBackground(Color.WHITE);
+    //getTreeTable().getParent().setBackground(Color.WHITE);
 
     InputMap inputMap = getInputMap();
     inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
@@ -547,7 +547,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     });
     getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
-    getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    //getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     getTable().setFillsViewportHeight(true);
   }
 
@@ -671,16 +671,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   @Override
   public void addMouseListener(MouseListener mouseListener) {
     super.addMouseListener(mouseListener);
-    getTable().addMouseListener(mouseListener);
-    getTree().addMouseListener(mouseListener);
-    this.getTreeTable().getParent().addMouseListener(mouseListener);
+    //this.getTreeTable().getParent().addMouseListener(mouseListener);
   }
 
   @Override
   public void addKeyListener(KeyListener keyListener) {
     super.addKeyListener(keyListener);
-    getTable().addKeyListener(keyListener);
-    getTree().addKeyListener(keyListener);
+//    getTable().addKeyListener(keyListener);
+//    getTree().addKeyListener(keyListener);
   }
 
   private static class DateCellEditor extends DefaultCellEditor {
