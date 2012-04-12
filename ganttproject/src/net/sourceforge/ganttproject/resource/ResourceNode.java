@@ -21,12 +21,15 @@ package net.sourceforge.ganttproject.resource;
 
 import java.util.List;
 
+import javax.swing.plaf.TreeUI;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import com.beust.jcommander.internal.Lists;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.roles.Role;
 
 public class ResourceNode extends DefaultMutableTreeTableNode {
@@ -108,12 +111,6 @@ public class ResourceNode extends DefaultMutableTreeTableNode {
   }
 
   public void removeAllChildren() {
-    List<MutableTreeTableNode> children = Lists.newArrayList();
-    for (int i = 0; i < getChildCount(); i++) {
-      children.add((MutableTreeTableNode) getChildAt(i));
-    }
-    for (MutableTreeTableNode child : children) {
-      remove(child);
-    }
+    TreeUtil.removeAllChildren(this);
   }
 }

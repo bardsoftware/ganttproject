@@ -58,7 +58,7 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
 
 /**
  * @author bard
@@ -493,7 +493,7 @@ public class OptionsPageBuilder {
   /**
    * Create JTextField component in options that allows user to input only
    * integer values.
-   * 
+   *
    * @param option
    * @return
    */

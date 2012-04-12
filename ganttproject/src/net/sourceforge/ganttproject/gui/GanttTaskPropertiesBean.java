@@ -75,7 +75,7 @@ import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.util.BrowserControl;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
 
 /**
  * Real panel for editing task properties

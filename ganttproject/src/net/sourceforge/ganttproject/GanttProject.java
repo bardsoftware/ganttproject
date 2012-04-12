@@ -53,9 +53,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
+
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
@@ -246,7 +247,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     setIconImage(icon.getImage());
 
     // Create each objects
-    myFacadeInvalidator = new FacadeInvalidator(getTree().getJTree().getModel());
+    myFacadeInvalidator = new FacadeInvalidator(getTree().getModel());
     getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
     options.addOptionGroups(new GPOptionGroup[] { getUIFacade().getOptions() });
@@ -576,17 +577,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
 
     int index = -1;
-    MutableTreeNode selectedNode = getTree().getSelectedNode();
+    TreeTableNode selectedNode = getTree().getSelectedNode();
     if (selectedNode != null) {
-      DefaultMutableTreeNode parent1 = (DefaultMutableTreeNode) selectedNode.getParent();
+      TreeTableNode parent1 = selectedNode.getParent();
       index = parent1.getIndex(selectedNode) + 1;
-      tree.getTreeTable().getTree().setSelectionPath(new TreePath(parent1.getPath()));
+      int selectedRow = tree.getTreeTable().getTree().getRowForPath(TreeUtil.createPath(parent1));
+      tree.getTreeTable().getTree().getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
       tree.getTreeTable().getTreeTable().editingStopped(new ChangeEvent(tree.getTreeTable().getTreeTable()));
     }
 
     GanttCalendar cal = new GanttCalendar(area.getStartDate());
 
-    DefaultMutableTreeNode node = tree.getSelectedNode();
+    MutableTreeTableNode node = tree.getSelectedNode();
     String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
     GanttTask task = getTaskManager().createTask();
     task.setStart(cal);

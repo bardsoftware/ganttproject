@@ -10,14 +10,14 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import com.google.common.collect.Lists;
 
-class TreeUtil {
+public class TreeUtil {
   static int getPrevSibling(TreeNode node, TreeNode child) {
     int childIndex = node.getIndex(child);
     return childIndex - 1;
   }
 
-  static TreeNode getPrevSibling(TreeNode node) {
-    TreeNode parent = node.getParent();
+  static TreeTableNode getPrevSibling(TreeTableNode node) {
+    TreeTableNode parent = node.getParent();
     int idxPrev = getPrevSibling(parent, node);
     return idxPrev == -1 ? null : parent.getChildAt(idxPrev);
   }
@@ -27,13 +27,13 @@ class TreeUtil {
     return childIndex == node.getChildCount() - 1 ? -1 : childIndex + 1;
   }
 
-  static TreeNode getNextSibling(TreeNode node) {
-    TreeNode parent = node.getParent();
+  static TreeTableNode getNextSibling(TreeTableNode node) {
+    TreeTableNode parent = node.getParent();
     int idxNext = getNextSibling(parent, node);
     return idxNext == -1 ? null : parent.getChildAt(idxNext);
   }
 
-  static TreePath createPath(TreeTableNode node) {
+  public static TreePath createPath(TreeNode node) {
     List<TreeNode> ascendingPath = Lists.newArrayList();
     while (node != null) {
       ascendingPath.add(node);
@@ -43,7 +43,7 @@ class TreeUtil {
     return new TreePath(descendingPath);
   }
 
-  static List<MutableTreeTableNode> collectSubtree(MutableTreeTableNode root) {
+  public static List<MutableTreeTableNode> collectSubtree(MutableTreeTableNode root) {
     final List<MutableTreeTableNode> result = Lists.newArrayList();
     collectSubtree(root, result);
     return result;
@@ -56,5 +56,23 @@ class TreeUtil {
     }
   }
 
+  public static void removeAllChildren(MutableTreeTableNode node) {
+    List<MutableTreeTableNode> children = Lists.newArrayList();
+    for (int i = 0; i < node.getChildCount(); i++) {
+      children.add((MutableTreeTableNode) node.getChildAt(i));
+    }
+    for (MutableTreeTableNode child : children) {
+      node.remove(child);
+    }
+  }
+
+  public static int getLevel(TreeTableNode treeNode) {
+    int level = 0;
+    while (treeNode != null) {
+      treeNode = treeNode.getParent();
+      level++;
+    }
+    return level - 1;
+  }
 
 }

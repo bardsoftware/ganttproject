@@ -25,9 +25,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import com.beust.jcommander.internal.Maps;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -36,7 +43,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {
-  private Map<Task, DefaultMutableTreeNode> myTask2treeNode = new HashMap<Task, DefaultMutableTreeNode>();
+  private Map<Task, MutableTreeTableNode> myTask2treeNode = Maps.newHashMap();
   private Map<Task, Integer> myTask2index = new LinkedHashMap<Task, Integer>();
   private Task myRootTask;
 
@@ -45,11 +52,11 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   private GanttTree2 myTree;
 
   public TaskContainmentHierarchyFacadeImpl(GanttTree2 tree) {
-    ArrayList<TaskNode> allTasks = tree.getAllTasks();
+    List<MutableTreeTableNode> allTasks = tree.getAllTasks();
     for (int i = 0; i < allTasks.size(); i++) {
-      TaskNode treeNode = allTasks.get(i);
+      MutableTreeTableNode treeNode = allTasks.get(i);
       Task task = (Task) treeNode.getUserObject();
-      if (treeNode.isRoot()) {
+      if (treeNode == tree.getRoot()) {
         myRootTask = task;
       }
       myTask2treeNode.put(task, treeNode);
@@ -61,11 +68,11 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   @Override
   public Task[] getNestedTasks(Task container) {
     Task[] result = null;
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(container);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(container);
     if (treeNode != null) {
       ArrayList<Task> list = new ArrayList<Task>();
       for (Enumeration children = treeNode.children(); children.hasMoreElements();) {
-        DefaultMutableTreeNode next = (DefaultMutableTreeNode) children.nextElement();
+        DefaultMutableTreeTableNode next = (DefaultMutableTreeTableNode) children.nextElement();
         if (next instanceof TaskNode) {
           list.add((Task) next.getUserObject());
         }
@@ -78,10 +85,9 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   @Override
   public Task[] getDeepNestedTasks(Task container) {
     ArrayList<Task> result = new ArrayList<Task>();
-    DefaultMutableTreeNode treeNodes = myTask2treeNode.get(container);
+    MutableTreeTableNode treeNodes = myTask2treeNode.get(container);
     if (treeNodes != null) {
-      for (Enumeration subtree = treeNodes.preorderEnumeration(); subtree.hasMoreElements();) {
-        DefaultMutableTreeNode curNode = (DefaultMutableTreeNode) subtree.nextElement();
+      for (MutableTreeTableNode curNode : TreeUtil.collectSubtree(treeNodes)) {
         assert curNode.getUserObject() instanceof Task;
         result.add((Task) curNode.getUserObject());
       }
@@ -96,13 +102,13 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   /**
    * Purpose: Returns true if the container Task has any nested tasks. This
    * should be a quicker check than using getNestedTasks().
-   * 
+   *
    * @param container
    *          The Task on which to check for children.
    */
   @Override
   public boolean hasNestedTasks(Task container) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(container);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(container);
     if (treeNode != null) {
       if (treeNode.children().hasMoreElements()) {
         return true;
@@ -118,35 +124,35 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
 
   @Override
   public Task getContainer(Task nestedTask) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);
     if (treeNode == null) {
       return null;
     }
-    DefaultMutableTreeNode containerNode = (DefaultMutableTreeNode) treeNode.getParent();
+    MutableTreeTableNode containerNode = (MutableTreeTableNode) treeNode.getParent();
     return containerNode == null ? null : (Task) containerNode.getUserObject();
   }
 
   @Override
   public Task getPreviousSibling(Task nestedTask) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);
     assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
-    DefaultMutableTreeNode siblingNode = treeNode.getPreviousSibling();
+    TreeTableNode siblingNode = TreeUtil.getPrevSibling(treeNode);
     return siblingNode == null ? null : (Task) siblingNode.getUserObject();
   }
 
   @Override
   public Task getNextSibling(Task nestedTask) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);
     assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
-    DefaultMutableTreeNode siblingNode = treeNode.getNextSibling();
+    TreeTableNode siblingNode = TreeUtil.getNextSibling(treeNode);
     return siblingNode == null ? null : (Task) siblingNode.getUserObject();
   }
 
   @Override
   public int getTaskIndex(Task nestedTask) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(nestedTask);
+    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);
     assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
-    DefaultMutableTreeNode containerNode = (DefaultMutableTreeNode) treeNode.getParent();
+    TreeNode containerNode = treeNode.getParent();
     return containerNode.getIndex(treeNode);
   }
 
@@ -171,26 +177,26 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
 
   @Override
   public void move(Task whatMove, Task whereMove) {
-    DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
+    MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);
     assert targetNode != null : "Failed to find tree node for task=" + whereMove;
     move(whatMove, whereMove, targetNode.getChildCount());
   }
 
   @Override
   public void move(Task whatMove, Task whereMove, int index) {
-    DefaultMutableTreeNode targetNode = myTask2treeNode.get(whereMove);
-    DefaultMutableTreeNode movedNode = myTask2treeNode.get(whatMove);
+    MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);
+    MutableTreeTableNode movedNode = myTask2treeNode.get(whatMove);
     if (movedNode != null) {
-      TreePath movedPath = new TreePath(movedNode.getPath());
-      boolean wasSelected = (myTree.getJTree().getSelectionModel().isPathSelected(movedPath));
+      TreePath movedPath = TreeUtil.createPath(movedNode);
+      boolean wasSelected = (myTree.getJTree().getTreeSelectionModel().isPathSelected(movedPath));
       if (wasSelected) {
-        myTree.getJTree().getSelectionModel().removeSelectionPath(movedPath);
+        myTree.getJTree().getTreeSelectionModel().removeSelectionPath(movedPath);
       }
       myTree.getModel().removeNodeFromParent(movedNode);
       myTree.getModel().insertNodeInto(movedNode, targetNode, index);
       if (wasSelected) {
-        movedPath = new TreePath(movedNode.getPath());
-        myTree.getJTree().getSelectionModel().addSelectionPath(movedPath);
+        movedPath = TreeUtil.createPath(movedNode);
+        myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);
       }
     } else {
       myTree.addObjectWithExpand(whatMove, targetNode);
@@ -210,8 +216,8 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
 
   @Override
   public int getDepth(Task task) {
-    DefaultMutableTreeNode treeNode = myTask2treeNode.get(task);
-    return treeNode.getLevel();
+    MutableTreeTableNode treeNode = myTask2treeNode.get(task);
+    return TreeUtil.getLevel(treeNode);
   }
 
   @Override
@@ -228,16 +234,14 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
 
   @Override
   public List<Task> getTasksInDocumentOrder() {
-    List<Task> result = new ArrayList<Task>();
-    DefaultMutableTreeNode rootNode = myTask2treeNode.get(getRootTask());
-    Enumeration<TreeNode> nodes = rootNode.preorderEnumeration();
-    if (nodes.hasMoreElements()) {
-      nodes.nextElement();
-    }
-    for (; nodes.hasMoreElements();) {
-      DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
-      result.add((Task) nextNode.getUserObject());
-    }
-    return result;
+    MutableTreeTableNode rootNode = myTask2treeNode.get(getRootTask());
+    List<MutableTreeTableNode> subtree = TreeUtil.collectSubtree(rootNode);
+
+    return Lists.transform(subtree.subList(1, subtree.size()), new Function<MutableTreeTableNode, Task>() {
+      @Override
+      public Task apply(MutableTreeTableNode input) {
+        return (Task) input.getUserObject();
+      }
+    });
   }
 }

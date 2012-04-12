@@ -38,7 +38,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.
- * 
+ *
  * @author bbaranne (Benoit Baranne) - original version
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
@@ -135,7 +135,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   /**
    * This class repaints the GraphicArea and the table every time the table
    * model has been modified. TODO Add the refresh functionality when available.
-   * 
+   *
    * @author Benoit Baranne
    */
   private class ModelListener implements TableModelListener {
@@ -146,7 +146,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   }
 
   void editSelectedTask() {
-    TreePath selectedPath = getTree().getSelectionPath();
+    TreePath selectedPath = getTree().getTreeSelectionModel().getSelectionPath();
     Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
     TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
     getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
