@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.chart.Chart;
@@ -59,7 +60,7 @@ public class GanttTreeTable extends GPTreeTableBase {
     return myUIfacade;
   }
 
-  private static enum DefaultColumn {
+  static enum DefaultColumn {
     TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)), PRIORITY(new TableHeaderUIFacade.ColumnStub(
         "tpd1", null, false, -1, 50)), INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)), NAME(
         new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)), BEGIN_DATE(new TableHeaderUIFacade.ColumnStub(
@@ -148,9 +149,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   void editSelectedTask() {
     TreePath selectedPath = getTree().getTreeSelectionModel().getSelectionPath();
     Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
-    TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(-1, column.getOrder());
-    getTable().editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
-    cellEditor.requestFocus();
+    editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
   }
 
   @Override

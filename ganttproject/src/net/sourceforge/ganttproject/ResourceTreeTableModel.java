@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -128,9 +129,9 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     return null;
   }
 
-  private ResourceNode buildTree() {
+  private DefaultMutableTreeTableNode buildTree() {
 
-    ResourceNode root = new ResourceNode(null);
+    DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
     List<HumanResource> listResources = myResourceManager.getResources();
     Iterator<HumanResource> itRes = listResources.iterator();
 
@@ -169,12 +170,16 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   public ResourceNode getNodeForResource(final HumanResource hr) {
-    return (ResourceNode)Iterators.find(Iterators.forEnumeration(root.children()), new Predicate<MutableTreeTableNode>() {
-      @Override
-      public boolean apply(MutableTreeTableNode input) {
-        return input.getUserObject().equals(hr);
-      }
-    });
+    try {
+      return (ResourceNode)Iterators.find(Iterators.forEnumeration(root.children()), new Predicate<MutableTreeTableNode>() {
+        @Override
+        public boolean apply(MutableTreeTableNode input) {
+          return input.getUserObject().equals(hr);
+        }
+      });
+    } catch (NoSuchElementException e) {
+      return null;
+    }
   }
 
   /**
@@ -331,10 +336,14 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     ResourceNode rn = null;
     AssignmentNode an = null;
 
-    if (node instanceof ResourceNode)
+    if (node instanceof ResourceNode) {
       rn = (ResourceNode) node;
-    else if (node instanceof AssignmentNode)
+    }
+    else if (node instanceof AssignmentNode) {
       an = (AssignmentNode) node;
+    } else {
+      return "";
+    }
 
     boolean hasChild = rn != null;
 

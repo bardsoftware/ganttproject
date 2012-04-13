@@ -182,6 +182,11 @@ GanttLanguage.Listener {
   }
 
   @Override
+  public int getHierarchicalColumn() {
+    return GanttTreeTable.DefaultColumn.NAME.ordinal();
+  }
+
+  @Override
   public Class<?> getColumnClass(int column) {
     if (column < 0) {
       return null;
