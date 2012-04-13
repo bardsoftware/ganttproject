@@ -88,6 +88,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   private final UIFacade myUiFacade;
   private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
   private final CustomPropertyManager myCustomPropertyManager;
+  private final JScrollPane myScrollPane = new JScrollPane() {
+    @Override
+    public void applyComponentOrientation(ComponentOrientation o) {
+      super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    }
+  };
+
   private boolean isInitialized;
   private GPAction myEditCellAction = new GPAction("tree.edit") {
     @Override
@@ -99,13 +106,19 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       if (t.getSelectedColumn() < 0) {
         t.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
       }
-      TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(
-          t.getSelectedRow(), t.getSelectedColumn());
-      t.editCellAt(t.getSelectedRow(), t.getSelectedColumn());
-      cellEditor.requestFocus();
+      editCellAt(t.getSelectedRow(), t.getSelectedColumn());
     }
   };
 
+  @Override
+  public boolean editCellAt(int row, int column) {
+    TableCellEditor cellEditor = getTable().getCellEditor(row, column);
+    boolean result = super.editCellAt(row, column);
+    if (cellEditor instanceof TreeTableCellEditorImpl) {
+      ((TreeTableCellEditorImpl)cellEditor).requestFocus();
+    }
+    return result;
+  }
   protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
     private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
     private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
@@ -381,49 +394,39 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return myProject;
   }
 
-  // TODO(dbarashev): make sure that we don't need these hacks anymore
-  @SuppressWarnings("unused")
-  private static JXTreeTable createTable(DefaultTreeTableModel model) {
-    JXTreeTable result = new JXTreeTable(model) {
-      {
-        setTableHeader(new JTableHeader(getColumnModel()) {
-          @Override
-          public void applyComponentOrientation(ComponentOrientation o) {
-            super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-          }
-        });
-      }
-
-      @Override
-      protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        if (e.isAltDown() || e.isControlDown()) {
-          putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
-        }
-        boolean result = super.processKeyBinding(ks, e, condition, pressed);
-        putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-        return result;
-      }
-
-      @Override
-      public void applyComponentOrientation(ComponentOrientation o) {
-        super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-      }
-
-      @Override
-      public String getToolTipText(MouseEvent e) {
-        try {
-          return super.getToolTipText(e);
-        } catch (NullPointerException ex) {
-          return null;
-        }
-      }
-    };
+  @Override
+  protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+    if (e.isAltDown() || e.isControlDown()) {
+      putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    }
+    boolean result = super.processKeyBinding(ks, e, condition, pressed);
+    putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
     return result;
+  }
+
+  @Override
+  public void applyComponentOrientation(ComponentOrientation o) {
+    super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+  }
+
+  @Override
+  public String getToolTipText(MouseEvent e) {
+    try {
+      return super.getToolTipText(e);
+    } catch (NullPointerException ex) {
+      return null;
+    }
   }
 
   protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
       DefaultTreeTableModel model) {
     super(model);
+    setTableHeader(new JTableHeader(getColumnModel()) {
+      @Override
+      public void applyComponentOrientation(ComponentOrientation o) {
+        super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+      }
+    });
     myCustomPropertyManager = customPropertyManager;
     myUiFacade = uiFacade;
     myProject = project;
@@ -459,13 +462,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   protected void doInit() {
-//    TODO(dbarashev): make sure that scroll bars are located properly
-//    scrollPane = new JScrollPane() {
-//      @Override
-//      public void applyComponentOrientation(ComponentOrientation o) {
-//        super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-//      }
-//    };
+    setRootVisible(false);
     myCustomPropertyManager.addListener(this);
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
@@ -510,12 +507,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setLeafIcon(icon);
     //getTreeTable().getParent().setBackground(Color.WHITE);
 
-    InputMap inputMap = getInputMap();
-    inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
-    getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-    ActionMap actionMap = getActionMap();
-    actionMap.setParent(getTreeTable().getActionMap());
-    getTreeTable().setActionMap(actionMap);
+//    InputMap inputMap = getInputMap();
+//    inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
+//    getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
+//    ActionMap actionMap = getActionMap();
+    //actionMap.setParent(getTreeTable().getActionMap());
+    //getTreeTable().setActionMap(actionMap);
     addActionWithAccelleratorKey(myEditCellAction);
 
 //  TODO(dbarashev): restore highlighters
@@ -613,6 +610,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     TableCellEditor editor = createCellEditor(columnClass);
     if (editor != null) {
       result.setCellEditor(new TreeTableCellEditorImpl(editor));
+    } else {
+      System.err.println("no editor for column=" + modelIndex + " class="+columnClass);
     }
     return result;
   }
@@ -633,7 +632,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   TableCellEditor createCellEditor(Class<?> columnClass) {
     TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? newDateCellEditor()
         : getTreeTable().getDefaultEditor(columnClass);
-    return wrapEditor(editor);
+    return editor == null ? null : wrapEditor(editor);
   }
 
   private static TableCellEditor wrapEditor(TableCellEditor editor) {
@@ -665,7 +664,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   protected JScrollPane getScrollPane() {
-    return getEnclosingScrollPane();
+    return myScrollPane;
   }
 
   @Override
@@ -748,8 +747,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   void insertWithLeftyScrollBar(JComponent container) {
-    container.add(getScrollPane(), BorderLayout.CENTER);
     getScrollPane().getViewport().add(getTable());
+    container.add(getScrollPane(), BorderLayout.CENTER);
 
   }
 

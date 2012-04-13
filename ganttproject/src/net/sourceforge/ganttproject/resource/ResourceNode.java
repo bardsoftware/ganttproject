@@ -40,6 +40,7 @@ public class ResourceNode extends DefaultMutableTreeTableNode {
 
   public ResourceNode(HumanResource res) {
     super(res);
+    assert res != null;
     resource = res;
   }
 
