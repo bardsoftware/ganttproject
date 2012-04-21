@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Argentina" type="country">
+	<date year="" month="01" date="01"/>
+	<date year="" month="03" date="24"/>
+	<date year="" month="04" date="02"/>
+    <date year="" month="05" date="01"/>
+	<date year="" month="05" date="25"/>
+	<date year="" month="07" date="09"/>
+	<date year="" month="12" date="08"/>
+	<date year="" month="12" date="25"/>
+	
+    <date year="2007" month="04" date="05"/>
+	<date year="2007" month="04" date="06"/>
+    <date year="2007" month="06" date="18"/>
+    <date year="2007" month="08" date="20"/>
+    <date year="2007" month="10" date="15"/>
+
+	<date year="2008" month="03" date="20"/>
+	<date year="2008" month="03" date="21"/>
+    <date year="2008" month="06" date="16"/>
+    <date year="2008" month="08" date="18"/>
+    <date year="2008" month="10" date="12"/>
+</calendar>

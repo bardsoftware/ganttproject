@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="0.2 1.0"
+	codebase="http://ganttproject.googlecode.com/svn/webstart/ganttproject-2.5"
+      href="ganttproject.jnlp">
+
+   <information>
+      <title>GanttProject 2.5</title>
+      <vendor>GanttProject Team</vendor>
+      <homepage href="http://ganttproject.biz"/>
+      <description>GanttProject is free project scheduling and management tool with Gantt chart, resource load chart, MS Project import/export, PDF and HTML reports</description>
+      <description kind="short">GanttProject is a free project scheduling tool</description>
+      <icon href="ganttproject.png"/>
+      <offline-allowed/>
+   </information>
+  <security>
+      <all-permissions/>
+  </security>
+   <resources>
+      <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+      <jar href="eclipsito.jar" download="eager"/>
+      <jar href="configuration.jar" download="eager"/>
+      <jar href="net.sourceforge.ganttproject.jar" download="eager"/>
+      <jar href="jgoodies-common-1.1.1.jar" download="eager"/>
+      <jar href="jgoodies-looks-2.4.0.jar" download="eager"/>
+    </resources>
+   <application-desc main-class="org.bardsoftware.eclipsito.Boot">
+      <argument>ganttproject-webstart-config.xml</argument>
+   </application-desc>
+</jnlp>
