@@ -15,6 +15,9 @@
       <library name="lib/core/balloontip-1.2.1.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-csv-0.1-svn678580.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-httpclient.jar">
          <export name="*"/>
       </library>
