@@ -493,7 +493,7 @@ public class OptionsPageBuilder {
   /**
    * Create JTextField component in options that allows user to input only
    * integer values.
-   *
+   * 
    * @param option
    * @return
    */

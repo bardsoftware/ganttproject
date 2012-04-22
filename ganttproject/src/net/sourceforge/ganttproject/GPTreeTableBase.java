@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -53,7 +52,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -115,10 +113,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     TableCellEditor cellEditor = getTable().getCellEditor(row, column);
     boolean result = super.editCellAt(row, column);
     if (cellEditor instanceof TreeTableCellEditorImpl) {
-      ((TreeTableCellEditorImpl)cellEditor).requestFocus();
+      ((TreeTableCellEditorImpl) cellEditor).requestFocus();
     }
     return result;
   }
+
   protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
     private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
     private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
@@ -496,8 +495,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     getTable().setAutoCreateColumnsFromModel(false);
     getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
     setShowHorizontalLines(true);
-    // TODO(dbarashev): make sure that everything is fine with the column control
-    //setHasColumnControl(true);
+    // TODO(dbarashev): make sure that everything is fine with the column
+    // control
+    // setHasColumnControl(true);
 
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/simple_task.gif"));
     setOpenIcon(icon);
@@ -505,19 +505,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
     setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
     setLeafIcon(icon);
-    //getTreeTable().getParent().setBackground(Color.WHITE);
+    // getTreeTable().getParent().setBackground(Color.WHITE);
 
-//    InputMap inputMap = getInputMap();
-//    inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
-//    getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-//    ActionMap actionMap = getActionMap();
-    //actionMap.setParent(getTreeTable().getActionMap());
-    //getTreeTable().setActionMap(actionMap);
+    // InputMap inputMap = getInputMap();
+    // inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
+    // getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
+    // ActionMap actionMap = getActionMap();
+    // actionMap.setParent(getTreeTable().getActionMap());
+    // getTreeTable().setActionMap(actionMap);
     addActionWithAccelleratorKey(myEditCellAction);
 
-//  TODO(dbarashev): restore highlighters
-//    setHighlighters(new HighlighterPipeline(new Highlighter[] { AlternateRowHighlighter.quickSilver,
-//        new HierarchicalColumnHighlighter() }));
+    // TODO(dbarashev): restore highlighters
+    // setHighlighters(new HighlighterPipeline(new Highlighter[] {
+    // AlternateRowHighlighter.quickSilver,
+    // new HierarchicalColumnHighlighter() }));
 
     getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
@@ -544,7 +545,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     });
     getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
-    //getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    // getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     getTable().setFillsViewportHeight(true);
   }
 
@@ -611,18 +612,19 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     if (editor != null) {
       result.setCellEditor(new TreeTableCellEditorImpl(editor));
     } else {
-      System.err.println("no editor for column=" + modelIndex + " class="+columnClass);
+      System.err.println("no editor for column=" + modelIndex + " class=" + columnClass);
     }
     return result;
   }
 
   TableCellRenderer createCellRenderer(Class<?> columnClass) {
     TableCellRenderer renderer = null;
-//  TODO(dbarashev): make sure that icon and boolean values render fine
-//    if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass)) {
-//      renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
-//
-//    }
+    // TODO(dbarashev): make sure that icon and boolean values render fine
+    // if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass))
+    // {
+    // renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+    //
+    // }
     if (renderer == null) {
       renderer = getTreeTable().getDefaultRenderer(columnClass);
     }
@@ -670,14 +672,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   @Override
   public void addMouseListener(MouseListener mouseListener) {
     super.addMouseListener(mouseListener);
-    //this.getTreeTable().getParent().addMouseListener(mouseListener);
+    // this.getTreeTable().getParent().addMouseListener(mouseListener);
   }
 
   @Override
   public void addKeyListener(KeyListener keyListener) {
     super.addKeyListener(keyListener);
-//    getTable().addKeyListener(keyListener);
-//    getTree().addKeyListener(keyListener);
+    // getTable().addKeyListener(keyListener);
+    // getTree().addKeyListener(keyListener);
   }
 
   private static class DateCellEditor extends DefaultCellEditor {

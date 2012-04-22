@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Handles opening CSV files.
- *
+ * 
  * A mapping is used to find the correct CSV field that belong to a known Task
  * attribute
  */
@@ -144,7 +144,7 @@ public class GanttCSVOpen {
    * <em>Note:</em> This method assumes that the BufferedReader is still at the
    * begin of the file!
    * </p>
-   *
+   * 
    * @param br
    *          BufferedReader to read the header from
    * @return an array of strings with the header fields

@@ -48,7 +48,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
-
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
   public static final int INDEX_RESOURCE_NAME = 0;
 
@@ -121,7 +120,8 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   public MutableTreeTableNode getNodeForAssigment(ResourceAssignment assignement) {
-    for (MutableTreeTableNode an : ImmutableList.copyOf(Iterators.forEnumeration(getNodeForResource(assignement.getResource()).children()))) {
+    for (MutableTreeTableNode an : ImmutableList.copyOf(Iterators.forEnumeration(getNodeForResource(
+        assignement.getResource()).children()))) {
       if (assignement.equals(an.getUserObject())) {
         return an;
       }
@@ -171,12 +171,13 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   public ResourceNode getNodeForResource(final HumanResource hr) {
     try {
-      return (ResourceNode)Iterators.find(Iterators.forEnumeration(root.children()), new Predicate<MutableTreeTableNode>() {
-        @Override
-        public boolean apply(MutableTreeTableNode input) {
-          return input.getUserObject().equals(hr);
-        }
-      });
+      return (ResourceNode) Iterators.find(Iterators.forEnumeration(root.children()),
+          new Predicate<MutableTreeTableNode>() {
+            @Override
+            public boolean apply(MutableTreeTableNode input) {
+              return input.getUserObject().equals(hr);
+            }
+          });
     } catch (NoSuchElementException e) {
       return null;
     }
@@ -184,7 +185,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   /**
    * Changes the language.
-   *
+   * 
    * @param ganttLanguage
    *          New language to use.
    */
@@ -309,8 +310,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
     if (node instanceof ResourceNode) {
       rn = (ResourceNode) node;
-    }
-    else if (node instanceof AssignmentNode) {
+    } else if (node instanceof AssignmentNode) {
       an = (AssignmentNode) node;
     } else {
       return "";

@@ -33,13 +33,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.text.DateFormatter;
-import javax.swing.text.DefaultFormatterFactory;
-
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
-
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -119,13 +115,14 @@ public abstract class UIUtil {
     table.setHighlighters(HighlighterFactory.createAlternateStriping(Color.WHITE, Color.ORANGE.brighter()));
 
   }
+
   public static void setupTableUI(JTable table) {
     setupTableUI(table, 10);
   }
 
   /**
-   * @return a {@link JXDatePicker} component with the default locale, images and
-   *         date formats.
+   * @return a {@link JXDatePicker} component with the default locale, images
+   *         and date formats.
    */
   public static JXDatePicker createDatePicker(ActionListener listener) {
     JXDatePicker result = new JXDatePicker();

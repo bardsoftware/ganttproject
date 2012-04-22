@@ -177,7 +177,7 @@ class TaskTreeImageGenerator {
   }
 
   private boolean isVisible(Task thetask) {
-    return  getTree().isVisible(thetask);
+    return getTree().isVisible(thetask);
   }
 
   protected static final int HEADER_OFFSET = 44;

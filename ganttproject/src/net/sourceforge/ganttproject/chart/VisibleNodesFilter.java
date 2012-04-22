@@ -19,15 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import net.sourceforge.ganttproject.TreeUtil;
@@ -38,8 +32,7 @@ import net.sourceforge.ganttproject.task.Task;
  */
 public class VisibleNodesFilter {
   public List<Task> getVisibleNodes(JXTreeTable jtree, int minHeight, int maxHeight, int nodeHeight) {
-    List<MutableTreeTableNode> preorderedNodes = TreeUtil.collectSubtree(
-        (MutableTreeTableNode) jtree.getTreeTableModel().getRoot());
+    List<MutableTreeTableNode> preorderedNodes = TreeUtil.collectSubtree((MutableTreeTableNode) jtree.getTreeTableModel().getRoot());
     List<Task> result = new ArrayList<Task>();
     int currentHeight = 0;
     for (int i = 1; i < preorderedNodes.size(); i++) {
