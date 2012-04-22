@@ -573,38 +573,37 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public Task newTask() {
     getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
+    tree.getTreeTable().editingStopped(new ChangeEvent(tree.getTreeTable()));
 
-    int index = -1;
-    TreeTableNode selectedNode = getTree().getSelectedNode();
-    if (selectedNode != null) {
-      TreeTableNode parent1 = selectedNode.getParent();
-      index = parent1.getIndex(selectedNode) + 1;
-      int selectedRow = tree.getTreeTable().getTree().getRowForPath(TreeUtil.createPath(parent1));
-      tree.getTreeTable().getTree().getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
-      tree.getTreeTable().getTreeTable().editingStopped(new ChangeEvent(tree.getTreeTable().getTreeTable()));
+    List<Task> selection = getUIFacade().getTaskSelectionManager().getSelectedTasks();
+    if (selection.size() > 1) {
+      return null;
     }
 
-    GanttCalendar cal = new GanttCalendar(area.getStartDate());
+    Task selectedTask = selection.isEmpty() ? null : selection.get(0);
+    Task parentTask = selectedTask == null ?
+        getTaskManager().getRootTask() : getTaskManager().getTaskHierarchy().getContainer(selectedTask);
 
-    MutableTreeTableNode node = tree.getSelectedNode();
-    String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
-    GanttTask task = getTaskManager().createTask();
-    task.setStart(cal);
-    task.setDuration(getTaskManager().createLength(1));
-    getTaskManager().registerTask(task);
-    task.setName(nameOfTask + "_" + task.getTaskID());
-    task.setColor(area.getTaskColor());
-    tree.addObject(task, node, index);
+    Task task = getTaskManager().createTask();
+    {
+      GanttCalendar cal = new GanttCalendar(area.getStartDate());
+      String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
+      task.setStart(cal);
+      task.setDuration(getTaskManager().createLength(1));
+      getTaskManager().registerTask(task);
+      task.setName(nameOfTask + "_" + task.getTaskID());
+      task.setColor(area.getTaskColor());
+    }
+    if (selectedTask != null) {
+      int position = getTaskManager().getTaskHierarchy().getTaskIndex(selectedTask) + 1;
+      getTaskManager().getTaskHierarchy().move(task, parentTask, position);
+    } else {
+      getTaskManager().getTaskHierarchy().move(task, parentTask);
+    }
 
-    // this will add new custom columns to the newly created task.
-    AdjustTaskBoundsAlgorithm alg = getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
-    alg.run(task);
     RecalculateTaskCompletionPercentageAlgorithm alg2 = getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
     alg2.run(task);
     area.repaint();
-    setAskForSave(true);
-    getUIFacade().setStatusText(language.getText("createNewTask"));
-    // setQuickSave(true);
     tree.setEditingTask(task);
     repaint2();
     return task;

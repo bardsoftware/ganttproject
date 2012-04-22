@@ -383,25 +383,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     return childNode;
   }
 
-  /** Add a sub task. */
-  TaskNode addObject(Object child, MutableTreeTableNode parent, int index) {
-    TaskNode childNode = new TaskNode((Task) child);
-
-    if (parent == null)
-      parent = getRootNode();
-
-    // GanttTask tmpTask = (GanttTask)(childNode.getUserObject());
-    // tmpTask.indentID((String)(((GanttTask)(parent.getUserObject())).getID()));
-
-    getTreeModel().insertNodeInto(childNode, parent, index == -1 ? parent.getChildCount() : index);
-
-    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(childNode));
-
-    myProject.refreshProjectInformation();
-
-    return childNode;
-  }
-
   /** @return the selected node */
   private DefaultMutableTreeTableNode getSelectedTaskNode() {
     DefaultMutableTreeTableNode selectedNode = getSelectedNode();

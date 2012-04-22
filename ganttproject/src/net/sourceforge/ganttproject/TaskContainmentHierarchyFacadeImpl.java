@@ -101,7 +101,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   /**
    * Purpose: Returns true if the container Task has any nested tasks. This
    * should be a quicker check than using getNestedTasks().
-   * 
+   *
    * @param container
    *          The Task on which to check for children.
    */
@@ -185,21 +185,22 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   public void move(Task whatMove, Task whereMove, int index) {
     MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);
     MutableTreeTableNode movedNode = myTask2treeNode.get(whatMove);
-    if (movedNode != null) {
-      TreePath movedPath = TreeUtil.createPath(movedNode);
-      boolean wasSelected = (myTree.getJTree().getTreeSelectionModel().isPathSelected(movedPath));
-      if (wasSelected) {
-        myTree.getJTree().getTreeSelectionModel().removeSelectionPath(movedPath);
-      }
-      myTree.getModel().removeNodeFromParent(movedNode);
-      myTree.getModel().insertNodeInto(movedNode, targetNode, index);
-      if (wasSelected) {
-        movedPath = TreeUtil.createPath(movedNode);
-        myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);
-      }
-    } else {
-      myTree.addObjectWithExpand(whatMove, targetNode);
+    if (movedNode == null) {
+      movedNode = myTree.addObjectWithExpand(whatMove, targetNode);
     }
+
+    TreePath movedPath = TreeUtil.createPath(movedNode);
+    boolean wasSelected = (myTree.getJTree().getTreeSelectionModel().isPathSelected(movedPath));
+    if (wasSelected) {
+      myTree.getJTree().getTreeSelectionModel().removeSelectionPath(movedPath);
+    }
+    myTree.getModel().removeNodeFromParent(movedNode);
+    myTree.getModel().insertNodeInto(movedNode, targetNode, index);
+    if (wasSelected) {
+      movedPath = TreeUtil.createPath(movedNode);
+      myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);
+    }
+
     getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);
     try {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
