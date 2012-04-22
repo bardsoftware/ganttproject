@@ -47,7 +47,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
- * 
+ *
  * @author bbaranne (Benoit Baranne)
  */
 public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, /*
@@ -87,7 +87,7 @@ GanttLanguage.Listener {
 
   /**
    * Creates an instance of GanttTreeTableModel with a root.
-   * 
+   *
    * @param root
    *          The root.
    * @param customColumnsManager
@@ -106,7 +106,7 @@ GanttLanguage.Listener {
 
   /**
    * Changes the language.
-   * 
+   *
    * @param ganttLanguage
    *          New language to use.
    */
@@ -193,7 +193,7 @@ GanttLanguage.Listener {
     case 2:
       return Icon.class;
     case 3:
-      return TreeNode.class;
+      return String.class;
     case 4:
     case 5:
       return GregorianCalendar.class;
@@ -358,7 +358,7 @@ GanttLanguage.Listener {
 
   /**
    * Set value in left pane cell
-   * 
+   *
    * @param value
    * @param node
    * @param column
