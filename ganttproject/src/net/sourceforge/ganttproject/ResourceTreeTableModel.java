@@ -195,35 +195,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         language.getText("tableColResourcePhone"), language.getText("tableColResourceRoleForTask") };
   }
 
-  /**
-   * Invoked this to insert newChild at location index in parents children. This
-   * will then message nodesWereInserted to create the appropriate event. This
-   * is the preferred way to add children as it will create the appropriate
-   * event.
-   */
-  @Override
-  public void insertNodeInto(MutableTreeTableNode newChild, MutableTreeTableNode parent, int index) {
-    parent.insert(newChild, index);
-    modelSupport.fireChildAdded(TreeUtil.createPath(parent), index, newChild);
-  }
-
-  /**
-   * Message this to remove node from its parent. This will message
-   * nodesWereRemoved to create the appropriate event. This is the preferred way
-   * to remove a node as it handles the event creation for you.
-   */
-  @Override
-  public void removeNodeFromParent(MutableTreeTableNode node) {
-    if (node != null) {
-      MutableTreeTableNode parent = (MutableTreeTableNode) node.getParent();
-
-      if (parent == null) {
-        throw new IllegalArgumentException("node does not have a parent.");
-      }
-      modelSupport.fireChildRemoved(TreeUtil.createPath(parent), parent.getIndex(node), node);
-    }
-  }
-
   public void changePeople(List<HumanResource> people) {
     Iterator<HumanResource> it = people.iterator();
     while (it.hasNext()) {
