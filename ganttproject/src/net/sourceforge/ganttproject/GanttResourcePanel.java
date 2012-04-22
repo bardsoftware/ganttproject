@@ -20,18 +20,13 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.tree.TreePath;
-
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
@@ -353,7 +348,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     if (clear) {
       clearSelection();
     }
-    getTree().getTreeSelectionModel().setSelectionPath(TreeUtil.createPath(getResourceTreeTableModel().getNodeForResource(resource)));
+    getTree().getTreeSelectionModel().setSelectionPath(
+        TreeUtil.createPath(getResourceTreeTableModel().getNodeForResource(resource)));
   }
 
   @Override

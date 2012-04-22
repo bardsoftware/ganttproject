@@ -53,7 +53,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -68,7 +67,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -78,7 +76,6 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -89,7 +86,6 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.GPAction;
@@ -417,7 +413,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     return Iterables.find(TreeUtil.collectSubtree(getRoot()), new Predicate<MutableTreeTableNode>() {
       @Override
       public boolean apply(MutableTreeTableNode input) {
-        return ((Task)input.getUserObject()).getTaskID() == id;
+        return ((Task) input.getUserObject()).getTaskID() == id;
       }
     });
   }
@@ -436,16 +432,18 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     return TreeUtil.collectSubtree(getRootNode());
   }
 
-//  List<DefaultMutableTreeTableNode> getAllVisibleNodes() {
-//    List<DefaultMutableTreeTableNode> res = new ArrayList<DefaultMutableTreeTableNode>();
-//    Enumeration<TreeNode> enumeration = getRootNode().preorderEnumeration();
-//    while (enumeration.hasMoreElements()) {
-//      DefaultMutableTreeTableNode o = (DefaultMutableTreeTableNode) enumeration.nextElement();
-//      if (getTreeTable().getTree().isVisible(new TreePath(o.getPath())))
-//        res.add(o);
-//    }
-//    return res;
-//  }
+  // List<DefaultMutableTreeTableNode> getAllVisibleNodes() {
+  // List<DefaultMutableTreeTableNode> res = new
+  // ArrayList<DefaultMutableTreeTableNode>();
+  // Enumeration<TreeNode> enumeration = getRootNode().preorderEnumeration();
+  // while (enumeration.hasMoreElements()) {
+  // DefaultMutableTreeTableNode o = (DefaultMutableTreeTableNode)
+  // enumeration.nextElement();
+  // if (getTreeTable().getTree().isVisible(new TreePath(o.getPath())))
+  // res.add(o);
+  // }
+  // return res;
+  // }
 
   /** Removes currentNode */
   public void removeCurrentNode(MutableTreeTableNode currentNode) {
@@ -463,7 +461,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     TreeUtil.removeAllChildren(getRootNode());
     initRootNode();
     getTreeModel().setRoot(getRootNode());
-    //getTreeModel().reload();
+    // getTreeModel().reload();
   }
 
   private void selectTasks(List<Task> tasksList) {
@@ -656,7 +654,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
       // In any case draw (over the ghost image if necessary) a cue line
       // indicating where a drop will occur
-      Rectangle raPath = getTreeTable().getTree().getCellRect(getTree().rowAtPoint(pt), getTree().columnAtPoint(pt), true);
+      Rectangle raPath = getTreeTable().getTree().getCellRect(getTree().rowAtPoint(pt), getTree().columnAtPoint(pt),
+          true);
       if (raPath == null) {
         raPath = new Rectangle(1, 1);
       }
@@ -698,15 +697,14 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
           try {
             Point pt = dtde.getLocation();
-            DefaultMutableTreeTableNode target = (DefaultMutableTreeTableNode) getTree().getPathForLocation(
-                pt.x, pt.y).getLastPathComponent();
+            DefaultMutableTreeTableNode target = (DefaultMutableTreeTableNode) getTree().getPathForLocation(pt.x, pt.y).getLastPathComponent();
             TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
             DefaultMutableTreeTableNode source = (DefaultMutableTreeTableNode) pathSource.getLastPathComponent();
 
             getTreeModel().removeNodeFromParent(source);
             getTreeModel().insertNodeInto(source, target, 0);
 
-            TreePath pathNewChild = TreeUtil.createPath((TreeNode)pathSource.getLastPathComponent());
+            TreePath pathNewChild = TreeUtil.createPath((TreeNode) pathSource.getLastPathComponent());
 
             // Mark this as the selected path in the tree
             getTree().getTreeSelectionModel().setSelectionPath(pathNewChild);
@@ -893,7 +891,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   }
 
   private DefaultMutableTreeTableNode[] findSelectedSubtreeRoots(DefaultMutableTreeTableNode[] selectedNodes) {
-    final HashSet<DefaultMutableTreeTableNode> set = new HashSet<DefaultMutableTreeTableNode>(Arrays.asList(selectedNodes));
+    final HashSet<DefaultMutableTreeTableNode> set = new HashSet<DefaultMutableTreeTableNode>(
+        Arrays.asList(selectedNodes));
     for (int i = 0; i < selectedNodes.length; i++) {
       for (TreeNode parent = selectedNodes[i].getParent(); parent != null; parent = parent.getParent()) {
         if (set.contains(parent)) {
@@ -987,8 +986,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   }
 
   /** Insert the cloned node and its children */
-  private TaskNode insertClonedNode(DefaultMutableTreeTableNode parent, DefaultMutableTreeTableNode child, int location,
-      boolean first) {
+  private TaskNode insertClonedNode(DefaultMutableTreeTableNode parent, DefaultMutableTreeTableNode child,
+      int location, boolean first) {
     if (parent == null) {
       return null; // it is the root node
     }
@@ -1070,8 +1069,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     // Work out the offset of the drag point from the TreePath bounding
     // rectangle origin
-    Rectangle raPath = getTreeTable().getTree().getCellRect(
-        getTree().rowAtPoint(ptDragOrigin), getTree().columnAtPoint(ptDragOrigin), true);
+    Rectangle raPath = getTreeTable().getTree().getCellRect(getTree().rowAtPoint(ptDragOrigin),
+        getTree().columnAtPoint(ptDragOrigin), true);
     offsetPoint.setLocation(ptDragOrigin.x - raPath.x, ptDragOrigin.y - raPath.y);
 
     // Get the cell renderer (which is a JLabel) for the path being dragged
@@ -1122,8 +1121,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     g2.dispose();
 
-    getTree().getTreeSelectionModel().setSelectionPath(path); // Select this path in the
-                                                     // tree
+    getTree().getTreeSelectionModel().setSelectionPath(path); // Select this
+                                                              // path in the
+    // tree
 
     // Wrap the path being transferred into a Transferable object
     Transferable transferable = new GanttTransferableTreePath(path);

@@ -65,7 +65,7 @@ public interface MutableTask {
    * having run a CriticalPathAlgorithm to set the critical tasks. When painted,
    * the tasks are rendered as critical using Task.isCritical(). So, a task is
    * set as critical only if critical path is displayed.
-   *
+   * 
    * @param critical
    *          <code>true</code> if this is critical, <code>false</code>
    *          otherwise.

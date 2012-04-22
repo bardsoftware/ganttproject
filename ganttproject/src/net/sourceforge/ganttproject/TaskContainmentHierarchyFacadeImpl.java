@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +101,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   /**
    * Purpose: Returns true if the container Task has any nested tasks. This
    * should be a quicker check than using getNestedTasks().
-   *
+   * 
    * @param container
    *          The Task on which to check for children.
    */

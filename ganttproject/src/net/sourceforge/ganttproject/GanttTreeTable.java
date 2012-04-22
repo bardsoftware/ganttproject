@@ -26,7 +26,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.chart.Chart;
@@ -39,7 +38,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.
- *
+ * 
  * @author bbaranne (Benoit Baranne) - original version
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
@@ -136,7 +135,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   /**
    * This class repaints the GraphicArea and the table every time the table
    * model has been modified. TODO Add the refresh functionality when available.
-   *
+   * 
    * @author Benoit Baranne
    */
   private class ModelListener implements TableModelListener {

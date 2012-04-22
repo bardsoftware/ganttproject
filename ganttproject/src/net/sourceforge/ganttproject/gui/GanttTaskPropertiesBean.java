@@ -792,7 +792,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   /**
    * Creates a milestone, a project task or no checkbox depending on the
    * selected task
-   *
+   * 
    * @return the created checkbox or null
    */
   private Pair<String, JCheckBox> constructCheckBox() {

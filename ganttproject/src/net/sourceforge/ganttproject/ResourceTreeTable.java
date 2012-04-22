@@ -217,7 +217,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
       myResourceTreeModel.moveUp(people);
       getTreeSelectionModel().setSelectionPath(TreeUtil.createPath(selectedNode));
     } else if (selectedNode instanceof AssignmentNode) {
-      swapAssignents((AssignmentNode)selectedNode, (AssignmentNode)previousSibling);
+      swapAssignents((AssignmentNode) selectedNode, (AssignmentNode) previousSibling);
     }
   }
 
@@ -250,7 +250,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
       myResourceTreeModel.moveDown(people);
       getTreeSelectionModel().setSelectionPath(TreeUtil.createPath(selectedNode));
     } else if (selectedNode instanceof AssignmentNode) {
-      swapAssignents((AssignmentNode)selectedNode, (AssignmentNode)nextSibling);
+      swapAssignents((AssignmentNode) selectedNode, (AssignmentNode) nextSibling);
     }
   }
 

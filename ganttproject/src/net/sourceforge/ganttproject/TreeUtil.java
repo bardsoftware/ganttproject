@@ -52,7 +52,7 @@ public class TreeUtil {
   static void collectSubtree(MutableTreeTableNode root, List<MutableTreeTableNode> result) {
     result.add(root);
     for (int i = 0; i < root.getChildCount(); i++) {
-      collectSubtree((MutableTreeTableNode)root.getChildAt(i), result);
+      collectSubtree((MutableTreeTableNode) root.getChildAt(i), result);
     }
   }
 
