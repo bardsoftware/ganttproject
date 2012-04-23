@@ -198,7 +198,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     // Create Actions
     GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
     GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
-    GPAction newAction = new TaskNewAction(project.getProject(), getUndoManager());
+    GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
 
     setArtefactActions(newAction, propertiesAction, deleteAction);
     myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
@@ -1189,6 +1189,14 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   public List<Task> getVisibleNodes(VisibleNodesFilter visibleNodesFilter) {
     return visibleNodesFilter.getVisibleNodes(getJTree(), getTreeTable().getVerticalScrollBar().getValue(),
         getHeight(), getTreeTable().getRowHeight());
+  }
+
+  @Override
+  public void startDefaultEditing(Task modelElement) {
+    if (getTable().isEditing()) {
+      getTable().getCellEditor().stopCellEditing();
+    }
+    setEditingTask(modelElement);
   }
 
   @Override

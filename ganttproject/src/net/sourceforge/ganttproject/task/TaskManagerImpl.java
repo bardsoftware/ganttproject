@@ -58,6 +58,7 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * @author bard
@@ -265,18 +266,59 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public GanttTask createTask() {
-    GanttTask result = createTask(-1);
-    return result;
+    return (GanttTask) newTaskBuilder().build();
   }
 
   @Override
-  public GanttTask createTask(int taskID) {
-    if (taskID == -1 || myTaskMap.getTask(taskID) != null) {
-      taskID = getAndIncrementId();
-    }
-    GanttTask result = new GanttTask("", new GanttCalendar(), 1, this, taskID);
-    fireTaskAdded(result);
-    return result;
+  public GanttTask createTask(int id) {
+    return (GanttTask) newTaskBuilder().withId(id).build();
+  }
+
+  @Override
+  public TaskBuilder newTaskBuilder() {
+    return new TaskBuilder() {
+      @Override
+      public Task build() {
+
+        if (myId == null || myTaskMap.getTask(myId) != null) {
+          myId = getAndIncrementId();
+        }
+
+        Task task = new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId);
+
+        String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
+        task.setName(name);
+
+        if (myStartDate != null) {
+          GanttCalendar cal = new GanttCalendar(myStartDate);
+          task.setStart(cal);
+        }
+        TaskLength duration = myDuration == null ?
+            createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f) : myDuration;
+        task.setDuration(duration);
+
+        if (myColor != null) {
+          task.setColor(myColor);
+        }
+
+        registerTask(task);
+
+        if (myPrevSibling != null) {
+          int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
+          Task parentTask = getTaskHierarchy().getContainer(myPrevSibling);
+          getTaskHierarchy().move(task, parentTask, position);
+        } else {
+          getTaskHierarchy().move(task, getRootTask());
+        }
+
+        fireTaskAdded(task);
+        return task;
+      }
+    };
+  }
+
+  protected TimeUnitStack getTimeUnitStack() {
+    return getConfig().getTimeUnitStack();
   }
 
   int getAndIncrementId() {
