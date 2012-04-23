@@ -53,8 +53,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
@@ -104,12 +102,9 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 import com.beust.jcommander.JCommander;
@@ -353,7 +348,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     System.err.println("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
-    myTaskManager.addTaskListener(new TaskModelModificationListener(this));
+    myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
     if (ourWindowListener != null) {
       addWindowListener(ourWindowListener);
     }
@@ -567,46 +562,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public List<GanttPreviousState> getBaselines() {
     return myPreviousStates;
-  }
-
-  /** Create a new task */
-  @Override
-  public Task newTask() {
-    getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
-    tree.getTreeTable().editingStopped(new ChangeEvent(tree.getTreeTable()));
-
-    List<Task> selection = getUIFacade().getTaskSelectionManager().getSelectedTasks();
-    if (selection.size() > 1) {
-      return null;
-    }
-
-    Task selectedTask = selection.isEmpty() ? null : selection.get(0);
-    Task parentTask = selectedTask == null ?
-        getTaskManager().getRootTask() : getTaskManager().getTaskHierarchy().getContainer(selectedTask);
-
-    Task task = getTaskManager().createTask();
-    {
-      GanttCalendar cal = new GanttCalendar(area.getStartDate());
-      String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
-      task.setStart(cal);
-      task.setDuration(getTaskManager().createLength(1));
-      getTaskManager().registerTask(task);
-      task.setName(nameOfTask + "_" + task.getTaskID());
-      task.setColor(area.getTaskColor());
-    }
-    if (selectedTask != null) {
-      int position = getTaskManager().getTaskHierarchy().getTaskIndex(selectedTask) + 1;
-      getTaskManager().getTaskHierarchy().move(task, parentTask, position);
-    } else {
-      getTaskManager().getTaskHierarchy().move(task, parentTask);
-    }
-
-    RecalculateTaskCompletionPercentageAlgorithm alg2 = getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg2.run(task);
-    area.repaint();
-    tree.setEditingTask(task);
-    repaint2();
-    return task;
   }
 
   /** Refresh the information of the project on the status bar. */

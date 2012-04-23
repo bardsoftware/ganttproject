@@ -38,7 +38,7 @@ public interface TreeUiFacade<T> {
 
   /**
    * Modifies the selected node(s) of the tree
-   * 
+   *
    * @param clear
    *          when true, it first clears the previous selection. When false the
    *          current selection gets extended
@@ -55,4 +55,6 @@ public interface TreeUiFacade<T> {
   GPAction getPropertiesAction();
 
   GPAction getDeleteAction();
+
+  void startDefaultEditing(T modelElement);
 }
