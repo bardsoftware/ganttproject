@@ -5,9 +5,8 @@ import java.io.IOException;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.io.GanttCSVOpen;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class ImporterFromCsvFile extends ImporterBase implements Importer {
+public class ImporterFromCsvFile extends ImporterBase {
 
   @Override
   public String getFileNamePattern() {
@@ -16,7 +15,7 @@ public class ImporterFromCsvFile extends ImporterBase implements Importer {
 
   @Override
   public String getFileTypeDescription() {
-    return GanttLanguage.getInstance().getText("csvFiles");
+    return language.getText("csvFiles");
   }
 
   @Override
