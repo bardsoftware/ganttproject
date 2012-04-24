@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
+import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
@@ -70,6 +71,27 @@ public class ImportFileWizardImpl extends WizardImpl {
     } else {
       getUIFacade().showErrorDialog(new Exception("You are not supposed to see this. Please report this bug."));
     }
+  }
+
+  @Override
+  public void nextPage() {
+    if (getCurrentPageNumber() == 0) {
+      // User choose exporter, so we can update the additional pages
+
+      // Remove old additional pages
+      while (getNumberOfPages() > 2) {
+        removePage(2);
+      }
+
+      // Add additional pages
+      List<WizardPage> pages = myState.myImporter.getAdditionalPages();
+      if (pages != null) {
+        for (WizardPage page : pages) {
+          addPage(page);
+        }
+      }
+    }
+    super.nextPage();
   }
 
   @Override
