@@ -36,24 +36,35 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Handles opening CSV files.
- * 
+ *
  * A mapping is used to find the correct CSV field that belong to a known Task
  * attribute
  */
 public class GanttCSVOpen {
   /** List of known (and supported) Task attributes */
   public enum TaskFields {
-    NAME, BEGIN_DATE, END_DATE, WEB_LINK, NOTES
+    NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"), NOTES(
+        "notes");
+
+    private final String text;
+
+    private TaskFields(final String text) {
+      this.text = text;
+    }
+
+    @Override
+    public String toString() {
+      // Return translated field name
+      return language.getText(text);
+    }
   }
 
   private final TaskManager myTaskManager;
 
+  /** The CSV file that is going to be imported */
   private final File myFile;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
-
-  /** Separator character used to parse the CSV file */
-  private char separator = 0;
 
   /**
    * Map containing a relation between the known task attributes and the fields
@@ -68,7 +79,7 @@ public class GanttCSVOpen {
 
   /**
    * Create tasks from file.
-   * 
+   *
    * @throws IOException
    *           on parse error or input read-failure
    */
@@ -120,7 +131,7 @@ public class GanttCSVOpen {
   /**
    * Try to find a mapping between the fields in the CSV file and the
    * known/supported task attributes
-   * 
+   *
    * @return true when the CSV file has an (assumed) header
    * @throws IOException
    *           when something went wrong while reading from the BufferedReader
@@ -135,7 +146,7 @@ public class GanttCSVOpen {
 
     // Determine/guess the required mapping
     for (TaskFields knownField : TaskFields.values()) {
-      String fieldName = knownField.name().toLowerCase().replace('_', ' ');
+      String fieldName = knownField.toString().toLowerCase();
       for (int i = 0; i < fields.length; i++) {
         String testFieldName = fields[i].toLowerCase();
         if (testFieldName.equals(fieldName)) {
@@ -148,16 +159,8 @@ public class GanttCSVOpen {
     }
 
     // We assume the file has a header when there is at least one match with
-    // known fieldnames
+    // known field names
     return fieldsMap.size() > 0;
-  }
-
-  /**
-   * @returns the separator char that is (going to be) used, or 0 if it is not
-   *          set yet
-   */
-  public char getSeparetor() {
-    return separator;
   }
 
   /**
