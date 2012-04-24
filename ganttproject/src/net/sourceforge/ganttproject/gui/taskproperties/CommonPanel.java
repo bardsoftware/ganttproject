@@ -28,20 +28,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.table.TableColumn;
 
-import org.jdesktop.jdnc.JNTable;
-import org.jdesktop.swing.decorator.AlternateRowHighlighter;
-import org.jdesktop.swing.decorator.Highlighter;
-import org.jdesktop.swing.decorator.HighlighterPipeline;
+import net.sourceforge.ganttproject.gui.UIUtil;
+
+import org.jdesktop.swingx.JXTable;
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
 abstract class CommonPanel {
-  static void setupTableUI(JNTable table) {
-    table.setPreferredVisibleRowCount(10);
-    table.setHighlighters(new HighlighterPipeline(new Highlighter[] { AlternateRowHighlighter.floralWhite,
-        AlternateRowHighlighter.quickSilver }));
-    table.getTable().setSortable(false);
+  static void setupTableUI(JXTable table) {
+    UIUtil.setupTableUI(table, 10);
+    UIUtil.setupHighlighters(table);
   }
 
   static void setupComboBoxEditor(TableColumn column, Object[] values) {

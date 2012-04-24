@@ -34,6 +34,7 @@ class TreeTableCellEditorImpl implements TableCellEditor {
   private Runnable myFocusCommand;
 
   TreeTableCellEditorImpl(TableCellEditor proxiedEditor) {
+    assert proxiedEditor != null;
     myProxiedEditor = proxiedEditor;
   }
 

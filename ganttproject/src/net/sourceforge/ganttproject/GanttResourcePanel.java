@@ -20,18 +20,14 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -119,7 +115,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   @Override
-  protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+  protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
     super.onSelectionChanged(selection);
     getPropertiesAction().setEnabled(!selection.isEmpty());
     getDeleteAction().setEnabled(!selection.isEmpty());
@@ -130,7 +126,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   protected void handlePopupTrigger(MouseEvent e) {
     if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-      DefaultMutableTreeNode[] selectedNodes = getSelectedNodes();
+      DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
       // TODO Allow to have multiple assignments selected as well!
       if (selectedNodes.length == 1 && selectedNodes[0] instanceof AssignmentNode) {
         // Clicked on an assignment node (ie a task assigned to a resource)
@@ -210,7 +206,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     // res = new ProjectResource[allRes.size()];
     // model.getAllResouces().toArray(res);
     // return res;
-    DefaultMutableTreeNode[] tNodes = getSelectedNodes();
+    DefaultMutableTreeTableNode[] tNodes = getSelectedNodes();
     if (tNodes == null) {
       return new HumanResource[0];
     }
@@ -233,8 +229,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   /** Create a new Human */
   public void newHuman(HumanResource people) {
     if (people != null) {
-      DefaultMutableTreeNode result = getTreeModel().addResource(people);
-      getTreeTable().getTree().scrollPathToVisible(new TreePath(result.getPath()));
+      DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
+      getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
     }
   }
 
@@ -268,7 +264,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   public ResourceAssignment[] getResourceAssignments() {
     ResourceAssignment[] res = null;
-    DefaultMutableTreeNode[] tNodes = getSelectedNodes();
+    DefaultMutableTreeTableNode[] tNodes = getSelectedNodes();
     if (tNodes != null) {
       int nbAssign = 0;
       for (int i = 0; i < tNodes.length; i++) {
@@ -317,7 +313,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   public void saveSelectionToClipboard(boolean cut) {
-    DefaultMutableTreeNode selectedNodes[] = getSelectedNodes();
+    DefaultMutableTreeTableNode selectedNodes[] = getSelectedNodes();
 
     if (selectedNodes == null) {
       return;
@@ -325,7 +321,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
     // count instances of ResourceNode
     int count = 0;
-    for (DefaultMutableTreeNode node : selectedNodes) {
+    for (DefaultMutableTreeTableNode node : selectedNodes) {
       if (node instanceof ResourceNode) {
         count++;
       }
@@ -334,7 +330,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     clipboard = new HumanResource[count];
 
     int index = 0;
-    for (DefaultMutableTreeNode node : selectedNodes) {
+    for (DefaultMutableTreeTableNode node : selectedNodes) {
       if (node instanceof ResourceNode) {
         ResourceNode rn = (ResourceNode) node;
 
@@ -352,7 +348,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     if (clear) {
       clearSelection();
     }
-    getTree().setSelectionPath(new TreePath(getResourceTreeTableModel().getNodeForResource(resource).getPath()));
+    getTree().getTreeSelectionModel().setSelectionPath(
+        TreeUtil.createPath(getResourceTreeTableModel().getNodeForResource(resource)));
   }
 
   @Override
@@ -368,6 +365,10 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   public AbstractAction getMoveDownAction() {
     return myResourceActionSet.getResourceMoveDownAction();
+  }
+
+  @Override
+  public void startDefaultEditing(HumanResource modelElement) {
   }
 
   public ResourceActionSet getResourceActionSet() {
@@ -387,8 +388,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   @Override
-  protected DefaultMutableTreeNode getRootNode() {
-    return (DefaultMutableTreeNode) getTreeModel().getRoot();
+  protected DefaultMutableTreeTableNode getRootNode() {
+    return (DefaultMutableTreeTableNode) getTreeModel().getRoot();
   }
 
   @Override

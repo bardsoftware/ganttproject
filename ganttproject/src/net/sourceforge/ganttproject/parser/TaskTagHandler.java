@@ -21,8 +21,6 @@ package net.sourceforge.ganttproject.parser;
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Stack;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;

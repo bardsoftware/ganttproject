@@ -1062,7 +1062,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special shape is defined for this task.
-   *
+   * 
    * @return true, if this task has its own shape defined.
    */
   public boolean shapeDefined() {
@@ -1071,7 +1071,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special color is defined for this task.
-   *
+   * 
    * @return true, if this task has its own color defined.
    */
   public boolean colorDefined() {
