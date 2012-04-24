@@ -28,11 +28,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -40,11 +38,12 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.jdesktop.swing.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -76,7 +75,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      TreePath currentSelection = getTree().getSelectionPath();
+      TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
       if (currentSelection != null) {
         if (getTree().isCollapsed(currentSelection)) {
           getTree().expandPath(currentSelection);
@@ -94,7 +93,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     myTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
 
-    myTreeTable.getTree().getModel().addTreeModelListener(new ChartUpdater());
+    myTreeTable.getTree().getTreeTableModel().addTreeModelListener(new ChartUpdater());
     ExpandCollapseAction expandAction = new ExpandCollapseAction();
     for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
       UIUtil.pushAction(myTreeTable, false, ks, expandAction);
@@ -144,12 +143,12 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     });
   }
 
-  protected void onSelectionChanged(List<DefaultMutableTreeNode> selection) {
+  protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
   }
 
   protected abstract void handlePopupTrigger(MouseEvent e);
 
-  protected JTree getTree() {
+  protected JXTreeTable getTree() {
     return getTreeTable().getTree();
   }
 
@@ -173,34 +172,33 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
   @Override
   public boolean isExpanded(ModelObject modelObject) {
-    DefaultMutableTreeNode treeNode = getNode(modelObject);
-    return treeNode == null ? false : !myTreeTable.getTree().isCollapsed(new TreePath(treeNode.getPath()));
+    MutableTreeTableNode treeNode = getNode(modelObject);
+    return treeNode == null ? false : !myTreeTable.getTree().isCollapsed(TreeUtil.createPath(treeNode));
   }
 
   @Override
   public void setExpanded(ModelObject modelObject) {
-    DefaultMutableTreeNode treeNode = getNode(modelObject);
+    MutableTreeTableNode treeNode = getNode(modelObject);
     if (treeNode != null) {
-      myTreeTable.getTree().expandPath(new TreePath(treeNode.getPath()));
+      myTreeTable.getTree().expandPath(TreeUtil.createPath(treeNode));
     }
   }
 
   @Override
   public boolean isVisible(ModelObject modelObject) {
-    DefaultMutableTreeNode node = getNode(modelObject);
+    MutableTreeTableNode node = getNode(modelObject);
     if (node == null) {
       return false;
     }
-    return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
+    return getTreeTable().getTree().isVisible(TreeUtil.createPath(node));
   }
 
   public int getRowHeight() {
     return myTreeTable.getTable().getRowHeight();
   }
 
-  protected DefaultMutableTreeNode getNode(ModelObject modelObject) {
-    for (Enumeration<TreeNode> nodes = getRootNode().preorderEnumeration(); nodes.hasMoreElements();) {
-      DefaultMutableTreeNode nextNode = (DefaultMutableTreeNode) nodes.nextElement();
+  protected MutableTreeTableNode getNode(ModelObject modelObject) {
+    for (MutableTreeTableNode nextNode : TreeUtil.collectSubtree(getRootNode())) {
       if (nextNode.getUserObject() != null && nextNode.getUserObject().equals(modelObject)) {
         return nextNode;
       }
@@ -208,25 +206,25 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     return null;
   }
 
-  protected DefaultMutableTreeNode getSelectedNode() {
-    TreePath currentSelection = getTree().getSelectionPath();
-    return (currentSelection == null) ? null : (DefaultMutableTreeNode) currentSelection.getLastPathComponent();
+  protected DefaultMutableTreeTableNode getSelectedNode() {
+    TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
+    return (currentSelection == null) ? null : (DefaultMutableTreeTableNode) currentSelection.getLastPathComponent();
   }
 
-  public DefaultMutableTreeNode[] getSelectedNodes() {
-    TreePath[] currentSelection = getTree().getSelectionPaths();
+  public DefaultMutableTreeTableNode[] getSelectedNodes() {
+    TreePath[] currentSelection = getTree().getTreeSelectionModel().getSelectionPaths();
 
     if (currentSelection == null || currentSelection.length == 0) {
-      return new DefaultMutableTreeNode[0];
+      return new DefaultMutableTreeTableNode[0];
     }
-    DefaultMutableTreeNode[] result = new DefaultMutableTreeNode[currentSelection.length];
+    DefaultMutableTreeTableNode[] result = new DefaultMutableTreeTableNode[currentSelection.length];
     for (int i = 0; i < currentSelection.length; i++) {
-      result[i] = (DefaultMutableTreeNode) currentSelection[i].getLastPathComponent();
+      result[i] = (DefaultMutableTreeTableNode) currentSelection[i].getLastPathComponent();
     }
     return result;
   }
 
-  protected abstract DefaultMutableTreeNode getRootNode();
+  protected abstract DefaultMutableTreeTableNode getRootNode();
 
   protected abstract Chart getChart();
 

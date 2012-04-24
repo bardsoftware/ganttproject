@@ -63,7 +63,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.search.SearchUiImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -78,7 +77,7 @@ import net.sourceforge.ganttproject.undo.UndoManagerImpl;
  * views through interfaces. This class is intentionally package local to
  * prevent using it in other packages (use interfaces rather than concrete
  * implementations!)
- * 
+ *
  * @author dbarashev
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
@@ -404,9 +403,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   @Override
   public abstract void setWebLink(String webLink);
-
-  @Override
-  public abstract Task newTask();
 
   @Override
   public abstract UIConfiguration getUIConfiguration();
