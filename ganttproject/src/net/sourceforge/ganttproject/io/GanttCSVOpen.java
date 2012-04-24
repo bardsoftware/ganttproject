@@ -18,16 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.csv.CSVParser;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
@@ -37,7 +36,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Handles opening CSV files.
- *
+ * 
  * A mapping is used to find the correct CSV field that belong to a known Task
  * attribute
  */
@@ -56,9 +55,6 @@ public class GanttCSVOpen {
   /** Separator character used to parse the CSV file */
   private char separator = 0;
 
-  /** When true, a series to separator characters are processed as one */
-  private boolean allowMultipleSeparators = false;
-
   /**
    * Map containing a relation between the known task attributes and the fields
    * in the CSV file
@@ -70,123 +66,90 @@ public class GanttCSVOpen {
     myTaskManager = taskManager;
   }
 
-  /** Create tasks from file. */
-  public boolean load() {
-    try {
-      // Open a stream
-      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(myFile)));
+  /**
+   * Create tasks from file.
+   * 
+   * @throws IOException
+   *           on parse error or input read-failure
+   */
+  public boolean load() throws IOException {
+    boolean hasHeader = getHeader();
+    CSVParser parser = new CSVParser(new InputStreamReader(new FileInputStream(myFile)));
 
-      if (!br.ready()) {
-        // We cannot read the file?!
-        return false;
-      }
+    if (hasHeader) {
+      // Ignore header
+      parser.getLine();
+    }
 
-      // First read header (and ignore for now)
-      getHeader(br);
-
-      // Read lines unit the stream is at its end
-      while (br.ready()) {
-        String line = br.readLine();
-
-        // Skip white lines
-        if (!"".equals(line)) {
-          List<String> fields = splitLine(line);
-          if (fields != null && fields.size() == 9) {
-            // Create the task
-            GanttTask task = myTaskManager.createTask();
-            // and fill in the mapped fields
-            for (Entry<TaskFields, Integer> entry : fieldsMap.entrySet()) {
-              Integer fieldIndex = entry.getValue();
-              switch (entry.getKey()) {
-              case NAME:
-                task.setName(fields.get(fieldIndex));
-                break;
-              case BEGIN_DATE:
-                task.setStart(new GanttCalendar(language.parseDate(fields.get(fieldIndex))));
-                break;
-              case END_DATE:
-                task.setEnd(new GanttCalendar(language.parseDate(fields.get(fieldIndex))));
-                break;
-              case WEB_LINK:
-                task.setWebLink(fields.get(fieldIndex));
-                break;
-              case NOTES:
-                task.setNotes(fields.get(fieldIndex));
-                break;
-              default:
-                // Should not happen, although it is not too serious...
-                GPLogger.log("Found unknown task field: " + entry.getKey());
-              }
-            }
-            myTaskManager.registerTask(task);
-            myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
-          } else {
-            GPLogger.log("Could not parse '" + line + "', skipped!");
-          }
+    String[] line;
+    while ((line = parser.getLine()) != null) {
+      // Create the task
+      GanttTask task = myTaskManager.createTask();
+      // and fill in the mapped fields
+      for (Entry<TaskFields, Integer> entry : getFieldsMap().entrySet()) {
+        Integer fieldIndex = entry.getValue();
+        switch (entry.getKey()) {
+        case NAME:
+          task.setName(line[fieldIndex]);
+          break;
+        case BEGIN_DATE:
+          task.setStart(new GanttCalendar(language.parseDate(line[fieldIndex])));
+          break;
+        case END_DATE:
+          task.setEnd(new GanttCalendar(language.parseDate(line[fieldIndex])));
+          break;
+        case WEB_LINK:
+          task.setWebLink(line[fieldIndex]);
+          break;
+        case NOTES:
+          task.setNotes(line[fieldIndex]);
+          break;
+        default:
+          // Should not happen, although it is not too serious...
+          GPLogger.log("Found unknown task field: " + entry.getKey());
         }
       }
-    } catch (Exception e) {
-      return false;
+      myTaskManager.registerTask(task);
+      myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
     }
+
+    // Succeeded
     return true;
   }
 
   /**
-   * <p>
-   * Reads the header and returns the fields. It also:
-   * <ul>
-   * <li>tries to find the correct separator char if it is not yet set</li>
-   * <li>tries to find a mapping between the fields in the CSV file and the
-   * known/supported task attributes</li>
-   * </ul>
-   * </p>
-   * <p>
-   * <em>Note:</em> This method assumes that the BufferedReader is still at the
-   * begin of the file!
-   * </p>
-   *
-   * @param br
-   *          BufferedReader to read the header from
-   * @return an array of strings with the header fields
+   * Try to find a mapping between the fields in the CSV file and the
+   * known/supported task attributes
+   * 
+   * @return true when the CSV file has an (assumed) header
    * @throws IOException
    *           when something went wrong while reading from the BufferedReader
    */
-  public List<String> getHeader(BufferedReader br) throws IOException {
-    final String header = br.readLine();
-    if (separator == 0) {
-      // Try to determine separator char used in this CSV file
-      // This simple method check which known separator char is encountered
-      // first...
-      int firstComma = findFirst(header, ',');
-      int firstSpace = findFirst(header, ' ');
-      int firstTab = findFirst(header, '\t');
-      if (firstSpace < firstComma && firstSpace < firstTab) {
-        setSeparator(' ');
-      } else if (firstTab < firstComma && firstTab < firstSpace) {
-        setSeparator('\t');
-      } else {
-        setSeparator(',');
-      }
+  public boolean getHeader() throws IOException {
+    CSVParser parser = new CSVParser(new InputStreamReader(new FileInputStream(myFile)));
+
+    String[] fields = parser.getLine();
+    if (getFieldsMap().size() > 0) {
+      fieldsMap.clear();
     }
 
-    List<String> fields = splitLine(header);
-    if (getFieldsMap().size() == 0) {
-      // Determine/guess the required mapping
-
-      for (TaskFields knownField : TaskFields.values()) {
-        String fieldName = knownField.name().toLowerCase().replace('_', ' ');
-        for (int i = 0; i < fields.size(); i++) {
-          String testFieldName = fields.get(i).toLowerCase();
-          if (testFieldName.equals(fieldName)) {
-            // Found a match to a known field!
-            fieldsMap.put(knownField, i);
-            // No need to check other fields
-            break;
-          }
+    // Determine/guess the required mapping
+    for (TaskFields knownField : TaskFields.values()) {
+      String fieldName = knownField.name().toLowerCase().replace('_', ' ');
+      for (int i = 0; i < fields.length; i++) {
+        String testFieldName = fields[i].toLowerCase();
+        if (testFieldName.equals(fieldName)) {
+          // Found a match to a known field!
+          fieldsMap.put(knownField, i);
+          // No need to check other fields
+          break;
         }
       }
     }
-    return fields;
+
+    // We assume the file has a header when there is at least one match with
+    // known fieldnames
+    return fieldsMap.size() > 0;
   }
 
   /**
@@ -206,65 +169,5 @@ public class GanttCSVOpen {
       fieldsMap = new HashMap<TaskFields, Integer>();
     }
     return fieldsMap;
-  }
-
-  /** Sets (override) the field separator to use */
-  public void setSeparator(char separator) {
-    this.separator = separator;
-    allowMultipleSeparators = separator == ' ' || separator == '\t';
-  }
-
-  private List<String> splitLine(String line) {
-    boolean sQuoteOpen = false;
-    boolean dQuoteOpen = false;
-    boolean previousSlash = false;
-    boolean previousSeparator = false;
-
-    final List<String> result = new ArrayList<String>();
-    StringBuilder field = new StringBuilder();
-    char[] bytes = line.toCharArray();
-
-    for (char b : bytes) {
-      if (previousSlash) {
-        // Always add this char
-        field.append(b);
-        previousSlash = false;
-      } else if (b == '"' && !sQuoteOpen) {
-        // Encountered an opening/closing double quote
-        dQuoteOpen = !dQuoteOpen;
-        continue;
-      }
-      if (b == '\'' && !dQuoteOpen) {
-        // Encountered an opening/closing single quote
-        sQuoteOpen = !sQuoteOpen;
-        continue;
-      }
-      if (b == '\\') {
-        // Skip slash, but always add next char
-        previousSlash = true;
-        continue;
-      }
-      if (b == separator && !dQuoteOpen && !sQuoteOpen && (!allowMultipleSeparators || !previousSeparator)) {
-        // End of field!
-        result.add(field.toString().trim());
-        field = new StringBuilder();
-        previousSeparator = true;
-        continue;
-      }
-
-      // Add byte to field string
-      field.append(b);
-      previousSeparator = false;
-    }
-    return result;
-  }
-
-  /** @return the first index of c in str, or str length if not found */
-  private int findFirst(String str, char c) {
-    int index = str.indexOf(c);
-    if (index == -1) {
-      return str.length();
-    }
-    return index;
   }
 }
