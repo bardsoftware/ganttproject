@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Colombia" type="country">
+	<date year="2006" month="01" date="01"/>
+	<date year="2006" month="01" date="09"/>
+	<date year="2006" month="03" date="20"/>
+	<date year="2006" month="04" date="13"/>
+	<date year="2006" month="04" date="14"/>
+	<date year="2006" month="05" date="01"/>
+	<date year="2006" month="05" date="29"/>
+	<date year="2006" month="06" date="19"/>
+	<date year="2006" month="06" date="26"/>
+	<date year="2006" month="07" date="03"/>
+	<date year="2006" month="07" date="20"/>
+	<date year="2006" month="08" date="07"/>
+	<date year="2006" month="08" date="21"/>
+	<date year="2006" month="10" date="16"/>
+	<date year="2006" month="11" date="06"/>
+	<date year="2006" month="11" date="13"/>
+	<date year="2006" month="12" date="08"/>
+	<date year="2006" month="12" date="25"/>
+
+	<date year="2007" month="01" date="01"/>
+        <date year="2007" month="01" date="08"/>
+	<date year="2007" month="03" date="19"/>
+        <date year="2007" month="04" date="05"/>
+	<date year="2007" month="04" date="06"/>
+        <date year="2007" month="05" date="01"/>
+        <date year="2007" month="05" date="21"/>
+        <date year="2007" month="06" date="11"/>
+        <date year="2007" month="06" date="18"/>
+        <date year="2007" month="07" date="02"/>
+        <date year="2007" month="07" date="20"/>
+        <date year="2007" month="08" date="07"/>
+        <date year="2007" month="08" date="20"/>
+        <date year="2007" month="10" date="15"/>
+        <date year="2007" month="11" date="05"/>
+        <date year="2007" month="11" date="12"/>
+        <date year="2007" month="12" date="08"/>
+        <date year="2007" month="12" date="25"/>	
+
+	<date year="2008" month="01" date="01"/>
+        <date year="2008" month="01" date="07"/>
+	<date year="2008" month="03" date="20"/>
+	<date year="2008" month="03" date="21"/>
+        <date year="2008" month="03" date="24"/>
+        <date year="2008" month="05" date="01"/>
+        <date year="2008" month="05" date="05"/>
+        <date year="2008" month="05" date="26"/>
+        <date year="2008" month="06" date="16"/>
+        <date year="2008" month="06" date="30"/>
+        <date year="2008" month="07" date="20"/>
+        <date year="2008" month="08" date="07"/>
+        <date year="2008" month="08" date="18"/>
+        <date year="2008" month="10" date="13"/>
+        <date year="2008" month="11" date="03"/>
+        <date year="2008" month="11" date="17"/>
+        <date year="2008" month="12" date="08"/>
+        <date year="2008" month="12" date="25"/>	
+
+	<date year="2009" month="01" date="01"/>
+        <date year="2009" month="01" date="12"/>
+	<date year="2009" month="03" date="23"/>
+	<date year="2009" month="04" date="05"/>
+        <date year="2009" month="04" date="09"/>
+	<date year="2009" month="04" date="10"/>
+        <date year="2009" month="05" date="01"/>
+        <date year="2009" month="05" date="25"/>
+        <date year="2009" month="06" date="15"/>
+        <date year="2009" month="06" date="22"/>
+	<date year="2009" month="06" date="29"/>
+        <date year="2009" month="07" date="20"/>
+        <date year="2009" month="08" date="07"/>
+        <date year="2009" month="08" date="17"/>
+        <date year="2009" month="10" date="12"/>
+        <date year="2009" month="11" date="02"/>
+        <date year="2009" month="11" date="16"/>
+        <date year="2009" month="12" date="08"/>
+        <date year="2009" month="12" date="25"/>	
+
+	<date year="2010" month="01" date="01"/>
+        <date year="2010" month="01" date="11"/>
+	<date year="2010" month="03" date="22"/>
+	<date year="2010" month="04" date="01"/>
+        <date year="2010" month="04" date="02"/>
+	<date year="2010" month="05" date="01"/>
+        <date year="2010" month="05" date="17"/>
+        <date year="2010" month="06" date="07"/>
+        <date year="2010" month="06" date="14"/>
+	<date year="2010" month="07" date="05"/>
+        <date year="2010" month="07" date="20"/>
+        <date year="2010" month="08" date="07"/>
+        <date year="2010" month="08" date="16"/>
+        <date year="2010" month="10" date="18"/>
+        <date year="2010" month="11" date="01"/>
+        <date year="2010" month="11" date="15"/>
+        <date year="2010" month="12" date="08"/>
+        <date year="2010" month="12" date="25"/>	
+
+	<date year="2011" month="01" date="01"/>
+        <date year="2011" month="01" date="10"/>
+	<date year="2011" month="03" date="21"/>
+	<date year="2011" month="04" date="21"/>
+        <date year="2011" month="04" date="22"/>
+        <date year="2011" month="06" date="06"/>
+        <date year="2011" month="06" date="27"/>
+	<date year="2011" month="07" date="04"/>
+        <date year="2011" month="07" date="20"/>
+        <date year="2011" month="08" date="15"/>
+        <date year="2011" month="10" date="17"/>
+        <date year="2011" month="11" date="07"/>
+        <date year="2011" month="11" date="14"/>
+        <date year="2011" month="12" date="08"/>
+        <date year="2011" month="12" date="25"/>	
+
+		<date year="2012" month="01" date="01"/>
+        <date year="2012" month="01" date="09"/>
+		<date year="2012" month="03" date="19"/>
+		<date year="2012" month="04" date="05"/>
+        <date year="2012" month="04" date="06"/>
+        <date year="2012" month="05" date="01"/>
+        <date year="2012" month="05" date="21"/>
+		<date year="2012" month="06" date="11"/>
+		<date year="2012" month="06" date="18"/>
+		<date year="2012" month="07" date="02"/>
+        <date year="2012" month="07" date="20"/>
+        <date year="2012" month="08" date="07"/>
+		<date year="2012" month="08" date="20"/>
+        <date year="2012" month="10" date="15"/>
+        <date year="2012" month="11" date="05"/>
+        <date year="2012" month="11" date="12"/>
+        <date year="2012" month="12" date="08"/>
+        <date year="2012" month="12" date="25"/>
+		
+		
+		
+		
+</calendar>
+
+ 	  	 
