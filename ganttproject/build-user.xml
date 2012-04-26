@@ -7,6 +7,7 @@
         <pathelement location="${plugin.src.dir}/lib/core/AppleJavaExtensions.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/balloontip-1.2.1.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/commons-httpclient.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/core/commons-csv-0.1-svn678580.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/commons-logging.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/commons-net-ftpclient-3.0.1.jar"/>
         <pathelement location="${plugin.src.dir}/lib/core/eclipsito.jar"/>

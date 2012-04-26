@@ -153,6 +153,16 @@ public abstract class WizardImpl {
     myPages.add(page);
   }
 
+  /** Removes an page from the list of available pages */
+  protected void removePage(int index) {
+    myPages.remove(index);
+  }
+
+  /** @return the number of available wizard pages */
+  protected int getNumberOfPages() {
+    return myPages.size();
+  }
+
   protected void onOkPressed() {
     getCurrentPage().setActive(false);
   }
@@ -163,6 +173,11 @@ public abstract class WizardImpl {
 
   private WizardPage getCurrentPage() {
     return myPages.get(myCurrentPage);
+  }
+
+  /** @return the number of the active page in the list of pages */
+  protected int getCurrentPageNumber() {
+    return myCurrentPage;
   }
 
   public UIFacade getUIFacade() {
