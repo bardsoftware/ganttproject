@@ -79,6 +79,7 @@ import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
@@ -112,6 +113,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   public boolean editCellAt(int row, int column) {
     TableCellEditor cellEditor = getTable().getCellEditor(row, column);
     boolean result = super.editCellAt(row, column);
+    if (cellEditor instanceof TreeTableCellEditor) {
+      JTextComponent editorComponent = (JTextComponent) ((TreeTableCellEditor)cellEditor).getComponent();
+      TreeTableCellEditorImpl.createSelectAllCommand(editorComponent).run();
+    }
     if (cellEditor instanceof TreeTableCellEditorImpl) {
       ((TreeTableCellEditorImpl) cellEditor).requestFocus();
     }
@@ -610,7 +615,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
     TableCellEditor editor = createCellEditor(columnClass);
     if (editor != null) {
-      result.setCellEditor(new TreeTableCellEditorImpl(editor));
+      result.setCellEditor(editor);
     } else {
       System.err.println("no editor for column=" + modelIndex + " class=" + columnClass);
     }

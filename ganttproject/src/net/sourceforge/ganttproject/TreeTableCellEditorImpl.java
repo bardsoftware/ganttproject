@@ -43,29 +43,8 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     final Component result = myProxiedEditor.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
     if (result instanceof JTextComponent) {
       ((JTextComponent) result).selectAll();
-      result.addFocusListener(new FocusAdapter() {
-        @Override
-        public void focusGained(FocusEvent arg0) {
-          super.focusGained(arg0);
-          ((JTextComponent) result).selectAll();
-          result.removeFocusListener(this);
-        }
-
-        @Override
-        public void focusLost(FocusEvent arg0) {
-          // TODO Auto-generated method stub
-          super.focusLost(arg0);
-        }
-
-      });
+      myFocusCommand = createSelectAllCommand((JTextComponent)result);
     }
-    myFocusCommand = new Runnable() {
-      @Override
-      public void run() {
-        result.requestFocus();
-        // field.selectAll();
-      }
-    };
     return result;
   }
 
@@ -108,5 +87,22 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     if (myFocusCommand != null) {
       SwingUtilities.invokeLater(myFocusCommand);
     }
+  }
+
+  static Runnable createSelectAllCommand(final JTextComponent textComponent) {
+    textComponent.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusGained(FocusEvent arg0) {
+        super.focusGained(arg0);
+        textComponent.selectAll();
+        textComponent.removeFocusListener(this);
+      }
+    });
+    return new Runnable() {
+      @Override
+      public void run() {
+        textComponent.requestFocus();
+      }
+    };
   }
 }
