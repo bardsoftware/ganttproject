@@ -165,7 +165,8 @@ class TaskActivityRenderer {
     int leftX = bounds[0];
     int rightX = bounds[1];
     if (activity.getTask().isMilestone()) {
-      rightX += 10;
+      rightX += 5;
+      leftX -= 5;
     }
     int topY = rowNum * getRowHeight();
     return new java.awt.Rectangle(leftX, topY, rightX - leftX, getRowHeight());
