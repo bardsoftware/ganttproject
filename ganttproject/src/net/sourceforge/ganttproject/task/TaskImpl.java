@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
+import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
@@ -53,6 +54,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**
  * @author bard
@@ -119,6 +121,8 @@ public class TaskImpl implements Task {
   public final static int EARLIESTBEGIN = 1;
 
   private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+
+  private static final TaskLength EMPTY_DURATION = new TaskLengthImpl(GPTimeUnitStack.DAY, 0);
 
   protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
     myManager = taskManager;
@@ -366,6 +370,9 @@ public class TaskImpl implements Task {
 
   @Override
   public TaskActivity[] getActivities() {
+    if (isMilestone()) {
+      return new TaskActivity[] {new MilestoneTaskFakeActivity(this)};
+    }
     List<TaskActivity> activities = myMutator == null ? null : myMutator.getActivities();
     if (activities == null) {
       activities = myActivities;
@@ -375,6 +382,9 @@ public class TaskImpl implements Task {
 
   @Override
   public TaskLength getDuration() {
+    if (isMilestone()) {
+      return EMPTY_DURATION;
+    }
     return (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) ? myMutator.getDuration()
         : myLength;
   }
@@ -868,6 +878,7 @@ public class TaskImpl implements Task {
     myName = (name == null ? null : name.trim());
   }
 
+  @Override
   public void setWebLink(String webLink) {
     myWebLink = webLink;
   }
@@ -875,7 +886,7 @@ public class TaskImpl implements Task {
   @Override
   public void setMilestone(boolean milestone) {
     if (milestone) {
-      setEnd(getStart().newAdd(Calendar.DATE, 1));
+      setEnd(getStart());
     }
     isMilestone = milestone;
   }
@@ -967,7 +978,7 @@ public class TaskImpl implements Task {
 
   @Override
   public void setDuration(TaskLength length) {
-    assert length.getLength() > 0;
+    assert length.getLength() >= 0;
 
     myLength = length;
     myEnd = null;
@@ -1062,7 +1073,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special shape is defined for this task.
-   * 
+   *
    * @return true, if this task has its own shape defined.
    */
   public boolean shapeDefined() {
@@ -1071,7 +1082,7 @@ public class TaskImpl implements Task {
 
   /**
    * Determines whether a special color is defined for this task.
-   * 
+   *
    * @return true, if this task has its own color defined.
    */
   public boolean colorDefined() {
@@ -1141,10 +1152,12 @@ public class TaskImpl implements Task {
     myTaskInfo = taskInfo;
   }
 
+  @Override
   public boolean isProjectTask() {
     return isProjectTask;
   }
 
+  @Override
   public void setProjectTask(boolean projectTask) {
     isProjectTask = projectTask;
   }

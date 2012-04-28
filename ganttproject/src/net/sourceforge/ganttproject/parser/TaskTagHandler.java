@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
 import org.xml.sax.Attributes;
 
@@ -57,24 +58,37 @@ public class TaskTagHandler implements TagHandler {
 
   private void loadTask(Attributes attrs) {
     String taskIdAsString = attrs.getValue("id");
-    GanttTask task = null;
-    if (taskIdAsString == null) {
-      task = getManager().createTask();
-    } else {
-      int taskId;
-      try {
-        taskId = Integer.parseInt(taskIdAsString);
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            "Failed to parse the value '" + taskIdAsString + "' of attribute 'id' of tag <task>", e);
-      }
-      task = getManager().createTask(taskId);
+    int taskId;
+    try {
+      taskId = Integer.parseInt(taskIdAsString);
+    } catch (NumberFormatException e) {
+      throw new RuntimeException(
+          "Failed to parse the value '" + taskIdAsString + "' of attribute 'id' of tag <task>", e);
     }
+    TaskBuilder builder = getManager().newTaskBuilder().withId(taskId);
 
     String taskName = attrs.getValue("name");
     if (taskName != null) {
-      task.setName(taskName);
+      builder = builder.withName(taskName);
     }
+
+    String start = attrs.getValue("start");
+    if (start != null) {
+      builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).getTime());
+    }
+
+    String duration = attrs.getValue("duration");
+    if (duration != null) {
+      try {
+        int length = Integer.parseInt(duration);
+        builder = builder.withDuration(getManager().createLength(length));
+      } catch (NumberFormatException e) {
+        throw new RuntimeException(
+            "Failed to parse the value '" + duration + "' of attribute 'duration' of tag <task>", e);
+      }
+    }
+
+    Task task = builder.build();
 
     task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
 
@@ -82,24 +96,7 @@ public class TaskTagHandler implements TagHandler {
     if (project != null)
       task.setProjectTask(true);
 
-    String start = attrs.getValue("start");
-    if (start != null) {
-      task.setStart(GanttCalendar.parseXMLDate(start));
-    }
 
-    String duration = attrs.getValue("duration");
-    if (duration != null) {
-      try {
-        int length = Integer.parseInt(duration);
-        if (length == 0) {
-          length = 1;
-        }
-        task.setLength(length);
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            "Failed to parse the value '" + duration + "' of attribute 'duration' of tag <task>", e);
-      }
-    }
 
     String complete = attrs.getValue("complete");
     if (complete != null) {
@@ -170,7 +167,6 @@ public class TaskTagHandler implements TagHandler {
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
-    getManager().registerTask(task);
     TaskContainmentHierarchyFacade taskHierarchy = getManager().getTaskHierarchy();
     Task stackHead = myContext.isStackEmpty() ? taskHierarchy.getRootTask() : myContext.peekTask();
     taskHierarchy.move(task, stackHead);

@@ -178,6 +178,10 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   public void move(Task whatMove, Task whereMove) {
     MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);
     assert targetNode != null : "Failed to find tree node for task=" + whereMove;
+    MutableTreeTableNode currentNode = myTask2treeNode.get(whatMove);
+    if (currentNode != null && currentNode.getParent() == targetNode) {
+      return;
+    }
     move(whatMove, whereMove, targetNode.getChildCount());
   }
 
