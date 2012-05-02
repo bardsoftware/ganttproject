@@ -1,3 +1,21 @@
+/*
+Copyright 2003-2012 GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Point;
@@ -13,12 +31,18 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
-public class TaskDependencyRenderer {
+/**
+ * Renders dependency lines between tasks.
+ *
+ * @author Dmitry Barashev
+ */
+class TaskDependencyRenderer {
   private List<Task> myVisibleTasks;
   private GraphicPrimitiveContainer myTaskCanvas;
   private GraphicPrimitiveContainer myOutputCanvas;
 
-  public TaskDependencyRenderer(List<Task> visibleTasks, GraphicPrimitiveContainer taskCanvas, GraphicPrimitiveContainer outputCanvas) {
+  public TaskDependencyRenderer(List<Task> visibleTasks, GraphicPrimitiveContainer taskCanvas,
+      GraphicPrimitiveContainer outputCanvas) {
     myVisibleTasks = visibleTasks;
     myTaskCanvas = taskCanvas;
     myOutputCanvas = outputCanvas;
@@ -68,14 +92,17 @@ public class TaskDependencyRenderer {
           Point forth = dependantVector.getPoint();
           lastLine = primitiveContainer.createLine(third.x, third.y, forth.x, forth.y);
           lastLine.setStyle(lineStyle);
-//          arrowBoundary = new java.awt.Rectangle(forth.x, forth.y - 3, arrowLength, 6);
-//          arrowStyle = "dependency.arrow.left";
+          // arrowBoundary = new java.awt.Rectangle(forth.x, forth.y - 3,
+          // arrowLength, 6);
+          // arrowStyle = "dependency.arrow.left";
         } else {
           third.y -= ysign * next.myDependantRectangle.myHeight / 2;
 
-//          arrowBoundary = new java.awt.Rectangle(third.x - 3, third.y - (ysign > 0 ? ysign * arrowLength : 0), 6,
-//              arrowLength);
-//          arrowStyle = ysign > 0 ? "dependency.arrow.down" : "dependency.arrow.up";
+          // arrowBoundary = new java.awt.Rectangle(third.x - 3, third.y -
+          // (ysign > 0 ? ysign * arrowLength : 0), 6,
+          // arrowLength);
+          // arrowStyle = ysign > 0 ? "dependency.arrow.down" :
+          // "dependency.arrow.up";
         }
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
@@ -84,15 +111,16 @@ public class TaskDependencyRenderer {
           lastLine = secondLine;
         }
         lastLine.setArrow(Arrow.FINISH);
-//        Rectangle arrow = primitiveContainer.createRectangle(arrowBoundary.x, arrowBoundary.y, arrowBoundary.width,
-//            arrowBoundary.height);
-//        arrow.setStyle(arrowStyle);
+        // Rectangle arrow = primitiveContainer.createRectangle(arrowBoundary.x,
+        // arrowBoundary.y, arrowBoundary.width,
+        // arrowBoundary.height);
+        // arrow.setStyle(arrowStyle);
       } else {
         Point first = dependeeVector.getPoint(3);
         if (dependantVector.reaches(first)) {
           Point second = new Point(first.x, dependantVector.getPoint().y);
-          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y,
-              first.x, first.y);
+          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
+              first.y);
           line.setStyle(lineStyle);
           line = primitiveContainer.createLine(first.x, first.y, second.x, second.y);
           line.setStyle(lineStyle);
@@ -109,8 +137,8 @@ public class TaskDependencyRenderer {
           Point forth = dependantVector.getPoint(3);
           Point second = new Point(first.x, (first.y + forth.y) / 2);
           Point third = new Point(forth.x, (first.y + forth.y) / 2);
-          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y,
-              first.x, first.y);
+          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
+              first.y);
           line = primitiveContainer.createLine(first.x, first.y, second.x, second.y);
           line.setStyle(lineStyle);
           line = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
@@ -173,10 +201,12 @@ public class TaskDependencyRenderer {
       PointVector dependantVector;
       if (bounds[0].equals(dependant.getStart())) {
         dependantVector = new WestPointVector(new Point(
-            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX, dependantRectangle.getMiddleY()));
+            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX,
+            dependantRectangle.getMiddleY()));
       } else if (bounds[0].equals(dependant.getEnd())) {
         dependantVector = new EastPointVector(new Point(
-            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(), dependantRectangle.getMiddleY()));
+            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(),
+            dependantRectangle.getMiddleY()));
       } else {
         throw new RuntimeException();
       }
@@ -184,10 +214,12 @@ public class TaskDependencyRenderer {
       PointVector dependeeVector;
       if (bounds[1].equals(dependee.getStart())) {
         dependeeVector = new WestPointVector(new Point(
-            dependee.getTask().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX, dependeeRectangle.getMiddleY()));
+            dependee.getTask().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX,
+            dependeeRectangle.getMiddleY()));
       } else if (bounds[1].equals(dependee.getEnd())) {
         dependeeVector = new EastPointVector(new Point(
-            dependee.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(), dependeeRectangle.getMiddleY()));
+            dependee.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(),
+            dependeeRectangle.getMiddleY()));
       } else {
         throw new RuntimeException("bounds: " + Arrays.asList(bounds) + " dependee=" + dependee + " dependant="
             + dependant);

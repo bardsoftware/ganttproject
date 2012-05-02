@@ -19,17 +19,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.httpclient.methods.GetMethod;
-
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
@@ -37,7 +33,6 @@ import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskLength;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -89,7 +84,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderDependencies() {
-    TaskDependencyRenderer dependencyRenderer = new TaskDependencyRenderer(myModel.getVisibleTasks(), getPrimitiveContainer(), getPrimitiveContainer().getLayer(1));
+    TaskDependencyRenderer dependencyRenderer = new TaskDependencyRenderer(myModel.getVisibleTasks(),
+        getPrimitiveContainer(), getPrimitiveContainer().getLayer(1));
     dependencyRenderer.createDependencyLines();
   }
 
@@ -272,7 +268,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       }
     }
   }
-
 
   public GPOptionGroup[] getOptionGroups() {
     return myOptionGroups;
