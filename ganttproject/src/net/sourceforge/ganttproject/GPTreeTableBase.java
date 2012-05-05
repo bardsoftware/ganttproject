@@ -566,7 +566,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
 
   private void addNewCustomColumn(CustomColumn customColumn) {
     TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(customColumn.getId(), customColumn.getName(),
-        true, getTable().getColumnCount(), 100);
+        false, getTable().getColumnCount(), 100);
     getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
   }
 
