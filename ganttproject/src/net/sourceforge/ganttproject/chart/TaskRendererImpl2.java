@@ -53,8 +53,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
-
-    myLabelsRenderer = new TaskLabelsRendererImpl(model, getPrimitiveContainer());
+    GraphicPrimitiveContainer labelCanvas = getPrimitiveContainer().newLayer();
+    myLabelsRenderer = new TaskLabelsRendererImpl(model, labelCanvas);
     myOptionGroups = new GPOptionGroup[] { myLabelsRenderer.getOptionGroup() };
   }
 
