@@ -616,7 +616,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
     TableCellEditor editor = createCellEditor(columnClass);
     if (editor != null) {
-      result.setCellEditor(new TreeTableCellEditorImpl(editor));
+      result.setCellEditor(new TreeTableCellEditorImpl(editor, getTable()));
     }
     return result;
   }
@@ -638,8 +638,8 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     return wrapEditor(editor);
   }
 
-  private static TableCellEditor wrapEditor(TableCellEditor editor) {
-    return new TreeTableCellEditorImpl(editor);
+  private TableCellEditor wrapEditor(TableCellEditor editor) {
+    return new TreeTableCellEditorImpl(editor, getTable());
   }
 
   protected TableCellEditor newDateCellEditor() {
