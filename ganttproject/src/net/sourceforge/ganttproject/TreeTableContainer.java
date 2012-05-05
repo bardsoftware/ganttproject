@@ -54,9 +54,9 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
- * 
+ *
  * @param <ModelObject>
  * @param <TreeTableClass>
  * @param <TreeTableModelClass>
@@ -124,16 +124,14 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
       @Override
       public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-          TreePath selPath = getTree().getPathForLocation(e.getX(), e.getY());
-          if (selPath != null) {
+          if (getTreeTable().getTable().getSelectedRow() != -1) {
             e.consume();
             getPropertiesAction().actionPerformed(null);
           }
-        } else {
-          handlePopupTrigger(e);
+          return;
         }
+        handlePopupTrigger(e);
       }
-
     };
     getTreeTable().addMouseListener(ml);
     getTree().addTreeSelectionListener(new TreeSelectionListener() {
