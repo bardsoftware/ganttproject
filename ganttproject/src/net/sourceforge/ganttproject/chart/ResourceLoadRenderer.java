@@ -26,12 +26,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders resource load chart
@@ -44,10 +49,13 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
   private final ChartModelResource myModel;
 
+  private final GraphicPrimitiveContainer myTextCanvas;
+
   public ResourceLoadRenderer(ChartModelResource model, ResourceChart resourceChart) {
     super(model);
     myResourcechart = resourceChart;
     myModel = model;
+    myTextCanvas = getPrimitiveContainer().newLayer();
   }
 
   /**
@@ -157,7 +165,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
       final Date nextStart = nextLoad.startDate;
       final Date nextEnd = nextLoad.endDate;
 
-      Rectangle nextRect = createRectangle(offsets, nextStart, nextEnd, ypos);
+      final Rectangle nextRect = createRectangle(offsets, nextStart, nextEnd, ypos);
       if (nextRect == null) {
         continue;
       }
@@ -172,6 +180,18 @@ class ResourceLoadRenderer extends ChartRendererBase {
       style += ".first.last";
       nextRect.setStyle(style);
       nextRect.setModelObject(new ResourceLoad(nextLoad.load));
+      Text loadLabel = myTextCanvas.createText(nextRect.getMiddleX(), nextRect.myTopY, new TextSelector() {
+        @Override
+        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          int loadInt = Math.round(nextLoad.load);
+          String loadStr = loadInt + "%";
+          int emsLength = textLengthCalculator.getTextLength(loadStr);
+          boolean displayLoad = (loadInt != 100 && emsLength <= nextRect.myWidth);
+          return displayLoad ? new Label[] {new Label(loadStr, nextRect.myWidth)} : new Label[0];
+        }
+      });
+      loadLabel.setAlignment(HAlignment.CENTER, VAlignment.TOP);
+      loadLabel.setStyle("text.resource.load");
     }
   }
 
@@ -209,7 +229,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
   /**
    * Class to use as Model object to display the load percentage in the
    * rectangle.
-   * 
+   *
    * @author bbaranne
    */
   static class ResourceLoad {

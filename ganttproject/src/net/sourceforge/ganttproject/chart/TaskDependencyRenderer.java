@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.util.MathUtil;
 
 /**
  * Renders dependency lines between tasks.
@@ -37,9 +38,9 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
  * @author Dmitry Barashev
  */
 class TaskDependencyRenderer {
-  private List<Task> myVisibleTasks;
-  private GraphicPrimitiveContainer myTaskCanvas;
-  private GraphicPrimitiveContainer myOutputCanvas;
+  private final List<Task> myVisibleTasks;
+  private final GraphicPrimitiveContainer myTaskCanvas;
+  private final GraphicPrimitiveContainer myOutputCanvas;
 
   public TaskDependencyRenderer(List<Task> visibleTasks, GraphicPrimitiveContainer taskCanvas,
       GraphicPrimitiveContainer outputCanvas) {
@@ -54,9 +55,6 @@ class TaskDependencyRenderer {
   }
 
   private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
-    // if(dependencyDrawData.size() == 0)
-    // System.out.println("VIDE");
-
     GraphicPrimitiveContainer primitiveContainer = myOutputCanvas;
     int arrowLength = 7;
     for (int i = 0; i < dependencyDrawData.size(); i++) {
@@ -80,7 +78,7 @@ class TaskDependencyRenderer {
         // any
         // or dependee.end <= dependant.end && dependency.type==FF
         // or dependee.start >= dependant.end && dependency.type==SF
-        int ysign = signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
+        int ysign = MathUtil.signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
         Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);
         Point second = new Point(dependantVector.getPoint(-3).x, dependeeVector.getPoint().y);
         Point third = new Point(dependantVector.getPoint(-3).x, dependantVector.getPoint().y);
@@ -92,17 +90,8 @@ class TaskDependencyRenderer {
           Point forth = dependantVector.getPoint();
           lastLine = primitiveContainer.createLine(third.x, third.y, forth.x, forth.y);
           lastLine.setStyle(lineStyle);
-          // arrowBoundary = new java.awt.Rectangle(forth.x, forth.y - 3,
-          // arrowLength, 6);
-          // arrowStyle = "dependency.arrow.left";
         } else {
           third.y -= ysign * next.myDependantRectangle.myHeight / 2;
-
-          // arrowBoundary = new java.awt.Rectangle(third.x - 3, third.y -
-          // (ysign > 0 ? ysign * arrowLength : 0), 6,
-          // arrowLength);
-          // arrowStyle = ysign > 0 ? "dependency.arrow.down" :
-          // "dependency.arrow.up";
         }
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
@@ -111,10 +100,6 @@ class TaskDependencyRenderer {
           lastLine = secondLine;
         }
         lastLine.setArrow(Arrow.FINISH);
-        // Rectangle arrow = primitiveContainer.createRectangle(arrowBoundary.x,
-        // arrowBoundary.y, arrowBoundary.width,
-        // arrowBoundary.height);
-        // arrow.setStyle(arrowStyle);
       } else {
         Point first = dependeeVector.getPoint(3);
         if (dependantVector.reaches(first)) {
@@ -127,12 +112,7 @@ class TaskDependencyRenderer {
           line = primitiveContainer.createLine(second.x, second.y, dependantVector.getPoint().x,
               dependantVector.getPoint().y);
           line.setStyle(lineStyle);
-          int xsign = signum(dependantVector.getPoint().x - second.x);
-          java.awt.Rectangle arrowBoundary = new java.awt.Rectangle(dependantVector.getPoint(7).x,
-              dependantVector.getPoint().y - 3, xsign * 7, 6);
-          Rectangle arrow = primitiveContainer.createRectangle(arrowBoundary.x, arrowBoundary.y, arrowBoundary.width,
-              arrowBoundary.height);
-          arrow.setStyle(xsign < 0 ? "dependency.arrow.left" : "dependency.arrow.right");
+          line.setArrow(Line.Arrow.FINISH);
         } else {
           Point forth = dependantVector.getPoint(3);
           Point second = new Point(first.x, (first.y + forth.y) / 2);
@@ -151,13 +131,6 @@ class TaskDependencyRenderer {
         }
       }
     }
-  }
-
-  private final int signum(int value) {
-    if (value == 0) {
-      return 0;
-    }
-    return value < 0 ? -1 : 1;
   }
 
   private List<DependencyDrawData> prepareDependencyDrawData() {
@@ -324,5 +297,4 @@ class TaskDependencyRenderer {
       return new EastPointVector(p);
     }
   }
-
 }

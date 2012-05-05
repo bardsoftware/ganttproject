@@ -21,7 +21,9 @@ package net.sourceforge.ganttproject.chart;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 
@@ -62,9 +64,9 @@ class TaskActivityRenderer {
       }
       final Rectangle nextRectangle;
       if (nextActivity.getEnd().compareTo(getChartModel().getOffsetAnchorDate()) <= 0) {
-        nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity, offsets);
+        nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity);
       } else if (nextActivity.getStart().compareTo(getChartModel().getEndDate()) >= 0) {
-        nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity, offsets);
+        nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity);
       } else {
         nextRectangle = processRegularActivity(rowNum, nextActivity, offsets);
       }
@@ -73,7 +75,7 @@ class TaskActivityRenderer {
     return rectangles;
   }
 
-  private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity, List<Offset> offsets) {
+  private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity) {
     GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
     int startx = getChartModel().getBottomUnitOffsets().getEndPx() + 1;
     int topy = rowNum * getRowHeight() + 4;
@@ -87,7 +89,7 @@ class TaskActivityRenderer {
     return myGraphicPrimitiveContainer;
   }
 
-  private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity, List<Offset> offsets) {
+  private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity) {
     GraphicPrimitiveContainer container = getContainerFor(nextActivity.getTask());
     int startx = getChartModel().getBottomUnitOffsets().getStartPx() - 1;
     int topy = rowNum * getRowHeight() + 4;
@@ -111,8 +113,11 @@ class TaskActivityRenderer {
     boolean nextHasNested = getChartModel().getTaskContainment().hasNestedTasks(nextTask);
     GraphicPrimitiveContainer container = getContainerFor(nextTask);
     nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
-    if (nextStarted.getTask().isMilestone()) {
+    if (nextTask.isMilestone()) {
       nextRectangle.setStyle("task.milestone");
+      GraphicPrimitiveContainer.Text timelineLabel = myLabelsRenderer.createTimelineLabel(nextRectangle, nextTask);
+      timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
+      timelineLabel.setForegroundColor(nextTask.getColor());
     } else if (nextTask.isProjectTask()) {
       nextRectangle.setStyle("task.projectTask");
       if (nextStarted.isFirst()) {
@@ -164,10 +169,6 @@ class TaskActivityRenderer {
     int[] bounds = offsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
     int leftX = bounds[0];
     int rightX = bounds[1];
-    if (activity.getTask().isMilestone()) {
-      rightX += 5;
-      leftX -= 5;
-    }
     int topY = rowNum * getRowHeight();
     return new java.awt.Rectangle(leftX, topY, rightX - leftX, getRowHeight());
   }
