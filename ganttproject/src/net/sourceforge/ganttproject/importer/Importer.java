@@ -19,14 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
-import java.util.List;
 
 import org.osgi.service.prefs.Preferences;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 
 public interface Importer {
   String getFileTypeDescription();
@@ -40,10 +38,4 @@ public interface Importer {
   String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.importer";
 
   void setContext(IGanttProject project, UIFacade uiFacade, Preferences pluginPreferences);
-
-  /**
-   * @return a list of additional wizard pages, required for the importer, or
-   *         null if no additional pages are available
-   */
-  List<WizardPage> getAdditionalPages();
 }
