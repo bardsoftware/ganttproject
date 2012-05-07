@@ -18,15 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.util.List;
-
 import org.osgi.service.prefs.Preferences;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class ImporterBase implements Importer {
@@ -72,11 +69,6 @@ public abstract class ImporterBase implements Importer {
   }
 
   protected GPOption[] getOptions() {
-    return null;
-  }
-
-  @Override
-  public List<WizardPage> getAdditionalPages() {
     return null;
   }
 
