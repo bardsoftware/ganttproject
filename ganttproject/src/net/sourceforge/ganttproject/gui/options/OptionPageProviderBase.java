@@ -89,7 +89,7 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
   protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
     JPanel result = new JPanel(new BorderLayout());
     result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    result.add(TopPanel.create(title, description), BorderLayout.NORTH);
+    //result.add(TopPanel.create(title, description), BorderLayout.NORTH);
     contentComponent.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0),
         contentComponent.getBorder()));
     JScrollPane scrollPane = new JScrollPane(contentComponent);
