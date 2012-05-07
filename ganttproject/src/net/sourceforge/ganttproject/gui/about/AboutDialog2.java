@@ -52,6 +52,7 @@ public class AboutDialog2 extends AbstractPagesDialog {
     List<ListItem> result = new ArrayList<AbstractPagesDialog.ListItem>();
     result.add(createSummaryPage());
     result.add(createHtmlPage("authors"));
+    result.add(createHtmlPage("translations"));
     result.add(createHtmlPage("license"));
     result.add(createHtmlPage("library"));
     return result;
