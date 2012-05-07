@@ -6,12 +6,16 @@ package net.sourceforge.ganttproject.export;
 import java.awt.Component;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
@@ -23,7 +27,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * @author bard
  */
-public class ExporterToImage extends AbstractExporter {
+public class ExporterToImage extends ExporterBase {
 
   static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
     static final String[] FILE_FORMAT_ID = new String[] { "impex.image.fileformat.png", "impex.image.fileformat.jpeg" };
@@ -112,14 +116,30 @@ public class ExporterToImage extends AbstractExporter {
   }
 
   @Override
-  public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-    Chart chart = getUIFacade().getActiveChart();
-    if (chart == null) {
-      chart = getGanttChart();
-    }
-    RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
-    ImageIO.write(renderedImage, myFileTypeOption.proposeFileExtension(), outputFile);
-    finalizationJob.run(new File[] { outputFile });
+  protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
+    ExporterJob job = createImageExportJob(outputFile);
+    return new ExporterJob[] { job };
+  }
+
+  private ExporterJob createImageExportJob(final File outputFile) {
+    ExporterJob result = new ExporterJob("Export project") {
+      @Override
+      protected IStatus run() {
+        Chart chart = getUIFacade().getActiveChart();
+        if (chart == null) {
+          chart = getGanttChart();
+        }
+        RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
+        try {
+          ImageIO.write(renderedImage, myFileTypeOption.proposeFileExtension(), outputFile);
+        } catch (IOException e) {
+          getUIFacade().showErrorDialog(e);
+          return Status.CANCEL_STATUS;
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    return result;
   }
 
   @Override
@@ -130,10 +150,5 @@ public class ExporterToImage extends AbstractExporter {
   @Override
   public String[] getFileExtensions() {
     return FileTypeOption.FILE_EXTENSION;
-  }
-
-  @Override
-  public String[] getCommandLineKeys() {
-    return getFileExtensions();
   }
 }
