@@ -41,7 +41,7 @@ public class ProjectNamePage implements WizardPage {
 
   @Override
   public Component getComponent() {
-    return myProjectSettingsPanel;
+    return myProjectSettingsPanel.getComponent();
   }
 
   @Override

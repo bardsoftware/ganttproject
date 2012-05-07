@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.gui.options;
 import java.awt.Component;
 
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -48,7 +47,8 @@ public class OptionPageProviderPanel {
       providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
     }
     providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
-    JScrollPane result = new JScrollPane(providerComponent);
+    Component result = providerComponent;
+    //JScrollPane result = new JScrollPane(providerComponent);
     return result;
   }
 

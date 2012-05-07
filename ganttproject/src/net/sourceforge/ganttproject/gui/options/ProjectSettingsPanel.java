@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,10 +41,10 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 
 /**
  * Panel to edit the project properties
- * 
+ *
  * @author athomas
  */
-public class ProjectSettingsPanel extends GeneralOptionPanel {
+public class ProjectSettingsPanel {
 
   private final JTextField tfName;
 
@@ -55,9 +56,11 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
   private final IGanttProject myProject;
 
-  public ProjectSettingsPanel(IGanttProject project) {
-    super(language.correctLabel(GanttLanguage.getInstance().getText("project")), language.getText("settingsProject"));
+  private JPanel myComponent;
 
+  private static final GanttLanguage language = GanttLanguage.getInstance();
+
+  public ProjectSettingsPanel(IGanttProject project) {
     myProject = project;
     Box vbproject = Box.createVerticalBox();
 
@@ -106,12 +109,10 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
 
     JPanel projectPanel = new JPanel(new BorderLayout());
     projectPanel.add(vbproject, BorderLayout.NORTH);
-    vb.add(projectPanel);
 
-    applyComponentOrientation(language.getComponentOrientation());
+    myComponent = projectPanel;
   }
 
-  @Override
   public boolean applyChanges(boolean askForApply) {
     boolean hasChange;
     if (myProject.getProjectName().equals(tfName.getText())
@@ -122,17 +123,14 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
       hasChange = true;
       // apply changes if user clicked apply (or warn about pending changes and
       // ask whether to apply or not)
-      if (!askForApply || (askForApply && askForApplyChanges())) {
-        myProject.setProjectName(getProjectName());
-        myProject.setDescription(getProjectDescription());
-        myProject.setOrganization(getProjectOrganization());
-        myProject.setWebLink(getWebLink());
-      }
+      myProject.setProjectName(getProjectName());
+      myProject.setDescription(getProjectDescription());
+      myProject.setOrganization(getProjectOrganization());
+      myProject.setWebLink(getWebLink());
     }
     return hasChange;
   }
 
-  @Override
   public void initialize() {
     tfName.setText(myProject.getProjectName());
     tfOrganization.setText(myProject.getOrganization());
@@ -158,5 +156,17 @@ public class ProjectSettingsPanel extends GeneralOptionPanel {
   /** @return the project description */
   public String getProjectDescription() {
     return taDescr.getText();
+  }
+
+  public String getTitle() {
+    return language.correctLabel(language.getText("project"));
+  }
+
+  public String getComment() {
+    return language.getText("settingsProject");
+  }
+
+  public JComponent getComponent() {
+    return myComponent;
   }
 }

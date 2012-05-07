@@ -20,14 +20,11 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Insets;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 
 /**
  * @author Dmitry Barashev
@@ -41,24 +38,18 @@ public class TopPanel {
     topPanel.setForeground(Color.BLACK);
     topPanel.setBorder(BorderFactory.createLineBorder(Color.ORANGE.darker()));
 
-    JLabel labelTitle = new JLabel(title);
-    labelTitle.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-    labelTitle.setFont(labelTitle.getFont().deriveFont(Font.BOLD));
-    topPanel.add(labelTitle, BorderLayout.NORTH);
-
-    if (comment != null && !comment.isEmpty()) {
-      JTextArea textArea = new JTextArea(comment);
-      textArea.setEditable(false);
-      textArea.setFont(textArea.getFont().deriveFont(Font.PLAIN, textArea.getFont().getSize() - 2));
-      textArea.setLineWrap(true);
-      textArea.setWrapStyleWord(true);
-      textArea.setMargin(new Insets(0, 5, 2, 5));
-      textArea.setBackground(Color.ORANGE);
-
-      JPanel commentWrapper = new JPanel(new BorderLayout());
-      commentWrapper.add(textArea, BorderLayout.NORTH);
-      topPanel.add(commentWrapper, BorderLayout.CENTER);
+    String labelText = "<html>";
+    if (title != null) {
+        labelText += "<b>" + title + "</b>";
     }
+    if (comment != null) {
+      labelText += "<br>" + comment;
+    }
+    labelText += "</html>";
+
+    JLabel labelTitle = new JLabel(labelText);
+    labelTitle.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+    topPanel.add(labelTitle, BorderLayout.NORTH);
     return topPanel;
   }
 }
