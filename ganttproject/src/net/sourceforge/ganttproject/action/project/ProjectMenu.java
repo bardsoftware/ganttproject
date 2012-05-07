@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2005-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -49,7 +49,7 @@ public class ProjectMenu extends JMenu {
     ExitAction exitAction = new ExitAction(project);
     ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
     ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project,
-        project.getGanttOptions());
+        project.getGanttOptions().getPluginPreferences());
 
     add(projectSettingsAction);
     add(myNewProjectAction);
