@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2012 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -222,8 +222,10 @@ class ProjectFileExporter {
     c.setTime(gpFinishDate);
     c.add(Calendar.DAY_OF_YEAR, -1);
     Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
-    c.set(Calendar.HOUR, finishTime.getHours());
-    c.set(Calendar.MINUTE, finishTime.getMinutes());
+    if (finishTime != null) {
+      c.set(Calendar.HOUR, finishTime.getHours());
+      c.set(Calendar.MINUTE, finishTime.getMinutes());
+    }
     return c.getTime();
 
   }

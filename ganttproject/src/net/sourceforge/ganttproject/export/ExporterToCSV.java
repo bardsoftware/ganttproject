@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2011 Dmitry Barashev
+Copyright (C) 2011-2012 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,22 +21,20 @@ package net.sourceforge.ganttproject.export;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttOptions;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.io.GanttCSVExport;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.osgi.service.prefs.Preferences;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
-public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptionsClient {
-
+public class ExporterToCSV extends ExporterBase {
+  /** List of available/associated extensions */
   private static String[] FILE_EXTENSIONS = new String[] { "csv" };
-  private IGanttProject myProject;
-  private GanttOptions myOptions;
 
   @Override
   public String getFileTypeDescription() {
@@ -45,13 +43,11 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
 
   @Override
   public GPOptionGroup getOptions() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public List<GPOptionGroup> getSecondaryOptions() {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -62,39 +58,42 @@ public class ExporterToCSV implements Exporter, ExportFileWizardImpl.LegacyOptio
 
   @Override
   public String getFileNamePattern() {
-    return ExporterToCSV.FILE_EXTENSIONS[0];
+    return FILE_EXTENSIONS[0];
   }
 
   @Override
-  public void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-    outputFile.createNewFile();
-    GanttCSVExport legacyExporter = new GanttCSVExport(myProject, myOptions.getCSVOptions());
-    legacyExporter.save(new FileOutputStream(outputFile));
-    finalizationJob.run(new File[] { outputFile });
+  protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
+    ExporterJob job = createCVSExportJob(outputFile);
+    return new ExporterJob[] { job };
+  }
+
+  private ExporterJob createCVSExportJob(final File outputFile) {
+    ExporterJob result = new ExporterJob("Export project") {
+      @Override
+      protected IStatus run() {
+        try {
+          outputFile.createNewFile();
+          // TODO Fix this ugly hack!! Ie make the settings available in a proper way
+          GanttCSVExport exporter = new GanttCSVExport(getProject(),
+              ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
+          exporter.save(new FileOutputStream(outputFile));
+        } catch (IOException e) {
+          getUIFacade().showErrorDialog(e);
+          return Status.CANCEL_STATUS;
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    return result;
   }
 
   @Override
   public String proposeFileExtension() {
-    return ExporterToCSV.FILE_EXTENSIONS[0];
+    return FILE_EXTENSIONS[0];
   }
 
   @Override
   public String[] getFileExtensions() {
-    return ExporterToCSV.FILE_EXTENSIONS;
-  }
-
-  @Override
-  public String[] getCommandLineKeys() {
-    return ExporterToCSV.FILE_EXTENSIONS;
-  }
-
-  @Override
-  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-    myProject = project;
-  }
-
-  @Override
-  public void setOptions(GanttOptions options) {
-    myOptions = options;
+    return FILE_EXTENSIONS;
   }
 }

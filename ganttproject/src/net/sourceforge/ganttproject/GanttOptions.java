@@ -124,7 +124,7 @@ public class GanttOptions {
 
   private boolean bExport3DBorders;
 
-  /** CVS export options. */
+  /** CSV export options. */
   private CSVOptions csvOptions;
 
   private Map<String, GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
@@ -173,7 +173,7 @@ public class GanttOptions {
     bExportRelations = true;
     bExport3DBorders = false;
 
-    // CVS export options
+    // CSV export options
     csvOptions = new CSVOptions();
   }
 
@@ -796,7 +796,7 @@ public class GanttOptions {
     return height;
   }
 
-  /** @return the cvsOptions. */
+  /** @return the csvOptions. */
   public CSVOptions getCSVOptions() {
     return csvOptions;
   }

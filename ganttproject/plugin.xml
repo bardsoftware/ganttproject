@@ -15,6 +15,9 @@
       <library name="lib/core/balloontip-1.2.1.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-csv-0.1-svn678580.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-httpclient.jar">
          <export name="*"/>
       </library>
@@ -30,9 +33,6 @@
       <library name="lib/core/jcommander-1.17.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/jdnc-modifBen.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/core/jdom-1.0.jar">
          <export name="*"/>
       </library>
@@ -40,6 +40,9 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/swingx-1.6.3.jar">
          <export name="*"/>
       </library>
       <library name="data/resources/">
@@ -69,6 +72,7 @@
          point="net.sourceforge.ganttproject.importer">
          <importer class="net.sourceforge.ganttproject.importer.ImporterFromGanttFile"/>
          <importer class="net.sourceforge.ganttproject.importer.ImporterFromTxtFile"/>
+         <importer class="net.sourceforge.ganttproject.importer.ImporterFromCsvFile"/>
    </extension>
    <extension point="net.sourceforge.ganttproject.OptionPageProvider">
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ExportCsvOptionPageProvider"/>
