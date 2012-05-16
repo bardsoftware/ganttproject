@@ -185,16 +185,16 @@ class ProjectFileExporter {
     if (nestedTasks.length > 0) {
     }
 
+    mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
     Date startTime = convertStartTime(t.getStart().getTime());
     Date finishTime = convertFinishTime(t.getEnd().getTime());
     mpxjTask.setStart(startTime);
     mpxjTask.setFinish(finishTime);
     Duration duration = convertDuration(t.getDuration());
     mpxjTask.setDuration(duration);
+    mpxjTask.setManualDuration(duration);
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
-    mpxjTask.setActualStart(startTime);
-    //mpxjTask.setActualFinish(finishTime);
     mpxjTask.setActualDuration(durations[0]);
     mpxjTask.setRemainingDuration(durations[1]);
     mpxjTask.setPriority(convertPriority(t));
@@ -337,6 +337,7 @@ class ProjectFileExporter {
     mpxjResource.setName(hr.getName());
     mpxjResource.setEmailAddress(hr.getMail());
     mpxjResource.setType(ResourceType.WORK);
+    mpxjResource.setCanLevel(false);
 
     exportDaysOff(hr, mpxjResource);
     exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
@@ -440,7 +441,6 @@ class ProjectFileExporter {
 
         mpxjAssignment.setWork(mpxjTask.getDuration());
         Duration[] durations = getActualAndRemainingDuration(mpxjTask, ra.getLoad() / 100.0);
-        mpxjAssignment.setActualStart(mpxjTask.getStart());
         mpxjAssignment.setActualWork(durations[0]);
         mpxjAssignment.setRemainingWork(durations[1]);
       }
