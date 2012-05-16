@@ -187,12 +187,14 @@ class ProjectFileExporter {
     mpxjTask.setStart(convertStartTime(t.getStart().getTime()));
     mpxjTask.setFinish(convertFinishTime(t.getEnd().getTime()));
     mpxjTask.setDuration(convertDuration(t.getDuration()));
+    mpxjTask.setManualDuration(convertDuration(t.getDuration()));
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
     mpxjTask.setActualDuration(durations[0]);
     mpxjTask.setRemainingDuration(durations[1]);
     mpxjTask.setPriority(convertPriority(t));
 
+    //mpxjTask.setm
     exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
       @Override
       public void set(FieldType ft, Object value) {
@@ -330,6 +332,7 @@ class ProjectFileExporter {
     mpxjResource.setName(hr.getName());
     mpxjResource.setEmailAddress(hr.getMail());
     mpxjResource.setType(ResourceType.WORK);
+    mpxjResource.setCanLevel(false);
 
     exportDaysOff(hr, mpxjResource);
     exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
