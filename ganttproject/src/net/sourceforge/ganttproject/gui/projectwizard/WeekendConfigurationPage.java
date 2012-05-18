@@ -23,9 +23,10 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -33,6 +34,8 @@ import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -135,7 +138,11 @@ public class WeekendConfigurationPage implements WizardPage {
         GPLogger.log(e1);
       }
 
-      myCalendarOption = new CalendarOption(calendar, Arrays.asList(calendarUrls), Arrays.asList(calendarLabels));
+      SortedMap<String, URL> sortedCalendars = new TreeMap<String, URL>();
+      for (int i = 0; i < calendarLabels.length; i++) {
+    	  sortedCalendars.put(calendarLabels[i], calendarUrls[i]);
+      }
+      myCalendarOption = new CalendarOption(calendar, Lists.newArrayList(sortedCalendars.values()), Lists.newArrayList(sortedCalendars.keySet()));
       myBox.add(builder.createLabeledComponent(myCalendarOption));
     } else {
       myCalendarOption = null;
@@ -147,7 +154,7 @@ public class WeekendConfigurationPage implements WizardPage {
      * Table to keep all the JCheckBoxes with days of the week. It is used to
      * check if in project creation dialog all days are marked as weekend. If
      * they are, day selected last will be unmarked. See class CheckBoxAction.
-     * 
+     *
      * If you know better solution, do not hesitate to replace this code.
      */
     JCheckBox[] allCheckBoxes = new JCheckBox[7];
