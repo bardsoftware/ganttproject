@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="France" type="country">
-	<date year="" month="12" date="25"/>
-	<date year="" month="01" date="01"/>
-	<date year="" month="05" date="01"/>
-	<date year="" month="05" date="08"/>
-	<date year="" month="07" date="14"/>
-	<date year="" month="08" date="15"/>
-	<date year="" month="11" date="01"/>
-	<date year="" month="11" date="11"/>
+<!-- http://www.officeholidays.com/countries/france/ -->
+	<date year="" month="01" date="01"/>     <!-- New Year -->
+	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
+	<date year="2012" month="04" date="09"/> <!-- Easter Monday -->
+	<date year="" month="05" date="01"/>     <!-- Labor Day -->
+	<date year="" month="05" date="08"/>     <!-- Victory in Europe -->
+	<date year="2012" month="05" date="17"/> <!-- Ascension -->
+	<date year="2012" month="05" date="28"/> <!-- Whitmonday -->
+	<date year="" month="07" date="14"/>     <!-- Bastille -->
+	<date year="" month="08" date="15"/>     <!-- Assumption -->
+	<date year="" month="11" date="01"/>     <!-- All Saints -->
+	<date year="" month="11" date="11"/>     <!-- Armistice -->
+	<date year="2012" month="11" date="12"/> <!-- Armistice in lieu -->
+	<date year="" month="12" date="25"/>     <!-- Christmas -->
 	<date year="2005" month="3" date="28"/>
 </calendar >

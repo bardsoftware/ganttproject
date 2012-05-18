@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Switzerland" type="country">
+<!-- http://www.officeholidays.com/countries/switzerland/2012.asp -->
+<!-- http://en.wikipedia.org/wiki/Public_holidays_in_Switzerland -->
+      <date year="" month="1" date="1"/>       <!-- New Year -->
+      <date year="" month="1" date="2"/>       <!-- Berchtolds day -->
+      <date year="2012" month="4" date="6"/>   <!-- Good Friday -->
+      <date year="2012" month="4" date="8"/>   <!-- Easter -->
+      <date year="2012" month="4" date="9"/>   <!-- Easter Monday -->
+      <date year="2012" month="5" date="17"/>  <!-- Ascension -->
+      <date year="2012" month="5" date="27"/>  <!-- Pentecost -->
+      <date year="2012" month="5" date="28"/>  <!-- Whitmonday -->
+      <date year="" month="08" date="01"/>     <!-- Swiss National Day -->
+      <date year="" month="12" date="25"/>     <!-- Christmas -->
+      <date year="" month="12" date="26"/>     <!-- St.Stephens -->
+</calendar>

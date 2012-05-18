@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="United States" type="country">
+<!-- http://www.opm.gov/operating_status_schedules/fedhol/2012.asp -->
 	<date year="" month="01" date="01"/> #New Year's Day
+	<date year="2012" month="1" date="02"/> #New Year's Day, since in 2012 Jan 01 is Sunday
 	<date year="" month="07" date="04"/> #Independence Day
 	<date year="" month="11" date="11"/> #Veterans Day
+	<date year="" month="11" date="12"/> #Veterans Day, since 2012-11-11 is Sunday
 	<date year="" month="12" date="25"/> #Christmas Day
 	<date year="2012" month="1" date="16"/> #Martin Luther King, Jr. Day
 	<date year="2013" month="1" date="21"/> #Martin Luther King, Jr. Day
