@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="Poland" type="country">
-      <date year="" month="1" date="1"/>
-      <date year="" month="5" date="1"/>
-      <date year="" month="5" date="3"/>
-      <date year="" month="8" date="15"/>
-      <date year="" month="11" date="1"/>
-      <date year="" month="11" date="11"/>
-      <date year="" month="12" date="25"/>
-      <date year="" month="12" date="26"/>
+<!-- http://en.poland.gov.pl/Holidays,in,2012,10766.html -->
+<!-- http://www.officeholidays.com/countries/poland/2012.asp -->
+      <date year="" month="1" date="1"/>       <!-- New Year -->
+      <date year="" month="1" date="6"/>       <!-- Epiphany -->
+      <date year="2012" month="4" date="8"/>   <!-- Easter -->
+      <date year="2012" month="4" date="9"/>   <!-- Easter Monday -->
+      <date year="" month="5" date="1"/>       <!-- Labour day -->
+      <date year="" month="5" date="3"/>       <!-- Constitution day -->
+      <date year="2012" month="5" date="27"/>  <!-- Pentecost -->
+      <date year="2012" month="6" date="7"/>   <!-- Corpus Christi -->
+      <date year="" month="8" date="15"/>      <!-- Assumption -->
+      <date year="" month="11" date="1"/>      <!-- All Saints -->
+      <date year="" month="11" date="11"/>     <!-- Independence -->
+      <date year="" month="12" date="25"/>     <!-- Christmas -->
+      <date year="" month="12" date="26"/>     <!-- St.Stephens -->
       <date year="2006" month="4" date="17"/>
       <date year="2006" month="6" date="15"/>
       <date year="2007" month="4" date="9"/>

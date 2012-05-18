@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="Canada" type="country">
+<!-- http://www.officeholidays.com/countries/canada/2012.asp -->
+<!-- http://www.statutoryholidays.com/2012.php -->
+	<date year="" month="01" date="01"/>      <!-- New Year -->
+	<date year="2012" month="01" date="02"/>  <!-- New Year in lieu -->
+	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
+	<date year="2012" month="05" date="21"/>  <!-- Victoria day -->
+	<date year="" month="07" date="01"/>      <!-- Canada day -->
+	<date year="2012" month="07" date="02"/>  <!-- Canada day in lieu -->
+	<date year="2012" month="09" date="03"/>  <!-- Labour day -->
+	<date year="" month="10" date="08"/>      <!-- Thanksgiving day -->
+	<date year="" month="12" date="25"/>      <!-- Christmas -->
+
 	<date year="2005" month="01" date="01"/>
 	<date year="2005" month="03" date="25"/>
 	<date year="2005" month="03" date="28"/>

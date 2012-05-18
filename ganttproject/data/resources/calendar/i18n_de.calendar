@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="Deutschland/alle" type="country">
-	<date year="" month="01" date="01"/> 
-	<date year="" month="01" date="06"/> #nur BW,BY,ST
-	<date year="" month="05" date="01"/>
-	<date year="" month="08" date="15"/> #nur BW,SL
-	<date year="" month="10" date="03"/>
-	<date year="" month="10" date="31"/> #nur BB,MV,SN,ST,TH
-	<date year="" month="11" date="01"/> #nur BW,BY,NW,RP,SL
-	<date year="" month="12" date="25"/>
-	<date year="" month="12" date="26"/>
+<!-- http://www.officeholidays.com/countries/germany/ -->
+<!-- http://www.holidays-info.com/Holidays-Germany/2012/holidays_2012.html -->
+	<date year="" month="01" date="01"/>      <!-- New Year --> 
+	<date year="" month="01" date="06"/>      <!-- Epiphany: only BW,BY,ST -->
+	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
+	<date year="2012" month="04" date="09"/>  <!-- Easter Monday -->
+	<date year="" month="05" date="01"/>      <!-- Labour day -->
+	<date year="2012" month="05" date="17"/>  <!-- Ascension -->
+	<date year="2012" month="05" date="28"/>  <!-- Whitmonday -->
+	<date year="2012" month="06" date="07"/>  <!-- Corpus Christi: only BW,BY,HE,NW,RP,SL -->
+	<date year="" month="08" date="15"/>      <!-- Assumption: only SL -->
+	<date year="" month="10" date="03"/>      <!-- German Unity -->
+	<date year="" month="10" date="31"/>      <!-- Reformation: only BB,MV,SN,ST,TH -->
+	<date year="" month="11" date="01"/>      <!-- All Saints: only BW,BY,NW,RP,SL -->
+	<date year="2012" month="11" date="21"/>  <!-- Repentance: only SN -->
+	<date year="" month="12" date="25"/>      <!-- Christmas -->
+	<date year="" month="12" date="26"/>      <!-- St.Stephens -->
 	<date year="2006" month="04" date="14"/>
 	<date year="2006" month="04" date="17"/>
 	<date year="2006" month="05" date="25"/>
