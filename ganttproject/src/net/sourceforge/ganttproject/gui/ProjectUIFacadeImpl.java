@@ -199,7 +199,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   /**
    * Check if the project has been modified, before creating or opening another
    * project
-   * 
+   *
    * @return true when the project is <b>not</b> modified or is allowed to be
    *         discarded
    */
@@ -256,8 +256,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         && document.getFileName().toLowerCase().endsWith(".gan") == false) {
       // Unknown file extension
       String errorMessage = GanttLanguage.getInstance().getText("msg2") + "\n" + document.getFileName();
-      GPLogger.log(new RuntimeException(errorMessage));
-      return;
+      throw new DocumentException(errorMessage);
     }
 
     boolean locked = document.acquireLock();
