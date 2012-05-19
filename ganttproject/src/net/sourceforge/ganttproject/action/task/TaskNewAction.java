@@ -19,40 +19,62 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.task;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class TaskNewAction extends GPAction {
   private final IGanttProject myProject;
+  private final UIFacade myUiFacade;
 
-  private final GPUndoManager myUndoManager;
 
-  public TaskNewAction(IGanttProject project, GPUndoManager undoManager) {
-    this(project, undoManager, IconSize.MENU);
+  public TaskNewAction(IGanttProject project, UIFacade uiFacade) {
+    this(project, uiFacade, IconSize.MENU);
   }
 
-  private TaskNewAction(IGanttProject project, GPUndoManager undoManager, IconSize size) {
+  private TaskNewAction(IGanttProject project, UIFacade uiFacade, IconSize size) {
     super("task.new", size.asString());
     myProject = project;
-    myUndoManager = undoManager;
+    myUiFacade = uiFacade;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new TaskNewAction(myProject, myUndoManager, size);
+    return new TaskNewAction(myProject, myUiFacade, size);
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    myUndoManager.undoableEdit(getLocalizedDescription(), new Runnable() {
+    myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
       @Override
       public void run() {
-        // TODO all actions have their actual action inside, so move newTask
-        // code to here
-        myProject.newTask();
+        List<Task> selection = getUIFacade().getTaskSelectionManager().getSelectedTasks();
+        if (selection.size() > 1) {
+          return;
+        }
+
+        Task selectedTask = selection.isEmpty() ? null : selection.get(0);
+        getTaskManager().newTaskBuilder()
+            .withColor(getUIConfiguration().getTaskColor()).withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
       }
     });
+  }
+
+  protected UIConfiguration getUIConfiguration() {
+    return myProject.getUIConfiguration();
+  }
+
+  protected TaskManager getTaskManager() {
+    return myProject.getTaskManager();
+  }
+
+  protected UIFacade getUIFacade() {
+    return myUiFacade;
   }
 }

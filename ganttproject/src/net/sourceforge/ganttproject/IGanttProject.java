@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -36,7 +35,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 /**
  * This interface represents a project as a logical business entity, without any
  * UI (except some configuration options :)
- * 
+ *
  * @author bard
  */
 public interface IGanttProject {
@@ -56,12 +55,6 @@ public interface IGanttProject {
   String getWebLink();
 
   void setWebLink(String webLink);
-
-  /**
-   * Creates a new task and performs all necessary initialization procedures
-   * such as changing properties of parent task, adjusting schedule, etc.
-   */
-  Task newTask();
 
   UIConfiguration getUIConfiguration();
 
