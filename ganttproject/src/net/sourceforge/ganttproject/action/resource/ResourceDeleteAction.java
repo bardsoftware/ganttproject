@@ -38,7 +38,7 @@ public class ResourceDeleteAction extends ResourceAction {
 
   public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
       UIFacade uiFacade) {
-    this(hrManager, context, project, uiFacade, IconSize.MENU);
+    this(hrManager, context, project, uiFacade, IconSize.TOOLBAR_SMALL);
   }
 
   private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
