@@ -228,8 +228,10 @@ class ProjectFileExporter {
     c.setTime(gpFinishDate);
     c.add(Calendar.DAY_OF_YEAR, -1);
     Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
-    c.set(Calendar.HOUR, finishTime.getHours());
-    c.set(Calendar.MINUTE, finishTime.getMinutes());
+    if (finishTime != null) {
+	    c.set(Calendar.HOUR, finishTime.getHours());
+	    c.set(Calendar.MINUTE, finishTime.getMinutes());
+    }
     return c.getTime();
 
   }
