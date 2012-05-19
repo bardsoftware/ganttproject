@@ -53,6 +53,7 @@ InstallDir $PROGRAMFILES\GanttProject-2.5
 Section "GanttProject"
 
   SectionIn RO ; read-only
+  SetShellVarContext all
   
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
@@ -120,6 +121,7 @@ SectionEnd
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
 
+  SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\GanttProject"
   CreateShortCut "$SMPROGRAMS\GanttProject\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
@@ -152,6 +154,7 @@ SectionEnd
 
 Section "Uninstall"
 
+  SetShellVarContext all
   ; Remove registry keys
   ReadRegStr $1 HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files"  
   ${If} $1 = 1
@@ -172,7 +175,7 @@ Section "Uninstall"
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\GanttProject\*.*"
   Delete "$DESKTOP\GanttProject.lnk"
-	Delete "$INSTDIR\Run GanttProject.lnk"
+  Delete "$INSTDIR\Run GanttProject.lnk"
 
   ; Remove directories used
   RMDir "$SMPROGRAMS\GanttProject"
