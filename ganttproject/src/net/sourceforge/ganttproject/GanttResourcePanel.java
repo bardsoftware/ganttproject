@@ -29,6 +29,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import net.sourceforge.ganttproject.action.ActiveActionProvider;
+import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -76,12 +79,23 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     prj.addProjectEventListener(getProjectEventListener());
     myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
 
+    final GPAction resourceDeleteAction = myResourceActionSet.getResourceDeleteAction();
+    final GPAction assignmentDeleteAction = myResourceActionSet.getAssignmentDelete();
+    GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
+		@Override
+		public AbstractAction getActiveAction() {
+			if (getResourceAssignments().length > 0) {
+				return assignmentDeleteAction;
+			}
+			return resourceDeleteAction;
+		}
+	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
     setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(),
-        myResourceActionSet.getResourceDeleteAction());
+        deleteAction);
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
-        myResourceActionSet.getResourceMoveDownAction(), null, null, myResourceActionSet.getResourceDeleteAction(),
+        myResourceActionSet.getResourceMoveDownAction(), null, null, deleteAction,
         appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),
-        myResourceActionSet.getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
+        myResourceActionSet.getResourcePropertiesAction());
     getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
     getTreeTable().setRowHeight(20);
 
@@ -101,6 +115,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     area.getChartModel().setRowHeight(getTreeTable().getRowHeight());
 
     this.setBackground(new Color(0.0f, 0.0f, 0.0f));
+    updateContextActions();
     // applyComponentOrientation(lang.getComponentOrientation());
   }
 
@@ -118,7 +133,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
     super.onSelectionChanged(selection);
     getPropertiesAction().setEnabled(!selection.isEmpty());
-    getDeleteAction().setEnabled(!selection.isEmpty());
+    updateContextActions();
+  }
+
+  private void updateContextActions() {
+    myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
+    myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
     appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
     appli.getViewManager().getCutAction().setEnabled(getResources().length > 0);
   }

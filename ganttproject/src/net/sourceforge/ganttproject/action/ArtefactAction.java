@@ -84,7 +84,11 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
   public void actionStateChanged() {
     // State of a delegate action has been changed, so update out state as well
     GPAction activeAction = (GPAction) myProvider.getActiveAction();
-    setEnabled(activeAction.isEnabled());
-    putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+    if (activeAction == null) {
+    	setEnabled(false);
+    } else {
+	    setEnabled(activeAction.isEnabled());
+	    putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+    }
   }
 }

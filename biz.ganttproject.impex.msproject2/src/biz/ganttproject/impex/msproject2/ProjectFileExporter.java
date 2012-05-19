@@ -80,6 +80,8 @@ class ProjectFileExporter {
     myOutputProject.setAutoOutlineLevel(true);
     myOutputProject.setAutoWBS(true);
     myOutputProject.setAutoOutlineNumber(true);
+    myOutputProject.setAutoResourceUniqueID(false);
+    myOutputProject.setAutoTaskUniqueID(false);
   }
 
   ProjectFile run() throws MPXJException {
@@ -142,6 +144,7 @@ class ProjectFileExporter {
       myOutputProject.setTaskFieldAlias((TaskField) e.getValue(), e.getKey().getName());
     }
     net.sf.mpxj.Task rootTask = myOutputProject.addTask();
+    rootTask.setEffortDriven(false);
     rootTask.setID(0);
     rootTask.setUniqueID(0);
     rootTask.setOutlineLevel(0);
@@ -179,22 +182,21 @@ class ProjectFileExporter {
 
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
     if (nestedTasks.length > 0) {
-      mpxjTask.setSummary(true);
-      // mpxjTask.setTaskMode(TaskMode.AUTO_SCHEDULED);
     }
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
-
-    mpxjTask.setStart(convertStartTime(t.getStart().getTime()));
-    mpxjTask.setFinish(convertFinishTime(t.getEnd().getTime()));
-    mpxjTask.setDuration(convertDuration(t.getDuration()));
-    mpxjTask.setManualDuration(convertDuration(t.getDuration()));
+    Date startTime = convertStartTime(t.getStart().getTime());
+    Date finishTime = convertFinishTime(t.getEnd().getTime());
+    mpxjTask.setStart(startTime);
+    mpxjTask.setFinish(finishTime);
+    Duration duration = convertDuration(t.getDuration());
+    mpxjTask.setDuration(duration);
+    mpxjTask.setManualDuration(duration);
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
     mpxjTask.setActualDuration(durations[0]);
     mpxjTask.setRemainingDuration(durations[1]);
     mpxjTask.setPriority(convertPriority(t));
 
-    //mpxjTask.setm
     exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {
       @Override
       public void set(FieldType ft, Object value) {
@@ -224,10 +226,8 @@ class ProjectFileExporter {
     c.setTime(gpFinishDate);
     c.add(Calendar.DAY_OF_YEAR, -1);
     Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
-    if (finishTime != null) {
-      c.set(Calendar.HOUR, finishTime.getHours());
-      c.set(Calendar.MINUTE, finishTime.getMinutes());
-    }
+    c.set(Calendar.HOUR, finishTime.getHours());
+    c.set(Calendar.MINUTE, finishTime.getMinutes());
     return c.getTime();
 
   }
@@ -237,13 +237,16 @@ class ProjectFileExporter {
   }
 
   private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask) {
+	  return getActualAndRemainingDuration(mpxjTask, 1.0);
+  }
+
+  private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask, double load) {
     TimeUnit durationUnits = mpxjTask.getDuration().getUnits();
-    double actualWork = (mpxjTask.getDuration().getDuration() * mpxjTask.getPercentageComplete().doubleValue()) / 100;
+    double actualWork = (mpxjTask.getDuration().getDuration() * mpxjTask.getPercentageComplete().doubleValue() * load) / 100;
     double remainingWork = mpxjTask.getDuration().getDuration() - actualWork;
 
     return new Duration[] { Duration.getInstance(actualWork, durationUnits),
         Duration.getInstance(remainingWork, durationUnits) };
-
   }
 
   private void exportDependencies(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
@@ -327,7 +330,7 @@ class ProjectFileExporter {
   private void exportResource(HumanResource hr, Map<Integer, Resource> id2mpxjResource,
       Map<CustomPropertyDefinition, FieldType> customProperty_fieldType) throws MPXJException {
     final Resource mpxjResource = myOutputProject.addResource();
-    mpxjResource.setUniqueID(hr.getId());
+    mpxjResource.setUniqueID(hr.getId()  + 1);
     mpxjResource.setID(id2mpxjResource.size() + 1);
     mpxjResource.setName(hr.getName());
     mpxjResource.setEmailAddress(hr.getMail());
@@ -435,7 +438,7 @@ class ProjectFileExporter {
         mpxjAssignment.setFinish(mpxjTask.getFinish());
 
         mpxjAssignment.setWork(mpxjTask.getDuration());
-        Duration[] durations = getActualAndRemainingDuration(mpxjTask);
+        Duration[] durations = getActualAndRemainingDuration(mpxjTask, ra.getLoad() / 100.0);
         mpxjAssignment.setActualWork(durations[0]);
         mpxjAssignment.setRemainingWork(durations[1]);
       }

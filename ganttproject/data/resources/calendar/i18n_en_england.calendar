@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="England" type="country">
-	<date year="" month="12" date="26"/>
+<!-- http://www.direct.gov.uk/en/Employment/Employees/Timeoffandholidays/DG_073741 -->
+<!-- http://www.officeholidays.com/countries/united_kingdom/2012.asp -->
+	<date year="" month="01" date="01"/>     <!-- New Year -->
+	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
+	<date year="2012" month="04" date="06"/> <!-- Good Friday -->
+	<date year="2012" month="04" date="09"/> <!-- Easter Monday -->
+	<date year="2012" month="05" date="07"/> <!-- Early May bank holiday -->
+	<date year="2012" month="06" date="04"/> <!-- Spring bank holiday -->
+	<date year="2012" month="06" date="05"/> <!-- Queen's diamond -->
+	<date year="2012" month="08" date="27"/> <!-- Summer bank holiday -->
+	<date year="" month="12" date="25"/>     <!-- Christmas -->
+	<date year="" month="12" date="26"/>     <!-- Boxing day -->
+	
 	<date year="2005" month="03" date="25"/>
 	<date year="2005" month="03" date="28"/>
 	<date year="2005" month="05" date="02"/>

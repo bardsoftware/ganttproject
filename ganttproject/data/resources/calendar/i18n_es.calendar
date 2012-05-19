@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="España" type="country">
-	<date year="" month="01" date="01"/>
-	<date year="" month="01" date="06"/>
-	<date year="" month="05" date="01"/>
-	<date year="" month="08" date="15"/>
-	<date year="" month="10" date="12"/>
-	<date year="" month="11" date="01"/>
-	<date year="" month="12" date="06"/>
-	<date year="" month="12" date="08"/>
-	<date year="" month="12" date="25"/>
+<!-- http://en.wikipedia.org/wiki/Public_holidays_in_Spain -->
+<!-- http://www.officeholidays.com/countries/spain/2012.asp -->
+	<date year="" month="01" date="01"/>     <!-- New Year -->
+	<date year="" month="01" date="06"/>     <!-- Epiphany -->
+	<date year="2012" month="04" date="05"/> <!-- Maundy Thursday -->
+	<date year="2012" month="04" date="06"/> <!-- Good Friday -->
+	<date year="" month="05" date="01"/>     <!-- Labour day -->
+	<date year="" month="08" date="15"/>     <!-- Assumption -->
+	<date year="" month="10" date="12"/>     <!-- Hispanic day -->
+	<date year="" month="11" date="01"/>     <!-- All Saints -->
+	<date year="" month="12" date="06"/>     <!-- Constitution day -->
+	<date year="" month="12" date="08"/>     <!-- Immaculate Conception -->
+	<date year="" month="12" date="25"/>     <!-- Christmas -->
 </calendar>
