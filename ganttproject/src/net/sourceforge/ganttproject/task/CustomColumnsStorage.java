@@ -34,7 +34,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 /**
  * TODO Remove the map Name->customColum to keep only the map Id -> CustomColumn
  * This class stores the CustomColumns.
- *
+ * 
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {

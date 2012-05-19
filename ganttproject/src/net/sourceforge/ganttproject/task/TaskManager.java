@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import java.awt.Color;
 import java.util.Date;
 import java.util.Map;
 
@@ -39,6 +40,47 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface TaskManager {
+  abstract class TaskBuilder {
+    String myName;
+    Integer myId;
+    Date myStartDate;
+    TaskLength myDuration;
+    Color myColor;
+    Task myPrevSibling;
+
+    public TaskBuilder withColor(Color color) {
+      myColor = color;
+      return this;
+    }
+
+    public TaskBuilder withDuration(TaskLength duration) {
+      myDuration = duration;
+      return this;
+    }
+
+    public TaskBuilder withId(int id) {
+      myId = id;
+      return this;
+    }
+
+    public TaskBuilder withName(String name) {
+      myName = name;
+      return this;
+    }
+
+    public TaskBuilder withPrevSibling(Task sibling) {
+      myPrevSibling = sibling;
+      return this;
+    }
+
+    public TaskBuilder withStartDate(Date startDate) {
+      myStartDate = startDate;
+      return this;
+    }
+
+    public abstract Task build();
+  }
+
   Task[] getTasks();
 
   public Task getRootTask();
@@ -53,7 +95,10 @@ public interface TaskManager {
 
   public GanttTask createTask();
 
+  @Deprecated
   public GanttTask createTask(int taskId);
+
+  public TaskBuilder newTaskBuilder();
 
   String encode(TaskLength duration);
 
@@ -108,7 +153,7 @@ public interface TaskManager {
 
   /**
    * Processes the critical path finding on <code>root</code> tasks.
-   * 
+   *
    * @param root
    *          The root of the tasks to consider in the critical path finding.
    */
