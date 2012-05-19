@@ -36,7 +36,7 @@ public class AssignmentDeleteAction extends GPAction {
   private final UIFacade myUIFacade;
 
   public AssignmentDeleteAction(AssignmentContext context, UIFacade uiFadade) {
-    super("assignment.delete");
+    super("assignment.delete", IconSize.TOOLBAR_SMALL);
     myContext = context;
     myUIFacade = uiFadade;
   }
@@ -64,10 +64,5 @@ public class AssignmentDeleteAction extends GPAction {
       ra.delete();
       ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
     }
-  }
-
-  @Override
-  protected String getIconFilePrefix() {
-    return "delete_";
   }
 }
