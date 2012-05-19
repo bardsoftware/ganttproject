@@ -583,7 +583,7 @@ public class GanttOptions {
             }
           } else if (qName.equals("file")) {
             if (aName.equals("path")) {
-              documentsMRU.add(myDocumentManager.getDocument(value));
+              documentsMRU.add(myDocumentManager.getDocument(value), false);
             }
           } else if (qName.equals("automatic-launch")) {
             if (aName.equals("value")) {
