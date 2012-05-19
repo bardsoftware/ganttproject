@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * List of Documents MRU (<b>M</b>ost <b>R</b>ecently <b>U</b>sed)
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentsMRU {
@@ -50,12 +50,12 @@ public class DocumentsMRU {
   /**
    * Adds a Document at the top of the list of Documents MRU. If the list is
    * already full, an old entry is removed, to make place for this new document.
-   * 
+   *
    * @param document
    *          the Document that should be added
    * @return true when the list has changed through the addition
    */
-  public boolean add(Document document) {
+  public boolean add(Document document, boolean toHead) {
     // if the document is invalid, we don't add it
     if (!document.isValidForMRU())
       return false;
@@ -73,8 +73,11 @@ public class DocumentsMRU {
         documents.remove(maxSize - 1);
       }
     }
-    documents.add(0, document);
-
+    if (toHead) {
+    	documents.add(0, document);
+    } else {
+    	documents.add(document);
+    }
     fireMRUListChanged();
 
     return true;
