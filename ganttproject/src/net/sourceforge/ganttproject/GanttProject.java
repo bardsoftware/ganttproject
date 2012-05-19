@@ -871,10 +871,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       System.err.println("Main frame created");
       if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
         ganttFrame.openStartupDocument(mainArgs.file.get(0));
-      } else {
-        ganttFrame.fireProjectCreated();
       }
       ganttFrame.setVisible(true);
+      ganttFrame.fireProjectCreated();
+
       if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
         OSXAdapter.registerMacOSXApplication(ganttFrame);
       }
