@@ -53,6 +53,13 @@ public class GPLogger {
 
   public static boolean log(Throwable e) {
     if (ourUIFacade != null) {
+      if (e instanceof NullPointerException) {
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        if ("initiateToolTip".equals(stackTrace[0].getMethodName()) && "javax.swing.ToolTipManager".equals(stackTrace[0].getClassName())) {
+        	// We will not show that stupid NPEs from TooltipManager
+        	return true;
+        }
+      }
       ourUIFacade.showErrorDialog(e);
       return true;
     }
