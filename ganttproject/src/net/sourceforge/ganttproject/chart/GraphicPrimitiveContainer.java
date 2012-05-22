@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
 /**
  * Stores the available primitives and their information (used for painting) and
  * provides methods to retrieve them
- * 
+ *
  * @author bard
  */
 public class GraphicPrimitiveContainer {
@@ -179,6 +179,8 @@ public class GraphicPrimitiveContainer {
   }
 
   public static class Line extends GraphicPrimitive {
+    public static enum Arrow { NONE, START, FINISH }
+
     private final int myStartX;
 
     private final int myStartY;
@@ -186,6 +188,8 @@ public class GraphicPrimitiveContainer {
     private final int myFinishX;
 
     private final int myFinishY;
+
+    private Arrow myArrow = Arrow.NONE;
 
     private Line(int startx, int starty, int finishx, int finishy) {
       myStartX = startx;
@@ -208,6 +212,14 @@ public class GraphicPrimitiveContainer {
 
     public int getFinishY() {
       return myFinishY;
+    }
+
+    public void setArrow(Arrow arrow) {
+      myArrow = arrow;
+    }
+
+    public Arrow getArrow() {
+      return myArrow;
     }
   }
 
