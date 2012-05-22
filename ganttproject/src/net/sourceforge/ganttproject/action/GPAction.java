@@ -20,10 +20,9 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -214,7 +213,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       putValue(Action.NAME, localizedName);
       if (bucksPos >= 0) {
         // Activate mnemonic key
-        putValue(Action.MNEMONIC_KEY, new Integer(Character.toLowerCase(localizedName.charAt(bucksPos))));
+        putValue(Action.MNEMONIC_KEY, KeyEvent.getExtendedKeyCodeForChar(Character.toLowerCase(localizedName.charAt(bucksPos))));
       }
     }
   }
