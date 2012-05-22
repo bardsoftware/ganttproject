@@ -114,7 +114,7 @@ public abstract class EditableList<T> {
           }
         }
       };
-      UIUtil.setupTableUI(resourcesTable, Math.min(20, myTableModel.getRowCount()));
+      UIUtil.setupTableUI(resourcesTable);
       resourcesTable.setTableHeader(null);
       resourcesTable.getColumnModel().getColumn(0).setPreferredWidth(240);
       resourcesTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {

@@ -132,6 +132,7 @@ public class BaselineDialogAction extends GPAction {
         for (GanttPreviousState trashBaseline : myTrash) {
           trashBaseline.remove();
         }
+        myProject.setModified();
       }
     }, CancelAction.EMPTY };
     myUiFacade.createDialog(list.createDefaultComponent(), actions, getI18n("baseline.dialog.title")).show();
