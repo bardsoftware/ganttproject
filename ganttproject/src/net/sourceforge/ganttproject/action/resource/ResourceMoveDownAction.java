@@ -33,7 +33,7 @@ public class ResourceMoveDownAction extends GPAction implements TreeSelectionLis
     super("resource.move.down");
     myTable = table;
     setEnabled(false);
-    table.getTree().getSelectionModel().addTreeSelectionListener(this);
+    table.getTree().getTreeSelectionModel().addTreeSelectionListener(this);
   }
 
   @Override

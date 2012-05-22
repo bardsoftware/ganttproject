@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,9 +21,8 @@ package net.sourceforge.ganttproject.importer;
 import java.io.File;
 
 import net.sourceforge.ganttproject.io.GanttTXTOpen;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class ImporterFromTxtFile extends ImporterBase implements Importer {
+public class ImporterFromTxtFile extends ImporterBase {
 
   @Override
   public String getFileNamePattern() {
@@ -32,7 +31,7 @@ public class ImporterFromTxtFile extends ImporterBase implements Importer {
 
   @Override
   public String getFileTypeDescription() {
-    return GanttLanguage.getInstance().getText("textFiles");
+    return language.getText("textFiles");
   }
 
   @Override
@@ -40,5 +39,4 @@ public class ImporterFromTxtFile extends ImporterBase implements Importer {
     GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
     opener.load(selectedFile);
   }
-
 }

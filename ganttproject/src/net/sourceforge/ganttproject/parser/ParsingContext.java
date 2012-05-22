@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.Task;
 
 public class ParsingContext {
