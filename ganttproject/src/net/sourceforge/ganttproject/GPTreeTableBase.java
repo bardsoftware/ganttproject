@@ -108,10 +108,12 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
       if (t.getSelectedColumn() < 0) {
         t.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
       }
-      TreeTableCellEditorImpl cellEditor = (TreeTableCellEditorImpl) getTable().getCellEditor(
+      TableCellEditor cellEditor = getTable().getCellEditor(
           t.getSelectedRow(), t.getSelectedColumn());
       t.editCellAt(t.getSelectedRow(), t.getSelectedColumn());
-      cellEditor.requestFocus();
+      if (cellEditor instanceof TreeTableCellEditorImpl) {
+    	  ((TreeTableCellEditorImpl)cellEditor).requestFocus();
+      }
     }
   };
 
