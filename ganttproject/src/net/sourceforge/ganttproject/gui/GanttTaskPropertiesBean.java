@@ -25,13 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.Calendar;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -41,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -49,8 +45,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
@@ -61,6 +55,7 @@ import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskAllocationsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskDependenciesPanel;
+import net.sourceforge.ganttproject.gui.taskproperties.TaskScheduleDatesPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -84,17 +79,11 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private static final JColorChooser colorChooser = new JColorChooser();
 
-  private JXDatePicker myStartDatePicker;
-  private JXDatePicker myEndDatePicker;
   private JXDatePicker myThirdDatePicker;
 
   protected GanttTask[] selectedTasks;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
-
-  private GanttCalendar myStart;
-
-  private GanttCalendar myEnd;
 
   private GanttCalendar myThird;
 
@@ -110,8 +99,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JPanel notesPanel;
 
   private JTextField nameField1;
-
-  private JTextField durationField1;
 
   private JTextField tfWebLink;
 
@@ -166,6 +153,8 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private ShapePaint originalShape;
 
+  private final TaskScheduleDatesPanel myTaskScheduleDates = new TaskScheduleDatesPanel();
+
   private CustomColumnsPanel myCustomColumnPanel = null;
 
   private TaskDependenciesPanel myDependenciesPanel;
@@ -180,15 +169,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private final TaskManager myTaskManager;
   private final IGanttProject myProject;
   private final UIFacade myUIfacade;
-
-  /** Radio button to lock the start field */
-  private JRadioButton startLock;
-
-  /** Radio button to lock the end field */
-  private JRadioButton endLock;
-
-  /** Radio button to lock the duration field */
-  private JRadioButton durationLock;
 
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     this.selectedTasks = selectedTasks;
@@ -222,65 +202,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
     addEmptyRow(propertiesPanel);
 
-    // Begin date
-    propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
-    Box startBox = Box.createHorizontalBox();
-    myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
-      }
-    });
-    startBox.add(myStartDatePicker);
-    startLock = new JRadioButton(language.getText("lockField"));
-    startBox.add(startLock);
-    propertiesPanel.add(startBox);
-
-    // End date
-    propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
-    Box endBox = Box.createHorizontalBox();
-    myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = new GanttCalendar(((JXDatePicker) e.getSource()).getDate());
-        c.add(Calendar.DATE, 1);
-        setEnd(c, false);
-      }
-    });
-    endBox.add(myEndDatePicker);
-    endLock = new JRadioButton(language.getText("lockField"));
-    endBox.add(endLock);
-    propertiesPanel.add(endBox);
-
-    // Duration
-    propertiesPanel.add(new JLabel(language.getText("length")));
-    Box durationBox = Box.createHorizontalBox();
-    durationField1 = new JTextField(8);
-    durationField1.setName("length");
-    durationField1.addFocusListener(new FocusListener() {
-      @Override
-      public void focusLost(FocusEvent e) {
-        fireDurationChanged();
-      }
-
-      @Override
-      public void focusGained(FocusEvent e) {
-      }
-    });
-    durationBox.add(durationField1);
-    durationLock = new JRadioButton(language.getText("lockField"));
-    durationBox.add(durationLock);
-    propertiesPanel.add(durationBox);
-
-    // Group radio buttons
-    ButtonGroup group = new ButtonGroup();
-    group.add(startLock);
-    group.add(endLock);
-    group.add(durationLock);
-
-    // Enable lock start by default
-    // TODO It is nicer to remember the previous used lock
-    startLock.setSelected(true);
+    myTaskScheduleDates.insertInto(propertiesPanel);
 
     Box extraConstraintBox = Box.createHorizontalBox();
     thirdDateComboBox = new JComboBox();
@@ -401,13 +323,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     generalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
   }
 
-  /** Add the different action listeners on the different widgets */
-  public void addActionListener(ActionListener l) {
-    nameField1.addActionListener(l);
-    thirdDateComboBox.addActionListener(l);
-    durationField1.addActionListener(l);
-  }
-
   /** Change the name of the task on all text fields containing task name */
   private void changeNameOfTask() {
     if (nameField1 != null) {
@@ -454,13 +369,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     constructNotesPanel();
 
     tabbedPane = new JTabbedPane();
-    tabbedPane.getModel().addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        changeNameOfTask();
-        fireDurationChanged();
-      }
-    });
+//    tabbedPane.getModel().addChangeListener(new ChangeListener() {
+//      @Override
+//      public void stateChanged(ChangeEvent e) {
+//        changeNameOfTask();
+//        fireDurationChanged();
+//      }
+//    });
     constructGeneralPanel();
 
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
@@ -561,7 +476,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private void setSelectedTaskProperties() {
     myUnpluggedClone = selectedTasks[0].unpluggedClone();
-
     nameField1.setText(originalName);
 
     setName(selectedTasks[0].toString());
@@ -569,8 +483,9 @@ public class GanttTaskPropertiesBean extends JPanel {
     percentCompleteSlider.setValue(new Integer(originalCompletionPercentage));
     priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
-    setStart(originalStartDate.clone(), true);
-    setEnd(originalEndDate.clone(), false);
+    myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
+    setStart(originalStartDate.clone());
+    setEnd(originalEndDate.clone());
 
     if (originalThirdDate != null) {
       setThird(originalThirdDate.clone(), true);
@@ -582,7 +497,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     } else if (projectTaskCheckBox1 != null) {
       projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
-    enableMilestoneUnfriendlyControls(!isMilestone());
+    myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
 
     tfWebLink.setText(originalWebLink);
 
@@ -598,10 +513,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     noteAreaNotes.setText(originalNotes);
   }
 
-  private void enableMilestoneUnfriendlyControls(boolean enable) {
-    myEndDatePicker.setEnabled(enable);
-    durationField1.setEnabled(enable);
-  }
 
   private boolean isMilestone() {
     if (mileStoneCheckBox1 == null) {
@@ -616,45 +527,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private int getThirdDateConstraint() {
     return thirdDateComboBox.getSelectedIndex();
-  }
-
-  private int getLength() {
-    int length;
-    try {
-      length = Integer.parseInt(durationField1.getText().trim());
-    } catch (NumberFormatException e) {
-      length = 0;
-    }
-    return length;
-  }
-
-  private void fireDurationChanged() {
-    String value = durationField1.getText();
-    try {
-      int duration = Integer.parseInt(value);
-      changeLength(duration);
-    } catch (NumberFormatException e) {
-
-    }
-  }
-
-  private void changeLength(int length) {
-    if (length <= 0) {
-      length = 1;
-    }
-    durationField1.setText(String.valueOf(length));
-
-    if (endLock.isSelected()) {
-      // Calculate the start date for the given length
-      myStart = myEnd.clone();
-      myStart.add(Calendar.DATE, -1 * getLength());
-      myStartDatePicker.setDate(myStart.getTime());
-    } else {
-      // Calculate the end date for the given length
-      myEnd = myStart.clone();
-      myEnd.add(Calendar.DATE, 1 * getLength());
-      myEndDatePicker.setDate(myEnd.getTime());
-    }
   }
 
   private String getNotes() {
@@ -680,68 +552,34 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private GanttCalendar getStart() {
-    return myStart;
+    return myTaskScheduleDates.getStart();
   }
 
   private GanttCalendar getEnd() {
-    return myEnd;
+    return myTaskScheduleDates.getEnd();
+  }
+
+  private void setEnd(GanttCalendar endDate) {
+    myTaskScheduleDates.setEnd(endDate, false);
+  }
+
+  private void setStart(GanttCalendar startDate) {
+    myTaskScheduleDates.setStart(startDate, true);
+  }
+
+  private int getLength() {
+    return myTaskScheduleDates.getLength();
   }
 
   private GanttCalendar getThird() {
     return myThird;
   }
 
-  private void setStart(GanttCalendar start, boolean test) {
-    myStart = start;
-    myStartDatePicker.setDate(myStart.getTime());
-    if (test == true) {
-      return;
-    }
-    if (endLock.isSelected()) {
-      // End is locked, so adjust duration
-      adjustLength();
-    } else {
-      myEnd = myStart.clone();
-      myEnd.add(Calendar.DATE, getLength() - 1);
-      myEndDatePicker.setDate(myEnd.getTime());
-    }
-  }
 
-  private void setEnd(GanttCalendar end, boolean test) {
-    myEnd = end;
-    myEndDatePicker.setDate(myEnd.newAdd(Calendar.DATE, -1).getTime());
-    if (test == true) {
-      return;
-    }
-    if (startLock.isSelected()) {
-      // Start is locked, so adjust duration
-      adjustLength();
-    } else {
-      myStart = myEnd.clone();
-      myStart.add(Calendar.DATE, -1 * getLength());
-      myStartDatePicker.setDate(myStart.getTime());
-    }
-  }
 
   private void setThird(GanttCalendar third, @SuppressWarnings("unused") boolean test) {
     myThird = third;
     myThirdDatePicker.setDate(myThird.getTime());
-  }
-
-  private void adjustLength() {
-    int length;
-    myUnpluggedClone.setStart(myStart);
-    myUnpluggedClone.setEnd(myEnd);
-    length = myUnpluggedClone.getDuration().getLength();
-    if (length > 0) {
-      durationField1.setText(String.valueOf(length));
-    } else {
-      // Start is bigger than end Date, so set length to 1 and adjust the
-      // non-locked field
-      // TODO It would be nice if the user is notified of the illegal date he
-      // selected
-      changeLength(1);
-    }
   }
 
   private void storeOriginalValues(GanttTask task) {
@@ -792,7 +630,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   /**
    * Creates a milestone, a project task or no checkbox depending on the
    * selected task
-   * 
+   *
    * @return the created checkbox or null
    */
   private Pair<String, JCheckBox> constructCheckBox() {
@@ -813,7 +651,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-          enableMilestoneUnfriendlyControls(!isMilestone());
+          myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
         }
       });
       result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);
