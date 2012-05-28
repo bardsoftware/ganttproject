@@ -15,24 +15,32 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Calendar;
 
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
+import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
+import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
@@ -49,20 +57,15 @@ public class TaskScheduleDatesPanel {
   private JXDatePicker myEndDatePicker;
   private JTextField durationField1;
 
-  /** Radio button to lock the start field */
-  private JRadioButton startLock;
-
-  /** Radio button to lock the end field */
-  private JRadioButton endLock;
-
-  /** Radio button to lock the duration field */
-  private JRadioButton durationLock;
-
   private GanttCalendar myStart;
 
   private GanttCalendar myEnd;
 
   private Task myUnpluggedClone;
+  private final BooleanOption myStartDateLock = new DefaultBooleanOption("", true);
+  private final BooleanOption myEndDateLock = new DefaultBooleanOption("", false);
+  private final BooleanOption myDurationLock = new DefaultBooleanOption("", false);
+  protected BooleanOption myPrevLock = myStartDateLock;
 
   public TaskScheduleDatesPanel() {
   }
@@ -71,24 +74,67 @@ public class TaskScheduleDatesPanel {
     myUnpluggedClone = unpluggedClone;
   }
 
+  private static final Icon ICON_LOCKED = GPAction.getIcon("16", "status-locked.png");
+  private static final Icon ICON_UNLOCKED = GPAction.getIcon("16", "status-unlocked.png");
+
+  private static JComponent createLabel(String title, final BooleanOption isLocked, final MouseListener lockListener) {
+    final JPanel labelPanel = new JPanel(new BorderLayout());
+    JLabel result = new JLabel(title);
+    final JLabel lock = isLocked.getValue() ? new JLabel(ICON_LOCKED) : new JLabel(ICON_UNLOCKED);
+    lock.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (lock.isEnabled()) {
+          lockListener.mouseClicked(e);
+        }
+      }
+
+    });
+    isLocked.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        if (isLocked.getValue()) {
+          lock.setIcon(ICON_LOCKED);
+        } else {
+          lock.setIcon(ICON_UNLOCKED);
+        }
+        UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
+      }
+    });
+    labelPanel.add(result, BorderLayout.WEST);
+    labelPanel.add(lock, BorderLayout.EAST);
+    UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
+    return labelPanel;
+  }
+
   public void insertInto(JPanel propertiesPanel) {
     // Begin date
-    propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
-    Box startBox = Box.createHorizontalBox();
+    propertiesPanel.add(createLabel(language.getText("dateOfBegining"), myStartDateLock, new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        myStartDateLock.setValue(true);
+        myPrevLock.setValue(false);
+        myPrevLock = myStartDateLock;
+      }
+    }));
     myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
       }
     });
-    startBox.add(myStartDatePicker);
-    startLock = new JRadioButton(language.getText("lockField"));
-    startBox.add(startLock);
-    propertiesPanel.add(startBox);
+    propertiesPanel.add(myStartDatePicker);
 
     // End date
-    propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
-    Box endBox = Box.createHorizontalBox();
+    propertiesPanel.add(createLabel(language.getText("dateOfEnd"), myEndDateLock, new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        myEndDateLock.setValue(true);
+        myPrevLock.setValue(false);
+        myPrevLock = myEndDateLock;
+      }
+
+    }));
     myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -97,14 +143,18 @@ public class TaskScheduleDatesPanel {
         setEnd(c, false);
       }
     });
-    endBox.add(myEndDatePicker);
-    endLock = new JRadioButton(language.getText("lockField"));
-    endBox.add(endLock);
-    propertiesPanel.add(endBox);
+    propertiesPanel.add(myEndDatePicker);
 
     // Duration
-    propertiesPanel.add(new JLabel(language.getText("length")));
-    Box durationBox = Box.createHorizontalBox();
+    propertiesPanel.add(createLabel(language.getText("length"), myDurationLock, new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        myDurationLock.setValue(true);
+        myPrevLock.setValue(false);
+        myPrevLock = myDurationLock;
+      }
+
+    }));
     durationField1 = new JTextField(8);
     durationField1.setName("length");
     durationField1.addFocusListener(new FocusListener() {
@@ -117,20 +167,7 @@ public class TaskScheduleDatesPanel {
       public void focusGained(FocusEvent e) {
       }
     });
-    durationBox.add(durationField1);
-    durationLock = new JRadioButton(language.getText("lockField"));
-    durationBox.add(durationLock);
-    propertiesPanel.add(durationBox);
-
-    // Group radio buttons
-    ButtonGroup group = new ButtonGroup();
-    group.add(startLock);
-    group.add(endLock);
-    group.add(durationLock);
-
-    // Enable lock start by default
-    // TODO It is nicer to remember the previous used lock
-    startLock.setSelected(true);
+    propertiesPanel.add(durationField1);
   }
 
   public void setStart(GanttCalendar start, boolean test) {
@@ -139,7 +176,7 @@ public class TaskScheduleDatesPanel {
     if (test == true) {
       return;
     }
-    if (endLock.isSelected()) {
+    if (myEndDateLock.isChecked()) {
       // End is locked, so adjust duration
       adjustLength();
     } else {
@@ -155,7 +192,7 @@ public class TaskScheduleDatesPanel {
     if (test == true) {
       return;
     }
-    if (startLock.isSelected()) {
+    if (myStartDateLock.isChecked()) {
       // Start is locked, so adjust duration
       adjustLength();
     } else {
@@ -189,7 +226,7 @@ public class TaskScheduleDatesPanel {
     }
     durationField1.setText(String.valueOf(length));
 
-    if (endLock.isSelected()) {
+    if (myEndDateLock.isChecked()) {
       // Calculate the start date for the given length
       myStart = myEnd.clone();
       myStart.add(Calendar.DATE, -1 * getLength());

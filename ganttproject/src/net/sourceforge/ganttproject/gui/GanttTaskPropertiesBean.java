@@ -18,13 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -37,6 +41,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JLayer;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -45,6 +50,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
+import javax.swing.plaf.LayerUI;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
@@ -189,7 +195,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   /** Construct the general panel */
   private void constructGeneralPanel() {
-    JPanel propertiesPanel = new JPanel(new SpringLayout());
+    final JPanel propertiesPanel = new JPanel(new SpringLayout());
 
     propertiesPanel.add(new JLabel(language.getText("name")));
     nameField1 = new JTextField(20);
@@ -316,7 +322,46 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount() / 2, 2, 1, 1, 5, 5);
 
+//    LayerUI<JPanel> layerUi = new LayerUI<JPanel>() {
+//
+//      @Override
+//      public void paint(Graphics g, JComponent c) {
+//        super.paint(g, c);
+//        Rectangle lockedRect = myTaskScheduleDates.getLockedFieldsRect(propertiesPanel);
+//        if (lockedRect != null) {
+//          g.setColor(new Color(64, 64, 64, 64));
+//          g.fillRect(lockedRect.x, lockedRect.y, lockedRect.width, lockedRect.height);
+//        }
+//      }
+//
+//      @Override
+//      protected void processMouseEvent(MouseEvent e, JLayer<? extends JPanel> l) {
+//        super.processMouseEvent(e, l);
+//        System.out.println("MouseEvent detected: " + e);
+//      }
+//
+//      @Override
+//      protected void processMouseMotionEvent(MouseEvent e, JLayer<? extends JPanel> l) {
+//        super.processMouseMotionEvent(e, l);
+//        System.out.println("MouseMotionEvent detected: " + e);
+//      }
+//
+//      @Override
+//      public void installUI(JComponent c) {
+//        super.installUI(c);
+//        ((JLayer) c).setLayerEventMask(AWTEvent.MOUSE_MOTION_EVENT_MASK);
+//      }
+//
+//      @Override
+//      public void uninstallUI(JComponent c) {
+//        super.uninstallUI(c);
+//        ((JLayer) c).setLayerEventMask(0);
+//      }
+//
+//    };
+
     generalPanel = new JPanel(new SpringLayout());
+    //generalPanel.add(new JLayer<JPanel>(propertiesPanel, layerUi));
     generalPanel.add(propertiesPanel);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
