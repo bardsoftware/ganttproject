@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,20 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.text.DateFormat;
-import java.util.Date;
-
+import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Class with which one can get any properties (even custom) from any task.
- * 
+ *
  * @author bbaranne
- * 
+ *
  */
 public class TaskProperties {
 
@@ -57,19 +53,17 @@ public class TaskProperties {
     myTimeUnitStack = timeUnitStack;
   }
 
-  private void formatDate(Date date, StringBuffer buf) {
-    DateFormat timeFormat = myTimeUnitStack.getTimeFormat();
-    DateFormat[] dateFormats = myTimeUnitStack.getDateFormats();
-    buf.append(dateFormats[dateFormats.length - 1].format(date));
-    if (timeFormat != null) {
-      buf.append(" ").append(timeFormat.format(date));
+  private void formatDate(GanttCalendar date, StringBuffer buf) {
+    buf.append(GanttLanguage.getInstance().formatShortDate(date));
+    if (myTimeUnitStack.getTimeFormat() != null) {
+      buf.append(" ").append(GanttLanguage.getInstance().formatTime(date));
     }
 
   }
 
   /**
    * Returns the task property specified by <code>propertyID</code>.
-   * 
+   *
    * @param task
    *          The task from which we want the property.
    * @param propertyID
@@ -84,9 +78,9 @@ public class TaskProperties {
     if (propertyID != null) {
       if (propertyID.equals(ID_TASK_DATES)) {
         sb.append(" [ ");
-        formatDate(task.getStart().getTime(), sb);
+        formatDate(task.getStart(), sb);
         sb.append(" - ");
-        formatDate(task.getEnd().getTime(), sb);
+        formatDate(task.getEnd(), sb);
         sb.append(" ] ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_NAME)) {
