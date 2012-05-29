@@ -577,7 +577,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     int index = -1;
     MutableTreeNode selectedNode = getTree().getSelectedNode();
-    if (selectedNode != null) {
+    if (selectedNode != null && selectedNode != getTree().getRoot()) {
       DefaultMutableTreeNode parent1 = (DefaultMutableTreeNode) selectedNode.getParent();
       index = parent1.getIndex(selectedNode) + 1;
       tree.getTreeTable().getTree().setSelectionPath(new TreePath(parent1.getPath()));
