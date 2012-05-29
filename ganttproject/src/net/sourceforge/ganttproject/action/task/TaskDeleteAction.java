@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -61,9 +61,9 @@ public class TaskDeleteAction extends TaskActionBase {
 
   @Override
   protected void run(List<Task> selection) throws Exception {
-    final DefaultMutableTreeNode[] cdmtn = getTree().getSelectedNodes();
+    final DefaultMutableTreeTableNode[] cdmtn = getTree().getSelectedNodes();
     getTree().stopEditing();
-    for (DefaultMutableTreeNode node : cdmtn) {
+    for (DefaultMutableTreeTableNode node : cdmtn) {
       if (node != null && node instanceof TaskNode) {
         Task task = (Task) node.getUserObject();
         getTree().removeCurrentNode(node);

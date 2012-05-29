@@ -156,6 +156,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return resource == null ? null : new ImageIcon(resource);
   }
 
+  public static final Icon getIcon(String iconSize, String iconFileName) {
+    URL resource = GPAction.class.getResource(MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, iconFileName));
+    return resource == null ? null : new ImageIcon(resource);
+
+  }
   /**
    * @return translation of "ID.description" if available, otherwise translation
    *         of "ID"
