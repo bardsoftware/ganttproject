@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 
 import org.w3c.util.DateParser;
@@ -121,7 +122,7 @@ public class GanttCalendar extends GregorianCalendar {
 
   /**
    * @deprecated (TODO: add what to use/do instead)
-   * 
+   *
    *             Create of copy of the current date and add the specified
    *             (signed) amount of time
    */
@@ -176,7 +177,7 @@ public class GanttCalendar extends GregorianCalendar {
 
   /**
    * This function compares the calendar date with the given date
-   * 
+   *
    * @return 0 If the two date are equals<br/>
    *         -1 if the date is before 'when'<br/>
    *         1 if the date is after 'when'
@@ -210,4 +211,8 @@ public class GanttCalendar extends GregorianCalendar {
       return o1.compareTo(o2);
     }
   };
+
+  public GanttCalendar getDisplayValue() {
+    return new GanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
+  }
 }

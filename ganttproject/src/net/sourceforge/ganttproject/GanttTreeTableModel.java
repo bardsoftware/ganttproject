@@ -48,7 +48,7 @@ import org.jdesktop.swing.treetable.DefaultTreeTableModel;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
- * 
+ *
  * @author bbaranne (Benoit Baranne)
  */
 public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, /*
@@ -88,7 +88,7 @@ GanttLanguage.Listener {
 
   /**
    * Creates an instance of GanttTreeTableModel with a root.
-   * 
+   *
    * @param root
    *          The root.
    * @param customColumnsManager
@@ -107,7 +107,7 @@ GanttLanguage.Listener {
 
   /**
    * Changes the language.
-   * 
+   *
    * @param ganttLanguage
    *          New language to use.
    */
@@ -283,7 +283,7 @@ GanttLanguage.Listener {
       res = tn.getStart();
       break;
     case 5:
-      res = tn.getEnd().newAdd(Calendar.DATE, -1);
+      res = tn.getEnd().getDisplayValue();
       break;
     case 6:
       res = new Integer(tn.getDuration());
@@ -351,7 +351,7 @@ GanttLanguage.Listener {
 
   /**
    * Set value in left pane cell
-   * 
+   *
    * @param value
    * @param node
    * @param column
@@ -446,7 +446,7 @@ GanttLanguage.Listener {
 
   /**
    * @return the corresponding task node according to the given task.
-   * 
+   *
    * @param task
    *          The task whose TaskNode we want to get.
    * @return The corresponding TaskNode according to the given task.
