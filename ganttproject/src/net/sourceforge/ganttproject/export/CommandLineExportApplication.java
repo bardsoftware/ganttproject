@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject developers
+Copyright (C) 2011-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -104,9 +104,6 @@ public class CommandLineExportApplication {
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
     prefs.putBoolean("commandLine", true);
     exporter.setContext(project, consoleUI, prefs);
-    if (exporter instanceof ExportFileWizardImpl.LegacyOptionsClient) {
-      ((ExportFileWizardImpl.LegacyOptionsClient) exporter).setOptions(project.getGanttOptions());
-    }
     try {
       ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
         @Override

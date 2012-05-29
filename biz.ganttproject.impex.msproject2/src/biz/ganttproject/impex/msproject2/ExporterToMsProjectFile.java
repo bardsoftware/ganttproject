@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2012 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,30 +20,29 @@ package biz.ganttproject.impex.msproject2;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.osgi.service.prefs.Preferences;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
+import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.mpx.MPXWriter;
 import net.sf.mpxj.mspdi.MSPDIWriter;
 import net.sf.mpxj.writer.ProjectWriter;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.export.ExportFinalizationJob;
-import net.sourceforge.ganttproject.export.Exporter;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
-public class ExporterToMsProjectFile implements Exporter {
+public class ExporterToMsProjectFile extends ExporterBase {
 
   private static final String[] FILE_FORMAT_IDS = new String[] { "impex.msproject.fileformat.mpx",
       "impex.msproject.fileformat.mspdi" };
@@ -67,19 +66,18 @@ public class ExporterToMsProjectFile implements Exporter {
 
   private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
 
-  private IGanttProject myProject;
-
   public ExporterToMsProjectFile() {
     myOptions.setTitled(false);
     myMPXOptions.setTitled(false);
     myFileFormatOption.lock();
     myFileFormatOption.setValue(FILE_FORMAT_IDS[0]);
     myFileFormatOption.commit();
+    myLanguageOption.setSelectedLocale(language.getLocale());
   }
 
   @Override
   public String getFileTypeDescription() {
-    return GanttLanguage.getInstance().getText("impex.msproject.description");
+    return language.getText("impex.msproject.description");
   }
 
   @Override
@@ -104,19 +102,31 @@ public class ExporterToMsProjectFile implements Exporter {
   }
 
   @Override
-  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
-    myProject = project;
-    myLanguageOption = new LocaleOption();
-    myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
-    myLanguageOption.setSelectedLocale(GanttLanguage.getInstance().getLocale());
+  protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
+    ExporterJob job = createExportJob(outputFile);
+    return new ExporterJob[] { job };
   }
 
-  @Override
-  public void run(final File outputFile, ExportFinalizationJob finalizationJob) throws Exception {
-    ProjectFile outProject = new ProjectFileExporter(myProject).run();
-    ProjectWriter writer = createProjectWriter();
-    writer.write(outProject, outputFile);
-    finalizationJob.run(new File[] { outputFile });
+  private ExporterJob createExportJob(final File outputFile) {
+    ExporterJob result = new ExporterJob("Export project") {
+      @Override
+      protected IStatus run() {
+        ProjectFile outProject;
+        try {
+          outProject = new ProjectFileExporter(getProject()).run();
+          ProjectWriter writer = createProjectWriter();
+          writer.write(outProject, outputFile);
+        } catch (MPXJException e) {
+          getUIFacade().showErrorDialog(e);
+          return Status.CANCEL_STATUS;
+        } catch (IOException e) {
+          getUIFacade().showErrorDialog(e);
+          return Status.CANCEL_STATUS;
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    return result;
   }
 
   private ProjectWriter createProjectWriter() {
@@ -152,10 +162,5 @@ public class ExporterToMsProjectFile implements Exporter {
   @Override
   public String[] getFileExtensions() {
     return FILE_EXTENSIONS;
-  }
-
-  @Override
-  public String[] getCommandLineKeys() {
-    return getFileExtensions();
   }
 }

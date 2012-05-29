@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2011 GanttProject Team
+Copyright (C) 2011-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,7 +39,7 @@ import java.util.Properties;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.export.AbstractExporter;
+import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -106,10 +106,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private boolean isColontitleEnabled = false;
   private final Properties myProperties;
   private FontSubstitutionModel mySubstitutionModel;
-  private final AbstractExporter myExporter;
+  private final ExporterBase myExporter;
   private final TTFontCache myFontCache;
 
-  ThemeImpl(URL url, String localizedName, AbstractExporter exporter, TTFontCache fontCache) {
+  ThemeImpl(URL url, String localizedName, ExporterBase exporter, TTFontCache fontCache) {
     super(url, localizedName + " (iText)");
     myFontCache = fontCache;
     myExporter = exporter;

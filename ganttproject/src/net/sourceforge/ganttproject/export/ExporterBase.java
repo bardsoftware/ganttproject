@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2011-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,6 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
@@ -31,8 +41,9 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public abstract class AbstractExporter implements Exporter {
+public abstract class ExporterBase implements Exporter {
   private IGanttProject myProject;
   private Chart myGanttChart;
   private Chart myResourceChart;
@@ -40,6 +51,10 @@ public abstract class AbstractExporter implements Exporter {
   private Preferences myRootPreferences;
   private DefaultDateOption myExportRangeStart;
   private DefaultDateOption myExportRangeEnd;
+
+  protected static final GanttLanguage language = GanttLanguage.getInstance();
+
+  static protected Object EXPORT_JOB_FAMILY = new String("Export job family");
 
   @Override
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
@@ -84,6 +99,12 @@ public abstract class AbstractExporter implements Exporter {
     return myResourceChart;
   }
 
+  @Override
+  public String[] getCommandLineKeys() {
+    // By default use the same
+    return getFileExtensions();
+  }
+
   public GanttExportSettings createExportSettings() {
     GanttExportSettings result = new GanttExportSettings();
     if (myRootPreferences != null) {
@@ -111,4 +132,76 @@ public abstract class AbstractExporter implements Exporter {
     }
     return result;
   }
+
+  @Override
+  public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
+    final IJobManager jobManager = Job.getJobManager();
+    final List<File> resultFiles = new ArrayList<File>();
+    final List<ExporterJob> jobs = new ArrayList<ExporterJob>(Arrays.asList(createJobs(outputFile, resultFiles)));
+    jobs.add(new ExporterJob("Finalizing") {
+      @Override
+      protected IStatus run() {
+        finalizationJob.run(resultFiles.toArray(new File[0]));
+        return Status.OK_STATUS;
+      }
+    });
+    final IProgressMonitor monitor = jobManager.createProgressGroup();
+    Job driverJob = new Job("Running export") {
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        monitor.beginTask("Running export", jobs.size());
+        for (ExporterJob job : jobs) {
+          if (monitor.isCanceled()) {
+            jobManager.cancel(EXPORT_JOB_FAMILY);
+            return Status.CANCEL_STATUS;
+          }
+          monitor.subTask(job.getName());
+          final IStatus state;
+          try {
+            state = job.run();
+          } catch (Throwable e) {
+            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), e));
+            monitor.setCanceled(true);
+            continue;
+          }
+
+          if (state.isOK() == false) {
+            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), state.getException()));
+            monitor.setCanceled(true);
+            continue;
+          }
+          // Sub task for export is finished without problems
+          // So, updated the total amount of work with the current
+          // work performed
+          monitor.worked(1);
+          // and remove the sub task description
+          // (convenient for debugging to know the sub task is
+          // finished properly)
+          monitor.subTask(null);
+        }
+        monitor.done();
+        return Status.OK_STATUS;
+      }
+    };
+    driverJob.setProgressGroup(monitor, 0);
+    driverJob.schedule();
+  }
+
+  /** @return a list with {@link ExporterJob}s required to actually export the current format */
+  protected abstract ExporterJob[] createJobs(File outputFile, List<File> resultFiles);
+
+  public abstract static class ExporterJob {
+    private final String myName;
+
+    protected ExporterJob(String name) {
+      myName = name;
+    }
+
+    String getName() {
+      return myName;
+    }
+
+    protected abstract IStatus run();
+  }
+
 }

@@ -20,8 +20,6 @@ package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.Icon;
@@ -30,8 +28,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -44,7 +42,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
-import org.jdesktop.swing.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
@@ -137,34 +136,37 @@ GanttLanguage.Listener {
    * is the preferred way to add children as it will create the appropriate
    * event.
    */
-  public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
-    parent.insert(newChild, index);
-
-    int[] newIndexs = new int[1];
-
-    newIndexs[0] = index;
-    nodesWereInserted(parent, newIndexs);
-  }
+  // @Override
+  // public void insertNodeInto(MutableTreeTableNode newChild,
+  // MutableTreeTableNode parent, int index) {
+  // parent.insert(newChild, index);
+  //
+  // int[] newIndexs = new int[1];
+  //
+  // newIndexs[0] = index;
+  // modelSupport.fireChildAdded(TreeUtil.createPath(parent), index, child);
+  // }
 
   /**
    * Message this to remove node from its parent. This will message
    * nodesWereRemoved to create the appropriate event. This is the preferred way
    * to remove a node as it handles the event creation for you.
    */
-  public void removeNodeFromParent(MutableTreeNode node) {
-    MutableTreeNode parent = (MutableTreeNode) node.getParent();
-
-    if (parent == null)
-      throw new IllegalArgumentException("node does not have a parent.");
-
-    int[] childIndex = new int[1];
-    Object[] removedArray = new Object[1];
-
-    childIndex[0] = parent.getIndex(node);
-    parent.remove(childIndex[0]);
-    removedArray[0] = node;
-    nodesWereRemoved(parent, childIndex, removedArray);
-  }
+  // @Override
+  // public void removeNodeFromParent(MutableTreeTableNode node) {
+  // MutableTreeTableNode parent = (MutableTreeTableNode) node.getParent();
+  //
+  // if (parent == null)
+  // throw new IllegalArgumentException("node does not have a parent.");
+  //
+  // int[] childIndex = new int[1];
+  // Object[] removedArray = new Object[1];
+  //
+  // childIndex[0] = parent.getIndex(node);
+  // parent.remove(childIndex[0]);
+  // removedArray[0] = node;
+  // nodesWereRemoved(parent, childIndex, removedArray);
+  // }
 
   @Override
   public String getColumnName(int column) {
@@ -173,6 +175,11 @@ GanttLanguage.Listener {
     }
     CustomPropertyDefinition customColumn = getCustomProperty(column);
     return customColumn.getName();
+  }
+
+  @Override
+  public int getHierarchicalColumn() {
+    return GanttTreeTable.DefaultColumn.NAME.ordinal();
   }
 
   @Override
@@ -186,7 +193,7 @@ GanttLanguage.Listener {
     case 2:
       return Icon.class;
     case 3:
-      return hierarchicalColumnClass;
+      return String.class;
     case 4:
     case 5:
       return GregorianCalendar.class;
@@ -417,74 +424,66 @@ GanttLanguage.Listener {
     // TODO Auto-generated method stub
   }
 
-  public Task[] getNestedTasks(Task container) {
-    TaskNode r = (TaskNode) root;
-    Enumeration<TaskNode> e = r.children();
-    return Collections.list(e).toArray(new Task[0]);
-  }
-
-  public Task[] getDeepNestedTasks(Task container) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /**
-   * @return true if this Tasks has any nested subtasks.
-   */
-  public boolean hasNestedTasks(Task container) {
-    TaskNode r = (TaskNode) root;
-    if (r.getChildCount() > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public Task getRootTask() {
-    return (Task) ((TaskNode) this.getRoot()).getUserObject();
-  }
-
-  /**
-   * @return the corresponding task node according to the given task.
-   *
-   * @param task
-   *          The task whose TaskNode we want to get.
-   * @return The corresponding TaskNode according to the given task.
-   */
-  public TaskNode getTaskNodeForTask(Task task) {
-    Enumeration enumeration = ((TaskNode) getRoot()).preorderEnumeration();
-    while (enumeration.hasMoreElements()) {
-      Object next = enumeration.nextElement();
-      if (!(next instanceof TaskNode)) {
-        continue;
-      }
-      TaskNode tn = (TaskNode) next;
-      Task t = (Task) tn.getUserObject();
-      if (t.equals(task)) {
-        return tn;
-      }
-    }
-    return null;
-  }
-
-  public Task getContainer(Task nestedTask) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public void move(Task whatMove, Task whereMove) {
-    // TODO Auto-generated method stub
-  }
-
-  public boolean areUnrelated(Task dependant, Task dependee) {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  public int getDepth(Task task) {
-    // TODO Auto-generated method stub
-    return 0;
-  }
+  // public Task[] getNestedTasks(Task container) {
+  // return null;
+  // }
+  //
+  // public Task[] getDeepNestedTasks(Task container) {
+  // // TODO Auto-generated method stub
+  // return null;
+  // }
+  //
+  // /**
+  // * @return true if this Tasks has any nested subtasks.
+  // */
+  // public boolean hasNestedTasks(Task container) {
+  // TaskNode r = (TaskNode) root;
+  // if (r.getChildCount() > 0) {
+  // return true;
+  // } else {
+  // return false;
+  // }
+  // }
+  //
+  // public Task getRootTask() {
+  // return (Task) ((TaskNode) this.getRoot()).getUserObject();
+  // }
+  //
+  // /**
+  // * @return the corresponding task node according to the given task.
+  // *
+  // * @param task
+  // * The task whose TaskNode we want to get.
+  // * @return The corresponding TaskNode according to the given task.
+  // */
+  // public TaskNode getTaskNodeForTask(Task task) {
+  // for (MutableTreeTableNode tn : TreeUtil.collectSubtree(getRootNode())) {
+  // Task t = (Task) tn.getUserObject();
+  // if (t.equals(task)) {
+  // return tn;
+  // }
+  // }
+  // return null;
+  // }
+  //
+  // public Task getContainer(Task nestedTask) {
+  // // TODO Auto-generated method stub
+  // return null;
+  // }
+  //
+  // public void move(Task whatMove, Task whereMove) {
+  // // TODO Auto-generated method stub
+  // }
+  //
+  // public boolean areUnrelated(Task dependant, Task dependee) {
+  // // TODO Auto-generated method stub
+  // return false;
+  // }
+  //
+  // public int getDepth(Task task) {
+  // // TODO Auto-generated method stub
+  // return 0;
+  // }
 
   @Override
   public void languageChanged(Event event) {
@@ -499,7 +498,7 @@ GanttLanguage.Listener {
     throw new UnsupportedOperationException();
   }
 
-  public DefaultMutableTreeNode getRootNode() {
-    return (DefaultMutableTreeNode) getRoot();
+  public DefaultMutableTreeTableNode getRootNode() {
+    return (DefaultMutableTreeTableNode) getRoot();
   }
 }

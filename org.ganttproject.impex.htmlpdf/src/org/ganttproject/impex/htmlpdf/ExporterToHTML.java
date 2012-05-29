@@ -36,14 +36,13 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.FileUtil;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.xml.sax.SAXException;
 
-public class ExporterToHTML extends ExporterBase {
+public class ExporterToHTML extends StylesheetExporterBase {
   static final String GANTT_CHART_FILE_EXTENSION = "png";
   static final String RESOURCE_CHART_FILE_EXTENSION = "res.png";
   private static final String PNG_FORMAT_NAME = "png";
@@ -52,7 +51,7 @@ public class ExporterToHTML extends ExporterBase {
 
   @Override
   public String getFileTypeDescription() {
-    return GanttLanguage.getInstance().getText("impex.html.description");
+    return language.getText("impex.html.description");
   }
 
   @Override

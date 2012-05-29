@@ -105,7 +105,6 @@ public class GanttProjectImpl implements IGanttProject {
     myWebLink = webLink;
   }
 
-  @Override
   public Task newTask() {
     Task result = getTaskManager().createTask();
     getTaskManager().getTaskHierarchy().move(result, getTaskManager().getRootTask());
