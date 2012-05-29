@@ -25,8 +25,10 @@ import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,11 +37,14 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import com.google.common.base.Function;
+
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.ListAndFieldsPanel;
@@ -86,8 +91,9 @@ public class ColumnManagerPanel {
     List<CustomPropertyDefinition> emptyList = Collections.emptyList();
     List<CustomPropertyDefinition> defs = new ArrayList<CustomPropertyDefinition>();
     createDefaultFieldDefinitions(myVisibleFields, myManager.getDefinitions(), defs);
+    final Set<CustomPropertyDefinition> standardDefs = new HashSet<CustomPropertyDefinition>(defs);
     defs.addAll(myManager.getDefinitions());
-    EditableList<CustomPropertyDefinition> props = new EditableList<CustomPropertyDefinition>(defs, emptyList) {
+    final EditableList<CustomPropertyDefinition> props = new EditableList<CustomPropertyDefinition>(defs, emptyList) {
       @Override
       protected boolean isEditable(CustomPropertyDefinition t) {
         return ColumnManagerPanel.this.isEditable(t);
@@ -181,6 +187,20 @@ public class ColumnManagerPanel {
     myFields = getFieldsComponent();
     ListAndFieldsPanel<CustomPropertyDefinition> listAndFields = new ListAndFieldsPanel<CustomPropertyDefinition>(
         props, myFields);
+
+    Function<List<CustomPropertyDefinition>, Boolean> isDeleteEnabled = new Function<List<CustomPropertyDefinition>, Boolean>() {
+
+      @Override
+      public Boolean apply(List<CustomPropertyDefinition> input) {
+        for (CustomPropertyDefinition def : input) {
+          if (standardDefs.contains(def)) {
+            return false;
+          }
+        }
+        return !input.isEmpty();
+      }
+    };
+    props.getTableAndActions().getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
     props.getTableAndActions().addSelectionListener(new SelectionListener<CustomPropertyDefinition>() {
       @Override
       public void selectionChanged(List<CustomPropertyDefinition> selection) {
@@ -205,6 +225,11 @@ public class ColumnManagerPanel {
 
   }
 
+  /**
+   * This method returns default columns (such as name, Id, etc.) in {@code output} list.
+   * It does it by scanning the tableHeader where all columns live and filtering out
+   * the real custom columns.
+   */
   private void createDefaultFieldDefinitions(TableHeaderUIFacade tableHeader,
       List<CustomPropertyDefinition> customFields, List<CustomPropertyDefinition> output) {
     LinkedHashMap<String, Column> name2column = new LinkedHashMap<String, Column>();
