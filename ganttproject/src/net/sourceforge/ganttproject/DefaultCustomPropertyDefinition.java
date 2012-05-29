@@ -110,7 +110,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
 
   @Override
   public int hashCode() {
-    return myID.hashCode();
+    return myID==null ? myName.hashCode() : myID.hashCode();
   }
 
   @Override
