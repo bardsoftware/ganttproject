@@ -12,6 +12,9 @@ import com.google.common.collect.Lists;
 
 public class TreeUtil {
   static int getPrevSibling(TreeNode node, TreeNode child) {
+    if (node == null) {
+      return -1;
+    }
     int childIndex = node.getIndex(child);
     return childIndex - 1;
   }
@@ -23,6 +26,9 @@ public class TreeUtil {
   }
 
   static int getNextSibling(TreeNode node, TreeNode child) {
+    if (node == null) {
+      return -1;
+    }
     int childIndex = node.getIndex(child);
     return childIndex == node.getChildCount() - 1 ? -1 : childIndex + 1;
   }
