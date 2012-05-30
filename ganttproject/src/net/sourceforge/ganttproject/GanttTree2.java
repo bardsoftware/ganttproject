@@ -837,12 +837,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
               parent = (MutableTreeTableNode) node.getParent();
               where = parent.getIndex(current);
               removeCurrentNode(current);
-              current.setParent(parent);
               taskFather = (GanttTask) parent.getUserObject();
               AdjustTaskBoundsAlgorithm alg = myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
               alg.run(taskFather);
-              // taskFather.refreshDateAndAdvancement(this);
-              parent.setUserObject(taskFather);
             }
           }
           if (parent.getChildCount() == 0) {

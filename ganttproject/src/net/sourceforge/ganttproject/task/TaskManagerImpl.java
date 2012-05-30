@@ -303,7 +303,7 @@ public class TaskManagerImpl implements TaskManager {
 
         registerTask(task);
 
-        if (myPrevSibling != null) {
+        if (myPrevSibling != null && myPrevSibling != getRootTask()) {
           int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
           Task parentTask = getTaskHierarchy().getContainer(myPrevSibling);
           getTaskHierarchy().move(task, parentTask, position);
