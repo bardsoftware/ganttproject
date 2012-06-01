@@ -784,6 +784,11 @@ public class TaskManagerImpl implements TaskManager {
     public List<Task> getTasksInDocumentOrder() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<Integer> getOutlinePath(Task task) {
+      throw new UnsupportedOperationException();
+    }
   }
 
   private class FacadeFactoryImpl implements TaskContainmentHierarchyFacade.Factory {

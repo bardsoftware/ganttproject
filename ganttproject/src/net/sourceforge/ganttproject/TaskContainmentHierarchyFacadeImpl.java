@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
-import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -42,7 +42,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {
-  private Map<Task, MutableTreeTableNode> myTask2treeNode = Maps.newHashMap();
+  private Map<Task, MutableTreeTableNode> myTask2treeNode = new HashMap<Task, MutableTreeTableNode>();
   private Map<Task, Integer> myTask2index = new LinkedHashMap<Task, Integer>();
   private Task myRootTask;
 
@@ -153,6 +153,19 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     assert treeNode != null : "TreeNode of " + nestedTask + " not found. Please inform GanttProject developers";
     TreeNode containerNode = treeNode.getParent();
     return containerNode.getIndex(treeNode);
+  }
+
+  @Override
+  public List<Integer> getOutlinePath(Task task) {
+    int depth = getDepth(task);
+    List<Integer> result = Lists.newArrayListWithExpectedSize(depth);
+    TreeNode node = myTask2treeNode.get(task);
+    for (int i = 0; i < depth; i++) {
+      TreeNode containerNode = node.getParent();
+      result.add(i, containerNode.getIndex(node) + 1);
+      node = containerNode;
+    }
+    return Lists.reverse(result);
   }
 
   @Override

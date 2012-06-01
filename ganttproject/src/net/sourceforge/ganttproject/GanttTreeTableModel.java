@@ -18,17 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
-import javax.swing.Icon;
+
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.tree.TreeNode;
 
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -44,6 +41,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+
+import com.google.common.base.Joiner;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
@@ -255,7 +254,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = new Integer(t.getTaskID());
         break;
       case OUTLINE_NUMBER:
-        res = String.valueOf(t.getTaskID());
+        List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
+        res = Joiner.on('.').join(outlinePath);
         break;
       default:
         break;
