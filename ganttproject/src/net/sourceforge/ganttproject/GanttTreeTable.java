@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -31,14 +30,13 @@ import javax.swing.tree.TreePath;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.
- * 
+ *
  * @author bbaranne (Benoit Baranne) - original version
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
@@ -51,7 +49,7 @@ public class GanttTreeTable extends GPTreeTableBase {
     super(project, uifacade, project.getTaskCustomColumnManager(), model);
     this.ttModel = model;
     myUIfacade = uifacade;
-    getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
+    getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
     initTreeTable();
   }
 
@@ -59,39 +57,9 @@ public class GanttTreeTable extends GPTreeTableBase {
     return myUIfacade;
   }
 
-  static enum DefaultColumn {
-    TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)), PRIORITY(new TableHeaderUIFacade.ColumnStub(
-        "tpd1", null, false, -1, 50)), INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)), NAME(
-        new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)), BEGIN_DATE(new TableHeaderUIFacade.ColumnStub(
-        "tpd4", null, true, 1, 75)), END_DATE(new TableHeaderUIFacade.ColumnStub("tpd5", null, true, 2, 75)), DURATION(
-        new TableHeaderUIFacade.ColumnStub("tpd6", null, false, -1, 50)), COMPLETION(
-        new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50)), COORDINATOR(
-        new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200)), PREDECESSORS(
-        new TableHeaderUIFacade.ColumnStub("tpd9", null, false, -1, 200)), ID(new TableHeaderUIFacade.ColumnStub(
-        "tpd10", null, false, -1, 20)), ;
-
-    private final Column myDelegate;
-
-    private DefaultColumn(TableHeaderUIFacade.Column delegate) {
-      myDelegate = delegate;
-    }
-
-    Column getStub() {
-      return myDelegate;
-    }
-
-    static List<Column> getColumnStubs() {
-      List<Column> result = new ArrayList<Column>();
-      for (DefaultColumn dc : values()) {
-        result.add(dc.myDelegate);
-      }
-      return result;
-    }
-  }
-
   @Override
   protected List<Column> getDefaultColumns() {
-    return DefaultColumn.getColumnStubs();
+    return TaskDefaultColumn.getColumnStubs();
   }
 
   @Override
@@ -125,9 +93,7 @@ public class GanttTreeTable extends GPTreeTableBase {
 
   void setDelay(TaskNode taskNode, Delay delay) {
     try {
-      int indexInfo = getTable().getColumnModel().getColumnIndex(GanttTreeTableModel.strColInfo);
-      indexInfo = getTable().convertColumnIndexToModel(indexInfo);
-      ttModel.setValueAt(delay, taskNode, indexInfo);
+      ttModel.setValueAt(delay, taskNode, TaskDefaultColumn.INFO.ordinal());
     } catch (IllegalArgumentException e) {
     }
   }
@@ -135,7 +101,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   /**
    * This class repaints the GraphicArea and the table every time the table
    * model has been modified. TODO Add the refresh functionality when available.
-   * 
+   *
    * @author Benoit Baranne
    */
   private class ModelListener implements TableModelListener {
@@ -147,7 +113,7 @@ public class GanttTreeTable extends GPTreeTableBase {
 
   void editSelectedTask() {
     TreePath selectedPath = getTree().getTreeSelectionModel().getSelectionPath();
-    Column column = getTableHeaderUiFacade().findColumnByID(DefaultColumn.NAME.getStub().getID());
+    Column column = getTableHeaderUiFacade().findColumnByID(TaskDefaultColumn.NAME.getStub().getID());
     editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
   }
 

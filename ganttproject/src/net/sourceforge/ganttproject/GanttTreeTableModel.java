@@ -50,41 +50,13 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
  *
  * @author bbaranne (Benoit Baranne)
  */
-public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, /*
-                                                                                                     * TaskContainmentHierarchyFacade
-                                                                                                     * ,
-                                                                                                     */
-GanttLanguage.Listener {
+public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, GanttLanguage.Listener {
 
   private static GanttLanguage language = GanttLanguage.getInstance();
 
-  public static String strColType = null;
-
-  public static String strColPriority = null;
-
-  public static String strColInfo = null;
-
-  public static String strColName = null;
-
-  public static String strColBegDate = null;
-
-  public static String strColEndDate = null;
-
-  public static String strColDuration = null;
-
-  public static String strColCompletion = null;
-
-  public static String strColCoordinator = null;
-
-  public static String strColPredecessors = null;
-
-  public static String strColID = null;
-
-  /** The columns titles */
-  private final List<String> titles = new ArrayList<String>();
-
   private final CustomPropertyManager myCustomColumnsManager;
 
+  private static final int STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().length;
   /**
    * Creates an instance of GanttTreeTableModel with a root.
    *
@@ -101,7 +73,7 @@ GanttLanguage.Listener {
 
   @Override
   public int getColumnCount() {
-    return titles.size() + myCustomColumnsManager.getDefinitions().size();
+    return STANDARD_COLUMN_COUNT + myCustomColumnsManager.getDefinitions().size();
   }
 
   /**
@@ -111,23 +83,6 @@ GanttLanguage.Listener {
    *          New language to use.
    */
   public void changeLanguage(GanttLanguage ganttLanguage) {
-    strColType = language.getText("tableColType");
-    strColPriority = language.getText("tableColPriority");
-    strColInfo = language.getText("tableColInfo");
-    strColName = language.getText("tableColName");
-    strColBegDate = language.getText("tableColBegDate");
-    strColEndDate = language.getText("tableColEndDate");
-    strColDuration = language.getText("tableColDuration");
-    strColCompletion = language.getText("tableColCompletion");
-    strColCoordinator = language.getText("tableColCoordinator");
-    strColPredecessors = language.getText("tableColPredecessors");
-    strColID = language.getText("tableColID");
-
-    titles.clear();
-    String[] cols = new String[] { strColType, strColPriority, strColInfo, strColName, strColBegDate, strColEndDate,
-        strColDuration, strColCompletion, strColCoordinator, strColPredecessors, strColID };
-    for (int i = 0; i < cols.length; i++)
-      titles.add(new String(cols[i]));
   }
 
   /**
@@ -170,8 +125,8 @@ GanttLanguage.Listener {
 
   @Override
   public String getColumnName(int column) {
-    if (column < titles.size()) {
-      return titles.get(column);
+    if (column >=0 && column < STANDARD_COLUMN_COUNT) {
+      return GanttLanguage.getInstance().getText(TaskDefaultColumn.values()[column].getNameKey());
     }
     CustomPropertyDefinition customColumn = getCustomProperty(column);
     return customColumn.getName();
@@ -179,7 +134,7 @@ GanttLanguage.Listener {
 
   @Override
   public int getHierarchicalColumn() {
-    return GanttTreeTable.DefaultColumn.NAME.ordinal();
+    return TaskDefaultColumn.NAME.ordinal();
   }
 
   @Override
@@ -187,38 +142,19 @@ GanttLanguage.Listener {
     if (column < 0) {
       return null;
     }
-    switch (column) {
-    case 0:
-    case 1:
-    case 2:
-      return Icon.class;
-    case 3:
-      return String.class;
-    case 4:
-    case 5:
-      return GregorianCalendar.class;
-    case 6:
-    case 7:
-      return Integer.class;
-    case 8:
-      return String.class;
-    case 9:
-      return String.class;
-    case 10:
-      return Integer.class;
-    default: {
-      CustomPropertyDefinition customColumn = getCustomProperty(column);
-      Class<?> result = customColumn == null ? String.class : customColumn.getType();
-      return result;
+    if (column >= 0 && column < STANDARD_COLUMN_COUNT) {
+      return TaskDefaultColumn.values()[column].getValueClass();
     }
-    }
+    CustomPropertyDefinition customColumn = getCustomProperty(column);
+    Class<?> result = customColumn == null ? String.class : customColumn.getType();
+    return result;
   }
 
   private CustomPropertyDefinition getCustomProperty(int columnIndex) {
-    assert columnIndex >= 11 : "We have 11 default properties, and custom property index starts at 11. I've got index #"
+    assert columnIndex >= STANDARD_COLUMN_COUNT : "We have " + STANDARD_COLUMN_COUNT + " default properties, and custom property index starts at " + STANDARD_COLUMN_COUNT + ". I've got index #"
         + columnIndex + ". Something must be wrong here";
     List<CustomPropertyDefinition> definitions = myCustomColumnsManager.getDefinitions();
-    columnIndex -= 11;
+    columnIndex -= STANDARD_COLUMN_COUNT;
     return columnIndex < definitions.size() ? definitions.get(columnIndex) : null;
   }
 
@@ -226,18 +162,10 @@ GanttLanguage.Listener {
   public boolean isCellEditable(Object node, int column) {
     if (node instanceof TaskNode) {
       Task task = (Task) ((TaskNode) node).getUserObject();
-      switch (column) {
-      case 5:
-      case 6:
-        return !task.isMilestone();
-      case 2:
-      case 8:
-      case 9:
-      case 10:
-        return false;
-      default:
-        return true;
+      if (column >=0 && column < STANDARD_COLUMN_COUNT) {
+        return TaskDefaultColumn.values()[column].isEditable(task);
       }
+      return true;
     }
     return false;
   }
@@ -253,83 +181,92 @@ GanttLanguage.Listener {
     Object res = null;
     TaskNode tn = (TaskNode) node;
     Task t = (Task) tn.getUserObject();
-    // if(tn.getParent()!=null){
-    switch (column) {
-    case 0:
-      if (((Task) tn.getUserObject()).isProjectTask()) {
-        res = new ImageIcon(getClass().getResource("/icons/mproject.gif"));
-      } else if (!tn.isLeaf())
-        res = new ImageIcon(getClass().getResource("/icons/mtask.gif"));
-      else if (t.isMilestone()) {
-        res = new ImageIcon(getClass().getResource("/icons/meeting.gif"));
-      } else {
-        res = new ImageIcon(getClass().getResource("/icons/tasks2.png"));
-      }
-      break;
-    case 1: // Priority
-      GanttTask task = (GanttTask) tn.getUserObject();
-      res = new ImageIcon(getClass().getResource(task.getPriority().getIconPath()));
-      break;
-    case 2: // info
-      TaskInfo info = t.getTaskInfo();
-      if (info != null) {
-        if (info instanceof Delay) {
-          int type = ((Delay) info).getType();
-          if (type == Delay.NORMAL) {
-            res = new ImageIcon(getClass().getResource("/icons/alert1_16.gif"));
-          } else if (type == Delay.CRITICAL) {
-            res = new ImageIcon(getClass().getResource("/icons/alert2_16.gif"));
+    if (column < STANDARD_COLUMN_COUNT) {
+      TaskDefaultColumn defaultColumn = TaskDefaultColumn.values()[column];
+      switch (defaultColumn) {
+      case TYPE:
+        if (((Task) tn.getUserObject()).isProjectTask()) {
+          res = new ImageIcon(getClass().getResource("/icons/mproject.gif"));
+        } else if (!tn.isLeaf())
+          res = new ImageIcon(getClass().getResource("/icons/mtask.gif"));
+        else if (t.isMilestone()) {
+          res = new ImageIcon(getClass().getResource("/icons/meeting.gif"));
+        } else {
+          res = new ImageIcon(getClass().getResource("/icons/tasks2.png"));
+        }
+        break;
+      case PRIORITY:
+        GanttTask task = (GanttTask) tn.getUserObject();
+        res = new ImageIcon(getClass().getResource(task.getPriority().getIconPath()));
+        break;
+      case INFO:
+        TaskInfo info = t.getTaskInfo();
+        if (info != null) {
+          if (info instanceof Delay) {
+            int type = ((Delay) info).getType();
+            if (type == Delay.NORMAL) {
+              res = new ImageIcon(getClass().getResource("/icons/alert1_16.gif"));
+            } else if (type == Delay.CRITICAL) {
+              res = new ImageIcon(getClass().getResource("/icons/alert2_16.gif"));
+            }
           }
         }
-      }
-      break;
-    case 3:
-      res = tn.getName();
-      break;
-    case 4:
-      res = tn.getStart();
-      break;
-    case 5:
-      res = tn.getEnd().getDisplayValue();
-      break;
-    case 6:
-      res = new Integer(tn.getDuration());
-      break;
-    case 7:
-      res = new Integer(tn.getCompletionPercentage());
-      break;
-    case 8:
-      ResourceAssignment[] tAssign = t.getAssignments();
-      StringBuffer sb = new StringBuffer();
-      int nb = 0;
-      for (int i = 0; i < tAssign.length; i++) {
-        ResourceAssignment resAss = tAssign[i];
-        if (resAss.isCoordinator()) {
-          sb.append(nb++ == 0 ? "" : ", ").append(resAss.getResource().getName());
+        break;
+      case NAME:
+        res = tn.getName();
+        break;
+      case BEGIN_DATE:
+        res = tn.getStart();
+        break;
+      case END_DATE:
+        res = tn.getEnd().getDisplayValue();
+        break;
+      case DURATION:
+        res = new Integer(tn.getDuration());
+        break;
+      case COMPLETION:
+        res = new Integer(tn.getCompletionPercentage());
+        break;
+      case COORDINATOR:
+        ResourceAssignment[] tAssign = t.getAssignments();
+        StringBuffer sb = new StringBuffer();
+        int nb = 0;
+        for (int i = 0; i < tAssign.length; i++) {
+          ResourceAssignment resAss = tAssign[i];
+          if (resAss.isCoordinator()) {
+            sb.append(nb++ == 0 ? "" : ", ").append(resAss.getResource().getName());
+          }
         }
-      }
-      res = sb.toString();
-      break;
-    case 9:
-      String resStr = "";
-      TaskDependency[] dep = t.getDependenciesAsDependant().toArray();
-      int i = 0;
-      if (dep != null && dep.length > 0) {
-        for (i = 0; i < dep.length - 1; i++) {
-          resStr += dep[i].getDependee().getTaskID() + ", ";
+        res = sb.toString();
+        break;
+      case PREDECESSORS:
+        String resStr = "";
+        TaskDependency[] dep = t.getDependenciesAsDependant().toArray();
+        int i = 0;
+        if (dep != null && dep.length > 0) {
+          for (i = 0; i < dep.length - 1; i++) {
+            resStr += dep[i].getDependee().getTaskID() + ", ";
+          }
+          resStr += dep[i].getDependee().getTaskID();
         }
-        resStr += dep[i].getDependee().getTaskID();
+        res = resStr;
+        break;
+      case ID:
+        res = new Integer(t.getTaskID());
+        break;
+      case OUTLINE_NUMBER:
+        res = String.valueOf(t.getTaskID());
+        break;
+      default:
+        break;
       }
-      res = resStr;
-      break;
-    case 10:
-      res = new Integer(t.getTaskID());
-      break;
-    default:
+
+    } else {
       CustomPropertyDefinition customColumn = getCustomProperty(column);
       res = t.getCustomValues().getValue(customColumn);
-      break;
+
     }
+    // if(tn.getParent()!=null){
     return res;
   }
 
