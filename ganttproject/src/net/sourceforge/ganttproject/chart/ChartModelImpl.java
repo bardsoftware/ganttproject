@@ -18,6 +18,7 @@ import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
+import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.ColorOption;
@@ -163,7 +164,18 @@ public class ChartModelImpl extends ChartModelBase {
     if (result == null) {
       result = findTaskBoundaryItem(x, y);
     }
+    if (result == null) {
+      result = findTimelineLabelItem(x, y);
+    }
     return result;
+  }
+
+  private ChartItem findTimelineLabelItem(int x, int y) {
+    GraphicPrimitiveContainer.GraphicPrimitive text = myTaskRendererImpl.getLabelLayer().getPrimitive(x, y);
+    if (text instanceof GraphicPrimitiveContainer.Text) {
+      return new TimelineLabelChartItem((Task)text.getModelObject());
+    }
+    return null;
   }
 
   private ChartItem findTaskProgressItem(int x, int y) {

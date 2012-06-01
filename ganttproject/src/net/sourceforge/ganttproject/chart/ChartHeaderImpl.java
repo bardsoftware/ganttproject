@@ -96,13 +96,12 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
             nextOffset.getOffsetUnit(), curDate);
         final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
         final TimeUnitText timeUnitText = texts[0];
-        GraphicPrimitiveContainer.Text text = new GraphicPrimitiveContainer.Text(curX + 5, 0, new TextSelector() {
+        textGroup.addText(curX + 5, 0, new TextSelector() {
           @Override
           public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
             return timeUnitText.getLabels(maxWidth, textLengthCalculator);
           }
         });
-        textGroup.addText(text);
         getTimelineContainer().createLine(curX, topUnitHeight - 10, curX, topUnitHeight);
       }
       curX = nextOffset.getOffsetPixels();

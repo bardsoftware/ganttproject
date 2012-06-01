@@ -53,6 +53,8 @@ public class GraphicPrimitiveContainer {
 
   private List<TextGroup> myTextGroups = new ArrayList<TextGroup>();
 
+  private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
+
   /** Horizontal alignments for texts */
   public enum HAlignment {
     CENTER, LEFT, RIGHT
@@ -226,10 +228,24 @@ public class GraphicPrimitiveContainer {
   public static class Label {
     public final String text;
     public final int lengthPx;
+    public final int heightPx;
+    private final Text myOwner;
 
-    public Label(String text, int lengthPx) {
+    public Label(Text owner, String text, int lengthPx) {
+      this(owner, text, lengthPx, Integer.MIN_VALUE);
+    }
+
+    public Label(Text owner, String text, int lengthPx, int heightPx) {
+      this.myOwner = owner;
       this.text = text;
       this.lengthPx = lengthPx;
+      this.heightPx = heightPx;
+    }
+
+    public void setVisible(boolean isVisible) {
+      if (isVisible && myOwner != null) {
+        myOwner.index(this);
+      }
     }
   }
 
@@ -246,17 +262,37 @@ public class GraphicPrimitiveContainer {
 
     private VAlignment myVAlignment = VAlignment.BOTTOM;
 
-    private final TextSelector mySelector;
+    private TextSelector mySelector;
 
-    Text(int leftX, int bottomY, String text) {
-      this(leftX, bottomY, TextSelector.Default.singleChoice(text));
+    private final SpatialIndex<Text> myIndex;
+
+    private Text(int leftX, int bottomY, final String text, SpatialIndex<Text> index) {
+      this(leftX, bottomY, (TextSelector)null, index);
+      mySelector = new TextSelector() {
+        @Override
+        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          return new Label[] {createLabel(text, textLengthCalculator.getTextLength(text))};
+        }
+      };
     }
 
-    Text(int leftX, int bottomY, TextSelector delegateSelector) {
+    void index(Label label) {
+      assert label.myOwner == this;
+      if (myIndex != null && label.heightPx != Integer.MIN_VALUE) {
+        myIndex.put(this, myLeftX, myBottomY, label.lengthPx, label.heightPx);
+      }
+    }
+
+    private Text(int leftX, int bottomY, TextSelector delegateSelector) {
+      this(leftX, bottomY, delegateSelector, null);
+    }
+
+    private Text(int leftX, int bottomY, TextSelector delegateSelector, SpatialIndex<Text> index) {
       myLeftX = leftX;
       myBottomY = bottomY;
       mySelector = delegateSelector;
       myMaxLength = -1;
+      myIndex = index;
     }
 
     public void setFont(Font font) {
@@ -307,9 +343,23 @@ public class GraphicPrimitiveContainer {
       return mySelector;
     }
 
+    public Label createLabel(String text, int lengthPx) {
+      return createLabel(text, lengthPx, Integer.MIN_VALUE);
+    }
+
+    public Label createLabel(String text, int lengthPx, int heightPx) {
+      return new Label(this, text, lengthPx, heightPx);
+    }
+
+    public void setShownLabel(Label l) {
+    }
     @Override
     public String toString() {
       return String.format("TBox [%d, %d]", myLeftX, myBottomY);
+    }
+
+    public void setSelector(TextSelector selector) {
+      mySelector = selector;
     }
   }
 
@@ -357,9 +407,10 @@ public class GraphicPrimitiveContainer {
       return totalHeight;
     }
 
-    public void addText(Text text) {
-      int line = text.getBottomY();
-      myLines.get(line).add(text);
+    public Text addText(int x, int y, TextSelector textSelector) {
+      Text result = new Text(x, y, textSelector);
+      myLines.get(y).add(result);
+      return result;
     }
 
     public int getLineCount() {
@@ -425,13 +476,13 @@ public class GraphicPrimitiveContainer {
   }
 
   public Text createText(int leftx, int bottomy, String text) {
-    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, text);
+    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, text, myTextIndex);
     myTexts.add(result);
     return result;
   }
 
   public Text createText(int leftx, int bottomy, TextSelector textSelector) {
-    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, textSelector);
+    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, textSelector, myTextIndex);
     myTexts.add(result);
     return result;
   }
@@ -510,7 +561,7 @@ public class GraphicPrimitiveContainer {
         return next;
       }
     }
-    return null;
+    return myTextIndex.get(x + myDeltaX, y + myDeltaY);
   }
 
   public List<GraphicPrimitiveContainer> getLayers() {
