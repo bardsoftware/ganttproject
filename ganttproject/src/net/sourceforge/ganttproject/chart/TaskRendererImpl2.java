@@ -44,7 +44,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private GPOptionGroup[] myOptionGroups;
 
-  private TaskLabelsRendererImpl myLabelsRenderer;
+  private final TaskLabelsRendererImpl myLabelsRenderer;
+
+  private final GraphicPrimitiveContainer myLabelsLayer;
 
   public TaskRendererImpl2(ChartModelImpl model) {
     super(model);
@@ -53,8 +55,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
-    GraphicPrimitiveContainer labelCanvas = getPrimitiveContainer().newLayer();
-    myLabelsRenderer = new TaskLabelsRendererImpl(model, labelCanvas);
+    myLabelsLayer = getPrimitiveContainer().newLayer();
+    myLabelsRenderer = new TaskLabelsRendererImpl(model, myLabelsLayer);
     myOptionGroups = new GPOptionGroup[] { myLabelsRenderer.getOptionGroup() };
   }
 
@@ -279,5 +281,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private int getRectangleHeight() {
     return myLabelsRenderer.getFontHeight();
+  }
+
+  GraphicPrimitiveContainer getLabelLayer() {
+    return myLabelsLayer;
   }
 }

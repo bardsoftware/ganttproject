@@ -76,6 +76,7 @@ class TextPainter {
 
   private void paint(int xleft, int ybottom, HAlignment alignHor, VAlignment alignVer, Text text, Label label,
       Style style) {
+    label.setVisible(true);
     int textHeight = myGraphics.getFont().getSize();
     Style.Padding padding = style.getPadding();
     switch (alignHor) {

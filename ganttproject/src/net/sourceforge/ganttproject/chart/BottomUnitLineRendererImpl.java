@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
@@ -76,13 +75,12 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
     TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
     for (int i = 0; i < texts.length; i++) {
       final TimeUnitText timeUnitText = texts[i];
-      GraphicPrimitiveContainer.Text text = new Text(curX + 2, i, new TextSelector() {
+      textGroup.addText(curX + 2, i, new TextSelector() {
         @Override
         public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
           return timeUnitText.getLabels(maxWidth, textLengthCalculator);
         }
       });
-      textGroup.addText(text);
     }
   }
 
