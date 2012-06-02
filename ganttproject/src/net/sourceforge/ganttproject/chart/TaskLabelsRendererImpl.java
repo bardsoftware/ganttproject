@@ -9,9 +9,9 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-// import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
+import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
@@ -19,17 +19,17 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-// import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * This class is responsible for rendering text labels on the sides of task bars
  * It keeps the rendering options and it lays out the labels on rendering time
  */
-class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
+class TaskLabelsRendererImpl {
   public static final int UP = 0;
 
   public static final int DOWN = 1;
@@ -40,7 +40,7 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
 
   private EnumerationOption[] myLabelOptions;
 
-  private GraphicPrimitiveContainer myPrimitiveContainer;
+  private GraphicPrimitiveContainer myCanvas;
 
   private ChartOptionGroup myOptionGroup;
 
@@ -49,6 +49,8 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
   private TaskProperties myLabelFormatter;
 
   private Font myFont;
+
+  private final ChartModelImpl myModel;
 
   static {
     ourInfoList = new ArrayList<String>();
@@ -63,13 +65,13 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
     ourInfoList.add("predecessors");
   }
 
-  TaskLabelsRendererImpl(ChartModelImpl model, GraphicPrimitiveContainer primitiveContainer) {
-    myPrimitiveContainer = primitiveContainer;
+  TaskLabelsRendererImpl(ChartModelImpl model, GraphicPrimitiveContainer canvas) {
+    myCanvas = canvas;
     myLabelFormatter = new TaskProperties(model.getTimeUnitStack());
-    DefaultEnumerationOption deo0 = new DefaultEnumerationOption("taskLabelUp", ourInfoList);
-    DefaultEnumerationOption deo1 = new DefaultEnumerationOption("taskLabelDown", ourInfoList);
-    DefaultEnumerationOption deo2 = new DefaultEnumerationOption("taskLabelLeft", ourInfoList);
-    DefaultEnumerationOption deo3 = new DefaultEnumerationOption("taskLabelRight", ourInfoList);
+    DefaultEnumerationOption<String> deo0 = new DefaultEnumerationOption<String>("taskLabelUp", ourInfoList);
+    DefaultEnumerationOption<String> deo1 = new DefaultEnumerationOption<String>("taskLabelDown", ourInfoList);
+    DefaultEnumerationOption<String> deo2 = new DefaultEnumerationOption<String>("taskLabelLeft", ourInfoList);
+    DefaultEnumerationOption<String> deo3 = new DefaultEnumerationOption<String>("taskLabelRight", ourInfoList);
 
     Mediator.addChangeValueDispatcher(deo0);
     Mediator.addChangeValueDispatcher(deo1);
@@ -80,6 +82,7 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
     myOptionGroup = new ChartOptionGroup("ganttChartDetails", myLabelOptions, model.getOptionEventDispatcher());
     // model.getTaskManager().getCustomColumnStorage().addCustomColumnsListener(this);
     myFont = model.getChartUIConfiguration().getChartFont();
+    myModel = model;
   }
 
   private void addOption(String name) {
@@ -145,10 +148,15 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
   }
 
   private Text processText(int xorigin, int yorigin, String text) {
-    Text res = getPrimitiveContainer().getLayer(1).createText(xorigin, yorigin, text);
-    res.setStyle("text.ganttinfo");
+    return processText(xorigin, yorigin, text, "text.ganttinfo");
+  }
+
+  private Text processText(int xorigin, int yorigin, String text, String style) {
+    Text res = getPrimitiveContainer().createText(xorigin, yorigin, text);
+    res.setStyle(style);
     return res;
   }
+
 
   private String getTaskLabel(Task task, int position) {
     StringBuffer result = new StringBuffer();
@@ -175,7 +183,7 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
   }
 
   private GraphicPrimitiveContainer getPrimitiveContainer() {
-    return myPrimitiveContainer;
+    return myCanvas;
   }
 
   private GanttLanguage getLanguage() {
@@ -201,6 +209,8 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
   static final int TINY_SPACE = 1;
   static final int MEDIUM_SPACE = 2;
   static final int LARGE_SPACE = 4;
+
+  protected static final int MAX_TIMELINE_LABEL_WIDTH = 200;
 
   int calculateRowHeight() {
     boolean textUP = isTextUp();
@@ -245,6 +255,28 @@ class TaskLabelsRendererImpl /* implements CustomPropertyListener */{
 
   int getFontHeight() {
     return myFont.getSize();
+  }
+
+  public Text createTimelineLabel(Rectangle rect, final Task task) {
+    final Text text = getPrimitiveContainer().createText(rect.getLeftX(), myModel.getChartUIConfiguration().getSpanningHeaderHeight(), "");
+    text.setSelector(new TextSelector() {
+      @Override
+      public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+        int height = textLengthCalculator.getTextHeight(task.getName());
+        int fullLength = textLengthCalculator.getTextLength(task.getName());
+        Label result;
+        if (fullLength <= MAX_TIMELINE_LABEL_WIDTH) {
+          result = text.createLabel(task.getName(), fullLength, height);
+        } else {
+          int idLength = textLengthCalculator.getTextLength(String.valueOf(task.getTaskID()));
+          result = text.createLabel("#" + String.valueOf(task.getTaskID()), idLength, height);
+        }
+        return new Label[] {result};
+      }
+    });
+    text.setStyle("text.timeline.label");
+    getPrimitiveContainer().bind(text, task);
+    return text;
   }
 
 }
