@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class TaskLinkAction extends TaskActionBase {
@@ -44,7 +45,8 @@ public class TaskLinkAction extends TaskActionBase {
       // FIXME If dependant is a supertask containing dependee, this check fails
       // and the dependency is created!!
       if (getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {
-        getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
+        TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
+        dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));
       }
     }
     // Update (un)link buttons

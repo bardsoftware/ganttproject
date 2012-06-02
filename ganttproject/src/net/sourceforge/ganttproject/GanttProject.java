@@ -626,10 +626,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           try {
             getProjectUIFacade().openProject(document, getProject());
           } catch (DocumentException e) {
+            fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
             if (!tryImportDocument(document)) {
               getUIFacade().showErrorDialog(e);
             }
           } catch (IOException e) {
+            fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
             if (!tryImportDocument(document)) {
               getUIFacade().showErrorDialog(e);
             }
@@ -823,11 +825,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       splash.setVisible(true);
       GanttProject ganttFrame = new GanttProject(false);
       System.err.println("Main frame created");
+      ganttFrame.fireProjectCreated();
       if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
         ganttFrame.openStartupDocument(mainArgs.file.get(0));
+      } else {
       }
       ganttFrame.setVisible(true);
-      ganttFrame.fireProjectCreated();
 
       if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
         OSXAdapter.registerMacOSXApplication(ganttFrame);
