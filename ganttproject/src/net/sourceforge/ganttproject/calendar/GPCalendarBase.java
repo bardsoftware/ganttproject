@@ -32,6 +32,9 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  */
 abstract class GPCalendarBase {
   public Date shiftDate(Date input, TaskLength shift) {
+    if (shift.getLength() == 0) {
+      return input;
+    }
     List<GPCalendarActivity> activities = getActivities(input, shift);
     if (activities.isEmpty()) {
       throw new RuntimeException("FIXME: Failed to compute calendar activities in time period=" + shift

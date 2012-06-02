@@ -34,7 +34,7 @@ import javax.swing.table.TableModel;
 
 import net.sourceforge.ganttproject.gui.UIUtil;
 
-import org.jdesktop.swing.JXTable;
+import org.jdesktop.swingx.JXTable;
 
 import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
 

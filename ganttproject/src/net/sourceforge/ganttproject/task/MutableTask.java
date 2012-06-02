@@ -51,6 +51,9 @@ public interface MutableTask {
 
   void setColor(Color color);
 
+  /** Sets the weblink for the task */
+  void setWebLink(String webLink);
+
   void setNotes(String notes);
 
   void addNotes(String notes);

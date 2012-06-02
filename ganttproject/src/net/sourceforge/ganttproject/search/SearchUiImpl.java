@@ -104,6 +104,7 @@ public class SearchUiImpl implements SearchUi {
         }
       });
     }
+
     @Override
     public void accept(final List<SearchResult<?>> results) {
       if (results.isEmpty()) {
@@ -160,6 +161,7 @@ public class SearchUiImpl implements SearchUi {
     void dismissPopup() {
 
     }
+
     protected void runSearch() {
       myDialog.runSearch(searchBox.getText(), this);
     }
