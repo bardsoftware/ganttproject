@@ -212,6 +212,7 @@ public class DependencyTableModel extends AbstractTableModel {
     if (value instanceof TaskComboItem) {
       Task selectedTask = ((TaskComboItem) value).myTask;
       TaskDependency dep = myMutator.createDependency(myTask, selectedTask, new FinishStartConstraintImpl());
+      dep.setHardness(TaskDependency.Hardness.parse(myTask.getManager().getDependencyHardnessOption().getValue()));
       myDependencies.add(dep);
       fireTableRowsInserted(myDependencies.size(), myDependencies.size());
     }

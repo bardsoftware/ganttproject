@@ -141,7 +141,7 @@ public class GanttChartController extends AbstractChartImplementation implements
 
       @Override
       public Hardness getDefaultHardness() {
-        return TaskDependency.Hardness.parse(myChartModel.getDependencyHardnessOption().getValue());
+        return TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue());
       }
     }, getUIFacade(), getTaskManager().getDependencyCollection()));
 
