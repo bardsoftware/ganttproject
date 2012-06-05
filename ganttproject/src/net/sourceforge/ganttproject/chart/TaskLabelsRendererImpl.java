@@ -11,7 +11,6 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
@@ -23,7 +22,6 @@ import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * This class is responsible for rendering text labels on the sides of task bars
@@ -210,8 +208,6 @@ class TaskLabelsRendererImpl {
   static final int MEDIUM_SPACE = 2;
   static final int LARGE_SPACE = 4;
 
-  protected static final int MAX_TIMELINE_LABEL_WIDTH = 200;
-
   int calculateRowHeight() {
     boolean textUP = isTextUp();
     boolean textDOWN = isTextDown();
@@ -256,27 +252,4 @@ class TaskLabelsRendererImpl {
   int getFontHeight() {
     return myFont.getSize();
   }
-
-  public Text createTimelineLabel(Rectangle rect, final Task task) {
-    final Text text = getPrimitiveContainer().createText(rect.getLeftX(), myModel.getChartUIConfiguration().getSpanningHeaderHeight(), "");
-    text.setSelector(new TextSelector() {
-      @Override
-      public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
-        int height = textLengthCalculator.getTextHeight(task.getName());
-        int fullLength = textLengthCalculator.getTextLength(task.getName());
-        Label result;
-        if (fullLength <= MAX_TIMELINE_LABEL_WIDTH) {
-          result = text.createLabel(task.getName(), fullLength, height);
-        } else {
-          int idLength = textLengthCalculator.getTextLength(String.valueOf(task.getTaskID()));
-          result = text.createLabel("#" + String.valueOf(task.getTaskID()), idLength, height);
-        }
-        return new Label[] {result};
-      }
-    });
-    text.setStyle("text.timeline.label");
-    getPrimitiveContainer().bind(text, task);
-    return text;
-  }
-
 }

@@ -493,7 +493,7 @@ public class GraphicPrimitiveContainer {
     return result;
   }
 
-  void paint(Painter painter) {
+  public void paint(Painter painter) {
     painter.prePaint();
     for (int i = 0; i < myRectangles.size(); i++) {
       Rectangle next = myRectangles.get(i);
@@ -579,5 +579,11 @@ public class GraphicPrimitiveContainer {
     GraphicPrimitiveContainer result = new GraphicPrimitiveContainer();
     myLayers.add(result);
     return result;
+  }
+
+  public void createLayers(int count) {
+    for (int i = 0; i < count; i++) {
+      newLayer();
+    }
   }
 }

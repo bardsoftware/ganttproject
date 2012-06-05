@@ -159,23 +159,16 @@ public class ChartModelImpl extends ChartModelBase {
     myHiddenTasks = hiddenTasks;
   }
 
+  @Override
   public ChartItem getChartItemWithCoordinates(int x, int y) {
     ChartItem result = findTaskProgressItem(x, y);
     if (result == null) {
       result = findTaskBoundaryItem(x, y);
     }
     if (result == null) {
-      result = findTimelineLabelItem(x, y);
+      result = super.getChartItemWithCoordinates(x, y);
     }
     return result;
-  }
-
-  private ChartItem findTimelineLabelItem(int x, int y) {
-    GraphicPrimitiveContainer.GraphicPrimitive text = myTaskRendererImpl.getLabelLayer().getPrimitive(x, y);
-    if (text instanceof GraphicPrimitiveContainer.Text) {
-      return new TimelineLabelChartItem((Task)text.getModelObject());
-    }
-    return null;
   }
 
   private ChartItem findTaskProgressItem(int x, int y) {

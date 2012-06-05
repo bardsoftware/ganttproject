@@ -115,9 +115,6 @@ class TaskActivityRenderer {
     nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
     if (nextTask.isMilestone()) {
       nextRectangle.setStyle("task.milestone");
-      GraphicPrimitiveContainer.Text timelineLabel = myLabelsRenderer.createTimelineLabel(nextRectangle, nextTask);
-      timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
-      timelineLabel.setForegroundColor(nextTask.getColor());
     } else if (nextTask.isProjectTask()) {
       nextRectangle.setStyle("task.projectTask");
       if (nextStarted.isFirst()) {
