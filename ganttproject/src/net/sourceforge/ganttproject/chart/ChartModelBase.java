@@ -26,9 +26,12 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.OffsetManager.OffsetBuilderFactory;
+import net.sourceforge.ganttproject.chart.item.ChartItem;
+import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -40,7 +43,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  * particular, timeline). Calculates data required by the specific charts (e.g.
  * calculates the offsets of the timeline grid cells)
  */
-public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */ChartModel {
+public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */ChartModel, TimelineLabelRendererImpl.ChartModelApi {
   public static interface ScrollingSession {
     void setXpos(int value);
 
@@ -186,6 +189,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private final ChartDayGridRenderer myChartGrid;
 
+  private final TimelineLabelRendererImpl myTimelineLabelRenderer;
+
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
@@ -195,9 +200,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartHeader = new ChartHeaderImpl(this);
     myChartGrid = new ChartDayGridRenderer(this, projectConfig, myChartHeader.getTimelineContainer());
     myBackgroundRenderer = new BackgroundRendererImpl(this);
+    myTimelineLabelRenderer = new TimelineLabelRendererImpl(this);
     addRenderer(myBackgroundRenderer);
     addRenderer(myChartHeader);
     addRenderer(myChartGrid);
+    addRenderer(myTimelineLabelRenderer);
   }
 
   private OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
@@ -398,6 +405,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     return myChartUIConfiguration;
   }
 
+  @Override
+  public int getTimelineTopLineHeight() {
+    return getChartUIConfiguration().getSpanningHeaderHeight();
+  }
+
   private void setChartUIConfiguration(ChartUIConfiguration chartConfig) {
     myChartUIConfiguration = chartConfig;
   }
@@ -542,5 +554,13 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   public ScrollingSession createScrollingSession(int startXpos) {
     assert myScrollingSession == null;
     return new ScrollingSessionImpl(startXpos);
+  }
+
+  public ChartItem getChartItemWithCoordinates(int x, int y) {
+    GraphicPrimitiveContainer.GraphicPrimitive text = myTimelineLabelRenderer.getLabelLayer().getPrimitive(x, y);
+    if (text instanceof GraphicPrimitiveContainer.Text) {
+      return new TimelineLabelChartItem((Task)text.getModelObject());
+    }
+    return null;
   }
 }
