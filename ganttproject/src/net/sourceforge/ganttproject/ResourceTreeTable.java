@@ -100,7 +100,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
     myResourceTreeModel = model;
     getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
     setTreeTableModel(model);
-    initTreeTable();
     myResourceTreeModel.setSelectionModel(getTreeSelectionModel());
   }
 
@@ -126,7 +125,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
       @Override
       protected TimelineChart getChart() {
-        return (TimelineChart) myUiFacade.getResourceChart();
+        return myUiFacade.getResourceChart();
       }
     });
   }

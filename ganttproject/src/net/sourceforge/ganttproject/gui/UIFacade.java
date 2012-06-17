@@ -27,6 +27,7 @@ import javax.swing.Action;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -89,7 +90,7 @@ public interface UIFacade {
   /**
    * Shows the given exception in an error dialog and also puts it into the log
    * file
-   * 
+   *
    * @param e
    *          the exception to show (and log)
    */
@@ -99,7 +100,7 @@ public interface UIFacade {
 
   GanttChart getGanttChart();
 
-  Chart getResourceChart();
+  TimelineChart getResourceChart();
 
   Chart getActiveChart();
 

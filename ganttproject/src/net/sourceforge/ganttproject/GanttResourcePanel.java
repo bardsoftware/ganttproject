@@ -82,14 +82,14 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     final GPAction resourceDeleteAction = myResourceActionSet.getResourceDeleteAction();
     final GPAction assignmentDeleteAction = myResourceActionSet.getAssignmentDelete();
     GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
-		@Override
-		public AbstractAction getActiveAction() {
-			if (getResourceAssignments().length > 0) {
-				return assignmentDeleteAction;
-			}
-			return resourceDeleteAction;
-		}
-	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
+  		@Override
+  		public AbstractAction getActiveAction() {
+  			if (getResourceAssignments().length > 0) {
+  				return assignmentDeleteAction;
+  			}
+  			return resourceDeleteAction;
+  		}
+  	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
     setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(),
         deleteAction);
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
@@ -117,6 +117,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     this.setBackground(new Color(0.0f, 0.0f, 0.0f));
     updateContextActions();
     // applyComponentOrientation(lang.getComponentOrientation());
+  }
+
+  @Override
+  protected void init() {
+    getTreeTable().initTreeTable();
   }
 
   private ProjectEventListener getProjectEventListener() {

@@ -72,6 +72,7 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
@@ -727,6 +728,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public GanttResourcePanel getResourcePanel() {
     if (this.resp == null) {
       this.resp = new GanttResourcePanel(this, getUIFacade());
+      this.resp.init();
       getHumanResourceManager().addView(this.resp);
     }
     return this.resp;
@@ -739,6 +741,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public GanttTree2 getTree() {
     if (tree == null) {
       tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
+      tree.init();
     }
     return tree;
   }
@@ -1047,7 +1050,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public Chart getResourceChart() {
+  public TimelineChart getResourceChart() {
     return getResourcePanel().area;
   }
 

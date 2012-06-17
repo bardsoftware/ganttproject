@@ -50,7 +50,6 @@ public class GanttTreeTable extends GPTreeTableBase {
     this.ttModel = model;
     myUIfacade = uifacade;
     getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
-    initTreeTable();
   }
 
   private UIFacade getUiFacade() {

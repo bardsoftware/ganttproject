@@ -59,6 +59,7 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.DialogAligner;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
@@ -406,7 +407,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public Chart getResourceChart() {
+  public TimelineChart getResourceChart() {
     return myFallbackDelegate.getResourceChart();
   }
 
