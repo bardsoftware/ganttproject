@@ -240,10 +240,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
-    // Create each objects
+
     myFacadeInvalidator = new FacadeInvalidator(getTree().getModel());
     getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
+    getTree().init();
     options.addOptionGroups(new GPOptionGroup[] { getUIFacade().getOptions() });
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
@@ -741,7 +742,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public GanttTree2 getTree() {
     if (tree == null) {
       tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
-      tree.init();
     }
     return tree;
   }

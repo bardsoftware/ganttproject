@@ -71,12 +71,10 @@ public class GanttTreeTable extends GPTreeTableBase {
     super.doInit();
     getTable().getColumnModel().addColumnModelListener((TableColumnModelListener) this.getTreeTableModel());
     getTable().getModel().addTableModelListener(new ModelListener());
-    getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(true) {
-      @Override
-      protected TimelineChart getChart() {
-        return myUIfacade.getGanttChart();
-      }
-    });
+    VscrollAdjustmentListener vscrollListener = new VscrollAdjustmentListener(myUIfacade.getGanttChart(), true);
+    getVerticalScrollBar().addAdjustmentListener(vscrollListener);
+    myUIfacade.getGanttChart().setVScrollController(vscrollListener);
+
   }
 
   void centerViewOnSelectedCell() {

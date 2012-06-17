@@ -23,6 +23,7 @@ import java.util.Date;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
+import net.sourceforge.ganttproject.chart.TimelineChart.VScrollController;
 import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
@@ -31,6 +32,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   private final ChartModelBase myChartModel;
   private final TaskManager myTaskManager;
+  private VScrollController myVScrollController;
 
   public TimelineFacadeImpl(ChartModelBase chartModel, TaskManager taskManager) {
     myChartModel = chartModel;
@@ -63,8 +65,29 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   }
 
   @Override
-  public ScrollingSession createScrollingSession(int xpos, int ypos) {
-    return myChartModel.createScrollingSession(xpos);
+  public ScrollingSession createScrollingSession(final int xpos, final int ypos) {
+    return new ScrollingSession() {
+      private final ScrollingSession myDelegate = myChartModel.createScrollingSession(xpos);
+      private int myStartYpos = ypos;
+
+      @Override
+      public void scrollTo(int xpos, int ypos) {
+        myDelegate.scrollTo(xpos, ypos);
+        if (myVScrollController != null && myVScrollController.isScrollable()) {
+          myVScrollController.scrollBy(myStartYpos - ypos);
+        }
+        myStartYpos = ypos;
+      }
+
+      @Override
+      public void finish() {
+        myDelegate.finish();
+      }
+    };
+  }
+
+  public void setVScrollController(VScrollController vscrollController) {
+    myVScrollController = vscrollController;
   }
 
 }
