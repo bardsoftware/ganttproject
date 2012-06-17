@@ -27,12 +27,12 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
 
   public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade) {
     super(timelineFacade.getDateAt(0), timelineFacade);
-    myScrollingSession = timelineFacade.createScrollingSession(e.getX());
+    myScrollingSession = timelineFacade.createScrollingSession(e.getX(), e.getY());
   }
 
   @Override
   public void apply(MouseEvent event) {
-    myScrollingSession.setXpos(event.getX());
+    myScrollingSession.scrollTo(event.getX(), event.getY());
   }
 
   @Override

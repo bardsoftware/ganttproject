@@ -63,7 +63,7 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   }
 
   @Override
-  public ScrollingSession createScrollingSession(int xpos) {
+  public ScrollingSession createScrollingSession(int xpos, int ypos) {
     return myChartModel.createScrollingSession(xpos);
   }
 
