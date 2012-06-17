@@ -53,9 +53,9 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
- * 
+ *
  * @param <ModelObject>
  * @param <TreeTableClass>
  * @param <TreeTableModelClass>
@@ -141,6 +141,8 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
       }
     });
   }
+
+  protected abstract void init();
 
   protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
   }

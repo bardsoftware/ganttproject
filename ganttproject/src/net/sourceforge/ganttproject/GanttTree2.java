@@ -192,9 +192,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       }
     });
 
-    // Create the root node
-    initRootNode();
-
     // Create Actions
     GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
     GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
@@ -209,6 +206,14 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
     getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, newAction,
         myProject.getCutAction(), myProject.getCopyAction(), myProject.getPasteAction(), propertiesAction, deleteAction);
+  }
+
+  @Override
+  protected void init() {
+    getTreeTable().initTreeTable();
+    // Create the root node
+    initRootNode();
+
 
     getTreeTable().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
         KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.ALT_DOWN_MASK), "cutTask");

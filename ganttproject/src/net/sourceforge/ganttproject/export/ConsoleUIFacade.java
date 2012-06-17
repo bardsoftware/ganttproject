@@ -27,6 +27,7 @@ import javax.swing.Action;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -107,7 +108,7 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Chart getResourceChart() {
+  public TimelineChart getResourceChart() {
     return myRealFacade.getResourceChart();
   }
 
