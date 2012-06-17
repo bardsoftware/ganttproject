@@ -122,12 +122,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
   protected void doInit() {
     super.doInit();
     myResourceTreeModel.updateResources();
-    getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(false) {
-      @Override
-      protected TimelineChart getChart() {
-        return myUiFacade.getResourceChart();
-      }
-    });
+    getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(myUiFacade.getResourceChart(), false));
   }
 
   @Override

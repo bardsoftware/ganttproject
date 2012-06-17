@@ -727,20 +727,21 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
-  protected abstract class VscrollAdjustmentListener implements AdjustmentListener {
+  protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {
     private final boolean isMod;
+    private final TimelineChart myChart;
 
-    protected VscrollAdjustmentListener(boolean calculateMod) {
+    protected VscrollAdjustmentListener(TimelineChart chart, boolean calculateMod) {
       isMod = calculateMod;
+      myChart = chart;
     }
 
-    protected abstract TimelineChart getChart();
+    protected TimelineChart getChart() {
+      return myChart;
+    }
 
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
-      if (!isInitialized) {
-        return;
-      }
       if (getChart() == null) {
         return;
       }
@@ -750,6 +751,16 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         getChart().getModel().setVerticalOffset(e.getValue());
       }
       getChart().reset();
+    }
+
+    @Override
+    public boolean isScrollable() {
+      return getVerticalScrollBar().getMaximum() - getVerticalScrollBar().getMinimum() > 0;
+    }
+
+    @Override
+    public void scrollBy(int pixels) {
+      getVerticalScrollBar().setValue(getVerticalScrollBar().getValue() + pixels);
     }
   }
 
