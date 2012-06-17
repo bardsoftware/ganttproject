@@ -45,7 +45,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
  */
 public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */ChartModel, TimelineLabelRendererImpl.ChartModelApi {
   public static interface ScrollingSession {
-    void setXpos(int value);
+    void scrollTo(int xpos, int ypos);
 
     void finish();
   }
@@ -70,7 +70,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     }
 
     @Override
-    public void setXpos(int xpos) {
+    public void scrollTo(int xpos, int ypos) {
       int shift = xpos - myPrevXpos;
       // System.err.println("xpos="+xpos+" shift=" + shift);
       shiftOffsets(shift);
