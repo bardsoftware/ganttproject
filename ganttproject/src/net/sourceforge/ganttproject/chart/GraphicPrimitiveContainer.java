@@ -351,8 +351,6 @@ public class GraphicPrimitiveContainer {
       return new Label(this, text, lengthPx, heightPx);
     }
 
-    public void setShownLabel(Label l) {
-    }
     @Override
     public String toString() {
       return String.format("TBox [%d, %d]", myLeftX, myBottomY);
@@ -519,6 +517,7 @@ public class GraphicPrimitiveContainer {
   }
 
   public void clear() {
+    myTextIndex.clear();
     myRectangles.clear();
     myLines.clear();
     myTexts.clear();
@@ -539,17 +538,7 @@ public class GraphicPrimitiveContainer {
   }
 
   public GraphicPrimitive getPrimitive(int x, int y) {
-    // System.err.println("looking for primitive under point x="+x+" y="+y);
     return getPrimitive(x, 0, y, 0);
-    // for (int i = 0; i < myRectangles.size(); i++) {
-    // Rectangle next = (Rectangle) myRectangles.get(i);
-    // // System.err.println(" next rectangle="+next);
-    // if (next.myLeftX <= x && next.myLeftX + next.myWidth >= x
-    // && next.myTopY <= y && next.myTopY + next.myHeight >= y) {
-    // return next;
-    // }
-    // }
-    // return null;
   }
 
   public GraphicPrimitive getPrimitive(int x, int xThreshold, int y, int yThreshold) {
