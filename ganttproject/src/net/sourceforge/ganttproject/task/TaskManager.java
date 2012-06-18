@@ -47,6 +47,8 @@ public interface TaskManager {
     TaskLength myDuration;
     Color myColor;
     Task myPrevSibling;
+    boolean isExpanded;
+    Task myParent;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -68,6 +70,10 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withParent(Task parent) {
+      myParent = parent;
+      return this;
+    }
     public TaskBuilder withPrevSibling(Task sibling) {
       myPrevSibling = sibling;
       return this;
@@ -78,7 +84,13 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withExpansionState(boolean isExpanded) {
+      this.isExpanded = isExpanded;
+      return this;
+    }
+
     public abstract Task build();
+
   }
 
   Task[] getTasks();
