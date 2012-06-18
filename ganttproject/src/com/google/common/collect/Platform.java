@@ -88,9 +88,9 @@ class Platform {
    * server-side code could generate enough volume that reclamation becomes
    * important.
    */
-//  static MapMaker tryWeakKeys(MapMaker mapMaker) {
-//    return mapMaker.weakKeys();
-//  }
+  static MapMaker tryWeakKeys(MapMaker mapMaker) {
+    return mapMaker.weakKeys();
+  }
 
   private Platform() {}
 }
