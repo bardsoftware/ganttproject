@@ -170,6 +170,8 @@ public class GanttTaskPropertiesBean extends JPanel {
   private final IGanttProject myProject;
   private final UIFacade myUIfacade;
 
+  private JCheckBox myShowInTimeline;
+
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     this.selectedTasks = selectedTasks;
     storeOriginalValues(selectedTasks[0]);
@@ -251,6 +253,10 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     addEmptyRow(propertiesPanel);
 
+    propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.showInTimeline.label")));
+    myShowInTimeline = new JCheckBox();
+    propertiesPanel.add(myShowInTimeline);
+
     propertiesPanel.add(new JLabel(language.getText("shape")));
     shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
     propertiesPanel.add(shapeComboBox);
@@ -315,44 +321,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     propertiesPanel.add(weblinkBox);
 
     SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount() / 2, 2, 1, 1, 5, 5);
-
-//    LayerUI<JPanel> layerUi = new LayerUI<JPanel>() {
-//
-//      @Override
-//      public void paint(Graphics g, JComponent c) {
-//        super.paint(g, c);
-//        Rectangle lockedRect = myTaskScheduleDates.getLockedFieldsRect(propertiesPanel);
-//        if (lockedRect != null) {
-//          g.setColor(new Color(64, 64, 64, 64));
-//          g.fillRect(lockedRect.x, lockedRect.y, lockedRect.width, lockedRect.height);
-//        }
-//      }
-//
-//      @Override
-//      protected void processMouseEvent(MouseEvent e, JLayer<? extends JPanel> l) {
-//        super.processMouseEvent(e, l);
-//        System.out.println("MouseEvent detected: " + e);
-//      }
-//
-//      @Override
-//      protected void processMouseMotionEvent(MouseEvent e, JLayer<? extends JPanel> l) {
-//        super.processMouseMotionEvent(e, l);
-//        System.out.println("MouseMotionEvent detected: " + e);
-//      }
-//
-//      @Override
-//      public void installUI(JComponent c) {
-//        super.installUI(c);
-//        ((JLayer) c).setLayerEventMask(AWTEvent.MOUSE_MOTION_EVENT_MASK);
-//      }
-//
-//      @Override
-//      public void uninstallUI(JComponent c) {
-//        super.uninstallUI(c);
-//        ((JLayer) c).setLayerEventMask(0);
-//      }
-//
-//    };
 
     generalPanel = new JPanel(new SpringLayout());
     //generalPanel.add(new JLayer<JPanel>(propertiesPanel, layerUi));
@@ -510,6 +478,12 @@ public class GanttTaskPropertiesBean extends JPanel {
       mutator.commit();
       myDependenciesPanel.commit();
       myAllocationsPanel.commit();
+
+      if (!myShowInTimeline.isSelected()) {
+        myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
+      } else {
+        myUIfacade.getCurrentTaskView().getTimelineTasks().add(selectedTasks[i]);
+      }
     }
   }
 
@@ -550,6 +524,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
 
     noteAreaNotes.setText(originalNotes);
+    myShowInTimeline.setSelected(myUIfacade.getCurrentTaskView().getTimelineTasks().contains(selectedTasks[0]));
   }
 
 
