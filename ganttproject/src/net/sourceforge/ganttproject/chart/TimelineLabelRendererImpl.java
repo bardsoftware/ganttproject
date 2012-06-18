@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart;
 
+import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
@@ -47,6 +48,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     TaskManager getTaskManager();
     int getTimelineTopLineHeight();
     List<Offset> getDefaultUnitOffsets();
+    Date getStartDate();
   }
 
   public TimelineLabelRendererImpl(ChartModelApi chartModel) {
@@ -59,10 +61,14 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
 
   @Override
   public void render() {
+    List<Offset> offsets = myChartModel.getDefaultUnitOffsets();
     for (Task t : myChartModel.getTaskManager().getTasks()) {
       if (t.isMilestone()) {
         TaskActivity activity = new MilestoneTaskFakeActivity(t);
-        int[] bounds = myOffsetLookup.getBounds(activity.getStart(), activity.getEnd(), myChartModel.getDefaultUnitOffsets());
+        if (activity.getEnd().before(myChartModel.getStartDate())) {
+          continue;
+        }
+        int[] bounds = myOffsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
         GraphicPrimitiveContainer.Text timelineLabel = createTimelineLabel(bounds[0], t);
         timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
         timelineLabel.setForegroundColor(t.getColor());

@@ -43,6 +43,11 @@ public class DummySpatialIndex<T> implements SpatialIndex<T>{
       myWidth = width;
       myHeight = height;
     }
+
+    @Override
+    public String toString() {
+      return "x=" + myLeftX + " y=" + myBottomY + " width=" + myWidth;
+    }
   }
 
   private final List<Rect<T>> myRects = Lists.newArrayList();
@@ -60,5 +65,9 @@ public class DummySpatialIndex<T> implements SpatialIndex<T>{
       }
     }
     return null;
+  }
+
+  public void clear() {
+    myRects.clear();
   }
 }
