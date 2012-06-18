@@ -301,14 +301,17 @@ public class TaskManagerImpl implements TaskManager {
           task.setColor(myColor);
         }
 
+        task.setExpand(isExpanded);
         registerTask(task);
+
 
         if (myPrevSibling != null && myPrevSibling != getRootTask()) {
           int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
           Task parentTask = getTaskHierarchy().getContainer(myPrevSibling);
           getTaskHierarchy().move(task, parentTask, position);
         } else {
-          getTaskHierarchy().move(task, getRootTask());
+          Task parentTask = myParent == null ? getRootTask() : myParent;
+          getTaskHierarchy().move(task, parentTask);
         }
 
         fireTaskAdded(task);

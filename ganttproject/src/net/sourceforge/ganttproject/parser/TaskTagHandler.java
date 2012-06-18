@@ -88,6 +88,14 @@ public class TaskTagHandler implements TagHandler {
       }
     }
 
+    if (!myContext.isStackEmpty()) {
+      builder = builder.withParent(myContext.peekTask());
+    }
+    String isExpanded = attrs.getValue("expand");
+    if (isExpanded != null) {
+      builder = builder.withExpansionState(Boolean.parseBoolean(isExpanded));
+    }
+
     Task task = builder.build();
 
     task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
@@ -151,8 +159,6 @@ public class TaskTagHandler implements TagHandler {
       task.setWebLink(webLink);
     }
 
-    task.setExpand(Boolean.parseBoolean(attrs.getValue("expand")));
-
     String shape = attrs.getValue("shape");
     if (shape != null) {
       java.util.StringTokenizer st1 = new java.util.StringTokenizer(shape, ",");
@@ -167,9 +173,6 @@ public class TaskTagHandler implements TagHandler {
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
-    TaskContainmentHierarchyFacade taskHierarchy = getManager().getTaskHierarchy();
-    Task stackHead = myContext.isStackEmpty() ? taskHierarchy.getRootTask() : myContext.peekTask();
-    taskHierarchy.move(task, stackHead);
     myContext.pushTask(task);
   }
 
