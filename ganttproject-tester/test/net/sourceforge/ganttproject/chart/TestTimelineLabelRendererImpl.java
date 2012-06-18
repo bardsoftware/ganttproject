@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -42,11 +44,6 @@ public class TestTimelineLabelRendererImpl extends TestCase {
     final List<Offset> myOffsets = Lists.newArrayList();
 
     @Override
-    public TaskManager getTaskManager() {
-      return myTaskManager;
-    }
-
-    @Override
     public int getTimelineTopLineHeight() {
       return 20;
     }
@@ -54,6 +51,26 @@ public class TestTimelineLabelRendererImpl extends TestCase {
     @Override
     public List<Offset> getDefaultUnitOffsets() {
       return myOffsets;
+    }
+
+    @Override
+    public Date getStartDate() {
+      return null;
+    }
+
+    @Override
+    public Collection<Task> getTimelineTasks() {
+      List<Task> result = Lists.newArrayList();
+      for (Task t : myTaskManager.getTasks()) {
+        if (t.isMilestone()) {
+          result.add(t);
+        }
+      }
+      return result;
+    }
+
+    TaskManager getTaskManager() {
+      return myTaskManager;
     }
   }
 
