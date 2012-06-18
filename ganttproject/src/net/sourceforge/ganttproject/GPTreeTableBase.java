@@ -77,6 +77,9 @@ import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
@@ -499,31 +502,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     });
     getTable().setAutoCreateColumnsFromModel(false);
     getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-    setShowHorizontalLines(true);
-    // TODO(dbarashev): make sure that everything is fine with the column
-    // control
-    // setHasColumnControl(true);
-
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/simple_task.gif"));
     setOpenIcon(icon);
     setClosedIcon(icon);
     setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
     setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
     setLeafIcon(icon);
-    // getTreeTable().getParent().setBackground(Color.WHITE);
-
-    // InputMap inputMap = getInputMap();
-    // inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
-    // getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-    // ActionMap actionMap = getActionMap();
-    // actionMap.setParent(getTreeTable().getActionMap());
-    // getTreeTable().setActionMap(actionMap);
     addActionWithAccelleratorKey(myEditCellAction);
 
-    // TODO(dbarashev): restore highlighters
-    // setHighlighters(new HighlighterPipeline(new Highlighter[] {
-    // AlternateRowHighlighter.quickSilver,
-    // new HierarchicalColumnHighlighter() }));
+    setHighlighters(new ColorHighlighter(new HighlightPredicate() {
+      @Override
+      public boolean isHighlighted(Component renderer, ComponentAdapter adapter) {
+        return adapter.row % 2 == 1;
+      }
+    }, new Color(0xf0, 0xf0, 0xe0), null));
 
     getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
