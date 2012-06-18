@@ -90,6 +90,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -106,6 +107,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final GPOptionGroup myOptions;
   private final LafOption myLafOption;
   private final NotificationManagerImpl myNotificationManager;
+  private final TaskView myTaskView = new TaskView();
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
       IGanttProject project, UIFacade fallbackDelegate) {
@@ -509,6 +511,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public IProgressMonitor getDefaultMonitor() {
     return null;
+  }
+
+  @Override
+  public TaskView getCurrentTaskView() {
+    return myTaskView;
   }
 
   @Override

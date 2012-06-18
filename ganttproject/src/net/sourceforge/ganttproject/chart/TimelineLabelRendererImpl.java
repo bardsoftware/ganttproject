@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -27,7 +28,6 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
@@ -42,13 +42,13 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
   private ChartModelApi myChartModel;
 
   /**
-   * Thsi class dependencies interface
+   * This class dependencies interface
    */
   protected static interface ChartModelApi {
-    TaskManager getTaskManager();
     int getTimelineTopLineHeight();
     List<Offset> getDefaultUnitOffsets();
     Date getStartDate();
+    Collection<Task> getTimelineTasks();
   }
 
   public TimelineLabelRendererImpl(ChartModelApi chartModel) {
@@ -62,17 +62,25 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
   @Override
   public void render() {
     List<Offset> offsets = myChartModel.getDefaultUnitOffsets();
-    for (Task t : myChartModel.getTaskManager().getTasks()) {
+    TaskActivity leadActivity = null;
+    for (Task t : myChartModel.getTimelineTasks()) {
       if (t.isMilestone()) {
-        TaskActivity activity = new MilestoneTaskFakeActivity(t);
-        if (activity.getEnd().before(myChartModel.getStartDate())) {
-          continue;
+        leadActivity = new MilestoneTaskFakeActivity(t);
+      } else {
+        for (TaskActivity activity : t.getActivities()) {
+          if (activity.getIntensity() > 0f) {
+            leadActivity = activity;
+            break;
+          }
         }
-        int[] bounds = myOffsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
-        GraphicPrimitiveContainer.Text timelineLabel = createTimelineLabel(bounds[0], t);
-        timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
-        timelineLabel.setForegroundColor(t.getColor());
       }
+      if (leadActivity == null || leadActivity.getEnd().before(myChartModel.getStartDate())) {
+        continue;
+      }
+      int[] bounds = myOffsetLookup.getBounds(leadActivity.getStart(), leadActivity.getEnd(), offsets);
+      GraphicPrimitiveContainer.Text timelineLabel = createTimelineLabel(bounds[0], t);
+      timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
+      timelineLabel.setForegroundColor(t.getColor());
     }
   }
 

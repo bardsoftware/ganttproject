@@ -93,6 +93,8 @@ public interface TaskManager {
 
   }
 
+  public TaskBuilder newTaskBuilder();
+
   Task[] getTasks();
 
   public Task getRootTask();
@@ -110,7 +112,6 @@ public interface TaskManager {
   @Deprecated
   public GanttTask createTask(int taskId);
 
-  public TaskBuilder newTaskBuilder();
 
   String encode(TaskLength duration);
 

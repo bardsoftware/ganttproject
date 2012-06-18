@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
@@ -123,6 +124,8 @@ public interface UIFacade {
   Frame getMainFrame();
 
   void setWorkbenchTitle(String title);
+
+  TaskView getCurrentTaskView();
 
   TaskTreeUIFacade getTaskTree();
 

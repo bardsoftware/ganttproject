@@ -21,8 +21,13 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.OffsetManager.OffsetBuilderFactory;
@@ -160,6 +165,13 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public static final Object STATIC_MUTEX = new Object();
+
+  private static final Predicate<Task> TIMELINE_LABEL_PREDICATE = new Predicate<Task>() {
+    @Override
+    public boolean apply(Task input) {
+      return input.isMilestone();
+    }
+  };
 
   private final OptionEventDispatcher myOptionEventDispatcher = new OptionEventDispatcher();
 
@@ -422,6 +434,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private ScrollingSessionImpl myScrollingSession;
 
+  private Set<Task> myTimelineTasks;
+
   @Override
   public TaskManager getTaskManager() {
     return myTaskManager;
@@ -562,5 +576,14 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       return new TimelineLabelChartItem((Task)text.getModelObject());
     }
     return null;
+  }
+
+  @Override
+  public Collection<Task> getTimelineTasks() {
+    return myTimelineTasks;
+  }
+
+  public void setTimelineTasks(Set<Task> timelineTasks) {
+    myTimelineTasks = timelineTasks;
   }
 }

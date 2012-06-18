@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class ConsoleUIFacade implements UIFacade {
@@ -171,6 +172,11 @@ public class ConsoleUIFacade implements UIFacade {
   public GPUndoManager getUndoManager() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public TaskView getCurrentTaskView() {
+    return myRealFacade.getCurrentTaskView();
   }
 
   @Override

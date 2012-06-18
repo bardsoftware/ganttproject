@@ -66,6 +66,7 @@ import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -292,6 +293,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public TaskSelectionManager getTaskSelectionManager() {
     return myUIFacade.getTaskSelectionManager();
+  }
+
+  @Override
+  public TaskView getCurrentTaskView() {
+    return myUIFacade.getCurrentTaskView();
   }
 
   @Override
