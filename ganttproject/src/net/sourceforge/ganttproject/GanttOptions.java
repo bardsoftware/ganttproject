@@ -1016,10 +1016,14 @@ public class GanttOptions {
     FTPUser = pvString;
   }
 
-  public void addOptionGroups(GPOptionGroup[] optionGroups) {
-    for (int i = 0; i < optionGroups.length; i++) {
-      GPOptionGroup nextGroup = optionGroups[i];
-      addOptions(nextGroup);
+  public void addOptionGroups(GPOptionGroup... optionGroups) {
+    for (GPOptionGroup group : optionGroups) {
+      addOptions(group);
+    }
+  }
+  public void addOptionGroups(Iterable<GPOptionGroup> optionGroups) {
+    for (GPOptionGroup group : optionGroups) {
+      addOptions(group);
     }
   }
 
