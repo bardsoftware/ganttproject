@@ -346,11 +346,11 @@ public class OptionsPageBuilder {
 
   private boolean isCheckboxOption(GPOptionGroup group, GPOption<?> option) {
     String yesKey = myi18n.getCanonicalOptionLabelKey(option) + ".yes";
-    if ((group == null || group.getI18Nkey(yesKey) == null) && myi18n.getValue(yesKey) == null) {
+    if ((group == null || group.getI18Nkey(yesKey) == null) && !myi18n.hasValue(yesKey)) {
       return true;
     }
     String noKey = myi18n.getCanonicalOptionLabelKey(option) + ".no";
-    if ((group == null || group.getI18Nkey(noKey) == null) && myi18n.getValue(noKey) == null) {
+    if ((group == null || group.getI18Nkey(noKey) == null) && !myi18n.hasValue(noKey)) {
       return true;
     }
     return false;
@@ -493,7 +493,7 @@ public class OptionsPageBuilder {
   /**
    * Create JTextField component in options that allows user to input only
    * integer values.
-   * 
+   *
    * @param option
    * @return
    */
@@ -547,6 +547,9 @@ public class OptionsPageBuilder {
     public I18N() {
     }
 
+    protected boolean hasValue(String key) {
+      return GanttLanguage.getInstance().getText(key) != null;
+    }
     protected String getValue(String key) {
       String result = GanttLanguage.getInstance().getText(key);
       return result == null ? key : result;
