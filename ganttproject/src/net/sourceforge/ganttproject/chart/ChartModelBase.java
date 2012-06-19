@@ -22,18 +22,19 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.OffsetManager.OffsetBuilderFactory;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
@@ -42,6 +43,9 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 
 /**
  * Controls painting of the common part of Gantt and resource charts (in
@@ -166,7 +170,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   public static final Object STATIC_MUTEX = new Object();
 
-  private static final Predicate<Task> TIMELINE_LABEL_PREDICATE = new Predicate<Task>() {
+  private static final Predicate<? super Task> MILESTONE_PREDICATE = new Predicate<Task>() {
     @Override
     public boolean apply(Task input) {
       return input.isMilestone();
@@ -203,6 +207,20 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private final TimelineLabelRendererImpl myTimelineLabelRenderer;
 
+  protected final TaskManager myTaskManager;
+
+  private int myVerticalOffset;
+
+  private int myHorizontalOffset;
+
+  private ScrollingSessionImpl myScrollingSession;
+
+  private Set<Task> myTimelineTasks;
+
+  private final GPOptionGroup myTimelineLabelOptions;
+
+  private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
+
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
@@ -212,6 +230,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartHeader = new ChartHeaderImpl(this);
     myChartGrid = new ChartDayGridRenderer(this, projectConfig, myChartHeader.getTimelineContainer());
     myBackgroundRenderer = new BackgroundRendererImpl(this);
+    myTimelineLabelOptions = new ChartOptionGroup("timelineLabels", new GPOption[] { myTimelineMilestonesOption }, getOptionEventDispatcher());
     myTimelineLabelRenderer = new TimelineLabelRendererImpl(this);
     addRenderer(myBackgroundRenderer);
     addRenderer(myChartHeader);
@@ -426,16 +445,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = chartConfig;
   }
 
-  protected final TaskManager myTaskManager;
-
-  private int myVerticalOffset;
-
-  private int myHorizontalOffset;
-
-  private ScrollingSessionImpl myScrollingSession;
-
-  private Set<Task> myTimelineTasks;
-
   @Override
   public TaskManager getTaskManager() {
     return myTaskManager;
@@ -523,7 +532,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public GPOptionGroup[] getChartOptionGroups() {
-    return new GPOptionGroup[] { myChartGrid.getOptions() };
+    return new GPOptionGroup[] { myChartGrid.getOptions(), myTimelineLabelOptions };
   }
 
   public void addOptionChangeListener(GPOptionChangeListener listener) {
@@ -580,7 +589,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   @Override
   public Collection<Task> getTimelineTasks() {
-    return myTimelineTasks;
+    return Sets.union(myTimelineTasks, getMilestones());
+  }
+
+  private Set<Task> getMilestones() {
+    return myTimelineMilestonesOption.getValue() ? Sets.filter(Sets.newHashSet(getTaskManager().getTasks()), MILESTONE_PREDICATE) : Collections.<Task>emptySet();
   }
 
   public void setTimelineTasks(Set<Task> timelineTasks) {
