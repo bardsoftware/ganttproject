@@ -40,6 +40,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -225,7 +226,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       if (action == null) {
         menu.addSeparator();
       } else {
-        menu.add(action);
+        Boolean isSelected = (Boolean)action.getValue(Action.SELECTED_KEY);
+        if (isSelected == null) {
+          menu.add(action);
+        } else {
+          menu.add(new JCheckBoxMenuItem(action));
+        }
       }
     }
     menu.applyComponentOrientation(getLanguage().getComponentOrientation());

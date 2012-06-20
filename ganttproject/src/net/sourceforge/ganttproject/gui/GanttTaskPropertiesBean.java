@@ -153,7 +153,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private ShapePaint originalShape;
 
-  private final TaskScheduleDatesPanel myTaskScheduleDates = new TaskScheduleDatesPanel();
+  private final TaskScheduleDatesPanel myTaskScheduleDates;
 
   private CustomColumnsPanel myCustomColumnPanel = null;
 
@@ -173,6 +173,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JCheckBox myShowInTimeline;
 
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
+    myTaskScheduleDates = new TaskScheduleDatesPanel(uifacade);
     this.selectedTasks = selectedTasks;
     storeOriginalValues(selectedTasks[0]);
     myHumanResourceManager = project.getHumanResourceManager();

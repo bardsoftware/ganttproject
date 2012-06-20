@@ -23,12 +23,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
-import javax.swing.Icon;
+import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,6 +36,7 @@ import javax.swing.JTextField;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
@@ -45,6 +46,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Encapsulates start date/end date/duration field.
@@ -66,51 +70,76 @@ public class TaskScheduleDatesPanel {
   private final BooleanOption myEndDateLock = new DefaultBooleanOption("", false);
   private final BooleanOption myDurationLock = new DefaultBooleanOption("", false);
   protected BooleanOption myPrevLock = myStartDateLock;
+  private final UIFacade myUiFacade;
+  private JXHyperlink myLockHyperlink;
+  private JXHyperlink mySchedulingHyperlink;
 
-  public TaskScheduleDatesPanel() {
+  public TaskScheduleDatesPanel(UIFacade uiFacade) {
+    myUiFacade = uiFacade;
   }
 
   public void setUnpluggedClone(Task unpluggedClone) {
     myUnpluggedClone = unpluggedClone;
   }
 
-  private static final Icon ICON_LOCKED = GPAction.getIcon("16", "status-locked.png");
-  private static final Icon ICON_UNLOCKED = GPAction.getIcon("16", "status-unlocked.png");
-
   private static JComponent createLabel(String title, final BooleanOption isLocked,
-      final JComponent controlledComponent, final MouseListener lockListener) {
+      final JComponent controlledComponent, final GPAction lockAction) {
     final JPanel labelPanel = new JPanel(new BorderLayout());
     JLabel result = new JLabel(title);
-    final JLabel lock = isLocked.getValue() ? new JLabel(ICON_LOCKED) : new JLabel(ICON_UNLOCKED);
-    lock.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        if (lock.isEnabled()) {
-          lockListener.mouseClicked(e);
-        }
-      }
-
-    });
     isLocked.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        if (isLocked.getValue()) {
-          lock.setIcon(ICON_LOCKED);
-        } else {
-          lock.setIcon(ICON_UNLOCKED);
-        }
         UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
         UIUtil.setEnabledTree(controlledComponent, !isLocked.getValue());
+        lockAction.setEnabled(!isLocked.getValue());
+        lockAction.putValue(Action.SELECTED_KEY, isLocked.getValue());
       }
     });
     labelPanel.add(result, BorderLayout.WEST);
-    labelPanel.add(lock, BorderLayout.EAST);
     UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
     UIUtil.setEnabledTree(controlledComponent, !isLocked.getValue());
+    lockAction.setEnabled(!isLocked.getValue());
     return labelPanel;
   }
 
-  public void insertInto(JPanel propertiesPanel) {
+  private GPAction createLockAction(String key, final BooleanOption lock) {
+    return new GPAction(key) {
+      {
+        putValue(Action.SELECTED_KEY, lock.isChecked());
+      }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        lock.setValue(true);
+        myPrevLock.setValue(false);
+        myPrevLock = lock;
+      }
+    };
+  }
+
+  private static Action createDisabledAction(String key) {
+    return new GPAction(key) {
+      {
+        setEnabled(false);
+      }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+      }
+    };
+  }
+  protected List<Action> createSchedulingMenu() {
+    return Arrays.asList(new Action[] {
+        createDisabledAction("option.taskProperties.main.scheduling.automated.value.start"),
+        createDisabledAction("option.taskProperties.main.scheduling.automated.value.duration"),
+        null,
+        createDisabledAction("option.taskProperties.main.scheduling.automated.value.hint")
+    });
+  }
+
+  protected void showPopup(List<Action> actions, JComponent owner, JComponent anchor) {
+    myUiFacade.showPopupMenu(owner, actions, anchor.getLocation().x, anchor.getLocation().y);
+  }
+
+  public void insertInto(final JPanel propertiesPanel) {
     // Begin date
     myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
@@ -118,16 +147,9 @@ public class TaskScheduleDatesPanel {
         setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
       }
     });
-    propertiesPanel.add(createLabel(language.getText("dateOfBegining"), myStartDateLock, myStartDatePicker,
-        new MouseAdapter() {
-          @Override
-          public void mouseClicked(MouseEvent e) {
-            myStartDateLock.setValue(true);
-            myPrevLock.setValue(false);
-            myPrevLock = myStartDateLock;
-          }
-        }));
-    propertiesPanel.add(myStartDatePicker);
+    final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", myStartDateLock);
+    JComponent startDateLabel = createLabel(language.getText("dateOfBegining"), myStartDateLock, myStartDatePicker, startDateLockAction);
+
 
     // End date
     myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
@@ -138,28 +160,11 @@ public class TaskScheduleDatesPanel {
         setEnd(c, false);
       }
     });
-    propertiesPanel.add(createLabel(language.getText("dateOfEnd"), myEndDateLock, myEndDatePicker, new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        myEndDateLock.setValue(true);
-        myPrevLock.setValue(false);
-        myPrevLock = myEndDateLock;
-      }
-
-    }));
-    propertiesPanel.add(myEndDatePicker);
+    final GPAction endDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.end", myEndDateLock);
+    JComponent endDateLabel = createLabel(language.getText("dateOfEnd"), myEndDateLock, myEndDatePicker, endDateLockAction);
 
     // Duration
     durationField1 = new JTextField(8);
-    propertiesPanel.add(createLabel(language.getText("length"), myDurationLock, durationField1, new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        myDurationLock.setValue(true);
-        myPrevLock.setValue(false);
-        myPrevLock = myDurationLock;
-      }
-
-    }));
     durationField1.setName("length");
     durationField1.addFocusListener(new FocusListener() {
       @Override
@@ -171,6 +176,33 @@ public class TaskScheduleDatesPanel {
       public void focusGained(FocusEvent e) {
       }
     });
+    final GPAction durationLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.duration", myDurationLock);
+    JComponent durationLabel = createLabel(language.getText("length"), myDurationLock, durationField1, durationLockAction);
+
+    propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.scheduling.label")));
+    final Box box = Box.createHorizontalBox();
+    myLockHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.manual.label") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showPopup(ImmutableList.<Action>of(startDateLockAction, endDateLockAction, durationLockAction), box, myLockHyperlink);
+      }
+    });
+    box.add(myLockHyperlink);
+    box.add(Box.createHorizontalStrut(15));
+    mySchedulingHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.automated.label") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showPopup(createSchedulingMenu(), box, mySchedulingHyperlink);
+      }
+    });
+    box.add(mySchedulingHyperlink);
+    propertiesPanel.add(box);
+
+    propertiesPanel.add(startDateLabel);
+    propertiesPanel.add(myStartDatePicker);
+    propertiesPanel.add(endDateLabel);
+    propertiesPanel.add(myEndDatePicker);
+    propertiesPanel.add(durationLabel);
     propertiesPanel.add(durationField1);
   }
 
