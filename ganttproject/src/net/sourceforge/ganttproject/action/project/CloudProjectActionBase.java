@@ -18,17 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.Action;
+import javax.swing.JComponent;
+
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.gui.GanttURLChooser;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Base class for actions doing open/save from/to cloud.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 abstract class CloudProjectActionBase extends GPAction {
@@ -42,34 +50,38 @@ abstract class CloudProjectActionBase extends GPAction {
   }
 
   protected Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
-    Document document = project.getDocument();
-    GanttURLChooser uc = new GanttURLChooser(myUiFacade, (null != document) ? document.getURI().toString()
-        : myDocumentManager.getLastWebDAVDocumentOption().getValue(), (null != document) ? document.getUsername()
-        : null, (null != document) ? document.getPassword() : null,
-        myDocumentManager.getWebDavLockTimeoutOption().getValue());
-    uc.show(isOpenUrl);
-    if (uc.getChoice() == UIFacade.Choice.OK) {
-      if (!sameDocument(document, uc)) {
-        document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
+    final Document document = project.getDocument();
+    final Document[] result = new Document[1];
+
+    class OkActionImpl extends OkAction implements DocumentStorageUi.DocumentReceiver {
+      private DocumentDescriptor myChosenDocument;
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (myChosenDocument != null && !sameDocument(document, myChosenDocument)) {
+          result[0] = myDocumentManager.getDocument(myChosenDocument.url, myChosenDocument.username, myChosenDocument.password);
+        }
       }
-      myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
-      if (uc.isTimeoutEnabled()) {
-        HttpDocument.setLockDAVMinutes(uc.getTimeout());
-        myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-      } else {
-        HttpDocument.setLockDAVMinutes(-1);
+
+      @Override
+      public void setDocument(DocumentDescriptor document) {
+        myChosenDocument = document;
       }
-    } else {
-      document = null;
     }
-    return document;
+
+    OkActionImpl okAction = new OkActionImpl();
+    DocumentStorageUi webdavStorage = myDocumentManager.getWebDavStorageUi();
+    JComponent component = isOpenUrl ? webdavStorage.open(document, okAction) : webdavStorage.save(document, null);
+    myUiFacade.createDialog(component, new Action[] { okAction, CancelAction.EMPTY },
+        GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
+    return result[0];
   }
 
-  private static boolean sameDocument(Document document, GanttURLChooser uc) {
-    if (document == null) {
+  private static boolean sameDocument(Document d1, DocumentDescriptor chosenDocument) {
+    if (d1 == null || chosenDocument == null) {
       return false;
     }
-    return document.getURI().toString().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
-        && document.getPassword().equals(uc.getPassword());
+    return d1.getURI().toString().equals(chosenDocument.url) && d1.getUsername().equals(chosenDocument.username)
+        && d1.getPassword().equals(chosenDocument.password);
   }
 }
