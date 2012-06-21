@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.document;
+package net.sourceforge.ganttproject.document.webdav;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +25,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.document.AbstractURLDocument;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.ErrorCode;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpException;
