@@ -22,7 +22,6 @@ import javax.swing.JComponent;
 
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
-import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
