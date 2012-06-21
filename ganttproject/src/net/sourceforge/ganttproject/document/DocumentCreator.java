@@ -12,6 +12,7 @@ import java.util.Comparator;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
@@ -19,14 +20,13 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 
 /**
  * This is a helper class, to create new instances of Document easily. It
  * chooses the correct implementation based on the given path.
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
@@ -45,7 +45,7 @@ public class DocumentCreator implements DocumentManager {
   /**
    * Creates an HttpDocument if path starts with "http://" or "https://";
    * creates a FileDocument otherwise.
-   * 
+   *
    * @param path
    *          path to the document
    * @return an implementation of the interface Document
@@ -57,7 +57,7 @@ public class DocumentCreator implements DocumentManager {
   /**
    * Creates an HttpDocument if path starts with "http://" or "https://";
    * creates a FileDocument otherwise.
-   * 
+   *
    * @param path
    *          path to the document
    * @param user
@@ -176,15 +176,6 @@ public class DocumentCreator implements DocumentManager {
     return myWorkingDirectory.getValue();
   }
 
-  @Override
-  public StringOption getLastWebDAVDocumentOption() {
-    return myLastWebDAVDocument;
-  }
-
-  @Override
-  public IntegerOption getWebDavLockTimeoutOption() {
-    return myWebDavLockTimeoutOption;
-  }
 
   private File getWorkingDirectoryFile() {
     return new File(getWorkingDirectory());
@@ -205,12 +196,17 @@ public class DocumentCreator implements DocumentManager {
     return new GPOptionGroup[] { myFtpOptions };
   }
 
-  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
-  private final StringOption myLastWebDAVDocument = new StringOptionImpl("last-webdav-document", "", "");
-  private final IntegerOption myWebDavLockTimeoutOption = new LockTimeoutOption();
+  public DocumentStorageUi getWebDavStorageUi() {
+    return myWebDavStorage;
+  }
 
-  private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] { myWorkingDirectory,
-      myLastWebDAVDocument, myWebDavLockTimeoutOption });
+  private final WebDavStorageImpl myWebDavStorage = new WebDavStorageImpl();
+  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
+
+  private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] {
+      myWorkingDirectory,
+      myWebDavStorage.getLastWebDAVDocumentOption(),
+      myWebDavStorage.getWebDavLockTimeoutOption()});
 
   private final StringOption myFtpUserOption = new StringOptionImpl("user-name", "ftp", "ftpuser");
   private final StringOption myFtpServerNameOption = new StringOptionImpl("server-name", "ftp", "ftpurl");

@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 
 /**
@@ -50,9 +49,7 @@ public interface DocumentManager {
 
   GPOptionGroup[] getNetworkOptionGroups();
 
-  StringOption getLastWebDAVDocumentOption();
-
-  IntegerOption getWebDavLockTimeoutOption();
+  DocumentStorageUi getWebDavStorageUi();
 
   abstract class FTPOptions extends GPOptionGroup {
     public FTPOptions(String id, GPOption<?>[] options) {
