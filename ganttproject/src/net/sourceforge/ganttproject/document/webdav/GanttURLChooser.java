@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2003-2011 Dmitry Barashev, GanttProject Team
+Copyright (C) 2003-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,23 +15,31 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+*/
 
 package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentReceiver;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -43,11 +51,15 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import org.apache.webdav.lib.WebdavResource;
+import org.jdesktop.swingx.JXList;
+
+import com.google.common.collect.ImmutableList;
+
 /**
- * Dialog for Open/Save file from/to WebDAV resource.
+ * UI component for WebDAV operarions.
  *
- * @author Dmitry Barashev (major rewrite).
- * @author Alexandre Thomas (initial version).
+ * @author dbarashev (Dmitry Barashev)
  */
 class GanttURLChooser {
   private static final GanttLanguage language = GanttLanguage.getInstance();
@@ -62,11 +74,11 @@ class GanttURLChooser {
 
   private final IntegerOption myTimeout;
 
-
-  public GanttURLChooser(String url, String username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
+  GanttURLChooser(String url, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
     myUrl = new DefaultStringOption("url", url);
-    myUsername = new DefaultStringOption("username", username);
+    myUsername = username;
     myPassword = new DefaultStringOption("password", password);
+    myPassword.setScreened(true);
     myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
 
@@ -95,6 +107,9 @@ class GanttURLChooser {
 
   private JComponent createComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
+    final JComponent lockComponent = (JComponent) builder.createOptionComponent(null, myLock);
+    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
+
     JPanel panel = new JPanel(new SpringLayout());
     panel.add(new JLabel(language.getText("fileFromServer")));
     panel.add(builder.createOptionComponent(null, myUrl));
@@ -102,11 +117,47 @@ class GanttURLChooser {
     panel.add(builder.createOptionComponent(null, myUsername));
     panel.add(new JLabel(language.getText("password")));
     panel.add(builder.createOptionComponent(null, myPassword));
+
+    {
+      final FilesTableModel tableModel = new FilesTableModel();
+      JPanel filesActionsPanel = new JPanel(new BorderLayout());
+      JButton refreshButton = new JButton(new AbstractAction("Refresh") {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+          try {
+            WebdavResource resource = WebDavStorageImpl.createResource(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
+            WebdavResource[] children = resource.listWebdavResources();
+            boolean isCollection = children != null && children.length > 0;
+            if (isCollection) {
+              tableModel.setCollection(resource);
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      });
+      filesActionsPanel.add(refreshButton, BorderLayout.NORTH);
+      panel.add(filesActionsPanel);
+      final JXList table = new JXList(tableModel);
+      table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
+      table.setCellRenderer(new FilesCellRenderer());
+      table.addListSelectionListener(new ListSelectionListener() {
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+          List<String> lockOwners = WebDavStorageImpl.getLockOwners((WebdavResource) table.getSelectedValue());
+          boolean canChangeLock = lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(myUsername.getValue()));
+          UIUtil.setEnabledTree(lockComponent, canChangeLock);
+          UIUtil.setEnabledTree(timeoutComponent, canChangeLock);
+        }
+      });
+      panel.add(new JScrollPane(table));
+    }
+
     addEmptyRow(panel);
     panel.add(new JLabel(language.getText("webdav.lockResource.label")));
-    panel.add(builder.createOptionComponent(null, myLock));
+    panel.add(lockComponent);
     panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
-    final Component timeoutComponent = builder.createOptionComponent(null, myTimeout);
+
     myLock.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -114,12 +165,13 @@ class GanttURLChooser {
       }
     });
     panel.add(timeoutComponent);
-    SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 10, 5);
+    SpringUtilities.makeCompactGrid(panel, 7, 2, 0, 0, 10, 5);
 
-    JPanel result = new JPanel(new BorderLayout());
-    result.add(panel, BorderLayout.NORTH);
-    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    return result;
+    JPanel properties = new JPanel(new BorderLayout());
+    properties.add(panel, BorderLayout.NORTH);
+    properties.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
+
+    return properties;
   }
 
   private static void addEmptyRow(JPanel form) {
