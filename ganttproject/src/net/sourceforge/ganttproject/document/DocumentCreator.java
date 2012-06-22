@@ -207,7 +207,7 @@ public class DocumentCreator implements DocumentManager {
   private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] {
       myWorkingDirectory,
       myWebDavStorage.getLastWebDAVDocumentOption(),
-      myWebDavStorage.getWebDavLockTimeoutOption()});
+      myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
 
   private final StringOption myFtpUserOption = new StringOptionImpl("user-name", "ftp", "ftpuser");
   private final StringOption myFtpServerNameOption = new StringOptionImpl("server-name", "ftp", "ftpurl");
