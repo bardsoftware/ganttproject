@@ -35,12 +35,23 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
+import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class UIUtil {
+  public static final Highlighter ZEBRA_HIGHLIGHTER = new ColorHighlighter(new HighlightPredicate() {
+    @Override
+    public boolean isHighlighted(Component renderer, ComponentAdapter adapter) {
+      return adapter.row % 2 == 1;
+    }
+  }, new Color(0xf0, 0xf0, 0xe0), null);
+
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
     ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
