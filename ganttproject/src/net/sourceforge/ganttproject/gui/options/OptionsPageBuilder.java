@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -281,7 +282,7 @@ public class OptionsPageBuilder {
   }
 
   private Component createStringComponent(final StringOption option) {
-    final JTextField result = new JTextField(option.getValue());
+    final JTextField result = option.isScreened() ? new JPasswordField(option.getValue()) : new JTextField(option.getValue());
 
     final DocumentListener documentListener = new DocumentListener() {
       private void saveValue() {
