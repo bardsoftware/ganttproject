@@ -71,15 +71,13 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.decorator.ColorHighlighter;
-import org.jdesktop.swingx.decorator.ComponentAdapter;
-import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
@@ -510,12 +508,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setLeafIcon(icon);
     addActionWithAccelleratorKey(myEditCellAction);
 
-    setHighlighters(new ColorHighlighter(new HighlightPredicate() {
-      @Override
-      public boolean isHighlighted(Component renderer, ComponentAdapter adapter) {
-        return adapter.row % 2 == 1;
-      }
-    }, new Color(0xf0, 0xf0, 0xe0), null));
+    setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
 
     getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
