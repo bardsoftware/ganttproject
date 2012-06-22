@@ -37,6 +37,7 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentReceiver;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -51,6 +52,7 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import org.apache.commons.httpclient.URIException;
 import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.swingx.JXList;
 
@@ -144,10 +146,16 @@ class GanttURLChooser {
       table.addListSelectionListener(new ListSelectionListener() {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-          List<String> lockOwners = WebDavStorageImpl.getLockOwners((WebdavResource) table.getSelectedValue());
+          WebdavResource resource = (WebdavResource) table.getSelectedValue();
+          List<String> lockOwners = WebDavStorageImpl.getLockOwners(resource);
           boolean canChangeLock = lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(myUsername.getValue()));
           UIUtil.setEnabledTree(lockComponent, canChangeLock);
           UIUtil.setEnabledTree(timeoutComponent, canChangeLock);
+          try {
+            myUrl.setValue(resource.getHttpURLExceptForUserInfo().toString());
+          } catch (URIException e1) {
+            GPLogger.log(e1);
+          }
         }
       });
       panel.add(new JScrollPane(table));

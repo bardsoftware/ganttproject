@@ -71,7 +71,7 @@ abstract class CloudProjectActionBase extends GPAction {
 
     OkActionImpl okAction = new OkActionImpl();
     DocumentStorageUi webdavStorage = myDocumentManager.getWebDavStorageUi();
-    JComponent component = isOpenUrl ? webdavStorage.open(document, okAction) : webdavStorage.save(document, null);
+    JComponent component = isOpenUrl ? webdavStorage.open(document, okAction) : webdavStorage.save(document, okAction);
     myUiFacade.createDialog(component, new Action[] { okAction, CancelAction.EMPTY },
         GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     return result[0];
