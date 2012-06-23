@@ -23,7 +23,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -133,14 +132,22 @@ class GanttURLChooser {
         public void actionPerformed(ActionEvent event) {
           try {
             WebdavResource resource = WebDavStorageImpl.createResource(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
-            WebdavResource[] children = resource.listWebdavResources();
-            boolean isCollection = children != null && children.length > 0;
-            if (isCollection) {
+            if (tryGetCollection(resource)) {
               tableModel.setCollection(resource);
+            } else {
+              WebdavResource parent = WebDavStorageImpl.getParent(resource);
+              if (tryGetCollection(parent)) {
+                tableModel.setCollection(parent);
+              }
             }
           } catch (IOException e) {
             e.printStackTrace();
           }
+        }
+
+        private boolean tryGetCollection(WebdavResource resource) throws IOException {
+          WebdavResource[] children = resource.listWebdavResources();
+          return children != null && children.length > 0;
         }
       });
       filesActionsPanel.add(refreshButton, BorderLayout.NORTH);

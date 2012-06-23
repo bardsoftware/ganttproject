@@ -126,7 +126,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   }
 
   private GPAction createLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
-    return new OkAction(key) {
+    return new CancelAction(key) {
       @Override
       public void actionPerformed(ActionEvent event) {
         try {
@@ -184,5 +184,12 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   static List<String> getLockOwners(WebdavResource resource) {
     Enumeration ownersEnum = resource.getActiveLockOwners();
     return ownersEnum == null ? Collections.emptyList() : Collections.list(resource.getActiveLockOwners());
+  }
+
+  static WebdavResource getParent(WebdavResource resource) throws IOException {
+    HttpURL httpURL = resource.getHttpURL();
+    HttpURL parentUrl = httpURL instanceof HttpsURL ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
+    parentUrl.setPath(httpURL.getCurrentHierPath());
+    return WebDavStorageImpl.createResource(parentUrl.toString(), httpURL.getUser(), httpURL.getPassword());
   }
 }

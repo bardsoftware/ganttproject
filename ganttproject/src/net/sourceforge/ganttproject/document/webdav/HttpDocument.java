@@ -118,9 +118,7 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     try {
-      HttpURL parentUrl = httpURL instanceof HttpsURL ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
-      parentUrl.setPath(httpURL.getCurrentHierPath());
-      WebdavResource parentRes = WebDavStorageImpl.createResource(parentUrl.toString(), myUsername, myPassword);
+      WebdavResource parentRes = WebDavStorageImpl.getParent(webdavResource);
       parentRes.listWebdavResources();
       if (!parentRes.isCollection()) {
         return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
