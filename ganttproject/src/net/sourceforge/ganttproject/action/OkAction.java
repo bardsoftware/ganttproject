@@ -25,6 +25,10 @@ package net.sourceforge.ganttproject.action;
  */
 public abstract class OkAction extends GPAction {
   public OkAction() {
-    super("ok");
+    this("ok");
+  }
+
+  public OkAction(String key) {
+    super(key);
   }
 }

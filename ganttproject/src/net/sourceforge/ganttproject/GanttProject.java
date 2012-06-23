@@ -385,8 +385,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.setUIConfiguration(myUIConfiguration);
     if (options.load()) {
       GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
-
-      HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
     }
 
     myUIConfiguration = options.getUIConfiguration();

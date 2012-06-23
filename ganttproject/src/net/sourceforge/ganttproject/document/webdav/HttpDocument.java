@@ -27,14 +27,10 @@ import java.net.URISyntaxException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.ErrorCode;
 
-import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.commons.httpclient.HttpsURL;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.webdav.lib.WebdavResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -42,7 +38,7 @@ import org.eclipse.core.runtime.Status;
 /**
  * This class implements the interface Document for file access on HTTP-servers
  * and WebDAV-enabled-servers.
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class HttpDocument extends AbstractURLDocument {
@@ -51,48 +47,36 @@ public class HttpDocument extends AbstractURLDocument {
 
   private String lastError;
 
-  private HttpURL httpURL;
+  private final HttpURL httpURL;
 
-  private WebdavResource webdavResource;
+  private final WebdavResource webdavResource;
 
   private boolean locked = false;
 
   private boolean malformedURL = false;
 
-  private String myUsername;
+  private final String myUsername;
 
-  private String myPassword;
+  private final String myPassword;
 
-  private static int lockDAVMinutes = 240;
+  private final int myTimeout;
 
-  public HttpDocument(String url, String user, String pass) {
+//  private static int lockDAVMinutes = 240;
+
+  public HttpDocument(String url, String username, String password) throws IOException {
+    this(url, username, password, -1);
+  }
+
+  public HttpDocument(String url, String username, String password, int lockTimeout) throws IOException {
+    webdavResource = WebDavStorageImpl.createResource(url, username, password);
+    this.httpURL = webdavResource.getHttpURL();
     this.url = url;
-    myUsername = user;
-    myPassword = pass;
-    try {
-      if (url.startsWith("https")) {
-        httpURL = new HttpsURL(url);
-      } else {
-        httpURL = new HttpURL(url);
-      }
-      httpURL.setUserinfo(user, pass);
-    } catch (URIException e) {
-      lastError = e.getMessage();
-      malformedURL = true;
-    }
+    myUsername = username;
+    myPassword = password;
+    myTimeout = lockTimeout;
   }
 
   WebdavResource getWebdavResource() {
-    if (null == webdavResource)
-      try {
-        Credentials credentials = new UsernamePasswordCredentials(myUsername, myPassword);
-        webdavResource = new WebdavResource(httpURL, credentials, WebdavResource.NOACTION, 0);
-        webdavResource.setFollowRedirects(true);
-      } catch (HttpException e) {
-        lastError = e.getMessage() + "(" + e.getReasonCode() + ")";
-      } catch (IOException e) {
-        lastError = e.getMessage();
-      }
     return webdavResource;
   }
 
@@ -116,7 +100,6 @@ public class HttpDocument extends AbstractURLDocument {
       return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
           lastError, null);
     }
-
     try {
       res.setProperties(0);
     } catch (HttpException e) {
@@ -135,19 +118,10 @@ public class HttpDocument extends AbstractURLDocument {
     }
 
     try {
-      HttpURL parentURL = httpURL.toString().startsWith("https:") ? new HttpsURL(httpURL.toString()) : new HttpURL(
-          httpURL.toString());
-      String user = (myUsername != null ? myUsername : httpURL.getUser());
-      String pass = (myPassword != null ? myPassword : httpURL.getPassword());
-      if (user != null) {
-        parentURL.setUserinfo(user, pass);
-      }
-      String currentHierPath = httpURL.getCurrentHierPath();
-      if (!currentHierPath.endsWith("/")) {
-        currentHierPath = currentHierPath + "/";
-      }
-      parentURL.setPath(currentHierPath);
-      WebdavResource parentRes = new WebdavResource(parentURL);
+      HttpURL parentUrl = httpURL instanceof HttpsURL ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
+      parentUrl.setPath(httpURL.getCurrentHierPath());
+      WebdavResource parentRes = WebDavStorageImpl.createResource(parentUrl.toString(), myUsername, myPassword);
+      parentRes.listWebdavResources();
       if (!parentRes.isCollection()) {
         return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
             parentRes.getPath(), null);
@@ -169,14 +143,14 @@ public class HttpDocument extends AbstractURLDocument {
 
   @Override
   public boolean acquireLock() {
-    if (locked || lockDAVMinutes < 0) {
+    if (locked || myTimeout < 0) {
       return true;
     }
     if (null == getWebdavResource()) {
       return false;
     }
     try {
-      locked = getWebdavResource().lockMethod(getUsername(), lockDAVMinutes * 60);
+      locked = getWebdavResource().lockMethod(getUsername(), myTimeout * 60);
       return locked;
     } catch (HttpException e) {
       if (!GPLogger.log(e)) {
@@ -253,11 +227,11 @@ public class HttpDocument extends AbstractURLDocument {
     return lastError;
   }
 
-  public static void setLockDAVMinutes(int i) {
-    // FIXME should not be static, as each derived object should have its own
-    // setting
-    lockDAVMinutes = i;
-  }
+//  public static void setLockDAVMinutes(int i) {
+//    // FIXME should not be static, as each derived object should have its own
+//    // setting
+//    lockDAVMinutes = i;
+//  }
 
   @Override
   public void write() throws IOException {

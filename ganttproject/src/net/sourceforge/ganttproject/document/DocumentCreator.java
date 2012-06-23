@@ -74,7 +74,12 @@ public class DocumentCreator implements DocumentManager {
     path = path.trim();
     String lowerPath = path.toLowerCase();
     if (lowerPath.startsWith("http://") || lowerPath.startsWith("https://")) {
-      return new HttpDocument(path, user, pass);
+      try {
+        return new HttpDocument(path, user, pass);
+      } catch (IOException e) {
+        GPLogger.log(e);
+        return null;
+      }
     } else if (lowerPath.startsWith("ftp:")) {
       return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
     } else if (!lowerPath.startsWith("file://") && path.contains("://")) {
@@ -93,8 +98,7 @@ public class DocumentCreator implements DocumentManager {
   }
 
   @Override
-  public Document getDocument(String path, String userName, String password) {
-    Document physicalDocument = createDocument(path, userName, password);
+  public Document getProxyDocument(Document physicalDocument) {
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
         getParserFactory());
     return proxyDocument;

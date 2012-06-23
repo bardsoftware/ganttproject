@@ -37,7 +37,7 @@ public interface DocumentManager {
 
   void addToRecentDocuments(Document document);
 
-  Document getDocument(String path, String userName, String password);
+  Document getProxyDocument(Document physicalDocument);
 
   void changeWorkingDirectory(File parentFile);
 
