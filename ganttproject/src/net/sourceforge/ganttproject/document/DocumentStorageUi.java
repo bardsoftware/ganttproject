@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.document;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 /**
@@ -43,9 +44,20 @@ public interface DocumentStorageUi {
    * Receives document descriptors as user changes selection in UI
    */
   public interface DocumentReceiver {
-    void setDocument(DocumentDescriptor document);
+    void setDocument(Document document);
+
+    void setError(Exception e);
   }
 
+  public class Components {
+    public final JComponent contentPane;
+    public final Action[] actions;
+
+    public Components(JComponent contentPane, Action[] actions) {
+      this.contentPane = contentPane;
+      this.actions = actions;
+    }
+  }
   /**
    * Creates UI to open a document. UI should allow for selecting a document from a list or for typing
    * document access parameters. Every time user changes something, UI should send an updated
@@ -55,7 +67,7 @@ public interface DocumentStorageUi {
    * @param receiver receiver of the descriptors of selected documents
    * @return UI component ready for inserting into a dialog or other component
    */
-  JComponent open(Document currentDocument, DocumentReceiver receiver);
+  Components open(Document currentDocument, DocumentReceiver receiver);
 
   /**
    * Creates UI to save a document. UI should allow for selecting a document from a list or for typing
@@ -66,5 +78,5 @@ public interface DocumentStorageUi {
    * @param receiver receiver of the descriptors of selected documents
    * @return UI component ready for inserting into a dialog or other component
    */
-  JComponent save(Document currentDocument, DocumentReceiver receiver);
+  Components save(Document currentDocument, DocumentReceiver receiver);
 }

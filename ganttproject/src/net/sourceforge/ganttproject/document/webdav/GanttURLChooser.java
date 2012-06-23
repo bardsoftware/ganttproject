@@ -56,8 +56,6 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.swingx.JXList;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * UI component for WebDAV operarions.
  *
@@ -76,6 +74,12 @@ class GanttURLChooser {
 
   private final IntegerOption myTimeout;
 
+  private SelectionListener mySelectionListener;
+
+  static interface SelectionListener {
+    public void setSelection(WebdavResource resource);
+  }
+
   GanttURLChooser(String url, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
     myUrl = new DefaultStringOption("url", url);
     myUsername = username;
@@ -84,15 +88,15 @@ class GanttURLChooser {
     myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
 
-    ChangeValueListener listener = new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        receiver.setDocument(createDocument());
-      }
-    };
-    myUrl.addChangeValueListener(listener);
-    myUsername.addChangeValueListener(listener);
-    myPassword.addChangeValueListener(listener);
+//    ChangeValueListener listener = new ChangeValueListener() {
+//      @Override
+//      public void changeValue(ChangeValueEvent event) {
+//        receiver.setDocument(createDocument());
+//      }
+//    };
+//    myUrl.addChangeValueListener(listener);
+//    myUsername.addChangeValueListener(listener);
+//    myPassword.addChangeValueListener(listener);
   }
 
   protected DocumentDescriptor createDocument() {
@@ -109,7 +113,6 @@ class GanttURLChooser {
 
   private JComponent createComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
-    final JComponent lockComponent = (JComponent) builder.createOptionComponent(null, myLock);
     final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
 
     JPanel panel = new JPanel(new SpringLayout());
@@ -119,6 +122,8 @@ class GanttURLChooser {
     panel.add(builder.createOptionComponent(null, myUsername));
     panel.add(new JLabel(language.getText("password")));
     panel.add(builder.createOptionComponent(null, myPassword));
+
+    addEmptyRow(panel);
 
     {
       final FilesTableModel tableModel = new FilesTableModel();
@@ -147,10 +152,7 @@ class GanttURLChooser {
         @Override
         public void valueChanged(ListSelectionEvent e) {
           WebdavResource resource = (WebdavResource) table.getSelectedValue();
-          List<String> lockOwners = WebDavStorageImpl.getLockOwners(resource);
-          boolean canChangeLock = lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(myUsername.getValue()));
-          UIUtil.setEnabledTree(lockComponent, canChangeLock);
-          UIUtil.setEnabledTree(timeoutComponent, canChangeLock);
+          mySelectionListener.setSelection(resource);
           try {
             myUrl.setValue(resource.getHttpURLExceptForUserInfo().toString());
           } catch (URIException e1) {
@@ -162,8 +164,8 @@ class GanttURLChooser {
     }
 
     addEmptyRow(panel);
-    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
-    panel.add(lockComponent);
+//    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
+//    panel.add(lockComponent);
     panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
 
     myLock.addChangeValueListener(new ChangeValueListener() {
@@ -185,5 +187,25 @@ class GanttURLChooser {
   private static void addEmptyRow(JPanel form) {
     form.add(Box.createRigidArea(new Dimension(1, 10)));
     form.add(Box.createRigidArea(new Dimension(1, 10)));
+  }
+
+  String getUrl() {
+    return myUrl.getValue();
+  }
+
+  String getUsername() {
+    return myUsername.getValue();
+  }
+
+  String getPassword() {
+    return myPassword.getValue();
+  }
+
+  int getLockTimeout() {
+    return myTimeout.getValue();
+  }
+
+  void setSelectionListener(SelectionListener selectionListener) {
+    mySelectionListener = selectionListener;
   }
 }
