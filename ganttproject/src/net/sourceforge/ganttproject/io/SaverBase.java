@@ -77,7 +77,7 @@ public class SaverBase {
 
   protected void cdataElement(String name, String cdata, AttributesImpl attrs, TransformerHandler handler)
       throws SAXException {
-    startElement(name, handler);
+    startElement(name, attrs, handler);
     handler.startCDATA();
     handler.characters(cdata.toCharArray(), 0, cdata.length());
     handler.endCDATA();
