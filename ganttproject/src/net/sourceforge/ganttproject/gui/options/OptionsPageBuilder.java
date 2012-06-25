@@ -55,6 +55,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
+import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -219,7 +220,9 @@ public class OptionsPageBuilder {
 
   public Component createOptionComponent(GPOptionGroup group, GPOption<?> option) {
     Component result = null;
-    if (option instanceof EnumerationOption) {
+    if (option instanceof ListOption) {
+      result = createListComponent((ListOption)option, group);
+    } else if (option instanceof EnumerationOption) {
       result = createEnumerationComponent((EnumerationOption) option, group);
     } else if (option instanceof BooleanOption) {
       result = createBooleanComponent(group, (BooleanOption) option);
@@ -400,6 +403,20 @@ public class OptionsPageBuilder {
           yesButton.setSelected(true);
         } else {
           noButton.setSelected(true);
+        }
+      }
+    });
+    return result;
+  }
+
+  private JComboBox<String> createListComponent(final ListOption option, GPOptionGroup group) {
+    final JComboBox result = createEnumerationComponent(option, group);
+    result.setEditable(true);
+    result.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        Object editedItem = result.getEditor().getItem();
+        if (editedItem instanceof String) {
+          option.addValue((String)editedItem);
         }
       }
     });
