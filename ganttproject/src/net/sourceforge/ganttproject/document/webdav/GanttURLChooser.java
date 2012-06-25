@@ -22,7 +22,6 @@ package net.sourceforge.ganttproject.document.webdav;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -36,9 +35,9 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentReceiver;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
@@ -51,8 +50,6 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.apache.commons.httpclient.URIException;
-import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.swingx.JXList;
 
 /**
@@ -76,7 +73,7 @@ class GanttURLChooser {
   private SelectionListener mySelectionListener;
 
   static interface SelectionListener {
-    public void setSelection(WebdavResource resource);
+    public void setSelection(WebDavResource resource);
   }
 
   GanttURLChooser(String url, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
@@ -126,48 +123,42 @@ class GanttURLChooser {
 
     {
       final FilesTableModel tableModel = new FilesTableModel();
-      JPanel filesActionsPanel = new JPanel(new BorderLayout());
+      JPanel filesTablePanel = new JPanel(new BorderLayout());
       JButton refreshButton = new JButton(new AbstractAction("Refresh") {
         @Override
         public void actionPerformed(ActionEvent event) {
           try {
-            WebdavResource resource = WebDavStorageImpl.createResource(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
-            if (tryGetCollection(resource)) {
+            WebDavResource resource = WebDavStorageImpl.createResource(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
+            if (resource.exists() && resource.isCollection()) {
               tableModel.setCollection(resource);
-            } else {
-              WebdavResource parent = WebDavStorageImpl.getParent(resource);
-              if (tryGetCollection(parent)) {
-                tableModel.setCollection(parent);
-              }
+              return;
             }
-          } catch (IOException e) {
+            WebDavResource parent = resource.getParent();
+            if (parent.exists() && parent.isCollection()) {
+              tableModel.setCollection(parent);
+              return;
+            }
+          } catch (WebDavException e) {
             e.printStackTrace();
           }
         }
-
-        private boolean tryGetCollection(WebdavResource resource) throws IOException {
-          WebdavResource[] children = resource.listWebdavResources();
-          return children != null && children.length > 0;
-        }
       });
-      filesActionsPanel.add(refreshButton, BorderLayout.NORTH);
-      panel.add(filesActionsPanel);
+      filesTablePanel.add(refreshButton, BorderLayout.NORTH);
+      //panel.add(filesActionsPanel);
       final JXList table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
       table.setCellRenderer(new FilesCellRenderer());
       table.addListSelectionListener(new ListSelectionListener() {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-          WebdavResource resource = (WebdavResource) table.getSelectedValue();
+          WebDavResource resource = (WebDavResource) table.getSelectedValue();
           mySelectionListener.setSelection(resource);
-          try {
-            myUrl.setValue(resource.getHttpURLExceptForUserInfo().toString());
-          } catch (URIException e1) {
-            GPLogger.log(e1);
-          }
+          myUrl.setValue(resource.getUrl());
         }
       });
-      panel.add(new JScrollPane(table));
+      filesTablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
+      panel.add(new JPanel());
+      panel.add(filesTablePanel);
     }
 
     addEmptyRow(panel);
@@ -214,5 +205,10 @@ class GanttURLChooser {
 
   void setSelectionListener(SelectionListener selectionListener) {
     mySelectionListener = selectionListener;
+  }
+
+  void showError(WebDavException e) {
+    // TODO Auto-generated method stub
+
   }
 }

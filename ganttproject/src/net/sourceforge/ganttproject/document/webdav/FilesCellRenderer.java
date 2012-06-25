@@ -29,9 +29,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import org.apache.webdav.lib.WebdavResource;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
 import com.google.common.base.Joiner;
 
@@ -40,36 +42,52 @@ import com.google.common.base.Joiner;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class FilesCellRenderer implements ListCellRenderer<WebdavResource> {
+class FilesCellRenderer implements ListCellRenderer<WebDavResource> {
   private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
   @Override
-  public Component getListCellRendererComponent(JList<? extends WebdavResource> list, WebdavResource value,
+  public Component getListCellRendererComponent(JList<? extends WebDavResource> list, WebDavResource value,
       int index, boolean isSelected, boolean cellHasFocus) {
     JComponent result;
-    JComponent defaultComponent = (JComponent) defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
-    List<String> lockOwners = WebDavStorageImpl.getLockOwners(value);
-    if (lockOwners.isEmpty()) {
-      result = defaultComponent;
-    } else {
-      JLabel name = new JLabel(value.getName());
-      JLabel locks = new JLabel("locked: " + Joiner.on(',').join(lockOwners));
-      locks.setFont(locks.getFont().deriveFont(locks.getFont().getSize()*0.82f));
-      locks.setForeground(UIManager.getColor("List.disabledForeground"));
-      JPanel box = new JPanel(new GridLayout(2, 1));
-      box.add(name);
-      box.add(locks);
-      if (isSelected) {
-        box.setBackground(UIManager.getColor("List.selectionBackground"));
-        name.setBackground(UIManager.getColor("List.selectionBackground"));
-        locks.setBackground(UIManager.getColor("List.selectionBackground"));
+    try {
+      JComponent defaultComponent = (JComponent) defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+      List<String> lockOwners = value.getLockOwners();
+      if (value.isCollection()) {
+        result = new JLabel(value.getName(), GPAction.getIcon("16", "folder.png"), SwingConstants.LEADING);
       } else {
-        box.setBackground(UIManager.getColor("List.background"));
+        if (lockOwners.isEmpty()) {
+          result = defaultComponent;
+        } else {
+          JLabel name = new JLabel(value.getName());
+          JLabel locks = new JLabel("locked: " + Joiner.on(',').join(lockOwners));
+          locks.setFont(locks.getFont().deriveFont(locks.getFont().getSize()*0.82f));
+          locks.setForeground(UIManager.getColor("List.disabledForeground"));
+          JPanel box = new JPanel(new GridLayout(2, 1));
+          box.add(name);
+          box.add(locks);
+          if (isSelected) {
+            name.setBackground(UIManager.getColor("List.selectionBackground"));
+            locks.setBackground(UIManager.getColor("List.selectionBackground"));
+          }
+          result = box;
+        }
+        result.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0), result.getBorder()));
       }
-      box.setBorder(defaultComponent.getBorder());
-      result = box;
+      result = decorate(result, defaultComponent, isSelected);
+      return result;
+
+    } catch (WebDavException e) {
+      return new JLabel("error");
     }
-    result.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0), result.getBorder()));
+  }
+
+  private JComponent decorate(JComponent result, JComponent defaultComponent, boolean isSelected) {
+    if (isSelected) {
+      result.setBackground(UIManager.getColor("List.selectionBackground"));
+    } else {
+      result.setBackground(UIManager.getColor("List.background"));
+    }
+    result.setBorder(defaultComponent.getBorder());
     return result;
   }
 }

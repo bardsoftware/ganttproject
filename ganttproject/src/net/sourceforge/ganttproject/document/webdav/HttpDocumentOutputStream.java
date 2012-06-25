@@ -23,7 +23,8 @@ import java.io.IOException;
 
 import javax.xml.ws.http.HTTPException;
 
-import org.apache.webdav.lib.WebdavResource;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+
 
 /**
  * This class implements an OutputStream for documents on
@@ -44,13 +45,11 @@ class HttpDocumentOutputStream extends ByteArrayOutputStream {
   @Override
   public void close() throws IOException {
     super.close();
-    WebdavResource wr = myDocument.getWebdavResource();
+    WebDavResource wr = myDocument.getWebdavResource();
     try {
-      if (!wr.putMethod(toByteArray())) {
-        throw new IOException("Failed to write data: " + wr.getStatusMessage());
-      }
-    } catch (HTTPException e) {
-      throw new IOException("Code: " + e.getStatusCode());
+      wr.write(toByteArray());
+    } catch (WebDavException e) {
+      throw new IOException(e);
     }
   }
 }
