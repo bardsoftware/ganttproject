@@ -38,6 +38,10 @@ class FilesTableModel extends AbstractListModel<WebDavResource> {
   private WebDavResource myCollection;
   private List<WebDavResource> myChildResources;
 
+  WebDavResource getCollection() {
+    return myCollection;
+  }
+
   void setCollection(WebDavResource collection) throws WebDavException {
     myCollection = null;
     if (myChildResources != null) {

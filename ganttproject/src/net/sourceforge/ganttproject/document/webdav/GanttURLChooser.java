@@ -22,8 +22,14 @@ package net.sourceforge.ganttproject.document.webdav;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -35,6 +41,7 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentReceiver;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
@@ -47,6 +54,7 @@ import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
+import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -60,11 +68,11 @@ import org.jdesktop.swingx.JXList;
 class GanttURLChooser {
   private static final GanttLanguage language = GanttLanguage.getInstance();
 
-  private final StringOption myUrl;
-
   private final StringOption myUsername;
 
   private final StringOption myPassword;
+
+  private final StringOption myPath;
 
   private final BooleanOption myLock;
 
@@ -72,31 +80,89 @@ class GanttURLChooser {
 
   private SelectionListener mySelectionListener;
 
+  private final ListOption myServers;
+
+  private final GPAction myReloadAction = new GPAction("fileChooser.reload") {
+    @Override
+    public void actionPerformed(ActionEvent event) {
+      try {
+        WebDavResource resource = WebDavStorageImpl.createResource(buildUrl(), myUsername.getValue(), myPassword.getValue());
+        if (resource.exists() && resource.isCollection()) {
+          tableModel.setCollection(resource);
+          return;
+        }
+        WebDavResource parent = resource.getParent();
+        if (parent.exists() && parent.isCollection()) {
+          tableModel.setCollection(parent);
+          return;
+        }
+      } catch (WebDavException e) {
+        e.printStackTrace();
+      }
+    }
+  };
+
+  private final GPAction myUpAction = new GPAction("fileChooser.up") {
+    @Override
+    public void actionPerformed(ActionEvent event) {
+      try {
+        WebDavResource collection = tableModel.getCollection();
+        WebDavResource parent = collection.getParent();
+        if (parent != null && parent.exists() && parent.isCollection()) {
+          tableModel.setCollection(parent);
+          myPath.setValue(new URL(parent.getUrl()).getPath());
+        }
+      } catch (WebDavException e) {
+        e.printStackTrace();
+      } catch (MalformedURLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  };
+
+  private final FilesTableModel tableModel = new FilesTableModel();
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(String url, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
-    myUrl = new DefaultStringOption("url", url);
+  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
+    myPath = new DefaultStringOption("path");
+    myServers = servers;
     myUsername = username;
     myPassword = new DefaultStringOption("password", password);
     myPassword.setScreened(true);
     myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
 
-//    ChangeValueListener listener = new ChangeValueListener() {
-//      @Override
-//      public void changeValue(ChangeValueEvent event) {
-//        receiver.setDocument(createDocument());
-//      }
-//    };
-//    myUrl.addChangeValueListener(listener);
-//    myUsername.addChangeValueListener(listener);
-//    myPassword.addChangeValueListener(listener);
+    myServers.addChangeValueListener(new ChangeValueListener() {
+      public void changeValue(ChangeValueEvent event) {
+        myPath.setValue("");
+        myPassword.setValue("");
+        myUsername.setValue("");
+        boolean empty = "".equals(event.getNewValue());
+        myReloadAction.setEnabled(!empty);
+      }
+    });
+    myPath.addChangeValueListener(new ChangeValueListener() {
+      public void changeValue(ChangeValueEvent event) {
+        String path = (String) event.getNewValue();
+        myUpAction.setEnabled(path.split("/").length > 1);
+      }
+    });
+    try {
+      URL url = new URL(urlSpec);
+      String host = MessageFormat.format("{0}://{1}{2}",url.getProtocol(), url.getHost(), url.getPort() == -1 ? "" : ":" + url.getPort());
+      myServers.addValue(host);
+      myServers.setValue(host);
+      myPath.setValue(url.getPath());
+    } catch (MalformedURLException e) {
+    }
   }
 
   protected DocumentDescriptor createDocument() {
-    return new DocumentDescriptor(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
+    return new DocumentDescriptor(buildUrl(), myUsername.getValue(), myPassword.getValue());
   }
 
   public JComponent createOpenDocumentUi() {
@@ -107,13 +173,25 @@ class GanttURLChooser {
     return createComponent();
   }
 
+  private String buildUrl() {
+    String host = myServers.getValue();
+    if (host.endsWith("/")) {
+      host = host.substring(0, host.length() - 1);
+    }
+    String path = myPath.getValue();
+    if (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+    return host + "/" + path;
+  }
+
   private JComponent createComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
     final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
 
     JPanel panel = new JPanel(new SpringLayout());
     panel.add(new JLabel(language.getText("fileFromServer")));
-    panel.add(builder.createOptionComponent(null, myUrl));
+    panel.add(builder.createOptionComponent(null, myServers));
     panel.add(new JLabel(language.getText("userName")));
     panel.add(builder.createOptionComponent(null, myUsername));
     panel.add(new JLabel(language.getText("password")));
@@ -122,28 +200,23 @@ class GanttURLChooser {
     addEmptyRow(panel);
 
     {
-      final FilesTableModel tableModel = new FilesTableModel();
       JPanel filesTablePanel = new JPanel(new BorderLayout());
-      JButton refreshButton = new JButton(new AbstractAction("Refresh") {
-        @Override
-        public void actionPerformed(ActionEvent event) {
-          try {
-            WebDavResource resource = WebDavStorageImpl.createResource(myUrl.getValue(), myUsername.getValue(), myPassword.getValue());
-            if (resource.exists() && resource.isCollection()) {
-              tableModel.setCollection(resource);
-              return;
-            }
-            WebDavResource parent = resource.getParent();
-            if (parent.exists() && parent.isCollection()) {
-              tableModel.setCollection(parent);
-              return;
-            }
-          } catch (WebDavException e) {
-            e.printStackTrace();
-          }
-        }
-      });
-      filesTablePanel.add(refreshButton, BorderLayout.NORTH);
+      JButton refreshButton = new JButton(myReloadAction);
+      JButton upButton = new JButton(myUpAction);
+      panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(myUpAction.getKeyStroke(), myUpAction);
+      panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(myReloadAction.getKeyStroke(), myReloadAction);
+      panel.getActionMap().put(myUpAction, myUpAction);
+      panel.getActionMap().put(myReloadAction, myReloadAction);
+      upButton.setText("");
+      refreshButton.setText("");
+      Box filesHeaderBox = Box.createHorizontalBox();
+      filesHeaderBox.add(builder.createOptionComponent(null, myPath));
+      filesHeaderBox.add(Box.createHorizontalStrut(5));
+      filesHeaderBox.add(upButton);
+      filesHeaderBox.add(Box.createHorizontalStrut(5));
+      filesHeaderBox.add(refreshButton);
+      filesHeaderBox.add(Box.createHorizontalGlue());
+      filesTablePanel.add(filesHeaderBox, BorderLayout.NORTH);
       //panel.add(filesActionsPanel);
       final JXList table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
@@ -152,8 +225,31 @@ class GanttURLChooser {
         @Override
         public void valueChanged(ListSelectionEvent e) {
           WebDavResource resource = (WebDavResource) table.getSelectedValue();
+          if (resource == null) {
+            return;
+          }
           mySelectionListener.setSelection(resource);
-          myUrl.setValue(resource.getUrl());
+          try {
+            URL url = new URL(resource.getUrl());
+            myPath.setValue(url.getPath());
+          } catch (MalformedURLException ex) {
+          }
+        }
+      });
+      table.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+          if (e.getClickCount() == 2) {
+            tryEnterCollection(table, tableModel);
+          }
+        }
+      });
+      table.addKeyListener(new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+          if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            tryEnterCollection(table, tableModel);
+          }
         }
       });
       filesTablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
@@ -182,13 +278,24 @@ class GanttURLChooser {
     return properties;
   }
 
+  protected void tryEnterCollection(JXList table, FilesTableModel tableModel) {
+    WebDavResource resource = (WebDavResource) table.getSelectedValue();
+    try {
+      if (resource.isCollection()) {
+        tableModel.setCollection(resource);
+      }
+    } catch (WebDavException e) {
+      showError(e);
+    }
+  }
+
   private static void addEmptyRow(JPanel form) {
     form.add(Box.createRigidArea(new Dimension(1, 10)));
     form.add(Box.createRigidArea(new Dimension(1, 10)));
   }
 
   String getUrl() {
-    return myUrl.getValue();
+    return buildUrl();
   }
 
   String getUsername() {
@@ -207,6 +314,9 @@ class GanttURLChooser {
     mySelectionListener = selectionListener;
   }
 
+  StringOption getPathOption() {
+    return myPath;
+  }
   void showError(WebDavException e) {
     // TODO Auto-generated method stub
 
