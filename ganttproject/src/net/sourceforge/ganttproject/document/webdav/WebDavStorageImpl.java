@@ -20,10 +20,6 @@ package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -33,20 +29,11 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
-
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpURL;
-import org.apache.commons.httpclient.HttpsURL;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.webdav.lib.WebdavResource;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Implements storage UI for WebDAV storages
@@ -69,8 +56,12 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     final GPAction openAndLockAction = createLockAction("storage.action.openAndLock", chooser, receiver);
     chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
       @Override
-      public void setSelection(WebdavResource resource) {
-        openAndLockAction.setEnabled(canLock(resource));
+      public void setSelection(WebDavResource resource) {
+        try {
+          openAndLockAction.setEnabled(resource.canLock());
+        } catch (WebDavException e) {
+          chooser.showError(e);
+        }
       }
     });
     JComponent contentPane = chooser.createOpenDocumentUi();
@@ -84,13 +75,17 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   @Override
   public Components save(Document currentDocument, final DocumentReceiver receiver) {
-    GanttURLChooser chooser = createChooser(currentDocument, receiver);
+    final GanttURLChooser chooser = createChooser(currentDocument, receiver);
     GPAction saveAction = createNoLockAction("storage.action.save", chooser, receiver);
     final GPAction saveAndLockAction = createLockAction("storage.action.saveAndLock", chooser, receiver);
     chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
       @Override
-      public void setSelection(WebdavResource resource) {
-        saveAndLockAction.setEnabled(canLock(resource));
+      public void setSelection(WebDavResource resource) {
+        try {
+          saveAndLockAction.setEnabled(resource.canLock());
+        } catch (WebDavException e) {
+          chooser.showError(e);
+        }
       }
     });
     JComponent contentPane = chooser.createSaveDocumentUi();
@@ -138,11 +133,6 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     };
   }
 
-  protected boolean canLock(WebdavResource resource) {
-    List<String> lockOwners = WebDavStorageImpl.getLockOwners(resource);
-    return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(myUsername.getValue()));
-  }
-
   public StringOption getWebDavUsernameOption() {
     return myUsername;
   }
@@ -155,41 +145,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     return myWebDavLockTimeoutOption;
   }
 
-  static WebdavResource createResource(String url, String username, String password) throws IOException {
-    HttpURL httpUrl;
-    try {
-      if (url.startsWith("https")) {
-        httpUrl = new HttpsURL(url);
-      } else {
-        httpUrl = new HttpURL(url);
-      }
-      if (username != null && password != null) {
-        httpUrl.setUserinfo(username, password);
-      }
-    } catch (URIException e) {
-      throw new IOException("Failed to parse url=" + url, e);
-    }
-    try {
-      Credentials credentials = new UsernamePasswordCredentials(username, password);
-      WebdavResource result = new WebdavResource(httpUrl, credentials, WebdavResource.NOACTION, 0);
-      result.setFollowRedirects(true);
-      return result;
-    } catch (HttpException e) {
-      throw new IOException(MessageFormat.format("Failed to access resource {0} \nError code: {1} ({2})", url, e.getReasonCode(), e.getReason()), e);
-    } catch (IOException e) {
-      throw new IOException(MessageFormat.format("Failed to access resource {0} \n{1}", url, e.getMessage()), e);
-    }
-  }
-
-  static List<String> getLockOwners(WebdavResource resource) {
-    Enumeration ownersEnum = resource.getActiveLockOwners();
-    return ownersEnum == null ? Collections.emptyList() : Collections.list(resource.getActiveLockOwners());
-  }
-
-  static WebdavResource getParent(WebdavResource resource) throws IOException {
-    HttpURL httpURL = resource.getHttpURL();
-    HttpURL parentUrl = httpURL instanceof HttpsURL ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
-    parentUrl.setPath(httpURL.getCurrentHierPath());
-    return WebDavStorageImpl.createResource(parentUrl.toString(), httpURL.getUser(), httpURL.getPassword());
+  static WebDavResource createResource(String urlString, String username, String password) throws WebDavException {
+    return new WebDavResourceSlideImpl(urlString, username, password);
   }
 }

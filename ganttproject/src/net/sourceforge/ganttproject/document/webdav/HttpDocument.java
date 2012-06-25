@@ -27,11 +27,8 @@ import java.net.URISyntaxException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpURL;
-import org.apache.commons.httpclient.HttpsURL;
-import org.apache.webdav.lib.WebdavResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -47,9 +44,9 @@ public class HttpDocument extends AbstractURLDocument {
 
   private String lastError;
 
-  private final HttpURL httpURL;
+  //private final HttpURL httpURL;
 
-  private final WebdavResource webdavResource;
+  private final WebDavResource webdavResource;
 
   private boolean locked = false;
 
@@ -68,67 +65,60 @@ public class HttpDocument extends AbstractURLDocument {
   }
 
   public HttpDocument(String url, String username, String password, int lockTimeout) throws IOException {
-    webdavResource = WebDavStorageImpl.createResource(url, username, password);
-    this.httpURL = webdavResource.getHttpURL();
+    try {
+      webdavResource = WebDavStorageImpl.createResource(url, username, password);
+    } catch (WebDavException e) {
+      throw new IOException(e);
+    }
     this.url = url;
     myUsername = username;
     myPassword = password;
     myTimeout = lockTimeout;
   }
 
-  WebdavResource getWebdavResource() {
+  WebDavResource getWebdavResource() {
     return webdavResource;
   }
 
   @Override
   public String getFileName() {
-    // TODO return filename instead of URL?
-    String filenName = httpURL.toString();
-    return (filenName != null ? filenName : url);
+    return getWebdavResource().getUrl();
   }
 
   @Override
   public boolean canRead() {
-    WebdavResource res = getWebdavResource();
-    return (null == res ? false : (res.exists() && !res.isCollection()));
+    WebDavResource res = getWebdavResource();
+    try {
+      return (null == res ? false : (res.exists() && !res.isCollection()));
+    } catch (WebDavException e) {
+      return false;
+    }
   }
 
   @Override
   public IStatus canWrite() {
-    WebdavResource res = getWebdavResource();
-    if (null == res) {
-      return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-          lastError, null);
-    }
+    WebDavResource res = getWebdavResource();
     try {
-      res.setProperties(0);
-    } catch (HttpException e) {
-      if (404 != e.getReasonCode()) {
-        return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-            e.getMessage(), e);
+      if (res.exists()) {
+        if (res.isCollection()) {
+          return new Status(IStatus.ERROR, Document.PLUGIN_ID,  Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getUrl(), null);
+        }
+        if (res.isWritable()) {
+          return Status.OK_STATUS;
+        }
+        return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal(), res.getUrl(), null);
       }
-    } catch (IOException e) {
-      return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-          e.getMessage(), e);
+    } catch (WebDavException e) {
+      return new Status(IStatus.ERROR, Document.PLUGIN_ID,  Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(), res.getUrl(), e);
     }
-
-    if (res.exists()) {
-      return (res.isCollection()) ? new Status(IStatus.ERROR, Document.PLUGIN_ID,
-          Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getPath(), null) : Status.OK_STATUS;
-    }
-
     try {
-      WebdavResource parentRes = WebDavStorageImpl.getParent(webdavResource);
-      parentRes.listWebdavResources();
-      if (!parentRes.isCollection()) {
+      WebDavResource parent = res.getParent();
+      if (!parent.exists() || !parent.isCollection()) {
         return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.PARENT_IS_NOT_DIRECTORY.ordinal(),
-            parentRes.getPath(), null);
+            parent.getUrl(), null);
       }
       return Status.OK_STATUS;
-    } catch (HttpException e) {
-      return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
-          (e.getReason() == null ? "Code: " + getHTTPError(e.getReasonCode()) : e.getReason()), e);
-    } catch (Exception e) {
+    } catch (WebDavException e) {
       return new Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.GENERIC_NETWORK_ERROR.ordinal(),
           e.getMessage(), e);
     }
@@ -148,13 +138,13 @@ public class HttpDocument extends AbstractURLDocument {
       return false;
     }
     try {
-      locked = getWebdavResource().lockMethod(getUsername(), myTimeout * 60);
-      return locked;
-    } catch (HttpException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
+      if (!getWebdavResource().exists()) {
+        return true;
       }
-    } catch (IOException e) {
+      getWebdavResource().lock(myTimeout * 60);
+      locked = true;
+      return locked;
+    } catch (WebDavException e) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err);
       }
@@ -172,12 +162,8 @@ public class HttpDocument extends AbstractURLDocument {
       if (!getWebdavResource().isLocked()) {
         return;
       }
-      getWebdavResource().unlockMethod();
-    } catch (HttpException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-    } catch (IOException e) {
+      getWebdavResource().unlock();
+    } catch (WebDavException e) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err);
       }
@@ -186,14 +172,10 @@ public class HttpDocument extends AbstractURLDocument {
 
   @Override
   public InputStream getInputStream() throws IOException {
-    if (null == getWebdavResource())
-      throw new IOException(lastError);
     try {
-      return getWebdavResource().getMethodData();
-    } catch (HttpException e) {
-      throw new IOException(e.getMessage() + "(" + e.getReasonCode() + ")");
-    } catch (IOException e) {
-      throw new IOException(HttpDocument.getHTTPError(getWebdavResource().getStatusCode()) + "\n" + e.getMessage(), e);
+      return getWebdavResource().getInputStream();
+    } catch (WebDavException e) {
+      throw new IOException(e);
     }
   }
 

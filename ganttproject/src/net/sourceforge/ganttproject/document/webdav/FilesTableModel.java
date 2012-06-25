@@ -18,39 +18,55 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.document.webdav;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.AbstractListModel;
 
-import org.apache.webdav.lib.WebdavResource;
+import com.beust.jcommander.internal.Lists;
+
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
 /**
  * Model of WebDAV collection contents.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class FilesTableModel extends AbstractListModel<WebdavResource> {
+class FilesTableModel extends AbstractListModel<WebDavResource> {
 
-  private WebdavResource myCollection;
-  private WebdavResource[] myChildResources;
+  private WebDavResource myCollection;
+  private List<WebDavResource> myChildResources;
 
-  void setCollection(WebdavResource collection) throws IOException {
+  void setCollection(WebDavResource collection) throws WebDavException {
     myCollection = null;
     if (myChildResources != null) {
-      fireIntervalRemoved(this, 0, myChildResources.length);
+      fireIntervalRemoved(this, 0, myChildResources.size());
     }
     myCollection = collection;
-    myChildResources = myCollection.getChildResources().listResources();
-    fireIntervalAdded(this, 0, myChildResources.length);
+    myChildResources = Lists.newArrayList(myCollection.getChildResources());
+    Collections.sort(myChildResources, new Comparator<WebDavResource>() {
+        @Override
+        public int compare(WebDavResource o1, WebDavResource o2) {
+          try {
+            int folder1 = o1.isCollection() ? 1 : 0;
+            int folder2 = o2.isCollection() ? 1 : 0;
+            return (folder1 - folder2 == 0) ? o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase()) : (folder2 - folder1);
+          } catch (WebDavException e) {
+            throw new WebDavResource.WebDavRuntimeException(e);
+          }
+        }
+      });
+    fireIntervalAdded(this, 0, myChildResources.size());
   }
 
   @Override
   public int getSize() {
-    return myCollection == null ? 0 : myChildResources.length;
+    return myCollection == null ? 0 : myChildResources.size();
   }
 
   @Override
-  public WebdavResource getElementAt(int index) {
-    return myChildResources[index];
+  public WebDavResource getElementAt(int index) {
+    return myChildResources.get(index);
   }
 }
