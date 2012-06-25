@@ -210,6 +210,7 @@ public class DocumentCreator implements DocumentManager {
 
   private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] {
       myWorkingDirectory,
+      myWebDavStorage.getServersOption(),
       myWebDavStorage.getLastWebDAVDocumentOption(),
       myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
 
