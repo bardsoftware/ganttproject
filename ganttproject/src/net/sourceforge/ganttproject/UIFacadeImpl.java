@@ -281,7 +281,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             commiter.commit();
           }
         });
-        dlg.getRootPane().setDefaultButton(nextButton);
+        if (((OkAction)nextAction).isDefault()) {
+          dlg.getRootPane().setDefaultButton(nextButton);
+        }
       }
       if (nextAction instanceof CancelAction) {
         cancelAction = nextAction;
@@ -307,6 +309,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         nextButton = new JButton(nextAction);
       }
       buttonBox.add(nextButton);
+      KeyStroke accelerator = (KeyStroke) nextAction.getValue(Action.ACCELERATOR_KEY);
+      if (accelerator != null) {
+        dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, nextAction);
+        dlg.getRootPane().getActionMap().put(nextAction, nextAction);
+      }
     }
     dlg.getContentPane().setLayout(new BorderLayout());
     dlg.getContentPane().add(content, BorderLayout.CENTER);

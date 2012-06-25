@@ -24,11 +24,21 @@ package net.sourceforge.ganttproject.action;
  * adds additional/special functionalities for this action
  */
 public abstract class OkAction extends GPAction {
+  private boolean isDefault = true;
+
   public OkAction() {
     this("ok");
   }
 
   public OkAction(String key) {
     super(key);
+  }
+
+  public boolean isDefault() {
+    return isDefault;
+  }
+
+  protected void setDefault(boolean value) {
+    isDefault = value;
   }
 }
