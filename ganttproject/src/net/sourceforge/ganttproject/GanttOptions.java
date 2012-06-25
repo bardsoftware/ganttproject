@@ -45,8 +45,10 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
+import net.sourceforge.ganttproject.io.SaverBase;
 import net.sourceforge.ganttproject.parser.IconPositionTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.roles.Role;
@@ -64,7 +66,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * This class is able to load and save options on the file
  */
-public class GanttOptions {
+public class GanttOptions extends SaverBase {
 
   private int x = 0, y = 0, width = 800, height = 600;
 
@@ -175,28 +177,6 @@ public class GanttOptions {
 
     // CSV export options
     csvOptions = new CSVOptions();
-  }
-
-  private void startElement(String name, Attributes attrs, TransformerHandler handler) throws SAXException {
-    handler.startElement("", name, name, attrs);
-  }
-
-  private void endElement(String name, TransformerHandler handler) throws SAXException {
-    handler.endElement("", name, name);
-  }
-
-  private void addAttribute(String name, String value, AttributesImpl attrs) {
-    if (value != null) {
-      attrs.addAttribute("", name, name, "CDATA", value);
-    } else {
-      System.err.println("[GanttOptions] attribute '" + name + "' is null");
-    }
-  }
-
-  private void emptyElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {
-    startElement(name, attrs, handler);
-    endElement(name, handler);
-    attrs.clear();
   }
 
   /**
@@ -355,8 +335,12 @@ public class GanttOptions {
         GPOption nextOption = nextEntry.getValue();
         if (nextOption.getPersistentValue() != null) {
           addAttribute("id", nextEntry.getKey(), attrs);
-          addAttribute("value", nextOption.getPersistentValue(), attrs);
-          emptyElement("option", attrs, handler);
+          if (nextOption instanceof ListOption) {
+            cdataElement("option", nextOption.getPersistentValue(), attrs, handler);
+          } else {
+            addAttribute("value", nextOption.getPersistentValue(), attrs);
+            emptyElement("option", attrs, handler);
+          }
         }
       }
       savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
@@ -527,6 +511,8 @@ public class GanttOptions {
   class GanttXMLOptionsParser extends DefaultHandler {
 
     private PluginOptionsHandler myPluginOptionsHandler;
+    private ListOption myContextOption;
+    private StringBuilder myCdataBuffer = new StringBuilder();
 
     @Override
     public void startElement(String namespaceURI, String sName, // simple name
@@ -544,8 +530,12 @@ public class GanttOptions {
 
       if ("option".equals(qName)) {
         GPOption option = myGPOptions.get(attrs.getValue("id"));
-        if (option != null) {
-          option.loadPersistentValue(attrs.getValue("value"));
+        if (option instanceof ListOption) {
+          myContextOption = (ListOption)option;
+        } else {
+          if (option != null) {
+            option.loadPersistentValue(attrs.getValue("value"));
+          }
         }
         return;
       }
@@ -717,6 +707,18 @@ public class GanttOptions {
       }
       if ("configuration".equals(name) || "instance".equals(name)) {
         myPluginOptionsHandler = null;
+      }
+      if (myContextOption != null) {
+        myContextOption.loadPersistentValue(myCdataBuffer.toString());
+        myContextOption = null;
+        myCdataBuffer = new StringBuilder();
+      }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+      if (myContextOption != null) {
+        myCdataBuffer.append(ch, start, length);
       }
     }
   }
