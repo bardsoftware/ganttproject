@@ -98,8 +98,14 @@ public class HttpDocument extends AbstractURLDocument {
   @Override
   public IStatus canWrite() {
     WebDavResource res = getWebdavResource();
+    boolean exists = false;
     try {
-      if (res.exists()) {
+      exists = res.exists();
+    } catch (WebDavException e) {
+      exists = false;
+    }
+    try {
+      if (exists) {
         if (res.isCollection()) {
           return new Status(IStatus.ERROR, Document.PLUGIN_ID,  Document.ErrorCode.IS_DIRECTORY.ordinal(), res.getUrl(), null);
         }
