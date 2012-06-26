@@ -18,13 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
-import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -52,24 +50,11 @@ abstract class CloudProjectActionBase extends GPAction {
       public void setDocument(Document document) {
         result[0] = document;
       }
-
-      @Override
-      public void setError(Exception e) {
-        GPLogger.log(e);
-      }
     };
     DocumentStorageUi webdavStorage = myDocumentManager.getWebDavStorageUi();
     DocumentStorageUi.Components components = isOpenUrl ? webdavStorage.open(document, receiver) : webdavStorage.save(document, receiver);
     myUiFacade.createDialog(components.contentPane, components.actions,
         GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
     return result[0] == null ? null : myDocumentManager.getProxyDocument(result[0]);
-  }
-
-  private static boolean sameDocument(Document d1, DocumentDescriptor chosenDocument) {
-    if (d1 == null || chosenDocument == null) {
-      return false;
-    }
-    return d1.getURI().toString().equals(chosenDocument.url) && d1.getUsername().equals(chosenDocument.username)
-        && d1.getPassword().equals(chosenDocument.password);
   }
 }

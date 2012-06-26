@@ -28,25 +28,11 @@ import javax.swing.JComponent;
  */
 public interface DocumentStorageUi {
 
-  public static class DocumentDescriptor {
-    public final String url;
-    public final String username;
-    public final String password;
-
-    public DocumentDescriptor(String url, String username, String password) {
-      this.url = url;
-      this.username = username;
-      this.password = password;
-    }
-  }
-
   /**
    * Receives document descriptors as user changes selection in UI
    */
   public interface DocumentReceiver {
     void setDocument(Document document);
-
-    void setError(Exception e);
   }
 
   public class Components {

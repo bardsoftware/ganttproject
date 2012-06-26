@@ -41,9 +41,8 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentDescriptor;
-import net.sourceforge.ganttproject.document.DocumentStorageUi.DocumentReceiver;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -97,7 +96,7 @@ class GanttURLChooser {
           return;
         }
       } catch (WebDavException e) {
-        e.printStackTrace();
+        showError(e);
       }
     }
   };
@@ -113,10 +112,9 @@ class GanttURLChooser {
           myPath.setValue(new URL(parent.getUrl()).getPath());
         }
       } catch (WebDavException e) {
-        e.printStackTrace();
+        showError(e);
       } catch (MalformedURLException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        showError(e);
       }
     }
   };
@@ -127,7 +125,7 @@ class GanttURLChooser {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, final DocumentReceiver receiver) {
+  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption) {
     myPath = new DefaultStringOption("path");
     myServers = servers;
     myUsername = username;
@@ -137,6 +135,7 @@ class GanttURLChooser {
     myTimeout = lockTimeoutOption;
 
     myServers.addChangeValueListener(new ChangeValueListener() {
+      @Override
       public void changeValue(ChangeValueEvent event) {
         myPath.setValue("");
         myPassword.setValue("");
@@ -146,6 +145,7 @@ class GanttURLChooser {
       }
     });
     myPath.addChangeValueListener(new ChangeValueListener() {
+      @Override
       public void changeValue(ChangeValueEvent event) {
         String path = (String) event.getNewValue();
         myUpAction.setEnabled(path.split("/").length > 1);
@@ -158,11 +158,8 @@ class GanttURLChooser {
       myServers.setValue(host);
       myPath.setValue(url.getPath());
     } catch (MalformedURLException e) {
+      GPLogger.logToLogger(e);
     }
-  }
-
-  protected DocumentDescriptor createDocument() {
-    return new DocumentDescriptor(buildUrl(), myUsername.getValue(), myPassword.getValue());
   }
 
   public JComponent createOpenDocumentUi() {
@@ -233,6 +230,7 @@ class GanttURLChooser {
             URL url = new URL(resource.getUrl());
             myPath.setValue(url.getPath());
           } catch (MalformedURLException ex) {
+            GPLogger.logToLogger(ex);
           }
         }
       });
@@ -317,8 +315,7 @@ class GanttURLChooser {
   StringOption getPathOption() {
     return myPath;
   }
-  void showError(WebDavException e) {
-    // TODO Auto-generated method stub
-
+  void showError(Exception e) {
+    GPLogger.log(e);
   }
 }
