@@ -81,6 +81,8 @@ class WebDavResourceSlideImpl implements WebDavResource {
         myExistance = myImpl.exists();
       } catch (HttpException e) {
         myExistance = false;
+        throw new WebDavException(
+            MessageFormat.format("HTTP problem when accessing {0} on {1}<br>Error code: {2}<br>Error message: {3}", getPath(), getHost(), e.getReasonCode(), e.getReason()), e);
       } catch (IOException e) {
         throw new WebDavException(MessageFormat.format("I/O problem when accessing {0} on {1}", getPath(), getHost()), e);
       }
@@ -156,6 +158,8 @@ class WebDavResourceSlideImpl implements WebDavResource {
       WebdavResource[] children = null;
       try {
         children = myImpl.listWebdavResources();
+        int statuscode = myImpl.getStatusCode();
+        String statusMessage = myImpl.getStatusMessage();
       } catch (HttpException e) {
         throw new WebDavException(MessageFormat.format("HTTP problem when reading child resources of {0} on {1}", getPath(), getHost()), e);
       } catch (IOException e) {

@@ -25,7 +25,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 
 import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
@@ -55,7 +54,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   @Override
   public Components open(Document currentDocument, final DocumentReceiver receiver) {
-    final GanttURLChooser chooser = createChooser(currentDocument, receiver);
+    final GanttURLChooser chooser = createChooser(currentDocument);
     final OkAction openAction = createNoLockAction("storage.action.open", chooser, receiver);
     final OkAction openAndLockAction = createLockAction("storage.action.openAndLock", chooser, receiver);
     chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
@@ -73,6 +72,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     });
     JComponent contentPane = chooser.createOpenDocumentUi();
     chooser.getPathOption().addChangeValueListener(new ChangeValueListener() {
+      @Override
       public void changeValue(ChangeValueEvent event) {
         boolean empty = "".equals(event.getNewValue());
         openAction.setEnabled(!empty);
@@ -89,7 +89,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   @Override
   public Components save(Document currentDocument, final DocumentReceiver receiver) {
-    final GanttURLChooser chooser = createChooser(currentDocument, receiver);
+    final GanttURLChooser chooser = createChooser(currentDocument);
     OkAction saveAction = createNoLockAction("storage.action.save", chooser, receiver);
     final OkAction saveAndLockAction = createLockAction("storage.action.saveAndLock", chooser, receiver);
     chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
@@ -111,14 +111,14 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     }});
   }
 
-  private GanttURLChooser createChooser(Document currentDocument, DocumentReceiver receiver) {
+  private GanttURLChooser createChooser(Document currentDocument) {
     String lastDocUrl = (currentDocument == null || !currentDocument.getURI().getScheme().toLowerCase().startsWith("http"))
         ? getLastWebDAVDocumentOption().getValue() : currentDocument.getURI().toString();
     if (currentDocument != null) {
       myUsername.setValue(currentDocument.getUsername());
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
-    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption(), receiver);
+    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption());
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
@@ -131,7 +131,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         try {
           receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword()));
         } catch (IOException e) {
-          receiver.setError(e);
+          chooser.showError(e);
         }
       }
     };
@@ -147,7 +147,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         try {
           receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout()));
         } catch (IOException e) {
-          receiver.setError(e);
+          chooser.showError(e);
         }
       }
     };

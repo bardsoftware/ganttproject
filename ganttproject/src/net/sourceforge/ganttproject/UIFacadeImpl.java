@@ -81,6 +81,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.ProgressProvider;
 
+import com.google.common.base.Objects;
+
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
@@ -225,7 +227,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-    return myDialogBuilder.createDialog(content, buttonActions, title);
+    return myDialogBuilder.createDialog(content, buttonActions, title, myNotificationManager);
   }
 
   @Override
@@ -268,7 +270,20 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showErrorDialog(Throwable e) {
     GPLogger.logToLogger(e);
-    showErrorNotification(e.getMessage());
+    showErrorNotification(buildMessage(e));
+  }
+
+  private static String buildMessage(Throwable e) {
+    StringBuilder result = new StringBuilder();
+    String lastMessage = null;
+    while (e != null) {
+      if (e.getMessage() != null && !Objects.equal(lastMessage, e.getMessage())) {
+        result.append(e.getMessage()).append("<br>");
+        lastMessage = e.getMessage();
+      }
+      e = e.getCause();
+    }
+    return result.toString();
   }
 
   @Override
