@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 
 public enum NotificationChannel {
   RSS(Color.YELLOW.brighter()), ERROR(new Color(255, 191, 207));
@@ -40,7 +41,7 @@ public enum NotificationChannel {
   private final Color myColor;
   private boolean isVisible;
   private final List<NotificationItem> myItems = new ArrayList<NotificationItem>();
-  private JButton myButton;
+  private JComponent myButton;
   private boolean isPulsing;
   private Color myNormalColor;
   private NotificationItem myDefaultNotification;
@@ -73,11 +74,11 @@ public enum NotificationChannel {
     return myItems;
   }
 
-  void setButton(JButton button) {
+  void setButton(JComponent button) {
     myButton = button;
   }
 
-  JButton getButton() {
+  JComponent getButton() {
     return myButton;
   }
 

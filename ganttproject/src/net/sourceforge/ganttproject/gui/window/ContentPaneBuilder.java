@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 /**
  * Builds a main frame's content pane and creates an animation host for the
  * notification slider.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class ContentPaneBuilder {
@@ -67,14 +67,6 @@ public class ContentPaneBuilder {
     @Override
     public boolean isReady() {
       return myStatusBar.isShowing();
-    }
-
-    @Override
-    public void setImage(BufferedImage image) {
-    }
-
-    @Override
-    public void setHeight(int height) {
     }
 
     @Override

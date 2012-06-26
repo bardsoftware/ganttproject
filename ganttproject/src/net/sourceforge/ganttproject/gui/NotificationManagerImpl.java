@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.action.ShowChannelAction;
 import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
 public class NotificationManagerImpl implements NotificationManager {
-  private final AnimationView myAnimationView;
+  private AnimationView myAnimationView;
   private NotificationChannel myFirstChannel;
   private final Runnable myOnReadyCommand;
 
@@ -142,5 +142,11 @@ public class NotificationManagerImpl implements NotificationManager {
   @Override
   public void hideNotification() {
     myAnimationView.close();
+  }
+
+  public AnimationView setAnimationView(AnimationView view) {
+    AnimationView result = myAnimationView;
+    myAnimationView = view;
+    return result;
   }
 }
