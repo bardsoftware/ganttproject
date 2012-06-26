@@ -51,10 +51,6 @@ public class NotificationComponent implements NotificationChannel.Listener {
 
     boolean isVisible();
 
-    void setImage(BufferedImage image);
-
-    void setHeight(int height);
-
     void setComponent(JComponent component, JComponent owner, Runnable onHide);
 
     void close();
