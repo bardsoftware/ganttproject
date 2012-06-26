@@ -187,7 +187,7 @@ class GanttURLChooser {
     final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
 
     JPanel panel = new JPanel(new SpringLayout());
-    panel.add(new JLabel(language.getText("fileFromServer")));
+    panel.add(new JLabel(language.getCorrectedLabel("webServer")));
     panel.add(builder.createOptionComponent(null, myServers));
     panel.add(new JLabel(language.getText("userName")));
     panel.add(builder.createOptionComponent(null, myUsername));
@@ -251,7 +251,7 @@ class GanttURLChooser {
         }
       });
       filesTablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
-      panel.add(new JPanel());
+      panel.add(new JLabel(language.getText("fileChooser.fileList")));
       panel.add(filesTablePanel);
     }
 
