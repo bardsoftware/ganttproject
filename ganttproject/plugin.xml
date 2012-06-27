@@ -15,10 +15,13 @@
       <library name="lib/core/balloontip-1.2.1.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-codec-1.4.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-csv-0.1-svn678580.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/commons-httpclient.jar">
+      <library name="lib/core/commons-httpclient-3.0.1.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/commons-logging.jar">
