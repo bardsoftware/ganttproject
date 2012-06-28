@@ -49,6 +49,7 @@ public interface TaskManager {
     Task myPrevSibling;
     boolean isExpanded;
     Task myParent;
+    boolean isLegacyMilestone;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -60,8 +61,18 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withExpansionState(boolean isExpanded) {
+      this.isExpanded = isExpanded;
+      return this;
+    }
+
     public TaskBuilder withId(int id) {
       myId = id;
+      return this;
+    }
+
+    public TaskBuilder withLegacyMilestone() {
+      isLegacyMilestone = true;
       return this;
     }
 
@@ -84,10 +95,6 @@ public interface TaskManager {
       return this;
     }
 
-    public TaskBuilder withExpansionState(boolean isExpanded) {
-      this.isExpanded = isExpanded;
-      return this;
-    }
 
     public abstract Task build();
 
@@ -179,4 +186,8 @@ public interface TaskManager {
   StringOption getTaskNamePrefixOption();
 
   EnumerationOption getDependencyHardnessOption();
+
+  void setZeroMilestones(Boolean b);
+
+  Boolean isZeroMilestones();
 }

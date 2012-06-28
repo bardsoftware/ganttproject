@@ -44,6 +44,9 @@ class TaskSaver extends SaverBase {
     AttributesImpl attrs = new AttributesImpl();
     if (defaultColor != null) {
       addAttribute("color", ColorConvertion.getColor(defaultColor), attrs);
+      if (project.getTaskManager().isZeroMilestones() != null) {
+        addAttribute("empty-milestones", project.getTaskManager().isZeroMilestones(), attrs);
+      }
     }
     startElement("tasks", attrs, handler);
 
@@ -72,7 +75,7 @@ class TaskSaver extends SaverBase {
     if (task.shapeDefined()) {
       addAttribute("shape", task.getShape().getArray(), attrs);
     }
-    addAttribute("meeting", Boolean.valueOf(task.isMilestone()).toString(), attrs);
+    addAttribute("meeting", Boolean.valueOf(task.isLegacyMilestone()).toString(), attrs);
     if (task.isProjectTask()) {
       addAttribute("project", Boolean.TRUE.toString(), attrs);
     }

@@ -187,7 +187,9 @@ public class GanttXMLOpen implements GPParser {
         // tags
         // we can do we need here.
       }
-
+      if (eName.equals("tasks")) {
+        myTaskManager.setZeroMilestones(null);
+      }
       if (attrs != null) {
         for (int i = 0; i < attrs.getLength(); i++) {
           String aName = attrs.getLocalName(i); // Attr name
@@ -216,6 +218,9 @@ public class GanttXMLOpen implements GPParser {
           } else if (eName.equals("tasks")) {
             if (aName.equals("color")) {
               myUIConfig.setProjectLevelTaskColor(determineColor(attrs.getValue(i)));
+            }
+            if ("empty-milestones".equals(aName)) {
+              myTaskManager.setZeroMilestones(Boolean.parseBoolean(attrs.getValue(i)));
             }
           }
         }

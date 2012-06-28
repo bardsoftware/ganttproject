@@ -21,12 +21,11 @@ package net.sourceforge.ganttproject.parser;
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
@@ -96,15 +95,20 @@ public class TaskTagHandler implements TagHandler {
       builder = builder.withExpansionState(Boolean.parseBoolean(isExpanded));
     }
 
+    String isLegacyMilestone = attrs.getValue("meeting");
+    if (Boolean.parseBoolean(isLegacyMilestone)) {
+      builder = builder.withLegacyMilestone();
+    }
     Task task = builder.build();
 
-    task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
-
+//    String newMilestone = attrs.getValue("milestone");
+//    if ("1".equals(newMilestone)) {
+//      task.setMilestone(true);
+//    }
     String project = attrs.getValue("project");
-    if (project != null)
+    if (project != null) {
       task.setProjectTask(true);
-
-
+    }
 
     String complete = attrs.getValue("complete");
     if (complete != null) {

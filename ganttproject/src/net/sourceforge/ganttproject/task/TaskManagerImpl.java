@@ -156,6 +156,8 @@ public class TaskManagerImpl implements TaskManager {
 
   private final CustomColumnsManager myCustomColumnsManager;
 
+  private Boolean isZeroMilestones = true;
+
   TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
     myCustomColumnsManager = new CustomColumnsManager();
@@ -284,7 +286,7 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        Task task = new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId);
+        TaskImpl task = new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId);
 
         String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
         task.setName(name);
@@ -314,6 +316,9 @@ public class TaskManagerImpl implements TaskManager {
           getTaskHierarchy().move(task, parentTask);
         }
 
+        if (isLegacyMilestone) {
+          task.setMilestone(isLegacyMilestone);
+        }
         fireTaskAdded(task);
         return task;
       }
@@ -984,6 +989,16 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public EnumerationOption getDependencyHardnessOption() {
     return myDependencyHardnessOption;
+  }
+
+  @Override
+  public void setZeroMilestones(Boolean b) {
+    isZeroMilestones = b;
+  }
+
+  @Override
+  public Boolean isZeroMilestones() {
+    return isZeroMilestones;
   }
 
 }
