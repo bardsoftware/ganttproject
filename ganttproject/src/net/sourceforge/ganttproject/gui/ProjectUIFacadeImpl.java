@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -28,27 +29,41 @@ import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
-
-import org.eclipse.core.runtime.IStatus;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskImpl;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;
+
+import org.eclipse.core.runtime.IStatus;
+import org.jdesktop.swingx.JXRadioGroup;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private final UIFacade myWorkbenchFacade;
@@ -56,6 +71,12 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private final DocumentManager myDocumentManager;
   private final GPUndoManager myUndoManager;
 
+  private static enum ConvertMilestones {
+    UNKNOWN, TRUE, FALSE
+  }
+  private final DefaultEnumerationOption<ConvertMilestones> myConvertMilestonesOption = new DefaultEnumerationOption<ConvertMilestones>(
+      "milestones_to_zero", ConvertMilestones.values());
+  private final GPOptionGroup myConverterGroup = new GPOptionGroup("convert", myConvertMilestonesOption);
   public ProjectUIFacadeImpl(UIFacade workbenchFacade, DocumentManager documentManager, GPUndoManager undoManager) {
     myWorkbenchFacade = workbenchFacade;
     myDocumentManager = documentManager;
@@ -271,10 +292,70 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       project.open(defaultDocument);
     }
     SwingUtilities.invokeLater(new Runnable() {
+      @Override
       public void run() {
         project.setModified(false);
       }
     });
+
+    TaskManager taskManager = project.getTaskManager();
+    boolean hasLegacyMilestones = false;
+    for (Task t : taskManager.getTasks()) {
+      if (((TaskImpl)t).isLegacyMilestone()) {
+        hasLegacyMilestones = true;
+        break;
+      }
+    }
+    if (hasLegacyMilestones && taskManager.isZeroMilestones() == null) {
+      ConvertMilestones option = myConvertMilestonesOption.getSelectedValue() == null ? ConvertMilestones.UNKNOWN : myConvertMilestonesOption.getSelectedValue();
+      switch (option) {
+      case UNKNOWN:
+        tryPatchMilestones(taskManager);
+        break;
+      case TRUE:
+        taskManager.setZeroMilestones(true);
+        break;
+      case FALSE:
+        taskManager.setZeroMilestones(false);
+        break;
+      }
+    }
+  }
+
+  private void tryPatchMilestones(final TaskManager taskManager) {
+    final JRadioButton buttonConvert = new JRadioButton(i18n.getText("legacyMilestones.choice.convert"));
+    final JRadioButton buttonKeep = new JRadioButton(i18n.getText("legacyMilestones.choice.keep"));
+    JXRadioGroup<JRadioButton> group = JXRadioGroup.create(new JRadioButton[] {buttonConvert, buttonKeep});
+    group.setLayoutAxis(BoxLayout.PAGE_AXIS);
+    final JCheckBox remember = new JCheckBox(i18n.getText("legacyMilestones.choice.remember"));
+
+    Box content = Box.createVerticalBox();
+    JLabel question = new JLabel(i18n.getText("legacyMilestones.question"), SwingConstants.LEADING);
+    question.setOpaque(true);
+    question.setAlignmentX(0.5f);
+    content.add(question);
+    content.add(Box.createVerticalStrut(15));
+    content.add(group);
+    content.add(Box.createVerticalStrut(5));
+    content.add(remember);
+
+    Box icon = Box.createVerticalBox();
+    icon.add(new JLabel(GPAction.getIcon("64", "dialog-question.png")));
+    icon.add(Box.createVerticalGlue());
+
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(content, BorderLayout.CENTER);
+    result.add(icon, BorderLayout.WEST);
+    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    myWorkbenchFacade.createDialog(result, new Action[] {new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        taskManager.setZeroMilestones(buttonConvert.isSelected());
+        if (remember.isSelected()) {
+          myConvertMilestonesOption.setSelectedValue(buttonConvert.isSelected() ? ConvertMilestones.TRUE : ConvertMilestones.FALSE);
+        }
+      }
+    }}, i18n.getText("legacyMilestones.title")).show();
   }
 
   private void beforeClose() {
@@ -299,8 +380,8 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   }
 
   @Override
-  public GPOptionGroup getOptionGroup() {
-    return myDocumentManager.getOptionGroup();
+  public GPOptionGroup[] getOptionGroups() {
+    return new GPOptionGroup[] { myDocumentManager.getOptionGroup(), myConverterGroup };
   }
 
   private GPUndoManager getUndoManager() {
