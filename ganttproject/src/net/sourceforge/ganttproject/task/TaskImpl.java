@@ -317,9 +317,12 @@ public class TaskImpl implements Task {
 
   @Override
   public boolean isMilestone() {
-    return isMilestone;
+    return isMilestone && Boolean.TRUE == myManager.isZeroMilestones();
   }
 
+  public boolean isLegacyMilestone() {
+    return isMilestone;
+  }
   @Override
   public Priority getPriority() {
     return myPriority;
@@ -886,7 +889,7 @@ public class TaskImpl implements Task {
   @Override
   public void setMilestone(boolean milestone) {
     if (milestone) {
-      setEnd(getStart());
+      setEnd(null);
     }
     isMilestone = milestone;
   }
