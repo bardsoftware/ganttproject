@@ -62,9 +62,11 @@ class WebDavResourceSlideImpl implements WebDavResource {
       myUrl = urlString.toLowerCase().startsWith("https") ? new HttpsURL(urlString) : new HttpURL(urlString);
       if (username != null && password != null) {
         myUrl.setUserinfo(username, password);
+        Credentials credentials = new UsernamePasswordCredentials(username, password);
+        myImpl = new WebdavResource(myUrl, credentials, WebdavResource.NOACTION, 0);
+      } else {
+        myImpl = new WebdavResource(myUrl, WebdavResource.NOACTION, 0);
       }
-      Credentials credentials = new UsernamePasswordCredentials(username, password);
-      myImpl = new WebdavResource(myUrl, credentials, WebdavResource.NOACTION, 0);
       myImpl.setFollowRedirects(true);
     } catch (URIException e) {
       throw new WebDavException(MessageFormat.format("Failed to parse url {0}", urlString), e);
