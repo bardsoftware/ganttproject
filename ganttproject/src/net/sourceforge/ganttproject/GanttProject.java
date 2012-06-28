@@ -248,7 +248,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(new GPOptionGroup[] { getUIFacade().getOptions() });
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
-    options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
+    options.addOptionGroups(getProjectUIFacade().getOptionGroups());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(getRssFeedChecker().getOptions());
     myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
