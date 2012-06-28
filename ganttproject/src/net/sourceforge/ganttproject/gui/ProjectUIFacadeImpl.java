@@ -325,6 +325,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private void tryPatchMilestones(final TaskManager taskManager) {
     final JRadioButton buttonConvert = new JRadioButton(i18n.getText("legacyMilestones.choice.convert"));
     final JRadioButton buttonKeep = new JRadioButton(i18n.getText("legacyMilestones.choice.keep"));
+    buttonConvert.setSelected(true);
     JXRadioGroup<JRadioButton> group = JXRadioGroup.create(new JRadioButton[] {buttonConvert, buttonKeep});
     group.setLayoutAxis(BoxLayout.PAGE_AXIS);
     final JCheckBox remember = new JCheckBox(i18n.getText("legacyMilestones.choice.remember"));
