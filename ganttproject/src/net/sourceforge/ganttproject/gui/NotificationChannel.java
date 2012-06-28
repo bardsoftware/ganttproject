@@ -28,7 +28,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 
 public enum NotificationChannel {
-  RSS(Color.YELLOW.brighter()), ERROR(new Color(255, 191, 207));
+  RSS(Color.YELLOW.brighter()), ERROR(UIUtil.ERROR_BACKGROUND);
 
   public interface Listener {
     void notificationAdded();
