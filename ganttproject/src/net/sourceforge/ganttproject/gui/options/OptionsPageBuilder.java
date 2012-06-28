@@ -42,6 +42,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
@@ -61,6 +62,7 @@ import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
 
 /**
  * @author bard
@@ -411,26 +413,52 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private JComboBox<String> createListComponent(final ListOption option, GPOptionGroup group) {
-    final JComboBox result = createEnumerationComponent(option, group);
-    result.setEditable(true);
-    result.addActionListener(new ActionListener() {
+  private JComponent createListComponent(final ListOption option, final GPOptionGroup group) {
+    final CardLayout wrapperLayout = new CardLayout();
+    final JPanel comboBoxWrapper = new JPanel(wrapperLayout);
+
+    final JComboBox comboBox = createEnumerationComponent(option, group);
+    final JTextField addEditor = new JTextField();
+    addEditor.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
-        Object editedItem = result.getEditor().getItem();
-        if (editedItem instanceof String) {
-          option.addValue((String)editedItem);
-        }
+        String text = addEditor.getText();
+        option.addValue(text);
+        wrapperLayout.show(comboBoxWrapper, "comboBox");
+        comboBox.setModel(new EnumerationOptionComboBoxModel(option, group));
+        option.setValue(text);
       }
     });
+    comboBoxWrapper.add(comboBox, "comboBox");
+    comboBoxWrapper.add(addEditor, "textField");
+    Box result = Box.createHorizontalBox();
+    result.add(comboBoxWrapper);
+    result.add(Box.createHorizontalStrut(5));
+    result.add(new JXHyperlink(new GPAction("add") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        wrapperLayout.show(comboBoxWrapper, "textField");
+        addEditor.setText("");
+        addEditor.requestFocus();
+      }
+    }));
+    result.add(Box.createHorizontalStrut(3));
+    result.add(new JXHyperlink(new GPAction("delete") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        option.removeValue(option.getValue());
+        comboBox.setModel(new EnumerationOptionComboBoxModel(option, group));
+      }
+    }));
     return result;
   }
 
   private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
-    final EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
-    final JComboBox result = new JComboBox(model);
+    final JComboBox result = new JComboBox(new EnumerationOptionComboBoxModel(option, group));
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
+        EnumerationOptionComboBoxModel model = (EnumerationOptionComboBoxModel) result.getModel();
         model.onValueChange();
         result.setSelectedItem(model.getSelectedItem());
       }
