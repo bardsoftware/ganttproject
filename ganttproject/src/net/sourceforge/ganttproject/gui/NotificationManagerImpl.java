@@ -61,6 +61,7 @@ public class NotificationManagerImpl implements NotificationManager {
       @Override
       public void run() {
         channel.getButton().setBackground(channel.getNormalColor());
+        channel.setVisible(false);
       }
     });
   }

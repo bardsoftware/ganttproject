@@ -165,7 +165,7 @@ public class OptionsPageBuilder {
       }
     }
     if (options.length > 0) {
-      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 3, 3);
+      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 5, 3);
     }
     return optionsPanel;
   }
@@ -214,7 +214,8 @@ public class OptionsPageBuilder {
 
   private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
     JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
-    // nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+    nextLabel.setVerticalAlignment(SwingConstants.TOP);
+    nextLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     return nextLabel;
   }
 
@@ -371,6 +372,7 @@ public class OptionsPageBuilder {
         }
       }
     });
+    yesButton.setVerticalAlignment(SwingConstants.CENTER);
     yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
     yesButton.setSelected(option.isChecked());
 
@@ -391,11 +393,11 @@ public class OptionsPageBuilder {
     buttonGroup.add(yesButton);
     buttonGroup.add(noButton);
 
-    Box result = Box.createHorizontalBox();
+    Box result = Box.createVerticalBox();
     result.add(yesButton);
-    result.add(Box.createHorizontalStrut(5));
+    result.add(Box.createVerticalStrut(2));
     result.add(noButton);
-    result.add(Box.createHorizontalGlue());
+    result.add(Box.createVerticalGlue());
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {

@@ -52,6 +52,8 @@ public abstract class UIUtil {
     }
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
+  public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
     ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
