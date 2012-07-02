@@ -22,17 +22,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.csv.CSVParser;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import com.google.common.collect.Lists;
 
 /**
  * Handles opening CSV files.
@@ -46,6 +47,7 @@ public class GanttCSVOpen {
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"), NOTES(
         "notes");
 
+    private static List<String> ourNames;
     private final String text;
 
     private TaskFields(final String text) {
@@ -57,6 +59,16 @@ public class GanttCSVOpen {
       // Return translated field name
       return language.getText(text);
     }
+
+    public static Collection<String> getAllFields() {
+      if (ourNames == null) {
+        ourNames = Lists.newArrayList();
+        for (TaskFields tf : values()) {
+          ourNames.add(tf.toString());
+        }
+      }
+      return ourNames;
+    }
   }
 
   private final TaskManager myTaskManager;
@@ -65,12 +77,6 @@ public class GanttCSVOpen {
   private final File myFile;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
-
-  /**
-   * Map containing a relation between the known task attributes and the fields
-   * in the CSV file
-   */
-  private Map<TaskFields, Integer> fieldsMap = null;
 
   public GanttCSVOpen(File file, TaskManager taskManager) {
     myFile = file;
@@ -84,93 +90,22 @@ public class GanttCSVOpen {
    *           on parse error or input read-failure
    */
   public boolean load() throws IOException {
-    boolean hasHeader = getHeader();
-    CSVParser parser = new CSVParser(new InputStreamReader(new FileInputStream(myFile)));
-
-    if (hasHeader) {
-      // Ignore header
-      parser.getLine();
-    }
-
-    String[] line;
-    while ((line = parser.getLine()) != null) {
+    CSVParser parser = new CSVParser(new InputStreamReader(new FileInputStream(myFile)),
+        CSVFormat.DEFAULT.withHeader().withEmptyLinesIgnored(false).withSurroundingSpacesIgnored(true));
+    List<CSVRecord> records = parser.getRecords();
+    for (CSVRecord record : records) {
+      if (record.size() > 0) {
       // Create the task
-      GanttTask task = myTaskManager.createTask();
-      // and fill in the mapped fields
-      for (Entry<TaskFields, Integer> entry : getFieldsMap().entrySet()) {
-        Integer fieldIndex = entry.getValue();
-        switch (entry.getKey()) {
-        case NAME:
-          task.setName(line[fieldIndex]);
-          break;
-        case BEGIN_DATE:
-          task.setStart(new GanttCalendar(language.parseDate(line[fieldIndex])));
-          break;
-        case END_DATE:
-          task.setEnd(new GanttCalendar(language.parseDate(line[fieldIndex])));
-          break;
-        case WEB_LINK:
-          task.setWebLink(line[fieldIndex]);
-          break;
-        case NOTES:
-          task.setNotes(line[fieldIndex]);
-          break;
-        default:
-          // Should not happen, although it is not too serious...
-          GPLogger.log("Found unknown task field: " + entry.getKey());
-        }
+        TaskManager.TaskBuilder builder = myTaskManager.newTaskBuilder()
+            .withName(record.get(TaskFields.NAME.toString()))
+            .withStartDate(language.parseDate(record.get(TaskFields.BEGIN_DATE.toString())))
+            .withEndDate(language.parseDate(record.get(TaskFields.END_DATE.toString())))
+            .withWebLink(record.get(TaskFields.WEB_LINK.toString()))
+            .withNotes(record.get(TaskFields.NOTES.toString()));
+        Task task = builder.build();
       }
-      myTaskManager.registerTask(task);
-      myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
     }
-
     // Succeeded
     return true;
-  }
-
-  /**
-   * Try to find a mapping between the fields in the CSV file and the
-   * known/supported task attributes
-   *
-   * @return true when the CSV file has an (assumed) header
-   * @throws IOException
-   *           when something went wrong while reading from the BufferedReader
-   */
-  public boolean getHeader() throws IOException {
-    CSVParser parser = new CSVParser(new InputStreamReader(new FileInputStream(myFile)));
-
-    String[] fields = parser.getLine();
-    if (getFieldsMap().size() > 0) {
-      fieldsMap.clear();
-    }
-
-    // Determine/guess the required mapping
-    for (TaskFields knownField : TaskFields.values()) {
-      String fieldName = knownField.toString().toLowerCase();
-      for (int i = 0; i < fields.length; i++) {
-        String testFieldName = fields[i].toLowerCase();
-        if (testFieldName.equals(fieldName)) {
-          // Found a match to a known field!
-          fieldsMap.put(knownField, i);
-          // No need to check other fields
-          break;
-        }
-      }
-    }
-
-    // We assume the file has a header when there is at least one match with
-    // known field names
-    return fieldsMap.size() > 0;
-  }
-
-  /**
-   * @return the mapping of the CSV fields. (So it could be used to manually
-   *         override the found mapping)
-   */
-  public Map<TaskFields, Integer> getFieldsMap() {
-    if (fieldsMap == null) {
-      fieldsMap = new HashMap<TaskFields, Integer>();
-    }
-    return fieldsMap;
   }
 }

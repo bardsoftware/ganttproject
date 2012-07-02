@@ -297,8 +297,12 @@ public class TaskManagerImpl implements TaskManager {
           GanttCalendar cal = new GanttCalendar(myStartDate);
           task.setStart(cal);
         }
-        TaskLength duration = myDuration == null ?
-            createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f) : myDuration;
+        TaskLength duration;
+        if (myDuration != null) {
+          duration = myDuration;
+        } else {
+          duration = (myEndDate == null) ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f) : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
+        }
         task.setDuration(duration);
 
         if (myColor != null) {
@@ -306,6 +310,9 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         task.setExpand(isExpanded);
+        task.setNotes(myNotes);
+        task.setWebLink(myWebLink);
+
         registerTask(task);
 
 

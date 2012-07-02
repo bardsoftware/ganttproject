@@ -20,8 +20,10 @@ package net.sourceforge.ganttproject.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 import net.sourceforge.ganttproject.CustomProperty;
@@ -59,23 +61,24 @@ public class GanttCSVExport {
    * @throws IOException
    */
   public void save(OutputStream stream) throws IOException {
-    CSVPrinter writer = new CSVPrinter(stream);
+    OutputStreamWriter writer = new OutputStreamWriter(stream);
+    CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
     if (csvOptions.bFixedSize) {
       // TODO The CVS library we use is lacking support for fixed size
       getMaxSize();
     }
 
-    writeTasks(writer);
+    writeTasks(csvPrinter);
 
     if (myProject.getHumanResourceManager().getResources().size() > 0) {
-      writer.println();
-      writer.println();
-      writeResources(writer);
+      csvPrinter.println();
+      csvPrinter.println();
+      writeResources(csvPrinter);
     }
   }
 
-  private void writeTaskHeaders(CSVPrinter writer) {
+  private void writeTaskHeaders(CSVPrinter writer) throws IOException {
     if (csvOptions.bExportTaskID) {
       writer.print(i18n("tableColID"));
     }
@@ -114,8 +117,9 @@ public class GanttCSVExport {
     return GanttLanguage.getInstance().getText(key);
   }
 
-  /** Write all tasks. */
-  private void writeTasks(CSVPrinter writer) {
+  /** Write all tasks.
+   * @throws IOException */
+  private void writeTasks(CSVPrinter writer) throws IOException {
     writeTaskHeaders(writer);
     List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
     for (Task task : myProject.getTaskManager().getTasks()) {
@@ -164,7 +168,7 @@ public class GanttCSVExport {
     }
   }
 
-  private void writeResourceHeaders(CSVPrinter writer) {
+  private void writeResourceHeaders(CSVPrinter writer) throws IOException {
     if (csvOptions.bExportResourceID) {
       writer.print(i18n("tableColID"));
     }
@@ -189,8 +193,9 @@ public class GanttCSVExport {
     writer.println();
   }
 
-  /** write the resources. */
-  private void writeResources(CSVPrinter writer) {
+  /** write the resources.
+   * @throws IOException */
+  private void writeResources(CSVPrinter writer) throws IOException {
     writeResourceHeaders(writer);
     // parse all resources
     for (HumanResource p : myProject.getHumanResourceManager().getResources()) {

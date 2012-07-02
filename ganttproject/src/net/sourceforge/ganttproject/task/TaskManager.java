@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
@@ -50,6 +51,9 @@ public interface TaskManager {
     boolean isExpanded;
     Task myParent;
     boolean isLegacyMilestone;
+    Date myEndDate;
+    String myNotes;
+    String myWebLink;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -58,6 +62,11 @@ public interface TaskManager {
 
     public TaskBuilder withDuration(TaskLength duration) {
       myDuration = duration;
+      return this;
+    }
+
+    public TaskBuilder withEndDate(Date date) {
+      myEndDate = date;
       return this;
     }
 
@@ -81,6 +90,11 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withNotes(String notes) {
+      myNotes = notes;
+      return this;
+    }
+
     public TaskBuilder withParent(Task parent) {
       myParent = parent;
       return this;
@@ -95,9 +109,12 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withWebLink(String value) {
+      myWebLink = value;
+      return this;
+    }
 
     public abstract Task build();
-
   }
 
   public TaskBuilder newTaskBuilder();
