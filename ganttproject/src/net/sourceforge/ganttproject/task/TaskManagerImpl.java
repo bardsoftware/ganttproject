@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -994,6 +996,21 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public void setZeroMilestones(Boolean b) {
     isZeroMilestones = b;
+    if (Boolean.TRUE == isZeroMilestones) {
+      List<Task> milestones = Lists.newArrayList();
+      for (Task t : getTasks()) {
+        if (t.isMilestone()) {
+          t.setEnd(null);
+          milestones.add(t);
+        }
+      }
+      getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(milestones);
+      try {
+        getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run(milestones);
+      } catch (TaskDependencyException e) {
+        GPLogger.log(e);
+      }
+    }
   }
 
   @Override
