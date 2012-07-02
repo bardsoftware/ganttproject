@@ -81,11 +81,13 @@ class GanttURLChooser {
 
   private final ListOption myServers;
 
+  private final WebDavResourceSlideFactory myWebDavFactory;
+
   private final GPAction myReloadAction = new GPAction("fileChooser.reload") {
     @Override
     public void actionPerformed(ActionEvent event) {
       try {
-        WebDavResource resource = WebDavStorageImpl.createResource(buildUrl(), myUsername.getValue(), myPassword.getValue());
+        WebDavResource resource = myWebDavFactory.createResource(buildUrl(), myUsername.getValue(), myPassword.getValue());
         if (resource.exists() && resource.isCollection()) {
           tableModel.setCollection(resource);
           return;
@@ -125,7 +127,8 @@ class GanttURLChooser {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption) {
+  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, WebDavResourceSlideFactory webDavFactory) {
+    myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
     myUsername = username;

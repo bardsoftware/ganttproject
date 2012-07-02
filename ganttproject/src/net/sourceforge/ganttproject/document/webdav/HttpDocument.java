@@ -40,11 +40,11 @@ import org.eclipse.core.runtime.Status;
  */
 public class HttpDocument extends AbstractURLDocument {
 
+  static final int NO_LOCK = -1;
+
   private String url;
 
   private String lastError;
-
-  //private final HttpURL httpURL;
 
   private final WebDavResource webdavResource;
 
@@ -58,15 +58,13 @@ public class HttpDocument extends AbstractURLDocument {
 
   private final int myTimeout;
 
-//  private static int lockDAVMinutes = 240;
-
   public HttpDocument(String url, String username, String password) throws IOException {
-    this(url, username, password, -1);
+    this(url, username, password, -1, new WebDavResourceSlideFactory());
   }
 
-  public HttpDocument(String url, String username, String password, int lockTimeout) throws IOException {
+  public HttpDocument(String url, String username, String password, int lockTimeout, WebDavResourceSlideFactory factory) throws IOException {
     try {
-      webdavResource = WebDavStorageImpl.createResource(url, username, password);
+      webdavResource = factory.createResource(url, username, password);
     } catch (WebDavException e) {
       throw new IOException(e);
     }

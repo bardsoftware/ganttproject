@@ -49,15 +49,19 @@ class WebDavResourceSlideImpl implements WebDavResource {
   private HttpURL myUrl;
   private String myUsername;
   private Boolean myExistance;
+  private Boolean isCollection;
   private List<WebdavResource> myChildren;
+  private final WebDavResourceSlideFactory myFactory;
 
-  WebDavResourceSlideImpl(WebdavResource impl) {
+  WebDavResourceSlideImpl(WebdavResource impl, WebDavResourceSlideFactory factory) {
     myImpl = impl;
     myUrl = impl.getHttpURL();
+    myFactory = factory;
   }
 
-  WebDavResourceSlideImpl(String urlString, String username, String password) throws WebDavException {
+  WebDavResourceSlideImpl(String urlString, String username, String password, WebDavResourceSlideFactory factory) throws WebDavException {
     try {
+      myFactory = factory;
       myUsername = username;
       myUrl = urlString.toLowerCase().startsWith("https") ? new HttpsURL(urlString) : new HttpURL(urlString);
       if (username != null && password != null) {
@@ -130,7 +134,7 @@ class WebDavResourceSlideImpl implements WebDavResource {
     try {
       HttpURL parentUrl = httpURL instanceof HttpsURL ? new HttpsURL(httpURL.toString()) : new HttpURL(httpURL.toString());
       parentUrl.setPath(httpURL.getCurrentHierPath());
-      return new WebDavResourceSlideImpl(parentUrl.toString(), httpURL.getUser(), httpURL.getPassword());
+      return myFactory.createResource(parentUrl.toString(), httpURL.getUser(), httpURL.getPassword());
     } catch (URIException e) {
       throw new WebDavRuntimeException(e);
     } catch (WebDavException e) {
@@ -141,8 +145,11 @@ class WebDavResourceSlideImpl implements WebDavResource {
   @Override
   public boolean isCollection() throws WebDavException {
     assertExists();
-    getChildren();
-    return myImpl.isCollection();
+    if (isCollection == null) {
+      getChildren();
+      isCollection = Boolean.valueOf(myImpl.isCollection());
+    }
+    return isCollection;
   }
 
   @Override
@@ -150,7 +157,7 @@ class WebDavResourceSlideImpl implements WebDavResource {
     return Lists.transform(getChildren(), new Function<WebdavResource, WebDavResource>() {
       @Override
       public WebDavResource apply(WebdavResource input) {
-        return new WebDavResourceSlideImpl(input);
+        return myFactory.createResource(input);
       }
     });
   }
@@ -160,8 +167,6 @@ class WebDavResourceSlideImpl implements WebDavResource {
       WebdavResource[] children = null;
       try {
         children = myImpl.listWebdavResources();
-        int statuscode = myImpl.getStatusCode();
-        String statusMessage = myImpl.getStatusMessage();
       } catch (HttpException e) {
         throw new WebDavException(MessageFormat.format("HTTP problem when reading child resources of {0} on {1}", getPath(), getHost()), e);
       } catch (IOException e) {

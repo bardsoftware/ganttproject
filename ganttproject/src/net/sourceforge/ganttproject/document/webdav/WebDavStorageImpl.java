@@ -48,6 +48,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
   private final StringOption myUsername = new DefaultStringOption("username", "");
+  private final WebDavResourceSlideFactory myWebDavFactory = new WebDavResourceSlideFactory();
 
   public WebDavStorageImpl() {
   }
@@ -118,7 +119,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       myUsername.setValue(currentDocument.getUsername());
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
-    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption());
+    myWebDavFactory.clearCache();
+    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
@@ -129,7 +131,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       @Override
       public void actionPerformed(ActionEvent event) {
         try {
-          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword()));
+          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK, myWebDavFactory));
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -145,7 +147,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       @Override
       public void actionPerformed(ActionEvent event) {
         try {
-          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout()));
+          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout(), myWebDavFactory));
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -167,9 +169,5 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   public IntegerOption getWebDavLockTimeoutOption() {
     return myWebDavLockTimeoutOption;
-  }
-
-  static WebDavResource createResource(String urlString, String username, String password) throws WebDavException {
-    return new WebDavResourceSlideImpl(urlString, username, password);
   }
 }
