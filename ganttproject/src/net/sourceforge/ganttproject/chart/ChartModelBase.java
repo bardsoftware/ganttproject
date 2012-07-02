@@ -215,7 +215,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private ScrollingSessionImpl myScrollingSession;
 
-  private Set<Task> myTimelineTasks;
+  private Set<Task> myTimelineTasks = Collections.emptySet();
 
   private final GPOptionGroup myTimelineLabelOptions;
 
