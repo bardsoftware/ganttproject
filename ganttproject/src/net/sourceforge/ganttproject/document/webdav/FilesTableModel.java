@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavExcepti
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class FilesTableModel extends AbstractListModel<WebDavResource> {
+class FilesTableModel extends AbstractListModel {
 
   private WebDavResource myCollection;
   private List<WebDavResource> myChildResources;

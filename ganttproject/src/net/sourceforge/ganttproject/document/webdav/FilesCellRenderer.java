@@ -42,23 +42,24 @@ import com.google.common.base.Joiner;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class FilesCellRenderer implements ListCellRenderer<WebDavResource> {
+class FilesCellRenderer implements ListCellRenderer {
   private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
   @Override
-  public Component getListCellRendererComponent(JList<? extends WebDavResource> list, WebDavResource value,
+  public Component getListCellRendererComponent(JList list, Object value,
       int index, boolean isSelected, boolean cellHasFocus) {
+    WebDavResource webdavResource = (WebDavResource) value;
     JComponent result;
     try {
-      JComponent defaultComponent = (JComponent) defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
-      List<String> lockOwners = value.getLockOwners();
-      if (value.isCollection()) {
-        result = new JLabel(value.getName(), GPAction.getIcon("16", "folder.png"), SwingConstants.LEADING);
+      JComponent defaultComponent = (JComponent) defaultRenderer.getListCellRendererComponent(list, webdavResource.getName(), index, isSelected, cellHasFocus);
+      List<String> lockOwners = webdavResource.getLockOwners();
+      if (webdavResource.isCollection()) {
+        result = new JLabel(webdavResource.getName(), GPAction.getIcon("16", "folder.png"), SwingConstants.LEADING);
       } else {
         if (lockOwners.isEmpty()) {
           result = defaultComponent;
         } else {
-          JLabel name = new JLabel(value.getName());
+          JLabel name = new JLabel(webdavResource.getName());
           JLabel locks = new JLabel("locked: " + Joiner.on(',').join(lockOwners));
           locks.setFont(locks.getFont().deriveFont(locks.getFont().getSize()*0.82f));
           locks.setForeground(UIManager.getColor("List.disabledForeground"));
