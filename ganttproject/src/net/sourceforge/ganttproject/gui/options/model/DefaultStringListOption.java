@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -59,6 +60,12 @@ public class DefaultStringListOption extends GPAbstractOption<String> implements
   @Override
   public void removeValue(String value) {
     myValues.remove(value);
+  }
+
+  @Override
+  public void setValues(Iterable<String> values) {
+    myValues.clear();
+    myValues.addAll(Lists.newArrayList(values));
   }
 
 }

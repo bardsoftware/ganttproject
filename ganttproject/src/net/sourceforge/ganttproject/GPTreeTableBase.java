@@ -384,13 +384,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     Dimension getHeaderFitDimension() {
-      TableCellRenderer renderer = myTableColumn.getHeaderRenderer();
-      if (renderer == null) {
-        renderer = myTable.getTableHeader().getDefaultRenderer();
-      }
-      Component comp = renderer.getTableCellRendererComponent(myTable, myTableColumn.getHeaderValue(), false, false, 0,
-          0);
-      return comp.getPreferredSize();
+      return UIUtil.getHeaderDimension(myTable, myTableColumn);
     }
 
   }
@@ -901,27 +895,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private Dimension autoFitColumnWidth(ColumnImpl column) {
-    final int margin = 5;
-    final JTable table = getTable();
-    final TableColumnExt tableColumn = column.myTableColumn;
+    Dimension dimension = UIUtil.autoFitColumnWidth(getTable(), column.getTableColumnExt());
+    column.getTableColumnExt().setWidth(dimension.width);
+    column.getTableColumnExt().setPreferredWidth(dimension.width);
+    return dimension;
 
-    Dimension headerFit = column.getHeaderFitDimension();
-    int width = headerFit.width;
-    int height = 0;
-
-    // Get maximum width of column data
-    for (int r = 0; r < getTable().getRowCount(); r++) {
-      TableCellRenderer renderer = table.getCellRenderer(r, column.getOrder());
-      Component comp = renderer.getTableCellRendererComponent(table, table.getValueAt(r, column.getOrder()), false,
-          false, r, column.getOrder());
-      width = Math.max(width, comp.getPreferredSize().width);
-      height += comp.getPreferredSize().height;
-    }
-    // Add margin
-    width += 2 * margin;
-    // Set the width
-    tableColumn.setWidth(width);
-    tableColumn.setPreferredWidth(width);
-    return new Dimension(width, height);
   }
 }

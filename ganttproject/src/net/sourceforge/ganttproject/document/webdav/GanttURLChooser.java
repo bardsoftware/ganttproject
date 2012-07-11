@@ -56,6 +56,7 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXList;
 
@@ -150,19 +151,40 @@ class GanttURLChooser {
     myPath.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        String path = (String) event.getNewValue();
-        myUpAction.setEnabled(path.split("/").length > 1);
+        String value = (String) event.getNewValue();
+        if (!tryApplyUrl(value)) {
+          myUpAction.setEnabled(value.split("/").length > 1);
+        }
       }
     });
+    tryApplyUrl(urlSpec);
+  }
+
+  private boolean tryApplyUrl(String urlSpec) {
     try {
       URL url = new URL(urlSpec);
-      String host = MessageFormat.format("{0}://{1}{2}",url.getProtocol(), url.getHost(), url.getPort() == -1 ? "" : ":" + url.getPort());
-      myServers.addValue(host);
-      myServers.setValue(host);
+      String domainUrl = MessageFormat.format("{0}://{1}{2}",url.getProtocol(), url.getHost(), url.getPort() == -1 ? "" : ":" + url.getPort());
+      String savedServer = findSavedServer(domainUrl);
+      if (savedServer != null) {
+        myServers.setValue(savedServer);
+      } else {
+        String newServer = MessageFormat.format("{1}\t{0}", domainUrl, url.getHost());
+        myServers.addValue(newServer);
+        myServers.setValue(newServer);
+      }
       myPath.setValue(url.getPath());
+      return true;
     } catch (MalformedURLException e) {
-      GPLogger.logToLogger(e);
+      return false;
     }
+  }
+  private String findSavedServer(String domainUrl) {
+    for (String server : myServers.getAvailableValues()) {
+      if (server.endsWith(domainUrl)) {
+        return server;
+      }
+    }
+    return null;
   }
 
   public JComponent createOpenDocumentUi() {
@@ -174,7 +196,7 @@ class GanttURLChooser {
   }
 
   private String buildUrl() {
-    String host = myServers.getValue();
+    String host = myServers.getValue().split("\\t")[1];
     if (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
@@ -191,7 +213,11 @@ class GanttURLChooser {
 
     JPanel panel = new JPanel(new SpringLayout());
     panel.add(new JLabel(language.getCorrectedLabel("webServer")));
-    panel.add(builder.createOptionComponent(null, myServers));
+
+    Box serverBox = Box.createHorizontalBox();
+    serverBox.add(new ServerListEditor(myServers).getComponent());
+    serverBox.add(builder.createOptionComponent(null, myPath));
+    panel.add(serverBox);
     panel.add(new JLabel(language.getText("userName")));
     panel.add(builder.createOptionComponent(null, myUsername));
     panel.add(new JLabel(language.getText("password")));
@@ -209,14 +235,14 @@ class GanttURLChooser {
       panel.getActionMap().put(myReloadAction, myReloadAction);
       upButton.setText("");
       refreshButton.setText("");
-      Box filesHeaderBox = Box.createHorizontalBox();
-      filesHeaderBox.add(builder.createOptionComponent(null, myPath));
-      filesHeaderBox.add(Box.createHorizontalStrut(5));
+      Box filesHeaderBox = Box.createVerticalBox();
+      //filesHeaderBox.add();
+      filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(upButton);
-      filesHeaderBox.add(Box.createHorizontalStrut(5));
+      filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(refreshButton);
-      filesHeaderBox.add(Box.createHorizontalGlue());
-      filesTablePanel.add(filesHeaderBox, BorderLayout.NORTH);
+      filesHeaderBox.add(Box.createVerticalGlue());
+      filesTablePanel.add(filesHeaderBox, BorderLayout.EAST);
       //panel.add(filesActionsPanel);
       final JXList table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);

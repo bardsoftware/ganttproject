@@ -27,4 +27,5 @@ package net.sourceforge.ganttproject.gui.options.model;
 public interface ListOption extends EnumerationOption {
   void addValue(String value);
   void removeValue(String value);
+  void setValues(Iterable<String> values);
 }

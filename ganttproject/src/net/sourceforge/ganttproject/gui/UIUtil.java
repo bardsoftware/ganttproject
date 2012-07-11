@@ -18,21 +18,31 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
@@ -40,6 +50,9 @@ import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+import org.jdesktop.swingx.table.TableColumnExt;
+
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -145,4 +158,53 @@ public abstract class UIUtil {
     return result;
   }
 
+  public static Dimension autoFitColumnWidth(JTable table, TableColumn tableColumn) {
+    final int margin = 5;
+
+    Dimension headerFit = getHeaderDimension(table, tableColumn);
+    int width = headerFit.width;
+    int height = 0;
+
+    int order = table.convertColumnIndexToView(tableColumn.getModelIndex());
+    // Get maximum width of column data
+    for (int r = 0; r < table.getRowCount(); r++) {
+      TableCellRenderer renderer = table.getCellRenderer(r, order);
+      Component comp = renderer.getTableCellRendererComponent(table, table.getValueAt(r, order), false,
+          false, r, order);
+      width = Math.max(width, comp.getPreferredSize().width);
+      height += comp.getPreferredSize().height;
+    }
+    // Add margin
+    width += 2 * margin;
+    // Set the width
+    return new Dimension(width, height);
+  }
+
+  public static Dimension getHeaderDimension(JTable table, TableColumn tableColumn) {
+    TableCellRenderer renderer = tableColumn.getHeaderRenderer();
+    if (renderer == null) {
+      renderer = table.getTableHeader().getDefaultRenderer();
+    }
+    Component comp = renderer.getTableCellRendererComponent(table, tableColumn.getHeaderValue(), false, false, 0, 0);
+    return comp.getPreferredSize();
+  }
+
+  public static JComponent createButtonBar(JButton[] leftButtons, JButton[] rightButtons) {
+    Box leftBox = Box.createHorizontalBox();
+    for (JButton button : leftButtons) {
+      leftBox.add(button);
+      leftBox.add(Box.createHorizontalStrut(3));
+    }
+
+    Box rightBox = Box.createHorizontalBox();
+    for (JButton button : Lists.reverse(Arrays.asList(rightButtons))) {
+      rightBox.add(Box.createHorizontalStrut(3));
+      rightBox.add(button);
+    }
+
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(leftBox, BorderLayout.WEST);
+    result.add(rightBox, BorderLayout.EAST);
+    return result;
+  }
 }

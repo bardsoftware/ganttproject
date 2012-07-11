@@ -26,6 +26,7 @@ import javax.swing.AbstractListModel;
 
 import com.beust.jcommander.internal.Lists;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
 /**
@@ -48,7 +49,18 @@ class FilesTableModel extends AbstractListModel {
       fireIntervalRemoved(this, 0, myChildResources.size());
     }
     myCollection = collection;
-    myChildResources = Lists.newArrayList(myCollection.getChildResources());
+    myChildResources = Lists.newArrayList();
+    for (WebDavResource resource : myCollection.getChildResources()) {
+      try {
+        if (resource.exists()) {
+          myChildResources.add(resource);
+        }
+      }
+      catch (WebDavException e) {
+        GPLogger.logToLogger(e);
+      }
+    }
+
     Collections.sort(myChildResources, new Comparator<WebDavResource>() {
         @Override
         public int compare(WebDavResource o1, WebDavResource o2) {
