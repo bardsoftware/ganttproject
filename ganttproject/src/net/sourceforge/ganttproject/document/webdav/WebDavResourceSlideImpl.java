@@ -83,6 +83,7 @@ class WebDavResourceSlideImpl implements WebDavResource {
   public boolean exists() throws WebDavException {
     if (myExistance == null) {
       try {
+        myImpl.setFollowRedirects(true);
         myImpl.setProperties(WebdavResource.BASIC, DepthSupport.DEPTH_0);
         myExistance = myImpl.exists();
       } catch (HttpException e) {
