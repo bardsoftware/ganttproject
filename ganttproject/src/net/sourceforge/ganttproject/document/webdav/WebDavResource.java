@@ -59,6 +59,7 @@ public interface WebDavResource {
    */
   boolean exists() throws WebDavException;
 
+  WebDavUri getWebDavUri();
   /**
    * This method should be just a simple getter and should not issue any requests.
    * @return URL of this resource

@@ -42,8 +42,6 @@ public class HttpDocument extends AbstractURLDocument {
 
   static final int NO_LOCK = -1;
 
-  private String url;
-
   private String lastError;
 
   private final WebDavResource webdavResource;
@@ -58,17 +56,12 @@ public class HttpDocument extends AbstractURLDocument {
 
   private final int myTimeout;
 
-  public HttpDocument(String url, String username, String password) throws IOException {
-    this(url, username, password, -1, new WebDavResourceSlideFactory());
+  public HttpDocument(String url, String username, String password) throws IOException, WebDavException {
+    this(new MiltonResourceFactory(username, password).createResource(new WebDavUri(url)), username, password, -1);
   }
 
-  public HttpDocument(String url, String username, String password, int lockTimeout, WebDavResourceSlideFactory factory) throws IOException {
-    try {
-      webdavResource = factory.createResource(url, username, password);
-    } catch (WebDavException e) {
-      throw new IOException(e);
-    }
-    this.url = url;
+  public HttpDocument(WebDavResource webdavResource, String username, String password, int lockTimeout) throws IOException {
+    this.webdavResource = webdavResource;
     myUsername = username;
     myPassword = password;
     myTimeout = lockTimeout;
@@ -225,7 +218,7 @@ public class HttpDocument extends AbstractURLDocument {
   @Override
   public URI getURI() {
     try {
-      return new URI(url);
+      return new URI(webdavResource.getUrl());
     } catch (URISyntaxException e) {
       return null;
     }
