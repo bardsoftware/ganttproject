@@ -86,10 +86,13 @@ class WebDavResourceSlideImpl implements WebDavResource {
         myImpl.setFollowRedirects(true);
         myImpl.setProperties(WebdavResource.BASIC, DepthSupport.DEPTH_0);
         myExistance = myImpl.exists();
+        isCollection = myImpl.isCollection();
       } catch (HttpException e) {
         myExistance = false;
-        throw new WebDavException(
-            MessageFormat.format("HTTP problem when accessing {0} on {1}<br>Error code: {2}<br>Error message: {3}", getPath(), getHost(), e.getReasonCode(), e.getReason()), e);
+        if (e.getReasonCode() != 404) {
+          throw new WebDavException(
+              MessageFormat.format("HTTP problem when accessing {0} on {1}<br>Error code: {2}<br>Error message: {3}", getPath(), getHost(), e.getReasonCode(), e.getReason()), e);
+        }
       } catch (IOException e) {
         throw new WebDavException(MessageFormat.format("I/O problem when accessing {0} on {1}", getPath(), getHost()), e);
       }
@@ -127,6 +130,12 @@ class WebDavResourceSlideImpl implements WebDavResource {
   @Override
   public String getUrl() {
     return myUrl.toString();
+  }
+
+
+  public WebDavUri getWebDavUri() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
@@ -169,11 +178,15 @@ class WebDavResourceSlideImpl implements WebDavResource {
       try {
         children = myImpl.listWebdavResources();
       } catch (HttpException e) {
-        throw new WebDavException(MessageFormat.format("HTTP problem when reading child resources of {0} on {1}", getPath(), getHost()), e);
+        if (e.getReasonCode() >= 400 && e.getReasonCode() < 500) {
+          children = null;
+        } else {
+          throw new WebDavException(MessageFormat.format("HTTP problem when reading child resources of {0} on {1}. Error code={2}", getPath(), getHost(), e.getReasonCode()), e);
+        }
       } catch (IOException e) {
         throw new WebDavException(MessageFormat.format("I/O problem when reading child resources of {0} on {1}", getPath(), getHost()), e);
       }
-      myChildren = children == null  ? null : Arrays.asList(children);
+      myChildren = children == null  ? Collections.<WebdavResource>emptyList() : Arrays.asList(children);
     }
     return myChildren;
   }

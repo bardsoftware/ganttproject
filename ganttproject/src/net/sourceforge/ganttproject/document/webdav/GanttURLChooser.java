@@ -82,13 +82,14 @@ class GanttURLChooser {
 
   private final ListOption myServers;
 
-  private final WebDavResourceSlideFactory myWebDavFactory;
+  private final MiltonResourceFactory myWebDavFactory;
 
   private final GPAction myReloadAction = new GPAction("fileChooser.reload") {
     @Override
     public void actionPerformed(ActionEvent event) {
       try {
-        WebDavResource resource = myWebDavFactory.createResource(buildUrl(), myUsername.getValue(), myPassword.getValue());
+        myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
+        WebDavResource resource = myWebDavFactory.createResource(buildUrl());
         if (resource.exists() && resource.isCollection()) {
           tableModel.setCollection(resource);
           return;
@@ -128,7 +129,7 @@ class GanttURLChooser {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, WebDavResourceSlideFactory webDavFactory) {
+  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, MiltonResourceFactory webDavFactory) {
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
@@ -195,16 +196,17 @@ class GanttURLChooser {
     return createComponent();
   }
 
-  private String buildUrl() {
-    String host = myServers.getValue().split("\\t")[1];
+  private WebDavUri buildUrl() {
+    String[] server = myServers.getValue().split("\\t");
+    String host = server[1];
     if (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
     String path = myPath.getValue();
-    if (path.startsWith("/")) {
-      path = path.substring(1);
+    if (!path.startsWith("/")) {
+      path = "/" + path;
     }
-    return host + "/" + path;
+    return new WebDavUri(server[0], host, path);
   }
 
   private JComponent createComponent() {
@@ -255,12 +257,7 @@ class GanttURLChooser {
             return;
           }
           mySelectionListener.setSelection(resource);
-          try {
-            URL url = new URL(resource.getUrl());
-            myPath.setValue(url.getPath());
-          } catch (MalformedURLException ex) {
-            GPLogger.logToLogger(ex);
-          }
+          myPath.setValue(resource.getWebDavUri().path);
         }
       });
       table.addMouseListener(new MouseAdapter() {
@@ -321,7 +318,7 @@ class GanttURLChooser {
     form.add(Box.createRigidArea(new Dimension(1, 10)));
   }
 
-  String getUrl() {
+  WebDavUri getUrl() {
     return buildUrl();
   }
 

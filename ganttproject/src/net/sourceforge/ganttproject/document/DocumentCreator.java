@@ -13,6 +13,7 @@ import java.util.Comparator;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -77,6 +78,9 @@ public class DocumentCreator implements DocumentManager {
       try {
         return new HttpDocument(path, user, pass);
       } catch (IOException e) {
+        GPLogger.log(e);
+        return null;
+      } catch (WebDavException e) {
         GPLogger.log(e);
         return null;
       }

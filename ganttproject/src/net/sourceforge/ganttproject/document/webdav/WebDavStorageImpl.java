@@ -48,7 +48,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
   private final StringOption myUsername = new DefaultStringOption("username", "");
-  private final WebDavResourceSlideFactory myWebDavFactory = new WebDavResourceSlideFactory();
+  private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
 
   public WebDavStorageImpl() {
   }
@@ -131,7 +131,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       @Override
       public void actionPerformed(ActionEvent event) {
         try {
-          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK, myWebDavFactory));
+          myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
+          receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK));
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -147,7 +148,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       @Override
       public void actionPerformed(ActionEvent event) {
         try {
-          receiver.setDocument(new HttpDocument(chooser.getUrl(), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout(), myWebDavFactory));
+          myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
+          receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout()));
         } catch (IOException e) {
           chooser.showError(e);
         }
