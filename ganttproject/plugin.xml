@@ -24,12 +24,24 @@
       <library name="lib/core/commons-httpclient-3.0.1.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-io.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-logging.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/commons-net-ftpclient-3.0.1.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/endrick-cache-1.7.9.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/httpclient-4.2.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/httpcore-4.2.1.jar">
+         <export name="*"/>
+      </library>      
       <library name="lib/core/jakarta-slide-webdavlib-2.1.jar">
          <export name="*"/>
       </library>
@@ -43,6 +55,18 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/milton-api-2.0.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/milton-client-2.0.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/slf4j-api-1.5.11.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/slf4j-simple-1.5.11.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/swingx-1.6.3.jar">
