@@ -28,13 +28,17 @@ import javax.swing.JComponent;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
+import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
@@ -113,10 +117,19 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final ListOption<WebDavServerDescriptor> myServers = new ServerListOption("servers");
   private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
+  private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("webdav.releaseLockOnProjectClose", true);
   private final StringOption myUsername = new DefaultStringOption("username", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
 
-  public WebDavStorageImpl() {
+  public WebDavStorageImpl(final IGanttProject project) {
+    project.addProjectEventListener(new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        if (myReleaseLockOption.isChecked() && project.getDocument() != null) {
+          project.getDocument().releaseLock();
+        }
+      }
+    });
   }
 
   @Override
@@ -186,7 +199,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
     myWebDavFactory.clearCache();
-    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption(), myWebDavFactory);
+    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
@@ -215,7 +228,12 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       public void actionPerformed(ActionEvent event) {
         try {
           myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
-          receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout()));
+          HttpDocument document = new HttpDocument(
+              myWebDavFactory.createResource(chooser.getUrl()),
+              chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout());
+          if (document.acquireLock()) {
+            receiver.setDocument(document);
+          }
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -238,4 +256,9 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   public IntegerOption getWebDavLockTimeoutOption() {
     return myWebDavLockTimeoutOption;
   }
+
+  public BooleanOption getWebDavReleaseLockOption() {
+    return myReleaseLockOption;
+  }
+
 }
