@@ -32,16 +32,27 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
-  private IGanttProject myProject;
+  private final IGanttProject myProject;
 
-  private UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-  private ParserFactory myParserFactory;
+  private final ParserFactory myParserFactory;
+
+  private final WebDavStorageImpl myWebDavStorage;
+  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
+
+  private final GPOptionGroup myOptionGroup;
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
     myUIFacade = uiFacade;
-    setParserFactory(parserFactory);
+    myParserFactory = parserFactory;
+    myWebDavStorage = new WebDavStorageImpl(project);
+    myOptionGroup = new GPOptionGroup("", new GPOption[] {
+        myWorkingDirectory,
+        myWebDavStorage.getServersOption(),
+        myWebDavStorage.getLastWebDAVDocumentOption(),
+        myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
   }
 
   /**
@@ -159,10 +170,6 @@ public class DocumentCreator implements DocumentManager {
 
   }
 
-  protected void setParserFactory(ParserFactory myParserFactory) {
-    this.myParserFactory = myParserFactory;
-  }
-
   protected ParserFactory getParserFactory() {
     return myParserFactory;
   }
@@ -208,15 +215,6 @@ public class DocumentCreator implements DocumentManager {
   public DocumentStorageUi getWebDavStorageUi() {
     return myWebDavStorage;
   }
-
-  private final WebDavStorageImpl myWebDavStorage = new WebDavStorageImpl();
-  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
-
-  private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] {
-      myWorkingDirectory,
-      myWebDavStorage.getServersOption(),
-      myWebDavStorage.getLastWebDAVDocumentOption(),
-      myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
 
   private final StringOption myFtpUserOption = new StringOptionImpl("user-name", "ftp", "ftpuser");
   private final StringOption myFtpServerNameOption = new StringOptionImpl("server-name", "ftp", "ftpurl");

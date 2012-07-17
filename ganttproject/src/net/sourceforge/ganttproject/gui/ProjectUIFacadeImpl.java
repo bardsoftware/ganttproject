@@ -122,11 +122,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   }
 
   private boolean saveProjectTryLock(IGanttProject project, Document document) {
-    if (!document.acquireLock()) {
-      myWorkbenchFacade.showErrorDialog(i18n.getText("msg14"));
-      saveProjectAs(project);
-      return false;
-    }
     return saveProjectTrySave(project, document);
   }
 
@@ -278,12 +273,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       // Unknown file extension
       String errorMessage = GanttLanguage.getInstance().getText("msg2") + "\n" + document.getFileName();
       throw new DocumentException(errorMessage);
-    }
-
-    boolean locked = document.acquireLock();
-    if (!locked
-        && Choice.NO == myWorkbenchFacade.showConfirmationDialog(GanttLanguage.getInstance().getText("msg13"), "")) {
-      return;
     }
 
     project.open(document);

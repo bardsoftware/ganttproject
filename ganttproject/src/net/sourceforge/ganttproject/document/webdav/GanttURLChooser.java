@@ -125,11 +125,13 @@ class GanttURLChooser {
 
   private final FilesTableModel tableModel = new FilesTableModel();
 
+  private final BooleanOption myReleaseLockOption;
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, MiltonResourceFactory webDavFactory) {
+  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption, MiltonResourceFactory webDavFactory) {
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
@@ -138,6 +140,7 @@ class GanttURLChooser {
     myPassword.setScreened(true);
     myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
+    myReleaseLockOption = releaseLockOption;
 
     myServers.addChangeValueListener(new ChangeValueListener() {
       @Override
@@ -217,7 +220,6 @@ class GanttURLChooser {
 
   private JComponent createComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
-    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
 
     JPanel panel = new JPanel(new SpringLayout());
     panel.add(new JLabel(language.getCorrectedLabel("webServer")));
@@ -291,15 +293,21 @@ class GanttURLChooser {
 //    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
 //    panel.add(lockComponent);
     panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
+    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
+    panel.add(timeoutComponent);
+
+    panel.add(new JLabel(language.getText("webdav.lockRelease.label")));
+    final JComponent lockReleaseComponent = (JComponent) builder.createOptionComponent(null, myReleaseLockOption);
+    panel.add(lockReleaseComponent);
 
     myLock.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         timeoutComponent.setEnabled(myLock.isChecked());
+        lockReleaseComponent.setEnabled(myLock.isChecked());
       }
     });
-    panel.add(timeoutComponent);
-    SpringUtilities.makeCompactGrid(panel, 7, 2, 0, 0, 10, 5);
+    SpringUtilities.makeCompactGrid(panel, 8, 2, 0, 0, 10, 5);
 
     JPanel properties = new JPanel(new BorderLayout());
     properties.add(panel, BorderLayout.NORTH);
