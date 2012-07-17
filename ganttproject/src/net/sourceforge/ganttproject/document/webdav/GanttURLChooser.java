@@ -80,7 +80,7 @@ class GanttURLChooser {
 
   private SelectionListener mySelectionListener;
 
-  private final ListOption myServers;
+  private final ListOption<WebDavServerDescriptor> myServers;
 
   private final MiltonResourceFactory myWebDavFactory;
 
@@ -129,7 +129,7 @@ class GanttURLChooser {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, MiltonResourceFactory webDavFactory) {
+  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, MiltonResourceFactory webDavFactory) {
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
@@ -144,9 +144,9 @@ class GanttURLChooser {
       public void changeValue(ChangeValueEvent event) {
         myPath.setValue("");
         myPassword.setValue("");
-        myUsername.setValue("");
-        boolean empty = "".equals(event.getNewValue());
-        myReloadAction.setEnabled(!empty);
+        WebDavServerDescriptor server = myServers.getValue();
+        myUsername.setValue(server.username);
+
       }
     });
     myPath.addChangeValueListener(new ChangeValueListener() {
@@ -158,6 +158,12 @@ class GanttURLChooser {
         }
       }
     });
+    myUsername.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        myServers.getValue().username = myUsername.getValue();
+      }
+    });
     tryApplyUrl(urlSpec);
   }
 
@@ -165,13 +171,13 @@ class GanttURLChooser {
     try {
       URL url = new URL(urlSpec);
       String domainUrl = MessageFormat.format("{0}://{1}{2}",url.getProtocol(), url.getHost(), url.getPort() == -1 ? "" : ":" + url.getPort());
-      String savedServer = findSavedServer(domainUrl);
+      WebDavServerDescriptor savedServer = findSavedServer(domainUrl);
       if (savedServer != null) {
         myServers.setValue(savedServer);
       } else {
-        String newServer = MessageFormat.format("{1}\t{0}", domainUrl, url.getHost());
-        myServers.addValue(newServer);
-        myServers.setValue(newServer);
+        WebDavServerDescriptor server = new WebDavServerDescriptor(url.getHost(), domainUrl, "");
+        myServers.addValue(server);
+        myServers.setValue(server);
       }
       myPath.setValue(url.getPath());
       return true;
@@ -179,9 +185,9 @@ class GanttURLChooser {
       return false;
     }
   }
-  private String findSavedServer(String domainUrl) {
-    for (String server : myServers.getAvailableValues()) {
-      if (server.endsWith(domainUrl)) {
+  private WebDavServerDescriptor findSavedServer(String domainUrl) {
+    for (WebDavServerDescriptor server : myServers.getValues()) {
+      if (server.rootUrl.equals(domainUrl)) {
         return server;
       }
     }
@@ -197,8 +203,8 @@ class GanttURLChooser {
   }
 
   private WebDavUri buildUrl() {
-    String[] server = myServers.getValue().split("\\t");
-    String host = server[1];
+    WebDavServerDescriptor server= myServers.getValue();
+    String host = server.rootUrl;
     if (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
@@ -206,7 +212,7 @@ class GanttURLChooser {
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
-    return new WebDavUri(server[0], host, path);
+    return new WebDavUri(server.name, host, path);
   }
 
   private JComponent createComponent() {

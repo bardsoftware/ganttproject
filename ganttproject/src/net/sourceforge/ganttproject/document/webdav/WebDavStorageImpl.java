@@ -20,9 +20,13 @@ package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -32,8 +36,8 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavExcepti
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringListOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
+import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
@@ -44,7 +48,69 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
  * @author dbarashev (Dmitry Barashev)
  */
 public class WebDavStorageImpl implements DocumentStorageUi {
-  private final ListOption myServers = new DefaultStringListOption("servers");
+  static class ServerListOption extends GPAbstractOption<WebDavServerDescriptor> implements ListOption<WebDavServerDescriptor> {
+    private List<WebDavServerDescriptor> myServers = Lists.newArrayList();
+
+    public ServerListOption(String id) {
+      super(id);
+    }
+
+    @Override
+    public String getPersistentValue() {
+      StringBuilder result = new StringBuilder();
+      for (WebDavServerDescriptor server : myServers) {
+        result.append("\n").append(server.name).append("\t").append(server.rootUrl).append("\t").append(server.username);
+      }
+      return result.toString();
+    }
+
+    @Override
+    public void loadPersistentValue(String value) {
+      for (String s : value.split("\\n")) {
+        if (!Strings.isNullOrEmpty(s)) {
+          String[] parts = s.split("\\t");
+          WebDavServerDescriptor server = new WebDavServerDescriptor();
+          if (parts.length >= 1) {
+            server.name = parts[0];
+          }
+          if (parts.length >= 2) {
+            server.rootUrl = parts[1];
+          }
+          if (parts.length >= 3) {
+            server.username = parts[2];
+          }
+          myServers.add(server);
+        }
+      }
+    }
+
+    @Override
+    public void setValues(Iterable<WebDavServerDescriptor> values) {
+      myServers = Lists.newArrayList(values);
+    }
+
+    @Override
+    public Iterable<WebDavServerDescriptor> getValues() {
+      return myServers;
+    }
+
+    @Override
+    public void setValueIndex(int idx) {
+      super.setValue(myServers.get(idx));
+    }
+
+    @Override
+    public void addValue(WebDavServerDescriptor value) {
+      myServers.add(value);
+    }
+
+    @Override
+    public void removeValueIndex(int idx) {
+      myServers.remove(idx);
+    }
+
+  }
+  private final ListOption<WebDavServerDescriptor> myServers = new ServerListOption("servers");
   private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
   private final StringOption myUsername = new DefaultStringOption("username", "");
@@ -157,7 +223,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     };
   }
 
-  public ListOption getServersOption() {
+  public ListOption<WebDavServerDescriptor> getServersOption() {
     return myServers;
   }
 
