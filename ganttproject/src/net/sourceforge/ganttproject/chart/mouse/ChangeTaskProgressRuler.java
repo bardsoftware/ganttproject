@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.task.TaskActivity;
  * Helper class for converting screen pixels into task completion percentage
  * value when changing the latter with a mouse. It operates with pixel offsets
  * from the chart viewport origin.
- * 
+ *
  * @author Dmitry Barashev
  */
 class ChangeTaskProgressRuler {
@@ -52,6 +52,7 @@ class ChangeTaskProgressRuler {
     float accumulatedDuration = 0f;
     List<Rectangle> taskRectangles = myTaskChartFacade.getTaskRectangles(myTask);
     myMinPx = taskRectangles.get(0).getLeftX();
+    myPixel2progress.put(myMinPx, 0);
     for (Rectangle r : taskRectangles) {
       TaskActivity activity = (TaskActivity) r.getModelObject();
       if (r.isVisible()) {
