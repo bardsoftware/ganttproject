@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -774,7 +775,7 @@ public class TaskManagerImpl implements TaskManager {
   public Map<Task, Task> importData(TaskManager taskManager,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping) {
     Task importRoot = taskManager.getRootTask();
-    Map<Task, Task> original2imported = new HashMap<Task, Task>();
+    Map<Task, Task> original2imported = new LinkedHashMap<Task, Task>();
     importData(importRoot, getRootTask(), customPropertyMapping, original2imported);
     TaskDependency[] deps = taskManager.getDependencyCollection().getDependencies();
     for (int i = 0; i < deps.length; i++) {
@@ -800,7 +801,7 @@ public class TaskManagerImpl implements TaskManager {
   private void importData(Task importRoot, Task root,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping, Map<Task, Task> original2imported) {
     Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
-    for (int i = nested.length - 1; i >= 0; i--) {
+    for (int i = 0; i < nested.length; i++) {
       Task nextImported = getTask(nested[i].getTaskID()) == null ? createTask(nested[i].getTaskID()) : createTask();
       registerTask(nextImported);
       nextImported.setName(nested[i].getName());

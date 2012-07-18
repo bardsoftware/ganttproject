@@ -78,7 +78,7 @@ import net.sourceforge.ganttproject.undo.UndoManagerImpl;
  * views through interfaces. This class is intentionally package local to
  * prevent using it in other packages (use interfaces rather than concrete
  * implementations!)
- * 
+ *
  * @author dbarashev
  */
 abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
@@ -133,6 +133,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return getUIFacade().getTaskTree().getVisibleFields();
       }
 
+      @Override
+      protected TableHeaderUIFacade getResourceVisibleFields() {
+        return getUIFacade().getResourceTree().getVisibleFields();
+      }
     };
     myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
       @Override

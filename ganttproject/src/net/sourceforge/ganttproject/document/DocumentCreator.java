@@ -26,7 +26,7 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 /**
  * This is a helper class, to create new instances of Document easily. It
  * chooses the correct implementation based on the given path.
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
@@ -45,7 +45,7 @@ public class DocumentCreator implements DocumentManager {
   /**
    * Creates an HttpDocument if path starts with "http://" or "https://";
    * creates a FileDocument otherwise.
-   * 
+   *
    * @param path
    *          path to the document
    * @return an implementation of the interface Document
@@ -57,7 +57,7 @@ public class DocumentCreator implements DocumentManager {
   /**
    * Creates an HttpDocument if path starts with "http://" or "https://";
    * creates a FileDocument otherwise.
-   * 
+   *
    * @param path
    *          path to the document
    * @param user
@@ -87,7 +87,7 @@ public class DocumentCreator implements DocumentManager {
   public Document getDocument(String path) {
     Document physicalDocument = createDocument(path);
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
-        getParserFactory());
+        getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
   }
 
@@ -95,7 +95,7 @@ public class DocumentCreator implements DocumentManager {
   public Document getDocument(String path, String userName, String password) {
     Document physicalDocument = createDocument(path, userName, password);
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
-        getParserFactory());
+        getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
   }
 
@@ -141,6 +141,10 @@ public class DocumentCreator implements DocumentManager {
   }
 
   protected TableHeaderUIFacade getVisibleFields() {
+    return null;
+  }
+
+  protected TableHeaderUIFacade getResourceVisibleFields() {
     return null;
   }
 

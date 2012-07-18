@@ -107,6 +107,7 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
   private void run(File selectedFile, IGanttProject targetProject, BufferProject bufferProject) {
     openDocument(targetProject, bufferProject, getUiFacade(), selectedFile);
     getUiFacade().getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
+    getUiFacade().getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
   }
 
   private static class TaskFieldImpl implements TableHeaderUIFacade.Column {
@@ -196,12 +197,17 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
     final TaskManager myTaskManager;
     final UIFacade myUIfacade;
     private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
+    private final TableHeaderUIFacade myResourceVisibleFields = new VisibleFieldsImpl();
 
     BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
       myDocumentManager = new DocumentCreator(this, uiFacade, this) {
         @Override
         protected TableHeaderUIFacade getVisibleFields() {
           return myVisibleFields;
+        }
+        @Override
+        protected TableHeaderUIFacade getResourceVisibleFields() {
+          return myResourceVisibleFields;
         }
       };
       myTaskManager = targetProject.getTaskManager().emptyClone();
@@ -233,8 +239,8 @@ public class ImporterFromGanttFile extends ImporterBase implements Importer {
     }
 
     @Override
-    public CustomColumnsManager getTaskCustomColumnManager() {
-      return super.getTaskCustomColumnManager();
+    public CustomPropertyManager getTaskCustomColumnManager() {
+      return myTaskManager.getCustomPropertyManager();
     }
   }
 
