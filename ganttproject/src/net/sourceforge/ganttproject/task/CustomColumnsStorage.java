@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Objects;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
@@ -104,13 +106,24 @@ public class CustomColumnsStorage {
   public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomColumnsStorage source) {
     Map<CustomPropertyDefinition, CustomPropertyDefinition> result = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
     for (CustomColumn thatColumn : source.getCustomColums()) {
-      CustomColumn thisColumn = new CustomColumn(myManager, thatColumn.getName(), thatColumn.getPropertyClass(),
-          thatColumn.getDefaultValue());
-      thisColumn.setId(createId());
-      addCustomColumn(thisColumn);
+      CustomColumn thisColumn = findByName(thatColumn.getName());
+      if (thisColumn == null || !thisColumn.getPropertyClass().equals(thatColumn.getPropertyClass())) {
+        thisColumn = new CustomColumn(myManager, thatColumn.getName(), thatColumn.getPropertyClass(), thatColumn.getDefaultValue());
+        thisColumn.setId(createId());
+        addCustomColumn(thisColumn);
+      }
       result.put(thatColumn, thisColumn);
     }
     return result;
+  }
+
+  private CustomColumn findByName(String name) {
+    for (CustomColumn cc : mapIdCustomColum.values()) {
+      if (Objects.equal(cc.getName(), name)) {
+        return cc;
+      }
+    }
+    return null;
   }
 
   public void addCustomColumnsListener(CustomPropertyListener listener) {
