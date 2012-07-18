@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -330,6 +332,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void windowOpened(WindowEvent e) {
         myRowHeightAligner.optionsChanged();
+      }
+    });
+    addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentShown(ComponentEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            // This will clear any modifications which might be caused by
+            // adjusting widths of table columns during initial layout process.
+            getProject().setModified(false);
+          }
+        });
       }
     });
 
@@ -659,9 +674,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     getTaskManager().projectOpened();
     fireProjectOpened();
-    // As we just have opened a new file it is still unmodified, so mark it as
-    // such
-    setModified(false);
   }
 
   public void openStartupDocument(String path) {
@@ -1042,7 +1054,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     myPreviousStates = new ArrayList<GanttPreviousState>();
     getTaskManager().getCalendar().clearPublicHolidays();
-    setModified(false);
     myFacadeInvalidator.projectClosed();
   }
 
