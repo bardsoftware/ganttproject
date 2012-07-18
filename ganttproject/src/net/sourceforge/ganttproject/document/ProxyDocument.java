@@ -71,16 +71,19 @@ class ProxyDocument implements Document {
 
   private PortfolioImpl myPortfolio;
 
-  private final TableHeaderUIFacade myVisibleFields;
+  private final TableHeaderUIFacade myTaskVisibleFields;
+
+  private final TableHeaderUIFacade myResourceVisibleFields;
 
   ProxyDocument(DocumentCreator creator, Document physicalDocument, IGanttProject project, UIFacade uiFacade,
-      TableHeaderUIFacade visibleFields, ParserFactory parserFactory) {
+      TableHeaderUIFacade taskVisibleFields, TableHeaderUIFacade resourceVisibleFields, ParserFactory parserFactory) {
     myPhysicalDocument = physicalDocument;
     myProject = project;
     myUIFacade = uiFacade;
     myParserFactory = parserFactory;
     myCreator = creator;
-    myVisibleFields = visibleFields;
+    myTaskVisibleFields = taskVisibleFields;
+    myResourceVisibleFields = resourceVisibleFields;
   }
 
   @Override
@@ -291,11 +294,11 @@ class ProxyDocument implements Document {
       CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),
           getTaskManager());
       opener.addTagHandler(customPropHandler);
-      TaskDisplayColumnsTagHandler taskDisplayHandler = new TaskDisplayColumnsTagHandler(myVisibleFields);
+      TaskDisplayColumnsTagHandler taskDisplayHandler = new TaskDisplayColumnsTagHandler(myTaskVisibleFields);
       opener.addTagHandler(taskDisplayHandler);
 
       TaskDisplayColumnsTagHandler resourceViewHandler = new TaskDisplayColumnsTagHandler(
-          getUIFacade().getResourceTree().getVisibleFields(), "field", "id", "order", "width", "visible");
+          myResourceVisibleFields, "field", "id", "order", "width", "visible");
       opener.addTagHandler(resourceViewHandler);
       opener.addParsingListener(resourceViewHandler);
 
