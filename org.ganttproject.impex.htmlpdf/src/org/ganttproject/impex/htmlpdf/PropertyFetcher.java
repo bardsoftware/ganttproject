@@ -24,11 +24,13 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GanttTreeTable;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskProperties;
 
 public class PropertyFetcher {
   private static final GanttLanguage language = GanttLanguage.getInstance();
@@ -51,11 +53,8 @@ public class PropertyFetcher {
     id2value.put("tpd5", dateFormat.format(t.getEnd().getDisplayValue().getTime()));
     id2value.put("tpd6", String.valueOf(t.getDuration().getLength()));
     id2value.put("tpd7", String.valueOf(t.getCompletionPercentage()));
-
-    HumanResource coordinator = t.getAssignmentCollection().getCoordinator();
-    if (coordinator != null) {
-      id2value.put("tpd8", coordinator.getName());
-    }
+    id2value.put(GanttTreeTable.DefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t));
+    id2value.put(GanttTreeTable.DefaultColumn.COORDINATOR.getStub().getID(), TaskProperties.formatCoordinators(t));
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {

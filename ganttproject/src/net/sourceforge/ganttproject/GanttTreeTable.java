@@ -38,7 +38,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.
- * 
+ *
  * @author bbaranne (Benoit Baranne) - original version
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
@@ -59,7 +59,7 @@ public class GanttTreeTable extends GPTreeTableBase {
     return myUIfacade;
   }
 
-  private static enum DefaultColumn {
+  public static enum DefaultColumn {
     TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1)), PRIORITY(new TableHeaderUIFacade.ColumnStub(
         "tpd1", null, false, -1, 50)), INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1)), NAME(
         new TableHeaderUIFacade.ColumnStub("tpd3", null, true, 0, 200)), BEGIN_DATE(new TableHeaderUIFacade.ColumnStub(
@@ -76,7 +76,7 @@ public class GanttTreeTable extends GPTreeTableBase {
       myDelegate = delegate;
     }
 
-    Column getStub() {
+    public Column getStub() {
       return myDelegate;
     }
 
@@ -135,7 +135,7 @@ public class GanttTreeTable extends GPTreeTableBase {
   /**
    * This class repaints the GraphicArea and the table every time the table
    * model has been modified. TODO Add the refresh functionality when available.
-   * 
+   *
    * @author Benoit Baranne
    */
   private class ModelListener implements TableModelListener {
