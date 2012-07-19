@@ -24,8 +24,8 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.GanttTreeTable;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.TaskDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
@@ -53,8 +53,8 @@ public class PropertyFetcher {
     id2value.put("tpd5", dateFormat.format(t.getEnd().getDisplayValue().getTime()));
     id2value.put("tpd6", String.valueOf(t.getDuration().getLength()));
     id2value.put("tpd7", String.valueOf(t.getCompletionPercentage()));
-    id2value.put(GanttTreeTable.DefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t));
-    id2value.put(GanttTreeTable.DefaultColumn.COORDINATOR.getStub().getID(), TaskProperties.formatCoordinators(t));
+    id2value.put(TaskDefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t));
+    id2value.put(TaskDefaultColumn.COORDINATOR.getStub().getID(), TaskProperties.formatCoordinators(t));
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
