@@ -72,6 +72,8 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
 
+import com.google.common.base.Objects;
+
 /**
  * Real panel for editing task properties
  */
@@ -458,7 +460,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       if (getLength() > 0) {
         mutator.setDuration(selectedTasks[i].getManager().createLength(getLength()));
       }
-      if (!originalNotes.equals(getNotes())) {
+      if (!Objects.equal(originalNotes, getNotes())) {
         mutator.setNotes(getNotes());
       }
       if (originalCompletionPercentage != getPercentComplete()) {
