@@ -36,7 +36,7 @@ import net.sourceforge.ganttproject.task.Task;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-enum TaskDefaultColumn {
+public enum TaskDefaultColumn {
   TYPE(new TableHeaderUIFacade.ColumnStub("tpd0", null, false, -1, -1), Icon.class, "tableColType"),
   PRIORITY(new TableHeaderUIFacade.ColumnStub("tpd1", null, false, -1, 50), Icon.class, "tableColPriority"),
   INFO(new TableHeaderUIFacade.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE),
@@ -66,7 +66,7 @@ enum TaskDefaultColumn {
     myNameKey = nameKey;
   }
 
-  Column getStub() {
+  public Column getStub() {
     return myDelegate;
   }
 

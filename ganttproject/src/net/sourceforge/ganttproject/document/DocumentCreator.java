@@ -113,8 +113,7 @@ public class DocumentCreator implements DocumentManager {
   }
 
   @Override
-  public Document getDocument(String path, String userName, String password) {
-    Document physicalDocument = createDocument(path, userName, password);
+  public Document getProxyDocument(Document physicalDocument) {
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
         getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
@@ -217,6 +216,7 @@ public class DocumentCreator implements DocumentManager {
     return new GPOptionGroup[] { myFtpOptions };
   }
 
+  @Override
   public DocumentStorageUi getWebDavStorageUi() {
     return myWebDavStorage;
   }
