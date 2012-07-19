@@ -195,6 +195,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
       @Override
       public void acceptLogo(ChartDimensions d, Image logo) {
+        if (d.getTreeWidth() <= 0) {
+          return;
+        }
         Graphics2D g = getGraphics(d);
         g.setBackground(Color.WHITE);
         g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
@@ -205,6 +208,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
       @Override
       public void acceptTable(ChartDimensions d, Component header, Component table) {
+        if (d.getTreeWidth() <= 0) {
+          return;
+        }
         Graphics2D g = getGraphics(d);
         g.translate(0, d.getLogoHeight());
         header.print(g);
@@ -215,6 +221,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
       @Override
       public void acceptChart(ChartDimensions d, ChartModel model) {
+        if (myTreeImage == null) {
+          myTreeImage = new BufferedImage(1, d.getChartHeight() + d.getLogoHeight(), BufferedImage.TYPE_INT_RGB);
+        }
         myRenderedImage = new RenderedChartImage(model, myTreeImage, d.getChartWidth(), d.getChartHeight()
             + d.getLogoHeight(), d.getLogoHeight());
       }

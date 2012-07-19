@@ -18,6 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -97,29 +106,8 @@ public class TaskProperties {
         sb.append(" ] ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_COORDINATOR)) {
-        ResourceAssignment[] assignments = task.getAssignments();
-        if (assignments.length > 0) {
-          boolean first = true;
-          boolean close = false;
-          int j = 0;
-          for (int i = 0; i < assignments.length; i++) {
-            if (assignments[i].isCoordinator()) {
-              j++;
-              if (first) {
-                close = true;
-                first = false;
-                sb.append("{");
-              }
-              if (j > 1) {
-                sb.append(", ");
-              }
-              sb.append(assignments[i].getResource().getName());
-            }
-          }
-          if (close)
-            sb.append("}");
-        }
-        res = sb.toString();
+        String coordinators = formatCoordinators(task);
+        return coordinators.isEmpty() ? "" : "{" + coordinators + "}";
       } else if (propertyID.equals(ID_TASK_RESOURCES)) {
         ResourceAssignment[] assignments = task.getAssignments();
         if (assignments.length > 0) {
@@ -159,17 +147,42 @@ public class TaskProperties {
         sb.append("# ").append(task.getTaskID());
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_PREDECESSORS)) {
-        TaskDependency[] dep = task.getDependenciesAsDependant().toArray();
-        int i = 0;
-        if (dep != null && dep.length > 0) {
-          for (i = 0; i < dep.length - 1; i++)
-            sb.append(dep[i].getDependee().getTaskID() + ", ");
-          sb.append(dep[i].getDependee().getTaskID());
-        }
-        res = sb.toString();
+        return formatPredecessors(task);
       }
     }
     return res;
 
+  }
+
+  public static String formatPredecessors(Task task) {
+    TaskDependency[] dep = task.getDependenciesAsDependant().toArray();
+    if (dep != null && dep.length > 0) {
+      return Joiner.on(", ").join(Lists.transform(Arrays.asList(dep), new Function<TaskDependency, String>() {
+        @Override
+        public String apply(TaskDependency input) {
+          return String.valueOf(input.getDependee().getTaskID());
+        }
+      }));
+    }
+    return "";
+  }
+
+  public static String formatCoordinators(Task t) {
+    ResourceAssignment[] assignments = t.getAssignments();
+    Collection<ResourceAssignment> coordinators = Collections2.filter(Arrays.asList(assignments), new Predicate<ResourceAssignment>() {
+      @Override
+      public boolean apply(ResourceAssignment input) {
+        return input.isCoordinator();
+      }
+    });
+    if (coordinators.isEmpty()) {
+      return "";
+    }
+    return Joiner.on(", ").join(Collections2.transform(coordinators, new Function<ResourceAssignment, String>() {
+      @Override
+      public String apply(ResourceAssignment input) {
+        return input.getResource().getName();
+      }
+    }));
   }
 }

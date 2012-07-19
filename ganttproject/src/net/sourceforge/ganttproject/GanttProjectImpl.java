@@ -245,7 +245,7 @@ public class GanttProjectImpl implements IGanttProject {
   }
 
   @Override
-  public CustomColumnsManager getTaskCustomColumnManager() {
+  public CustomPropertyManager getTaskCustomColumnManager() {
     return myTaskCustomColumnManager;
   }
 

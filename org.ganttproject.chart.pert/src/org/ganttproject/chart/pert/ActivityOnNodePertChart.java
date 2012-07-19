@@ -36,6 +36,7 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -49,10 +50,10 @@ import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
 /**
  * PERT chart implementation where nodes are tasks and links succession
  * relations.
- * 
+ *
  * @author bbaranne
  * @author Julien Seiler
- * 
+ *
  */
 public class ActivityOnNodePertChart extends PertChart {
 
@@ -125,6 +126,8 @@ public class ActivityOnNodePertChart extends PertChart {
 
   /** Color of the arrows. */
   private final static Color ARROW_COLOR = Color.GRAY;
+
+  private final JScrollPane myScrollPane;
 
   public ActivityOnNodePertChart() {
     setBackground(Color.WHITE.brighter());
@@ -201,6 +204,7 @@ public class ActivityOnNodePertChart extends PertChart {
         repaint();
       }
     });
+    myScrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
   }
 
   /** Recalculate preferred size so that graphics fit with nodes positions. */
@@ -339,7 +343,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
   /**
    * Creates or gets the graphical node corresponding to the taskGrahNode
-   * 
+   *
    * @param taskGraphNode
    */
   private GraphicalNode createGraphicalNode(TaskGraphNode taskGraphNode) {
@@ -456,7 +460,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
   /**
    * Get the list of GraphicalNode that are in a column.
-   * 
+   *
    * @param col
    *          the column number to look in
    * @return the list of GraphicalNode in the col
@@ -672,15 +676,18 @@ public class ActivityOnNodePertChart extends PertChart {
 
   @Override
   public Object getAdapter(Class adapter) {
-    if (adapter.equals(Container.class) || adapter.equals(Chart.class)) {
+    if (adapter.equals(Chart.class)) {
       return this;
+    }
+    if (adapter.equals(Container.class)) {
+      return myScrollPane;
     }
     return null;
   }
 
   /**
    * Graphical node that is rendered on graphics.
-   * 
+   *
    * @author bbaranne
    */
   private static class GraphicalNode extends JComponent {
@@ -713,7 +720,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
     /**
      * Updates the linked abstract node.
-     * 
+     *
      * @param node
      *          new linked abstract node.
      */
@@ -723,7 +730,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
     /**
      * Paints the graphical node.
-     * 
+     *
      * @param g
      *          Graphics where the graphical node is to be painted.
      */
@@ -739,7 +746,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
     /**
      * Paints the graphical node.
-     * 
+     *
      * @param g
      *          Graphics where the graphical node is to be painted.
      */
@@ -808,7 +815,7 @@ public class ActivityOnNodePertChart extends PertChart {
 
   /**
    * Graphical arrow that is rendered on graphics.
-   * 
+   *
    * @author bbaranne
    */
   private static class GraphicalArrow {

@@ -108,14 +108,15 @@ public class DocumentCreator implements DocumentManager {
   public Document getDocument(String path) {
     Document physicalDocument = createDocument(path);
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
-        getParserFactory());
+        getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
   }
 
   @Override
-  public Document getProxyDocument(Document physicalDocument) {
+  public Document getDocument(String path, String userName, String password) {
+    Document physicalDocument = createDocument(path, userName, password);
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
-        getParserFactory());
+        getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
   }
 
@@ -161,6 +162,10 @@ public class DocumentCreator implements DocumentManager {
   }
 
   protected TableHeaderUIFacade getVisibleFields() {
+    return null;
+  }
+
+  protected TableHeaderUIFacade getResourceVisibleFields() {
     return null;
   }
 

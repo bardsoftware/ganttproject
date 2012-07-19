@@ -133,6 +133,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return getUIFacade().getTaskTree().getVisibleFields();
       }
 
+      @Override
+      protected TableHeaderUIFacade getResourceVisibleFields() {
+        return getUIFacade().getResourceTree().getVisibleFields();
+      }
     };
     myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
       @Override
