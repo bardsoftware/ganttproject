@@ -866,18 +866,19 @@ public class TaskManagerImpl implements TaskManager {
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping, Map<Task, Task> original2imported) {
     Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
     for (int i = 0; i < nested.length; i++) {
-      Task nextImported = getTask(nested[i].getTaskID()) == null ? createTask(nested[i].getTaskID()) : createTask();
-      registerTask(nextImported);
-      nextImported.setName(nested[i].getName());
-      nextImported.setStart(nested[i].getStart().clone());
-      nextImported.setDuration(nested[i].getDuration());
-      nextImported.setMilestone(nested[i].isMilestone());
-      nextImported.setColor(nested[i].getColor());
+      TaskManager.TaskBuilder builder = newTaskBuilder();
+      GanttTask that = (GanttTask) nested[i];
+      if (getTask(that.getTaskID()) == null) {
+        builder = builder.withId(that.getTaskID());
+      }
+      Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
+        .withDuration(that.getDuration()).withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
-      nextImported.setNotes(nested[i].getNotes());
       nextImported.setTaskInfo(nested[i].getTaskInfo());
       nextImported.setExpand(nested[i].getExpand());
+      nextImported.setMilestone(nested[i].isMilestone());
       if (nested[i].getThird() != null) {
         nextImported.setThirdDate(nested[i].getThird().clone());
         nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());
@@ -897,11 +898,7 @@ public class TaskManagerImpl implements TaskManager {
           }
         }
       }
-      // System.out.println ("Import : " + nextImported.getTaskID() + "
-      // -->> " + nextImported.getName());
-
       original2imported.put(nested[i], nextImported);
-      getTaskHierarchy().move(nextImported, root);
       importData(nested[i], nextImported, customPropertyMapping, original2imported);
     }
   }
