@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task.hierarchy;
 
 import java.util.ArrayList;
+
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.task.Task;
 
@@ -58,7 +60,7 @@ public class TaskHierarchyItem {
       for (TaskHierarchyItem nested = myFirstNestedItem; nested != null; nested = nested.myNextSiblingItem) {
         tempList.add(nested);
       }
-      result = tempList.toArray(EMPTY_ARRAY);
+      result = Lists.reverse(tempList).toArray(EMPTY_ARRAY);
     }
     return result;
   }

@@ -24,7 +24,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -150,10 +154,23 @@ public abstract class UIUtil {
    * @return a {@link JXDatePicker} component with the default locale, images
    *         and date formats.
    */
-  public static JXDatePicker createDatePicker(ActionListener listener) {
-    JXDatePicker result = new JXDatePicker();
+  public static JXDatePicker createDatePicker(final ActionListener listener) {
+    final JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
     result.addActionListener(listener);
+    
+    result.getEditor().addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusLost(FocusEvent e) {
+        try {
+          result.commitEdit();
+          listener.actionPerformed(new ActionEvent(result, ActionEvent.ACTION_PERFORMED, ""));
+        } catch (ParseException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+      }
+    });
     result.setFormats(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
     return result;
   }

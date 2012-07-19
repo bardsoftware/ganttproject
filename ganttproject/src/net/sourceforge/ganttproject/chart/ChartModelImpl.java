@@ -263,9 +263,10 @@ public class ChartModelImpl extends ChartModelBase {
 
   @Override
   public ChartModelBase createCopy() {
-    ChartModelBase result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
+    ChartModelImpl result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
     super.setupCopy(result);
     result.setVisibleTasks(getVisibleTasks());
+    result.setBaseline(getBaseline());
     return result;
   }
 
