@@ -368,7 +368,7 @@ public class GanttCSVExport {
 
   /** @return the link of the task. */
   private String getWebLink(GanttTask task) {
-    return (task.getWebLink().equals("http://") ? "" : task.getWebLink());
+    return (task.getWebLink() == null || task.getWebLink().equals("http://") ? "" : task.getWebLink());
   }
 
   /** @return the list of the assignment for the resources. */
