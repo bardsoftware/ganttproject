@@ -247,12 +247,13 @@ class GanttURLChooser {
       refreshButton.setText("");
       Box filesHeaderBox = Box.createVerticalBox();
       //filesHeaderBox.add();
-      filesHeaderBox.add(Box.createVerticalStrut(5));
+      //filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(upButton);
       filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(refreshButton);
       filesHeaderBox.add(Box.createVerticalGlue());
       filesTablePanel.add(filesHeaderBox, BorderLayout.EAST);
+      filesHeaderBox.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
       //panel.add(filesActionsPanel);
       final JXList table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
