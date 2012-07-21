@@ -58,8 +58,6 @@ public class MiltonResourceImpl implements WebDavResource {
   private static final ProgressListener PROGRESS_LISTENER_STUB = null;
   private Resource myImpl;
   private final WebDavUri myUrl;
-  private String myUsername;
-  private String myPassword;
   private final Host myHost;
   private Boolean myExistance;
   private MiltonResourceFactory myFactory;
@@ -72,11 +70,9 @@ public class MiltonResourceImpl implements WebDavResource {
     myHost = impl.host();
   }
 
-  MiltonResourceImpl(WebDavUri uri, Host host, String username, String password, MiltonResourceFactory factory) {
+  MiltonResourceImpl(WebDavUri uri, Host host, MiltonResourceFactory factory) {
     myFactory = factory;
     myUrl = uri;
-    myUsername = username;
-    myPassword = password;
     myHost = host;
   }
 
@@ -116,7 +112,7 @@ public class MiltonResourceImpl implements WebDavResource {
         return myImpl;
       }
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", myUsername, myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (IOException e) {
@@ -152,9 +148,9 @@ public class MiltonResourceImpl implements WebDavResource {
   public void lock(int timeout) throws WebDavException {
     assertExists();
     try {
-      myImpl.lock();
+      myImpl.lock(timeout);
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", myUsername, myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
@@ -175,7 +171,7 @@ public class MiltonResourceImpl implements WebDavResource {
     try {
       myImpl.unlock();
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", myUsername, myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
@@ -193,7 +189,7 @@ public class MiltonResourceImpl implements WebDavResource {
     if (myImpl != null) {
       return new MiltonResourceImpl(myUrl.buildParent(), myImpl.parent, myFactory);
     }
-    return new MiltonResourceImpl(myUrl.buildParent(), myHost, myUsername, myPassword, myFactory);
+    return new MiltonResourceImpl(myUrl.buildParent(), myHost, myFactory);
   }
 
   @Override
@@ -217,7 +213,7 @@ public class MiltonResourceImpl implements WebDavResource {
         }
       });
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", myUsername, myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (IOException e) {
@@ -253,7 +249,7 @@ public class MiltonResourceImpl implements WebDavResource {
       });
       parentFolder.uploadFile(getName(), tempFile, null);
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", myUsername, myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
@@ -303,6 +299,10 @@ public class MiltonResourceImpl implements WebDavResource {
   public boolean canLock() throws WebDavException {
     assertExists();
     List<String> lockOwners = getLockOwners();
-    return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(myUsername));
+    return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(getUsername()));
+  }
+
+  private String getUsername() {
+    return myHost.user;
   }
 }

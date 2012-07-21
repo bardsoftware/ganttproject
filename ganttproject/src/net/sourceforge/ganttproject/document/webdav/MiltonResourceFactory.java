@@ -75,7 +75,7 @@ class MiltonResourceFactory {
     Key key = new Key(uri.buildUrl(), myUsername, myPassword);
     MiltonResourceImpl result = myResourceCache.get(key);
     if (result == null) {
-      result = new MiltonResourceImpl(uri, getHost(uri), myUsername, myPassword, this);
+      result = new MiltonResourceImpl(uri, getHost(uri), this);
       myResourceCache.put(key, result);
     }
     return result;
@@ -95,7 +95,7 @@ class MiltonResourceFactory {
     Host result = myHostCache.get(hostKey);
     if (result== null) {
       result = new Host(uri.hostUrl, uri.rootPath, uri.port, myUsername, myPassword, null, TIMEOUT_MS, null, null);
-      myHostCache.put(hostKey, result);
+      // myHostCache.put(hostKey, result);
     }
     return result;
   }
