@@ -25,20 +25,24 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -157,6 +161,14 @@ class ServerListEditor {
     myTable.setVisibleRowCount(10);
     myTable.setFillsViewportHeight(true);
     myTable.setPreferredSize(new Dimension(600, 200));
+    myTable.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2) {
+          myDoneAction.actionPerformed(null);
+        }
+      }
+    });
     myScrollPane = new JScrollPane(myTable);
     myDoneButton = new JButton(myDoneAction);
     myResult = new JPanel(new BorderLayout());
@@ -177,6 +189,18 @@ class ServerListEditor {
     myResult.setPreferredSize(new Dimension(600, 250));
 
     myTable.getSelectionModel().addListSelectionListener(mySelectionListener);
+    DefaultCellEditor cellEditor = new DefaultCellEditor(new JTextField()) {
+      @Override
+      public boolean isCellEditable(EventObject evt) {
+        if (evt instanceof MouseEvent && ((MouseEvent)evt).getClickCount() >= 2) {
+          return false;
+        }
+        return super.isCellEditable(evt);
+      }
+
+    };
+    myTable.getColumn(0).setCellEditor(cellEditor);
+    myTable.getColumn(1).setCellEditor(cellEditor);
   }
 
   JComponent getComponent() {

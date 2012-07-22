@@ -131,7 +131,7 @@ class GanttURLChooser {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, String urlSpec, StringOption username, String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption, MiltonResourceFactory webDavFactory) {
+  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username, String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption, MiltonResourceFactory webDavFactory) {
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
@@ -156,8 +156,14 @@ class GanttURLChooser {
       @Override
       public void changeValue(ChangeValueEvent event) {
         String value = (String) event.getNewValue();
-        if (!tryApplyUrl(value)) {
-          myUpAction.setEnabled(value.split("/").length > 1);
+        if (value == null) {
+          return;
+        }
+        String lcValue = value.toLowerCase();
+        if (lcValue.startsWith("http://") || lcValue.startsWith("https://")) {
+          if (!tryApplyUrl(new WebDavUri(value))) {
+            myUpAction.setEnabled(value.split("/").length > 1);
+          }
         }
       }
     });
@@ -167,26 +173,20 @@ class GanttURLChooser {
         myServers.getValue().username = myUsername.getValue();
       }
     });
-    tryApplyUrl(urlSpec);
+    tryApplyUrl(currentUri);
   }
 
-  private boolean tryApplyUrl(String urlSpec) {
-    try {
-      URL url = new URL(urlSpec);
-      String domainUrl = MessageFormat.format("{0}://{1}{2}",url.getProtocol(), url.getHost(), url.getPort() == -1 ? "" : ":" + url.getPort());
-      WebDavServerDescriptor savedServer = findSavedServer(domainUrl);
-      if (savedServer != null) {
-        myServers.setValue(savedServer);
-      } else {
-        WebDavServerDescriptor server = new WebDavServerDescriptor(url.getHost(), domainUrl, "");
-        myServers.addValue(server);
-        myServers.setValue(server);
-      }
-      myPath.setValue(url.getPath());
-      return true;
-    } catch (MalformedURLException e) {
-      return false;
+  private boolean tryApplyUrl(WebDavUri currentUri) {
+    WebDavServerDescriptor savedServer = findSavedServer(currentUri.buildRootUrl());
+    if (savedServer != null && !savedServer.equals(myServers.getValue())) {
+      myServers.setValue(savedServer);
+    } else {
+      WebDavServerDescriptor server = new WebDavServerDescriptor(currentUri.hostName, currentUri.buildRootUrl(), "");
+      myServers.addValue(server);
+      myServers.setValue(server);
     }
+    myPath.setValue(currentUri.path);
+    return true;
   }
   private WebDavServerDescriptor findSavedServer(String domainUrl) {
     for (WebDavServerDescriptor server : myServers.getValues()) {
