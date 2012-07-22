@@ -93,6 +93,7 @@ class GanttURLChooser {
     @Override
     public void actionPerformed(ActionEvent event) {
       try {
+        myWebDavFactory.clearCache();
         myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
         WebDavResource resource = myWebDavFactory.createResource(buildUrl());
         if (resource.exists() && resource.isCollection()) {
