@@ -60,7 +60,7 @@ class FilesCellRenderer implements ListCellRenderer {
           result = defaultComponent;
         } else {
           JLabel name = new JLabel(webdavResource.getName());
-          JLabel locks = new JLabel("locked: " + Joiner.on(',').join(lockOwners));
+          JLabel locks = new JLabel(Joiner.on(',').join(lockOwners), GPAction.getIcon("8", "status-locked.png"), SwingConstants.LEADING);
           locks.setFont(locks.getFont().deriveFont(locks.getFont().getSize()*0.82f));
           locks.setForeground(UIManager.getColor("List.disabledForeground"));
           JPanel box = new JPanel(new GridLayout(2, 1));

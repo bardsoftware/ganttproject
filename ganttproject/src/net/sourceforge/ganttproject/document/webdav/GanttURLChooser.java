@@ -30,11 +30,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
@@ -42,8 +44,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
@@ -123,15 +128,80 @@ class GanttURLChooser {
     }
   };
 
+  private final GPAction myLockAction = new GPAction("fileChooser.lock") {
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+      WebDavResource resource = getSelectedResource();
+      if (resource == null) {
+        return;
+      }
+      try {
+        if (!resource.isLocked()) {
+          resource.lock(myTimeout.getValue());
+        }
+      } catch (WebDavException e) {
+        showError(e);
+      }
+    }
+  };
+
+  private final GPAction myUnlockAction = new GPAction("fileChooser.unlock") {
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+      WebDavResource resource = getSelectedResource();
+      if (resource == null) {
+        return;
+      }
+      try {
+        if (resource.isLocked()) {
+          resource.unlock();
+        }
+      } catch (WebDavException e) {
+        showError(e);
+      }
+    }
+  };
+
+  private final GPAction myDeleteAction = new GPAction("fileChooser.delete") {
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+      final WebDavResource resource = getSelectedResource();
+      if (resource == null) {
+        return;
+      }
+      myUiFacade.showOptionDialog(JOptionPane.QUESTION_MESSAGE, GanttLanguage.getInstance().getText("fileChooser.delete.question"), new Action[] {
+        new OkAction() {
+          @Override
+          public void actionPerformed(ActionEvent evt) {
+            try {
+              resource.delete();
+            } catch (WebDavException e) {
+              showError(e);
+            }
+          }
+        }, CancelAction.EMPTY
+      });
+    }
+  };
+
   private final FilesTableModel tableModel = new FilesTableModel();
 
   private final BooleanOption myReleaseLockOption;
+
+  private JXList table;
+
+  private JButton myLockButton;
+
+  private final UIFacade myUiFacade;
 
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username, String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption, MiltonResourceFactory webDavFactory) {
+  GanttURLChooser(UIFacade uiFacade, ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username,
+      String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption,
+      MiltonResourceFactory webDavFactory) {
+    myUiFacade = uiFacade;
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
     myServers = servers;
@@ -146,10 +216,9 @@ class GanttURLChooser {
       @Override
       public void changeValue(ChangeValueEvent event) {
         myPath.setValue("");
-        myPassword.setValue("");
         WebDavServerDescriptor server = myServers.getValue();
         myUsername.setValue(server.username);
-
+        myPassword.setValue(server.password);
       }
     });
     myPath.addChangeValueListener(new ChangeValueListener() {
@@ -171,6 +240,11 @@ class GanttURLChooser {
       @Override
       public void changeValue(ChangeValueEvent event) {
         myServers.getValue().username = myUsername.getValue();
+      }
+    });
+    myPassword.addChangeValueListener(new ChangeValueListener() {
+      public void changeValue(ChangeValueEvent event) {
+        myServers.getValue().password = myPassword.getValue();
       }
     });
     tryApplyUrl(currentUri);
@@ -218,6 +292,10 @@ class GanttURLChooser {
     return new WebDavUri(server.name, host, path);
   }
 
+  private WebDavResource getSelectedResource() {
+    return (WebDavResource) table.getSelectedValue();
+  }
+
   private JComponent createComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 
@@ -239,6 +317,8 @@ class GanttURLChooser {
       JPanel filesTablePanel = new JPanel(new BorderLayout());
       JButton refreshButton = new JButton(myReloadAction);
       JButton upButton = new JButton(myUpAction);
+      myLockButton = new JButton(myLockAction);
+
       panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(myUpAction.getKeyStroke(), myUpAction);
       panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(myReloadAction.getKeyStroke(), myReloadAction);
       panel.getActionMap().put(myUpAction, myUpAction);
@@ -252,21 +332,24 @@ class GanttURLChooser {
       filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(refreshButton);
       filesHeaderBox.add(Box.createVerticalGlue());
+      filesHeaderBox.add(new JButton(myDeleteAction));
+      filesHeaderBox.add(Box.createVerticalStrut(5));
+      filesHeaderBox.add(myLockButton);
+
       filesTablePanel.add(filesHeaderBox, BorderLayout.EAST);
       filesHeaderBox.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
       //panel.add(filesActionsPanel);
-      final JXList table = new JXList(tableModel);
+      table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
       table.setCellRenderer(new FilesCellRenderer());
       table.addListSelectionListener(new ListSelectionListener() {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-          WebDavResource resource = (WebDavResource) table.getSelectedValue();
+          WebDavResource resource = getSelectedResource();
           if (resource == null) {
             return;
           }
-          mySelectionListener.setSelection(resource);
-          myPath.setValue(resource.getWebDavUri().path);
+          onSelectionChanged(resource);
         }
       });
       table.addMouseListener(new MouseAdapter() {
@@ -315,6 +398,20 @@ class GanttURLChooser {
     properties.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
 
     return properties;
+  }
+
+  protected void onSelectionChanged(WebDavResource resource) {
+    mySelectionListener.setSelection(resource);
+    myPath.setValue(resource.getWebDavUri().path);
+    try {
+      if (resource.isLocked()) {
+        myLockButton.setAction(myUnlockAction);
+      } else {
+        myLockButton.setAction(myLockAction);
+      }
+    } catch (WebDavException e) {
+      GPLogger.logToLogger(e);
+    }
   }
 
   protected void tryEnterCollection(JXList table, FilesTableModel tableModel) {

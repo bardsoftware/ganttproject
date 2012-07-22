@@ -305,4 +305,24 @@ public class MiltonResourceImpl implements WebDavResource {
   private String getUsername() {
     return myHost.user;
   }
+
+  @Override
+  public void delete() throws WebDavException {
+    assertExists();
+    try {
+      myImpl.delete();
+    } catch (NotAuthorizedException e) {
+      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
+    } catch (BadRequestException e) {
+      throw new WebDavException(MessageFormat.format("Bad request when deleting {0}", myUrl.hostName), e);
+    } catch (HttpException e) {
+      throw new WebDavException(MessageFormat.format("HTTP problems when deleting {0}", myUrl.hostName), e);
+    } catch (ConflictException e) {
+      throw new WebDavException(MessageFormat.format("Conflict when deleting {0}", myUrl.hostName), e);
+    } catch (NotFoundException e) {
+      throw new WebDavException(MessageFormat.format("Resource {0} is not found on {1}", myUrl.path, myUrl.hostName), e);
+    } catch (IOException e) {
+      throw new WebDavException(MessageFormat.format("I/O problems when deleting {0}", myUrl.hostName), e);
+    }
+  }
 }

@@ -47,7 +47,7 @@ public class DocumentCreator implements DocumentManager {
     myProject = project;
     myUIFacade = uiFacade;
     myParserFactory = parserFactory;
-    myWebDavStorage = new WebDavStorageImpl(project);
+    myWebDavStorage = new WebDavStorageImpl(project, uiFacade);
     myOptionGroup = new GPOptionGroup("", new GPOption[] {
         myWorkingDirectory,
         myWebDavStorage.getServersOption(),
