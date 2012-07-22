@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.swing.Action;
@@ -28,6 +30,7 @@ import javax.swing.JComponent;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -192,14 +195,27 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   }
 
   private GanttURLChooser createChooser(Document currentDocument) {
-    String lastDocUrl = (currentDocument == null || !currentDocument.getURI().getScheme().toLowerCase().startsWith("http"))
-        ? getLastWebDAVDocumentOption().getValue() : currentDocument.getURI().toString();
-    if (currentDocument != null) {
+    WebDavUri currentUri;
+    if (currentDocument instanceof HttpDocument) {
+      currentUri = ((HttpDocument)currentDocument).getWebdavResource().getWebDavUri();
       myUsername.setValue(currentDocument.getUsername());
+    } else {
+      String[] savedComponents = getLastWebDAVDocumentOption().getValue().split("\\t");
+      if (savedComponents.length == 1) {
+        currentUri = new WebDavUri(savedComponents[0]);
+      } else {
+        try {
+          URL rootUrl = new URL(savedComponents[0]);
+          currentUri = new WebDavUri(rootUrl.getHost(), savedComponents[0], savedComponents[1]);
+        } catch (MalformedURLException e) {
+          GPLogger.logToLogger(e);
+          currentUri = new WebDavUri(getLastWebDAVDocumentOption().getValue());
+        }
+      }
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
     myWebDavFactory.clearCache();
-    return new GanttURLChooser(myServers, lastDocUrl, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
+    return new GanttURLChooser(myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
@@ -212,6 +228,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         try {
           myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
           receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK));
+          myLastWebDAVDocument.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -231,6 +248,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           HttpDocument document = new HttpDocument(
               myWebDavFactory.createResource(chooser.getUrl()),
               chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout());
+          myLastWebDAVDocument.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
           if (document.acquireLock()) {
             receiver.setDocument(document);
           }

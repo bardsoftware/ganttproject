@@ -92,7 +92,7 @@ public class WebDavUri {
   }
 
   String buildRootUrl() {
-    return (isSecure ? "https://" : "http://") + hostUrl + ":" + port + rootPath;
+    return (isSecure ? "https://" : "http://") + hostUrl + (port == 80 ? "" :  ":" + port) + rootPath;
   }
   public WebDavUri buildParent() {
     return new WebDavUri(hostName, buildRootUrl(), Path.path(path).getParent().toString());
