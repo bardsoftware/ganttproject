@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
@@ -123,8 +124,10 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("webdav.releaseLockOnProjectClose", true);
   private final StringOption myUsername = new DefaultStringOption("username", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
+  private final UIFacade myUiFacade;
 
-  public WebDavStorageImpl(final IGanttProject project) {
+  public WebDavStorageImpl(final IGanttProject project, UIFacade uiFacade) {
+    myUiFacade = uiFacade;
     project.addProjectEventListener(new ProjectEventListener.Stub() {
       @Override
       public void projectClosed() {
@@ -215,7 +218,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
     myWebDavFactory.clearCache();
-    return new GanttURLChooser(myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
+    return new GanttURLChooser(myUiFacade, myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {

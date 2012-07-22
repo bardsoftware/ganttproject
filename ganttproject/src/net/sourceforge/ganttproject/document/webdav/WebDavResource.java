@@ -165,4 +165,6 @@ public interface WebDavResource {
    */
   InputStream getInputStream() throws WebDavException;
 
+  void delete() throws WebDavException;
+
 }

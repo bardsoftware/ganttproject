@@ -29,6 +29,7 @@ class WebDavServerDescriptor {
   public String name;
   public String rootUrl;
   public String username;
+  String password = "";
 
   WebDavServerDescriptor() {
   }
