@@ -1,22 +1,17 @@
 <property file="build-user.properties"/>
 <property name="plugin.name.versioned" value="${plugin.name}"/>
 <property name="plugin.install.dir" value="${install.dir}/plugins/${plugin.name.versioned}"/>
+<loadproperties srcFile="build.properties">
+<filterchain>
+    <tokenfilter>
+        <replaceregex pattern="," replace=":" flags="g"/>
+    </tokenfilter>
+</filterchain>
+</loadproperties>
 
     <path id="project.classpath">
         <pathelement location="bin"/>
-        <pathelement location="${plugin.src.dir}/lib/core/AppleJavaExtensions.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/balloontip-1.2.1.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/commons-httpclient-3.0.1.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/commons-csv.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/commons-logging.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/commons-net-ftpclient-3.0.1.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/eclipsito.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jakarta-slide-webdavlib-2.1.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jcommander-1.17.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jdom-1.0.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jgoodies-common-1.1.1.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/jgoodies-looks-2.4.0.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/core/swingx-1.6.3.jar"/>
+        <pathelement path="${jars.extra.classpath}"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
