@@ -44,12 +44,13 @@ public class WebDavUri {
     try {
       URL url = new URL(fullUrl);
       tryHostUrl = url.getHost();
-      tryPort = url.getPort() == -1 ? 80 : url.getPort();
       trySecure = "https".equals(url.getProtocol().toLowerCase());
+      tryPort = url.getPort() == -1 ?
+          (trySecure ? 443 : 80) : url.getPort();
       tryPath = url.getPath();
     } catch (MalformedURLException e) {
       tryHostUrl = fullUrl;
-      tryPort = 80;
+      tryPort = trySecure ? 443 : 80;
       tryPath = "";
     }
     this.hostName = "";
@@ -72,8 +73,9 @@ public class WebDavUri {
     try {
       URL url = new URL(hostUrl);
       tryHostUrl = url.getHost();
-      tryPort = url.getPort() == -1 ? 80 : url.getPort();
       trySecure = "https".equals(url.getProtocol().toLowerCase());
+      tryPort = url.getPort() == -1 ?
+          (trySecure ? 443 : 80) : url.getPort();
       tryRootPath = url.getPath();
     } catch (MalformedURLException e) {
       tryHostUrl = hostUrl;

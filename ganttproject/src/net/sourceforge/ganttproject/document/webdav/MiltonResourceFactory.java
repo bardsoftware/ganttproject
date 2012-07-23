@@ -95,6 +95,7 @@ class MiltonResourceFactory {
     Host result = myHostCache.get(hostKey);
     if (result== null) {
       result = new Host(uri.hostUrl, uri.rootPath, uri.port, myUsername, myPassword, null, TIMEOUT_MS, null, null);
+      result.setSecure(uri.isSecure);
       // myHostCache.put(hostKey, result);
     }
     return result;
