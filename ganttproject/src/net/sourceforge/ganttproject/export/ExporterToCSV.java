@@ -19,11 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.io.GanttCSVExport;
@@ -71,15 +74,26 @@ public class ExporterToCSV extends ExporterBase {
     ExporterJob result = new ExporterJob("Export project") {
       @Override
       protected IStatus run() {
+        OutputStream outputStream = null;
         try {
           outputFile.createNewFile();
+          outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
           GanttCSVExport exporter = new GanttCSVExport(getProject(),
               ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
-          exporter.save(new FileOutputStream(outputFile));
+          exporter.save(outputStream);
+          outputStream.flush();
         } catch (IOException e) {
           getUIFacade().showErrorDialog(e);
           return Status.CANCEL_STATUS;
+        } finally {
+          if (outputStream != null) {
+            try {
+              outputStream.close();
+            } catch (IOException e) {
+              GPLogger.logToLogger(e);
+            }
+          }
         }
         return Status.OK_STATUS;
       }

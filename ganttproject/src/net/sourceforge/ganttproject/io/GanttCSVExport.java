@@ -76,6 +76,8 @@ public class GanttCSVExport {
       csvPrinter.println();
       writeResources(csvPrinter);
     }
+    writer.flush();
+    writer.close();
   }
 
   private void writeTaskHeaders(CSVPrinter writer) throws IOException {
