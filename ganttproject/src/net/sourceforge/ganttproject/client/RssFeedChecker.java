@@ -30,6 +30,12 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
@@ -43,10 +49,11 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-
+/**
+ * Checks GanttProject RSS news feeds once per day
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class RssFeedChecker {
   private static enum CheckOption {
     YES, NO, UNDEFINED
@@ -107,7 +114,7 @@ public class RssFeedChecker {
   }
 
   public void run() {
-    Runnable command = null;
+    Runnable command = createRssReadCommand();
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
       NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
@@ -148,24 +155,17 @@ public class RssFeedChecker {
       @Override
       public void run() {
         try {
-          HttpClient httpClient = new HttpClient();
+          HttpClient httpClient = new DefaultHttpClient();
           String url = RSS_URL;
           while (true) {
-            GetMethod getRssUrl = new GetMethod(url);
-            getRssUrl.setFollowRedirects(false);
-            getRssUrl.setRequestHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
-            int result = httpClient.executeMethod(getRssUrl);
+            HttpGet getRssUrl = new HttpGet(url);
+            getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
+            HttpResponse result = httpClient.execute(getRssUrl);
 
-            switch (result) {
+            switch (result.getStatusLine().getStatusCode()) {
             case HttpStatus.SC_OK:
-              processResponse(getRssUrl.getResponseBodyAsStream());
+              processResponse(result.getEntity().getContent());
               return;
-            case HttpStatus.SC_MOVED_PERMANENTLY:
-            case HttpStatus.SC_MOVED_TEMPORARILY:
-            case HttpStatus.SC_SEE_OTHER:
-            case HttpStatus.SC_TEMPORARY_REDIRECT:
-              url = getRssUrl.getResponseHeader("Location").getValue();
-              break;
             }
           }
         } catch (MalformedURLException e) {
