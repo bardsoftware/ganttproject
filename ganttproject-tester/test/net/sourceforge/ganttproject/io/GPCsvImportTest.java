@@ -1,3 +1,21 @@
+/*
+Copyright 2012 GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.io;
 
 import java.io.Reader;
@@ -19,11 +37,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
- * Tests CSV import with GP semantics
+ * Tests CSV import with GP semantics.
  *
  * @author dbarashev (Dmitry Barashev)
  */
@@ -115,5 +132,22 @@ public class GPCsvImportTest extends TestCase {
 
     assertDependency(t2, t1);
     assertDependency(t3, t1);
+  }
+
+  public void testMilestone() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,End date,Duration,Resources,Completion,Web Link,Notes,Predecessors";
+    String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
+    String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2)), taskManager, null);
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Task t1 = taskMap.get("t1");
+    Task t2 = taskMap.get("t2");
+    assertFalse(t1.isMilestone());
+    assertTrue(t2.isMilestone());
   }
 }

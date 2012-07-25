@@ -48,6 +48,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
@@ -186,9 +187,13 @@ public class GanttCSVOpen {
         TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
             .withName(record.get(TaskFields.NAME.toString()))
             .withStartDate(language.parseDate(record.get(TaskFields.BEGIN_DATE.toString())))
-            .withEndDate(language.parseDate(record.get(TaskFields.END_DATE.toString())))
+            .withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())))
             .withWebLink(record.get(TaskFields.WEB_LINK.toString()))
             .withNotes(record.get(TaskFields.NOTES.toString()));
+        if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
+            && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
+          builder = builder.withLegacyMilestone();
+        }
         if (!Strings.isNullOrEmpty(record.get(TaskFields.COMPLETION.toString()))) {
           builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
         }
