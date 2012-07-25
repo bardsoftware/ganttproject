@@ -313,7 +313,7 @@ public class TaskManagerImpl implements TaskManager {
         task.setExpand(isExpanded);
         task.setNotes(myNotes);
         task.setWebLink(myWebLink);
-
+        task.setCompletionPercentage(myCompletion);
         registerTask(task);
 
 
