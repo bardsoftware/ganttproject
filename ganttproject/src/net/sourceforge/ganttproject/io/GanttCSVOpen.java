@@ -35,11 +35,13 @@ import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.TaskDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -85,8 +87,9 @@ public class GanttCSVOpen {
   }
   /** List of known (and supported) Task attributes */
   public enum TaskFields {
+    ID(TaskDefaultColumn.ID.getNameKey()),
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"), NOTES(
-        "notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration");
+        "notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"), PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey());
 
     private final String text;
 
@@ -166,7 +169,9 @@ public class GanttCSVOpen {
 
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager, final HumanResourceManager resourceManager) {
     return new RecordGroup(Sets.newHashSet(getFieldNames(TaskFields.values()))) {
-      private Map<Task, String> myResourceMap = Maps.newHashMap();
+      private Map<Task, String> myAssignmentMap = Maps.newHashMap();
+      private Map<Task, String> myPredecessorMap = Maps.newHashMap();
+      private Map<String, Task> myTaskIdMap = Maps.newHashMap();
 
       @Override
       public void setHeader(List<String> header) {
@@ -188,7 +193,12 @@ public class GanttCSVOpen {
           builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
         }
         Task task = builder.build();
-        myResourceMap.put(task, record.get(TaskFields.RESOURCES.toString()));
+
+        if (record.get(TaskDefaultColumn.ID.getName()) != null) {
+          myTaskIdMap.put(record.get(TaskDefaultColumn.ID.getName()), task);
+        }
+        myAssignmentMap.put(task, record.get(TaskFields.RESOURCES.toString()));
+        myPredecessorMap.put(task, record.get(TaskDefaultColumn.PREDECESSORS.getName()));
         for (String customField : getCustomFields()) {
           String value = record.get(customField);
           CustomPropertyDefinition def = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(customField);
@@ -204,21 +214,36 @@ public class GanttCSVOpen {
 
       @Override
       protected void postProcess() {
-        if (resourceManager == null) {
-          return;
-        }
-        Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-          @Override
-          public String apply(HumanResource input) {
-            return input.getName();
+        if (resourceManager != null) {
+          Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+            @Override
+            public String apply(HumanResource input) {
+              return input.getName();
+            }
+          });
+          for (Entry<Task, String> assignment : myAssignmentMap.entrySet()) {
+            String[] names = assignment.getValue().split(";");
+            for (String name : names) {
+              HumanResource resource = resourceMap.get(name);
+              if (resource != null) {
+                assignment.getKey().getAssignmentCollection().addAssignment(resource);
+              }
+            }
           }
-        });
-        for (Entry<Task, String> assignment : myResourceMap.entrySet()) {
-          String[] names = assignment.getValue().split(";");
-          for (String name : names) {
-            HumanResource resource = resourceMap.get(name);
-            if (resource != null) {
-              assignment.getKey().getAssignmentCollection().addAssignment(resource);
+        }
+        for (Entry<Task, String> predecessor : myPredecessorMap.entrySet()) {
+          if (predecessor.getValue() == null) {
+            continue;
+          }
+          String[] ids = predecessor.getValue().split(";");
+          for (String id : ids) {
+            Task dependee = myTaskIdMap.get(id);
+            if (dependee != null) {
+              try {
+                taskManager.getDependencyCollection().createDependency(predecessor.getKey(), dependee);
+              } catch (TaskDependencyException e) {
+                GPLogger.logToLogger(e);
+              }
             }
           }
         }

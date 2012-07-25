@@ -21,21 +21,28 @@ package net.sourceforge.ganttproject.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.TaskDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.StringUtils;
 
 /**
@@ -82,22 +89,22 @@ public class GanttCSVExport {
 
   private void writeTaskHeaders(CSVPrinter writer) throws IOException {
     if (csvOptions.bExportTaskID) {
-      writer.print(i18n("tableColID"));
+      writer.print(TaskDefaultColumn.ID.getName());
     }
     if (csvOptions.bExportTaskName) {
-      writer.print(i18n("tableColName"));
+      writer.print(TaskDefaultColumn.NAME.getName());
     }
     if (csvOptions.bExportTaskStartDate) {
-      writer.print(i18n("tableColBegDate"));
+      writer.print(TaskDefaultColumn.BEGIN_DATE.getName());
     }
     if (csvOptions.bExportTaskEndDate) {
-      writer.print(i18n("tableColEndDate"));
+      writer.print(TaskDefaultColumn.END_DATE.getName());
     }
     if (csvOptions.bExportTaskDuration) {
-      writer.print(i18n("tableColDuration"));
+      writer.print(TaskDefaultColumn.DURATION.getName());
     }
     if (csvOptions.bExportTaskPercent) {
-      writer.print(i18n("tableColCompletion"));
+      writer.print(TaskDefaultColumn.COMPLETION.getName());
     }
     if (csvOptions.bExportTaskWebLink) {
       writer.print(i18n("webLink"));
@@ -108,6 +115,7 @@ public class GanttCSVExport {
     if (csvOptions.bExportTaskNotes) {
       writer.print(i18n("notes"));
     }
+    writer.print(TaskDefaultColumn.PREDECESSORS.getName());
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
       writer.print(def.getName());
     }
@@ -161,6 +169,14 @@ public class GanttCSVExport {
       if (csvOptions.bExportTaskNotes) {
         writer.print(task.getNotes());
       }
+      writer.print(Joiner.on(';').join(Lists.transform(
+          Arrays.asList(task.getDependenciesAsDependant().toArray()),
+          new Function<TaskDependency, String>() {
+            @Override
+            public String apply(TaskDependency input) {
+              return "" + input.getDependee().getTaskID();
+            }
+          })));
       CustomColumnsValues customValues = task.getCustomValues();
       for (int j = 0; j < customFields.size(); j++) {
         Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
