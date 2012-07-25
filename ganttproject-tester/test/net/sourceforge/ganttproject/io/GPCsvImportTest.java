@@ -13,11 +13,13 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
@@ -38,13 +40,23 @@ public class GPCsvImportTest extends TestCase {
       }
     });
   }
+
+  private static void assertDependency(Task dependant, Task dependee) {
+    for (TaskDependency dep : dependant.getDependenciesAsDependant().toArray()) {
+      if (dep.getDependee() == dependee) {
+        return;
+      }
+    }
+    fail("Can't find " + dependee + " in the list of predecessors of " + dependant);
+  }
+
   public void testImportAssignments() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
     HumanResourceManager resourceManager = builder.getResourceManager();
 
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes";
-    String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,";
+    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,,,";
 
     String header2 = "Name,ID,e-mail,Phone,Default role";
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
@@ -67,8 +79,8 @@ public class GPCsvImportTest extends TestCase {
   public void testCustomFields() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
-    String header1 = "Field1,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Field2";
-    String data1 = "value1,t1,23/07/12,25/07/12,,,,,,value2";
+    String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
+    String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)), taskManager, null);
     importer.load();
@@ -83,5 +95,25 @@ public class GPCsvImportTest extends TestCase {
 
     assertEquals("value1", t1.getCustomValues().getValue(def1));
     assertEquals("value2", t1.getCustomValues().getValue(def2));
+  }
+
+  public void testDependencies() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors";
+    String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
+    String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
+    String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3)), taskManager, null);
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Task t1 = taskMap.get("t1");
+    Task t2 = taskMap.get("t2");
+    Task t3 = taskMap.get("t3");
+
+    assertDependency(t2, t1);
+    assertDependency(t3, t1);
   }
 }
