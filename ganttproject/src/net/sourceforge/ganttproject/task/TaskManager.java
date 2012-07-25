@@ -54,9 +54,15 @@ public interface TaskManager {
     Date myEndDate;
     String myNotes;
     String myWebLink;
+    int myCompletion;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
+      return this;
+    }
+
+    public TaskBuilder withCompletion(int pctgCompletion) {
+      myCompletion = pctgCompletion;
       return this;
     }
 
@@ -115,6 +121,7 @@ public interface TaskManager {
     }
 
     public abstract Task build();
+
   }
 
   public TaskBuilder newTaskBuilder();

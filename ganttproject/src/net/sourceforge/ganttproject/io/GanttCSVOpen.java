@@ -27,6 +27,8 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -40,9 +42,11 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -61,11 +65,13 @@ public class GanttCSVOpen {
     }
 
     protected abstract void process(CSVRecord record);
+
+    protected void postProcess() {}
   }
   /** List of known (and supported) Task attributes */
   public enum TaskFields {
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"), NOTES(
-        "notes");
+        "notes"), COMPLETION("tableColCompletion"), RESOURCES("resources");
 
     private final String text;
 
@@ -115,22 +121,66 @@ public class GanttCSVOpen {
     myInputSupplier = inputSupplier;
     myRecordGroups = ImmutableList.of(group);
   }
+
   public GanttCSVOpen(Supplier<Reader> inputSupplier, RecordGroup... groups) {
     myInputSupplier = inputSupplier;
     myRecordGroups = Arrays.asList(groups);
   }
 
-  private static RecordGroup createTaskRecordGroup(final TaskManager taskManager) {
+  public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager, final HumanResourceManager resourceManager) {
+    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager), createResourceRecordGroup(resourceManager));
+  }
+
+  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager) {
+    this(new Supplier<Reader>() {
+      @Override
+      public Reader get() {
+        try {
+          return new InputStreamReader(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }, taskManager, resourceManager);
+  }
+
+  private static RecordGroup createTaskRecordGroup(final TaskManager taskManager, final HumanResourceManager resourceManager) {
     return new RecordGroup(Sets.newHashSet(getFieldNames(TaskFields.values()))) {
+      private Map<Task, String> myResourceMap = Maps.newHashMap();
       @Override
       protected void process(CSVRecord record) {
         assert record.size() > 0;
         // Create the task
-        TaskManager.TaskBuilder builder = taskManager.newTaskBuilder().withName(record.get(TaskFields.NAME.toString())).withStartDate(
-            language.parseDate(record.get(TaskFields.BEGIN_DATE.toString()))).withEndDate(
-            language.parseDate(record.get(TaskFields.END_DATE.toString()))).withWebLink(
-            record.get(TaskFields.WEB_LINK.toString())).withNotes(record.get(TaskFields.NOTES.toString()));
+        TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
+            .withName(record.get(TaskFields.NAME.toString()))
+            .withStartDate(language.parseDate(record.get(TaskFields.BEGIN_DATE.toString())))
+            .withEndDate(language.parseDate(record.get(TaskFields.END_DATE.toString())))
+            .withWebLink(record.get(TaskFields.WEB_LINK.toString()))
+            .withNotes(record.get(TaskFields.NOTES.toString()));
+        if (!Strings.isNullOrEmpty(record.get(TaskFields.COMPLETION.toString()))) {
+          builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
+        }
         Task task = builder.build();
+        myResourceMap.put(task, record.get(TaskFields.RESOURCES.toString()));
+      }
+
+      @Override
+      protected void postProcess() {
+        Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+          @Override
+          public String apply(HumanResource input) {
+            return input.getName();
+          }
+        });
+        for (Entry<Task, String> assignment : myResourceMap.entrySet()) {
+          String[] names = assignment.getValue().split(";");
+          for (String name : names) {
+            HumanResource resource = resourceMap.get(name);
+            if (resource != null) {
+              assignment.getKey().getAssignmentCollection().addAssignment(resource);
+            }
+          }
+        }
       }
     };
   }
@@ -145,19 +195,6 @@ public class GanttCSVOpen {
             record.get(ResourceFields.PHONE.toString())).withRole(record.get(ResourceFields.ROLE.toString())).build();
       }
     };
-  }
-
-  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager) {
-    this(new Supplier<Reader>() {
-      @Override
-      public Reader get() {
-        try {
-          return new InputStreamReader(new FileInputStream(file));
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }, createTaskRecordGroup(taskManager), createResourceRecordGroup(resourceManager));
   }
 
   /**
@@ -195,6 +232,9 @@ public class GanttCSVOpen {
       }
       assert currentGroup != null;
       currentGroup.process(record);
+    }
+    for (RecordGroup group : myRecordGroups) {
+      group.postProcess();
     }
     // Succeeded
     return true;
