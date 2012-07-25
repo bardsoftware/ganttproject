@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.TestSetupHelper.TaskManagerBuilder;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -29,6 +30,14 @@ public class GPCsvImportTest extends TestCase {
     return Suppliers.<Reader> ofInstance(new StringReader(data));
   }
 
+  private static Map<String, Task> buildTaskMap(TaskManager taskManager) {
+    return Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), new Function<Task, String>() {
+      @Override
+      public String apply(Task input) {
+        return input.getName();
+      }
+    });
+  }
   public void testImportAssignments() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
@@ -42,12 +51,7 @@ public class GPCsvImportTest extends TestCase {
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)), taskManager, resourceManager);
     importer.load();
 
-    Map<String, Task> taskMap = Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), new Function<Task, String>() {
-      @Override
-      public String apply(Task input) {
-        return input.getName();
-      }
-    });
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
     Task t1 = taskMap.get("t1");
     assertNotNull(t1);
     Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
@@ -58,5 +62,26 @@ public class GPCsvImportTest extends TestCase {
     });
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+  }
+
+  public void testCustomFields() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+    String header1 = "Field1,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Field2";
+    String data1 = "value1,t1,23/07/12,25/07/12,,,,,,value2";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)), taskManager, null);
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Task t1 = taskMap.get("t1");
+    assertNotNull(t1);
+
+    CustomPropertyDefinition def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
+    CustomPropertyDefinition def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
+    assertNotNull(def1);
+    assertNotNull(def2);
+
+    assertEquals("value1", t1.getCustomValues().getValue(def1));
+    assertEquals("value2", t1.getCustomValues().getValue(def2));
   }
 }

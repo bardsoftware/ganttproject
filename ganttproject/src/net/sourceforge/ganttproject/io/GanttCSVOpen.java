@@ -31,6 +31,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -46,8 +50,10 @@ import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
  * Handles opening CSV files.
@@ -55,6 +61,7 @@ import com.google.common.collect.Sets;
 public class GanttCSVOpen {
   public static abstract class RecordGroup {
     private final Set<String> myFields;
+    private SetView<String> myCustomFields;
 
     public RecordGroup(Set<String> fields) {
       myFields = fields;
@@ -67,11 +74,19 @@ public class GanttCSVOpen {
     protected abstract void process(CSVRecord record);
 
     protected void postProcess() {}
+
+    public void setHeader(List<String> header) {
+      myCustomFields = Sets.difference(Sets.newHashSet(header), myFields);
+    }
+
+    protected Collection<String> getCustomFields() {
+      return myCustomFields;
+    }
   }
   /** List of known (and supported) Task attributes */
   public enum TaskFields {
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"), NOTES(
-        "notes"), COMPLETION("tableColCompletion"), RESOURCES("resources");
+        "notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration");
 
     private final String text;
 
@@ -124,7 +139,12 @@ public class GanttCSVOpen {
 
   public GanttCSVOpen(Supplier<Reader> inputSupplier, RecordGroup... groups) {
     myInputSupplier = inputSupplier;
-    myRecordGroups = Arrays.asList(groups);
+    myRecordGroups = Lists.newArrayList();
+    for (RecordGroup group : groups) {
+      if (group != null) {
+        myRecordGroups.add(group);
+      }
+    }
   }
 
   public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager, final HumanResourceManager resourceManager) {
@@ -147,6 +167,13 @@ public class GanttCSVOpen {
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager, final HumanResourceManager resourceManager) {
     return new RecordGroup(Sets.newHashSet(getFieldNames(TaskFields.values()))) {
       private Map<Task, String> myResourceMap = Maps.newHashMap();
+
+      @Override
+      public void setHeader(List<String> header) {
+        super.setHeader(header);
+        createCustomProperties(getCustomFields(), taskManager.getCustomPropertyManager());
+      }
+
       @Override
       protected void process(CSVRecord record) {
         assert record.size() > 0;
@@ -162,10 +189,24 @@ public class GanttCSVOpen {
         }
         Task task = builder.build();
         myResourceMap.put(task, record.get(TaskFields.RESOURCES.toString()));
+        for (String customField : getCustomFields()) {
+          String value = record.get(customField);
+          CustomPropertyDefinition def = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(customField);
+          if (def == null) {
+            GPLogger.logToLogger("Can't find custom field with name=" + customField + " value=" + value);
+            continue;
+          }
+          if (value != null) {
+            task.getCustomValues().addCustomProperty(def, value);
+          }
+        }
       }
 
       @Override
       protected void postProcess() {
+        if (resourceManager == null) {
+          return;
+        }
         Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
           @Override
           public String apply(HumanResource input) {
@@ -185,14 +226,32 @@ public class GanttCSVOpen {
     };
   }
 
+  protected static void createCustomProperties(Collection<String> customFields, CustomPropertyManager customPropertyManager) {
+    for (String name : customFields) {
+      customPropertyManager.createDefinition(name, CustomPropertyClass.TEXT.getID(), name, null);
+    }
+  }
+
   private static RecordGroup createResourceRecordGroup(final HumanResourceManager resourceManager) {
-    return new RecordGroup(Sets.newHashSet(getFieldNames(ResourceFields.values()))) {
+    return resourceManager == null ? null : new RecordGroup(Sets.newHashSet(getFieldNames(ResourceFields.values()))) {
+      @Override
+      public void setHeader(List<String> header) {
+        super.setHeader(header);
+        createCustomProperties(getCustomFields(), resourceManager.getCustomPropertyManager());
+      }
+
       @Override
       protected void process(CSVRecord record) {
         assert record.size() > 0;
         HumanResource hr = resourceManager.newResourceBuilder().withName(record.get(ResourceFields.NAME.toString())).withID(
             record.get(ResourceFields.ID.toString())).withEmail(record.get(ResourceFields.EMAIL.toString())).withPhone(
             record.get(ResourceFields.PHONE.toString())).withRole(record.get(ResourceFields.ROLE.toString())).build();
+        for (String customField : getCustomFields()) {
+          String value = record.get(customField);
+          if (value != null) {
+            hr.addCustomProperty(resourceManager.getCustomPropertyManager().getCustomPropertyDefinition(customField), value);
+          }
+        }
       }
     };
   }
@@ -225,6 +284,7 @@ public class GanttCSVOpen {
           searchHeader = false;
           currentGroup = myRecordGroups.get(numGroup);
           parser.readHeader(record);
+          currentGroup.setHeader(Lists.newArrayList(record.iterator()));
           numGroup++;
           continue;
         }
