@@ -50,7 +50,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Serializes project data into XML for GanttProject's HTML/FOP stylesheets.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class XmlSerializer extends SaverBase {
@@ -162,7 +162,7 @@ public class XmlSerializer extends SaverBase {
         textElement("begin", myAttrs, t.getStart().toString(), handler);
 
         addAttribute("id", "tpd5", myAttrs);
-        textElement("end", myAttrs, t.getEnd().toString(), handler);
+        textElement("end", myAttrs, t.getEnd().getDisplayValue().toString(), handler);
         textElement("milestone", myAttrs, Boolean.valueOf(t.isMilestone()).toString(), handler);
 
         addAttribute("id", "tpd7", myAttrs);
