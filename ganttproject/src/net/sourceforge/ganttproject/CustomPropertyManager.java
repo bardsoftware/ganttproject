@@ -23,6 +23,9 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.StringUtils;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.w3c.util.DateParser;
@@ -92,16 +95,16 @@ public interface CustomPropertyManager {
         defaultValue = doubleValue;
       } else if (typeAsString.equals("date")) {
         propertyClass = CustomPropertyClass.DATE;
-        if (valueAsString == null) {
+        if (StringUtils.isEmptyOrNull(valueAsString)) {
           defaultValue = null;
         } else {
-          Date defaultDate;
+          Date defaultDate = null;
           try {
             defaultDate = DateParser.parse(valueAsString);
           } catch (InvalidDateException e) {
-            defaultDate = null;
+            defaultDate = GanttLanguage.getInstance().parseDate(valueAsString);
           }
-          defaultValue = new GanttCalendar(defaultDate);
+          defaultValue = defaultDate == null ? null : new GanttCalendar(defaultDate);
         }
       } else {
         propertyClass = CustomPropertyClass.TEXT;

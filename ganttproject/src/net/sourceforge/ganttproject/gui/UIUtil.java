@@ -133,8 +133,10 @@ public abstract class UIUtil {
       @Override
       public void focusLost(FocusEvent e) {
         try {
-          result.commitEdit();
-          listener.actionPerformed(new ActionEvent(result, ActionEvent.ACTION_PERFORMED, ""));
+          if (result.getEditor().getValue() != null) {
+            result.commitEdit();
+            listener.actionPerformed(new ActionEvent(result, ActionEvent.ACTION_PERFORMED, ""));
+          }
         } catch (ParseException e1) {
           // TODO Auto-generated catch block
           e1.printStackTrace();

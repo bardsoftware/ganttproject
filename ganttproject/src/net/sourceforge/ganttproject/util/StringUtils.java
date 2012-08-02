@@ -22,7 +22,7 @@ import java.awt.FontMetrics;
 
 /**
  * This class groups static methods together to handle strings.
- * 
+ *
  * @author Maarten Bezemer
  */
 public class StringUtils {
@@ -69,7 +69,7 @@ public class StringUtils {
   /**
    * Truncates the <code>str</code> String according to <code>width</code> and
    * <code>fontMetrics</code>.
-   * 
+   *
    * @return the truncated String.
    */
   public static String getTruncatedString(String str, int width, FontMetrics fontMetrics) {
@@ -92,4 +92,16 @@ public class StringUtils {
     // substring documentation)
     return str.substring(0, i) + "...";
   }
+
+  public static boolean isEmptyOrNull(String s) {
+    if (s == null) {
+      return true;
+    }
+    if (s.isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
+
 }
