@@ -34,10 +34,8 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -51,11 +49,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
+import net.sourceforge.ganttproject.gui.options.model.ColorOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskAllocationsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskDependenciesPanel;
@@ -80,8 +80,7 @@ import org.jdesktop.swing.JXDatePicker;
  */
 public class GanttTaskPropertiesBean extends JPanel {
 
-  private static final JColorChooser colorChooser = new JColorChooser();
-
+  private ColorOption myTaskColorOption = new DefaultColorOption("");
   private JXDatePicker myStartDatePicker;
   private JXDatePicker myEndDatePicker;
   private JXDatePicker myThirdDatePicker;
@@ -124,12 +123,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JCheckBox mileStoneCheckBox1;
 
   private JCheckBox projectTaskCheckBox1;
-
-  private boolean isColorChanged;
-
-  private JButton colorButton;
-
-  private JButton defaultColorButton;
 
   /** Shape chooser combo Box */
   private JPaintCombo shapeComboBox;
@@ -296,39 +289,9 @@ public class GanttTaskPropertiesBean extends JPanel {
     shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
     propertiesPanel.add(shapeComboBox);
 
+    OptionsPageBuilder builder = new OptionsPageBuilder(GanttTaskPropertiesBean.this);
     Box colorBox = Box.createHorizontalBox();
-    colorButton = new JButton(language.getText("colorButton"));
-    colorButton.setBackground(selectedTasks[0].getColor());
-    final String colorChooserTitle = language.getText("selectColor");
-    colorButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        JDialog dialog = JColorChooser.createDialog(GanttTaskPropertiesBean.this, colorChooserTitle, true,
-            colorChooser, new ActionListener() {
-              @Override
-              public void actionPerformed(ActionEvent e) {
-                colorButton.setBackground(colorChooser.getColor());
-                isColorChanged = true;
-              }
-            }, null);
-        colorChooser.setColor(colorButton.getBackground());
-        dialog.setVisible(true);
-      }
-    });
-    colorBox.add(colorButton);
-    colorBox.add(Box.createHorizontalStrut(5));
-
-    defaultColorButton = new JButton(language.getText("defaultColor"));
-    defaultColorButton.setBackground(GanttGraphicArea.taskDefaultColor);
-    defaultColorButton.setToolTipText(GanttProject.getToolTip(language.getText("resetColor")));
-    defaultColorButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        colorButton.setBackground(GanttGraphicArea.taskDefaultColor);
-        isColorChanged = true;
-      }
-    });
-    colorBox.add(defaultColorButton);
+    colorBox.add(builder.createColorComponent(myTaskColorOption));
 
     propertiesPanel.add(new JLabel(language.getText("colors")));
     propertiesPanel.add(colorBox);
@@ -504,9 +467,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       if (this.taskPriority != getPriority()) {
         returnTask[i].setPriority(getPriority());
       }
-      if (isColorChanged) {
-        returnTask[i].setColor(colorButton.getBackground());
-      }
+      returnTask[i].setColor(myTaskColorOption.getValue());
       if (this.taskShape == null && shapeComboBox.getSelectedIndex() != 0 || this.taskShape != null
           && !this.taskShape.equals(shapeComboBox.getSelectedPaint())) {
         returnTask[i].setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
@@ -561,6 +522,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
 
     noteAreaNotes.setText(selectedTasks[0].getNotes());
+    myTaskColorOption.setValue(selectedTasks[0].getColor());
     myUnpluggedClone = selectedTasks[0].unpluggedClone();
   }
 
@@ -735,7 +697,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   /**
    * Creates a milestone, a project task or no checkbox depending on the
    * selected task
-   * 
+   *
    * @return the created checkbox or null
    */
   private Pair<String, JCheckBox> constructCheckBox() {

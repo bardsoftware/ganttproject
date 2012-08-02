@@ -21,8 +21,6 @@ package net.sourceforge.ganttproject.util;
 import java.awt.Color;
 import java.util.regex.Pattern;
 
-import net.sourceforge.ganttproject.GanttGraphicArea;
-
 public class ColorConvertion {
 
   /** @return the color as hexadecimal version like #RRGGBB */
@@ -44,9 +42,7 @@ public class ColorConvertion {
 
   /** parse a string as hew and return the corresponding color. */
   public static Color determineColor(String hexString) {
-    if (!Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString)) {
-      return GanttGraphicArea.taskDefaultColor;
-    }
+    assert Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString) : "Can't parse color " + hexString;
     int r, g, b;
     r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();
     g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();

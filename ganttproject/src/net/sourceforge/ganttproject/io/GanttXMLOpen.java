@@ -44,6 +44,7 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -214,10 +215,6 @@ public class GanttXMLOpen implements GPParser {
             } else if (aName.equals("resource-divider-location")) {
               resourceDividerLocation = new Integer(attrs.getValue(i)).intValue();
             }
-          } else if (eName.equals("tasks")) {
-            if (aName.equals("color")) {
-              myUIConfig.setProjectLevelTaskColor(determineColor(attrs.getValue(i)));
-            }
           }
         }
       }
@@ -234,16 +231,6 @@ public class GanttXMLOpen implements GPParser {
       }
     }
 
-    private final Color determineColor(String hexString) {
-      if (!Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString)) {
-        return GanttGraphicArea.taskDefaultColor;
-      }
-      int r, g, b;
-      r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();
-      g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();
-      b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
-      return new Color(r, g, b);
-    }
   }
 
   private StringBuffer myCharacterBuffer = new StringBuffer();
