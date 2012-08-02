@@ -192,6 +192,12 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     return getTreeTable().getTree().isVisible(new TreePath(node.getPath()));
   }
 
+  public void commitIfEditing() {
+    if (myTreeTable.getTable().isEditing()) {
+      myTreeTable.getTable().getCellEditor().stopCellEditing();
+    }
+  }
+
   public int getRowHeight() {
     return myTreeTable.getTable().getRowHeight();
   }

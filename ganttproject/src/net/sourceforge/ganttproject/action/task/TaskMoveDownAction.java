@@ -58,6 +58,7 @@ public class TaskMoveDownAction extends TaskActionBase {
 
   @Override
   protected void run(List<Task> selection) throws Exception {
+    getTree().commitIfEditing();
     TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     for (int i = selection.size() - 1; i >= 0; i--) {
       Task task = selection.get(i);
