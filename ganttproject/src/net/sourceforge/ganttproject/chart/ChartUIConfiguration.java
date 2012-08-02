@@ -132,10 +132,6 @@ public class ChartUIConfiguration {
     myRowHeight = rowHeight;
   }
 
-  public Color getDefaultTaskColor() {
-    return myProjectConfig.getTaskColor();
-  }
-
   public Color getWeekEndColor() {
     return myProjectConfig.getWeekEndColor();
   }

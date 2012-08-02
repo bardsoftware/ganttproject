@@ -208,7 +208,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
-        return myUIConfiguration.getTaskColor();
+        return getArea().getTaskColor();
       }
 
       @Override
@@ -262,7 +262,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("2. loading options");
     initOptions();
-    area.setUIConfiguration(myUIConfiguration);
     getTree().setGraphicArea(area);
 
     getZoomManager().addZoomListener(area.getZoomListener());
@@ -403,8 +402,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myApplicationConfig.register(options);
     options.setUIConfiguration(myUIConfiguration);
     if (options.load()) {
-      GanttGraphicArea.taskDefaultColor = options.getDefaultColor();
-
       HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
     }
 
@@ -457,7 +454,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void restoreOptions() {
     options.initDefault();
     myUIConfiguration = options.getUIConfiguration();
-    GanttGraphicArea.taskDefaultColor = new Color(140, 182, 206);
     area.repaint();
   }
 

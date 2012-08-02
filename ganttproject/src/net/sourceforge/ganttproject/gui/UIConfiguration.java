@@ -35,9 +35,6 @@ public class UIConfiguration {
 
   private final Font myChartMainFont;
 
-  private Color myTaskColor;
-  private Color myProjectLevelTaskColor;
-
   /** default resource color */
   private Color myResColor;
 
@@ -71,7 +68,6 @@ public class UIConfiguration {
     myMenuFont = menuFont == null ? Fonts.DEFAULT_MENU_FONT : menuFont;
     myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
     this.isRedlineOn = isRedlineOn;
-    setTaskColor(taskColor);
     myResColor = new Color(140, 182, 206);
     myResOverColor = new Color(229, 50, 50);
     myResUnderColor = new Color(50, 229, 50);
@@ -89,18 +85,6 @@ public class UIConfiguration {
 
   public Font getChartMainFont() {
     return myChartMainFont;
-  }
-
-  public Color getTaskColor() {
-    return myProjectLevelTaskColor == null ? myTaskColor : myProjectLevelTaskColor;
-  }
-
-  public void setTaskColor(Color myTaskColor) {
-    this.myTaskColor = myTaskColor;
-  }
-
-  public void setProjectLevelTaskColor(Color color) {
-    myProjectLevelTaskColor = color;
   }
 
   public Color getResourceColor() {
