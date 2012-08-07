@@ -45,7 +45,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
 
   @Override
   public void setSelectedItem(Object item) {
-    if (item != null) {
+    if (item instanceof Item) {
       mySelectedItem = (Item) item;
       myOption.setValue(mySelectedItem.myID);
     }
@@ -66,7 +66,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
     return myValues.get(index);
   }
 
-  String[] geti18nedValues(EnumerationOption option, GPOptionGroup group) {
+  static String[] geti18nedValues(EnumerationOption option, GPOptionGroup group) {
     String[] ids = option.getAvailableValues();
     String[] result = new String[ids.length];
     for (int i = 0; i < ids.length; i++) {

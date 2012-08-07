@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -58,7 +59,7 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
 
 /**
  * @author bard
@@ -163,7 +164,7 @@ public class OptionsPageBuilder {
       }
     }
     if (options.length > 0) {
-      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 3, 3);
+      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 5, 3);
     }
     return optionsPanel;
   }
@@ -212,7 +213,8 @@ public class OptionsPageBuilder {
 
   private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
     JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
-    // nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+    nextLabel.setVerticalAlignment(SwingConstants.TOP);
+    nextLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     return nextLabel;
   }
 
@@ -281,7 +283,7 @@ public class OptionsPageBuilder {
   }
 
   private Component createStringComponent(final StringOption option) {
-    final JTextField result = new JTextField(option.getValue());
+    final JTextField result = option.isScreened() ? new JPasswordField(option.getValue()) : new JTextField(option.getValue());
 
     final DocumentListener documentListener = new DocumentListener() {
       private void saveValue() {
@@ -346,11 +348,11 @@ public class OptionsPageBuilder {
 
   private boolean isCheckboxOption(GPOptionGroup group, GPOption<?> option) {
     String yesKey = myi18n.getCanonicalOptionLabelKey(option) + ".yes";
-    if ((group == null || group.getI18Nkey(yesKey) == null) && myi18n.getValue(yesKey) == null) {
+    if ((group == null || group.getI18Nkey(yesKey) == null) && !myi18n.hasValue(yesKey)) {
       return true;
     }
     String noKey = myi18n.getCanonicalOptionLabelKey(option) + ".no";
-    if ((group == null || group.getI18Nkey(noKey) == null) && myi18n.getValue(noKey) == null) {
+    if ((group == null || group.getI18Nkey(noKey) == null) && !myi18n.hasValue(noKey)) {
       return true;
     }
     return false;
@@ -367,6 +369,7 @@ public class OptionsPageBuilder {
         }
       }
     });
+    yesButton.setVerticalAlignment(SwingConstants.CENTER);
     yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
     yesButton.setSelected(option.isChecked());
 
@@ -387,11 +390,11 @@ public class OptionsPageBuilder {
     buttonGroup.add(yesButton);
     buttonGroup.add(noButton);
 
-    Box result = Box.createHorizontalBox();
+    Box result = Box.createVerticalBox();
     result.add(yesButton);
-    result.add(Box.createHorizontalStrut(5));
+    result.add(Box.createVerticalStrut(2));
     result.add(noButton);
-    result.add(Box.createHorizontalGlue());
+    result.add(Box.createVerticalGlue());
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -406,11 +409,11 @@ public class OptionsPageBuilder {
   }
 
   private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
-    final EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
-    final JComboBox result = new JComboBox(model);
+    final JComboBox result = new JComboBox(new EnumerationOptionComboBoxModel(option, group));
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
+        EnumerationOptionComboBoxModel model = (EnumerationOptionComboBoxModel) result.getModel();
         model.onValueChange();
         result.setSelectedItem(model.getSelectedItem());
       }
@@ -547,6 +550,9 @@ public class OptionsPageBuilder {
     public I18N() {
     }
 
+    protected boolean hasValue(String key) {
+      return GanttLanguage.getInstance().getText(key) != null;
+    }
     protected String getValue(String key) {
       String result = GanttLanguage.getInstance().getText(key);
       return result == null ? key : result;

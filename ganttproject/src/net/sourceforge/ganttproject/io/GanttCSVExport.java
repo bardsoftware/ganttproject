@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2004-2011 Thomas Alexandre, GanttProject Team
+Copyright (C) 2004-2012 Thomas Alexandre, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,24 +21,33 @@ package net.sourceforge.ganttproject.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.TaskDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.StringUtils;
 
 /**
- * Class to export the project in csv text format
- * 
+ * Class to export the project in CSV text format
+ *
  * @author athomas
  */
 public class GanttCSVExport {
@@ -46,211 +55,196 @@ public class GanttCSVExport {
 
   private final CSVOptions csvOptions;
 
-  private final HumanResourceManager myHrManager;
-
-  private final Task[] myTasks;
-
-  private List<HumanResource> resources;
-
   private int iMaxSize = 0;
-
-  /** Create a table like output with fixed column widths */
-  private boolean bFixedSize;
 
   public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
     myProject = project;
-    myTasks = project.getTaskManager().getTasks();
-    myHrManager = project.getHumanResourceManager();
     this.csvOptions = csvOptions;
-    bFixedSize = csvOptions.bFixedSize;
   }
 
   /**
    * Save the project as CSV on a stream
-   * 
+   *
    * @throws IOException
    */
   public void save(OutputStream stream) throws IOException {
-    OutputStreamWriter out = new OutputStreamWriter(stream);
-    beginToSave(out);
-    out.close();
-  }
-
-  /** Start saving the csv document. */
-  private void beginToSave(OutputStreamWriter out) throws IOException {
-    resources = myHrManager.getResources();
+    OutputStreamWriter writer = new OutputStreamWriter(stream);
+    CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
     if (csvOptions.bFixedSize) {
+      // TODO The CVS library we use is lacking support for fixed size
       getMaxSize();
     }
 
-    writeTasks(out);
-    out.write("\n");
+    writeTasks(csvPrinter);
 
-    if (resources.size() > 0) {
-      out.write("\n\n");
-      writeResources(out);
-      out.write("\n");
+    if (myProject.getHumanResourceManager().getResources().size() > 0) {
+      csvPrinter.println();
+      csvPrinter.println();
+      writeResources(csvPrinter);
     }
+    writer.flush();
+    writer.close();
   }
 
-  private void writeCell(OutputStreamWriter out, String cellValue) throws IOException {
-    out.write(correctField(cellValue) + (bFixedSize ? "" : csvOptions.sSeparatedChar));
-  }
-
-  private void writeTextCell(OutputStreamWriter out, String cellValue) throws IOException {
-    out.write((bFixedSize ? "" : csvOptions.sSeparatedTextChar) + correctField(cellValue)
-        + (bFixedSize ? "" : csvOptions.sSeparatedTextChar + csvOptions.sSeparatedChar));
-  }
-
-  private void writeTaskHeaders(OutputStreamWriter out) throws IOException {
+  private void writeTaskHeaders(CSVPrinter writer) throws IOException {
     if (csvOptions.bExportTaskID) {
-      writeCell(out, i18n("tableColID"));
+      writer.print(TaskDefaultColumn.ID.getName());
     }
     if (csvOptions.bExportTaskName) {
-      writeCell(out, i18n("tableColName"));
+      writer.print(TaskDefaultColumn.NAME.getName());
     }
     if (csvOptions.bExportTaskStartDate) {
-      writeCell(out, i18n("tableColBegDate"));
+      writer.print(TaskDefaultColumn.BEGIN_DATE.getName());
     }
     if (csvOptions.bExportTaskEndDate) {
-      writeCell(out, i18n("tableColEndDate"));
+      writer.print(TaskDefaultColumn.END_DATE.getName());
     }
     if (csvOptions.bExportTaskDuration) {
-      writeCell(out, i18n("tableColDuration"));
+      writer.print(TaskDefaultColumn.DURATION.getName());
     }
     if (csvOptions.bExportTaskPercent) {
-      writeCell(out, i18n("tableColCompletion"));
+      writer.print(TaskDefaultColumn.COMPLETION.getName());
     }
     if (csvOptions.bExportTaskWebLink) {
-      writeCell(out, i18n("webLink"));
+      writer.print(i18n("webLink"));
     }
     if (csvOptions.bExportTaskResources) {
-      writeCell(out, i18n("resources"));
+      writer.print(i18n("resources"));
     }
     if (csvOptions.bExportTaskNotes) {
-      writeCell(out, i18n("notes"));
+      writer.print(i18n("notes"));
     }
+    writer.print(TaskDefaultColumn.PREDECESSORS.getName());
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
-      writeCell(out, def.getName());
+      writer.print(def.getName());
     }
-    out.write("\n\n");
+    writer.println();
+    writer.println();
   }
 
   private String i18n(String key) {
     return GanttLanguage.getInstance().getText(key);
   }
 
-  /** Write all tasks. */
-  private void writeTasks(OutputStreamWriter out) throws IOException {
-    writeTaskHeaders(out);
+  /** Write all tasks.
+   * @throws IOException */
+  private void writeTasks(CSVPrinter writer) throws IOException {
+    writeTaskHeaders(writer);
     List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
-    for (int i = 0; i < myTasks.length; i++) {
-      Task task = myTasks[i];
+    for (Task task : myProject.getTaskManager().getTasks()) {
       // ID
       if (csvOptions.bExportTaskID) {
-        writeCell(out, String.valueOf(task.getTaskID()));
+        writer.print(String.valueOf(task.getTaskID()));
       }
       // Name
       if (csvOptions.bExportTaskName) {
-        writeTextCell(out, getName(task));
+        writer.print(getName(task));
       }
       // Start Date
       if (csvOptions.bExportTaskStartDate) {
-        writeCell(out, task.getStart().toString());
+        writer.print(task.getStart().toString());
       }
       // End Date
       if (csvOptions.bExportTaskEndDate) {
-        writeCell(out, task.getEnd().toString());
+        writer.print(task.getEnd().toString());
       }
       // Duration
       if (csvOptions.bExportTaskDuration) {
-        writeCell(out, "" + task.getDuration().getLength());
+        writer.print(String.valueOf(task.getDuration().getLength()));
       }
       // Percent complete
       if (csvOptions.bExportTaskPercent) {
-        writeCell(out, "" + task.getCompletionPercentage());
+        writer.print(String.valueOf(task.getCompletionPercentage()));
       }
       // Web Link
       if (csvOptions.bExportTaskWebLink) {
-        writeTextCell(out, getWebLink((GanttTask) task));
+        writer.print(getWebLink((GanttTask) task));
       }
       // associated resources
       if (csvOptions.bExportTaskResources) {
-        writeTextCell(out, getAssignments(task));
+        writer.print(getAssignments(task));
       }
       // Notes
       if (csvOptions.bExportTaskNotes) {
-        writeTextCell(out, task.getNotes());
+        writer.print(task.getNotes());
       }
+      writer.print(Joiner.on(';').join(Lists.transform(
+          Arrays.asList(task.getDependenciesAsDependant().toArray()),
+          new Function<TaskDependency, String>() {
+            @Override
+            public String apply(TaskDependency input) {
+              return "" + input.getDependee().getTaskID();
+            }
+          })));
       CustomColumnsValues customValues = task.getCustomValues();
       for (int j = 0; j < customFields.size(); j++) {
         Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
-        writeCell(out, String.valueOf(nextCustomFieldValue));
+        writer.print(String.valueOf(nextCustomFieldValue));
       }
-      out.write("\n");
+      writer.println();
     }
   }
 
-  private void writeResourceHeaders(OutputStreamWriter out) throws IOException {
+  private void writeResourceHeaders(CSVPrinter writer) throws IOException {
     if (csvOptions.bExportResourceID) {
-      writeCell(out, i18n("tableColID"));
+      writer.print(i18n("tableColID"));
     }
     if (csvOptions.bExportResourceName) {
-      writeCell(out, i18n("tableColResourceName"));
+      writer.print(i18n("tableColResourceName"));
     }
     if (csvOptions.bExportResourceMail) {
-      writeCell(out, i18n("tableColResourceEMail"));
+      writer.print(i18n("tableColResourceEMail"));
     }
     if (csvOptions.bExportResourcePhone) {
-      writeCell(out, i18n("tableColResourcePhone"));
+      writer.print(i18n("tableColResourcePhone"));
     }
     if (csvOptions.bExportResourceRole) {
-      writeCell(out, i18n("tableColResourceRole"));
+      writer.print(i18n("tableColResourceRole"));
     }
     List<CustomPropertyDefinition> customFieldDefs = myProject.getResourceCustomPropertyManager().getDefinitions();
     for (int i = 0; i < customFieldDefs.size(); i++) {
       CustomPropertyDefinition nextDef = customFieldDefs.get(i);
-      writeCell(out, nextDef.getName());
+      writer.print(nextDef.getName());
     }
-    out.write("\n\n");
+    writer.println();
+    writer.println();
   }
 
-  /** write the resources. */
-  private void writeResources(OutputStreamWriter out) throws IOException {
-    writeResourceHeaders(out);
+  /** write the resources.
+   * @throws IOException */
+  private void writeResources(CSVPrinter writer) throws IOException {
+    writeResourceHeaders(writer);
     // parse all resources
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource p = resources.get(i);
-
+    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
       // ID
       if (csvOptions.bExportResourceID) {
-        writeCell(out, "" + p.getId());
+        writer.print(String.valueOf(p.getId()));
       }
       // Name
       if (csvOptions.bExportResourceName) {
-        writeTextCell(out, p.getName());
+        writer.print(p.getName());
       }
       // Mail
       if (csvOptions.bExportResourceMail) {
-        writeTextCell(out, p.getMail());
+        writer.print(p.getMail());
       }
       // Phone
       if (csvOptions.bExportResourcePhone) {
-        writeTextCell(out, p.getPhone());
+        writer.print(p.getPhone());
       }
       // Role
       if (csvOptions.bExportResourceRole) {
         Role role = p.getRole();
         String sRoleID = role == null ? "0" : role.getPersistentID();
-        writeTextCell(out, sRoleID);
+        writer.print(sRoleID);
       }
       List<CustomProperty> customProps = p.getCustomProperties();
       for (int j = 0; j < customProps.size(); j++) {
         CustomProperty nextProperty = customProps.get(j);
-        writeTextCell(out, nextProperty.getValueAsString());
+        writer.print(nextProperty.getValueAsString());
       }
-      out.write("\n");
+      writer.println();
     }
   }
 
@@ -258,8 +252,8 @@ public class GanttCSVExport {
   private void getMaxSize() {
     List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
     iMaxSize = 0;
-    for (int i = 0; i < myTasks.length; i++) {
-      Task task = myTasks[i];
+    // Check widths of the tasks fields
+    for (Task task : myProject.getTaskManager().getTasks()) {
 
       if (csvOptions.bExportTaskID) {
         String s = String.valueOf(task.getTaskID());
@@ -334,10 +328,8 @@ public class GanttCSVExport {
       }
     }
 
-    // parse all resources
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource p = resources.get(i);
-
+    // Check widths of the resources fields
+    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
       if (csvOptions.bExportResourceID) {
         String s = String.valueOf(p.getId());
         if (s.length() > iMaxSize) {
@@ -385,16 +377,16 @@ public class GanttCSVExport {
 
   /** @return the name of task with the correct level. */
   private String getName(Task task) {
-    if (bFixedSize) {
+    if (csvOptions.bFixedSize) {
       return task.getName();
     }
-    int depth = task.getManager().getTaskHierarchy().getDepth(task);
+    int depth = task.getManager().getTaskHierarchy().getDepth(task) - 1;
     return StringUtils.padLeft(task.getName(), depth * 2);
   }
 
   /** @return the link of the task. */
   private String getWebLink(GanttTask task) {
-    return (task.getWebLink().equals("http://") ? "" : task.getWebLink());
+    return (task.getWebLink() == null || task.getWebLink().equals("http://") ? "" : task.getWebLink());
   }
 
   /** @return the list of the assignment for the resources. */
@@ -406,9 +398,5 @@ public class GanttCSVExport {
           : csvOptions.sSeparatedChar.equals(";") ? "," : ";"));
     }
     return res;
-  }
-
-  private String correctField(String field) {
-    return StringUtils.padLeft(field, iMaxSize - field.length());
   }
 }

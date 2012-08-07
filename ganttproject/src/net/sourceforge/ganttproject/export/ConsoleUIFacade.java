@@ -27,6 +27,7 @@ import javax.swing.Action;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -37,6 +38,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class ConsoleUIFacade implements UIFacade {
@@ -107,7 +109,7 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Chart getResourceChart() {
+  public TimelineChart getResourceChart() {
     return myRealFacade.getResourceChart();
   }
 
@@ -170,6 +172,11 @@ public class ConsoleUIFacade implements UIFacade {
   public GPUndoManager getUndoManager() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public TaskView getCurrentTaskView() {
+    return myRealFacade.getCurrentTaskView();
   }
 
   @Override
