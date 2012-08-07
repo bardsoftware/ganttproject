@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import java.awt.Color;
 import java.util.Date;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
@@ -39,6 +41,91 @@ import net.sourceforge.ganttproject.time.TimeUnit;
  * @author bard
  */
 public interface TaskManager {
+  abstract class TaskBuilder {
+    String myName;
+    Integer myId;
+    Date myStartDate;
+    TaskLength myDuration;
+    Color myColor;
+    Task myPrevSibling;
+    boolean isExpanded;
+    Task myParent;
+    boolean isLegacyMilestone;
+    Date myEndDate;
+    String myNotes;
+    String myWebLink;
+    int myCompletion;
+
+    public TaskBuilder withColor(Color color) {
+      myColor = color;
+      return this;
+    }
+
+    public TaskBuilder withCompletion(int pctgCompletion) {
+      myCompletion = pctgCompletion;
+      return this;
+    }
+
+    public TaskBuilder withDuration(TaskLength duration) {
+      myDuration = duration;
+      return this;
+    }
+
+    public TaskBuilder withEndDate(Date date) {
+      myEndDate = date;
+      return this;
+    }
+
+    public TaskBuilder withExpansionState(boolean isExpanded) {
+      this.isExpanded = isExpanded;
+      return this;
+    }
+
+    public TaskBuilder withId(int id) {
+      myId = id;
+      return this;
+    }
+
+    public TaskBuilder withLegacyMilestone() {
+      isLegacyMilestone = true;
+      return this;
+    }
+
+    public TaskBuilder withName(String name) {
+      myName = name;
+      return this;
+    }
+
+    public TaskBuilder withNotes(String notes) {
+      myNotes = notes;
+      return this;
+    }
+
+    public TaskBuilder withParent(Task parent) {
+      myParent = parent;
+      return this;
+    }
+    public TaskBuilder withPrevSibling(Task sibling) {
+      myPrevSibling = sibling;
+      return this;
+    }
+
+    public TaskBuilder withStartDate(Date startDate) {
+      myStartDate = startDate;
+      return this;
+    }
+
+    public TaskBuilder withWebLink(String value) {
+      myWebLink = value;
+      return this;
+    }
+
+    public abstract Task build();
+
+  }
+
+  public TaskBuilder newTaskBuilder();
+
   Task[] getTasks();
 
   public Task getRootTask();
@@ -53,7 +140,9 @@ public interface TaskManager {
 
   public GanttTask createTask();
 
+  @Deprecated
   public GanttTask createTask(int taskId);
+
 
   String encode(TaskLength duration);
 
@@ -108,7 +197,7 @@ public interface TaskManager {
 
   /**
    * Processes the critical path finding on <code>root</code> tasks.
-   * 
+   *
    * @param root
    *          The root of the tasks to consider in the critical path finding.
    */
@@ -121,4 +210,8 @@ public interface TaskManager {
   StringOption getTaskNamePrefixOption();
 
   EnumerationOption getDependencyHardnessOption();
+
+  void setZeroMilestones(Boolean b);
+
+  Boolean isZeroMilestones();
 }

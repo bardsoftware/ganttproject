@@ -35,4 +35,7 @@ public interface GPOption<T> {
 
   void removePropertyChangeListener(PropertyChangeListener listener);
 
+  boolean isScreened();
+
+  void setScreened(boolean isScreened);
 }

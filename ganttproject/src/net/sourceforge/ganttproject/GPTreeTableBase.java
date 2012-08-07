@@ -32,7 +32,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,9 +43,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.DefaultCellEditor;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -54,9 +51,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -76,27 +71,30 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
-import org.jdesktop.jdnc.JNTreeTable;
-import org.jdesktop.swing.JXTreeTable;
-import org.jdesktop.swing.decorator.AlternateRowHighlighter;
-import org.jdesktop.swing.decorator.HierarchicalColumnHighlighter;
-import org.jdesktop.swing.decorator.Highlighter;
-import org.jdesktop.swing.decorator.HighlighterPipeline;
-import org.jdesktop.swing.table.TableCellRenderers;
-import org.jdesktop.swing.table.TableColumnExt;
-import org.jdesktop.swing.treetable.DefaultTreeTableModel;
-import org.jdesktop.swing.treetable.TreeTableModel;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.TreeTableCellEditor;
+import org.jdesktop.swingx.treetable.TreeTableModel;
 
-public abstract class GPTreeTableBase extends JNTreeTable implements CustomPropertyListener {
+public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
   private final TableHeaderUiFacadeImpl myTableHeaderFacade = new TableHeaderUiFacadeImpl();
   private final CustomPropertyManager myCustomPropertyManager;
+  private final JScrollPane myScrollPane = new JScrollPane() {
+    @Override
+    public void applyComponentOrientation(ComponentOrientation o) {
+      super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    }
+  };
+
   private boolean isInitialized;
   private GPAction myEditCellAction = new GPAction("tree.edit") {
     @Override
@@ -108,14 +106,23 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
       if (t.getSelectedColumn() < 0) {
         t.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
       }
-      TableCellEditor cellEditor = getTable().getCellEditor(
-          t.getSelectedRow(), t.getSelectedColumn());
-      t.editCellAt(t.getSelectedRow(), t.getSelectedColumn());
-      if (cellEditor instanceof TreeTableCellEditorImpl) {
-    	  ((TreeTableCellEditorImpl)cellEditor).requestFocus();
-      }
+      editCellAt(t.getSelectedRow(), t.getSelectedColumn());
     }
   };
+
+  @Override
+  public boolean editCellAt(int row, int column) {
+    TableCellEditor cellEditor = getTable().getCellEditor(row, column);
+    boolean result = super.editCellAt(row, column);
+    if (cellEditor instanceof TreeTableCellEditor) {
+      JTextComponent editorComponent = (JTextComponent) ((TreeTableCellEditor)cellEditor).getComponent();
+      TreeTableCellEditorImpl.createSelectAllCommand(editorComponent).run();
+    }
+    if (cellEditor instanceof TreeTableCellEditorImpl) {
+      ((TreeTableCellEditorImpl) cellEditor).requestFocus();
+    }
+    return result;
+  }
 
   protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
     private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
@@ -377,13 +384,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
 
     Dimension getHeaderFitDimension() {
-      TableCellRenderer renderer = myTableColumn.getHeaderRenderer();
-      if (renderer == null) {
-        renderer = myTable.getTableHeader().getDefaultRenderer();
-      }
-      Component comp = renderer.getTableCellRendererComponent(myTable, myTableColumn.getHeaderValue(), false, false, 0,
-          0);
-      return comp.getPreferredSize();
+      return UIUtil.getHeaderDimension(myTable, myTableColumn);
     }
 
   }
@@ -392,47 +393,39 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     return myProject;
   }
 
-  private static JXTreeTable createTable(DefaultTreeTableModel model) {
-    JXTreeTable result = new JXTreeTable(model) {
-      {
-        setTableHeader(new JTableHeader(getColumnModel()) {
-          @Override
-          public void applyComponentOrientation(ComponentOrientation o) {
-            super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-          }
-        });
-      }
-
-      @Override
-      protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        if (e.isAltDown() || e.isControlDown()) {
-          putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
-        }
-        boolean result = super.processKeyBinding(ks, e, condition, pressed);
-        putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-        return result;
-      }
-
-      @Override
-      public void applyComponentOrientation(ComponentOrientation o) {
-        super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-      }
-
-      @Override
-      public String getToolTipText(MouseEvent e) {
-        try {
-          return super.getToolTipText(e);
-        } catch (NullPointerException ex) {
-          return null;
-        }
-      }
-    };
+  @Override
+  protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+    if (e.isAltDown() || e.isControlDown()) {
+      putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    }
+    boolean result = super.processKeyBinding(ks, e, condition, pressed);
+    putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
     return result;
+  }
+
+  @Override
+  public void applyComponentOrientation(ComponentOrientation o) {
+    super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+  }
+
+  @Override
+  public String getToolTipText(MouseEvent e) {
+    try {
+      return super.getToolTipText(e);
+    } catch (NullPointerException ex) {
+      return null;
+    }
   }
 
   protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
       DefaultTreeTableModel model) {
-    super(createTable(model));
+    super(model);
+    setTableHeader(new JTableHeader(getColumnModel()) {
+      @Override
+      public void applyComponentOrientation(ComponentOrientation o) {
+        super.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+      }
+    });
     myCustomPropertyManager = customPropertyManager;
     myUiFacade = uiFacade;
     myProject = project;
@@ -468,12 +461,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
   }
 
   protected void doInit() {
-    scrollPane = new JScrollPane() {
-      @Override
-      public void applyComponentOrientation(ComponentOrientation o) {
-        super.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-      }
-    };
+    setRootVisible(false);
     myCustomPropertyManager.addListener(this);
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
@@ -506,27 +494,15 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     });
     getTable().setAutoCreateColumnsFromModel(false);
     getTable().setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-    setShowHorizontalLines(true);
-    setHasColumnControl(true);
-
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/simple_task.gif"));
     setOpenIcon(icon);
     setClosedIcon(icon);
     setCollapsedIcon(new ImageIcon(getClass().getResource("/icons/plus.gif")));
     setExpandedIcon(new ImageIcon(getClass().getResource("/icons/minus.gif")));
     setLeafIcon(icon);
-    getTreeTable().getParent().setBackground(Color.WHITE);
-
-    InputMap inputMap = getInputMap();
-    inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
-    getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-    ActionMap actionMap = getActionMap();
-    actionMap.setParent(getTreeTable().getActionMap());
-    getTreeTable().setActionMap(actionMap);
     addActionWithAccelleratorKey(myEditCellAction);
 
-    setHighlighters(new HighlighterPipeline(new Highlighter[] { AlternateRowHighlighter.quickSilver,
-        new HierarchicalColumnHighlighter() }));
+    setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
 
     getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
@@ -540,7 +516,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
         onCellSelectionChanged();
       }
     });
-    getTreeTable().getTree().addTreeExpansionListener(new TreeExpansionListener() {
+    getTree().addTreeExpansionListener(new TreeExpansionListener() {
       @Override
       public void treeExpanded(TreeExpansionEvent arg0) {
         getChart().reset();
@@ -553,7 +529,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     });
     getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
 
-    getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    // getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     getTable().setFillsViewportHeight(true);
   }
 
@@ -562,7 +538,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
       int row = getTable().getSelectedRow();
       int col = getTable().getSelectedColumn();
       Rectangle rect = getTable().getCellRect(row, col, true);
-      scrollPane.scrollRectToVisible(rect);
+      getScrollPane().scrollRectToVisible(rect);
     }
   }
 
@@ -618,16 +594,21 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
     TableCellEditor editor = createCellEditor(columnClass);
     if (editor != null) {
-      result.setCellEditor(new TreeTableCellEditorImpl(editor, getTable()));
+      result.setCellEditor(editor);
+    } else {
+      System.err.println("no editor for column=" + modelIndex + " class=" + columnClass);
     }
     return result;
   }
 
   TableCellRenderer createCellRenderer(Class<?> columnClass) {
     TableCellRenderer renderer = null;
-    if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass)) {
-      renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
-    }
+    // TODO(dbarashev): make sure that icon and boolean values render fine
+    // if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass))
+    // {
+    // renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
+    //
+    // }
     if (renderer == null) {
       renderer = getTreeTable().getDefaultRenderer(columnClass);
     }
@@ -637,7 +618,7 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
   TableCellEditor createCellEditor(Class<?> columnClass) {
     TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? newDateCellEditor()
         : getTreeTable().getDefaultEditor(columnClass);
-    return wrapEditor(editor);
+    return editor == null ? null : wrapEditor(editor);
   }
 
   private TableCellEditor wrapEditor(TableCellEditor editor) {
@@ -648,35 +629,41 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     return new DateCellEditor();
   }
 
-  public JTree getTree() {
-    return this.getTreeTable().getTree();
+  public JXTreeTable getTree() {
+    return this;
+  }
+
+  public JXTreeTable getTreeTable() {
+    return this;
+  }
+
+  public JTable getTable() {
+    return this;
   }
 
   JScrollBar getVerticalScrollBar() {
-    return scrollPane.getVerticalScrollBar();
+    return getScrollPane().getVerticalScrollBar();
   }
 
   JScrollBar getHorizontalScrollBar() {
-    return scrollPane.createHorizontalScrollBar();
+    return getScrollPane().createHorizontalScrollBar();
   }
 
   protected JScrollPane getScrollPane() {
-    return scrollPane;
+    return myScrollPane;
   }
 
   @Override
   public void addMouseListener(MouseListener mouseListener) {
     super.addMouseListener(mouseListener);
-    getTable().addMouseListener(mouseListener);
-    getTree().addMouseListener(mouseListener);
-    this.getTreeTable().getParent().addMouseListener(mouseListener);
+    // this.getTreeTable().getParent().addMouseListener(mouseListener);
   }
 
   @Override
   public void addKeyListener(KeyListener keyListener) {
     super.addKeyListener(keyListener);
-    getTable().addKeyListener(keyListener);
-    getTree().addKeyListener(keyListener);
+    // getTable().addKeyListener(keyListener);
+    // getTree().addKeyListener(keyListener);
   }
 
   private static class DateCellEditor extends DefaultCellEditor {
@@ -719,20 +706,21 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
     }
   }
 
-  protected abstract class VscrollAdjustmentListener implements AdjustmentListener {
+  protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {
     private final boolean isMod;
+    private final TimelineChart myChart;
 
-    protected VscrollAdjustmentListener(boolean calculateMod) {
+    protected VscrollAdjustmentListener(TimelineChart chart, boolean calculateMod) {
       isMod = calculateMod;
+      myChart = chart;
     }
 
-    protected abstract TimelineChart getChart();
+    protected TimelineChart getChart() {
+      return myChart;
+    }
 
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
-      if (!isInitialized) {
-        return;
-      }
       if (getChart() == null) {
         return;
       }
@@ -743,11 +731,21 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
       }
       getChart().reset();
     }
+
+    @Override
+    public boolean isScrollable() {
+      return getVerticalScrollBar().getMaximum() - getVerticalScrollBar().getMinimum() > 0;
+    }
+
+    @Override
+    public void scrollBy(int pixels) {
+      getVerticalScrollBar().setValue(getVerticalScrollBar().getValue() + pixels);
+    }
   }
 
   void insertWithLeftyScrollBar(JComponent container) {
-    container.add(scrollPane, BorderLayout.CENTER);
-    scrollPane.getViewport().add(getTable());
+    getScrollPane().getViewport().add(getTable());
+    container.add(getScrollPane(), BorderLayout.CENTER);
 
   }
 
@@ -897,27 +895,10 @@ public abstract class GPTreeTableBase extends JNTreeTable implements CustomPrope
   }
 
   private Dimension autoFitColumnWidth(ColumnImpl column) {
-    final int margin = 5;
-    final JTable table = getTable();
-    final TableColumnExt tableColumn = column.myTableColumn;
+    Dimension dimension = UIUtil.autoFitColumnWidth(getTable(), column.getTableColumnExt());
+    column.getTableColumnExt().setWidth(dimension.width);
+    column.getTableColumnExt().setPreferredWidth(dimension.width);
+    return dimension;
 
-    Dimension headerFit = column.getHeaderFitDimension();
-    int width = headerFit.width;
-    int height = 0;
-
-    // Get maximum width of column data
-    for (int r = 0; r < getTable().getRowCount(); r++) {
-      TableCellRenderer renderer = table.getCellRenderer(r, column.getOrder());
-      Component comp = renderer.getTableCellRendererComponent(table, table.getValueAt(r, column.getOrder()), false,
-          false, r, column.getOrder());
-      width = Math.max(width, comp.getPreferredSize().width);
-      height += comp.getPreferredSize().height;
-    }
-    // Add margin
-    width += 2 * margin;
-    // Set the width
-    tableColumn.setWidth(width);
-    tableColumn.setPreferredWidth(width);
-    return new Dimension(width, height);
   }
 }

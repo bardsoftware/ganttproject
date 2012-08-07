@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,7 +75,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     isRunning = false;
   }
 
-  public void run(Set<Task> taskSet) throws TaskDependencyException {
+  public void run(Collection<Task> taskSet) throws TaskDependencyException {
     if (!isEnabled()) {
       return;
     }

@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -23,17 +23,18 @@ import java.util.Date;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
-class MilestoneTaskFakeActivity implements TaskActivity {
+public class MilestoneTaskFakeActivity implements TaskActivity {
   private final Task myTask;
   private final Date myStartTime;
   private final Date myEndTime;
 
-  MilestoneTaskFakeActivity(Task task) {
+  public MilestoneTaskFakeActivity(Task task) {
     this(task, task.getStart().getTime(), task.getEnd().getTime());
   }
 
-  MilestoneTaskFakeActivity(Task task, Date startTime, Date endTime) {
+  public MilestoneTaskFakeActivity(Task task, Date startTime, Date endTime) {
     assert task.isMilestone();
     myTask = task;
     myStartTime = startTime;

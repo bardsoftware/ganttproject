@@ -25,8 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.Calendar;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -45,8 +43,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttProject;
@@ -59,6 +55,7 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskAllocationsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskDependenciesPanel;
+import net.sourceforge.ganttproject.gui.taskproperties.TaskScheduleDatesPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -73,7 +70,9 @@ import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.util.BrowserControl;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
+
+import com.google.common.base.Objects;
 
 /**
  * Real panel for editing task properties
@@ -81,17 +80,11 @@ import org.jdesktop.swing.JXDatePicker;
 public class GanttTaskPropertiesBean extends JPanel {
 
   private ColorOption myTaskColorOption = new DefaultColorOption("");
-  private JXDatePicker myStartDatePicker;
-  private JXDatePicker myEndDatePicker;
   private JXDatePicker myThirdDatePicker;
 
   protected GanttTask[] selectedTasks;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
-
-  private GanttCalendar myStart;
-
-  private GanttCalendar myEnd;
 
   private GanttCalendar myThird;
 
@@ -107,8 +100,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JPanel notesPanel;
 
   private JTextField nameField1;
-
-  private JTextField durationField1;
 
   private JTextField tfWebLink;
 
@@ -133,27 +124,31 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private JPanel secondRowPanelNotes;
 
-  private String taskWebLink;
+  private String originalName;
 
-  private boolean taskIsMilestone;
+  private String originalWebLink;
 
-  private GanttCalendar taskStartDate;
+  private boolean originalIsMilestone;
 
-  private GanttCalendar taskThirdDate;
+  private GanttCalendar originalStartDate;
 
-  private int taskThirdDateConstraint;
+  private GanttCalendar originalEndDate;
 
-  private boolean taskIsProjectTask;
+  private GanttCalendar originalThirdDate;
 
-  private int taskLength;
+  private int originalThirdDateConstraint;
 
-  private String taskNotes;
+  private boolean originalIsProjectTask;
 
-  private int taskCompletionPercentage;
+  private String originalNotes;
 
-  private Task.Priority taskPriority;
+  private int originalCompletionPercentage;
 
-  private ShapePaint taskShape;
+  private Task.Priority originalPriority;
+
+  private ShapePaint originalShape;
+
+  private final TaskScheduleDatesPanel myTaskScheduleDates;
 
   private CustomColumnsPanel myCustomColumnPanel = null;
 
@@ -170,18 +165,19 @@ public class GanttTaskPropertiesBean extends JPanel {
   private final IGanttProject myProject;
   private final UIFacade myUIfacade;
 
-  private TaskMutator mutator;
+  private JCheckBox myShowInTimeline;
 
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
+    myTaskScheduleDates = new TaskScheduleDatesPanel(uifacade);
     this.selectedTasks = selectedTasks;
-    setInitialValues(selectedTasks[0]);
+    storeOriginalValues(selectedTasks[0]);
     myHumanResourceManager = project.getHumanResourceManager();
     myRoleManager = project.getRoleManager();
     myTaskManager = project.getTaskManager();
     myProject = project;
     myUIfacade = uifacade;
     init();
-    setSelectedTask();
+    setSelectedTaskProperties();
   }
 
   private static void addEmptyRow(JPanel form) {
@@ -191,7 +187,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   /** Construct the general panel */
   private void constructGeneralPanel() {
-    JPanel propertiesPanel = new JPanel(new SpringLayout());
+    final JPanel propertiesPanel = new JPanel(new SpringLayout());
 
     propertiesPanel.add(new JLabel(language.getText("name")));
     nameField1 = new JTextField(20);
@@ -203,40 +199,8 @@ public class GanttTaskPropertiesBean extends JPanel {
       propertiesPanel.add(checkBox.second());
     }
     addEmptyRow(propertiesPanel);
-    propertiesPanel.add(new JLabel(language.getText("dateOfBegining")));
-    myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
-      }
-    });
-    propertiesPanel.add(myStartDatePicker);
 
-    propertiesPanel.add(new JLabel(language.getText("dateOfEnd")));
-    myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = new GanttCalendar(((JXDatePicker) e.getSource()).getDate());
-        c.add(Calendar.DATE, 1);
-        setEnd(c, false);
-      }
-    });
-    propertiesPanel.add(myEndDatePicker);
-
-    propertiesPanel.add(new JLabel(language.getText("length")));
-    durationField1 = new JTextField(8);
-    durationField1.setName("length");
-    durationField1.addFocusListener(new FocusListener() {
-      @Override
-      public void focusLost(FocusEvent e) {
-        fireDurationChanged();
-      }
-
-      @Override
-      public void focusGained(FocusEvent e) {
-      }
-    });
-    propertiesPanel.add(durationField1);
+    myTaskScheduleDates.insertInto(propertiesPanel);
 
     Box extraConstraintBox = Box.createHorizontalBox();
     thirdDateComboBox = new JComboBox();
@@ -285,6 +249,10 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     addEmptyRow(propertiesPanel);
 
+    propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.showInTimeline.label")));
+    myShowInTimeline = new JCheckBox();
+    propertiesPanel.add(myShowInTimeline);
+
     propertiesPanel.add(new JLabel(language.getText("shape")));
     shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
     propertiesPanel.add(shapeComboBox);
@@ -321,17 +289,11 @@ public class GanttTaskPropertiesBean extends JPanel {
     SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount() / 2, 2, 1, 1, 5, 5);
 
     generalPanel = new JPanel(new SpringLayout());
+    //generalPanel.add(new JLayer<JPanel>(propertiesPanel, layerUi));
     generalPanel.add(propertiesPanel);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
     generalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-  }
-
-  /** Add the different action listeners on the different widgets */
-  public void addActionListener(ActionListener l) {
-    nameField1.addActionListener(l);
-    thirdDateComboBox.addActionListener(l);
-    durationField1.addActionListener(l);
   }
 
   /** Change the name of the task on all text fields containing task name */
@@ -380,13 +342,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     constructNotesPanel();
 
     tabbedPane = new JTabbedPane();
-    tabbedPane.getModel().addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        changeNameOfTask();
-        fireDurationChanged();
-      }
-    });
+//    tabbedPane.getModel().addChangeListener(new ChangeListener() {
+//      @Override
+//      public void stateChanged(ChangeEvent e) {
+//        changeNameOfTask();
+//        fireDurationChanged();
+//      }
+//    });
     constructGeneralPanel();
 
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
@@ -423,113 +385,113 @@ public class GanttTaskPropertiesBean extends JPanel {
     tabbedPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 0));
   }
 
-  // TODO The name of the method is very confusing... Rename to applySettings
-  // and remove return value?
-  public Task[] getReturnTask() {
-    GanttTask[] returnTask = new GanttTask[selectedTasks.length];
-
+  /** Apply the modified properties to the selected Tasks */
+  public void applySettings() {
     for (int i = 0; i < selectedTasks.length; i++) {
-      returnTask[i] = selectedTasks[i];
-
-      mutator = selectedTasks[0].createMutator();
-      mutator.setName(getTaskName()); // getName()
+      // TODO The originalXXX values should not be used,
+      // but the original values should be read from each processed task to
+      // determine whether the value has been changed
+      TaskMutator mutator = selectedTasks[i].createMutator();
+      if (originalName == null || !originalName.equals(getTaskName())) {
+        mutator.setName(getTaskName());
+      }
       mutator.setProjectTask(false);
-      if (this.taskWebLink != null && !this.taskWebLink.equals(getWebLink())) {
-        returnTask[i].setWebLink(getWebLink()); // getName()
+      if (originalWebLink == null || !originalWebLink.equals(getWebLink())) {
+        mutator.setWebLink(getWebLink());
       }
       if (mileStoneCheckBox1 != null) {
-        if (this.taskIsMilestone != isMilestone()) {
+        if (originalIsMilestone != isMilestone()) {
           mutator.setMilestone(isMilestone());
         }
       } else if (projectTaskCheckBox1 != null) {
-        if (this.taskIsProjectTask != isProjectTask()) {
+        if (originalIsProjectTask != isProjectTask()) {
           mutator.setProjectTask(isProjectTask());
         }
       }
-      if (!this.taskStartDate.equals(getStart())) {
+      if (!originalStartDate.equals(getStart())) {
         mutator.setStart(getStart());
       }
-      if (this.taskThirdDate == null && getThird() != null || this.taskThirdDate != null && getThird() == null
-          || this.taskThirdDate != null && !this.taskThirdDate.equals(getThird())
-          || this.taskThirdDateConstraint != getThirdDateConstraint()) {
+      if (!originalEndDate.equals(getEnd())) {
+        mutator.setEnd(getEnd());
+      }
+      if (originalThirdDate == null && getThird() != null || originalThirdDate != null && getThird() == null
+          || originalThirdDate != null && !originalThirdDate.equals(getThird())
+          || originalThirdDateConstraint != getThirdDateConstraint()) {
         mutator.setThird(getThird(), getThirdDateConstraint());
       }
 
       if (getLength() > 0) {
-        mutator.setDuration(returnTask[i].getManager().createLength(getLength()));
+        mutator.setDuration(selectedTasks[i].getManager().createLength(getLength()));
       }
-      if (!this.taskNotes.equals(getNotes())) {
-        returnTask[i].setNotes(getNotes());
+      if (!Objects.equal(originalNotes, getNotes())) {
+        mutator.setNotes(getNotes());
       }
-      if (this.taskCompletionPercentage != getPercentComplete()) {
+      if (originalCompletionPercentage != getPercentComplete()) {
         mutator.setCompletionPercentage(getPercentComplete());
       }
-      if (this.taskPriority != getPriority()) {
-        returnTask[i].setPriority(getPriority());
+      if (this.originalPriority != getPriority()) {
+        mutator.setPriority(getPriority());
       }
-      returnTask[i].setColor(myTaskColorOption.getValue());
-      if (this.taskShape == null && shapeComboBox.getSelectedIndex() != 0 || this.taskShape != null
-          && !this.taskShape.equals(shapeComboBox.getSelectedPaint())) {
-        returnTask[i].setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
-            returnTask[i].getColor()));
-      }
-      if (returnTask[i].getShape() != null) {
-        returnTask[i].setShape(new ShapePaint(returnTask[i].getShape(), Color.white, returnTask[i].getColor()));
+      mutator.setColor(myTaskColorOption.getValue());
+      if (this.originalShape == null && shapeComboBox.getSelectedIndex() != 0 || originalShape != null
+          && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
+        mutator.setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
+            myTaskColorOption.getValue()));
       }
 
       mutator.commit();
       myDependenciesPanel.commit();
       myAllocationsPanel.commit();
-      returnTask[i].applyThirdDateConstraint();
-    }
 
-    return returnTask;
+      if (!myShowInTimeline.isSelected()) {
+        myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
+      } else {
+        myUIfacade.getCurrentTaskView().getTimelineTasks().add(selectedTasks[i]);
+      }
+    }
   }
 
-  private void setSelectedTask() {
-    nameField1.setText(selectedTasks[0].getName());
+  private void setSelectedTaskProperties() {
+    myUnpluggedClone = selectedTasks[0].unpluggedClone();
+    nameField1.setText(originalName);
 
     setName(selectedTasks[0].toString());
 
-    durationField1.setText(String.valueOf(selectedTasks[0].getLength()));
+    percentCompleteSlider.setValue(new Integer(originalCompletionPercentage));
+    priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
-    percentCompleteSlider.setValue(new Integer(selectedTasks[0].getCompletionPercentage()));
-    priorityComboBox.setSelectedIndex(selectedTasks[0].getPriority().ordinal());
+    myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
+    setStart(originalStartDate.clone());
+    setEnd(originalEndDate.clone());
 
-    setStart(selectedTasks[0].getStart().clone(), true);
-    setEnd(selectedTasks[0].getEnd().clone(), true);
-    if (selectedTasks[0].getThird() != null) {
-      setThird(selectedTasks[0].getThird().clone(), true);
+    if (originalThirdDate != null) {
+      setThird(originalThirdDate.clone(), true);
     }
-    thirdDateComboBox.setSelectedIndex(selectedTasks[0].getThirdDateConstraint());
+    thirdDateComboBox.setSelectedIndex(originalThirdDateConstraint);
 
     if (mileStoneCheckBox1 != null) {
-      mileStoneCheckBox1.setSelected(selectedTasks[0].isMilestone());
+      mileStoneCheckBox1.setSelected(originalIsMilestone);
     } else if (projectTaskCheckBox1 != null) {
-      projectTaskCheckBox1.setSelected(selectedTasks[0].isProjectTask());
+      projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
-    enableMilestoneUnfriendlyControls(!isMilestone());
+    myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
 
-    tfWebLink.setText(selectedTasks[0].getWebLink());
+    tfWebLink.setText(originalWebLink);
 
     if (selectedTasks[0].shapeDefined()) {
       for (int j = 0; j < ShapeConstants.PATTERN_LIST.length; j++) {
-        if (selectedTasks[0].getShape().equals(ShapeConstants.PATTERN_LIST[j])) {
+        if (originalShape.equals(ShapeConstants.PATTERN_LIST[j])) {
           shapeComboBox.setSelectedIndex(j);
           break;
         }
       }
     }
 
-    noteAreaNotes.setText(selectedTasks[0].getNotes());
+    noteAreaNotes.setText(originalNotes);
     myTaskColorOption.setValue(selectedTasks[0].getColor());
-    myUnpluggedClone = selectedTasks[0].unpluggedClone();
+    myShowInTimeline.setSelected(myUIfacade.getCurrentTaskView().getTimelineTasks().contains(selectedTasks[0]));
   }
 
-  private void enableMilestoneUnfriendlyControls(boolean enable) {
-    myEndDatePicker.setEnabled(enable);
-    durationField1.setEnabled(enable);
-  }
 
   private boolean isMilestone() {
     if (mileStoneCheckBox1 == null) {
@@ -544,38 +506,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private int getThirdDateConstraint() {
     return thirdDateComboBox.getSelectedIndex();
-  }
-
-  private int getLength() {
-    int length;
-    try {
-      length = Integer.parseInt(durationField1.getText().trim());
-    } catch (NumberFormatException e) {
-      length = 0;
-    }
-    return length;
-  }
-
-  private void fireDurationChanged() {
-    String value = durationField1.getText();
-    try {
-      int duration = Integer.parseInt(value);
-      changeLength(duration);
-    } catch (NumberFormatException e) {
-
-    }
-  }
-
-  private void changeLength(int length) {
-    if (length <= 0) {
-      length = 1;
-    }
-    durationField1.setText(String.valueOf(length));
-
-    // Calculate the end date for the given length
-    myUnpluggedClone.setStart(myStart);
-    myUnpluggedClone.setDuration(myUnpluggedClone.getManager().createLength(length));
-    setEnd(myUnpluggedClone.getEnd(), false);
   }
 
   private String getNotes() {
@@ -601,67 +531,49 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private GanttCalendar getStart() {
-    return myStart;
+    return myTaskScheduleDates.getStart();
+  }
+
+  private GanttCalendar getEnd() {
+    return myTaskScheduleDates.getEnd();
+  }
+
+  private void setEnd(GanttCalendar endDate) {
+    myTaskScheduleDates.setEnd(endDate, false);
+  }
+
+  private void setStart(GanttCalendar startDate) {
+    myTaskScheduleDates.setStart(startDate, true);
+  }
+
+  private int getLength() {
+    return myTaskScheduleDates.getLength();
   }
 
   private GanttCalendar getThird() {
     return myThird;
   }
 
-  private void setStart(GanttCalendar start, boolean test) {
-    myStart = start;
-    myStartDatePicker.setDate(myStart.getTime());
-    if (test == true) {
-      return;
-    }
-    if (myStart.compareTo(myEnd) < 0) {
-      adjustLength();
-    } else {
-      myEnd = myStart.clone();
-      myEnd.add(Calendar.DATE, taskLength);
-      myEndDatePicker.setDate(myEnd.getTime());
-    }
-  }
 
-  private void setEnd(GanttCalendar end, boolean test) {
-    myEnd = end;
-    myEndDatePicker.setDate(myEnd.newAdd(Calendar.DATE, -1).getTime());
-    if (test == true) {
-      return;
-    }
-    if (myStart.compareTo(myEnd) < 0) {
-      adjustLength();
-    } else {
-      myStart = myEnd.clone();
-      myStart.add(Calendar.DATE, -1 * getLength());
-    }
-  }
 
-  private void setThird(GanttCalendar third, boolean test) {
+  private void setThird(GanttCalendar third, @SuppressWarnings("unused") boolean test) {
     myThird = third;
     myThirdDatePicker.setDate(myThird.getTime());
   }
 
-  private void adjustLength() {
-    int length;
-    myUnpluggedClone.setStart(this.myStart);
-    myUnpluggedClone.setEnd(this.myEnd);
-    length = myUnpluggedClone.getDuration().getLength();
-    durationField1.setText(String.valueOf(length));
-  }
-
-  private void setInitialValues(GanttTask task) {
-    taskWebLink = task.getWebLink();
-    taskIsMilestone = task.isMilestone();
-    taskStartDate = task.getStart();
-    taskLength = task.getLength();
-    taskNotes = task.getNotes();
-    taskCompletionPercentage = task.getCompletionPercentage();
-    taskPriority = task.getPriority();
-    taskShape = task.getShape();
-    taskThirdDate = task.getThird();
-    taskThirdDateConstraint = task.getThirdDateConstraint();
-    taskIsProjectTask = task.isProjectTask();
+  private void storeOriginalValues(GanttTask task) {
+    originalName = task.getName();
+    originalWebLink = task.getWebLink();
+    originalIsMilestone = task.isMilestone();
+    originalStartDate = task.getStart();
+    originalEndDate = task.getEnd();
+    originalNotes = task.getNotes();
+    originalCompletionPercentage = task.getCompletionPercentage();
+    originalPriority = task.getPriority();
+    originalShape = task.getShape();
+    originalThirdDate = task.getThird();
+    originalThirdDateConstraint = task.getThirdDateConstraint();
+    originalIsProjectTask = task.isProjectTask();
   }
 
   private boolean canBeProjectTask(Task testedTask, TaskContainmentHierarchyFacade taskHierarchy) {
@@ -718,7 +630,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-          enableMilestoneUnfriendlyControls(!isMilestone());
+          myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
         }
       });
       result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);

@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -27,9 +27,8 @@ import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import org.ganttproject.impex.htmlpdf.itext.ITextStylesheet;
 
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
-public class ExporterToPDF extends ExporterBase {
+public class ExporterToPDF extends StylesheetExporterBase {
 
   private final FOPEngine myFopEngine = new FOPEngine(this);
   private final ITextEngine myITextEngine = new ITextEngine(this);
@@ -78,7 +77,7 @@ public class ExporterToPDF extends ExporterBase {
 
   @Override
   public String getFileTypeDescription() {
-    return GanttLanguage.getInstance().getText("impex.pdf.description");
+    return language.getText("impex.pdf.description");
   }
 
   @Override

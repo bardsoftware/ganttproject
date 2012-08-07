@@ -41,6 +41,11 @@ public class ChartRendererBase {
     myChartModel = model;
   }
 
+  public ChartRendererBase(ChartModelBase chartModel, GraphicPrimitiveContainer canvas) {
+    myChartModel = chartModel;
+    myPrimitiveContainer = canvas;
+  }
+
   public void setHeight(int height) {
     myHeight = height;
   }

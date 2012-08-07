@@ -37,6 +37,8 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
   private T myValue;
   private T myInitialValue;
 
+  private boolean isScreened;
+
   protected GPAbstractOption(String id) {
     this(id, null);
   }
@@ -124,6 +126,16 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
   public void setWritable(boolean isWritable) {
     this.isWritable = isWritable;
     myPropertyChangeSupport.firePropertyChange("isWritable", Boolean.valueOf(!isWritable), Boolean.valueOf(isWritable));
+  }
+
+  @Override
+  public boolean isScreened() {
+    return isScreened;
+  }
+
+  @Override
+  public void setScreened(boolean value) {
+    isScreened = value;
   }
 
   protected static String i18n(String key) {

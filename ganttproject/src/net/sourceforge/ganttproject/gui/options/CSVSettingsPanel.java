@@ -72,7 +72,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
   private JComboBox myFieldSeparatorCombo;
 
   public CSVSettingsPanel(CSVOptions csvOptions) {
-    super(language.getCorrectedLabel("csvexport"), language.getText("settingsCVSExport"));
+    super(language.getCorrectedLabel("csvexport"), language.getText("settingsCSVExport"));
     myCsvOptions = csvOptions;
 
     vb.add(createSeparatorSettingsPanel());
