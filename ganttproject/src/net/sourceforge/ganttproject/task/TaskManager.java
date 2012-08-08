@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
@@ -55,6 +56,7 @@ public interface TaskManager {
     String myNotes;
     String myWebLink;
     int myCompletion;
+    Priority myPriority;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -110,6 +112,11 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withPriority(Priority priority) {
+      myPriority = priority;
+      return this;
+    }
+
     public TaskBuilder withStartDate(Date startDate) {
       myStartDate = startDate;
       return this;
@@ -121,7 +128,6 @@ public interface TaskManager {
     }
 
     public abstract Task build();
-
   }
 
   public TaskBuilder newTaskBuilder();

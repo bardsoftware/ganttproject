@@ -309,7 +309,9 @@ public class TaskManagerImpl implements TaskManager {
         if (myColor != null) {
           task.setColor(myColor);
         }
-
+        if (myPriority != null) {
+          task.setPriority(myPriority);
+        }
         task.setExpand(isExpanded);
         task.setNotes(myNotes);
         task.setWebLink(myWebLink);
