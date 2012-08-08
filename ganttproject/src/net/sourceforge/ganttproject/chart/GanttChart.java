@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import net.sourceforge.ganttproject.GanttPreviousState;
+import net.sourceforge.ganttproject.gui.options.model.ColorOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public interface GanttChart extends TimelineChart {
@@ -27,4 +28,5 @@ public interface GanttChart extends TimelineChart {
   GanttPreviousState getBaseline();
 
   GPOptionGroup getBaselineColorOptions();
+  ColorOption getTaskDefaultColorOption();
 }

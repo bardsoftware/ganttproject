@@ -23,11 +23,9 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 public class TaskNewAction extends GPAction {
   private final IGanttProject myProject;
@@ -61,13 +59,10 @@ public class TaskNewAction extends GPAction {
 
         Task selectedTask = selection.isEmpty() ? null : selection.get(0);
         getTaskManager().newTaskBuilder()
-            .withColor(getUIConfiguration().getTaskColor()).withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
+            .withColor(getUIFacade().getGanttChart().getTaskDefaultColorOption().getValue())
+            .withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
       }
     });
-  }
-
-  protected UIConfiguration getUIConfiguration() {
-    return myProject.getUIConfiguration();
   }
 
   protected TaskManager getTaskManager() {
