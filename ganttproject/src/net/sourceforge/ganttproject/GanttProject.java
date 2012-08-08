@@ -397,6 +397,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Color color = GanttGraphicArea.taskDefaultColor;
     // myApplicationConfig.register(options);
     options.setUIConfiguration(myUIConfiguration);
+    options.load();
     myUIConfiguration = options.getUIConfiguration();
   }
 

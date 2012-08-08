@@ -47,8 +47,8 @@ public enum TaskDefaultColumn {
   COMPLETION(new TableHeaderUIFacade.ColumnStub("tpd7", null, false, -1, 50), Integer.class, "tableColCompletion"),
   COORDINATOR(new TableHeaderUIFacade.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE),
   PREDECESSORS(new TableHeaderUIFacade.ColumnStub("tpd9", null, false, -1, 200), String.class, "tableColPredecessors", Functions.NOT_EDITABLE),
-  ID(new TableHeaderUIFacade.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE),
-  OUTLINE_NUMBER(new TableHeaderUIFacade.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE);
+  ID(new TableHeaderUIFacade.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE)/*,
+  OUTLINE_NUMBER(new TableHeaderUIFacade.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE)*/;
 
   private final Column myDelegate;
   private final Class<?> myValueClass;
