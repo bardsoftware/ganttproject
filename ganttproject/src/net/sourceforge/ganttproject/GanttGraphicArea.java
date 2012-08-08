@@ -167,8 +167,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return myStateDiffOptions;
   }
 
-  Color getTaskColor() {
-    return myChartModel.getTaskDefaultColorOption().getValue();
+  @Override
+  public ColorOption getTaskDefaultColorOption() {
+    return myChartModel.getTaskDefaultColorOption();
   }
 
   /** @return the preferred size of the panel. */

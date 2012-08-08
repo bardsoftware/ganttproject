@@ -203,7 +203,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
-        return getArea().getTaskColor();
+        return getUIFacade().getGanttChart().getTaskDefaultColorOption().getValue();
       }
 
       @Override
