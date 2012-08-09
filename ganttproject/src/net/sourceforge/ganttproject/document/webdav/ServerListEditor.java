@@ -42,6 +42,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -130,37 +131,11 @@ class ServerListEditor {
     myButton.setIcon(new ImageIcon(getClass().getResource("/icons/dropdown_16.png")));
     myButton.setHorizontalTextPosition(SwingConstants.LEADING);
     myButton.setVerticalTextPosition(SwingConstants.CENTER);
-
     myWrapper.add(myButton);
 
-    myTableModel = new DefaultTableModel(new Vector<String>(Arrays.asList("Name", "URL")), 0) {
-      @Override
-      public void setValueAt(Object aValue, int row, int column) {
-        super.setValueAt(aValue, row, column);
-
-        String editValue = String.valueOf(aValue);
-        List<WebDavServerDescriptor> values = Lists.newArrayList(myOption.getValues());
-        WebDavServerDescriptor descr = values.get(row);
-        switch (column) {
-        case 0:
-          descr.name = editValue;
-          break;
-        case 1:
-          descr.rootUrl = editValue;
-          break;
-        default:
-          assert false : "should not be here";
-        }
-      }
-
-    };
-    for (WebDavServerDescriptor value : option.getValues()) {
-      myTableModel.addRow(new String[] {value.name, value.rootUrl});
-    }
-    myTable = new JXTable(myTableModel);
-    myTable.setVisibleRowCount(10);
-    myTable.setFillsViewportHeight(true);
-    myTable.setPreferredSize(new Dimension(600, 200));
+    myTableModel = createTableModel(option);
+    myTable = createTable(myTableModel);
+    myTable.getSelectionModel().addListSelectionListener(mySelectionListener);
     myTable.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
@@ -169,6 +144,7 @@ class ServerListEditor {
         }
       }
     });
+
     myScrollPane = new JScrollPane(myTable);
     myDoneButton = new JButton(myDoneAction);
     myResult = new JPanel(new BorderLayout());
@@ -188,7 +164,40 @@ class ServerListEditor {
     myResult.add(buttonBar, BorderLayout.SOUTH);
     myResult.setPreferredSize(new Dimension(600, 250));
 
-    myTable.getSelectionModel().addListSelectionListener(mySelectionListener);
+  }
+
+  static DefaultTableModel createTableModel(final ListOption<WebDavServerDescriptor> option) {
+    DefaultTableModel tableModel = new DefaultTableModel(new Vector<String>(Arrays.asList("Name", "URL")), 0) {
+      @Override
+      public void setValueAt(Object aValue, int row, int column) {
+        super.setValueAt(aValue, row, column);
+
+        String editValue = String.valueOf(aValue);
+        List<WebDavServerDescriptor> values = Lists.newArrayList(option.getValues());
+        WebDavServerDescriptor descr = values.get(row);
+        switch (column) {
+        case 0:
+          descr.name = editValue;
+          break;
+        case 1:
+          descr.rootUrl = editValue;
+          break;
+        default:
+          assert false : "should not be here";
+        }
+      }
+    };
+    for (WebDavServerDescriptor value : option.getValues()) {
+      tableModel.addRow(new String[] {value.name, value.rootUrl});
+    }
+    return tableModel;
+  }
+
+  static JXTable createTable(DefaultTableModel tableModel) {
+    JXTable myTable = new JXTable(tableModel);
+    myTable.setVisibleRowCount(10);
+    myTable.setFillsViewportHeight(true);
+    myTable.setPreferredSize(new Dimension(600, 200));
     DefaultCellEditor cellEditor = new DefaultCellEditor(new JTextField()) {
       @Override
       public boolean isCellEditable(EventObject evt) {
@@ -201,6 +210,7 @@ class ServerListEditor {
     };
     myTable.getColumn(0).setCellEditor(cellEditor);
     myTable.getColumn(1).setCellEditor(cellEditor);
+    return myTable;
   }
 
   JComponent getComponent() {
