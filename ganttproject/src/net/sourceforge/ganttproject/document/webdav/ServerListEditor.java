@@ -19,18 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.EventObject;
-import java.util.List;
-import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -42,25 +36,22 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-
-import org.jdesktop.swingx.JXTable;
-
-import com.google.common.collect.Lists;
+import javax.swing.table.TableModel;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
+
+import org.jdesktop.swingx.JXTable;
 
 /**
  * Editor for WebDAV server list in WebDAV open/save dialog
@@ -86,7 +77,7 @@ class ServerListEditor {
     @Override
     public void actionPerformed(ActionEvent arg0) {
       myOption.addValue(new WebDavServerDescriptor("", "", ""));
-      myTableModel.addRow(new String[] {"", ""});
+      //myTableModel.addRow(new String[] {"", ""});
       myTable.editCellAt(myTableModel.getRowCount() - 1, 0);
     }
   };
@@ -95,14 +86,14 @@ class ServerListEditor {
     @Override
     public void actionPerformed(ActionEvent e) {
       myOption.removeValueIndex(myTable.getSelectedRow());
-      myTableModel.removeRow(myTable.getSelectedRow());
+      //myTableModel.removeRow(myTable.getSelectedRow());
     }
   };
 
   private JButton myButton = new TestGanttRolloverButton(myPopupAction);
   private JPanel myWrapper = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
   private ListOption<WebDavServerDescriptor> myOption;
-  private DefaultTableModel myTableModel;
+  private TableModel myTableModel;
   private JXTable myTable;
 
   private JScrollPane myScrollPane;
@@ -166,34 +157,11 @@ class ServerListEditor {
 
   }
 
-  static DefaultTableModel createTableModel(final ListOption<WebDavServerDescriptor> option) {
-    DefaultTableModel tableModel = new DefaultTableModel(new Vector<String>(Arrays.asList("Name", "URL")), 0) {
-      @Override
-      public void setValueAt(Object aValue, int row, int column) {
-        super.setValueAt(aValue, row, column);
-
-        String editValue = String.valueOf(aValue);
-        List<WebDavServerDescriptor> values = Lists.newArrayList(option.getValues());
-        WebDavServerDescriptor descr = values.get(row);
-        switch (column) {
-        case 0:
-          descr.name = editValue;
-          break;
-        case 1:
-          descr.rootUrl = editValue;
-          break;
-        default:
-          assert false : "should not be here";
-        }
-      }
-    };
-    for (WebDavServerDescriptor value : option.getValues()) {
-      tableModel.addRow(new String[] {value.name, value.rootUrl});
-    }
-    return tableModel;
+  static TableModel createTableModel(final ListOption<WebDavServerDescriptor> option) {
+    return null;
   }
 
-  static JXTable createTable(DefaultTableModel tableModel) {
+  static JXTable createTable(TableModel tableModel) {
     JXTable myTable = new JXTable(tableModel);
     myTable.setVisibleRowCount(10);
     myTable.setFillsViewportHeight(true);

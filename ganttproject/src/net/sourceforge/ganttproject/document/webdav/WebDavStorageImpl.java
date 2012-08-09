@@ -27,9 +27,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
@@ -37,18 +34,22 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
-import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
+import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * Implements storage UI for WebDAV storages
@@ -117,6 +118,21 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       myServers.remove(idx);
     }
 
+    @Override
+    public EnumerationOption asEnumerationOption() {
+      return new DefaultEnumerationOption<WebDavServerDescriptor>(getID(), myServers.toArray(new WebDavServerDescriptor[0])) {
+        @Override
+        protected String objectToString(WebDavServerDescriptor obj) {
+          return obj.name;
+        }
+
+        @Override
+        public void setValue(String value) {
+          super.setValue(value);
+          ServerListOption.this.setValue(stringToObject(value));
+        }
+      };
+    }
   }
   private final ListOption<WebDavServerDescriptor> myServers = new ServerListOption("servers");
   private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
@@ -125,8 +141,10 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final StringOption myUsername = new DefaultStringOption("username", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
   private final UIFacade myUiFacade;
+  private final IGanttProject myProject;
 
   public WebDavStorageImpl(final IGanttProject project, UIFacade uiFacade) {
+    myProject = project;
     myUiFacade = uiFacade;
     project.addProjectEventListener(new ProjectEventListener.Stub() {
       @Override
@@ -142,30 +160,30 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   public Components open(Document currentDocument, final DocumentReceiver receiver) {
     final GanttURLChooser chooser = createChooser(currentDocument);
     final OkAction openAction = createNoLockAction("storage.action.open", chooser, receiver);
-    final OkAction openAndLockAction = createLockAction("storage.action.openAndLock", chooser, receiver);
-    chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
-      @Override
-      public void setSelection(WebDavResource resource) {
-        if (resource == null) {
-          return;
-        }
-        try {
-          openAndLockAction.setEnabled(resource.canLock());
-        } catch (WebDavException e) {
-          chooser.showError(e);
-        }
-      }
-    });
+    //final OkAction openAndLockAction = createLockAction("storage.action.openAndLock", chooser, receiver);
+//    chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
+//      @Override
+//      public void setSelection(WebDavResource resource) {
+//        if (resource == null) {
+//          return;
+//        }
+//        try {
+//          openAndLockAction.setEnabled(resource.canLock());
+//        } catch (WebDavException e) {
+//          chooser.showError(e);
+//        }
+//      }
+//    });
     JComponent contentPane = chooser.createOpenDocumentUi();
     chooser.getPathOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         boolean empty = "".equals(event.getNewValue());
         openAction.setEnabled(!empty);
-        openAndLockAction.setEnabled(!empty);
+//        openAndLockAction.setEnabled(!empty);
       }
     });
-    return new Components(contentPane, new Action[] {openAction, openAndLockAction, new CancelAction() {
+    return new Components(contentPane, new Action[] {openAction, /*openAndLockAction,*/ new CancelAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
         receiver.setDocument(null);
@@ -177,19 +195,19 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   public Components save(Document currentDocument, final DocumentReceiver receiver) {
     final GanttURLChooser chooser = createChooser(currentDocument);
     OkAction saveAction = createNoLockAction("storage.action.save", chooser, receiver);
-    final OkAction saveAndLockAction = createLockAction("storage.action.saveAndLock", chooser, receiver);
-    chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
-      @Override
-      public void setSelection(WebDavResource resource) {
-        try {
-          saveAndLockAction.setEnabled(resource.canLock());
-        } catch (WebDavException e) {
-          chooser.showError(e);
-        }
-      }
-    });
+    //final OkAction saveAndLockAction = createLockAction("storage.action.saveAndLock", chooser, receiver);
+//    chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
+//      @Override
+//      public void setSelection(WebDavResource resource) {
+//        try {
+//          saveAndLockAction.setEnabled(resource.canLock());
+//        } catch (WebDavException e) {
+//          chooser.showError(e);
+//        }
+//      }
+//    });
     JComponent contentPane = chooser.createSaveDocumentUi();
-    return new Components(contentPane, new Action[] {saveAction, saveAndLockAction, new CancelAction() {
+    return new Components(contentPane, new Action[] {saveAction, /*saveAndLockAction,*/ new CancelAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
         receiver.setDocument(null);
@@ -218,7 +236,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     }
     String password = currentDocument == null ? null : currentDocument.getPassword();
     myWebDavFactory.clearCache();
-    return new GanttURLChooser(myUiFacade, myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
+    return new GanttURLChooser(myProject, myUiFacade, myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
