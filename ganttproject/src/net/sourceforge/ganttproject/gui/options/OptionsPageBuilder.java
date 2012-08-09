@@ -61,6 +61,8 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.jdesktop.swingx.JXDatePicker;
 
+import com.google.common.base.Function;
+
 /**
  * @author bard
  */
@@ -68,13 +70,40 @@ public class OptionsPageBuilder {
   private static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
   I18N myi18n = new I18N();
   private Component myParentComponent;
+  private final LayoutApi myLayoutApi;
 
-  public OptionsPageBuilder() {
-    this(null);
+  public static interface LayoutApi {
+    void layout(JPanel panel, int componentsCount);
   }
 
-  public OptionsPageBuilder(Component parentComponent) {
+  public static LayoutApi TWO_COLUMN_LAYOUT = new LayoutApi() {
+    @Override
+    public void layout(JPanel panel, int componentsCount) {
+      panel.setLayout(new SpringLayout());
+      SpringUtilities.makeCompactGrid(panel, componentsCount, 2, 0, 0, 5, 3);
+    }
+  };
+
+  public static LayoutApi ONE_COLUMN_LAYOUT = new LayoutApi() {
+    @Override
+    public void layout(JPanel panel, int componentsCount) {
+      panel.setLayout(new SpringLayout());
+      SpringUtilities.makeCompactGrid(panel, componentsCount*2, 1, 0, 0, 5, new Function<Integer, Integer>() {
+        @Override
+        public Integer apply(Integer input) {
+          return input % 2 == 0 ? 5 : 3;
+        }
+      });
+    }
+  };
+
+  public OptionsPageBuilder() {
+    this(null, TWO_COLUMN_LAYOUT);
+  }
+
+  public OptionsPageBuilder(Component parentComponent, LayoutApi layoutApi) {
     myParentComponent = parentComponent;
+    myLayoutApi = layoutApi;
   }
 
   public void setI18N(I18N i18n) {
@@ -132,7 +161,7 @@ public class OptionsPageBuilder {
   }
 
   public JComponent createGroupComponent(GPOptionGroup group, GPOption<?>... options) {
-    JPanel optionsPanel = new JPanel(new SpringLayout());
+    JPanel optionsPanel = new JPanel();
     for (int i = 0; i < options.length; i++) {
       GPOption<?> nextOption = options[i];
       final Component nextComponent = createOptionComponent(group, nextOption);
@@ -156,7 +185,7 @@ public class OptionsPageBuilder {
       }
     }
     if (options.length > 0) {
-      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 5, 3);
+      myLayoutApi.layout(optionsPanel, options.length);
     }
     return optionsPanel;
   }

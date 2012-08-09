@@ -257,7 +257,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     shapeComboBox = new JPaintCombo(ShapeConstants.PATTERN_LIST);
     propertiesPanel.add(shapeComboBox);
 
-    OptionsPageBuilder builder = new OptionsPageBuilder(GanttTaskPropertiesBean.this);
+    OptionsPageBuilder builder = new OptionsPageBuilder(GanttTaskPropertiesBean.this, OptionsPageBuilder.TWO_COLUMN_LAYOUT);
     Box colorBox = Box.createHorizontalBox();
     colorBox.add(builder.createColorComponent(myTaskColorOption));
 
