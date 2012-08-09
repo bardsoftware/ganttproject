@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -28,7 +30,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -44,6 +45,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -57,13 +59,17 @@ import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
 import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
 import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
+import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.util.collect.Pair;
 
+import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 
 /**
  * UI component for WebDAV operarions.
@@ -195,13 +201,16 @@ class GanttURLChooser {
 
   private final UIFacade myUiFacade;
 
+  private final IGanttProject myProject;
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
 
-  GanttURLChooser(UIFacade uiFacade, ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username,
+  GanttURLChooser(IGanttProject project, UIFacade uiFacade, ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username,
       String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption,
       MiltonResourceFactory webDavFactory) {
+    myProject = project;
     myUiFacade = uiFacade;
     myWebDavFactory = webDavFactory;
     myPath = new DefaultStringOption("path");
@@ -220,6 +229,7 @@ class GanttURLChooser {
         WebDavServerDescriptor server = myServers.getValue();
         myUsername.setValue(server.username);
         myPassword.setValue(server.password);
+        System.err.println("password=" + server.password);
       }
     });
     myPath.addChangeValueListener(new ChangeValueListener() {
@@ -244,6 +254,7 @@ class GanttURLChooser {
       }
     });
     myPassword.addChangeValueListener(new ChangeValueListener() {
+      @Override
       public void changeValue(ChangeValueEvent event) {
         myServers.getValue().password = myPassword.getValue();
       }
@@ -302,15 +313,19 @@ class GanttURLChooser {
 
     JPanel panel = new JPanel(new SpringLayout());
     panel.add(new JLabel(language.getCorrectedLabel("webServer")));
-
-    Box serverBox = Box.createHorizontalBox();
-    serverBox.add(new ServerListEditor(myServers).getComponent());
-    serverBox.add(builder.createOptionComponent(null, myPath));
-    panel.add(serverBox);
-    panel.add(new JLabel(language.getText("userName")));
-    panel.add(builder.createOptionComponent(null, myUsername));
-    panel.add(new JLabel(language.getText("password")));
-    panel.add(builder.createOptionComponent(null, myPassword));
+    EnumerationOption serverChoiceOption = myServers.asEnumerationOption();
+    panel.add(builder.createOptionComponent(null, serverChoiceOption));
+    panel.add(new JLabel());
+    panel.add(createUsernamePasswordPanel());
+    //Box serverBox = Box.createHorizontalBox();
+    //serverBox.add(new ServerListEditor(myServers).getComponent());
+    panel.add(new JLabel(language.getCorrectedLabel("fileFromServer")));
+    panel.add(builder.createOptionComponent(null, myPath));
+    //panel.add(serverBox);
+//    panel.add(new JLabel(language.getText("userName")));
+//    panel.add(builder.createOptionComponent(null, myUsername));
+//    panel.add(new JLabel(language.getText("password")));
+//    panel.add(builder.createOptionComponent(null, myPassword));
 
     addEmptyRow(panel);
 
@@ -377,22 +392,22 @@ class GanttURLChooser {
     addEmptyRow(panel);
 //    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
 //    panel.add(lockComponent);
-    panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
-    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
-    panel.add(timeoutComponent);
-
-    panel.add(new JLabel(language.getText("webdav.lockRelease.label")));
-    final JComponent lockReleaseComponent = (JComponent) builder.createOptionComponent(null, myReleaseLockOption);
-    panel.add(lockReleaseComponent);
-
-    myLock.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        timeoutComponent.setEnabled(myLock.isChecked());
-        lockReleaseComponent.setEnabled(myLock.isChecked());
-      }
-    });
-    SpringUtilities.makeCompactGrid(panel, 8, 2, 0, 0, 10, 5);
+//    panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
+//    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
+//    panel.add(timeoutComponent);
+//
+//    panel.add(new JLabel(language.getText("webdav.lockRelease.label")));
+//    final JComponent lockReleaseComponent = (JComponent) builder.createOptionComponent(null, myReleaseLockOption);
+//    panel.add(lockReleaseComponent);
+//
+//    myLock.addChangeValueListener(new ChangeValueListener() {
+//      @Override
+//      public void changeValue(ChangeValueEvent event) {
+//        timeoutComponent.setEnabled(myLock.isChecked());
+//        lockReleaseComponent.setEnabled(myLock.isChecked());
+//      }
+//    });
+    SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 10, 5);
 
     JPanel properties = new JPanel(new BorderLayout());
     properties.add(panel, BorderLayout.NORTH);
@@ -401,8 +416,52 @@ class GanttURLChooser {
     return properties;
   }
 
+  private Component createUsernamePasswordPanel() {
+    JPanel grid = new JPanel(new GridLayout(3, 2));
+    grid.add(new JLabel(language.getText("userName")));
+    final JLabel username = new JLabel(myUsername.getValue());
+    myUsername.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        username.setText(myUsername.getValue() == null ? "" : myUsername.getValue());
+      }
+    });
+    grid.add(username);
+    grid.add(new JLabel(language.getText("password")));
+    final JLabel password = new JLabel(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
+    myPassword.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        password.setText(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
+      }
+    });
+    grid.add(password);
+    grid.add(new JXHyperlink(new GPAction("webdav.configure") {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        WebDavOptionPageProvider optionPage = new WebDavOptionPageProvider();
+        optionPage.init(myProject, myUiFacade);
+        myUiFacade.createDialog(optionPage.buildPageComponent(), new Action[] {CancelAction.CLOSE}, "").show();
+      }
+    }));
+    UIUtil.walkComponentTree(grid, new Predicate<JComponent>() {
+      @Override
+      public boolean apply(JComponent input) {
+        input.setFont(input.getFont().deriveFont(input.getFont().getSize()*0.82f));
+        return true;
+      }
+    });
+
+    Box result = Box.createHorizontalBox();
+    result.add(grid);
+    result.add(Box.createHorizontalGlue());
+    return grid;
+  }
+
   protected void onSelectionChanged(WebDavResource resource) {
-    mySelectionListener.setSelection(resource);
+    if (mySelectionListener != null) {
+      mySelectionListener.setSelection(resource);
+    }
     myPath.setValue(resource.getWebDavUri().path);
     try {
       if (resource.isLocked()) {
