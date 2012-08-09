@@ -158,7 +158,7 @@ public abstract class UIUtil {
     final JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
     result.addActionListener(listener);
-    
+
     result.getEditor().addFocusListener(new FocusAdapter() {
       @Override
       public void focusLost(FocusEvent e) {
@@ -225,5 +225,19 @@ public abstract class UIUtil {
     result.add(leftBox, BorderLayout.WEST);
     result.add(rightBox, BorderLayout.EAST);
     return result;
+  }
+
+  public static JComponent createTopAndCenter(JComponent top, JComponent center) {
+    JPanel result = new JPanel(new BorderLayout());
+    top.setAlignmentX(Component.LEFT_ALIGNMENT);
+    result.add(top, BorderLayout.NORTH);
+
+    JPanel planePageWrapper = new JPanel(new BorderLayout());
+    planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+    center.setAlignmentX(Component.LEFT_ALIGNMENT);
+    planePageWrapper.add(center, BorderLayout.NORTH);
+    result.add(planePageWrapper, BorderLayout.CENTER);
+    return result;
+
   }
 }

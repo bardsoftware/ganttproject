@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.table.TableColumn;
 
+import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
 import org.jdesktop.swingx.JXTable;
@@ -52,13 +53,6 @@ abstract class CommonPanel {
   }
 
   static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
-    JPanel result = new JPanel(new BorderLayout());
-    actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
-    JPanel actionsWrapper = new JPanel(new BorderLayout());
-    actionsWrapper.add(actionsComponent, BorderLayout.WEST);
-    result.add(actionsWrapper, BorderLayout.NORTH);
-    JScrollPane scrollPane = new JScrollPane(table);
-    result.add(scrollPane, BorderLayout.CENTER);
-    return result;
+    return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, actionsComponent);
   }
 }

@@ -89,19 +89,11 @@ public class OptionsPageBuilder {
     myi18n.myOptionKeyPrefix = optionKeyPrefix;
   }
 
-  public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
-    JPanel result = new JPanel(new BorderLayout());
-    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
-    topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-    result.add(topPanel, BorderLayout.NORTH);
 
-    JPanel planePageWrapper = new JPanel(new BorderLayout());
-    planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+  public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
+    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
     JComponent planePage = buildPlanePage(optionGroups);
-    planePage.setAlignmentX(Component.LEFT_ALIGNMENT);
-    planePageWrapper.add(planePage, BorderLayout.NORTH);
-    result.add(planePageWrapper, BorderLayout.CENTER);
-    return result;
+    return UIUtil.createTopAndCenter(topPanel, planePage);
   }
 
   public JComponent buildPlanePage(GPOptionGroup[] optionGroups) {

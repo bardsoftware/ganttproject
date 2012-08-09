@@ -18,16 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -86,16 +83,8 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
         new OptionsPageBuilder.I18N().getCanonicalOptionPageLabelKey(getPageID()));
   }
 
-  protected static JPanel wrapContentComponent(JComponent contentComponent, String title, String description) {
-    JPanel result = new JPanel(new BorderLayout());
-    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    //result.add(TopPanel.create(title, description), BorderLayout.NORTH);
-    contentComponent.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0),
-        contentComponent.getBorder()));
-    JScrollPane scrollPane = new JScrollPane(contentComponent);
-    scrollPane.setBorder(BorderFactory.createEmptyBorder());
-    result.add(scrollPane, BorderLayout.NORTH);
-    return result;
+  protected static JComponent wrapContentComponent(JComponent contentComponent, String title, String description) {
+    return UIUtil.createTopAndCenter(TopPanel.create(title, description), contentComponent);
   }
 
   protected String getCanonicalPageTitle() {
