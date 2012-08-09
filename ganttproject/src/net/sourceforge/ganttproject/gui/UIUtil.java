@@ -56,6 +56,7 @@ import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.table.TableColumnExt;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.GPAction;
@@ -91,26 +92,36 @@ public abstract class UIUtil {
     DialogAligner.centerOnScreen(windowAncestor);
   }
 
-  public static void setEnabledTree(JComponent root, boolean isEnabled) {
-    root.setEnabled(isEnabled);
-    Component[] components = root.getComponents();
-    for (int i = 0; i < components.length; i++) {
-      if (components[i] instanceof JComponent) {
-        setEnabledTree((JComponent) components[i], isEnabled);
+  public static void setEnabledTree(JComponent root, final boolean isEnabled) {
+    walkComponentTree(root, new Predicate<JComponent>() {
+      @Override
+      public boolean apply(JComponent input) {
+        input.setEnabled(isEnabled);
+        return true;
+      }
+    });
+  }
+
+  public static void setBackgroundTree(JComponent root, final Color background) {
+    walkComponentTree(root, new Predicate<JComponent>() {
+      @Override
+      public boolean apply(JComponent input) {
+        input.setBackground(background);
+        return true;
+      }
+    });
+  }
+
+  public static void walkComponentTree(JComponent root, Predicate<JComponent> visitor) {
+    if (visitor.apply(root)) {
+      Component[] components = root.getComponents();
+      for (int i = 0; i < components.length; i++) {
+        if (components[i] instanceof JComponent) {
+          walkComponentTree((JComponent) components[i], visitor);
+        }
       }
     }
   }
-
-  public static void setBackgroundTree(JComponent root, Color background) {
-    root.setBackground(background);
-    Component[] components = root.getComponents();
-    for (int i = 0; i < components.length; i++) {
-      if (components[i] instanceof JComponent) {
-        setBackgroundTree((JComponent) components[i], background);
-      }
-    }
-  }
-
   public static void createTitle(JComponent component, String title) {
     Border lineBorder = BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK);
     component.setBorder(BorderFactory.createTitledBorder(lineBorder, title));
