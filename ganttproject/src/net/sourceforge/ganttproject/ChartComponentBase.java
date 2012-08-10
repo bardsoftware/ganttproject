@@ -58,7 +58,7 @@ import net.sourceforge.ganttproject.time.TimeUnitStack;
 import org.eclipse.core.runtime.IStatus;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
-  private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+  private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
 
   private final IGanttProject myProject;
 
