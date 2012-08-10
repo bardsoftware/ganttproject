@@ -46,8 +46,11 @@ public class ChartImageBuilder {
       myChartModel.setTopTimeUnit(mySettings.getZoomLevel().getTimeUnitPair().getTopTimeUnit());
       myChartModel.setBottomUnitWidth(mySettings.getZoomLevel().getBottomUnitWidth());
     }
-    OffsetBuilder.Factory factory = myChartModel.createOffsetBuilderFactory().withStartDate(mySettings.getStartDate()).withEndDate(
-        mySettings.getEndDate()).withEndOffset(mySettings.getWidth() < 0 ? Integer.MAX_VALUE : mySettings.getWidth());
+    OffsetBuilder.Factory factory = myChartModel.createOffsetBuilderFactory()
+        .withViewportStartDate(mySettings.getStartDate())
+        .withStartDate(myChartModel.getBottomUnit().jumpLeft(mySettings.getStartDate()))
+        .withEndDate(mySettings.getEndDate())
+        .withEndOffset(mySettings.getWidth() < 0 ? Integer.MAX_VALUE : mySettings.getWidth());
 
     OffsetBuilder offsetBuilder = factory.build();
     OffsetList bottomOffsets = new OffsetList();

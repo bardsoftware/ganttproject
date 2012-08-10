@@ -41,4 +41,10 @@ public class OffsetList extends ArrayList<Offset> {
     myStartPx = 0;
   }
 
+  public void shift(int shiftPixels) {
+    for (Offset o : this) {
+      o.shift(shiftPixels);
+    }
+    myStartPx += shiftPixels;
+  }
 }
