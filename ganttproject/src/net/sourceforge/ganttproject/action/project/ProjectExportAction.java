@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2005-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.action.project;
 
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.GanttOptions;
+import org.osgi.service.prefs.Preferences;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl;
@@ -35,13 +36,13 @@ public class ProjectExportAction extends GPAction {
 
   private final UIFacade myUIFacade;
 
-  private final GanttOptions myOptions;
+  private Preferences myPluginPrerences;
 
-  public ProjectExportAction(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
+  public ProjectExportAction(UIFacade uiFacade, IGanttProject project, Preferences pluginPrerences) {
     super("project.export");
     myProject = project;
     myUIFacade = uiFacade;
-    myOptions = options;
+    myPluginPrerences = pluginPrerences;
   }
 
   @Override
@@ -51,7 +52,7 @@ public class ProjectExportAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    WizardImpl wizard = new ExportFileWizardImpl(myUIFacade, myProject, myOptions);
+    WizardImpl wizard = new ExportFileWizardImpl(myUIFacade, myProject, myPluginPrerences);
     wizard.show();
   }
 }

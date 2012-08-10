@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -24,6 +24,7 @@ import javax.swing.filechooser.FileFilter;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 
+// TODO Class is unused, remove?
 public abstract class ImporterFactory {
   public static Importer createImporter(FileFilter fileFilter) {
     if (fileFilter == ImporterFactory.txtFilter) {
@@ -32,9 +33,9 @@ public abstract class ImporterFactory {
     if (fileFilter == ImporterFactory.ganFilter) {
       return new ImporterFromGanttFile();
     }
-    // else if (fileFilter==plannerFilter) {
-    // return new ImporterFromPlannerFile();
-    // }
+    if (fileFilter == ImporterFactory.csvFilter) {
+      return new ImporterFromCsvFile();
+    }
     return null;
   }
 
@@ -47,23 +48,17 @@ public abstract class ImporterFactory {
     fc.addChoosableFileFilter(ImporterFactory.ganFilter);
     fc.addChoosableFileFilter(ImporterFactory.mppFilter);
     fc.addChoosableFileFilter(ImporterFactory.txtFilter);
-    // fc.addChoosableFileFilter(plannerFilter);
+    fc.addChoosableFileFilter(ImporterFactory.csvFilter);
 
     return fc;
-
   }
 
   private static FileFilter txtFilter = new ExtensionBasedFileFilter("txt", "Text files (.txt)");
 
-  // private static FileFilter mppFilter = new
-  // ExtensionBasedFileFilter("mpp|mpx|xml", "MsProject files (.mpp, .mpx,
-  // .xml)");
+  private static FileFilter csvFilter = new ExtensionBasedFileFilter("csv", "Comma-separated values files (.csv)");
+
   private static FileFilter mppFilter = new ExtensionBasedFileFilter("mpp|mpx|xml",
       "MsProject files (.mpp, .mpx, .xml)");
 
   private static FileFilter ganFilter = new ExtensionBasedFileFilter("xml|gan", "GanttProject files (.gan, .xml)");
-  // private static FileFilter plannerFilter = new
-  // ExtensionBasedFileFilter("mrproject|planner", "Planner (MrProject) files
-  // (.mrproject)");
-
 }

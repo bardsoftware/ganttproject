@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -106,35 +106,35 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
       // (NOTE: There should be a better way to do this!!)
       // The length of the text in the column is clipped based on the actual
       // width of each column as set in the main java
-      if (colName.equalsIgnoreCase(GanttTreeTableModel.strColName)) {
+      if (colName.equalsIgnoreCase(TaskDefaultColumn.NAME.getName())) {
         String strToDraw = (String) getTree().getModel().getValueAt(currTaskNode, 3);
         int nameIndent = (state.nestingStack.size() - 1) * state.indent / 2;
         paintString(g, lengthCalculator, strToDraw, state, x + nameIndent, currWidth - nameIndent);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColBegDate)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.BEGIN_DATE.getName())) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 4).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColEndDate)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.END_DATE.getName())) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 5).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColDuration)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.DURATION.getName())) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 6).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColCompletion)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.COMPLETION.getName())) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 7).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColCoordinator)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.COORDINATOR.getName())) {
         String strToDraw = (String) getTree().getModel().getValueAt(currTaskNode, 8);
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColInfo)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.INFO.getName())) {
         ImageIcon infoIcon = (ImageIcon) (getTree().getModel().getValueAt(currTaskNode, 2));
         paintIcon(g, infoIcon, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColPriority)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.PRIORITY.getName())) {
         ImageIcon infoIcon = (ImageIcon) (getTree().getModel().getValueAt(currTaskNode, 1));
         paintIcon(g, infoIcon, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColType)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.INFO.getName())) {
         ImageIcon infoIcon = (ImageIcon) (getTree().getModel().getValueAt(currTaskNode, 0));
         paintIcon(g, infoIcon, state, x, currWidth);
-      } else if (colName.equalsIgnoreCase(GanttTreeTableModel.strColID)) {
+      } else if (colName.equalsIgnoreCase(TaskDefaultColumn.ID.getName())) {
         String strToDraw = getTree().getModel().getValueAt(currTaskNode, 10).toString();
         paintString(g, lengthCalculator, strToDraw, state, x, currWidth);
       }

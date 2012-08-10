@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -23,6 +23,8 @@ import java.awt.Container;
 
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
+
+import com.google.common.base.Function;
 
 /**
  * A 1.4 file that provides utility methods for creating form- or grid-style
@@ -45,7 +47,7 @@ public class SpringUtilities {
    * <code>parent</code> in a grid. Each component is as big as the maximum
    * preferred width and height of the components. The parent is made just big
    * enough to fit them all.
-   * 
+   *
    * @param rows
    *          number of rows
    * @param cols
@@ -135,7 +137,7 @@ public class SpringUtilities {
    * maximum preferred width of the components in that column; height is
    * similarly determined for each row. The parent is made just big enough to
    * fit them all.
-   * 
+   *
    * @param rows
    *          number of rows
    * @param cols
@@ -150,7 +152,17 @@ public class SpringUtilities {
    *          y padding between cells
    */
   public static void makeCompactGrid(Container parent, int rows, int cols, int initialX, int initialY, int xPad,
-      int yPad) {
+      final int yPad) {
+    makeCompactGrid(parent, rows, cols, initialX, initialY, xPad, new Function<Integer, Integer>() {
+      @Override
+      public Integer apply(Integer input) {
+        return yPad;
+      }
+    });
+  }
+
+  public static void makeCompactGrid(Container parent, int rows, int cols, int initialX, int initialY, int xPad,
+      Function<Integer, Integer> getYpad) {
     SpringLayout layout;
     try {
       layout = (SpringLayout) parent.getLayout();
@@ -186,7 +198,7 @@ public class SpringUtilities {
         constraints.setY(y);
         constraints.setHeight(height);
       }
-      y = Spring.sum(y, Spring.sum(height, Spring.constant(yPad)));
+      y = Spring.sum(y, Spring.sum(height, Spring.constant(getYpad.apply(r))));
     }
 
     // Set the parent's size.

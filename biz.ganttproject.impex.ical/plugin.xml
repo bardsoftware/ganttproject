@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="biz.ganttproject.impex.ical"
+   name="GanttProject ICal import/export"
+   version="2.6.0"
+   provider-name="">
+
+   <runtime>
+      <library name="ical.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/backport-util-concurrent-3.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-codec-1.5.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-lang-2.6.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/ical4j-1.0.3.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="net.sourceforge.ganttproject"/>
+   </requires>
+</plugin>

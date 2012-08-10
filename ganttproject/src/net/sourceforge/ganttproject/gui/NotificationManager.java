@@ -23,9 +23,11 @@ import java.util.Collection;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public interface NotificationManager {
+  AnimationView setAnimationView(AnimationView view);
   void addNotifications(NotificationChannel channel, Collection<NotificationItem> notifications);
 
   void showNotification(NotificationChannel channel);

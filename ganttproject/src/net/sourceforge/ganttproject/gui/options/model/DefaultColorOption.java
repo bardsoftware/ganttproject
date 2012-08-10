@@ -23,9 +23,8 @@ import java.awt.Color;
 import net.sourceforge.ganttproject.util.ColorConvertion;
 
 public class DefaultColorOption extends GPAbstractOption<Color> implements ColorOption {
-
   public DefaultColorOption(String id) {
-    this(id, null);
+    super(id);
   }
 
   public DefaultColorOption(String id, Color initialValue) {

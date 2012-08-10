@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2010 Dmitry Barashev
+Copyright (C) 2010-2012 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -42,7 +42,6 @@ import net.sf.mpxj.ResourceField;
 import net.sf.mpxj.ResourceType;
 import net.sf.mpxj.TaskField;
 import net.sf.mpxj.TaskMode;
-import net.sf.mpxj.TaskType;
 import net.sf.mpxj.TimeUnit;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyClass;
@@ -184,7 +183,6 @@ class ProjectFileExporter {
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
     if (nestedTasks.length > 0) {
     }
-
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
     Date startTime = convertStartTime(t.getStart().getTime());
     Date finishTime = convertFinishTime(t.getEnd().getTime());

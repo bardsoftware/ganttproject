@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -175,5 +176,16 @@ public abstract class AbstractTableAndActionsComponent<T> {
   protected abstract void onDeleteEvent();
 
   protected abstract void onSelectionChanged();
+
+  public static JPanel createDefaultTableAndActions(JComponent table, JComponent actionsComponent) {
+    JPanel result = new JPanel(new BorderLayout());
+    actionsComponent.setBorder(BorderFactory.createEmptyBorder(0, 0, 3, 0));
+    JPanel actionsWrapper = new JPanel(new BorderLayout());
+    actionsWrapper.add(actionsComponent, BorderLayout.WEST);
+    result.add(actionsWrapper, BorderLayout.NORTH);
+    JScrollPane scrollPane = new JScrollPane(table);
+    result.add(scrollPane, BorderLayout.CENTER);
+    return result;
+  }
 
 }
