@@ -42,6 +42,9 @@ import org.xml.sax.helpers.AttributesImpl;
 class TaskSaver extends SaverBase {
   void save(IGanttProject project, TransformerHandler handler) throws SAXException, IOException {
     AttributesImpl attrs = new AttributesImpl();
+    if (project.getTaskManager().isZeroMilestones() != null) {
+      addAttribute("empty-milestones", project.getTaskManager().isZeroMilestones(), attrs);
+    }
     startElement("tasks", attrs, handler);
 
     startElement("taskproperties", handler);
@@ -69,7 +72,7 @@ class TaskSaver extends SaverBase {
     if (task.shapeDefined()) {
       addAttribute("shape", task.getShape().getArray(), attrs);
     }
-    addAttribute("meeting", Boolean.valueOf(task.isMilestone()).toString(), attrs);
+    addAttribute("meeting", Boolean.valueOf(task.isLegacyMilestone()).toString(), attrs);
     if (task.isProjectTask()) {
       addAttribute("project", Boolean.TRUE.toString(), attrs);
     }

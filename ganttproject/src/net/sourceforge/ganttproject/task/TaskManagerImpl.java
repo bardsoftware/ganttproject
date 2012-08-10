@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -59,6 +61,7 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
+import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * @author bard
@@ -155,6 +158,8 @@ public class TaskManagerImpl implements TaskManager {
   private final CustomPropertyListenerImpl myCustomPropertyListener;
 
   private final CustomColumnsManager myCustomColumnsManager;
+
+  private Boolean isZeroMilestones = true;
 
   TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
@@ -266,18 +271,74 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public GanttTask createTask() {
-    GanttTask result = createTask(-1);
-    return result;
+    return (GanttTask) newTaskBuilder().build();
   }
 
   @Override
-  public GanttTask createTask(int taskID) {
-    if (taskID == -1 || myTaskMap.getTask(taskID) != null) {
-      taskID = getAndIncrementId();
-    }
-    GanttTask result = new GanttTask("", new GanttCalendar(), 1, this, taskID);
-    fireTaskAdded(result);
-    return result;
+  public GanttTask createTask(int id) {
+    return (GanttTask) newTaskBuilder().withId(id).build();
+  }
+
+  @Override
+  public TaskBuilder newTaskBuilder() {
+    return new TaskBuilder() {
+      @Override
+      public Task build() {
+
+        if (myId == null || myTaskMap.getTask(myId) != null) {
+          myId = getAndIncrementId();
+        }
+
+        TaskImpl task = new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId);
+
+        String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
+        task.setName(name);
+
+        if (myStartDate != null) {
+          GanttCalendar cal = new GanttCalendar(myStartDate);
+          task.setStart(cal);
+        }
+        TaskLength duration;
+        if (myDuration != null) {
+          duration = myDuration;
+        } else {
+          duration = (myEndDate == null) ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f) : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
+        }
+        task.setDuration(duration);
+
+        if (myColor != null) {
+          task.setColor(myColor);
+        }
+        if (myPriority != null) {
+          task.setPriority(myPriority);
+        }
+        task.setExpand(isExpanded);
+        task.setNotes(myNotes);
+        task.setWebLink(myWebLink);
+        task.setCompletionPercentage(myCompletion);
+        registerTask(task);
+
+
+        if (myPrevSibling != null && myPrevSibling != getRootTask()) {
+          int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
+          Task parentTask = getTaskHierarchy().getContainer(myPrevSibling);
+          getTaskHierarchy().move(task, parentTask, position);
+        } else {
+          Task parentTask = myParent == null ? getRootTask() : myParent;
+          getTaskHierarchy().move(task, parentTask);
+        }
+
+        if (isLegacyMilestone) {
+          task.setMilestone(isLegacyMilestone);
+        }
+        fireTaskAdded(task);
+        return task;
+      }
+    };
+  }
+
+  protected TimeUnitStack getTimeUnitStack() {
+    return getConfig().getTimeUnitStack();
   }
 
   int getAndIncrementId() {
@@ -743,6 +804,11 @@ public class TaskManagerImpl implements TaskManager {
     public List<Task> getTasksInDocumentOrder() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<Integer> getOutlinePath(Task task) {
+      throw new UnsupportedOperationException();
+    }
   }
 
   private class FacadeFactoryImpl implements TaskContainmentHierarchyFacade.Factory {
@@ -753,7 +819,7 @@ public class TaskManagerImpl implements TaskManager {
     // }
 
     @Override
-    public TaskContainmentHierarchyFacade createFacede() {
+    public TaskContainmentHierarchyFacade createFacade() {
       return new FacadeImpl();
     }
   }
@@ -761,7 +827,7 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public TaskContainmentHierarchyFacade getTaskHierarchy() {
     // if (myTaskContainment==null) {
-    return myFacadeFactory.createFacede();
+    return myFacadeFactory.createFacade();
     // }
     // return myTaskContainment;
   }
@@ -802,18 +868,19 @@ public class TaskManagerImpl implements TaskManager {
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping, Map<Task, Task> original2imported) {
     Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
     for (int i = 0; i < nested.length; i++) {
-      Task nextImported = getTask(nested[i].getTaskID()) == null ? createTask(nested[i].getTaskID()) : createTask();
-      registerTask(nextImported);
-      nextImported.setName(nested[i].getName());
-      nextImported.setStart(nested[i].getStart().clone());
-      nextImported.setDuration(nested[i].getDuration());
-      nextImported.setMilestone(nested[i].isMilestone());
-      nextImported.setColor(nested[i].getColor());
+      TaskManager.TaskBuilder builder = newTaskBuilder();
+      GanttTask that = (GanttTask) nested[i];
+      if (getTask(that.getTaskID()) == null) {
+        builder = builder.withId(that.getTaskID());
+      }
+      Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
+        .withDuration(that.getDuration()).withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
-      nextImported.setNotes(nested[i].getNotes());
       nextImported.setTaskInfo(nested[i].getTaskInfo());
       nextImported.setExpand(nested[i].getExpand());
+      nextImported.setMilestone(nested[i].isMilestone());
       if (nested[i].getThird() != null) {
         nextImported.setThirdDate(nested[i].getThird().clone());
         nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());
@@ -833,11 +900,7 @@ public class TaskManagerImpl implements TaskManager {
           }
         }
       }
-      // System.out.println ("Import : " + nextImported.getTaskID() + "
-      // -->> " + nextImported.getName());
-
       original2imported.put(nested[i], nextImported);
-      getTaskHierarchy().move(nextImported, root);
       importData(nested[i], nextImported, customPropertyMapping, original2imported);
     }
   }
@@ -935,6 +998,31 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public EnumerationOption getDependencyHardnessOption() {
     return myDependencyHardnessOption;
+  }
+
+  @Override
+  public void setZeroMilestones(Boolean b) {
+    isZeroMilestones = b;
+    if (Boolean.TRUE == isZeroMilestones) {
+      List<Task> milestones = Lists.newArrayList();
+      for (Task t : getTasks()) {
+        if (t.isMilestone()) {
+          t.setEnd(null);
+          milestones.add(t);
+        }
+      }
+      getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(milestones);
+      try {
+        getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run(milestones);
+      } catch (TaskDependencyException e) {
+        GPLogger.log(e);
+      }
+    }
+  }
+
+  @Override
+  public Boolean isZeroMilestones() {
+    return isZeroMilestones;
   }
 
 }

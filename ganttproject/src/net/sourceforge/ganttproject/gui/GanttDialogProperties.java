@@ -47,7 +47,7 @@ public class GanttDialogProperties {
         uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), new Runnable() {
           @Override
           public void run() {
-            taskPropertiesBean.getReturnTask();
+            taskPropertiesBean.applySettings();
             try {
               project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
             } catch (TaskDependencyException e) {

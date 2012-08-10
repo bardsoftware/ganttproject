@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -22,7 +22,7 @@ import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 public class TimeUnitText {
-  private static final Label[] EMPTY_LABELS = new Label[] { new Label("", 0), new Label("", 0), new Label("", 0) };
+  private static final Label[] EMPTY_LABELS = new Label[] { new Label(null, "", 0), new Label(null, "", 0), new Label(null, "", 0) };
 
   private String myLongText;
 
@@ -49,9 +49,9 @@ public class TimeUnitText {
   public Label[] getLabels(int requestedMaxLength, TextLengthCalculator calculator) {
     if (!calculator.getState().equals(myCalculatorState)) {
       myCalculatorState = calculator.getState();
-      myLabels = new Label[] { new Label(myShortText, calculator.getTextLength(myShortText)),
-          new Label(myMediumText, calculator.getTextLength(myMediumText)),
-          new Label(myLongText, calculator.getTextLength(myLongText)) };
+      myLabels = new Label[] { new Label(null, myShortText, calculator.getTextLength(myShortText)),
+          new Label(null, myMediumText, calculator.getTextLength(myMediumText)),
+          new Label(null, myLongText, calculator.getTextLength(myLongText)) };
     }
     int fitCount = getFitCount(myLabels, requestedMaxLength);
     if (fitCount == 0) {

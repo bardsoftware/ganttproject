@@ -28,12 +28,48 @@ import java.util.Map;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * @author barmeier
  */
 public class HumanResourceManager {
+
+  public abstract static class ResourceBuilder {
+    String myName;
+    Integer myID;
+    String myEmail;
+    String myPhone;
+    String myRole;
+
+    public ResourceBuilder withName(String name) {
+      myName = name;
+      return this;
+    }
+
+    public ResourceBuilder withID(String id) {
+      myID = Integer.valueOf(id);
+      return this;
+    }
+
+    public ResourceBuilder withEmail(String email) {
+      myEmail = email;
+      return this;
+    }
+
+    public ResourceBuilder withPhone(String phone) {
+      myPhone = phone;
+      return this;
+    }
+
+    public ResourceBuilder withRole(String role) {
+      myRole = role;
+      return this;
+    }
+
+    public abstract HumanResource build();
+  }
 
   private List<ResourceView> myViews = new ArrayList<ResourceView>();
 
@@ -45,9 +81,16 @@ public class HumanResourceManager {
 
   private final CustomPropertyManager myCustomPropertyManager;
 
+  private final RoleManager myRoleManager;
+
   public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager) {
+    this(defaultRole, customPropertyManager, null);
+  }
+
+  public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager, RoleManager roleManager) {
     myDefaultRole = defaultRole;
     myCustomPropertyManager = customPropertyManager;
+    myRoleManager = roleManager;
   }
 
   public HumanResource newHumanResource() {
@@ -56,6 +99,31 @@ public class HumanResourceManager {
     return result;
   }
 
+  public ResourceBuilder newResourceBuilder() {
+    return new ResourceBuilder() {
+
+      @Override
+      public HumanResource build() {
+        if (myName == null || myID == null) {
+          return null;
+        }
+        HumanResource result = new HumanResource(myName, myID, HumanResourceManager.this);
+        Role role = null;
+        if (myRole != null && myRoleManager != null) {
+          role = myRoleManager.getRole(myRole);
+        }
+        if (role == null) {
+          role = myDefaultRole;
+        }
+        result.setRole(role);
+        result.setPhone(myPhone);
+        result.setMail(myEmail);
+        add(result);
+        return result;
+      }
+
+    };
+  }
   public HumanResource create(String name, int i) {
     HumanResource hr = new HumanResource(name, i, this);
     hr.setRole(myDefaultRole);

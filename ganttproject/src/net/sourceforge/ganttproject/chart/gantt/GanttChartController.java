@@ -165,6 +165,7 @@ public class GanttChartController extends AbstractChartImplementation implements
       VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
       List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
       model.setVisibleTasks(visibleTasks);
+      myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);
       if (getActiveInteraction() != null) {
         getActiveInteraction().paint(g);

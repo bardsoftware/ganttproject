@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,6 +50,8 @@ public interface TaskContainmentHierarchyFacade {
   /** @return the index of the nestedTask with respect of its siblings */
   int getTaskIndex(Task nestedTask);
 
+  List<Integer> getOutlinePath(Task task);
+
   /** Move whatMove to whereMove, added as a child at the end */
   void move(Task whatMove, Task whereMove);
 
@@ -66,7 +69,7 @@ public interface TaskContainmentHierarchyFacade {
   boolean contains(Task task);
 
   interface Factory {
-    TaskContainmentHierarchyFacade createFacede();
+    TaskContainmentHierarchyFacade createFacade();
   }
 
   TaskContainmentHierarchyFacade STUB = new TaskContainmentHierarchyFacade() {
@@ -109,6 +112,11 @@ public interface TaskContainmentHierarchyFacade {
     @Override
     public int getTaskIndex(Task nestedTask) {
       return 0;
+    }
+
+    @Override
+    public List<Integer> getOutlinePath(Task task) {
+      return Collections.emptyList();
     }
 
     @Override

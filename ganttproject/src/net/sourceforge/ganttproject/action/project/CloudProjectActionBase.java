@@ -22,13 +22,13 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.HttpDocument;
-import net.sourceforge.ganttproject.gui.GanttURLChooser;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Base class for actions doing open/save from/to cloud.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 abstract class CloudProjectActionBase extends GPAction {
@@ -42,34 +42,19 @@ abstract class CloudProjectActionBase extends GPAction {
   }
 
   protected Document showURLDialog(IGanttProject project, boolean isOpenUrl) {
-    Document document = project.getDocument();
-    GanttURLChooser uc = new GanttURLChooser(myUiFacade, (null != document) ? document.getURI().toString()
-        : myDocumentManager.getLastWebDAVDocumentOption().getValue(), (null != document) ? document.getUsername()
-        : null, (null != document) ? document.getPassword() : null,
-        myDocumentManager.getWebDavLockTimeoutOption().getValue());
-    uc.show(isOpenUrl);
-    if (uc.getChoice() == UIFacade.Choice.OK) {
-      if (!sameDocument(document, uc)) {
-        document = myDocumentManager.getDocument(uc.getUrl(), uc.getUsername(), uc.getPassword());
-      }
-      myDocumentManager.getLastWebDAVDocumentOption().setValue(uc.getUrl());
-      if (uc.isTimeoutEnabled()) {
-        HttpDocument.setLockDAVMinutes(uc.getTimeout());
-        myDocumentManager.getWebDavLockTimeoutOption().setValue(uc.getTimeout());
-      } else {
-        HttpDocument.setLockDAVMinutes(-1);
-      }
-    } else {
-      document = null;
-    }
-    return document;
-  }
+    final Document document = project.getDocument();
+    final Document[] result = new Document[1];
 
-  private static boolean sameDocument(Document document, GanttURLChooser uc) {
-    if (document == null) {
-      return false;
-    }
-    return document.getURI().toString().equals(uc.getUrl()) && document.getUsername().equals(uc.getUsername())
-        && document.getPassword().equals(uc.getPassword());
+    DocumentStorageUi.DocumentReceiver receiver = new DocumentStorageUi.DocumentReceiver() {
+      @Override
+      public void setDocument(Document document) {
+        result[0] = document;
+      }
+    };
+    DocumentStorageUi webdavStorage = myDocumentManager.getWebDavStorageUi();
+    DocumentStorageUi.Components components = isOpenUrl ? webdavStorage.open(document, receiver) : webdavStorage.save(document, receiver);
+    myUiFacade.createDialog(components.contentPane, components.actions,
+        GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
+    return result[0] == null ? null : myDocumentManager.getProxyDocument(result[0]);
   }
 }

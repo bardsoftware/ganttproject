@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.RenderedImage;
@@ -41,10 +40,7 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
-import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseWheelListenerBase;
-import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -212,6 +208,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   }
 
   @Override
+  public void setVScrollController(VScrollController vscrollController) {
+    getImplementation().setVScrollController(vscrollController);
+  }
+
+  @Override
   public void scrollBy(TaskLength duration) {
     getImplementation().scrollBy(duration);
     repaint();
@@ -262,10 +263,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     super.paintComponent(g);
     getChartModel().setBounds(getSize());
     getImplementation().paintChart(g);
-  }
-
-  public MouseInteraction newScrollViewInteraction(MouseEvent e) {
-    return new ScrollViewInteraction(e, new TimelineFacadeImpl(getChartModel(), getTaskManager()));
   }
 
   @Override

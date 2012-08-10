@@ -54,7 +54,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
-public class ImporterFromGanttFile extends ImporterBase implements Importer {
+public class ImporterFromGanttFile extends ImporterBase {
   private final DefaultEnumerationOption<Object> myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
 
   private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption };

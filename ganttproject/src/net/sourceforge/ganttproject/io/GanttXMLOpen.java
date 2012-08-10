@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
@@ -189,7 +188,9 @@ public class GanttXMLOpen implements GPParser {
         // tags
         // we can do we need here.
       }
-
+      if (eName.equals("tasks")) {
+        myTaskManager.setZeroMilestones(null);
+      }
       if (attrs != null) {
         for (int i = 0; i < attrs.getLength(); i++) {
           String aName = attrs.getLocalName(i); // Attr name
@@ -214,6 +215,10 @@ public class GanttXMLOpen implements GPParser {
               ganttDividerLocation = new Integer(attrs.getValue(i)).intValue();
             } else if (aName.equals("resource-divider-location")) {
               resourceDividerLocation = new Integer(attrs.getValue(i)).intValue();
+            }
+          } else if (eName.equals("tasks")) {
+            if ("empty-milestones".equals(aName)) {
+              myTaskManager.setZeroMilestones(Boolean.parseBoolean(attrs.getValue(i)));
             }
           }
         }
