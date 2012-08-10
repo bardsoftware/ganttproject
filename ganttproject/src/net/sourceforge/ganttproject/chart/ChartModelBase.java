@@ -62,18 +62,18 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private class ScrollingSessionImpl implements ScrollingSession {
     private int myPrevXpos;
 
-    private List<Offset> myTopOffsets;
+    private OffsetList myTopOffsets;
     private OffsetList myBottomOffsets;
-    private List<Offset> myDefaultOffsets;
+    private OffsetList myDefaultOffsets;
 
     private ScrollingSessionImpl(int startXpos) {
       // System.err.println("start xpos=" + startXpos);
       myPrevXpos = startXpos;
       ChartModelBase.this.myScrollingSession = this;
       ChartModelBase.this.myOffsetManager.reset();
-      myTopOffsets = getTopUnitOffsets();
+      myTopOffsets = (OffsetList) getTopUnitOffsets();
       myBottomOffsets = getBottomUnitOffsets();
-      myDefaultOffsets = getDefaultUnitOffsets();
+      myDefaultOffsets = (OffsetList) getDefaultUnitOffsets();
       // shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
       // System.err.println(myBottomOffsets.subList(0, 3));
     }
@@ -115,21 +115,14 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     }
 
     private void shiftOffsets(int shiftPixels) {
-      ChartModelBase.shiftOffsets(myBottomOffsets, shiftPixels);
-      ChartModelBase.shiftOffsets(myTopOffsets, shiftPixels);
+      myBottomOffsets.shift(shiftPixels);
+      myTopOffsets.shift(shiftPixels);
       if (myDefaultOffsets != myBottomOffsets) {
         if (myDefaultOffsets.isEmpty()) {
-          myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
+          myDefaultOffsets = (OffsetList) ChartModelBase.this.getDefaultUnitOffsets();
         }
-        ChartModelBase.shiftOffsets(myDefaultOffsets, shiftPixels);
+        myDefaultOffsets.shift(shiftPixels);
       }
-      myBottomOffsets.setStartPx(myBottomOffsets.getStartPx() + shiftPixels);
-    }
-  }
-
-  private static void shiftOffsets(List<Offset> offsets, int shiftPixels) {
-    for (Offset o : offsets) {
-      o.shift(shiftPixels);
     }
   }
 

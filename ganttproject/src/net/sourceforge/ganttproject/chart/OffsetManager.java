@@ -18,21 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.List;
-
-import net.sourceforge.ganttproject.chart.ChartModelBase.OffsetBuilderImpl;
-
 /**
  * Holds offset lists and provides a unified way to reset them all at once and
  * to rebuild them again.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class OffsetManager {
   static interface OffsetBuilderFactory {
     OffsetBuilder createTopAndBottomUnitBuilder();
 
-    OffsetBuilderImpl createAtomUnitBuilder();
+    OffsetBuilder createAtomUnitBuilder();
   }
 
   private final OffsetList myTopUnitOffsets = new OffsetList();
@@ -60,10 +56,41 @@ class OffsetManager {
     // calls
     // constructOffsets()
     isReset = false;
-    myFactory.createAtomUnitBuilder().constructBottomOffsets(myDefaultUnitOffsets, 0);
+    myFactory.createAtomUnitBuilder().constructOffsets(null, myDefaultUnitOffsets);
+    alignOffsets(myBottomUnitOffsets);
+    alignOffsets(myTopUnitOffsets);
   }
 
-  public List<Offset> getTopUnitOffsets() {
+  /**
+   * It is possible that different lists get misaligned with respect to the atom unit offsets.
+   * For instance, it may happen when chart start date is not on the unit boundary (e.g. bottom unit is MONTH and chart starts
+   * somewhere in the middle of a month). We do additional alignment to make sure that offsets which end on the same
+   * date have the same pixel offset.
+   */
+  private void alignOffsets(OffsetList offsets) {
+    Offset firstVisibleOffset = null;
+    for (Offset o : offsets) {
+      if (o.getOffsetPixels() > 0) {
+        firstVisibleOffset = o;
+        break;
+      }
+    }
+    if (firstVisibleOffset == null) {
+      return;
+    }
+    OffsetLookup lookup = new OffsetLookup();
+    int alignedDefaultOffsetIdx = lookup.lookupOffsetByEndDate(firstVisibleOffset.getOffsetEnd(), myDefaultUnitOffsets);
+    if (alignedDefaultOffsetIdx >= 0) {
+      Offset alignedAtomicOffset = myDefaultUnitOffsets.get(alignedDefaultOffsetIdx);
+      int diff = (alignedAtomicOffset.getOffsetPixels() - firstVisibleOffset.getOffsetPixels());
+      if (diff == 0) {
+        return;
+      }
+      offsets.shift(diff);
+    }
+  }
+
+  public OffsetList getTopUnitOffsets() {
     if (isReset) {
       constructOffsets();
     }
