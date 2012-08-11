@@ -63,10 +63,10 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.search.SearchUiImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -300,6 +300,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
+  public TaskView getCurrentTaskView() {
+    return myUIFacade.getCurrentTaskView();
+  }
+
+  @Override
   public void setWorkbenchTitle(String title) {
     myUIFacade.setWorkbenchTitle(title);
   }
@@ -408,9 +413,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   @Override
   public abstract void setWebLink(String webLink);
-
-  @Override
-  public abstract Task newTask();
 
   @Override
   public abstract UIConfiguration getUIConfiguration();

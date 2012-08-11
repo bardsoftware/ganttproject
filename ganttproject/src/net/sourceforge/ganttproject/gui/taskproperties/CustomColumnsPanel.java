@@ -27,8 +27,6 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import org.w3c.util.DateParser;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;

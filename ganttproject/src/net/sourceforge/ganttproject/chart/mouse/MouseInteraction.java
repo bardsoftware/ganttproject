@@ -36,7 +36,7 @@ public interface MouseInteraction {
   void paint(Graphics g);
 
   static interface TimelineFacade {
-    ScrollingSession createScrollingSession(int xpos);
+    ScrollingSession createScrollingSession(int xpos, int ypos);
 
     Date getDateAt(int x);
 

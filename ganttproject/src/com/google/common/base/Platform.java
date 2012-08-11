@@ -16,11 +16,14 @@
 
 package com.google.common.base;
 
+import com.google.common.annotations.GwtCompatible;
+
 /**
  * Methods factored out so that they can be emulated differently in GWT.
  *
  * @author Jesse Wilson
  */
+@GwtCompatible(emulated = true)
 final class Platform {
   private Platform() {}
 
@@ -28,7 +31,7 @@ final class Platform {
   static char[] charBufferFromThreadLocal() {
     return DEST_TL.get();
   }
-
+  
   /** Calls {@link System#nanoTime()}. */
   static long systemNanoTime() {
     return System.nanoTime();
@@ -46,4 +49,7 @@ final class Platform {
     }
   };
 
+  static CharMatcher precomputeCharMatcher(CharMatcher matcher) {
+    return matcher.precomputedInternal();
+  }
 }

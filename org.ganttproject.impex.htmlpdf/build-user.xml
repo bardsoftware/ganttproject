@@ -19,7 +19,7 @@
     <path id="deps.classpath">
         <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
         <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/eclipsito.jar"/>
-        <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/jdnc-modifBen.jar"/>
+        <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/swingx-1.6.3.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>

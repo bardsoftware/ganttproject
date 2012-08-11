@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2005-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,6 +41,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
@@ -50,7 +51,6 @@ import org.apache.fop.apps.Options;
 import org.apache.fop.image.FopImageFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.ganttproject.impex.htmlpdf.ExporterBase.ExporterJob;
 import org.ganttproject.impex.htmlpdf.fonts.FontRecord;
 import org.ganttproject.impex.htmlpdf.fonts.FontTriplet;
 import org.ganttproject.impex.htmlpdf.fonts.JDKFontLocator;

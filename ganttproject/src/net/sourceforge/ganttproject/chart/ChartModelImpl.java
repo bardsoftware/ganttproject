@@ -18,11 +18,11 @@ import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
+import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.ColorOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
@@ -51,12 +51,6 @@ public class ChartModelImpl extends ChartModelBase {
   private final ColorOption myTaskDefaultColorOption;
 
   private final GPOptionGroup myTaskDefaultsOptions;
-
-  private final ColorOption myTaskAheadOfScheduleColor;
-  private final ColorOption myTaskBehindScheduleColor;
-  private final ColorOption myTaskOnScheduleColor;
-
-  private final ChartOptionGroup myStateDiffOptions;
 
   private Set<Task> myHiddenTasks;
 
@@ -89,43 +83,6 @@ public class ChartModelImpl extends ChartModelBase {
         commit();
       }
     }
-    {
-      myTaskAheadOfScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskAheadOfScheduleColor") {
-        @Override
-        public void commit() {
-          super.commit();
-          projectConfig.setEarlierPreviousTaskColor(getValue());
-        }
-      };
-      myTaskAheadOfScheduleColor.lock();
-      myTaskAheadOfScheduleColor.setValue(new Color(50, 229, 50));
-      myTaskAheadOfScheduleColor.commit();
-      //
-      myTaskBehindScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskBehindScheduleColor") {
-        @Override
-        public void commit() {
-          super.commit();
-          projectConfig.setLaterPreviousTaskColor(getValue());
-        }
-      };
-      myTaskBehindScheduleColor.lock();
-      myTaskBehindScheduleColor.setValue(new Color(229, 50, 50));
-      myTaskBehindScheduleColor.commit();
-      //
-      myTaskOnScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskOnScheduleColor") {
-        @Override
-        public void commit() {
-          super.commit();
-          projectConfig.setPreviousTaskColor(getValue());
-        }
-      };
-      myTaskOnScheduleColor.lock();
-      myTaskOnScheduleColor.setValue(Color.LIGHT_GRAY);
-      myTaskOnScheduleColor.commit();
-      //
-      myStateDiffOptions = new ChartOptionGroup("ganttChartStateDiffColors", new GPOption[] { myTaskOnScheduleColor,
-          myTaskAheadOfScheduleColor, myTaskBehindScheduleColor }, getOptionEventDispatcher());
-    }
 
     myTaskDefaultColorOption = new NewTaskColorOption();
     myTaskDefaultsOptions = new GPOptionGroup("ganttChartDefaults",
@@ -150,10 +107,14 @@ public class ChartModelImpl extends ChartModelBase {
     myHiddenTasks = hiddenTasks;
   }
 
+  @Override
   public ChartItem getChartItemWithCoordinates(int x, int y) {
     ChartItem result = findTaskProgressItem(x, y);
     if (result == null) {
       result = findTaskBoundaryItem(x, y);
+    }
+    if (result == null) {
+      result = super.getChartItemWithCoordinates(x, y);
     }
     return result;
   }
@@ -279,7 +240,6 @@ public class ChartModelImpl extends ChartModelBase {
     result.add(myTaskDefaultsOptions);
     result.addAll(Arrays.asList(superGroups));
     result.addAll(Arrays.asList(rendererGroups));
-    result.add(myStateDiffOptions);
     return result.toArray(new GPOptionGroup[result.size()]);
   }
 

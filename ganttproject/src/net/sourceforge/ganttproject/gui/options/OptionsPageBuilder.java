@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -58,7 +59,9 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.gui.options.model.ValidationException;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-import org.jdesktop.swing.JXDatePicker;
+import org.jdesktop.swingx.JXDatePicker;
+
+import com.google.common.base.Function;
 
 /**
  * @author bard
@@ -67,13 +70,40 @@ public class OptionsPageBuilder {
   private static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
   I18N myi18n = new I18N();
   private Component myParentComponent;
+  private final LayoutApi myLayoutApi;
 
-  public OptionsPageBuilder() {
-    this(null);
+  public static interface LayoutApi {
+    void layout(JPanel panel, int componentsCount);
   }
 
-  public OptionsPageBuilder(Component parentComponent) {
+  public static LayoutApi TWO_COLUMN_LAYOUT = new LayoutApi() {
+    @Override
+    public void layout(JPanel panel, int componentsCount) {
+      panel.setLayout(new SpringLayout());
+      SpringUtilities.makeCompactGrid(panel, componentsCount, 2, 0, 0, 5, 3);
+    }
+  };
+
+  public static LayoutApi ONE_COLUMN_LAYOUT = new LayoutApi() {
+    @Override
+    public void layout(JPanel panel, int componentsCount) {
+      panel.setLayout(new SpringLayout());
+      SpringUtilities.makeCompactGrid(panel, componentsCount*2, 1, 0, 0, 5, new Function<Integer, Integer>() {
+        @Override
+        public Integer apply(Integer input) {
+          return input % 2 == 0 ? 5 : 3;
+        }
+      });
+    }
+  };
+
+  public OptionsPageBuilder() {
+    this(null, TWO_COLUMN_LAYOUT);
+  }
+
+  public OptionsPageBuilder(Component parentComponent, LayoutApi layoutApi) {
     myParentComponent = parentComponent;
+    myLayoutApi = layoutApi;
   }
 
   public void setI18N(I18N i18n) {
@@ -88,19 +118,11 @@ public class OptionsPageBuilder {
     myi18n.myOptionKeyPrefix = optionKeyPrefix;
   }
 
-  public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
-    JPanel result = new JPanel(new BorderLayout());
-    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
-    topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-    result.add(topPanel, BorderLayout.NORTH);
 
-    JPanel planePageWrapper = new JPanel(new BorderLayout());
-    planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+  public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
+    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
     JComponent planePage = buildPlanePage(optionGroups);
-    planePage.setAlignmentX(Component.LEFT_ALIGNMENT);
-    planePageWrapper.add(planePage, BorderLayout.NORTH);
-    result.add(planePageWrapper, BorderLayout.CENTER);
-    return result;
+    return UIUtil.createTopAndCenter(topPanel, planePage);
   }
 
   public JComponent buildPlanePage(GPOptionGroup[] optionGroups) {
@@ -139,7 +161,7 @@ public class OptionsPageBuilder {
   }
 
   public JComponent createGroupComponent(GPOptionGroup group, GPOption<?>... options) {
-    JPanel optionsPanel = new JPanel(new SpringLayout());
+    JPanel optionsPanel = new JPanel();
     for (int i = 0; i < options.length; i++) {
       GPOption<?> nextOption = options[i];
       final Component nextComponent = createOptionComponent(group, nextOption);
@@ -163,7 +185,7 @@ public class OptionsPageBuilder {
       }
     }
     if (options.length > 0) {
-      SpringUtilities.makeCompactGrid(optionsPanel, options.length, 2, 0, 0, 3, 3);
+      myLayoutApi.layout(optionsPanel, options.length);
     }
     return optionsPanel;
   }
@@ -212,7 +234,8 @@ public class OptionsPageBuilder {
 
   private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
     JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
-    // nextLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+    nextLabel.setVerticalAlignment(SwingConstants.TOP);
+    nextLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     return nextLabel;
   }
 
@@ -281,7 +304,7 @@ public class OptionsPageBuilder {
   }
 
   private Component createStringComponent(final StringOption option) {
-    final JTextField result = new JTextField(option.getValue());
+    final JTextField result = option.isScreened() ? new JPasswordField(option.getValue()) : new JTextField(option.getValue());
 
     final DocumentListener documentListener = new DocumentListener() {
       private void saveValue() {
@@ -346,11 +369,11 @@ public class OptionsPageBuilder {
 
   private boolean isCheckboxOption(GPOptionGroup group, GPOption<?> option) {
     String yesKey = myi18n.getCanonicalOptionLabelKey(option) + ".yes";
-    if ((group == null || group.getI18Nkey(yesKey) == null) && myi18n.getValue(yesKey) == null) {
+    if ((group == null || group.getI18Nkey(yesKey) == null) && !myi18n.hasValue(yesKey)) {
       return true;
     }
     String noKey = myi18n.getCanonicalOptionLabelKey(option) + ".no";
-    if ((group == null || group.getI18Nkey(noKey) == null) && myi18n.getValue(noKey) == null) {
+    if ((group == null || group.getI18Nkey(noKey) == null) && !myi18n.hasValue(noKey)) {
       return true;
     }
     return false;
@@ -367,6 +390,7 @@ public class OptionsPageBuilder {
         }
       }
     });
+    yesButton.setVerticalAlignment(SwingConstants.CENTER);
     yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
     yesButton.setSelected(option.isChecked());
 
@@ -387,11 +411,11 @@ public class OptionsPageBuilder {
     buttonGroup.add(yesButton);
     buttonGroup.add(noButton);
 
-    Box result = Box.createHorizontalBox();
+    Box result = Box.createVerticalBox();
     result.add(yesButton);
-    result.add(Box.createHorizontalStrut(5));
+    result.add(Box.createVerticalStrut(2));
     result.add(noButton);
-    result.add(Box.createHorizontalGlue());
+    result.add(Box.createVerticalGlue());
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -406,11 +430,11 @@ public class OptionsPageBuilder {
   }
 
   private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
-    final EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
-    final JComboBox result = new JComboBox(model);
+    final JComboBox result = new JComboBox(new EnumerationOptionComboBoxModel(option, group));
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
+        EnumerationOptionComboBoxModel model = (EnumerationOptionComboBoxModel) result.getModel();
         model.onValueChange();
         result.setSelectedItem(model.getSelectedItem());
       }
@@ -547,6 +571,9 @@ public class OptionsPageBuilder {
     public I18N() {
     }
 
+    protected boolean hasValue(String key) {
+      return GanttLanguage.getInstance().getText(key) != null;
+    }
     protected String getValue(String key) {
       String result = GanttLanguage.getInstance().getText(key);
       return result == null ? key : result;

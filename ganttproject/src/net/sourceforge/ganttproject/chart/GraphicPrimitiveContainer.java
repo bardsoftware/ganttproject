@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -33,7 +33,7 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
 /**
  * Stores the available primitives and their information (used for painting) and
  * provides methods to retrieve them
- * 
+ *
  * @author bard
  */
 public class GraphicPrimitiveContainer {
@@ -52,6 +52,8 @@ public class GraphicPrimitiveContainer {
   private int myDeltaY;
 
   private List<TextGroup> myTextGroups = new ArrayList<TextGroup>();
+
+  private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
 
   /** Horizontal alignments for texts */
   public enum HAlignment {
@@ -179,6 +181,8 @@ public class GraphicPrimitiveContainer {
   }
 
   public static class Line extends GraphicPrimitive {
+    public static enum Arrow { NONE, START, FINISH }
+
     private final int myStartX;
 
     private final int myStartY;
@@ -186,6 +190,8 @@ public class GraphicPrimitiveContainer {
     private final int myFinishX;
 
     private final int myFinishY;
+
+    private Arrow myArrow = Arrow.NONE;
 
     private Line(int startx, int starty, int finishx, int finishy) {
       myStartX = startx;
@@ -209,15 +215,37 @@ public class GraphicPrimitiveContainer {
     public int getFinishY() {
       return myFinishY;
     }
+
+    public void setArrow(Arrow arrow) {
+      myArrow = arrow;
+    }
+
+    public Arrow getArrow() {
+      return myArrow;
+    }
   }
 
   public static class Label {
     public final String text;
     public final int lengthPx;
+    public final int heightPx;
+    private final Text myOwner;
 
-    public Label(String text, int lengthPx) {
+    public Label(Text owner, String text, int lengthPx) {
+      this(owner, text, lengthPx, Integer.MIN_VALUE);
+    }
+
+    public Label(Text owner, String text, int lengthPx, int heightPx) {
+      this.myOwner = owner;
       this.text = text;
       this.lengthPx = lengthPx;
+      this.heightPx = heightPx;
+    }
+
+    public void setVisible(boolean isVisible) {
+      if (isVisible && myOwner != null) {
+        myOwner.index(this);
+      }
     }
   }
 
@@ -234,17 +262,37 @@ public class GraphicPrimitiveContainer {
 
     private VAlignment myVAlignment = VAlignment.BOTTOM;
 
-    private final TextSelector mySelector;
+    private TextSelector mySelector;
 
-    Text(int leftX, int bottomY, String text) {
-      this(leftX, bottomY, TextSelector.Default.singleChoice(text));
+    private final SpatialIndex<Text> myIndex;
+
+    private Text(int leftX, int bottomY, final String text, SpatialIndex<Text> index) {
+      this(leftX, bottomY, (TextSelector)null, index);
+      mySelector = new TextSelector() {
+        @Override
+        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          return new Label[] {createLabel(text, textLengthCalculator.getTextLength(text))};
+        }
+      };
     }
 
-    Text(int leftX, int bottomY, TextSelector delegateSelector) {
+    void index(Label label) {
+      assert label.myOwner == this;
+      if (myIndex != null && label.heightPx != Integer.MIN_VALUE) {
+        myIndex.put(this, myLeftX, myBottomY, label.lengthPx, label.heightPx);
+      }
+    }
+
+    private Text(int leftX, int bottomY, TextSelector delegateSelector) {
+      this(leftX, bottomY, delegateSelector, null);
+    }
+
+    private Text(int leftX, int bottomY, TextSelector delegateSelector, SpatialIndex<Text> index) {
       myLeftX = leftX;
       myBottomY = bottomY;
       mySelector = delegateSelector;
       myMaxLength = -1;
+      myIndex = index;
     }
 
     public void setFont(Font font) {
@@ -295,9 +343,21 @@ public class GraphicPrimitiveContainer {
       return mySelector;
     }
 
+    public Label createLabel(String text, int lengthPx) {
+      return createLabel(text, lengthPx, Integer.MIN_VALUE);
+    }
+
+    public Label createLabel(String text, int lengthPx, int heightPx) {
+      return new Label(this, text, lengthPx, heightPx);
+    }
+
     @Override
     public String toString() {
       return String.format("TBox [%d, %d]", myLeftX, myBottomY);
+    }
+
+    public void setSelector(TextSelector selector) {
+      mySelector = selector;
     }
   }
 
@@ -345,9 +405,10 @@ public class GraphicPrimitiveContainer {
       return totalHeight;
     }
 
-    public void addText(Text text) {
-      int line = text.getBottomY();
-      myLines.get(line).add(text);
+    public Text addText(int x, int y, TextSelector textSelector) {
+      Text result = new Text(x, y, textSelector);
+      myLines.get(y).add(result);
+      return result;
     }
 
     public int getLineCount() {
@@ -413,13 +474,13 @@ public class GraphicPrimitiveContainer {
   }
 
   public Text createText(int leftx, int bottomy, String text) {
-    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, text);
+    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, text, myTextIndex);
     myTexts.add(result);
     return result;
   }
 
   public Text createText(int leftx, int bottomy, TextSelector textSelector) {
-    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, textSelector);
+    Text result = new Text(leftx + myDeltaX, bottomy + myDeltaY, textSelector, myTextIndex);
     myTexts.add(result);
     return result;
   }
@@ -430,7 +491,7 @@ public class GraphicPrimitiveContainer {
     return result;
   }
 
-  void paint(Painter painter) {
+  public void paint(Painter painter) {
     painter.prePaint();
     for (int i = 0; i < myRectangles.size(); i++) {
       Rectangle next = myRectangles.get(i);
@@ -456,6 +517,7 @@ public class GraphicPrimitiveContainer {
   }
 
   public void clear() {
+    myTextIndex.clear();
     myRectangles.clear();
     myLines.clear();
     myTexts.clear();
@@ -476,17 +538,7 @@ public class GraphicPrimitiveContainer {
   }
 
   public GraphicPrimitive getPrimitive(int x, int y) {
-    // System.err.println("looking for primitive under point x="+x+" y="+y);
     return getPrimitive(x, 0, y, 0);
-    // for (int i = 0; i < myRectangles.size(); i++) {
-    // Rectangle next = (Rectangle) myRectangles.get(i);
-    // // System.err.println(" next rectangle="+next);
-    // if (next.myLeftX <= x && next.myLeftX + next.myWidth >= x
-    // && next.myTopY <= y && next.myTopY + next.myHeight >= y) {
-    // return next;
-    // }
-    // }
-    // return null;
   }
 
   public GraphicPrimitive getPrimitive(int x, int xThreshold, int y, int yThreshold) {
@@ -498,7 +550,7 @@ public class GraphicPrimitiveContainer {
         return next;
       }
     }
-    return null;
+    return myTextIndex.get(x + myDeltaX, y + myDeltaY);
   }
 
   public List<GraphicPrimitiveContainer> getLayers() {
@@ -516,5 +568,11 @@ public class GraphicPrimitiveContainer {
     GraphicPrimitiveContainer result = new GraphicPrimitiveContainer();
     myLayers.add(result);
     return result;
+  }
+
+  public void createLayers(int count) {
+    for (int i = 0; i < count; i++) {
+      newLayer();
+    }
   }
 }

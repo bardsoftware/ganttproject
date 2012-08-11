@@ -33,7 +33,7 @@ public class Offset {
   private GPCalendar.DayType myDayType;
   private Date myOffsetStart;
 
-  Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels,
+  public Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels,
       GPCalendar.DayType dayType) {
     myOffsetAnchor = offsetAnchor;
     myOffsetStart = offsetStart;

@@ -12,6 +12,9 @@ import java.util.Comparator;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.webdav.HttpDocument;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
@@ -19,7 +22,6 @@ import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 
@@ -30,16 +32,27 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
-  private IGanttProject myProject;
+  private final IGanttProject myProject;
 
-  private UIFacade myUIFacade;
+  private final UIFacade myUIFacade;
 
-  private ParserFactory myParserFactory;
+  private final ParserFactory myParserFactory;
+
+  private final WebDavStorageImpl myWebDavStorage;
+  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
+
+  private final GPOptionGroup myOptionGroup;
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
     myUIFacade = uiFacade;
-    setParserFactory(parserFactory);
+    myParserFactory = parserFactory;
+    myWebDavStorage = new WebDavStorageImpl(project, uiFacade);
+    myOptionGroup = new GPOptionGroup("", new GPOption[] {
+        myWorkingDirectory,
+        myWebDavStorage.getServersOption(),
+        myWebDavStorage.getLastWebDAVDocumentOption(),
+        myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
   }
 
   /**
@@ -73,7 +86,15 @@ public class DocumentCreator implements DocumentManager {
     path = path.trim();
     String lowerPath = path.toLowerCase();
     if (lowerPath.startsWith("http://") || lowerPath.startsWith("https://")) {
-      return new HttpDocument(path, user, pass);
+      try {
+        return new HttpDocument(path, user, pass);
+      } catch (IOException e) {
+        GPLogger.log(e);
+        return null;
+      } catch (WebDavException e) {
+        GPLogger.log(e);
+        return null;
+      }
     } else if (lowerPath.startsWith("ftp:")) {
       return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
     } else if (!lowerPath.startsWith("file://") && path.contains("://")) {
@@ -92,8 +113,7 @@ public class DocumentCreator implements DocumentManager {
   }
 
   @Override
-  public Document getDocument(String path, String userName, String password) {
-    Document physicalDocument = createDocument(path, userName, password);
+  public Document getProxyDocument(Document physicalDocument) {
     Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),
         getResourceVisibleFields(), getParserFactory());
     return proxyDocument;
@@ -154,10 +174,6 @@ public class DocumentCreator implements DocumentManager {
 
   }
 
-  protected void setParserFactory(ParserFactory myParserFactory) {
-    this.myParserFactory = myParserFactory;
-  }
-
   protected ParserFactory getParserFactory() {
     return myParserFactory;
   }
@@ -180,15 +196,6 @@ public class DocumentCreator implements DocumentManager {
     return myWorkingDirectory.getValue();
   }
 
-  @Override
-  public StringOption getLastWebDAVDocumentOption() {
-    return myLastWebDAVDocument;
-  }
-
-  @Override
-  public IntegerOption getWebDavLockTimeoutOption() {
-    return myWebDavLockTimeoutOption;
-  }
 
   private File getWorkingDirectoryFile() {
     return new File(getWorkingDirectory());
@@ -209,12 +216,10 @@ public class DocumentCreator implements DocumentManager {
     return new GPOptionGroup[] { myFtpOptions };
   }
 
-  private final StringOption myWorkingDirectory = new StringOptionImpl("working-dir", "working-dir", "dir");
-  private final StringOption myLastWebDAVDocument = new StringOptionImpl("last-webdav-document", "", "");
-  private final IntegerOption myWebDavLockTimeoutOption = new LockTimeoutOption();
-
-  private final GPOptionGroup myOptionGroup = new GPOptionGroup("", new GPOption[] { myWorkingDirectory,
-      myLastWebDAVDocument, myWebDavLockTimeoutOption });
+  @Override
+  public DocumentStorageUi getWebDavStorageUi() {
+    return myWebDavStorage;
+  }
 
   private final StringOption myFtpUserOption = new StringOptionImpl("user-name", "ftp", "ftpuser");
   private final StringOption myFtpServerNameOption = new StringOptionImpl("server-name", "ftp", "ftpurl");

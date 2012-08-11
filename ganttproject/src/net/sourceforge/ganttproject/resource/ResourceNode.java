@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.roles.Role;
 
-public class ResourceNode extends DefaultMutableTreeNode {
+public class ResourceNode extends DefaultMutableTreeTableNode {
 
   private static final long serialVersionUID = 3834033541318392117L;
 
@@ -31,6 +31,7 @@ public class ResourceNode extends DefaultMutableTreeNode {
 
   public ResourceNode(HumanResource res) {
     super(res);
+    assert res != null;
     resource = res;
   }
 
@@ -99,5 +100,9 @@ public class ResourceNode extends DefaultMutableTreeNode {
       res = rn.getUserObject() != null && rn.getUserObject().equals(this.getUserObject());
     }
     return res;
+  }
+
+  public void removeAllChildren() {
+    TreeUtil.removeAllChildren(this);
   }
 }

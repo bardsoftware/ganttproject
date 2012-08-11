@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -23,15 +23,4 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 public interface TextSelector {
   Label[] getLabels(TextLengthCalculator textLengthCalculator);
-
-  class Default {
-    public static TextSelector singleChoice(final String text) {
-      return new TextSelector() {
-        @Override
-        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
-          return new Label[] { new Label(text, textLengthCalculator.getTextLength(text)) };
-        }
-      };
-    }
-  }
 }
