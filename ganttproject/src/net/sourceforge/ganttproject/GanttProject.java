@@ -55,9 +55,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
@@ -77,11 +74,12 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
-import net.sourceforge.ganttproject.document.HttpDocument;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -107,12 +105,9 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 import com.beust.jcommander.JCommander;
@@ -208,7 +203,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
-        return getArea().getTaskColor();
+        return getUIFacade().getGanttChart().getTaskDefaultColorOption().getValue();
       }
 
       @Override
@@ -240,21 +235,22 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     TaskManagerConfig taskConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(new TaskContainmentHierarchyFacade.Factory() {
       @Override
-      public TaskContainmentHierarchyFacade createFacede() {
+      public TaskContainmentHierarchyFacade createFacade() {
         return GanttProject.this.getTaskContainment();
       }
     }, taskConfig);
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
-    // Create each objects
-    myFacadeInvalidator = new FacadeInvalidator(getTree().getJTree().getModel());
+
+    myFacadeInvalidator = new FacadeInvalidator(getTree().getModel());
     getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
+    getTree().init();
     options.addOptionGroups(new GPOptionGroup[] { getUIFacade().getOptions() });
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
-    options.addOptionGroups(new GPOptionGroup[] { getProjectUIFacade().getOptionGroup() });
+    options.addOptionGroups(getProjectUIFacade().getOptionGroups());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(getRssFeedChecker().getOptions());
     myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
@@ -368,7 +364,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     System.err.println("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
-    myTaskManager.addTaskListener(new TaskModelModificationListener(this));
+    myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
     if (ourWindowListener != null) {
       addWindowListener(ourWindowListener);
     }
@@ -401,10 +397,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Color color = GanttGraphicArea.taskDefaultColor;
     // myApplicationConfig.register(options);
     options.setUIConfiguration(myUIConfiguration);
-    if (options.load()) {
-      HttpDocument.setLockDAVMinutes(options.getLockDAVMinutes());
-    }
-
+    options.load();
     myUIConfiguration = options.getUIConfiguration();
   }
 
@@ -581,46 +574,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return myPreviousStates;
   }
 
-  /** Create a new task */
-  @Override
-  public Task newTask() {
-    getTabs().setSelectedIndex(UIFacade.GANTT_INDEX);
-
-    int index = -1;
-    MutableTreeNode selectedNode = getTree().getSelectedNode();
-    if (selectedNode != null && selectedNode != getTree().getRoot()) {
-      DefaultMutableTreeNode parent1 = (DefaultMutableTreeNode) selectedNode.getParent();
-      index = parent1.getIndex(selectedNode) + 1;
-      tree.getTreeTable().getTree().setSelectionPath(new TreePath(parent1.getPath()));
-      tree.getTreeTable().getTreeTable().editingStopped(new ChangeEvent(tree.getTreeTable().getTreeTable()));
-    }
-
-    GanttCalendar cal = new GanttCalendar(area.getStartDate());
-
-    DefaultMutableTreeNode node = tree.getSelectedNode();
-    String nameOfTask = getTaskManager().getTaskNamePrefixOption().getValue();
-    GanttTask task = getTaskManager().createTask();
-    task.setStart(cal);
-    task.setDuration(getTaskManager().createLength(1));
-    getTaskManager().registerTask(task);
-    task.setName(nameOfTask + "_" + task.getTaskID());
-    task.setColor(area.getTaskColor());
-    tree.addObject(task, node, index);
-
-    // this will add new custom columns to the newly created task.
-    AdjustTaskBoundsAlgorithm alg = getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
-    alg.run(task);
-    RecalculateTaskCompletionPercentageAlgorithm alg2 = getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg2.run(task);
-    area.repaint();
-    setAskForSave(true);
-    getUIFacade().setStatusText(language.getText("createNewTask"));
-    // setQuickSave(true);
-    tree.setEditingTask(task);
-    repaint2();
-    return task;
-  }
-
   /** Refresh the information of the project on the status bar. */
   public void refreshProjectInformation() {
     if (getTaskManager().getTaskCount() == 0 && resp.nbPeople() == 0) {
@@ -781,6 +734,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public GanttResourcePanel getResourcePanel() {
     if (this.resp == null) {
       this.resp = new GanttResourcePanel(this, getUIFacade());
+      this.resp.init();
       getHumanResourceManager().addView(this.resp);
     }
     return this.resp;
@@ -1035,9 +989,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     fireProjectClosed();
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
-    if (null != projectDocument) {
-      projectDocument.releaseLock();
-    }
     projectDocument = null;
     getTaskManager().projectClosed();
     getTaskCustomColumnManager().reset();
@@ -1100,7 +1051,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public Chart getResourceChart() {
+  public TimelineChart getResourceChart() {
     return getResourcePanel().area;
   }
 

@@ -21,15 +21,13 @@ package net.sourceforge.ganttproject.parser;
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Stack;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
 import org.xml.sax.Attributes;
 
@@ -59,48 +57,57 @@ public class TaskTagHandler implements TagHandler {
 
   private void loadTask(Attributes attrs) {
     String taskIdAsString = attrs.getValue("id");
-    GanttTask task = null;
-    if (taskIdAsString == null) {
-      task = getManager().createTask();
-    } else {
-      int taskId;
-      try {
-        taskId = Integer.parseInt(taskIdAsString);
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            "Failed to parse the value '" + taskIdAsString + "' of attribute 'id' of tag <task>", e);
-      }
-      task = getManager().createTask(taskId);
+    int taskId;
+    try {
+      taskId = Integer.parseInt(taskIdAsString);
+    } catch (NumberFormatException e) {
+      throw new RuntimeException(
+          "Failed to parse the value '" + taskIdAsString + "' of attribute 'id' of tag <task>", e);
     }
+    TaskBuilder builder = getManager().newTaskBuilder().withId(taskId);
 
     String taskName = attrs.getValue("name");
     if (taskName != null) {
-      task.setName(taskName);
+      builder = builder.withName(taskName);
     }
-
-    task.setMilestone(Boolean.parseBoolean(attrs.getValue("meeting")));
-
-    String project = attrs.getValue("project");
-    if (project != null)
-      task.setProjectTask(true);
 
     String start = attrs.getValue("start");
     if (start != null) {
-      task.setStart(GanttCalendar.parseXMLDate(start));
+      builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).getTime());
     }
 
     String duration = attrs.getValue("duration");
     if (duration != null) {
       try {
         int length = Integer.parseInt(duration);
-        if (length == 0) {
-          length = 1;
-        }
-        task.setLength(length);
+        builder = builder.withDuration(getManager().createLength(length));
       } catch (NumberFormatException e) {
         throw new RuntimeException(
             "Failed to parse the value '" + duration + "' of attribute 'duration' of tag <task>", e);
       }
+    }
+
+    if (!myContext.isStackEmpty()) {
+      builder = builder.withParent(myContext.peekTask());
+    }
+    String isExpanded = attrs.getValue("expand");
+    if (isExpanded != null) {
+      builder = builder.withExpansionState(Boolean.parseBoolean(isExpanded));
+    }
+
+    String isLegacyMilestone = attrs.getValue("meeting");
+    if (Boolean.parseBoolean(isLegacyMilestone)) {
+      builder = builder.withLegacyMilestone();
+    }
+    Task task = builder.build();
+
+//    String newMilestone = attrs.getValue("milestone");
+//    if ("1".equals(newMilestone)) {
+//      task.setMilestone(true);
+//    }
+    String project = attrs.getValue("project");
+    if (project != null) {
+      task.setProjectTask(true);
     }
 
     String complete = attrs.getValue("complete");
@@ -156,8 +163,6 @@ public class TaskTagHandler implements TagHandler {
       task.setWebLink(webLink);
     }
 
-    task.setExpand(Boolean.parseBoolean(attrs.getValue("expand")));
-
     String shape = attrs.getValue("shape");
     if (shape != null) {
       java.util.StringTokenizer st1 = new java.util.StringTokenizer(shape, ",");
@@ -172,10 +177,6 @@ public class TaskTagHandler implements TagHandler {
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
-    getManager().registerTask(task);
-    TaskContainmentHierarchyFacade taskHierarchy = getManager().getTaskHierarchy();
-    Task stackHead = myContext.isStackEmpty() ? taskHierarchy.getRootTask() : myContext.peekTask();
-    taskHierarchy.move(task, stackHead);
     myContext.pushTask(task);
   }
 

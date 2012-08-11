@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -83,6 +83,8 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDep
   public ActivityBinding getActivityBinding() {
     TaskActivity[] dependantActivities = getDependency().getDependant().getActivities();
     TaskActivity[] dependeeActivities = getDependency().getDependee().getActivities();
+    assert dependantActivities.length > 0 : "Task " + getDependency().getDependant() + " has no activities";
+    assert dependeeActivities.length > 0 : "Task " + getDependency().getDependee() + " has no activities";
     TaskActivity theDependant = dependantActivities[0];
     TaskActivity theDependee = dependeeActivities[dependeeActivities.length - 1];
     return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getStart(),

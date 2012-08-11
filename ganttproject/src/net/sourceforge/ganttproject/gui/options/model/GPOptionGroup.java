@@ -17,7 +17,7 @@ public class GPOptionGroup {
 
   private boolean isTitled = true;
 
-  public GPOptionGroup(String id, GPOption[] options) {
+  public GPOptionGroup(String id, GPOption... options) {
     myID = id;
     myOptions = options;
   }

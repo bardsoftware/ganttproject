@@ -38,5 +38,5 @@ public interface ProjectUIFacade {
 
   void createProject(IGanttProject project);
 
-  GPOptionGroup getOptionGroup();
+  GPOptionGroup[] getOptionGroups();
 }

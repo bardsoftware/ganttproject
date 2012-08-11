@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2009-2011 Dmitry Barashev, GanttProject Team
+Copyright (C) 2009-2012 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -36,8 +36,9 @@ import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.export.AbstractExporter;
+import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -51,7 +52,6 @@ import org.ganttproject.impex.htmlpdf.AbstractEngine;
 import org.ganttproject.impex.htmlpdf.ExporterToPDF;
 import org.ganttproject.impex.htmlpdf.Stylesheet;
 import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
-import org.ganttproject.impex.htmlpdf.ExporterBase.ExporterJob;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
@@ -127,7 +127,7 @@ public class ITextEngine extends AbstractEngine {
     return factory.createStylesheets(ITextStylesheet.class);
   }
 
-  private AbstractExporter getExporter() {
+  private ExporterBase getExporter() {
     return myExporter;
   }
 

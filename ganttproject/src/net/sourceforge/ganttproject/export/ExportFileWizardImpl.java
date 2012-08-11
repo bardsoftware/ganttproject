@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject Team
+Copyright (C) 2005-2012 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,8 +25,9 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.osgi.service.prefs.Preferences;
+
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
@@ -41,30 +42,24 @@ public class ExportFileWizardImpl extends WizardImpl {
 
   private final IGanttProject myProject;
 
-  private final GanttOptions myOptions;
-
   private final State myState;
 
   private static Exporter ourLastSelectedExporter;
   private static List<Exporter> ourExporters;
 
-  public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
+  public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
     super(uiFacade, language.getText("exportWizard.dialog.title"));
     myProject = project;
-    myOptions = options;
     myState = new State();
     if (ourExporters == null) {
       ourExporters = PluginManager.getExporters();
     }
     myState.setExporter(ourLastSelectedExporter == null ? ourExporters.get(0) : ourLastSelectedExporter);
     for (Exporter e : ourExporters) {
-      e.setContext(project, uiFacade, myOptions.getPluginPreferences());
-      if (e instanceof LegacyOptionsClient) {
-        ((LegacyOptionsClient) e).setOptions(myOptions);
-      }
+      e.setContext(project, uiFacade, pluginPreferences);
     }
     addPage(new ExporterChooserPage(ourExporters, myState));
-    addPage(new FileChooserPage(myState, myProject, this, options.getPluginPreferences().node(
+    addPage(new FileChooserPage(myState, myProject, this, pluginPreferences.node(
         "/instance/net.sourceforge.ganttproject/export")));
   }
 
@@ -129,9 +124,5 @@ public class ExportFileWizardImpl extends WizardImpl {
     public URL getUrl() {
       return myUrl;
     }
-  }
-
-  interface LegacyOptionsClient {
-    void setOptions(GanttOptions options);
   }
 }

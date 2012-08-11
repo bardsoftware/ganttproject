@@ -55,6 +55,8 @@ import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
+import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
+import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
@@ -78,6 +80,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   private final ChartComponentBase myChartComponent;
   private MouseInteraction myActiveInteraction;
   private final UIFacade myUiFacade;
+  private VScrollController myVScrollController;
 
   public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
       ChartComponentBase chartComponent) {
@@ -117,8 +120,15 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myProject;
   }
 
+  @Override
+  public void setVScrollController(TimelineChart.VScrollController vscrollController) {
+    myVScrollController = vscrollController;
+  }
+
   public void beginScrollViewInteraction(MouseEvent e) {
-    setActiveInteraction(myChartComponent.newScrollViewInteraction(e));
+    TimelineFacadeImpl timelineFacade = new TimelineFacadeImpl(getChartModel(), myProject.getTaskManager());
+    timelineFacade.setVScrollController(myVScrollController);
+    setActiveInteraction(new ScrollViewInteraction(e, timelineFacade));
   }
 
   public MouseInteraction finishInteraction() {

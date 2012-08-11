@@ -49,7 +49,7 @@ public class GanttSplash extends JFrame {
         Font font = Fonts.SPLASH_FONT;
         g2.setFont(font);
 
-        drawTextWithShadow(g2, GPVersion.PRAHA, 65, 80);
+        drawTextWithShadow(g2, GPVersion.CURRENT, 65, 80);
         // drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
       }
     };

@@ -190,7 +190,7 @@ public abstract class EditableList<T> {
     return result;
   }
 
-  T getSelectedObject() {
+  public T getSelectedObject() {
     int selIndex = resourcesTable.getSelectedRow();
     return selIndex >= 0 && selIndex < myValues.size() ? myValues.get(selIndex) : null;
   }

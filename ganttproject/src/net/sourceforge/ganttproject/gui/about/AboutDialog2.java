@@ -60,7 +60,7 @@ public class AboutDialog2 extends AbstractPagesDialog {
 
   private static ListItem createSummaryPage() {
     JPanel result = new JPanel(new BorderLayout());
-    JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.PRAHA));
+    JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.CURRENT));
     html.setAlignmentX(0.5f);
     JPanel htmlWrapper = new JPanel(new BorderLayout());
     htmlWrapper.add(html, BorderLayout.NORTH);

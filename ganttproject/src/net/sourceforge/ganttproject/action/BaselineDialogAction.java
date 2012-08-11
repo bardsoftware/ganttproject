@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 
 public class BaselineDialogAction extends GPAction {
   private final IGanttProject myProject;
@@ -135,6 +137,11 @@ public class BaselineDialogAction extends GPAction {
         myProject.setModified();
       }
     }, CancelAction.EMPTY };
-    myUiFacade.createDialog(list.createDefaultComponent(), actions, getI18n("baseline.dialog.title")).show();
+
+    OptionsPageBuilder optionsBuilder = new OptionsPageBuilder();
+    JPanel contentPanel = new JPanel(new BorderLayout());
+    contentPanel.add(list.createDefaultComponent(), BorderLayout.CENTER);
+    contentPanel.add(optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()), BorderLayout.SOUTH);
+    myUiFacade.createDialog(contentPanel, actions, getI18n("baseline.dialog.title")).show();
   }
 }
