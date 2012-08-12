@@ -339,7 +339,7 @@ class GanttURLChooser {
       myServers.setValue(savedServer);
     } else {
       WebDavServerDescriptor server = new WebDavServerDescriptor(
-          Strings.isNullOrEmpty(currentUri.hostName) ? currentUri.buildRootUrl() : currentUri.hostName, currentUri.buildRootUrl(), "");
+          Strings.isNullOrEmpty(currentUri.hostName) ? currentUri.hostUrl : currentUri.hostName, currentUri.buildRootUrl(), "");
       myServers.addValue(server);
       myServers.setValue(server);
     }
