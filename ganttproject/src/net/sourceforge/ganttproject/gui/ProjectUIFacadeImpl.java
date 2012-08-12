@@ -371,7 +371,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
   @Override
   public GPOptionGroup[] getOptionGroups() {
-    return new GPOptionGroup[] { myDocumentManager.getOptionGroup(), myConverterGroup };
+    return new GPOptionGroup[] { myConverterGroup };
   }
 
   private GPUndoManager getUndoManager() {
