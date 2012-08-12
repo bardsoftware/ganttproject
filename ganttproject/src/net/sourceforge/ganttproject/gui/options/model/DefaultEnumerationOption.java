@@ -18,40 +18,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+
+
 public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implements EnumerationOption {
-  private final String[] myValues;
-  private final Map<String, T> myStringValue_ObjectValue = new HashMap<String, T>();
+  private final List<String> myValues;
+  private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<String, T>();
 
   public DefaultEnumerationOption(String id, String[] values) {
     super(id);
-    myValues = values;
+    myValues = Arrays.asList(values);
   }
 
   public DefaultEnumerationOption(String id, List<String> values) {
     super(id);
-    myValues = values.toArray(new String[0]);
+    myValues = values;
   }
 
   public DefaultEnumerationOption(String id, T[] values) {
     super(id);
-    List<String> buf = new ArrayList<String>();
-    for (T nextValue : values) {
-      buf.add(objectToString(nextValue));
-    }
-    myValues = buf.toArray(new String[0]);
-    fillStringObjectValueMapping(values);
+    myValues = Lists.newArrayList();
+    reloadValues(Arrays.asList(values));
   }
 
-  private void fillStringObjectValueMapping(T[] values) {
-    assert myValues.length == values.length;
-    for (int i = 0; i < values.length; i++) {
-      myStringValue_ObjectValue.put(myValues[i], values[i]);
+  protected void reloadValues(List<T> values) {
+    List<String> oldValues = Lists.newArrayList(myValues);
+    myValues.clear();
+    myStringValue_ObjectValue.clear();
+    for (T value : values) {
+      myStringValue_ObjectValue.put(objectToString(value), value);
     }
+    myValues.addAll(myStringValue_ObjectValue.keySet());
+    getPropertyChangeSupport().firePropertyChange(EnumerationOption.VALUE_SET, oldValues, myValues);
   }
 
   protected String objectToString(T obj) {
@@ -68,7 +71,7 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
 
   @Override
   public String[] getAvailableValues() {
-    return myValues;
+    return myValues.toArray(new String[myValues.size()]);
   }
 
   @Override
@@ -86,6 +89,10 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
   }
 
   public void setSelectedValue(T value) {
+    if (value == null) {
+      setValue(null);
+      return;
+    }
     String stringValue = objectToString(value);
     if (myStringValue_ObjectValue.containsKey(stringValue)) {
       setValue(stringValue);

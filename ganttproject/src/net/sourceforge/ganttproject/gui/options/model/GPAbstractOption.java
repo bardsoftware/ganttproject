@@ -138,6 +138,10 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
     isScreened = value;
   }
 
+  protected PropertyChangeSupport getPropertyChangeSupport() {
+    return myPropertyChangeSupport;
+  }
+
   protected static String i18n(String key) {
     return GanttLanguage.getInstance().getText(key);
   }

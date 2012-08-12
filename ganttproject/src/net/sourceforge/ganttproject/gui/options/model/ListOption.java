@@ -29,6 +29,7 @@ public interface ListOption<T> extends GPOption<T> {
   Iterable<T> getValues();
   void setValueIndex(int idx);
   void addValue(T value);
+  void updateValue(T oldValue, T newValue);
   void removeValueIndex(int idx);
 
   EnumerationOption asEnumerationOption();
