@@ -104,6 +104,7 @@
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectRolesOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
+         <optionpageprovider class="net.sourceforge.ganttproject.document.webdav.WebDavOptionPageProvider"/>
    </extension>
 
    <extension point="net.sourceforge.ganttproject.calendar">
