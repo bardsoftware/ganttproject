@@ -45,12 +45,11 @@ public class WebDavUri {
       URL url = new URL(fullUrl);
       tryHostUrl = url.getHost();
       trySecure = "https".equals(url.getProtocol().toLowerCase());
-      tryPort = url.getPort() == -1 ?
-          (trySecure ? 443 : 80) : url.getPort();
+      tryPort = url.getPort();
       tryPath = url.getPath();
     } catch (MalformedURLException e) {
       tryHostUrl = fullUrl;
-      tryPort = trySecure ? 443 : 80;
+      tryPort = -1;
       tryPath = "";
     }
     this.hostName = "";
@@ -74,8 +73,7 @@ public class WebDavUri {
       URL url = new URL(hostUrl);
       tryHostUrl = url.getHost();
       trySecure = "https".equals(url.getProtocol().toLowerCase());
-      tryPort = url.getPort() == -1 ?
-          (trySecure ? 443 : 80) : url.getPort();
+      tryPort = url.getPort();
       tryRootPath = url.getPath();
     } catch (MalformedURLException e) {
       tryHostUrl = hostUrl;
@@ -94,7 +92,7 @@ public class WebDavUri {
   }
 
   String buildRootUrl() {
-    return (isSecure ? "https://" : "http://") + hostUrl + (port == 80 ? "" :  ":" + port) + rootPath;
+    return (isSecure ? "https://" : "http://") + hostUrl + (port == -1 ? "" :  ":" + port) + rootPath;
   }
   public WebDavUri buildParent() {
     return new WebDavUri(hostName, buildRootUrl(), Path.path(path).getParent().toString());
