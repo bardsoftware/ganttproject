@@ -43,23 +43,13 @@ class FilesTableModel extends AbstractListModel {
     return myCollection;
   }
 
-  void setCollection(WebDavResource collection) throws WebDavException {
+  void setCollection(WebDavResource collection, List<WebDavResource> children) {
     myCollection = null;
     if (myChildResources != null) {
       fireIntervalRemoved(this, 0, myChildResources.size());
     }
     myCollection = collection;
-    myChildResources = Lists.newArrayList();
-    for (WebDavResource resource : myCollection.getChildResources()) {
-      try {
-        if (resource.exists()) {
-          myChildResources.add(resource);
-        }
-      }
-      catch (WebDavException e) {
-        GPLogger.logToLogger(e);
-      }
-    }
+    myChildResources = children;
 
     Collections.sort(myChildResources, new Comparator<WebDavResource>() {
         @Override
