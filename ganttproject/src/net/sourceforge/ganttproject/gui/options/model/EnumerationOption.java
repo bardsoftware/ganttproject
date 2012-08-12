@@ -22,5 +22,7 @@ package net.sourceforge.ganttproject.gui.options.model;
  * @author bard
  */
 public interface EnumerationOption extends GPOption<String> {
+  String VALUE_SET = "valueSet";
+
   String[] getAvailableValues();
 }

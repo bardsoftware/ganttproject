@@ -429,7 +429,7 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private JComboBox createEnumerationComponent(EnumerationOption option, GPOptionGroup group) {
+  private JComboBox createEnumerationComponent(final EnumerationOption option, final GPOptionGroup group) {
     final JComboBox result = new JComboBox(new EnumerationOptionComboBoxModel(option, group));
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
@@ -437,6 +437,16 @@ public class OptionsPageBuilder {
         EnumerationOptionComboBoxModel model = (EnumerationOptionComboBoxModel) result.getModel();
         model.onValueChange();
         result.setSelectedItem(model.getSelectedItem());
+      }
+    });
+    option.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if (EnumerationOption.VALUE_SET.equals(evt.getPropertyName())) {
+          EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
+          result.setModel(model);
+          result.setSelectedItem(model.getSelectedItem());
+        }
       }
     });
     return result;
