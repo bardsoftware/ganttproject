@@ -43,6 +43,8 @@ public class DocumentCreator implements DocumentManager {
 
   private final GPOptionGroup myOptionGroup;
 
+  private final GPOptionGroup myWebDavOptionGroup;
+
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
     myUIFacade = uiFacade;
@@ -50,9 +52,14 @@ public class DocumentCreator implements DocumentManager {
     myWebDavStorage = new WebDavStorageImpl(project, uiFacade);
     myOptionGroup = new GPOptionGroup("", new GPOption[] {
         myWorkingDirectory,
+        myWebDavStorage.getLegacyLastWebDAVDocumentOption(),
+        myWebDavStorage.getWebDavLockTimeoutOption()
+    });
+    myWebDavOptionGroup = new GPOptionGroup("webdav", new GPOption[] {
         myWebDavStorage.getServersOption(),
-        myWebDavStorage.getLastWebDAVDocumentOption(),
-        myWebDavStorage.getWebDavLockTimeoutOption(), myWebDavStorage.getWebDavUsernameOption()});
+        myWebDavStorage.getLastWebDavDocumentOption(),
+        myWebDavStorage.getWebDavReleaseLockOption()
+    });
   }
 
   /**
@@ -213,7 +220,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public GPOptionGroup[] getNetworkOptionGroups() {
-    return new GPOptionGroup[] { myFtpOptions };
+    return new GPOptionGroup[] { myFtpOptions, myOptionGroup, myWebDavOptionGroup };
   }
 
   @Override
@@ -279,32 +286,4 @@ public class DocumentCreator implements DocumentManager {
       loadPersistentValue(legacyValue);
     }
   }
-
-  private static class LockTimeoutOption extends DefaultIntegerOption implements GP1XOptionConverter {
-    public LockTimeoutOption() {
-      super("webdav.lockTimeout", -1);
-    }
-
-    @Override
-    public String getTagName() {
-      return "lockdavminutes";
-    }
-
-    @Override
-    public String getAttributeName() {
-      return "value";
-    }
-
-    @Override
-    public void loadValue(String legacyValue) {
-      try {
-        setValue(Integer.parseInt(legacyValue), true);
-      } catch (NumberFormatException e) {
-        GPLogger.log(e);
-        setValue(-1, true);
-      }
-    }
-
-  }
-
 }
