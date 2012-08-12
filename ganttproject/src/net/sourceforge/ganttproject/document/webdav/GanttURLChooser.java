@@ -20,8 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -30,6 +32,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -37,10 +41,13 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -64,12 +71,16 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
+import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
+import org.jdesktop.swingx.JXPanel;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * UI component for WebDAV operarions.
@@ -98,22 +109,7 @@ class GanttURLChooser {
   private final GPAction myReloadAction = new GPAction("fileChooser.reload") {
     @Override
     public void actionPerformed(ActionEvent event) {
-      try {
-        myWebDavFactory.clearCache();
-        myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
-        WebDavResource resource = myWebDavFactory.createResource(buildUrl());
-        if (resource.exists() && resource.isCollection()) {
-          tableModel.setCollection(resource);
-          return;
-        }
-        WebDavResource parent = resource.getParent();
-        if (parent.exists() && parent.isCollection()) {
-          tableModel.setCollection(parent);
-          return;
-        }
-      } catch (WebDavException e) {
-        showError(e);
-      }
+      reloadFilesTable();
     }
   };
 
@@ -124,7 +120,7 @@ class GanttURLChooser {
         WebDavResource collection = tableModel.getCollection();
         WebDavResource parent = collection.getParent();
         if (parent != null && parent.exists() && parent.isCollection()) {
-          tableModel.setCollection(parent);
+          new ReloadWorker(parent).execute();
           myPath.setValue(new URL(parent.getUrl()).getPath());
         }
       } catch (WebDavException e) {
@@ -203,6 +199,14 @@ class GanttURLChooser {
 
   private final IGanttProject myProject;
 
+  private JScrollPane myFilesComponent;
+
+  private JProgressBar myProgressBar;
+
+  private JPanel myProgressComponent;
+
+  private WebDavUri myInitialUri;
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
@@ -221,15 +225,14 @@ class GanttURLChooser {
     myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
     myReleaseLockOption = releaseLockOption;
+    myInitialUri = currentUri;
 
     myServers.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         myPath.setValue("");
-        WebDavServerDescriptor server = myServers.getValue();
-        myUsername.setValue(server.username);
-        myPassword.setValue(server.password);
-        System.err.println("password=" + server.password);
+        updateUsernameAndPassword();
+        myReloadAction.actionPerformed(null);
       }
     });
     myPath.addChangeValueListener(new ChangeValueListener() {
@@ -250,16 +253,84 @@ class GanttURLChooser {
     myUsername.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        myServers.getValue().username = myUsername.getValue();
+        if (myServers.getValue() != null) {
+          myServers.getValue().username = myUsername.getValue();
+        }
       }
     });
     myPassword.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        myServers.getValue().password = myPassword.getValue();
+        if (myServers.getValue() != null) {
+          myServers.getValue().password = myPassword.getValue();
+        }
       }
     });
-    tryApplyUrl(currentUri);
+  }
+
+  class ReloadWorker extends SwingWorker<Pair<WebDavResource, List<WebDavResource>>, Object> {
+    private WebDavResource myResource;
+
+    public ReloadWorker(WebDavResource resource) {
+      myResource = resource;
+      setProgressBar(true);
+    }
+    @Override
+    protected Pair<WebDavResource, List<WebDavResource>> doInBackground() throws Exception {
+      try {
+        WebDavResource resource = myResource;
+        myWebDavFactory.clearCache();
+        myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
+        if (resource.exists() && resource.isCollection()) {
+          return Pair.create(resource, readChildren(resource));
+        }
+        WebDavResource parent = resource.getParent();
+        if (parent.exists() && parent.isCollection()) {
+          return Pair.create(parent, readChildren(parent));
+        }
+        return null;
+      } catch (WebDavException e) {
+        showError(e);
+        return null;
+      }
+    }
+
+    private List<WebDavResource> readChildren(WebDavResource parent) throws WebDavException {
+      List<WebDavResource> children = Lists.newArrayList();
+      for (WebDavResource child : parent.getChildResources()) {
+        try {
+          if (child.exists()) {
+            children.add(child);
+          }
+        }
+        catch (WebDavException e) {
+          GPLogger.logToLogger(e);
+        }
+      }
+      return children;
+    }
+
+    @Override
+    protected void done() {
+      try {
+        Pair<WebDavResource, List<WebDavResource>> result = get();
+        if (result != null) {
+          tableModel.setCollection(result.first(), result.second());
+        }
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (ExecutionException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } finally {
+        setProgressBar(false);
+      }
+    }
+  };
+
+  protected void reloadFilesTable() {
+    new ReloadWorker(myWebDavFactory.createResource(buildUrl())).execute();
   }
 
   private boolean tryApplyUrl(WebDavUri currentUri) {
@@ -267,13 +338,15 @@ class GanttURLChooser {
     if (savedServer != null && !savedServer.equals(myServers.getValue())) {
       myServers.setValue(savedServer);
     } else {
-      WebDavServerDescriptor server = new WebDavServerDescriptor(currentUri.hostName, currentUri.buildRootUrl(), "");
+      WebDavServerDescriptor server = new WebDavServerDescriptor(
+          Strings.isNullOrEmpty(currentUri.hostName) ? currentUri.buildRootUrl() : currentUri.hostName, currentUri.buildRootUrl(), "");
       myServers.addValue(server);
       myServers.setValue(server);
     }
     myPath.setValue(currentUri.path);
     return true;
   }
+
   private WebDavServerDescriptor findSavedServer(String domainUrl) {
     for (WebDavServerDescriptor server : myServers.getValues()) {
       if (server.rootUrl.equals(domainUrl)) {
@@ -384,7 +457,20 @@ class GanttURLChooser {
           }
         }
       });
-      filesTablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+      myProgressBar = new JProgressBar();
+      myProgressBar.setIndeterminate(true);
+      myProgressComponent = new JPanel(new CardLayout());
+      myProgressComponent.add(myProgressBar, "ProgressOn");
+      myProgressComponent.add(new JLabel("foo"), "ProgressOff");
+      setProgressBar(false);
+
+      myFilesComponent = new JScrollPane(table);
+
+      //filesTablePanel.add(myFilesComponent, BorderLayout.CENTER);
+      filesTablePanel.add(myFilesComponent, BorderLayout.CENTER);
+      myProgressComponent.setPreferredSize(new Dimension(100, 20));
+      filesTablePanel.add(myProgressComponent, BorderLayout.SOUTH);
       panel.add(new JLabel(language.getText("fileChooser.fileList")));
       panel.add(filesTablePanel);
     }
@@ -413,7 +499,14 @@ class GanttURLChooser {
     properties.add(panel, BorderLayout.NORTH);
     properties.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
 
+    if (myInitialUri != null) {
+      tryApplyUrl(myInitialUri);
+    }
     return properties;
+  }
+
+  private void setProgressBar(boolean b) {
+    ((CardLayout)myProgressComponent.getLayout()).show(myProgressComponent, b ? "ProgressOn" : "ProgressOff");
   }
 
   private Component createUsernamePasswordPanel() {
@@ -442,6 +535,8 @@ class GanttURLChooser {
         WebDavOptionPageProvider optionPage = new WebDavOptionPageProvider();
         optionPage.init(myProject, myUiFacade);
         myUiFacade.createDialog(optionPage.buildPageComponent(), new Action[] {CancelAction.CLOSE}, "").show();
+        updateUsernameAndPassword();
+        myReloadAction.actionPerformed(null);
       }
     }));
     UIUtil.walkComponentTree(grid, new Predicate<JComponent>() {
@@ -457,6 +552,13 @@ class GanttURLChooser {
     result.add(Box.createHorizontalGlue());
     return grid;
   }
+
+  private void updateUsernameAndPassword() {
+    WebDavServerDescriptor server = myServers.getValue();
+    myUsername.setValue(server == null ? "" : server.username);
+    myPassword.setValue(server == null ? "" : server.password);
+  }
+
 
   protected void onSelectionChanged(WebDavResource resource) {
     if (mySelectionListener != null) {
@@ -478,7 +580,7 @@ class GanttURLChooser {
     WebDavResource resource = (WebDavResource) table.getSelectedValue();
     try {
       if (resource.isCollection()) {
-        tableModel.setCollection(resource);
+        new ReloadWorker(resource).execute();
       }
     } catch (WebDavException e) {
       showError(e);
@@ -513,6 +615,7 @@ class GanttURLChooser {
   StringOption getPathOption() {
     return myPath;
   }
+
   void showError(Exception e) {
     GPLogger.log(e);
   }

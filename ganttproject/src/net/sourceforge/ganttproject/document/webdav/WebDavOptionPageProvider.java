@@ -2,10 +2,12 @@ package net.sourceforge.ganttproject.document.webdav;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
@@ -48,8 +50,11 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
 
           @Override
           protected WebDavServerDescriptor updateValue(WebDavServerDescriptor newValue, WebDavServerDescriptor curValue) {
-            curValue.name = newValue.name;
-            return curValue;
+            newValue.username = curValue.username;
+            newValue.password = curValue.password;
+            newValue.rootUrl = curValue.rootUrl;
+            serversOption.updateValue(curValue, newValue);
+            return newValue;
           }
 
           @Override
@@ -77,6 +82,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
             return t.name;
           }
     };
+    serverList.getTableComponent().setPreferredSize(new Dimension(150, 300));
     serverList.setUndefinedValueLabel("<type server name here>");
 
     final DefaultStringOption urlOption = new DefaultStringOption("webdav.server.url");
@@ -104,9 +110,8 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     });
     passwordOption.setScreened(true);
 
-    GPOptionGroup optionGroup = new GPOptionGroup("webdav", urlOption, usernameOption, passwordOption);
+    GPOptionGroup optionGroup = new GPOptionGroup("webdav.server", urlOption, usernameOption, passwordOption);
 
-    OptionsPageBuilder builder = new OptionsPageBuilder(null, OptionsPageBuilder.ONE_COLUMN_LAYOUT);
     serverList.getTableAndActions().addSelectionListener(new SelectionListener<WebDavServerDescriptor>() {
       @Override
       public void selectionChanged(List<WebDavServerDescriptor> selection) {
@@ -119,15 +124,23 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       }
     });
 
-    Box result = Box.createHorizontalBox();
+    //Box result = Box.createHorizontalBox();
     JPanel serversPanel = new JPanel(new BorderLayout());
     serversPanel.add(serverList.createDefaultComponent(), BorderLayout.CENTER);
 
+    OptionsPageBuilder builder = new OptionsPageBuilder();
     GPOptionGroup lockingGroup = new GPOptionGroup("webdav.lock", webdavStorage.getWebDavLockTimeoutOption(), webdavStorage.getWebDavReleaseLockOption());
+    lockingGroup.setI18Nkey(builder.getI18N().getCanonicalOptionLabelKey(webdavStorage.getWebDavLockTimeoutOption()), "webdav.lockTimeout.label");
+    lockingGroup.setI18Nkey(builder.getI18N().getCanonicalOptionLabelKey(webdavStorage.getWebDavReleaseLockOption()), "option.webdav.lock.releaseOnProjectClose.label");
     serversPanel.add(builder.buildPlanePage(new GPOptionGroup[] {lockingGroup}), BorderLayout.SOUTH);
 
-    result.add(serversPanel);
-    result.add(builder.buildPlanePage(new GPOptionGroup[] {optionGroup}));
-    return OptionPageProviderBase.wrapContentComponent(result, "WebDAV servers", "foo");
+    builder = new OptionsPageBuilder(null, OptionsPageBuilder.ONE_COLUMN_LAYOUT);
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(serversPanel, BorderLayout.WEST);
+    JComponent serverDetails = builder.buildPlanePage(new GPOptionGroup[] {optionGroup});
+    serverDetails.setPreferredSize(new Dimension(300, 300));
+    result.add(serverDetails, BorderLayout.CENTER);
+    //result.add(Box.createHorizontalGlue());
+    return OptionPageProviderBase.wrapContentComponent(result, getCanonicalPageTitle(), null);
   }
 }

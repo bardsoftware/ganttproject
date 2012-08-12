@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.Action;
@@ -48,6 +49,7 @@ import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
 import net.sourceforge.ganttproject.gui.options.model.ListOption;
 import net.sourceforge.ganttproject.gui.options.model.StringOption;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -60,8 +62,36 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   static class ServerListOption extends GPAbstractOption<WebDavServerDescriptor> implements ListOption<WebDavServerDescriptor> {
     private List<WebDavServerDescriptor> myServers = Lists.newArrayList();
 
+    class EnumerationOptionImpl extends DefaultEnumerationOption<WebDavServerDescriptor> {
+      public EnumerationOptionImpl(String id) {
+        super(id, myServers.toArray(new WebDavServerDescriptor[0]));
+      }
+      @Override
+      protected String objectToString(WebDavServerDescriptor obj) {
+        return obj.name;
+      }
+
+      @Override
+      public void setValue(String value) {
+        super.setValue(value);
+        ServerListOption.this.setValue(stringToObject(value));
+      }
+
+      void reload() {
+        String curValue = getValue();
+        int idxValue = Arrays.asList(getAvailableValues()).indexOf(curValue);
+        super.reloadValues(myServers);
+        if (idxValue >= 0) {
+          setValueIndex(idxValue);
+        }
+      }
+    };
+
+    private EnumerationOptionImpl myEnumerationOption;
+
     public ServerListOption(String id) {
       super(id);
+      myEnumerationOption = new EnumerationOptionImpl(id);
     }
 
     @Override
@@ -91,11 +121,13 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           myServers.add(server);
         }
       }
+      myEnumerationOption.reload();
     }
 
     @Override
     public void setValues(Iterable<WebDavServerDescriptor> values) {
       myServers = Lists.newArrayList(values);
+      myEnumerationOption.reload();
     }
 
     @Override
@@ -109,35 +141,43 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     }
 
     @Override
+    public void setValue(WebDavServerDescriptor value) {
+      if (!Objects.equal(value, getValue())) {
+        super.setValue(value);
+        myEnumerationOption.setSelectedValue(value);
+      }
+    }
+
+    @Override
     public void addValue(WebDavServerDescriptor value) {
       myServers.add(value);
+      myEnumerationOption.reload();
+    }
+
+    @Override
+    public void updateValue(WebDavServerDescriptor oldValue, WebDavServerDescriptor newValue) {
+      int idxOldValue = myServers.indexOf(oldValue);
+      assert idxOldValue >= 0 : "Failed to find value=" + oldValue + " in the list=" + myServers;
+      myServers.set(idxOldValue, newValue);
+      myEnumerationOption.reload();
     }
 
     @Override
     public void removeValueIndex(int idx) {
       myServers.remove(idx);
+      myEnumerationOption.reload();
     }
 
     @Override
     public EnumerationOption asEnumerationOption() {
-      return new DefaultEnumerationOption<WebDavServerDescriptor>(getID(), myServers.toArray(new WebDavServerDescriptor[0])) {
-        @Override
-        protected String objectToString(WebDavServerDescriptor obj) {
-          return obj.name;
-        }
-
-        @Override
-        public void setValue(String value) {
-          super.setValue(value);
-          ServerListOption.this.setValue(stringToObject(value));
-        }
-      };
+      return myEnumerationOption;
     }
   }
   private final ListOption<WebDavServerDescriptor> myServers = new ServerListOption("servers");
-  private final StringOption myLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
+  private final StringOption myLegacyLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
+  private final StringOption myLastWebDavDocumentOption = new DefaultStringOption("lastDocument", null);
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
-  private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("webdav.releaseLockOnProjectClose", true);
+  private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("lockRelease", true);
   private final StringOption myUsername = new DefaultStringOption("username", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
   private final UIFacade myUiFacade;
@@ -221,16 +261,22 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       currentUri = ((HttpDocument)currentDocument).getWebdavResource().getWebDavUri();
       myUsername.setValue(currentDocument.getUsername());
     } else {
-      String[] savedComponents = getLastWebDAVDocumentOption().getValue().split("\\t");
-      if (savedComponents.length == 1) {
-        currentUri = new WebDavUri(savedComponents[0]);
+      String lastDocument = Objects.firstNonNull(
+          getLastWebDavDocumentOption().getValue(), getLegacyLastWebDAVDocumentOption().getValue());
+      if (lastDocument == null) {
+        currentUri = null;
       } else {
-        try {
-          URL rootUrl = new URL(savedComponents[0]);
-          currentUri = new WebDavUri(rootUrl.getHost(), savedComponents[0], savedComponents[1]);
-        } catch (MalformedURLException e) {
-          GPLogger.logToLogger(e);
-          currentUri = new WebDavUri(getLastWebDAVDocumentOption().getValue());
+        String[] savedComponents = lastDocument.split("\\t");
+        if (savedComponents.length == 1) {
+          currentUri = new WebDavUri(savedComponents[0]);
+        } else {
+          try {
+            URL rootUrl = new URL(savedComponents[0]);
+            currentUri = new WebDavUri(rootUrl.getHost(), savedComponents[0], savedComponents[1]);
+          } catch (MalformedURLException e) {
+            GPLogger.logToLogger(e);
+            currentUri = null;
+          }
         }
       }
     }
@@ -249,30 +295,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         try {
           myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
           receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK));
-          myLastWebDAVDocument.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
-        } catch (IOException e) {
-          chooser.showError(e);
-        }
-      }
-    };
-  }
-
-  private OkAction createLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
-    return new OkAction(key) {
-      {
-        setDefault(false);
-      }
-      @Override
-      public void actionPerformed(ActionEvent event) {
-        try {
-          myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
-          HttpDocument document = new HttpDocument(
-              myWebDavFactory.createResource(chooser.getUrl()),
-              chooser.getUsername(), chooser.getPassword(), chooser.getLockTimeout());
-          myLastWebDAVDocument.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
-          if (document.acquireLock()) {
-            receiver.setDocument(document);
-          }
+          myLastWebDavDocumentOption.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
+          myLegacyLastWebDAVDocument.setValue(chooser.getUrl().buildUrl());
         } catch (IOException e) {
           chooser.showError(e);
         }
@@ -288,8 +312,12 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     return myUsername;
   }
 
-  public StringOption getLastWebDAVDocumentOption() {
-    return myLastWebDAVDocument;
+  public StringOption getLegacyLastWebDAVDocumentOption() {
+    return myLegacyLastWebDAVDocument;
+  }
+
+  public StringOption getLastWebDavDocumentOption() {
+    return myLastWebDavDocumentOption;
   }
 
   public IntegerOption getWebDavLockTimeoutOption() {
