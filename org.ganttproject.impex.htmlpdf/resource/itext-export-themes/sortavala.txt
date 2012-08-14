@@ -2,3 +2,4 @@ font-family = arial
 font.sansserif = arial
 font.dialog = arial
 manager-role = default:1
+charset = Identity-H
