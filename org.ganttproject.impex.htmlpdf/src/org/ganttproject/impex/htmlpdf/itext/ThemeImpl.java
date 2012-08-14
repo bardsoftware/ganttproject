@@ -77,7 +77,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * Implements Sortavala iText theme.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
@@ -89,7 +89,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       }
     }
   }
-  private static final BaseColor SORTAVALA_GREEN = new BaseColor(new Color(0x66, 0x99, 0x99));
+  private static final BaseColor SORTAVALA_GREEN = new BaseColor(0x66, 0x99, 0x99);
   private Document myDoc;
   private PdfWriter myWriter;
   private IGanttProject myProject;
