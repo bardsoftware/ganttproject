@@ -52,6 +52,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -95,7 +96,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   };
 
-  private boolean isInitialized;
   private GPAction myEditCellAction = new GPAction("tree.edit") {
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -109,6 +109,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       editCellAt(t.getSelectedRow(), t.getSelectedColumn());
     }
   };
+  private final Runnable myUpdateUiCommand = new Runnable() {
+    @Override
+    public void run() {
+      updateUI();
+    }
+  };
+
 
   @Override
   public boolean editCellAt(int row, int column) {
@@ -122,6 +129,18 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       ((TreeTableCellEditorImpl) cellEditor).requestFocus();
     }
     return result;
+  }
+
+  @Override
+  public void editingCanceled(ChangeEvent e) {
+    super.editingCanceled(e);
+    SwingUtilities.invokeLater(myUpdateUiCommand);
+  }
+
+  @Override
+  public void editingStopped(ChangeEvent arg0) {
+    super.editingStopped(arg0);
+    SwingUtilities.invokeLater(myUpdateUiCommand);
   }
 
   protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
@@ -459,7 +478,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   protected void initTreeTable() {
     doInit();
-    isInitialized = true;
   }
 
   protected void doInit() {
@@ -604,17 +622,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   TableCellRenderer createCellRenderer(Class<?> columnClass) {
-    TableCellRenderer renderer = null;
+
     // TODO(dbarashev): make sure that icon and boolean values render fine
     // if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass))
     // {
     // renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
     //
     // }
-    if (renderer == null) {
-      renderer = getTreeTable().getDefaultRenderer(columnClass);
-    }
-    return renderer;
+    return getTreeTable().getDefaultRenderer(columnClass);
   }
 
   TableCellEditor createCellEditor(Class<?> columnClass) {
