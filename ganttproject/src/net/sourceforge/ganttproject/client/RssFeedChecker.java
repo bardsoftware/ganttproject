@@ -114,7 +114,7 @@ public class RssFeedChecker {
   }
 
   public void run() {
-    Runnable command = createRssReadCommand();
+    Runnable command = null;
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
       NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
