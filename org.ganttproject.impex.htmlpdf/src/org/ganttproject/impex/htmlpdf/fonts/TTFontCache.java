@@ -39,9 +39,9 @@ import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.itextpdf.awt.FontMapper;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.FontMapper;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -50,7 +50,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  * This class collects True Type fonts from .ttf files in the registered
  * directories and provides mappings of font family names to plain AWT fonts and
  * iText fonts.
- * 
+ *
  * @author dbarashev
  */
 public class TTFontCache {
