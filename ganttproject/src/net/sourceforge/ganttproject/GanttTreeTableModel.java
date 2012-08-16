@@ -253,10 +253,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       case ID:
         res = new Integer(t.getTaskID());
         break;
-//      case OUTLINE_NUMBER:
-//        List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
-//        res = Joiner.on('.').join(outlinePath);
-//        break;
+      case OUTLINE_NUMBER:
+        List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
+        res = Joiner.on('.').join(outlinePath);
+        break;
       default:
         break;
       }
