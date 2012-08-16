@@ -4,17 +4,18 @@
 <target name="help">
     <echo message="Please run: $ ant -v -projecthelp"/>
 </target>
+<loadproperties srcFile="build.properties">
+<filterchain>
+    <tokenfilter>
+        <replaceregex pattern="," replace=":" flags="g"/>
+    </tokenfilter>
+</filterchain>
+</loadproperties>
+
     <path id="project.classpath">
-        <path refid="mainproject.classpath"/>
-        <path refid="deps.classpath"/>
-    </path>
-    <path id="mainproject.classpath">
         <pathelement location="bin"/>
-        <pathelement location="lib/fop.jar"/>
-        <pathelement location="lib/fop-font-metrics.jar"/>
-        <pathelement location="lib/ganttproject-avalon.jar"/>
-        <pathelement location="lib/ganttproject-batik.jar"/>
-        <pathelement location="lib/itextpdf-5.1.3.jar"/>
+        <pathelement path="${jars.extra.classpath}"/>
+        <path refid="deps.classpath"/>
     </path>
     <path id="deps.classpath">
         <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
