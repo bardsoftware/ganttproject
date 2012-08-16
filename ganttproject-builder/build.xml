@@ -88,15 +88,17 @@
 
 	<target name="dist-bin" depends="build">
 		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
+    <chmod perm="ugo+rx" file="${install.dir}/ganttproject.command"></chmod>
 		<input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
 			addproperty="package.name.suffix"
 		    defaultvalue="2.5"/>
-		<move file="${install.dir}" tofile="${package.name.prefix}-${package.name.suffix}"></move>
-		<zip destfile="${package.name.prefix}-${package.name.suffix}.zip" basedir="." includes="/**">
-			<zipfileset dir="${package.name.prefix}-${package.name.suffix}" excludes="ganttproject" prefix="${package.name.prefix}-${package.name.suffix}">
+		<property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
+		<move file="${install.dir}" tofile="${package.dir}"></move>
+		<zip destfile="${package.dir}.zip" basedir="." includes="/**">
+			<zipfileset dir="${package.dir}" excludes="ganttproject" prefix="${package.dir}">
 			</zipfileset>
-            <zipfileset dir="${package.name.prefix}-${package.name.suffix}" includes="ganttproject" prefix="${package.name.prefix}-${package.name.suffix}" filemode="755">
-            </zipfileset>
+      <zipfileset dir="${package.dir}" includes="ganttproject" prefix="${package.dir}" filemode="755">
+      </zipfileset>
 		</zip>
 	</target>
 	
@@ -130,6 +132,7 @@
 				<include name="ganttproject_32_2.ico"/>
 				<include name="ganttproject"/>
 				<include name="ganttproject.bat"/>
+        <include name="ganttproject.command"/>
 				<include name="ganttproject.desktop"/>
 				<include name="ganttproject-eclipsito-config.xml"/>
         <include name="ganttproject.exe"/>
@@ -259,5 +262,13 @@
 		<delete dir="bin"/>
 		<delete dir="dist-bin"/>
 		<delete dir="build-deb"/>
+	</target>
+	
+	<target name="dist-win" description="Builds Windows installer" depends="dist-bin">
+		<copy todir="${package.dir}" file="ganttproject.nsi"/>
+		<exec executable="makensis" dir="${package.dir}">
+			<arg value="ganttproject.nsi"/>
+	  </exec>
+		<copy todir="." file="${package.dir}/${package.dir}.exe"/>
 	</target>
 </project>
