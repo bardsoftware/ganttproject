@@ -214,7 +214,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 //        }
 //      }
 //    });
-    JComponent contentPane = chooser.createOpenDocumentUi();
+    JComponent contentPane = chooser.createOpenDocumentUi(openAction);
     chooser.getPathOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -246,7 +246,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 //        }
 //      }
 //    });
-    JComponent contentPane = chooser.createSaveDocumentUi();
+    JComponent contentPane = chooser.createSaveDocumentUi(saveAction);
     return new Components(contentPane, new Action[] {saveAction, /*saveAndLockAction,*/ new CancelAction() {
       @Override
       public void actionPerformed(ActionEvent e) {

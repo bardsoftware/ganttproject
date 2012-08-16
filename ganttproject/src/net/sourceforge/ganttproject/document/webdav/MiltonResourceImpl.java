@@ -112,7 +112,7 @@ public class MiltonResourceImpl implements WebDavResource {
         return myImpl;
       }
     } catch (NotAuthorizedException e) {
-      throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
+      throw new WebDavException(MessageFormat.format("User {0} is not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (IOException e) {
