@@ -123,7 +123,10 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
         }
       }
     });
-
+    int selected = Lists.newArrayList(serversOption.getValues()).indexOf(serversOption.getValue());
+    if (selected >= 0) {
+      serverList.getTableAndActions().setSelection(selected);
+    }
     //Box result = Box.createHorizontalBox();
     JPanel serversPanel = new JPanel(new BorderLayout());
     serversPanel.add(serverList.createDefaultComponent(), BorderLayout.CENTER);

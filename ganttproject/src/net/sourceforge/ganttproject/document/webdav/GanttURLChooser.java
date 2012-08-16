@@ -19,11 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.document.webdav;
 
+import io.milton.http.exceptions.NotAuthorizedException;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -41,13 +43,13 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -73,10 +75,8 @@ import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
-import org.jdesktop.swingx.JXPanel;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -109,6 +109,9 @@ class GanttURLChooser {
   private final GPAction myReloadAction = new GPAction("fileChooser.reload") {
     @Override
     public void actionPerformed(ActionEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
       reloadFilesTable();
     }
   };
@@ -207,6 +210,10 @@ class GanttURLChooser {
 
   private WebDavUri myInitialUri;
 
+  private JLabel myPasswordLabel;
+
+  private OkAction myOkAction;
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
@@ -233,21 +240,6 @@ class GanttURLChooser {
         myPath.setValue("");
         updateUsernameAndPassword();
         myReloadAction.actionPerformed(null);
-      }
-    });
-    myPath.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        String value = (String) event.getNewValue();
-        if (value == null) {
-          return;
-        }
-        String lcValue = value.toLowerCase();
-        if (lcValue.startsWith("http://") || lcValue.startsWith("https://")) {
-          if (!tryApplyUrl(new WebDavUri(value))) {
-            myUpAction.setEnabled(value.split("/").length > 1);
-          }
-        }
       }
     });
     myUsername.addChangeValueListener(new ChangeValueListener() {
@@ -279,8 +271,6 @@ class GanttURLChooser {
     protected Pair<WebDavResource, List<WebDavResource>> doInBackground() throws Exception {
       try {
         WebDavResource resource = myResource;
-        myWebDavFactory.clearCache();
-        myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
         if (resource.exists() && resource.isCollection()) {
           return Pair.create(resource, readChildren(resource));
         }
@@ -330,18 +320,20 @@ class GanttURLChooser {
   };
 
   protected void reloadFilesTable() {
+    myWebDavFactory.clearCache();
+    myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
     new ReloadWorker(myWebDavFactory.createResource(buildUrl())).execute();
   }
 
   private boolean tryApplyUrl(WebDavUri currentUri) {
     WebDavServerDescriptor savedServer = findSavedServer(currentUri.buildRootUrl());
-    if (savedServer != null && !savedServer.equals(myServers.getValue())) {
-      myServers.setValue(savedServer);
-    } else {
+    if (savedServer == null) {
       WebDavServerDescriptor server = new WebDavServerDescriptor(
           Strings.isNullOrEmpty(currentUri.hostName) ? currentUri.hostUrl : currentUri.hostName, currentUri.buildRootUrl(), "");
       myServers.addValue(server);
       myServers.setValue(server);
+    } else if (!savedServer.equals(myServers.getValue())) {
+      myServers.setValue(savedServer);
     }
     myPath.setValue(currentUri.path);
     return true;
@@ -356,11 +348,13 @@ class GanttURLChooser {
     return null;
   }
 
-  public JComponent createOpenDocumentUi() {
+  public JComponent createOpenDocumentUi(OkAction openAction) {
+    myOkAction = openAction;
     return createComponent();
   }
 
-  public JComponent createSaveDocumentUi() {
+  public JComponent createSaveDocumentUi(OkAction saveAction) {
+    myOkAction = saveAction;
     return createComponent();
   }
 
@@ -394,6 +388,21 @@ class GanttURLChooser {
     //serverBox.add(new ServerListEditor(myServers).getComponent());
     panel.add(new JLabel(language.getCorrectedLabel("fileFromServer")));
     panel.add(builder.createOptionComponent(null, myPath));
+    myPath.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        String value = (String) event.getNewValue();
+        if (value == null) {
+          return;
+        }
+        String lcValue = value.toLowerCase();
+        if (lcValue.startsWith("http://") || lcValue.startsWith("https://")) {
+          if (!tryApplyUrl(new WebDavUri(value))) {
+            myUpAction.setEnabled(value.split("/").length > 1);
+          }
+        }
+      }
+    });
     //panel.add(serverBox);
 //    panel.add(new JLabel(language.getText("userName")));
 //    panel.add(builder.createOptionComponent(null, myUsername));
@@ -462,7 +471,7 @@ class GanttURLChooser {
       myProgressBar.setIndeterminate(true);
       myProgressComponent = new JPanel(new CardLayout());
       myProgressComponent.add(myProgressBar, "ProgressOn");
-      myProgressComponent.add(new JLabel("foo"), "ProgressOff");
+      myProgressComponent.add(new JLabel(""), "ProgressOff");
       setProgressBar(false);
 
       myFilesComponent = new JScrollPane(table);
@@ -521,14 +530,16 @@ class GanttURLChooser {
     });
     grid.add(username);
     grid.add(new JLabel(language.getText("password")));
-    final JLabel password = new JLabel(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
+    myPasswordLabel = new JLabel(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
     myPassword.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        password.setText(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
+        myPasswordLabel.setText(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
+        myPasswordLabel.setIcon(null);
+        myPasswordLabel.setForeground(UIManager.getColor("Label.foreground"));
       }
     });
-    grid.add(password);
+    grid.add(myPasswordLabel);
     grid.add(new JXHyperlink(new GPAction("webdav.configure") {
       @Override
       public void actionPerformed(ActionEvent arg0) {
@@ -557,8 +568,17 @@ class GanttURLChooser {
     WebDavServerDescriptor server = myServers.getValue();
     myUsername.setValue(server == null ? "" : server.username);
     myPassword.setValue(server == null ? "" : server.password);
+    setWebDavActionsEnabled(
+        !Strings.isNullOrEmpty(myUsername.getValue()) && !Strings.isNullOrEmpty(myPassword.getValue()));
   }
 
+ private void setWebDavActionsEnabled(boolean value) {
+   myDeleteAction.setEnabled(value);
+   myLockAction.setEnabled(value);
+   myReloadAction.setEnabled(value);
+   myUpAction.setEnabled(value);
+   myOkAction.setEnabled(value);
+ }
 
   protected void onSelectionChanged(WebDavResource resource) {
     if (mySelectionListener != null) {
@@ -617,6 +637,12 @@ class GanttURLChooser {
   }
 
   void showError(Exception e) {
+    if (e.getCause() instanceof NotAuthorizedException) {
+      myPasswordLabel.setIcon(GPAction.getIcon("8", "label-red-exclamation.png"));
+      myPasswordLabel.setText("Access denied");
+      myPasswordLabel.setForeground(Color.RED);
+      setWebDavActionsEnabled(false);
+    }
     GPLogger.log(e);
   }
 }
