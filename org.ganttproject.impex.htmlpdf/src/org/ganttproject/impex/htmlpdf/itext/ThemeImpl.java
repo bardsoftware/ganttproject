@@ -47,12 +47,6 @@ import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -61,6 +55,13 @@ import net.sourceforge.ganttproject.task.Task;
 import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.StylesheetImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;

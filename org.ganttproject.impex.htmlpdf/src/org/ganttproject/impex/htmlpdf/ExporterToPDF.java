@@ -26,7 +26,8 @@ import java.util.List;
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import org.ganttproject.impex.htmlpdf.itext.ITextStylesheet;
 
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import biz.ganttproject.core.option.GPOptionGroup;
+
 
 public class ExporterToPDF extends StylesheetExporterBase {
 
