@@ -10,6 +10,7 @@
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.junit4"/>
+      <import plugin="biz.ganttproject.core"/>
       <import plugin="net.sourceforge.ganttproject"/>
    </requires>
 </plugin>
