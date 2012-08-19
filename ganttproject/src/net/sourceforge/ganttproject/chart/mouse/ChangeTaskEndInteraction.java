@@ -24,9 +24,9 @@ import java.util.Date;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction implements MouseInteraction {
   private TaskMutator myMutator;
@@ -43,7 +43,7 @@ public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction impl
   @Override
   public void apply(MouseEvent event) {
     Date dateUnderX = getChartDateGrid().getDateAt(event.getX());
-    TaskLength newDuration = myCounter.run(getStartDate(), dateUnderX);
+    TimeDuration newDuration = myCounter.run(getStartDate(), dateUnderX);
     myMutator.setDuration(newDuration);
     updateTooltip(event);
   }

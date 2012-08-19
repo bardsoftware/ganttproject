@@ -6,7 +6,7 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * @author bard
@@ -15,11 +15,11 @@ public class DayTypeAlternance {
 
   private DayType myDayType;
 
-  private TaskLength myDuration;
+  private TimeDuration myDuration;
 
   private Date myEnd;
 
-  DayTypeAlternance(DayType dayType, TaskLength duration, Date endDate) {
+  DayTypeAlternance(DayType dayType, TimeDuration duration, Date endDate) {
     myDayType = dayType;
     myDuration = duration;
     myEnd = endDate;
@@ -33,7 +33,7 @@ public class DayTypeAlternance {
     return myDayType;
   }
 
-  public TaskLength getDuration() {
+  public TimeDuration getDuration() {
     return myDuration;
   }
 

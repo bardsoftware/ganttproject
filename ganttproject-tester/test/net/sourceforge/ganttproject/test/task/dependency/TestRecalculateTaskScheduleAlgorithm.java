@@ -3,13 +3,13 @@ package net.sourceforge.ganttproject.test.task.dependency;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**
@@ -165,7 +165,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
                 .createConstraint(GanttTaskRelationship.SS));
 
         // Shift task1 forward in time.
-        TaskLength task1Duration = task1.getDuration();
+        TimeDuration task1Duration = task1.getDuration();
         task1.setStart(new GanttCalendar(2000, 01, 04));
         task1.setDuration(task1Duration);
 
@@ -212,7 +212,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         //
         // task1 ___xxx___
         // task2 _xx______
-        TaskLength task1Duration = task1.getDuration();
+        TimeDuration task1Duration = task1.getDuration();
         task1.setStart(new GanttCalendar(2000, 01, 04));
         task1.setDuration(task1Duration);
         //

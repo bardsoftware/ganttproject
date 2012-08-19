@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Project task definition
@@ -109,9 +110,9 @@ public interface Task extends MutableTask {
 
   GanttCalendar getEnd();
 
-  TaskLength getDuration();
+  TimeDuration getDuration();
 
-  TaskLength translateDuration(TaskLength duration);
+  TimeDuration translateDuration(TimeDuration duration);
 
   int getCompletionPercentage();
 

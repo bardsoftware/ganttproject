@@ -16,19 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.task;
+package net.sourceforge.ganttproject.time;
 
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard
  */
-public class TaskLengthImpl implements TaskLength {
+public class TimeDurationImpl implements TimeDuration {
   private final TimeUnit myUnit;
 
   private float myCount;
 
-  public TaskLengthImpl(TimeUnit unit, long count) {
+  public TimeDurationImpl(TimeUnit unit, long count) {
     myUnit = unit;
     myCount = count;
   }
@@ -37,7 +36,7 @@ public class TaskLengthImpl implements TaskLength {
    * @param unit
    * @param length
    */
-  public TaskLengthImpl(TimeUnit unit, float length) {
+  public TimeDurationImpl(TimeUnit unit, float length) {
     myUnit = unit;
     myCount = length;
   }
@@ -77,14 +76,14 @@ public class TaskLengthImpl implements TaskLength {
   }
 
   @Override
-  public TaskLength reverse() {
-    return new TaskLengthImpl(getTimeUnit(), -getLength());
+  public TimeDuration reverse() {
+    return new TimeDurationImpl(getTimeUnit(), -getLength());
   }
 
   @Override
-  public TaskLength translate(TimeUnit toUnit) {
+  public TimeDuration translate(TimeUnit toUnit) {
     float translatedLength = getLength(toUnit);
-    return new TaskLengthImpl(toUnit, translatedLength);
+    return new TimeDurationImpl(toUnit, translatedLength);
   }
 
   @Override

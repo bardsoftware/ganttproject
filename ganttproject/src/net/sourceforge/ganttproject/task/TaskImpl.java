@@ -54,6 +54,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
+import net.sourceforge.ganttproject.time.TimeDuration;
+import net.sourceforge.ganttproject.time.TimeDurationImpl;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**
@@ -84,7 +86,7 @@ public class TaskImpl implements Task {
 
   private int myCompletionPercentage;
 
-  private TaskLength myLength;
+  private TimeDuration myLength;
 
   private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
 
@@ -122,7 +124,7 @@ public class TaskImpl implements Task {
 
   private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
-  private static final TaskLength EMPTY_DURATION = new TaskLengthImpl(GPTimeUnitStack.DAY, 0);
+  private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
 
   protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
     myManager = taskManager;
@@ -384,7 +386,7 @@ public class TaskImpl implements Task {
   }
 
   @Override
-  public TaskLength getDuration() {
+  public TimeDuration getDuration() {
     if (isMilestone()) {
       return EMPTY_DURATION;
     }
@@ -582,7 +584,7 @@ public class TaskImpl implements Task {
           TaskImpl.this.setStart(start);
         }
         if (myDurationChange != null) {
-          TaskLength duration = getDuration();
+          TimeDuration duration = getDuration();
           TaskImpl.this.setDuration(duration);
           myEndChange = null;
         }
@@ -717,7 +719,7 @@ public class TaskImpl implements Task {
     }
 
     @Override
-    public void setDuration(final TaskLength length) {
+    public void setDuration(final TimeDuration length) {
       // If duration of task was set to 0 or less do not change it
       if (length.getLength() <= 0) {
         return;
@@ -728,7 +730,7 @@ public class TaskImpl implements Task {
         myDurationChange.myEventSender = myPropertiesEventSender;
         myDurationChange.setValue(length);
       } else {
-        TaskLength currentLength = (TaskLength) myDurationChange.myFieldValue;
+        TimeDuration currentLength = (TimeDuration) myDurationChange.myFieldValue;
         if (currentLength.getLength() - length.getLength() == 0) {
           return;
         }
@@ -834,8 +836,8 @@ public class TaskImpl implements Task {
       return myEndChange == null ? null : (GanttCalendar) myEndChange.myFieldValue;
     }
 
-    TaskLength getDuration() {
-      return myDurationChange == null ? TaskImpl.this.myLength : (TaskLength) myDurationChange.myFieldValue;
+    TimeDuration getDuration() {
+      return myDurationChange == null ? TaskImpl.this.myLength : (TimeDuration) myDurationChange.myFieldValue;
     }
 
     @Override
@@ -852,7 +854,7 @@ public class TaskImpl implements Task {
     }
 
     @Override
-    public void shift(TaskLength shift) {
+    public void shift(TimeDuration shift) {
       TaskImpl.this.shift(shift);
     }
 
@@ -945,7 +947,7 @@ public class TaskImpl implements Task {
   }
 
   @Override
-  public void shift(TaskLength shift) {
+  public void shift(TimeDuration shift) {
     float unitCount = shift.getLength(myLength.getTimeUnit());
     if (unitCount != 0f) {
       Task resultTask = shift(unitCount);
@@ -966,7 +968,7 @@ public class TaskImpl implements Task {
     if (unitCount != 0) {
       Date newStart;
       if (unitCount > 0) {
-        TaskLength length = myManager.createLength(myLength.getTimeUnit(), unitCount);
+        TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
         // clone.setDuration(length);
         newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
       } else {
@@ -980,7 +982,7 @@ public class TaskImpl implements Task {
   }
 
   @Override
-  public void setDuration(TaskLength length) {
+  public void setDuration(TimeDuration length) {
     assert length.getLength() >= 0;
 
     myLength = length;
@@ -988,16 +990,16 @@ public class TaskImpl implements Task {
     recalculateActivities();
   }
 
-  private Date shiftDate(Date input, TaskLength duration) {
+  private Date shiftDate(Date input, TimeDuration duration) {
     return myManager.getConfig().getCalendar().shiftDate(input, duration);
   }
 
   @Override
-  public TaskLength translateDuration(TaskLength duration) {
+  public TimeDuration translateDuration(TimeDuration duration) {
     return myManager.createLength(myLength.getTimeUnit(), translateDurationValue(duration));
   }
 
-  private float translateDurationValue(TaskLength duration) {
+  private float translateDurationValue(TimeDuration duration) {
     if (myLength.getTimeUnit().equals(duration.getTimeUnit())) {
       return duration.getValue();
     }
@@ -1126,7 +1128,7 @@ public class TaskImpl implements Task {
   // Method GanttCalendar.newAdd() assumes that time unit is day
   @Override
   public void applyThirdDateConstraint() {
-    TaskLength length = getDuration();
+    TimeDuration length = getDuration();
     if (getThird() != null)
       switch (getThirdDateConstraint()) {
       case EARLIESTBEGIN:

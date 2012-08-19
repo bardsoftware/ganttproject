@@ -34,10 +34,10 @@ import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskInfo;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
@@ -320,7 +320,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       break;
     case 6:
       Task task = (Task) ((TaskNode) node).getUserObject();
-      TaskLength tl = task.getDuration();
+      TimeDuration tl = task.getDuration();
       ((TaskNode) node).setDuration(task.getManager().createLength(tl.getTimeUnit(), ((Integer) value).intValue()));
       break;
     case 7:

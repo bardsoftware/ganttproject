@@ -46,8 +46,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -213,7 +213,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   }
 
   @Override
-  public void scrollBy(TaskLength duration) {
+  public void scrollBy(TimeDuration duration) {
     getImplementation().scrollBy(duration);
     repaint();
   }

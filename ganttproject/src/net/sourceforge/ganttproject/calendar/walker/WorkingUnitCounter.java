@@ -21,8 +21,8 @@ package net.sourceforge.ganttproject.calendar.walker;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.task.TaskLength;
-import net.sourceforge.ganttproject.task.TaskLengthImpl;
+import net.sourceforge.ganttproject.time.TimeDuration;
+import net.sourceforge.ganttproject.time.TimeDurationImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -58,11 +58,11 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
     isMoving = nextIntervalStart.before(myEndDate);
   }
 
-  public TaskLength getNonWorkingTime() {
-    return new TaskLengthImpl(getTimeUnit(), myNonWorkingUnitCounter);
+  public TimeDuration getNonWorkingTime() {
+    return new TimeDurationImpl(getTimeUnit(), myNonWorkingUnitCounter);
   }
 
-  public TaskLength run(Date startDate, Date endDate) {
+  public TimeDuration run(Date startDate, Date endDate) {
     assert startDate != null : "null start date";
     assert endDate != null : "null end date";
     isMoving = true;
@@ -70,6 +70,6 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
     myWorkingUnitCounter = 0;
     myEndDate = endDate;
     walk(startDate);
-    return new TaskLengthImpl(getTimeUnit(), myWorkingUnitCounter);
+    return new TimeDurationImpl(getTimeUnit(), myWorkingUnitCounter);
   }
 }

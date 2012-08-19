@@ -23,10 +23,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class PertChartAbstraction {
 
@@ -137,7 +137,7 @@ public class PertChartAbstraction {
       return myTask.getName();
     }
 
-    TaskLength getDuration() {
+    TimeDuration getDuration() {
       return myTask.getDuration();
     }
 

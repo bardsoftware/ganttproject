@@ -23,13 +23,13 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ScrollToStartAction extends GPAction {
   private final TimelineChart myChart;
   private final TaskManager myTaskManager;
-  private final TaskLength myCorrectionInterval;
+  private final TimeDuration myCorrectionInterval;
 
   public ScrollToStartAction(IGanttProject project, TimelineChart chart) {
     super("scroll.start");

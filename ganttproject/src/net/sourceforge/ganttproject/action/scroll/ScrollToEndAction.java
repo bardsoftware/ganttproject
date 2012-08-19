@@ -24,14 +24,14 @@ import java.util.Date;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ScrollToEndAction extends GPAction {
   private final TimelineChart myChart;
   private final TaskManager myTaskManager;
-  private final TaskLength myCorrectionInterval;
-  private final TaskLength myCorrectionIntervalNeg;
+  private final TimeDuration myCorrectionInterval;
+  private final TimeDuration myCorrectionIntervalNeg;
 
   public ScrollToEndAction(IGanttProject project, TimelineChart chart) {
     super("scroll.end");

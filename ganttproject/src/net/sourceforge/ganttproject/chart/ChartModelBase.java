@@ -38,8 +38,8 @@ import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
@@ -464,10 +464,10 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
    * @return A length of the visible part of this chart area measured in the
    *         bottom line time units
    */
-  public TaskLength getVisibleLength() {
+  public TimeDuration getVisibleLength() {
     double pixelsLength = getBounds().getWidth();
     float unitsLength = (float) (pixelsLength / getBottomUnitWidth());
-    TaskLength result = getTaskManager().createLength(getBottomUnit(), unitsLength);
+    TimeDuration result = getTaskManager().createLength(getBottomUnit(), unitsLength);
     return result;
   }
 

@@ -4,6 +4,8 @@ package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
 
+import net.sourceforge.ganttproject.time.TimeDuration;
+
 /**
  * @author bard
  */
@@ -12,7 +14,7 @@ public interface TaskActivity {
 
   Date getEnd();
 
-  TaskLength getDuration();
+  TimeDuration getDuration();
 
   float getIntensity();
 

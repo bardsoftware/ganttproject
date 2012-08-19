@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * @author bard
@@ -18,7 +18,7 @@ public class ScrollingManagerImpl implements ScrollingManager {
   }
 
   @Override
-  public void scrollBy(TaskLength duration) {
+  public void scrollBy(TimeDuration duration) {
     for (ScrollingListener l : myListeners) {
       l.scrollBy(duration);
     }
