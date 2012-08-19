@@ -7,12 +7,13 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeDurationImpl;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitGraph;
-import net.sourceforge.ganttproject.time.TimeUnitPair;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitGraph;
+import biz.ganttproject.core.time.TimeUnitPair;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 
 /**
  * @author bard

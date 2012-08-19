@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -9,7 +10,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
-import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**

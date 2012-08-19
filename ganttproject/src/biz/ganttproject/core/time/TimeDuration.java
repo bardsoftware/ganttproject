@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 GanttProject team
+Copyright (C) 2004-2011 GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,33 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.time;
+package biz.ganttproject.core.time;
 
-import java.util.Date;
 
 /**
  * @author bard
  */
-public class TimeUnitDateFrameableImpl extends TimeUnitImpl {
-  private final DateFrameable myFramer;
+public interface TimeDuration {
+  float getLength(TimeUnit unit);
 
-  public TimeUnitDateFrameableImpl(String name, TimeUnitGraph timeUnitGraph, TimeUnit atomUnit, DateFrameable framer) {
-    super(name, timeUnitGraph, atomUnit);
-    myFramer = framer;
-  }
+  int getLength();
 
-  @Override
-  public Date adjustRight(Date baseDate) {
-    return myFramer.adjustRight(baseDate);
-  }
+  TimeUnit getTimeUnit();
 
-  @Override
-  public Date adjustLeft(Date baseDate) {
-    return myFramer.adjustLeft(baseDate);
-  }
+  float getValue();
 
-  @Override
-  public Date jumpLeft(Date baseDate) {
-    return myFramer.jumpLeft(baseDate);
-  }
+  TimeDuration reverse();
+
+  TimeDuration translate(TimeUnit timeUnit);
 }

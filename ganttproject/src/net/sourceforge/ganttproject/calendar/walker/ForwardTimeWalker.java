@@ -20,8 +20,9 @@ package net.sourceforge.ganttproject.calendar.walker;
 
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * Abstract iterator-like class for walking forward over the calendar timeline

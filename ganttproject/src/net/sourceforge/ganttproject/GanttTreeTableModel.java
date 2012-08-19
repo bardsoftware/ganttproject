@@ -37,10 +37,11 @@ import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+
+import biz.ganttproject.core.time.TimeDuration;
 
 import com.google.common.base.Joiner;
 

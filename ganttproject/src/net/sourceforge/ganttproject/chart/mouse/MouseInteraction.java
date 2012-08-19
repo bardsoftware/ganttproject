@@ -22,11 +22,12 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public interface MouseInteraction {
   void apply(MouseEvent event);

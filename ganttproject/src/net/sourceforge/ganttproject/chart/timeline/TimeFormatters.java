@@ -22,8 +22,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitText;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitText;
+
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**

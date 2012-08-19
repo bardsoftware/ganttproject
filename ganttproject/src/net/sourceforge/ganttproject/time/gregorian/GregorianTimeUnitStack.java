@@ -23,13 +23,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.sourceforge.ganttproject.time.DateFrameable;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
-import net.sourceforge.ganttproject.time.TimeUnitGraph;
-import net.sourceforge.ganttproject.time.TimeUnitPair;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
+import biz.ganttproject.core.time.DateFrameable;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
+import biz.ganttproject.core.time.TimeUnitGraph;
+import biz.ganttproject.core.time.TimeUnitPair;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 
 /**
  * Created by IntelliJ IDEA.

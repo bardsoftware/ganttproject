@@ -10,11 +10,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 
 /**
  * Builds grid offsets for timelines where top cells are always constructed from

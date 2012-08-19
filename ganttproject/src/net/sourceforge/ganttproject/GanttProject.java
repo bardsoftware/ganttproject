@@ -108,7 +108,8 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
+
+import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;

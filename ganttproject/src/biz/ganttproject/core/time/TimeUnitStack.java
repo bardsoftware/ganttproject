@@ -1,7 +1,7 @@
 /*
  * Created on 09.11.2004
  */
-package net.sourceforge.ganttproject.time;
+package biz.ganttproject.core.time;
 
 
 import java.text.DateFormat;

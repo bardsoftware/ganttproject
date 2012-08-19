@@ -64,11 +64,12 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
   public static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));

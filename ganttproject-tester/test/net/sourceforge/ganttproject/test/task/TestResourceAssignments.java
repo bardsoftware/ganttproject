@@ -5,7 +5,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -18,6 +17,8 @@ import java.net.URL;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
+
+import biz.ganttproject.core.time.TimeUnitStack;
 
 public class TestResourceAssignments extends TestCase {
     private TaskManager myTaskManager;

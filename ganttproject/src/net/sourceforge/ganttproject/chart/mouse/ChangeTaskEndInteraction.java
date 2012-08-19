@@ -21,12 +21,13 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ChangeTaskEndInteraction extends ChangeTaskBoundaryInteraction implements MouseInteraction {
   private TaskMutator myMutator;

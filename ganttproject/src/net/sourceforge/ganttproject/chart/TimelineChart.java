@@ -18,8 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
 
 public interface TimelineChart extends Chart {
   public interface VScrollController {

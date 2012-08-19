@@ -23,11 +23,12 @@ import java.awt.Graphics;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * @author dbarashev

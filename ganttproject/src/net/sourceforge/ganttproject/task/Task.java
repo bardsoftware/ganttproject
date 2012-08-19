@@ -21,12 +21,13 @@ package net.sourceforge.ganttproject.task;
 import java.awt.Color;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Project task definition

@@ -21,7 +21,8 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.text.MessageFormat;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.time.TimeUnitText;
+import biz.ganttproject.core.time.TimeUnitText;
+
 
 public class DayTextFormatter extends CachingTextFormatter implements TimeFormatter {
   // /** cache for holding formatted day names * */

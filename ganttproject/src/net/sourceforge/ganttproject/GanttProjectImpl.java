@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.document.Document;
@@ -38,7 +40,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class GanttProjectImpl implements IGanttProject {

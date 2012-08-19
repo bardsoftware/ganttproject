@@ -5,7 +5,8 @@ package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
 
-import net.sourceforge.ganttproject.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDuration;
+
 
 /**
  * @author bard

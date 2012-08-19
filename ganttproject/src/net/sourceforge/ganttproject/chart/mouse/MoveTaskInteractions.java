@@ -22,12 +22,13 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class MoveTaskInteractions extends MouseInteractionBase implements MouseInteraction {
   private final List<Task> myTasks;

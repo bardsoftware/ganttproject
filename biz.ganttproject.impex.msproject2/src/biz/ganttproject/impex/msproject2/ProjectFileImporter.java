@@ -88,10 +88,11 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
-import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import biz.ganttproject.core.time.TimeDuration;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;

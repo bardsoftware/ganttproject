@@ -22,10 +22,11 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeUnitText;
+
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class WeekTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private Calendar myCalendar;

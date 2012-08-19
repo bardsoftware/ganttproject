@@ -20,11 +20,12 @@ package net.sourceforge.ganttproject.action.scroll;
 
 import java.awt.event.ActionEvent;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ScrollTimeIntervalAction extends GPAction {
   private final ScrollingManager myScrollingManager;

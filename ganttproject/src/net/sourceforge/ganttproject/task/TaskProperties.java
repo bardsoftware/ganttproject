@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.task;
 import java.util.Arrays;
 import java.util.Collection;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -30,7 +32,6 @@ import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Class with which one can get any properties (even custom) from any task.

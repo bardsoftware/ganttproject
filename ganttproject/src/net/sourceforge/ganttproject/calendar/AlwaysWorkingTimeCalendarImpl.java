@@ -24,8 +24,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 
 /**
  * @author bard

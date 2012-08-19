@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject;
 import java.io.IOException;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -30,7 +32,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * This interface represents a project as a logical business entity, without any
