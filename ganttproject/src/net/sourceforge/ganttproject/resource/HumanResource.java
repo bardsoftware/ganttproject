@@ -61,7 +61,7 @@ public class HumanResource implements CustomPropertyHolder {
   }
 
   /** Creates a new instance of HumanResource */
-  HumanResource(String name, int id, HumanResourceManager manager) {
+  public HumanResource(String name, int id, HumanResourceManager manager) {
     this.id = id;
     this.name = name;
     myManager = manager;
