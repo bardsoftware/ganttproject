@@ -16,17 +16,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
-/**
- * The classes that implements this interface should dispatch all
- * <code>ChangeValueEvent</code> to their <code>ChangeValueListener</code>.
- * 
- * @author bbaranne
- * 
- */
-public interface ChangeValueDispatcher {
-  public void addChangeValueListener(ChangeValueListener listener);
+public class ValidationException extends RuntimeException {
+  public ValidationException() {
+  }
 
-  // public void fireChangeValueEvent(ChangeValueEvent event);
+  public ValidationException(String message) {
+    super(message);
+  }
+
+  public ValidationException(Throwable cause) {
+    super(cause);
+  }
+
+  public ValidationException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
 }

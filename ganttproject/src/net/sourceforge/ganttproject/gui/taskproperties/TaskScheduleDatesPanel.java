@@ -37,16 +37,16 @@ import javax.swing.JTextField;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
 
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.collect.ImmutableList;

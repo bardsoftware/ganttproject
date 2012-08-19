@@ -50,8 +50,6 @@ import javax.swing.filechooser.FileFilter;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -59,6 +57,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.osgi.service.prefs.Preferences;
+
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public abstract class FileChooserPageBase implements WizardPage {
   public static final int FILE_SOURCE = 0;

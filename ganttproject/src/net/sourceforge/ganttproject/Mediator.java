@@ -21,8 +21,9 @@ package net.sourceforge.ganttproject;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.option.ChangeValueDispatcher;
+
 import net.sourceforge.ganttproject.delay.DelayManager;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueDispatcher;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 

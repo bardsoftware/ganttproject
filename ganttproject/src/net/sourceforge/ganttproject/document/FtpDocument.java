@@ -28,8 +28,9 @@ import java.net.URISyntaxException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.option.StringOption;
+
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.gui.options.model.StringOption;
 
 public class FtpDocument extends AbstractURLDocument {
   private static final Object EMPTY_STRING = "";

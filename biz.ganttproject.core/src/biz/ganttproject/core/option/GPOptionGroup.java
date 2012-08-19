@@ -1,7 +1,7 @@
 /*
  * Created on 02.04.2005
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
 import java.util.HashMap;
 import java.util.Map;

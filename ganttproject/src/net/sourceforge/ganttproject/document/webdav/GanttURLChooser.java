@@ -63,20 +63,21 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.IntegerOption;
-import net.sourceforge.ganttproject.gui.options.model.ListOption;
-import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
+
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.option.StringOption;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;

@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.resource;
 
 import java.util.Map;
 
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+
 
 public interface HumanResourceMerger {
   void merge(Map<HumanResource, HumanResource> existing2imported);

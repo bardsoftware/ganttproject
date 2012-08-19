@@ -25,9 +25,10 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl.State;
 import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 

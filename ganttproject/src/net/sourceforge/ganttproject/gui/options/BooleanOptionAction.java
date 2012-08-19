@@ -22,7 +22,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
+import biz.ganttproject.core.option.BooleanOption;
+
 
 class BooleanOptionAction extends AbstractAction {
   private BooleanOption myOption;

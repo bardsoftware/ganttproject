@@ -23,8 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
-import net.sourceforge.ganttproject.gui.options.model.ValidationException;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.ValidationException;
+
 
 public class ShortDateFormatOption extends DefaultStringOption {
   private SimpleDateFormat myDateFormat;

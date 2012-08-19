@@ -16,10 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
-public interface BooleanOption extends GPOption<Boolean> {
-  boolean isChecked();
-
-  void toggle();
+/**
+ * All classes that should listen to ChangeValueEvent should implements this
+ * interface
+ * 
+ * @author bbaranne
+ * 
+ */
+public interface ChangeValueListener {
+  public void changeValue(ChangeValueEvent event);
 }

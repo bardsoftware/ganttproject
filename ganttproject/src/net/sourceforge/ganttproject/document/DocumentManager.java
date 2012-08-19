@@ -21,9 +21,10 @@ package net.sourceforge.ganttproject.document;
 import java.io.File;
 import java.io.IOException;
 
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.StringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
+
 
 /**
  * @author bard

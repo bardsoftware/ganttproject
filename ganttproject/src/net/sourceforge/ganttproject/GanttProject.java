@@ -86,7 +86,6 @@ import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -109,6 +108,7 @@ import net.sourceforge.ganttproject.task.TaskManagerConfig;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.beust.jcommander.JCommander;

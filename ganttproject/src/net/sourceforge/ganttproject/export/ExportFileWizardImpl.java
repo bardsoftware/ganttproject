@@ -27,11 +27,12 @@ import javax.swing.SwingUtilities;
 
 import org.osgi.service.prefs.Preferences;
 
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 

@@ -20,8 +20,9 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 

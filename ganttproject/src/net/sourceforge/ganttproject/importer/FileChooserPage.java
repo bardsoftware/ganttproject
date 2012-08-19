@@ -25,9 +25,10 @@ import javax.swing.filechooser.FileFilter;
 
 import org.osgi.service.prefs.Preferences;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 import net.sourceforge.ganttproject.gui.FileChooserPageBase;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.importer.ImportFileWizardImpl.State;
 import net.sourceforge.ganttproject.language.GanttLanguage;
