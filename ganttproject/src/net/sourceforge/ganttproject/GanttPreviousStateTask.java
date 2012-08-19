@@ -20,9 +20,9 @@ package net.sourceforge.ganttproject;
 
 import java.util.Calendar;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.GanttCalendar;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 /**
  * @author nbohn

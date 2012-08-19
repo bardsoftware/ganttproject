@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.calendar;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +30,16 @@ import biz.ganttproject.core.time.TimeUnit;
  * @author bard
  */
 public interface GPCalendar {
+  public class Holiday {
+    public final Date date;
+    public final boolean isRepeating;
+    
+    Holiday(Date date, boolean isRepeating) {
+      this.date = date;
+      this.isRepeating = isRepeating;
+    }
+  }
+  
   public enum MoveDirection {
     FORWARD, BACKWARD
   }
@@ -66,13 +75,13 @@ public interface GPCalendar {
 
   public DayType getDayTypeDate(Date curDayStart);
 
-  public void setPublicHolidays(URL calendar);
+  public void setPublicHolidays(Collection<Holiday> holidays);
 
   /** Clears all defined public holidays */
   public void clearPublicHolidays();
 
   /** @return an unmodifiable collection of (public) holidays */
-  public Collection<Date> getPublicHolidays();
+  public Collection<Holiday> getPublicHolidays();
 
   public GPCalendar copy();
 
@@ -96,6 +105,7 @@ public interface GPCalendar {
   GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
   String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
 
-  URL getPublicHolidaysUrl();
-
+  String getBaseCalendarID();
+  
+  void setBaseCalendarID(String id);
 }

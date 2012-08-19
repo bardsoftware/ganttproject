@@ -23,8 +23,9 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.calendar.GanttDaysOff;
+
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
 
 class VacationSaver extends SaverBase {

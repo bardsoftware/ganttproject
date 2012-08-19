@@ -5,8 +5,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -17,6 +15,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
 
+import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 

@@ -16,15 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.calendar.walker;
+package biz.ganttproject.core.calendar.walker;
 
 import java.util.Date;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 /**
  * This class walks forward and counts the number of steps which start at

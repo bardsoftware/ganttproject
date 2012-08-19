@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.I18N;
 import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
 import net.sourceforge.ganttproject.task.Task;
@@ -30,7 +30,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * Panel to edit the weekend settings
- * 
+ *
  * @author Maarten Bezemer
  */
 public class WeekendsSettingsPanel extends GeneralOptionPanel {
@@ -69,7 +69,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
       for (Task task : project.getTaskManager().getTasks()) {
         task.setEnd(null);
       }
-      projectCalendar.setPublicHolidays(calendar.getPublicHolidaysUrl());
+      projectCalendar.setBaseCalendarID(calendar.getBaseCalendarID());
+      projectCalendar.setPublicHolidays(calendar.getPublicHolidays());
       projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());
       try {
         TaskManager taskManager = project.getTaskManager();

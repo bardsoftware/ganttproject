@@ -23,7 +23,6 @@ import java.util.Collections;
 
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
@@ -32,6 +31,8 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.easymock.EasyMock;
+
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 
 /**
  * Tests for {@link ChangeTaskProgressRuler}.

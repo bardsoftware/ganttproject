@@ -3,12 +3,12 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.net.URL;
 
+import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
-import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;

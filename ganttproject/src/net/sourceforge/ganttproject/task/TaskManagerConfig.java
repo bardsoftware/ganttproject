@@ -13,9 +13,9 @@ package net.sourceforge.ganttproject.task;
 import java.awt.Color;
 import java.net.URL;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
 /**

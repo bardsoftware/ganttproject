@@ -31,10 +31,11 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import biz.ganttproject.core.calendar.GanttDaysOff;
+
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DefaultDateIntervalModel;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;

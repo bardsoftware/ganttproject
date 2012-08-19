@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import junit.framework.TestCase;
 
 /**

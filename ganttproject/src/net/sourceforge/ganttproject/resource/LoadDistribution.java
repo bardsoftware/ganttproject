@@ -14,7 +14,8 @@ import java.util.Map;
 
 import javax.swing.DefaultListModel;
 
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
+import biz.ganttproject.core.calendar.GanttDaysOff;
+
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;

@@ -1,7 +1,7 @@
 /*
  * Created on 18.10.2004
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.calendar;
 
 import java.util.Date;
 

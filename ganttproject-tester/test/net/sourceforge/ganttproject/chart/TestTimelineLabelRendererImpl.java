@@ -22,13 +22,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;

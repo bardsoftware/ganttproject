@@ -31,8 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;

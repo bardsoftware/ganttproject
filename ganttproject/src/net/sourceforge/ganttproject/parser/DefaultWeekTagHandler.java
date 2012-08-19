@@ -23,9 +23,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.calendar.GPCalendar;
 
 public class DefaultWeekTagHandler implements TagHandler {
 

@@ -9,12 +9,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
+import biz.ganttproject.core.calendar.CalendarActivityImpl;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarActivity;
 import biz.ganttproject.core.time.GanttCalendar;
 
-import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
-import net.sourceforge.ganttproject.calendar.CalendarActivityImpl;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.GPCalendarActivity;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;

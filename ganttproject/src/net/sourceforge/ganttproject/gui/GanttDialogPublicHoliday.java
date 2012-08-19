@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -39,8 +40,8 @@ public class GanttDialogPublicHoliday {
 
   public GanttDialogPublicHoliday(IGanttProject project) {
     publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
-    for (Date d : project.getActiveCalendar().getPublicHolidays()) {
-      publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(d, d));
+    for (GPCalendar.Holiday h : project.getActiveCalendar().getPublicHolidays()) {
+      publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(h.date, h.date));
     }
 
     publicHolidayBean = new DateIntervalListEditor(publicHolidays);
