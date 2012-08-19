@@ -43,7 +43,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
@@ -57,6 +56,8 @@ import org.ganttproject.impex.htmlpdf.fonts.JDKFontLocator;
 import org.osgi.service.prefs.Preferences;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class FOPEngine extends AbstractEngine {
   private static final String JPG_FORMAT_NAME = "jpg";

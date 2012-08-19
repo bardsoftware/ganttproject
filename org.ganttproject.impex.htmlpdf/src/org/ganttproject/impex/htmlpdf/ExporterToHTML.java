@@ -35,12 +35,13 @@ import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.util.FileUtil;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.xml.sax.SAXException;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ExporterToHTML extends StylesheetExporterBase {
   static final String GANTT_CHART_FILE_EXTENSION = "png";

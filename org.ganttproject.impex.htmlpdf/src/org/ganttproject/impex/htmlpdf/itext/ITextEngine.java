@@ -41,7 +41,6 @@ import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -54,6 +53,8 @@ import org.ganttproject.impex.htmlpdf.Stylesheet;
 import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ITextEngine extends AbstractEngine {
   private ITextStylesheet myStylesheet;
