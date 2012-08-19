@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import biz.ganttproject.core.option.DefaultIntegerOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
@@ -17,12 +23,7 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavExcepti
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.options.model.DefaultIntegerOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 
 /**

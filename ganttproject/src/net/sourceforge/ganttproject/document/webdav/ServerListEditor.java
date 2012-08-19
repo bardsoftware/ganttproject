@@ -49,9 +49,10 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.GPAction.IconSize;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.model.ListOption;
 
 import org.jdesktop.swingx.JXTable;
+
+import biz.ganttproject.core.option.ListOption;
 
 /**
  * Editor for WebDAV server list in WebDAV open/save dialog

@@ -16,21 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import biz.ganttproject.core.option.GPAbstractOption.I18N;
 
 public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
+  protected abstract static class I18N {
+    private static I18N ourInstance;
+
+    protected static void setI18N(I18N i18n) {
+      ourInstance = i18n;
+    }
+    
+    protected abstract String i18n(String key); 
+  }
+  
   private final String myID;
 
-  private List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
+  private final List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
 
-  private PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
+  private final PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
 
   private boolean isWritable = true;
 
@@ -143,6 +153,6 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
   }
 
   protected static String i18n(String key) {
-    return GanttLanguage.getInstance().getText(key);
+    return I18N.ourInstance.i18n(key);
   }
 }

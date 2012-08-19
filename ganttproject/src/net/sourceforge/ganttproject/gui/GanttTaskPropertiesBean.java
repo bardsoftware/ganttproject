@@ -49,8 +49,6 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
-import net.sourceforge.ganttproject.gui.options.model.ColorOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskAllocationsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskDependenciesPanel;
@@ -71,6 +69,8 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
 
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.base.Objects;

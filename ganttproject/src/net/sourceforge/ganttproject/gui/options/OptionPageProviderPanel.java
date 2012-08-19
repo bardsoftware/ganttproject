@@ -23,9 +23,10 @@ import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 
 public class OptionPageProviderPanel {

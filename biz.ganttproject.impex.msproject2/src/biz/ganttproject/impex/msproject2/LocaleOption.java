@@ -21,8 +21,9 @@ package biz.ganttproject.impex.msproject2;
 import java.util.Arrays;
 import java.util.Locale;
 
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+
 import net.sf.mpxj.mpx.MPXWriter;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 class LocaleOption extends DefaultEnumerationOption<Object> {

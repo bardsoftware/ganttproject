@@ -20,10 +20,11 @@ package net.sourceforge.ganttproject.gui;
 
 import java.io.IOException;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public interface ProjectUIFacade {
   void saveProject(IGanttProject project);

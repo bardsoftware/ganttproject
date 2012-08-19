@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.gui.options.model;
 
 import java.awt.Component;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 

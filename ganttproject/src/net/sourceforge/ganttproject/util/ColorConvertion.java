@@ -21,32 +21,17 @@ package net.sourceforge.ganttproject.util;
 import java.awt.Color;
 import java.util.regex.Pattern;
 
+import biz.ganttproject.core.option.ColorOption;
+
 public class ColorConvertion {
 
   /** @return the color as hexadecimal version like #RRGGBB */
   public static String getColor(Color color) {
-    String res = "#";
-
-    if (color.getRed() <= 15)
-      res += "0";
-    res += Integer.toHexString(color.getRed());
-    if (color.getGreen() <= 15)
-      res += "0";
-    res += Integer.toHexString(color.getGreen());
-    if (color.getBlue() <= 15)
-      res += "0";
-    res += Integer.toHexString(color.getBlue());
-
-    return res;
+    return ColorOption.Util.getColor(color);
   }
 
   /** parse a string as hew and return the corresponding color. */
   public static Color determineColor(String hexString) {
-    assert Pattern.matches("#[0-9abcdefABCDEF]{6}+", hexString) : "Can't parse color " + hexString;
-    int r, g, b;
-    r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();
-    g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();
-    b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
-    return new Color(r, g, b);
+    return ColorOption.Util.determineColor(hexString);
   }
 }

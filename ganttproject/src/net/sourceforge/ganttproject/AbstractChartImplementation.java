@@ -58,7 +58,6 @@ import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -68,6 +67,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 

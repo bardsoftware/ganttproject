@@ -24,9 +24,10 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 import org.osgi.service.prefs.Preferences;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 /**
  * @author bard

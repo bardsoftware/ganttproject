@@ -52,8 +52,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
@@ -64,6 +62,9 @@ import net.sourceforge.ganttproject.util.FileUtil;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
+
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private final UIFacade myWorkbenchFacade;

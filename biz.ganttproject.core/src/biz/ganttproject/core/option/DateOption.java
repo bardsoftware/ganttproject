@@ -16,28 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
-public class DefaultDoubleOption extends GPAbstractOption<Double> implements DoubleOption {
-  public DefaultDoubleOption(String id) {
-    this(id, 0.0);
-  }
+import java.util.Date;
 
-  public DefaultDoubleOption(String id, Double initialValue) {
-    super(id, initialValue);
-  }
-
-  @Override
-  public String getPersistentValue() {
-    return getValue() == null ? "" : getValue().toString();
-  }
-
-  @Override
-  public void loadPersistentValue(String value) {
-    try {
-      setValue(Double.parseDouble(value), true);
-    } catch (NumberFormatException e) {
-      setValue(null, true);
-    }
-  }
+public interface DateOption extends GPOption<Date> {
 }

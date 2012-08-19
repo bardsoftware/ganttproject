@@ -26,6 +26,11 @@ import java.util.Map;
 
 import org.osgi.service.prefs.Preferences;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttProjectImpl;
@@ -38,10 +43,6 @@ import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.parser.GPParser;

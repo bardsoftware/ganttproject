@@ -22,9 +22,10 @@ import java.io.File;
 
 import org.osgi.service.prefs.Preferences;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 public interface Importer {
   String getFileTypeDescription();

@@ -33,15 +33,16 @@ import javax.swing.border.EmptyBorder;
 
 import org.eclipse.core.runtime.IStatus;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.export.WebPublisher;
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class NetworkOptionPageProvider extends OptionPageProviderBase {

@@ -21,10 +21,11 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Color;
 import java.awt.Font;
 
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+
 import net.sourceforge.ganttproject.font.Fonts;
-import net.sourceforge.ganttproject.gui.options.model.BooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 
 /**

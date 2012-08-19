@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
@@ -45,7 +46,6 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 

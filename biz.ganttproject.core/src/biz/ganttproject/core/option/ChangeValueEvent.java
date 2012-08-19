@@ -16,26 +16,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
-public class DefaultIntegerOption extends GPAbstractOption<Integer> implements IntegerOption {
-  public DefaultIntegerOption(String id) {
-    this(id, 0);
+/**
+ * Event that discribes a change in a value.
+ * 
+ * @author bbaranne
+ * 
+ */
+public class ChangeValueEvent {
+
+  private Object myID;
+
+  private Object myOldValue;
+
+  private Object myNewValue;
+
+  public ChangeValueEvent(Object id, Object oldValue, Object newValue) {
+    myID = id;
+    myOldValue = oldValue;
+    myNewValue = newValue;
   }
 
-  public DefaultIntegerOption(String id, Integer initialValue) {
-    super(id, initialValue);
+  public Object getID() {
+    return myID;
+  }
+
+  public Object getOldValue() {
+    return myOldValue;
+  }
+
+  public Object getNewValue() {
+    return myNewValue;
   }
 
   @Override
-  public String getPersistentValue() {
-    int value = getValue();
-    return String.valueOf(value);
-  }
-
-  @Override
-  public void loadPersistentValue(String value) {
-    int intValue = Integer.parseInt(value);
-    setValue(intValue, true);
+  public String toString() {
+    return "[id:" + myID + ", old:" + myOldValue + ", new: " + myNewValue + "]";
   }
 }

@@ -32,6 +32,12 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
 
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -39,12 +45,6 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DefaultDateIntervalModel;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
-import net.sourceforge.ganttproject.gui.options.model.StringOption;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;

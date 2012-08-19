@@ -60,14 +60,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueEvent;
-import net.sourceforge.ganttproject.gui.options.model.ChangeValueListener;
-import net.sourceforge.ganttproject.gui.options.model.DefaultBooleanOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultStringOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -80,6 +73,14 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.ProgressProvider;
+
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.google.common.base.Objects;
 

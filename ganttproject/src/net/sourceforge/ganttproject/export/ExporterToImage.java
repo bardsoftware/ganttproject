@@ -32,11 +32,12 @@ import javax.imageio.ImageIO;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPAbstractOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**

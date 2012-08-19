@@ -16,24 +16,36 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
-public class DefaultStringOption extends GPAbstractOption<String> implements StringOption {
-  public DefaultStringOption(String id) {
+import org.w3c.util.DateParser;
+import org.w3c.util.InvalidDateException;
+
+import java.util.Date;
+
+public class DefaultDateOption extends GPAbstractOption<Date> implements DateOption {
+
+  public DefaultDateOption(String id) {
     super(id);
   }
 
-  public DefaultStringOption(String id, String initialValue) {
+  public DefaultDateOption(String id, Date initialValue) {
     super(id, initialValue);
   }
 
   @Override
   public String getPersistentValue() {
-    return getValue();
+    return DateParser.getIsoDateNoHours(getValue());
   }
 
   @Override
   public void loadPersistentValue(String value) {
-    setValue(value);
+    try {
+      setValue(DateParser.parse(value), true);
+    } catch (InvalidDateException e) {
+      e.printStackTrace(); // To change body of catch statement use File |
+                           // Settings | File Templates.
+    }
   }
+
 }

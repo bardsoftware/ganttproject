@@ -65,6 +65,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
+import biz.ganttproject.core.option.DateOption;
+import biz.ganttproject.core.option.DefaultDateOption;
+
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttProject;
@@ -75,8 +78,6 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.DateOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public class PrintPreview extends JDialog {

@@ -32,8 +32,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SpringLayout;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 /**
  * @author bard

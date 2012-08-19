@@ -28,16 +28,17 @@ import java.util.List;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.mpx.MPXWriter;
 import net.sf.mpxj.mspdi.MSPDIWriter;
 import net.sf.mpxj.writer.ProjectWriter;
 import net.sourceforge.ganttproject.export.ExporterBase;
-import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 /**
  * @author dbarashev (Dmitry Barashev)

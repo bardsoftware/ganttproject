@@ -24,9 +24,10 @@ import java.util.Date;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public interface Chart extends IAdaptable {
   IGanttProject getProject();

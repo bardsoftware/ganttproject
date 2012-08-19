@@ -28,12 +28,13 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.io.GanttCSVExport;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ExporterToCSV extends ExporterBase {
   /** List of available/associated extensions */

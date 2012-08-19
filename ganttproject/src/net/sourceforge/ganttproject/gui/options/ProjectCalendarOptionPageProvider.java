@@ -36,12 +36,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import biz.ganttproject.core.option.DefaultDateOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;

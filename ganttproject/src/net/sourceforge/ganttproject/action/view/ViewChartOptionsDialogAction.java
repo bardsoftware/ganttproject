@@ -25,13 +25,14 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 
 /**
  * Action to show the options dialog for {@code myChart}.

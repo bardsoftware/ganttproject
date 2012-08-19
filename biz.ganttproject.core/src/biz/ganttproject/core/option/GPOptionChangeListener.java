@@ -1,7 +1,7 @@
 /*
  * Created on 05.04.2005
  */
-package net.sourceforge.ganttproject.gui.options.model;
+package biz.ganttproject.core.option;
 
 /**
  * @author bard

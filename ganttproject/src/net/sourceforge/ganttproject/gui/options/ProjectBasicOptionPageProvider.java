@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.Component;
 
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import biz.ganttproject.core.option.GPOptionGroup;
+
 
 public class ProjectBasicOptionPageProvider extends OptionPageProviderBase {
   private ProjectSettingsPanel mySettingsPanel;

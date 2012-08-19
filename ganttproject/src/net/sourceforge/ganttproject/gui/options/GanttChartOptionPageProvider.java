@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
+import biz.ganttproject.core.option.GPOptionGroup;
 
 public class GanttChartOptionPageProvider extends OptionPageProviderBase {
 

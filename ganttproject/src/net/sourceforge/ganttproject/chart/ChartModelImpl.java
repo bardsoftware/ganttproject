@@ -12,6 +12,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
@@ -23,12 +28,7 @@ import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.ColorOption;
-import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
-import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.gui.options.model.GPOption;
-import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
