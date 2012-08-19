@@ -21,9 +21,9 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.TimeUnit;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 public interface OffsetBuilder {
   public static abstract class Factory {

@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.calendar;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -116,12 +115,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public void setPublicHolidays(URL calendar) {
-    // Nothing to do, as this calendar does not support holidays
-  }
-
-  @Override
-  public Collection<Date> getPublicHolidays() {
+  public Collection<Holiday> getPublicHolidays() {
     // Return an empty collection, as there are no holidays in this calendar
     return Collections.emptyList();
   }
@@ -142,7 +136,15 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public URL getPublicHolidaysUrl() {
+  public void setPublicHolidays(Collection<Holiday> holidays) {
+  }
+
+  @Override
+  public String getBaseCalendarID() {
     return null;
+  }
+
+  @Override
+  public void setBaseCalendarID(String id) {
   }
 }

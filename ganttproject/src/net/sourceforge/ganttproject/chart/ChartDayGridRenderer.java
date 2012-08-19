@@ -22,7 +22,8 @@ import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar;
+
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.UIConfiguration;

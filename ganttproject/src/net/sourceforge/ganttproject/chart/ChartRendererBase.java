@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar;
 
 /**
  * @author bard

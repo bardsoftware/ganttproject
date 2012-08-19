@@ -27,10 +27,11 @@ import java.util.Locale;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.calendar.GPCalendar;
 
 public class CalendarSaver extends SaverBase {
   private SimpleDateFormat myShortFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
@@ -62,8 +63,9 @@ public class CalendarSaver extends SaverBase {
     endElement("calendar", handler);
 
     endElement("day-types", handler);
-    for (Date d : project.getActiveCalendar().getPublicHolidays()) {
-      if (d.getYear() == 1 - 1900) {
+    for (GPCalendar.Holiday holiday : project.getActiveCalendar().getPublicHolidays()) {
+      Date d = holiday.date;
+      if (holiday.isRepeating) {
         addAttribute("year", "", attrs);
       } else {
         addAttribute("year", String.valueOf(d.getYear() + 1900), attrs);

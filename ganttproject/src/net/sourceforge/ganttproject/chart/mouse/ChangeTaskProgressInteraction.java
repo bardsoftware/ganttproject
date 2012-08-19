@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.chart.mouse;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
-import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
+
+import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskInteractionHintRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;

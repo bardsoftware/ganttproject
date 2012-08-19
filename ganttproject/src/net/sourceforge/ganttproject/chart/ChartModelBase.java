@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.chart.OffsetManager.OffsetBuilderFactory;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
@@ -40,6 +39,7 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;

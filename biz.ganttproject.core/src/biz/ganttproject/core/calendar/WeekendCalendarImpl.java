@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.calendar;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -30,14 +29,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.FramerImpl;
-
-import net.sourceforge.ganttproject.calendar.walker.ForwardTimeWalker;
-import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 
 /**
  * @author bard
@@ -60,9 +57,15 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   private AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
-  private URL myCalendarUrl;
+  private String myBaseCalendarID;
+//  private URL myCalendarUrl;
 
   public WeekendCalendarImpl() {
+    this(null);
+  }
+  
+  public WeekendCalendarImpl(String baseCalendarID) {
+    myBaseCalendarID = baseCalendarID;
     for (int i = 0; i < myTypes.length; i++) {
       myTypes[i] = GPCalendar.DayType.WORKING;
     }
@@ -228,27 +231,42 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   }
 
   @Override
-  public void setPublicHolidays(URL calendarUrl) {
-    myCalendarUrl = calendarUrl;
-    clearPublicHolidays();
-    if (calendarUrl != null) {
-      XMLCalendarOpen opener = new XMLCalendarOpen();
-
-      HolidayTagHandler tagHandler = new HolidayTagHandler(this);
-
-      opener.addTagHandler(tagHandler);
-      opener.addParsingListener(tagHandler);
-      try {
-        opener.load(calendarUrl.openStream());
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+  public void setPublicHolidays(Collection<Holiday> holidays) {
+    publicHolidaysArray.clear();
+    for (Holiday h : holidays) {
+      if (h.isRepeating) {
+        myStableHolidays.add(h.date);
+      } else {
+        publicHolidaysArray.add(h.date);
       }
     }
+//    myCalendarUrl = calendarUrl;
+//    clearPublicHolidays();
+//    if (calendarUrl != null) {
+//      XMLCalendarOpen opener = new XMLCalendarOpen();
+//
+//      HolidayTagHandler tagHandler = new HolidayTagHandler(this);
+//
+//      opener.addTagHandler(tagHandler);
+//      opener.addParsingListener(tagHandler);
+//      try {
+//        opener.load(calendarUrl.openStream());
+//      } catch (Exception e) {
+//        throw new RuntimeException(e);
+//      }
+//    }
   }
 
   @Override
-  public Collection<Date> getPublicHolidays() {
-    return Collections.unmodifiableCollection(publicHolidaysArray);
+  public Collection<Holiday> getPublicHolidays() {
+    List<Holiday> result = new ArrayList<Holiday>();
+    for (Date d : publicHolidaysArray) {
+      result.add(new Holiday(d, false));
+    }
+    for (Date d : myStableHolidays) {
+      result.add(new Holiday(d, true));
+    }
+    return Collections.unmodifiableCollection(result);
   }
 
   @Override
@@ -263,18 +281,30 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public GPCalendar copy() {
-    WeekendCalendarImpl result = new WeekendCalendarImpl();
+    WeekendCalendarImpl result = new WeekendCalendarImpl(myBaseCalendarID);
     for (int i = 1; i < 8; i++) {
       result.setWeekDayType(i, getWeekDayType(i));
     }
     result.setOnlyShowWeekends(getOnlyShowWeekends());
-    result.setPublicHolidays(myCalendarUrl);
-    result.publicHolidaysArray.addAll(publicHolidaysArray);
+    result.setPublicHolidays(getPublicHolidays());
+    //result.publicHolidaysArray.addAll(publicHolidaysArray);
     return result;
   }
 
   @Override
-  public URL getPublicHolidaysUrl() {
-    return myCalendarUrl;
+  public String getBaseCalendarID() {
+    return myBaseCalendarID;
   }
+
+  @Override
+  public void setBaseCalendarID(String id) {
+    myBaseCalendarID = id;
+  }
+
+  
+  
+//  @Override
+//  public URL getPublicHolidaysUrl() {
+//    return myCalendarUrl;
+//  }
 }

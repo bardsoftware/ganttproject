@@ -26,6 +26,9 @@ import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
@@ -53,9 +56,6 @@ import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -132,9 +132,12 @@ class ProjectFileExporter {
   }
 
   private void exportHolidays(ProjectCalendar calendar) {
-    for (Date d : getCalendar().getPublicHolidays()) {
-      ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
-      calendarException.addRange(new DateRange(d, d));
+    for (GPCalendar.Holiday h : getCalendar().getPublicHolidays()) {
+      if (!h.isRepeating) {
+        Date d = h.date;
+        ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
+        calendarException.addRange(new DateRange(d, d));
+      }
     }
   }
 

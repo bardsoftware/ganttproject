@@ -16,17 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.calendar;
 
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.GPCalendar.MoveDirection;
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
 
 /**
  * @author bard

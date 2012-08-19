@@ -40,6 +40,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+
 /**
  * @author nbohn
  */
@@ -57,7 +59,7 @@ public class XMLCalendarOpen {
 
   private ArrayList<ParsingListener> myListeners = new ArrayList<ParsingListener>();
 
-  boolean load(InputStream inputStream) throws MyException {
+  public boolean load(InputStream inputStream) throws MyException {
     // Use an instance of ourselves as the SAX event handler
     DefaultHandler handler = new GanttXMLParser();
 
@@ -77,11 +79,11 @@ public class XMLCalendarOpen {
     return true;
   }
 
-  void addTagHandler(TagHandler handler) {
+  public void addTagHandler(TagHandler handler) {
     myTagHandlers.add(handler);
   }
 
-  void addParsingListener(ParsingListener listener) {
+  public void addParsingListener(ParsingListener listener) {
     myListeners.add(listener);
   }
 

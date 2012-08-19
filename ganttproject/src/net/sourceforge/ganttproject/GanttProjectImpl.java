@@ -24,11 +24,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
-import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.font.Fonts;

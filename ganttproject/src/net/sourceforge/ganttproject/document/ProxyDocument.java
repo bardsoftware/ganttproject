@@ -27,8 +27,9 @@ import java.net.URI;
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;

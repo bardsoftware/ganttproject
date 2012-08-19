@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import biz.ganttproject.core.calendar.GanttDaysOff;
+
 import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.calendar.GanttDaysOff;
 import net.sourceforge.ganttproject.gui.options.model.EnumerationOption;
 
 public class OverwritingMerger implements HumanResourceMerger {

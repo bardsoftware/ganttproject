@@ -35,16 +35,19 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+
+import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.DefaultEnumerationOption;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 
 /**
  * @author bard
@@ -78,8 +81,8 @@ public class WeekendConfigurationPage implements WizardPage {
       myUrls = urls;
       myLabels = labels;
       myCalendar = calendar;
-      if (calendar.getPublicHolidaysUrl() != null) {
-        int idx = urls.indexOf(calendar.getPublicHolidaysUrl());
+      if (calendar.getBaseCalendarID() != null) {
+        int idx = Lists.transform(urls, Functions.toStringFunction()).indexOf(calendar.getBaseCalendarID());
         if (idx >= 0) {
           setValue(labels.get(idx));
         }
@@ -99,7 +102,22 @@ public class WeekendConfigurationPage implements WizardPage {
     @Override
     public void commit() {
       super.commit();
-      myCalendar.setPublicHolidays(getSelectedUrl());
+      myCalendar.setBaseCalendarID(getSelectedUrl().toString());
+      loadCalendar(myCalendar, getSelectedUrl());
+    }
+
+    private static void loadCalendar(GPCalendar calendar, URL url) {
+      XMLCalendarOpen opener = new XMLCalendarOpen();
+
+      HolidayTagHandler tagHandler = new HolidayTagHandler(calendar);
+
+      opener.addTagHandler(tagHandler);
+      opener.addParsingListener(tagHandler);
+      try {
+        opener.load(url.openStream());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
