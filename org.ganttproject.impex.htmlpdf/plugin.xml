@@ -30,6 +30,7 @@
       </library>
    </runtime>
    <requires>
+      <import plugin="biz.ganttproject.core"/>
       <import plugin="net.sourceforge.ganttproject"/>
       <import plugin="org.eclipse.core.runtime"/>
    </requires>

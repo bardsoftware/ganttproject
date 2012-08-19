@@ -9,6 +9,9 @@
       <library name="ganttproject-core.jar">
          <export name="*"/>
       </library>
+      <library name="lib/ganttproject-guava.jar">
+         <export name="*"/>
+      </library>
    </runtime>
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
