@@ -1,7 +1,7 @@
 /*
  * Created on 08.11.2004
  */
-package net.sourceforge.ganttproject.time.gregorian;
+package biz.ganttproject.core.time.impl;
 
 import java.text.DateFormat;
 import java.util.Calendar;

@@ -24,11 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**

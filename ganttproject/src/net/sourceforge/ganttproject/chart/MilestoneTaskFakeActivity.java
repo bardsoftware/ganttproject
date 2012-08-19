@@ -21,10 +21,10 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class MilestoneTaskFakeActivity implements TaskActivity {
   private final Task myTask;

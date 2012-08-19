@@ -21,7 +21,8 @@ package net.sourceforge.ganttproject.calendar;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
+
 
 /**
  * @author nbohn

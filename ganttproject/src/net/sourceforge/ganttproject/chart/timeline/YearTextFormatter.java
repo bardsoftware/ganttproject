@@ -7,7 +7,8 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
+import biz.ganttproject.core.time.CalendarFactory;
+
 import net.sourceforge.ganttproject.chart.TimeUnitText;
 
 /**

@@ -27,7 +27,6 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
@@ -38,6 +37,8 @@ import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.w3c.util.DateParser;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 class TaskSaver extends SaverBase {
   void save(IGanttProject project, TransformerHandler handler) throws SAXException, IOException {

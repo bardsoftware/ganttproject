@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -25,7 +26,6 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgori
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.TestSetupHelper;
 
 public class TestSupertaskAdjustment extends TaskTestCase {

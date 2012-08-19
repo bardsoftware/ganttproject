@@ -25,8 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;

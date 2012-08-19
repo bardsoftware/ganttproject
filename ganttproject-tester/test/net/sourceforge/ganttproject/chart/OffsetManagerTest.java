@@ -20,9 +20,10 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import junit.framework.TestCase;
 
 /**

@@ -16,15 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package biz.ganttproject.core.time;
 
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
-import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
@@ -32,9 +30,7 @@ import org.w3c.util.InvalidDateException;
 /**
  * Class use for calendar
  */
-public class GanttCalendar extends GregorianCalendar {
-  private final GanttLanguage language = GanttLanguage.getInstance();
-
+public class GanttCalendar extends java.util.GregorianCalendar {
   public GanttCalendar() {
     super();
     set(Calendar.HOUR_OF_DAY, 0);
@@ -72,9 +68,9 @@ public class GanttCalendar extends GregorianCalendar {
       String y = s.substring(sb + 1);
 
       // Set the date
-      result.set(Calendar.YEAR, new Integer(y).hashCode());
-      result.set(Calendar.MONTH, new Integer(m).hashCode() - 1);
-      result.set(Calendar.DATE, new Integer(d).hashCode());
+      result.set(Calendar.YEAR, Integer.parseInt(y));
+      result.set(Calendar.MONTH, Integer.parseInt(m) - 1);
+      result.set(Calendar.DATE, Integer.parseInt(d));
     }
     return result;
   }
@@ -84,12 +80,6 @@ public class GanttCalendar extends GregorianCalendar {
   public GanttCalendar clone() {
     GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
     return clone;
-  }
-
-  /** @return the date to as a string */
-  @Override
-  public String toString() {
-    return language.formatShortDate(this);
   }
 
   public String toXMLString() {
@@ -110,14 +100,6 @@ public class GanttCalendar extends GregorianCalendar {
 
   public int getDay() {
     return this.get(Calendar.DAY_OF_MONTH);
-  }
-
-  public int getDayWeek() {
-    return this.get(Calendar.DAY_OF_WEEK);
-  }
-
-  public int getWeek() {
-    return this.get(Calendar.WEEK_OF_YEAR);
   }
 
   /**
@@ -199,11 +181,11 @@ public class GanttCalendar extends GregorianCalendar {
     return getYear() == when.getYear() && getMonth() == when.getMonth() && getDay() == when.getDay();
   }
 
-  /** @return the actually date */
-  public static String getDateAndTime() {
-    GanttCalendar c = new GanttCalendar();
-    return c.toString() + " - " + GanttLanguage.getInstance().formatTime(c);
-  }
+//  /** @return the actually date */
+//  public static String getDateAndTime() {
+//    GanttCalendar c = new GanttCalendar();
+//    return c.toString() + " - " + GanttLanguage.getInstance().formatTime(c);
+//  }
 
   public static Comparator<GanttCalendar> COMPARATOR = new Comparator<GanttCalendar>() {
     @Override

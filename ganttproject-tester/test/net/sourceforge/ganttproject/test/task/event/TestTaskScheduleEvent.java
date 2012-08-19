@@ -2,14 +2,15 @@ package net.sourceforge.ganttproject.test.task.event;
 
 import java.util.Calendar;
 
+import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
+
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
-import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**
  * Created by IntelliJ IDEA. User: bard

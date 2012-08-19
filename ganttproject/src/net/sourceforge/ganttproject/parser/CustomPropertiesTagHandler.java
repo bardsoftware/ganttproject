@@ -25,7 +25,6 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -33,6 +32,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author bbaranne Mar 10, 2005

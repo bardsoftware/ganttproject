@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task;
 import java.util.Arrays;
 import java.util.Collection;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
@@ -29,7 +30,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 

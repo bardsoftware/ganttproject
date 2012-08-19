@@ -8,13 +8,13 @@
 
  Copyright (C) 2004, GanttProject Development Team
  */
-package net.sourceforge.ganttproject.time.gregorian;
+package biz.ganttproject.core.time.impl;
 
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.DateFrameable;
-import net.sourceforge.ganttproject.calendar.CalendarFactory;
 
 /**
  * Created by IntelliJ IDEA.

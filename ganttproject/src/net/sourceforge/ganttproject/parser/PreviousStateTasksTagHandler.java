@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author nbohn

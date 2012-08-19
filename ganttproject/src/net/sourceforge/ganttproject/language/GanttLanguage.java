@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -43,9 +44,9 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
+import biz.ganttproject.core.time.CalendarFactory;
+
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
@@ -73,6 +74,12 @@ public class GanttLanguage {
           + o2.getDisplayCountry(Locale.US));
     }
   };
+
+  private static class CalendarFactoryImpl extends CalendarFactory {
+    static void setLocaleImpl(Locale locale) {
+      CalendarFactory.setLocale(locale);
+    }
+  }
 
   private static final GanttLanguage ganttLanguage = new GanttLanguage();
 
@@ -144,6 +151,7 @@ public class GanttLanguage {
 
   public void setLocale(Locale locale) {
     currentLocale = locale;
+    CalendarFactoryImpl.setLocaleImpl(locale);
     Locale.setDefault(locale);
     int defaultTimezoneOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
@@ -195,15 +203,15 @@ public class GanttLanguage {
     return currentDateFormat;
   }
 
-  public String formatDate(GanttCalendar date) {
+  public String formatDate(Calendar date) {
     return currentDateFormat.format(date.getTime());
   }
 
-  public String formatShortDate(GanttCalendar date) {
+  public String formatShortDate(Calendar date) {
     return shortCurrentDateFormat.format(date.getTime());
   }
 
-  public String formatTime(GanttCalendar date) {
+  public String formatTime(Calendar date) {
     return currentTimeFormat.format(date.getTime());
   }
 
@@ -299,10 +307,6 @@ public class GanttLanguage {
       label = label.substring(0, index).concat(label.substring(++index));
     }
     return label;
-  }
-
-  public Calendar newCalendar() {
-    return (Calendar) Calendar.getInstance(currentLocale).clone();
   }
 
   public String formatText(String key, Object... values) {
