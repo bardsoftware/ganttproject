@@ -109,7 +109,7 @@ class TaskSaver extends SaverBase {
     for (int i = 0; i < depsAsDependee.length; i++) {
       TaskDependency next = depsAsDependee[i];
       addAttribute("id", String.valueOf(next.getDependant().getTaskID()), attrs);
-      addAttribute("type", String.valueOf(next.getConstraint().getID()), attrs);
+      addAttribute("type", next.getConstraint().getType().getPersistentValue(), attrs);
       addAttribute("difference", String.valueOf(next.getDifference()), attrs);
       addAttribute("hardness", next.getHardness().getIdentifier(), attrs);
       emptyElement("depend", attrs, handler);

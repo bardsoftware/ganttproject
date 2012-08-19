@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.task.dependency.constraint;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -35,7 +34,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
  */
 public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public FinishStartConstraintImpl() {
-    super(GanttTaskRelationship.FS, GanttLanguage.getInstance().getText("finishstart"));
+    super(TaskDependencyConstraint.Type.finishstart, GanttLanguage.getInstance().getText("finishstart"));
   }
 
   @Override
