@@ -60,6 +60,8 @@ import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import net.sourceforge.ganttproject.time.TimeDuration;
+import net.sourceforge.ganttproject.time.TimeDurationImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -298,7 +300,7 @@ public class TaskManagerImpl implements TaskManager {
           GanttCalendar cal = new GanttCalendar(myStartDate);
           task.setStart(cal);
         }
-        TaskLength duration;
+        TimeDuration duration;
         if (myDuration != null) {
           duration = myDuration;
         } else {
@@ -363,7 +365,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public TaskLength getProjectLength() {
+  public TimeDuration getProjectLength() {
     if (myTaskMap.isEmpty()) {
       return createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 0);
     }
@@ -395,18 +397,18 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public String encode(TaskLength taskLength) {
+  public String encode(TimeDuration taskLength) {
     StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
     result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
     return result.toString();
   }
 
   @Override
-  public TaskLength createLength(String lengthAsString) throws DurationParsingException {
+  public TimeDuration createLength(String lengthAsString) throws DurationParsingException {
     int state = 0;
     StringBuffer valueBuffer = new StringBuffer();
     Integer currentValue = null;
-    TaskLength currentLength = null;
+    TimeDuration currentLength = null;
     lengthAsString += " ";
     for (int i = 0; i < lengthAsString.length(); i++) {
       char nextChar = lengthAsString.charAt(i);
@@ -427,7 +429,7 @@ public class TaskManagerImpl implements TaskManager {
             throw new DurationParsingException(valueBuffer.toString());
           }
           assert currentValue != null;
-          TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+          TimeDuration localResult = createLength(timeUnit, currentValue.floatValue());
           if (currentLength == null) {
             currentLength = localResult;
           } else {
@@ -458,7 +460,7 @@ public class TaskManagerImpl implements TaskManager {
             throw new DurationParsingException(valueBuffer.toString());
           }
           assert currentValue != null;
-          TaskLength localResult = createLength(timeUnit, currentValue.floatValue());
+          TimeDuration localResult = createLength(timeUnit, currentValue.floatValue());
           if (currentLength == null) {
             currentLength = localResult;
           } else {
@@ -502,22 +504,22 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public TaskLength createLength(TimeUnit unit, float length) {
-    return new TaskLengthImpl(unit, length);
+  public TimeDuration createLength(TimeUnit unit, float length) {
+    return new TimeDurationImpl(unit, length);
   }
 
   @Override
-  public TaskLength createLength(long count) {
-    return new TaskLengthImpl(getConfig().getTimeUnitStack().getDefaultTimeUnit(), count);
+  public TimeDuration createLength(long count) {
+    return new TimeDurationImpl(getConfig().getTimeUnitStack().getDefaultTimeUnit(), count);
   }
 
   @Override
-  public TaskLength createLength(TimeUnit timeUnit, Date startDate, Date endDate) {
+  public TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate) {
     return getConfig().getTimeUnitStack().createDuration(timeUnit, startDate, endDate);
   }
 
   @Override
-  public Date shift(Date original, TaskLength duration) {
+  public Date shift(Date original, TimeDuration duration) {
     GPCalendar calendar = RESTLESS_CALENDAR;
     return calendar.shiftDate(original, duration);
   }

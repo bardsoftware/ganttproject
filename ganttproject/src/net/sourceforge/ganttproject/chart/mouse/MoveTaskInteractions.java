@@ -24,10 +24,10 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class MoveTaskInteractions extends MouseInteractionBase implements MouseInteraction {
   private final List<Task> myTasks;
@@ -52,7 +52,7 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
 
   @Override
   public void apply(MouseEvent event) {
-    TaskLength currentInterval = getLengthDiff(event);
+    TimeDuration currentInterval = getLengthDiff(event);
     if (currentInterval.getLength() != 0) {
       for (TaskMutator mutator : myMutators) {
         mutator.shift(currentInterval);

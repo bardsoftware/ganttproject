@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.event.TaskListener;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -46,7 +47,7 @@ public interface TaskManager {
     String myName;
     Integer myId;
     Date myStartDate;
-    TaskLength myDuration;
+    TimeDuration myDuration;
     Color myColor;
     Task myPrevSibling;
     boolean isExpanded;
@@ -68,7 +69,7 @@ public interface TaskManager {
       return this;
     }
 
-    public TaskBuilder withDuration(TaskLength duration) {
+    public TaskBuilder withDuration(TimeDuration duration) {
       myDuration = duration;
       return this;
     }
@@ -150,17 +151,17 @@ public interface TaskManager {
   public GanttTask createTask(int taskId);
 
 
-  String encode(TaskLength duration);
+  String encode(TimeDuration duration);
 
-  TaskLength createLength(String lengthAsString);
+  TimeDuration createLength(String lengthAsString);
 
-  public TaskLength createLength(long length);
+  public TimeDuration createLength(long length);
 
-  TaskLength createLength(TimeUnit unit, float length);
+  TimeDuration createLength(TimeUnit unit, float length);
 
-  public TaskLength createLength(TimeUnit timeUnit, Date startDate, Date endDate);
+  public TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
 
-  Date shift(Date original, TaskLength duration);
+  Date shift(Date original, TimeDuration duration);
 
   TaskDependencyCollection getDependencyCollection();
 
@@ -183,7 +184,7 @@ public interface TaskManager {
     }
   }
 
-  public TaskLength getProjectLength();
+  public TimeDuration getProjectLength();
 
   public int getTaskCount();
 

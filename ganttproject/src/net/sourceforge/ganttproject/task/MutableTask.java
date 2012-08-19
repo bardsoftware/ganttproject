@@ -22,6 +22,7 @@ import java.awt.Color;
 
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.shape.ShapePaint;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * @author bard
@@ -37,9 +38,9 @@ public interface MutableTask {
 
   void setEnd(GanttCalendar end);
 
-  void setDuration(TaskLength length);
+  void setDuration(TimeDuration length);
 
-  void shift(TaskLength shift);
+  void shift(TimeDuration shift);
 
   void setCompletionPercentage(int percentage);
 

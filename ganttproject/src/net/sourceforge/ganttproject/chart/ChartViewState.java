@@ -27,7 +27,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -46,7 +46,7 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
   }
 
   @Override
-  public void scrollBy(TaskLength duration) {
+  public void scrollBy(TimeDuration duration) {
     myChart.scrollBy(duration);
     myOffsetPixels = 0;
     myChart.setStartOffset(myOffsetPixels);

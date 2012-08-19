@@ -32,7 +32,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -138,7 +138,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       for (GanttPreviousStateTask taskBaseline : baseline) {
         if (taskBaseline.getId() == t.getTaskID()) {
           Date startDate = taskBaseline.getStart().getTime();
-          TaskLength duration = getChartModel().getTaskManager().createLength(taskBaseline.getDuration());
+          TimeDuration duration = getChartModel().getTaskManager().createLength(taskBaseline.getDuration());
           Date endDate = getCalendar().shiftDate(startDate, duration);
           if (endDate.equals(t.getEnd().getTime())) {
             return;

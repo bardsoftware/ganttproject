@@ -23,8 +23,8 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ScrollTimeIntervalAction extends GPAction {
   private final ScrollingManager myScrollingManager;
@@ -46,7 +46,7 @@ public class ScrollTimeIntervalAction extends GPAction {
     myScrollingManager.scrollBy(createTimeInterval());
   }
 
-  private TaskLength createTimeInterval() {
+  private TimeDuration createTimeInterval() {
     return myTaskManager.createLength(myChartModel.getBottomUnit(), myInterval);
   }
 

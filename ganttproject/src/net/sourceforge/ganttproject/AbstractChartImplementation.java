@@ -63,8 +63,8 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 import org.eclipse.core.runtime.IStatus;
@@ -255,7 +255,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   @Override
-  public void scrollBy(TaskLength duration) {
+  public void scrollBy(TimeDuration duration) {
     setStartDate(getChartModel().getTaskManager().shift(getStartDate(), duration));
   }
 

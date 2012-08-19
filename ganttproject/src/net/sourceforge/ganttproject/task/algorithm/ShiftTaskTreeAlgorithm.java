@@ -23,9 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ShiftTaskTreeAlgorithm {
   public static final boolean DEEP = true;
@@ -40,7 +40,7 @@ public class ShiftTaskTreeAlgorithm {
     myRescheduleAlgorithm = rescheduleAlgorithm;
   }
 
-  public void run(List<Task> tasks, TaskLength shift, boolean deep) throws AlgorithmException {
+  public void run(List<Task> tasks, TimeDuration shift, boolean deep) throws AlgorithmException {
     myTaskManager.setEventsEnabled(false);
     for (Task t : tasks) {
       shiftTask(t, shift, deep);
@@ -52,11 +52,11 @@ public class ShiftTaskTreeAlgorithm {
     }
   }
 
-  public void run(Task rootTask, TaskLength shift, boolean deep) throws AlgorithmException {
+  public void run(Task rootTask, TimeDuration shift, boolean deep) throws AlgorithmException {
     run(Collections.singletonList(rootTask), shift, deep);
   }
 
-  private void shiftTask(Task rootTask, TaskLength shift, boolean deep) {
+  private void shiftTask(Task rootTask, TimeDuration shift, boolean deep) {
     if (rootTask != myTaskManager.getRootTask()) {
       rootTask.shift(shift);
     }

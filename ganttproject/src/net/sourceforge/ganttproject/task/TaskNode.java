@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * This class is used to describe the hierarchy of the tasks.
@@ -104,7 +105,7 @@ public class TaskNode extends DefaultMutableTreeTableNode {
    * @param length
    *          The duration to be set.
    */
-  public void setDuration(TaskLength length) {
+  public void setDuration(TimeDuration length) {
     TaskMutator mutator = task.createMutator();
     mutator.setDuration(length);
     mutator.commit();

@@ -59,11 +59,11 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
@@ -234,7 +234,7 @@ class ProjectFileExporter {
 
   }
 
-  private Duration convertDuration(TaskLength duration) {
+  private Duration convertDuration(TimeDuration duration) {
     return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);
   }
 

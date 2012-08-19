@@ -23,7 +23,7 @@ import java.awt.event.MouseEvent;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 abstract class MouseInteractionBase {
   protected Date myStartDate;
@@ -34,9 +34,9 @@ abstract class MouseInteractionBase {
     myChartDateGrid = chartDateGrid;
   }
 
-  protected TaskLength getLengthDiff(MouseEvent event) {
+  protected TimeDuration getLengthDiff(MouseEvent event) {
     Date dateUnderX = myChartDateGrid.getDateAt(event.getX());
-    TaskLength result = myChartDateGrid.createTimeInterval(myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(),
+    TimeDuration result = myChartDateGrid.createTimeInterval(myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(),
         myStartDate, dateUnderX);
     return result;
   }

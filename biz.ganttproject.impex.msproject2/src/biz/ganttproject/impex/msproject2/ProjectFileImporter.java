@@ -79,7 +79,6 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task.Priority;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -89,6 +88,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.util.collect.Pair;
@@ -278,7 +278,7 @@ class ProjectFileImporter {
   }
 
   private void importHolidays(Date start, Date end, HolidayAdder adder) {
-    TaskLength oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
+    TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
     for (Date dayStart = start; !dayStart.after(end);) {
       // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
       adder.addHoliday(dayStart);
@@ -341,7 +341,7 @@ class ProjectFileImporter {
     }
   }
 
-  private Function<Task, Pair<TaskLength, TaskLength>> findDurationFunction(Task t) {
+  private Function<Task, Pair<TimeDuration, TimeDuration>> findDurationFunction(Task t) {
     if (t.getStart() != null && t.getFinish() != null) {
       return DURATION_FROM_START_FINISH;
     }
@@ -364,7 +364,7 @@ class ProjectFileImporter {
       }
     }
 
-    Function<Task, Pair<TaskLength, TaskLength>> getDuration = findDurationFunction(t);
+    Function<Task, Pair<TimeDuration, TimeDuration>> getDuration = findDurationFunction(t);
     if (getDuration == null) {
       myErrors.add("Failed to import leaf task=" + t + ". Unable to determine its duration. Tried: ");
       return;
@@ -386,11 +386,11 @@ class ProjectFileImporter {
       if (t.getMilestone()) {
         taskBuilder.withLegacyMilestone();
       }
-      Pair<TaskLength, TaskLength> durations = getDuration.apply(t);
+      Pair<TimeDuration, TimeDuration> durations = getDuration.apply(t);
 
-      TaskLength workingDuration = durations.first();
-      TaskLength nonWorkingDuration = durations.second();
-      TaskLength defaultDuration = myNativeProject.getTaskManager().createLength(
+      TimeDuration workingDuration = durations.first();
+      TimeDuration nonWorkingDuration = durations.second();
+      TimeDuration defaultDuration = myNativeProject.getTaskManager().createLength(
           myNativeProject.getTimeUnitStack().getDefaultTimeUnit(), 1.0f);
 
       if (!t.getMilestone()) {
@@ -544,18 +544,18 @@ class ProjectFileImporter {
     }
   }
 
-  private Pair<TaskLength, TaskLength> getDurations(Date start, Date end) {
+  private Pair<TimeDuration, TimeDuration> getDurations(Date start, Date end) {
     WorkingUnitCounter unitCounter = new WorkingUnitCounter(getNativeCalendar(),
         myNativeProject.getTimeUnitStack().getDefaultTimeUnit());
-    TaskLength workingDuration = unitCounter.run(start, end);
-    TaskLength nonWorkingDuration = unitCounter.getNonWorkingTime();
+    TimeDuration workingDuration = unitCounter.run(start, end);
+    TimeDuration nonWorkingDuration = unitCounter.getNonWorkingTime();
     return Pair.create(workingDuration, nonWorkingDuration);
 
   }
-  private final Function<Task, Pair<TaskLength, TaskLength>> DURATION_FROM_START_FINISH =
-      new Function<Task, Pair<TaskLength,TaskLength>>() {
+  private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_FINISH =
+      new Function<Task, Pair<TimeDuration,TimeDuration>>() {
         @Override
-        public Pair<TaskLength, TaskLength> apply(Task t) {
+        public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {
             return Pair.create(getTaskManager().createLength(1), null);
           }
@@ -563,15 +563,15 @@ class ProjectFileImporter {
         }
       };
 
-  private final Function<Task, Pair<TaskLength, TaskLength>> DURATION_FROM_START_AND_DURATION =
-      new Function<Task, Pair<TaskLength,TaskLength>>() {
+  private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_AND_DURATION =
+      new Function<Task, Pair<TimeDuration,TimeDuration>>() {
         @Override
-        public Pair<TaskLength, TaskLength> apply(Task t) {
+        public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {
             return Pair.create(getTaskManager().createLength(1), null);
           }
           Duration dayUnits = t.getDuration().convertUnits(TimeUnit.DAYS, myProjectFile.getProjectHeader());
-          TaskLength gpDuration = getTaskManager().createLength(GPTimeUnitStack.DAY, (float) dayUnits.getDuration());
+          TimeDuration gpDuration = getTaskManager().createLength(GPTimeUnitStack.DAY, (float) dayUnits.getDuration());
           Date endDate = getTaskManager().shift(t.getStart(), gpDuration);
           return getDurations(t.getStart(), endDate);
         }

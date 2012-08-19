@@ -24,7 +24,7 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * @author bard
@@ -38,8 +38,8 @@ public class SortTasksAlgorithm {
         result = leftTask.getStart().compareTo(rightTask.getStart());
         if (result == 0) {
           float longResult = 0;
-          TaskLength leftLength = leftTask.getDuration();
-          TaskLength rightLength = rightTask.getDuration();
+          TimeDuration leftLength = leftTask.getDuration();
+          TimeDuration rightLength = rightTask.getDuration();
           if (leftLength.getTimeUnit().isConstructedFrom(rightLength.getTimeUnit())) {
             longResult = leftLength.getLength(rightLength.getTimeUnit()) - rightLength.getLength();
           } else if (rightLength.getTimeUnit().isConstructedFrom(leftLength.getTimeUnit())) {
@@ -65,8 +65,8 @@ public class SortTasksAlgorithm {
         result = leftTask.getStart().compareTo(rightTask.getStart());
         if (result == 0) {
           float longResult = 0;
-          TaskLength leftLength = leftTask.getDuration();
-          TaskLength rightLength = rightTask.getDuration();
+          TimeDuration leftLength = leftTask.getDuration();
+          TimeDuration rightLength = rightTask.getDuration();
           if (leftLength.getTimeUnit().isConstructedFrom(rightLength.getTimeUnit())) {
             longResult = leftLength.getLength(rightLength.getTimeUnit()) - rightLength.getLength();
           } else if (rightLength.getTimeUnit().isConstructedFrom(leftLength.getTimeUnit())) {

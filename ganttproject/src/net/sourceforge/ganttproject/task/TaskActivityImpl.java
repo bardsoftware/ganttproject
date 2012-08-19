@@ -5,6 +5,8 @@ package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
 
+import net.sourceforge.ganttproject.time.TimeDuration;
+
 /**
  * @author bard
  */
@@ -14,7 +16,7 @@ class TaskActivityImpl implements TaskActivity {
 
   private final Date myStartDate;
 
-  private final TaskLength myDuration;
+  private final TimeDuration myDuration;
 
   private float myIntensity;
 
@@ -43,7 +45,7 @@ class TaskActivityImpl implements TaskActivity {
   }
 
   @Override
-  public TaskLength getDuration() {
+  public TimeDuration getDuration() {
     return myDuration;
   }
 

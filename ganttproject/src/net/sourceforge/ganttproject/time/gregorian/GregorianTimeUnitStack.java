@@ -23,8 +23,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
@@ -111,7 +111,7 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
   }
 
   @Override
-  public TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
+  public TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
     return null; // To change body of implemented methods use File | Settings |
                  // File Templates.
   }

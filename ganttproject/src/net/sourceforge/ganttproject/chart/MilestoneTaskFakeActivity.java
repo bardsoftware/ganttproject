@@ -22,7 +22,7 @@ import java.util.Date;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class MilestoneTaskFakeActivity implements TaskActivity {
@@ -42,7 +42,7 @@ public class MilestoneTaskFakeActivity implements TaskActivity {
   }
 
   @Override
-  public TaskLength getDuration() {
+  public TimeDuration getDuration() {
     return myTask.getManager().createLength(1);
   }
 

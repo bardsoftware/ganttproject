@@ -23,15 +23,15 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.time.DateFrameable;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard
  */
 abstract class GPCalendarBase {
-  public Date shiftDate(Date input, TaskLength shift) {
+  public Date shiftDate(Date input, TimeDuration shift) {
     if (shift.getLength() == 0) {
       return input;
     }
@@ -60,7 +60,7 @@ abstract class GPCalendarBase {
 
   protected abstract List<GPCalendarActivity> getActivitiesForward(Date startDate, TimeUnit timeUnit, long unitCount);
 
-  public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
+  public List<GPCalendarActivity> getActivities(Date startingFrom, TimeDuration period) {
     return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
   }
 

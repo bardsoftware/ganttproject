@@ -43,10 +43,10 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
+import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Provides project calendar settings page in the settings dialog.
@@ -91,7 +91,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
 
     myProjectStart = getProject().getTaskManager().getProjectStart();
     myProjectStartOption = new DefaultDateOption("project.startDate", myProjectStart) {
-      private TaskLength getMoveDuration() {
+      private TimeDuration getMoveDuration() {
         return getProject().getTaskManager().createLength(getProject().getTimeUnitStack().getDefaultTimeUnit(),
             getInitialValue(), getValue());
       }
@@ -99,7 +99,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
       @Override
       public void setValue(Date value) {
         super.setValue(value);
-        TaskLength moveDuration = getMoveDuration();
+        TimeDuration moveDuration = getMoveDuration();
         if (moveDuration.getLength() != 0) {
           updateMoveOptions(moveDuration);
         }
@@ -178,7 +178,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     return OptionPageProviderBase.wrapContentComponent(result, myWeekendsPanel.getTitle(), null);
   }
 
-  protected void updateMoveOptions(TaskLength moveDuration) {
+  protected void updateMoveOptions(TimeDuration moveDuration) {
     if (moveDuration.getLength() != 0) {
       String moveLabel = MessageFormat.format(
           GanttLanguage.getInstance().getText("project.calendar.moveDuration.label"), moveDuration.getLength(),
@@ -190,7 +190,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     }
   }
 
-  protected void moveProject(TaskLength moveDuration) throws AlgorithmException {
+  protected void moveProject(TimeDuration moveDuration) throws AlgorithmException {
     TaskManager taskManager = getProject().getTaskManager();
     ShiftTaskTreeAlgorithm shiftTaskTreeAlgorithm = taskManager.getAlgorithmCollection().getShiftTaskTreeAlgorithm();
     if (myMoveAllTasks.isSelected()) {

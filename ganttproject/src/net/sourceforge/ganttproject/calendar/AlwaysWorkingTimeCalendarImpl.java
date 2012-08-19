@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -131,7 +131,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
+  public List<GPCalendarActivity> getActivities(Date startingFrom, TimeDuration period) {
     return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
   }
 

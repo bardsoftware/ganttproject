@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
@@ -88,7 +88,7 @@ public interface GPCalendar {
    * Saturday and Sunday then adding a shift of "1 day" will result to the
    * midnight of the next Monday
    */
-  Date shiftDate(Date input, TaskLength shift);
+  Date shiftDate(Date input, TimeDuration shift);
 
   Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
 

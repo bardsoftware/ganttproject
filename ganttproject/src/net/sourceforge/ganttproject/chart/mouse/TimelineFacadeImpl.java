@@ -24,8 +24,8 @@ import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.chart.TimelineChart.VScrollController;
-import net.sourceforge.ganttproject.task.TaskLength;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -45,7 +45,7 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   }
 
   @Override
-  public TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
+  public TimeDuration createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
     return myTaskManager.createLength(timeUnit, startDate, endDate);
   }
 

@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 
 public interface TimelineChart extends Chart {
@@ -47,7 +47,7 @@ public interface TimelineChart extends Chart {
    *          are the number of days to scroll. If days < 0 it scrolls to the
    *          right otherwise to the left.
    */
-  public void scrollBy(TaskLength duration);
+  public void scrollBy(TimeDuration duration);
 
   void setVScrollController(VScrollController vscrollController);
 

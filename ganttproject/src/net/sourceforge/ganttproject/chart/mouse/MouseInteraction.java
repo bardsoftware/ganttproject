@@ -24,7 +24,7 @@ import java.util.Date;
 
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitStack;
 
@@ -40,7 +40,7 @@ public interface MouseInteraction {
 
     Date getDateAt(int x);
 
-    TaskLength createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
+    TimeDuration createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate);
 
     TimeUnitStack getTimeUnitStack();
 

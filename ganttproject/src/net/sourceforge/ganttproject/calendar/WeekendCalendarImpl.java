@@ -33,7 +33,7 @@ import java.util.Set;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.walker.ForwardTimeWalker;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
-import net.sourceforge.ganttproject.task.TaskLength;
+import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.gregorian.FramerImpl;
 
@@ -255,7 +255,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   }
 
   @Override
-  public List<GPCalendarActivity> getActivities(Date startingFrom, TaskLength period) {
+  public List<GPCalendarActivity> getActivities(Date startingFrom, TimeDuration period) {
     return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
   }
 

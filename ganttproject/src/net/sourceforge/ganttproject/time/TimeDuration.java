@@ -16,14 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.task;
+package net.sourceforge.ganttproject.time;
 
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard
  */
-public interface TaskLength {
+public interface TimeDuration {
   float getLength(TimeUnit unit);
 
   int getLength();
@@ -32,7 +31,7 @@ public interface TaskLength {
 
   float getValue();
 
-  TaskLength reverse();
+  TimeDuration reverse();
 
-  TaskLength translate(TimeUnit timeUnit);
+  TimeDuration translate(TimeUnit timeUnit);
 }

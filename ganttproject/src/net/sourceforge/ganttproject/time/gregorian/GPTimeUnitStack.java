@@ -7,8 +7,8 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.task.TaskLength;
-import net.sourceforge.ganttproject.task.TaskLengthImpl;
+import net.sourceforge.ganttproject.time.TimeDuration;
+import net.sourceforge.ganttproject.time.TimeDurationImpl;
 import net.sourceforge.ganttproject.time.TimeUnit;
 import net.sourceforge.ganttproject.time.TimeUnitGraph;
 import net.sourceforge.ganttproject.time.TimeUnitPair;
@@ -133,8 +133,8 @@ public class GPTimeUnitStack implements TimeUnitStack {
   }
 
   @Override
-  public TaskLength createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
-    TaskLength result;
+  public TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
+    TimeDuration result;
     int sign = 1;
     if (endDate.before(startDate)) {
       sign = -1;
@@ -146,7 +146,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
     for (; startDate.before(endDate); unitCount++) {
       startDate = timeUnit.adjustRight(startDate);
     }
-    result = new TaskLengthImpl(timeUnit, unitCount * sign);
+    result = new TimeDurationImpl(timeUnit, unitCount * sign);
     return result;
   }
 }
