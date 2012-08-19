@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitText;
-
+import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**

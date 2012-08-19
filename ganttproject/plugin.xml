@@ -72,6 +72,7 @@
    </runtime>
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="biz.ganttproject.core"/>
    </requires>
    <extension-point id="exporter" name="Exporter"/>
    <extension-point id="importer" name="Importer"/>
