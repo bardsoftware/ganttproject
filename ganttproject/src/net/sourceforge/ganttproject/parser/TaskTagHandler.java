@@ -23,13 +23,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
 import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 public class TaskTagHandler implements TagHandler {
   private final ParsingContext myContext;

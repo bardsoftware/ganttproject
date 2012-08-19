@@ -16,13 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.calendar;
+package biz.ganttproject.core.time;
 
 import java.util.Calendar;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import java.util.Locale;
 
 public abstract class CalendarFactory {
+  private static Locale ourLocale;
+
   public static Calendar newCalendar() {
-    return GanttLanguage.getInstance().newCalendar();
+    return (Calendar) Calendar.getInstance(ourLocale).clone();
+  }
+  
+  protected static void setLocale(Locale locale) {
+    ourLocale = locale;
   }
 }

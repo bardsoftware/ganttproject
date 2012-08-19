@@ -18,10 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 
 import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author nbohn

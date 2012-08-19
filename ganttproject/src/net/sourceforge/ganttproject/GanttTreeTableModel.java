@@ -41,6 +41,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
 import com.google.common.base.Joiner;

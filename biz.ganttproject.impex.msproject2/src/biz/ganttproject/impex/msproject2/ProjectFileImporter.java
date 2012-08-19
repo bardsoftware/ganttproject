@@ -67,7 +67,6 @@ import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -88,11 +87,12 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;

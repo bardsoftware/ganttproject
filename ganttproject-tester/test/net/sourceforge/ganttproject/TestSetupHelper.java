@@ -3,7 +3,9 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.net.URL;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
@@ -12,7 +14,6 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 public class TestSetupHelper {
     public static class TaskManagerBuilder implements TaskManagerConfig {

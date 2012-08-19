@@ -31,7 +31,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -48,6 +47,8 @@ import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * Allows to load a gantt file from xml format, using SAX parser

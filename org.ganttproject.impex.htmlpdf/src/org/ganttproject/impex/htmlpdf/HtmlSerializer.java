@@ -20,22 +20,26 @@ package org.ganttproject.impex.htmlpdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.FileUtil;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
+
 /**
  * HTML-specific serializer.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class HtmlSerializer extends XmlSerializer {
@@ -103,7 +107,10 @@ public class HtmlSerializer extends XmlSerializer {
     }
 
     addAttribute("version", "Ganttproject (" + GanttProject.version + ")", attrs);
-    addAttribute("date", GanttCalendar.getDateAndTime(), attrs);
+    Calendar c = CalendarFactory.newCalendar();
+    String dateAndTime = GanttLanguage.getInstance().formatShortDate(c) + " - " + GanttLanguage.getInstance().formatTime(c);
+
+    addAttribute("date", dateAndTime, attrs);
     emptyElement("footer", attrs, handler);
     endElement("ganttproject", handler);
     handler.endDocument();

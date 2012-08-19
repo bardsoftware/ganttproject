@@ -30,7 +30,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskMutator;

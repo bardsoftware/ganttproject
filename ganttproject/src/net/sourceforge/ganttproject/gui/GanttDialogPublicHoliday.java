@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
 

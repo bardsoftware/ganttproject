@@ -30,13 +30,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.FramerImpl;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.walker.ForwardTimeWalker;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
-import net.sourceforge.ganttproject.time.gregorian.FramerImpl;
 
 /**
  * @author bard

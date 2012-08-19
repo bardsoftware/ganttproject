@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author bard Date: 27.01.2004

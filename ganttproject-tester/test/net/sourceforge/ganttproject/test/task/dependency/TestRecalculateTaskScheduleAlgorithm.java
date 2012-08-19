@@ -1,6 +1,8 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -9,8 +11,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
-import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**
  * Created by IntelliJ IDEA. User: bard

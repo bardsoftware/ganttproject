@@ -38,11 +38,12 @@ import java.net.URLEncoder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
@@ -56,7 +57,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
-import net.sourceforge.ganttproject.time.gregorian.GPTimeUnitStack;
 
 /**
  * @author bard

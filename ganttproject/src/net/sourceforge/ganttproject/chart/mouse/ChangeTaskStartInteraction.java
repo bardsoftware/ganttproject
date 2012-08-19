@@ -21,7 +21,8 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskMutator;

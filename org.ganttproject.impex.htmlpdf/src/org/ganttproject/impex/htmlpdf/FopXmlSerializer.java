@@ -23,13 +23,14 @@ import java.util.Locale;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 
 import org.ganttproject.impex.htmlpdf.FOPEngine.ExportState;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * FOP-specific serializer.

@@ -20,9 +20,9 @@ package net.sourceforge.ganttproject.task;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
-import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
  * This class is used to describe the hierarchy of the tasks.

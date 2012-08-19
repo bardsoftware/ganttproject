@@ -61,8 +61,9 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
-import net.sourceforge.ganttproject.time.gregorian.GregorianCalendar;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.collect.ObjectArrays;
 
@@ -122,7 +123,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
 
-    super.setStartDate(GregorianCalendar.getInstance().getTime());
+    super.setStartDate(CalendarFactory.newCalendar().getTime());
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
       public void taskScheduleChanged(TaskScheduleEvent e) {

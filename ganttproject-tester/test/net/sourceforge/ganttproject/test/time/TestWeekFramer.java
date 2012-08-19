@@ -8,7 +8,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-import net.sourceforge.ganttproject.time.gregorian.WeekFramerImpl;
+import biz.ganttproject.core.time.impl.WeekFramerImpl;
+
 import junit.framework.TestCase;
 
 /**

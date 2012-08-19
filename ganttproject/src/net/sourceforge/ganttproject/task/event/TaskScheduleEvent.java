@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.task.event;
 
 import java.util.EventObject;
 
-import net.sourceforge.ganttproject.GanttCalendar;
+import biz.ganttproject.core.time.GanttCalendar;
+
 import net.sourceforge.ganttproject.task.Task;
 
 /**

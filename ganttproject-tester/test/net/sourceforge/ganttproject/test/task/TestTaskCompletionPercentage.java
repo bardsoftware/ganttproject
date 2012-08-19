@@ -10,10 +10,10 @@
  */
 package net.sourceforge.ganttproject.test.task;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
-import net.sourceforge.ganttproject.GanttCalendar;
 
 /**
  * Created by IntelliJ IDEA. User: bard

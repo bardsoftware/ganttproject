@@ -3,13 +3,13 @@
  */
 package net.sourceforge.ganttproject.test.task.calendar;
 
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
-import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**
  * @author bard

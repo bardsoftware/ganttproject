@@ -84,6 +84,8 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
+import biz.ganttproject.core.time.GanttCalendar;
+
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
