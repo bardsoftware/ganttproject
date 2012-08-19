@@ -8,9 +8,8 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.time.TimeUnitText;
-
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 import net.sourceforge.ganttproject.util.TextLengthCalculator;

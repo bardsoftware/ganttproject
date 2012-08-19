@@ -8,8 +8,8 @@ import java.util.HashMap;
 
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitText;
 
+import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.language.GanttLanguage.Listener;

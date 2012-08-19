@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,8 +21,7 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import biz.ganttproject.core.time.TimeUnitText;
-
+import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 
