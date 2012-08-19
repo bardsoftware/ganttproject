@@ -23,10 +23,10 @@ import java.util.List;
 
 /**
  * Finds the bounds of the given date range in the given list of offsets.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
-class OffsetLookup {
+public class OffsetLookup {
   static interface ComparatorBy<T> {
     int compare(T point, int offsetIdx, List<Offset> offsets);
   }
@@ -112,7 +112,7 @@ class OffsetLookup {
     return findOffset(startDate, comparator, 0, offsets.size() - 1, offsets);
   }
 
-  int lookupOffsetByEndDate(Date endDate, List<Offset> offsets) {
+  public int lookupOffsetByEndDate(Date endDate, List<Offset> offsets) {
     ComparatorByEndDate comparator = new ComparatorByEndDate();
     return findOffset(endDate, comparator, 0, offsets.size() - 1, offsets);
   }

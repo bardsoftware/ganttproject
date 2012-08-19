@@ -76,17 +76,17 @@ public interface OffsetBuilder {
       return this;
     }
 
-    Factory withWeekendDecreaseFactor(float weekendDecreaseFactor) {
+    public Factory withWeekendDecreaseFactor(float weekendDecreaseFactor) {
       myWeekendDecreaseFactor = weekendDecreaseFactor;
       return this;
     }
 
-    Factory withCalendar(GPCalendar calendar) {
+    public Factory withCalendar(GPCalendar calendar) {
       myCalendar = calendar;
       return this;
     }
 
-    Factory withRightMargin(int rightMarginTimeUnits) {
+    public Factory withRightMargin(int rightMarginTimeUnits) {
       myRightMarginTimeUnits = rightMarginTimeUnits;
       return this;
     }

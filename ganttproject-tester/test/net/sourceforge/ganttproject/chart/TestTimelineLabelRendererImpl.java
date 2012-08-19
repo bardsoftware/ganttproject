@@ -56,7 +56,7 @@ public class TestTimelineLabelRendererImpl extends TestCase {
 
     @Override
     public Date getStartDate() {
-      return null;
+      return myTaskManager.getProjectStart();
     }
 
     @Override

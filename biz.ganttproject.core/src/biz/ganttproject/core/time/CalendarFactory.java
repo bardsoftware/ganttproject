@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public abstract class CalendarFactory {
-  private static Locale ourLocale;
+  private static Locale ourLocale = Locale.getDefault();
 
   public static Calendar newCalendar() {
     return (Calendar) Calendar.getInstance(ourLocale).clone();

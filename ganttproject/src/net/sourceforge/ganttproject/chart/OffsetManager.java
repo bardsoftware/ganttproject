@@ -24,8 +24,8 @@ package net.sourceforge.ganttproject.chart;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class OffsetManager {
-  static interface OffsetBuilderFactory {
+public class OffsetManager {
+  public static interface OffsetBuilderFactory {
     OffsetBuilder createTopAndBottomUnitBuilder();
 
     OffsetBuilder createAtomUnitBuilder();
@@ -37,7 +37,7 @@ class OffsetManager {
   private final OffsetBuilderFactory myFactory;
   private boolean isReset = true;
 
-  OffsetManager(OffsetBuilderFactory factory) {
+  public OffsetManager(OffsetBuilderFactory factory) {
     myFactory = factory;
   }
 

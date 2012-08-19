@@ -212,7 +212,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     return null;
   }
 
-  static class FactoryImpl extends OffsetBuilder.Factory {
+  public static class FactoryImpl extends OffsetBuilder.Factory {
     @Override
     public OffsetBuilder build() {
       return new RegularFrameOffsetBuilder(myCalendar, myTopUnit, myBottomUnit, myStartDate, myViewportStartDate,
