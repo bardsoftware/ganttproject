@@ -5,11 +5,11 @@ import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 /**
@@ -124,8 +124,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         TaskDependency dep = taskManager
                 .getDependencyCollection()
                 .createDependency(task2, task1, new FinishStartConstraintImpl());
-        dep.setConstraint(taskManager
-                .createConstraint(GanttTaskRelationship.FF));
+        dep.setConstraint(taskManager.createConstraint(TaskDependencyConstraint.Type.finishfinish));
 
         // Increase the length of task1.
         task1.setEnd(new GanttCalendar(2000, 01, 05));
@@ -161,8 +160,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         TaskDependency dep = taskManager
                 .getDependencyCollection()
                 .createDependency(task2, task1, new FinishStartConstraintImpl());
-        dep.setConstraint(taskManager
-                .createConstraint(GanttTaskRelationship.SS));
+        dep.setConstraint(taskManager.createConstraint(TaskDependencyConstraint.Type.startstart));
 
         // Shift task1 forward in time.
         TimeDuration task1Duration = task1.getDuration();
@@ -204,8 +202,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         TaskDependency dep = taskManager
                 .getDependencyCollection()
                 .createDependency(task2, task1, new FinishStartConstraintImpl());
-        dep.setConstraint(taskManager
-                .createConstraint(GanttTaskRelationship.SF));
+        dep.setConstraint(taskManager.createConstraint(TaskDependencyConstraint.Type.startfinish));
         //
         // shift task1 forward. We expect that task2 will also be shifted
         // forward

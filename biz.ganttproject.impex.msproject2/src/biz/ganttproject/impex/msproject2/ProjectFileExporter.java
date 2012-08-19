@@ -266,7 +266,7 @@ class ProjectFileExporter {
   }
 
   private RelationType convertConstraint(TaskDependency dep) {
-    switch (TaskDependencyConstraint.Type.getType(dep.getConstraint())) {
+    switch (dep.getConstraint().getType()) {
     case finishstart:
       return RelationType.FINISH_START;
     case startfinish:

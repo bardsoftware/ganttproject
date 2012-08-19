@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task.dependency;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
 
 /**
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 2:35:20 To change
@@ -30,9 +31,9 @@ public interface TaskDependencyConstraint extends Cloneable {
   enum Type {
     startstart, finishstart, finishfinish, startfinish;
 
-    public static Type getType(TaskDependencyConstraint constraint) {
-      return getType(constraint.getID());
-    }
+//    public static Type getType(TaskDependencyConstraint constraint) {
+//      return getType(constraint.getID());
+//    }
 
     public static Type getType(int constraintID) {
       for (Type t : Type.values()) {
@@ -42,7 +43,17 @@ public interface TaskDependencyConstraint extends Cloneable {
       }
       return null;
     }
+
+    public String getPersistentValue() {
+      return String.valueOf(ordinal());
+    }
+
+    public static Type fromPersistentValue(String dependencyTypeAsString) {
+      return Type.values()[Integer.parseInt(dependencyTypeAsString) - 1];
+    }
   }
+
+  Type getType();
 
   void setTaskDependency(TaskDependency dependency);
 
@@ -53,8 +64,6 @@ public interface TaskDependencyConstraint extends Cloneable {
   Collision getBackwardCollision(Date depedantStart);
 
   String getName();
-
-  int getID();
 
   TaskDependency.ActivityBinding getActivityBinding();
 

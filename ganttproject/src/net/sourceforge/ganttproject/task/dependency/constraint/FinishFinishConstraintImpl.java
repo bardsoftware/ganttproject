@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -33,12 +32,12 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
 
 /**
  * Dependent task finishes not earlier than dependee finishes
- * 
+ *
  * @author bard
  */
 public class FinishFinishConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public FinishFinishConstraintImpl() {
-    super(GanttTaskRelationship.FF, GanttLanguage.getInstance().getText("finishfinish"));
+    super(TaskDependencyConstraint.Type.finishfinish, GanttLanguage.getInstance().getText("finishfinish"));
   }
 
   @Override

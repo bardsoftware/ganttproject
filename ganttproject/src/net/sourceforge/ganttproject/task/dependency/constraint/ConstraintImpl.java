@@ -23,19 +23,20 @@ import java.util.Date;
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
 
 /**
  * @author bard
  */
 public abstract class ConstraintImpl implements Cloneable {
-  private final int myID;
-
   private final String myName;
 
   private TaskDependency myDependency;
 
-  public ConstraintImpl(int myID, String myName) {
-    this.myID = myID;
+  private final Type myType;
+
+  public ConstraintImpl(TaskDependencyConstraint.Type type, String myName) {
+    myType = type;
     this.myName = myName;
   }
 
@@ -56,13 +57,13 @@ public abstract class ConstraintImpl implements Cloneable {
     return myName;
   }
 
-  public int getID() {
-    return myID;
-  }
-
   @Override
   public String toString() {
     return getName();
+  }
+
+  public Type getType() {
+    return myType;
   }
 
   protected void shift(GanttCalendar calendar, int shift) {

@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -32,12 +31,12 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
 
 /**
  * Dependent task starts not earlier than dependee starts
- * 
+ *
  * @author bard
  */
 public class StartStartConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public StartStartConstraintImpl() {
-    super(GanttTaskRelationship.SS, GanttLanguage.getInstance().getText("startstart"));
+    super(TaskDependencyConstraint.Type.startstart, GanttLanguage.getInstance().getText("startstart"));
   }
 
   @Override

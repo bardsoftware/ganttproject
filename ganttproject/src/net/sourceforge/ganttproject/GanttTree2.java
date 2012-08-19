@@ -939,7 +939,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
                   TaskDependency dep = myTaskManager.getDependencyCollection().createDependency(
                       myTaskManager.getTask(mapOriginalIDCopyID.get(new Integer(dependant.getTaskID())).intValue()),
                       myTaskManager.getTask(mapOriginalIDCopyID.get(new Integer(dependee.getTaskID())).intValue()),
-                      myTaskManager.createConstraint(constraint.getID()));
+                      myTaskManager.createConstraint(constraint.getType()));
                   dep.setDifference(td.getDifference());
                   dep.setHardness(td.getHardness());
                 } catch (TaskDependencyException e) {

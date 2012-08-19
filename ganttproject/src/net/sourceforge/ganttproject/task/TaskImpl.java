@@ -43,7 +43,6 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttCalendar;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.calendar.AlwaysWorkingTimeCalendarImpl;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
@@ -427,16 +426,6 @@ public class TaskImpl implements Task {
   @Override
   public String getNotes() {
     return myNotes;
-  }
-
-  @Override
-  public GanttTaskRelationship[] getPredecessors() {
-    return new GanttTaskRelationship[0];
-  }
-
-  @Override
-  public GanttTaskRelationship[] getSuccessors() {
-    return new GanttTaskRelationship[0];
   }
 
   @Override

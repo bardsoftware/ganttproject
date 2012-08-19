@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttTaskRelationship;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -104,8 +104,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
       String hardnessAsString = attrs.getValue("hardness");
       if (dependencyTypeAsString != null) {
         try {
-          int dependencyType = Integer.parseInt(dependencyTypeAsString);
-          gds.setDependType(dependencyType);
+          gds.setDependType(TaskDependencyConstraint.Type.fromPersistentValue(dependencyTypeAsString));
         } catch (NumberFormatException e) {
         }
       }
@@ -154,7 +153,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
 
     public int difference = 0;
 
-    public int dependType = GanttTaskRelationship.FS;
+    public TaskDependencyConstraint.Type dependType = TaskDependencyConstraint.Type.finishstart;
 
     private Hardness myHardness = TaskDependency.Hardness.STRONG;
 
@@ -177,7 +176,7 @@ public class DependencyTagHandler implements TagHandler, ParsingListener {
       this.successorTaskID = successorTaskID;
     }
 
-    public void setDependType(int dependType) {
+    public void setDependType(TaskDependencyConstraint.Type dependType) {
       this.dependType = dependType;
     }
   }
