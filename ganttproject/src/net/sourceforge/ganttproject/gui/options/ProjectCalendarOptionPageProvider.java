@@ -36,6 +36,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.GanttCalendar;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.DefaultDateOption;
@@ -46,7 +48,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Provides project calendar settings page in the settings dialog.

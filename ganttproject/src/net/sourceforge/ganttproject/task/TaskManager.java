@@ -22,6 +22,9 @@ import java.awt.Color;
 import java.util.Date;
 import java.util.Map;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
@@ -36,8 +39,6 @@ import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.event.TaskListener;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard

@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
@@ -63,7 +65,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.

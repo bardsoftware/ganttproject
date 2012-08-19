@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -31,7 +33,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * Controls painting of the Gantt chart

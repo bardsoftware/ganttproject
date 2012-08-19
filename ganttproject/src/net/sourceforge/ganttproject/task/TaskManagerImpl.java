@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -60,10 +65,6 @@ import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeDurationImpl;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 /**
  * @author bard

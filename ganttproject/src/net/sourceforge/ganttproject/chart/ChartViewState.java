@@ -20,6 +20,9 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingListener;
@@ -27,8 +30,6 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard

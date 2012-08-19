@@ -21,11 +21,12 @@ package net.sourceforge.ganttproject.calendar;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.time.DateFrameable;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
 import net.sourceforge.ganttproject.calendar.GPCalendar.MoveDirection;
-import net.sourceforge.ganttproject.time.DateFrameable;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * @author bard

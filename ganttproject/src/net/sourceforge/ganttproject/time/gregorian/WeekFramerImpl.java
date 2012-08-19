@@ -21,8 +21,9 @@ package net.sourceforge.ganttproject.time.gregorian;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.time.DateFrameable;
+
 import net.sourceforge.ganttproject.calendar.CalendarFactory;
-import net.sourceforge.ganttproject.time.DateFrameable;
 
 public class WeekFramerImpl implements DateFrameable {
   private final FramerImpl myDayFramer = new FramerImpl(Calendar.DATE);

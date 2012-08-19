@@ -21,11 +21,12 @@ package net.sourceforge.ganttproject.action.scroll;
 import java.awt.event.ActionEvent;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ScrollToEndAction extends GPAction {
   private final TimelineChart myChart;

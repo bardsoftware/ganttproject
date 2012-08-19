@@ -20,10 +20,11 @@ package net.sourceforge.ganttproject.calendar.walker;
 
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeDurationImpl;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * This class walks forward and counts the number of steps which start at

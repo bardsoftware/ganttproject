@@ -22,8 +22,9 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 abstract class MouseInteractionBase {
   protected Date myStartDate;

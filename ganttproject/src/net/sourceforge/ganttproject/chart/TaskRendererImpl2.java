@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
@@ -32,8 +35,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings

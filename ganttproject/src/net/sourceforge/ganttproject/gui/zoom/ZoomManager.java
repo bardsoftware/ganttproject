@@ -21,8 +21,9 @@ package net.sourceforge.ganttproject.gui.zoom;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.time.TimeUnitPair;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
+import biz.ganttproject.core.time.TimeUnitPair;
+import biz.ganttproject.core.time.TimeUnitStack;
+
 
 /**
  * @author bard

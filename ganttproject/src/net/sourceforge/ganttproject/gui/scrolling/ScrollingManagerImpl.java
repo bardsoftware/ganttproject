@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDuration;
+
 
 /**
  * @author bard

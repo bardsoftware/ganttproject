@@ -39,10 +39,11 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionChangeListener;
 import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitFunctionOfDate;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
+
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
+import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;

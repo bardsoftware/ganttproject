@@ -22,6 +22,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.ColorOption;
 import net.sourceforge.ganttproject.gui.options.model.DefaultColorOption;
@@ -32,7 +34,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 public class ChartModelResource extends ChartModelBase {
 

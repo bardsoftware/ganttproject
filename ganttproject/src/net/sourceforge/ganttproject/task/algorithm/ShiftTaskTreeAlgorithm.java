@@ -22,10 +22,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 public class ShiftTaskTreeAlgorithm {
   public static final boolean DEEP = true;

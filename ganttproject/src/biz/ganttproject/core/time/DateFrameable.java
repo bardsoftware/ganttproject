@@ -8,7 +8,7 @@
 
  Copyright (C) 2004, GanttProject Development Team
  */
-package net.sourceforge.ganttproject.time;
+package biz.ganttproject.core.time;
 
 import java.util.Date;
 

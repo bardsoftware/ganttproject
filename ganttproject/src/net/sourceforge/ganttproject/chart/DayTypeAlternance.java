@@ -5,8 +5,9 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import net.sourceforge.ganttproject.calendar.GPCalendar.DayType;
-import net.sourceforge.ganttproject.time.TimeDuration;
 
 /**
  * @author bard

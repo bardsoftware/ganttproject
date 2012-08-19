@@ -47,11 +47,12 @@ import net.sourceforge.ganttproject.gui.options.model.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.time.TimeDuration;
-import net.sourceforge.ganttproject.time.TimeUnit;
-import net.sourceforge.ganttproject.time.TimeUnitStack;
 
 import org.eclipse.core.runtime.IStatus;
+
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
   private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);

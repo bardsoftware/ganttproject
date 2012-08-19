@@ -20,13 +20,14 @@ package net.sourceforge.ganttproject.test.task.calendar;
 
 import java.util.Calendar;
 
+import biz.ganttproject.core.time.TimeDuration;
+
 import junit.framework.Assert;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.calendar.GPCalendar;
 import net.sourceforge.ganttproject.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
-import net.sourceforge.ganttproject.time.TimeDuration;
 import net.sourceforge.ganttproject.time.gregorian.GregorianTimeUnitStack;
 
 public class TestWorkingUnitCounter extends TaskTestCase {

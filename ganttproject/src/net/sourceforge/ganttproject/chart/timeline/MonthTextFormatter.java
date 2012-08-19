@@ -21,9 +21,10 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import biz.ganttproject.core.time.TimeUnitText;
+
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.time.TimeUnitText;
 
 public class MonthTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private String myLongPattern;
