@@ -61,8 +61,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.GraphicPrimitive;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Shape;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -119,7 +119,7 @@ public class GanttChartController extends AbstractChartImplementation implements
       public List<Rectangle> getTaskRectangles(Task t) {
         List<Rectangle> result = new ArrayList<Rectangle>();
         for (TaskActivity activity : t.getActivities()) {
-          GraphicPrimitive graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
+          Shape graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
           assert graphicPrimitive != null;
           assert graphicPrimitive instanceof Rectangle;
           result.add((Rectangle) graphicPrimitive);

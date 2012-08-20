@@ -31,8 +31,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import org.easymock.EasyMock;
 
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
 /**
  * Tests for {@link ChangeTaskProgressRuler}.
@@ -56,7 +56,7 @@ public class ChangeTaskProgressRulerTest extends TestCase {
         task.setStart(TestSetupHelper.newMonday());
         task.setDuration(taskManager.createLength(2));
 
-        GraphicPrimitiveContainer primitives = new GraphicPrimitiveContainer();
+        Canvas primitives = new Canvas();
         Rectangle r = primitives.createRectangle(0, 0, 100, 10);
 
         assertEquals(1, task.getActivities().length);
@@ -86,7 +86,7 @@ public class ChangeTaskProgressRulerTest extends TestCase {
         TaskActivity[] activities = task.getActivities();
         assertEquals(3, activities.length);
 
-        GraphicPrimitiveContainer primitives = new GraphicPrimitiveContainer();
+        Canvas primitives = new Canvas();
         Rectangle r0 = primitives.createRectangle(0, 0, 100, 10);
         primitives.bind(r0, activities[0]);
 

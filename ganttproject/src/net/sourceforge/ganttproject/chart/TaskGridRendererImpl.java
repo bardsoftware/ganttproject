@@ -6,7 +6,7 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 
 import net.sourceforge.ganttproject.task.Task;
 
@@ -30,7 +30,7 @@ public class TaskGridRendererImpl extends ChartRendererBase {
     int ypos = rowHeight;
     List<Task> tasks = ((ChartModelImpl) getChartModel()).getVisibleTasks();
     for (int i = 0; i < tasks.size(); i++) {
-      GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(0, ypos,
+      Canvas.Line nextLine = getPrimitiveContainer().createLine(0, ypos,
           (int) getChartModel().getBounds().getWidth(), ypos);
       nextLine.setForegroundColor(Color.GRAY);
       ypos += rowHeight;

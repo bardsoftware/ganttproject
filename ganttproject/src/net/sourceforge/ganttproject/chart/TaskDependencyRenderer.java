@@ -24,10 +24,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line.Arrow;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -41,11 +41,11 @@ import net.sourceforge.ganttproject.util.MathUtil;
  */
 class TaskDependencyRenderer {
   private final List<Task> myVisibleTasks;
-  private final GraphicPrimitiveContainer myTaskCanvas;
-  private final GraphicPrimitiveContainer myOutputCanvas;
+  private final Canvas myTaskCanvas;
+  private final Canvas myOutputCanvas;
 
-  public TaskDependencyRenderer(List<Task> visibleTasks, GraphicPrimitiveContainer taskCanvas,
-      GraphicPrimitiveContainer outputCanvas) {
+  public TaskDependencyRenderer(List<Task> visibleTasks, Canvas taskCanvas,
+      Canvas outputCanvas) {
     myVisibleTasks = visibleTasks;
     myTaskCanvas = taskCanvas;
     myOutputCanvas = outputCanvas;
@@ -57,7 +57,7 @@ class TaskDependencyRenderer {
   }
 
   private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
-    GraphicPrimitiveContainer primitiveContainer = myOutputCanvas;
+    Canvas primitiveContainer = myOutputCanvas;
     int arrowLength = 7;
     for (int i = 0; i < dependencyDrawData.size(); i++) {
       PointVector dependantVector;
@@ -154,8 +154,8 @@ class TaskDependencyRenderer {
       if (dependant.getTask().isMilestone()) {
         dependant = new MilestoneTaskFakeActivity(dependant.getTask());
       }
-      GraphicPrimitiveContainer graphicPrimitiveContainer = myTaskCanvas;
-      GraphicPrimitiveContainer.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
+      Canvas graphicPrimitiveContainer = myTaskCanvas;
+      Canvas.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
       if (dependantRectangle == null) {
         // System.out.println("dependantRectangle == null");
         continue;
@@ -164,7 +164,7 @@ class TaskDependencyRenderer {
       if (dependee.getTask().isMilestone()) {
         dependee = new MilestoneTaskFakeActivity(dependee.getTask());
       }
-      GraphicPrimitiveContainer.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
+      Canvas.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
       if (dependeeRectangle == null) {
         // System.out.println("dependeeRectangle == null");
         continue;
@@ -206,7 +206,7 @@ class TaskDependencyRenderer {
   }
 
   private static class DependencyDrawData {
-    final GraphicPrimitiveContainer.Rectangle myDependantRectangle;
+    final Canvas.Rectangle myDependantRectangle;
 
     final TaskDependency myDependency;
 
@@ -214,10 +214,10 @@ class TaskDependencyRenderer {
 
     final PointVector myDependeeVector;
 
-    public DependencyDrawData(TaskDependency dependency, GraphicPrimitiveContainer.GraphicPrimitive dependantPrimitive,
+    public DependencyDrawData(TaskDependency dependency, Canvas.Shape dependantPrimitive,
         PointVector dependantVector, PointVector dependeeVector) {
       myDependency = dependency;
-      myDependantRectangle = (GraphicPrimitiveContainer.Rectangle) dependantPrimitive;
+      myDependantRectangle = (Canvas.Rectangle) dependantPrimitive;
       myDependantVector = dependantVector;
       myDependeeVector = dependeeVector;
     }

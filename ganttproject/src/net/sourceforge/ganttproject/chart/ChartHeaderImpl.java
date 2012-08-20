@@ -8,10 +8,10 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 
 import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
@@ -22,9 +22,9 @@ import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
  */
 class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
 
-  private GraphicPrimitiveContainer myPrimitiveContainer;
-  private GraphicPrimitiveContainer myTimelineContainer;
-  private GraphicPrimitiveContainer myBackgroundContainer;
+  private Canvas myPrimitiveContainer;
+  private Canvas myTimelineContainer;
+  private Canvas myBackgroundContainer;
 
   ChartHeaderImpl(ChartModelBase model) {
     super(model);
@@ -40,7 +40,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     createGreyRectangleWithNiceBorders();
   }
 
-  public GraphicPrimitiveContainer getTimelineContainer() {
+  public Canvas getTimelineContainer() {
     return myTimelineContainer;
   }
 
@@ -51,11 +51,11 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     int sizex = getWidth();
     final int spanningHeaderHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
     final int headerHeight = getChartModel().getChartUIConfiguration().getHeaderHeight();
-    GraphicPrimitiveContainer container = myTimelineContainer;
-    GraphicPrimitiveContainer.Rectangle headerRectangle = container.createRectangle(0, 0, sizex, headerHeight);
+    Canvas container = myTimelineContainer;
+    Canvas.Rectangle headerRectangle = container.createRectangle(0, 0, sizex, headerHeight);
     headerRectangle.setBackgroundColor(getChartModel().getChartUIConfiguration().getSpanningHeaderBackgroundColor());
 
-    GraphicPrimitiveContainer.Rectangle timeunitHeaderBorder = container.createRectangle(0, spanningHeaderHeight,
+    Canvas.Rectangle timeunitHeaderBorder = container.createRectangle(0, spanningHeaderHeight,
         sizex - 1, spanningHeaderHeight);
     timeunitHeaderBorder.setForegroundColor(getChartModel().getChartUIConfiguration().getHeaderBorderColor());
     //
@@ -65,12 +65,12 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     // middleGutter1.setForegroundColor(getChartModel()
     // .getChartUIConfiguration().getHorizontalGutterColor1());
     //
-    GraphicPrimitiveContainer.Line bottomGutter = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
+    Canvas.Line bottomGutter = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
         headerHeight - 1);
     bottomGutter.setForegroundColor(getChartModel().getChartUIConfiguration().getHorizontalGutterColor1());
   }
 
-  public GraphicPrimitiveContainer paint() {
+  public Canvas paint() {
     return myPrimitiveContainer;
   }
 
@@ -101,7 +101,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final TimeUnitText timeUnitText = texts[0];
         textGroup.addText(curX + 5, 0, new TextSelector() {
           @Override
-          public GraphicPrimitiveContainer.Label[] getLabels(TextMetrics textLengthCalculator) {
+          public Canvas.Label[] getLabels(TextMetrics textLengthCalculator) {
             return timeUnitText.getLabels(maxWidth, textLengthCalculator);
           }
         });

@@ -28,11 +28,11 @@ public interface Painter {
   /** Initializes the graphic area (Call before painting!) */
   void prePaint();
 
-  void paint(GraphicPrimitiveContainer.Rectangle rectangle);
+  void paint(Canvas.Rectangle rectangle);
 
-  void paint(GraphicPrimitiveContainer.Line line);
+  void paint(Canvas.Line line);
 
-  void paint(GraphicPrimitiveContainer.Text next);
+  void paint(Canvas.Text next);
 
-  void paint(GraphicPrimitiveContainer.TextGroup textGroup);
+  void paint(Canvas.TextGroup textGroup);
 }

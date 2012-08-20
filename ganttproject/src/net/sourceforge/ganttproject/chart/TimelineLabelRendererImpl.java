@@ -22,13 +22,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -41,7 +41,7 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 public class TimelineLabelRendererImpl extends ChartRendererBase {
   private static final int MAX_TIMELINE_LABEL_WIDTH = 200;
   private OffsetLookup myOffsetLookup;
-  private GraphicPrimitiveContainer myLabelsLayer;
+  private Canvas myLabelsLayer;
   private ChartModelApi myChartModel;
 
   /**
@@ -81,7 +81,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
         continue;
       }
       int[] bounds = myOffsetLookup.getBounds(leadActivity.getStart(), leadActivity.getEnd(), offsets);
-      GraphicPrimitiveContainer.Text timelineLabel = createTimelineLabel(bounds[0], t);
+      Canvas.Text timelineLabel = createTimelineLabel(bounds[0], t);
       timelineLabel.setAlignment(HAlignment.LEFT, VAlignment.BOTTOM);
       timelineLabel.setForegroundColor(t.getColor());
     }
@@ -109,7 +109,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     return text;
   }
 
-  public GraphicPrimitiveContainer getLabelLayer() {
+  public Canvas getLabelLayer() {
     return myLabelsLayer;
   }
 }

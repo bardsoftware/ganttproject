@@ -9,11 +9,11 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -40,7 +40,7 @@ class TaskLabelsRendererImpl {
 
   private EnumerationOption[] myLabelOptions;
 
-  private GraphicPrimitiveContainer myCanvas;
+  private Canvas myCanvas;
 
   private ChartOptionGroup myOptionGroup;
 
@@ -65,7 +65,7 @@ class TaskLabelsRendererImpl {
     ourInfoList.add("predecessors");
   }
 
-  TaskLabelsRendererImpl(ChartModelImpl model, GraphicPrimitiveContainer canvas) {
+  TaskLabelsRendererImpl(ChartModelImpl model, Canvas canvas) {
     myCanvas = canvas;
     myLabelFormatter = new TaskProperties(model.getTimeUnitStack());
     DefaultEnumerationOption<String> deo0 = new DefaultEnumerationOption<String>("taskLabelUp", ourInfoList);
@@ -182,7 +182,7 @@ class TaskLabelsRendererImpl {
     }
   }
 
-  private GraphicPrimitiveContainer getPrimitiveContainer() {
+  private Canvas getPrimitiveContainer() {
     return myCanvas;
   }
 

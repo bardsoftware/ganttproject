@@ -22,10 +22,10 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
@@ -36,20 +36,20 @@ import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
  * @author dbarashev (Dmitry Barashev)
  */
 public class BottomUnitLineRendererImpl extends ChartRendererBase {
-  private GraphicPrimitiveContainer myTimelineContainer;
+  private Canvas myTimelineContainer;
 
-  public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer primitiveContainer) {
+  public BottomUnitLineRendererImpl(ChartModel model, Canvas primitiveContainer) {
     this(model, primitiveContainer, primitiveContainer);
   }
 
-  public BottomUnitLineRendererImpl(ChartModel model, GraphicPrimitiveContainer timelineContainer,
-      GraphicPrimitiveContainer primitiveContainer) {
+  public BottomUnitLineRendererImpl(ChartModel model, Canvas timelineContainer,
+      Canvas primitiveContainer) {
     super(model);
     myTimelineContainer = timelineContainer;
   }
 
   @Override
-  public GraphicPrimitiveContainer getPrimitiveContainer() {
+  public Canvas getPrimitiveContainer() {
     return myTimelineContainer;
   }
 
@@ -79,7 +79,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
       final TimeUnitText timeUnitText = texts[i];
       textGroup.addText(curX + 2, i, new TextSelector() {
         @Override
-        public GraphicPrimitiveContainer.Label[] getLabels(TextMetrics textLengthCalculator) {
+        public Canvas.Label[] getLabels(TextMetrics textLengthCalculator) {
           return timeUnitText.getLabels(maxWidth, textLengthCalculator);
         }
       });

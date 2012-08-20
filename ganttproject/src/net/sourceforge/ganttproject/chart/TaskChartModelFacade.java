@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
 import net.sourceforge.ganttproject.task.Task;
 

@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 
 /**
  * @author bard
@@ -29,12 +29,12 @@ public class ChartRendererBase {
 
   private ChartModel myChartModel;
 
-  private final GraphicPrimitiveContainer myPrimitiveContainer;
+  private final Canvas myPrimitiveContainer;
 
   private boolean isEnabled = true;
 
   protected ChartRendererBase() {
-    myPrimitiveContainer = new GraphicPrimitiveContainer();
+    myPrimitiveContainer = new Canvas();
   }
 
   public ChartRendererBase(ChartModel model) {
@@ -42,7 +42,7 @@ public class ChartRendererBase {
     myChartModel = model;
   }
 
-  public ChartRendererBase(ChartModelBase chartModel, GraphicPrimitiveContainer canvas) {
+  public ChartRendererBase(ChartModelBase chartModel, Canvas canvas) {
     myChartModel = chartModel;
     myPrimitiveContainer = canvas;
   }
@@ -63,7 +63,7 @@ public class ChartRendererBase {
     return getChartModel().getChartUIConfiguration();
   }
 
-  public GraphicPrimitiveContainer getPrimitiveContainer() {
+  public Canvas getPrimitiveContainer() {
     return myPrimitiveContainer;
   }
 

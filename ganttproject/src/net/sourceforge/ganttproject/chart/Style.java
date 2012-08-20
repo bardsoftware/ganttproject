@@ -25,7 +25,7 @@ import java.util.Properties;
 
 import net.sourceforge.ganttproject.util.ColorConvertion;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -169,14 +169,14 @@ class Style {
     return myPadding;
   }
 
-  BackgroundColor getBackgroundColor(GraphicPrimitiveContainer.GraphicPrimitive primitive) {
+  BackgroundColor getBackgroundColor(Canvas.Shape primitive) {
     if (primitive.getBackgroundColor() != null) {
       return new BackgroundColor(primitive.getBackgroundColor());
     }
     return myBackground;
   }
 
-  Border getBorder(GraphicPrimitiveContainer.GraphicPrimitive primitive) {
+  Border getBorder(Canvas.Shape primitive) {
     if (primitive.getForegroundColor() != null) {
       return new Border(primitive.getForegroundColor());
     }

@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import junit.framework.TestCase;
 
 /**
@@ -33,7 +33,7 @@ public class TestCanvas extends TestCase {
    * Tests whether labels are returned by getPrimitive() method.
    */
   public void testTextLabelSearch() {
-    GraphicPrimitiveContainer canvas = new GraphicPrimitiveContainer();
+    Canvas canvas = new Canvas();
     {
       Text text = canvas.createText(100, 20, "");
       Label label = text.createLabel("foobar", 50, 10);

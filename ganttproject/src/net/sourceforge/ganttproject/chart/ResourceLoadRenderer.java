@@ -26,14 +26,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 
 import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -52,7 +52,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
   private final ChartModelResource myModel;
 
-  private final GraphicPrimitiveContainer myTextCanvas;
+  private final Canvas myTextCanvas;
 
   public ResourceLoadRenderer(ChartModelResource model, ResourceChart resourceChart) {
     super(model);
@@ -79,7 +79,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
         ypos += calculateGap(distribution.getResource());
       }
       ypos += getConfig().getRowHeight();
-      GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(0, ypos,
+      Canvas.Line nextLine = getPrimitiveContainer().createLine(0, ypos,
           (int) getChartModel().getBounds().getWidth(), ypos);
       nextLine.setForegroundColor(Color.GRAY);
     }
