@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 

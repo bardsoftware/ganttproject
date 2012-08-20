@@ -21,6 +21,10 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.grid.OffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;

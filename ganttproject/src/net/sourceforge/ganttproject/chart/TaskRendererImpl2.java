@@ -27,6 +27,7 @@ import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
