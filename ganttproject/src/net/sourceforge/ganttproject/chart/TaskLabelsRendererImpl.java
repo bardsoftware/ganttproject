@@ -9,15 +9,16 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
 import net.sourceforge.ganttproject.Mediator;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;

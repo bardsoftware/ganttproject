@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+
 public class BackgroundRendererImpl extends ChartRendererBase {
 
   public BackgroundRendererImpl() {

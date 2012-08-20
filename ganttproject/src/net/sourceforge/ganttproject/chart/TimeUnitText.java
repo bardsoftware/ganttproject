@@ -18,8 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
 
 public class TimeUnitText {
   private static final Label[] EMPTY_LABELS = new Label[] { new Label(null, "", 0), new Label(null, "", 0), new Label(null, "", 0) };
@@ -46,7 +46,7 @@ public class TimeUnitText {
     myShortText = mediumText;
   }
 
-  public Label[] getLabels(int requestedMaxLength, TextLengthCalculator calculator) {
+  public Label[] getLabels(int requestedMaxLength, TextMetrics calculator) {
     if (!calculator.getState().equals(myCalculatorState)) {
       myCalculatorState = calculator.getState();
       myLabels = new Label[] { new Label(null, myShortText, calculator.getTextLength(myShortText)),

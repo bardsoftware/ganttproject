@@ -26,17 +26,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+
 import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders resource load chart
@@ -183,7 +186,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
       final Text loadLabel = myTextCanvas.createText(nextRect.getMiddleX(), nextRect.myTopY, "");
       loadLabel.setSelector(new TextSelector() {
         @Override
-        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+        public Label[] getLabels(TextMetrics textLengthCalculator) {
           int loadInt = Math.round(nextLoad.load);
           String loadStr = loadInt + "%";
           int emsLength = textLengthCalculator.getTextLength(loadStr);

@@ -44,6 +44,7 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
+import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.time.CalendarFactory;
 
 import net.sourceforge.ganttproject.GPLogger;
@@ -104,6 +105,15 @@ public class GanttLanguage {
   private Locale myDateFormatLocale;
 
   private GanttLanguage() {
+    new GPAbstractOption.I18N() {
+      {
+        setI18N(this);
+      }
+      @Override
+      protected String i18n(String key) {
+        return getText(key);
+      }
+    };
     Properties charsets = new Properties();
     PropertiesUtil.loadProperties(charsets, "/charsets.properties");
     myCharSetMap = new CharSetMap(charsets);

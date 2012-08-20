@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;

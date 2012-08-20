@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.canvas;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Stores the available primitives and their information (used for painting) and
@@ -121,7 +120,7 @@ public class GraphicPrimitiveContainer {
       return myModelObject;
     }
 
-    void setModelObject(Object modelObject) {
+    public void setModelObject(Object modelObject) {
       myModelObject = modelObject;
     }
 
@@ -135,13 +134,13 @@ public class GraphicPrimitiveContainer {
   }
 
   public static class Rectangle extends GraphicPrimitive {
-    final int myLeftX;
+    public final int myLeftX;
 
-    final int myTopY;
+    public final int myTopY;
 
-    final int myWidth;
+    public final int myWidth;
 
-    final int myHeight;
+    public final int myHeight;
 
     private Rectangle(int leftx, int topy, int width, int height) {
       myLeftX = leftx;
@@ -270,7 +269,7 @@ public class GraphicPrimitiveContainer {
       this(leftX, bottomY, (TextSelector)null, index);
       mySelector = new TextSelector() {
         @Override
-        public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+        public Label[] getLabels(TextMetrics textLengthCalculator) {
           return new Label[] {createLabel(text, textLengthCalculator.getTextLength(text))};
         }
       };
@@ -311,7 +310,7 @@ public class GraphicPrimitiveContainer {
       return myFont;
     }
 
-    public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+    public Label[] getLabels(TextMetrics textLengthCalculator) {
       return mySelector.getLabels(textLengthCalculator);
       // String text = mySelector.getText(textLengthCalculator);
       // int length = textLengthCalculator.getTextLength(text);
@@ -533,7 +532,7 @@ public class GraphicPrimitiveContainer {
     primitive.setModelObject(modelObject);
   }
 
-  GraphicPrimitive getPrimitive(Object modelObject) {
+  public GraphicPrimitive getPrimitive(Object modelObject) {
     return myModelObject2primitive.get(modelObject);
   }
 

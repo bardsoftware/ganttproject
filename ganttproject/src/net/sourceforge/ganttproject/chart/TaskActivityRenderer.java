@@ -21,9 +21,11 @@ package net.sourceforge.ganttproject.chart;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 

@@ -6,6 +6,8 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.util.List;
 
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+
 import net.sourceforge.ganttproject.task.Task;
 
 /**

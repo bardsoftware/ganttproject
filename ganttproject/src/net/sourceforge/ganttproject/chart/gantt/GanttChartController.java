@@ -39,8 +39,6 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.GraphicPrimitive;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -62,6 +60,9 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.GraphicPrimitive;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;

@@ -25,11 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.FontChooser;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 /**

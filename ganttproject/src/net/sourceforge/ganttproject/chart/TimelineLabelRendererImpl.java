@@ -22,13 +22,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.HAlignment;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.VAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.HAlignment;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.VAlignment;
+
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders labels on the timeline.
@@ -88,7 +91,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     final Text text = myLabelsLayer.createText(leftX, myChartModel.getTimelineTopLineHeight(), "");
     text.setSelector(new TextSelector() {
       @Override
-      public Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+      public Label[] getLabels(TextMetrics textLengthCalculator) {
         int height = textLengthCalculator.getTextHeight(task.getName());
         int fullLength = textLengthCalculator.getTextLength(task.getName());
         Label result;

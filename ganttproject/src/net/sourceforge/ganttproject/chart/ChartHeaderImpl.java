@@ -8,11 +8,14 @@ package net.sourceforge.ganttproject.chart;
 import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+
 import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * Renders chart timeline.
@@ -98,7 +101,7 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
         final TimeUnitText timeUnitText = texts[0];
         textGroup.addText(curX + 5, 0, new TextSelector() {
           @Override
-          public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+          public GraphicPrimitiveContainer.Label[] getLabels(TextMetrics textLengthCalculator) {
             return timeUnitText.getLabels(maxWidth, textLengthCalculator);
           }
         });
