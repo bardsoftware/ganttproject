@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.grid;
 
 import java.util.Date;
 import java.util.List;
@@ -64,7 +64,7 @@ public class Offset {
     myOffsetPixels += pixels;
   }
 
-  TimeUnit getOffsetUnit() {
+  public TimeUnit getOffsetUnit() {
     return myOffsetUnit;
   }
 

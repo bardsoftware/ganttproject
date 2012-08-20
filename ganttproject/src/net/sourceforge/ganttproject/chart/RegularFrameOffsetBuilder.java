@@ -13,6 +13,10 @@ import java.util.List;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
 

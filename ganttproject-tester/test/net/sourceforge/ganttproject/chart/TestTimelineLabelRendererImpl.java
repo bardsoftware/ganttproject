@@ -24,6 +24,7 @@ import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 

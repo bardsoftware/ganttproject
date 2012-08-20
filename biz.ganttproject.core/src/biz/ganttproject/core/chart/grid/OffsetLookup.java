@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.grid;
 
 import java.util.Date;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class OffsetLookup {
-  static interface ComparatorBy<T> {
+  public static interface ComparatorBy<T> {
     int compare(T point, int offsetIdx, List<Offset> offsets);
   }
 
@@ -45,8 +45,8 @@ public class OffsetLookup {
     }
   }
 
-  static final ComparatorBy<Date> BY_START_DATE = new ComparatorByStartDate();
-  static final ComparatorBy<Date> BY_END_DATE = new ComparatorByEndDate();
+  public static final ComparatorBy<Date> BY_START_DATE = new ComparatorByStartDate();
+  public static final ComparatorBy<Date> BY_END_DATE = new ComparatorByEndDate();
 
   private <Type> int findOffset(Type point, ComparatorBy<Type> comparator, int start, int end, List<Offset> offsets) {
     if (comparator.compare(point, end, offsets) > 0) {
@@ -77,7 +77,7 @@ public class OffsetLookup {
     return start;
   }
 
-  int[] getBounds(Date startDate, Date endDate, List<Offset> offsets) {
+  public int[] getBounds(Date startDate, Date endDate, List<Offset> offsets) {
     int end = offsets.size() - 1;
     int start = 0;
 
@@ -103,11 +103,11 @@ public class OffsetLookup {
     return new int[] { leftX, rightX };
   }
 
-  int lookupOffsetBy(Date date, List<Offset> offsets, ComparatorBy<Date> comparator) {
+  public int lookupOffsetBy(Date date, List<Offset> offsets, ComparatorBy<Date> comparator) {
     return findOffset(date, comparator, 0, offsets.size() - 1, offsets);
   }
 
-  int lookupOffsetByStartDate(Date startDate, List<Offset> offsets) {
+  public int lookupOffsetByStartDate(Date startDate, List<Offset> offsets) {
     ComparatorByStartDate comparator = new ComparatorByStartDate();
     return findOffset(startDate, comparator, 0, offsets.size() - 1, offsets);
   }

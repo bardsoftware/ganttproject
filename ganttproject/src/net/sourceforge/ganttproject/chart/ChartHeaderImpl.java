@@ -12,6 +12,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
+import biz.ganttproject.core.chart.grid.Offset;
 
 import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;

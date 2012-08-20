@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.grid;
 
 /**
  * Holds offset lists and provides a unified way to reset them all at once and
@@ -41,11 +41,11 @@ public class OffsetManager {
     myFactory = factory;
   }
 
-  void reset() {
+  public void reset() {
     isReset = true;
   }
 
-  void constructOffsets() {
+  public void constructOffsets() {
     myTopUnitOffsets.clear();
     myBottomUnitOffsets.clear();
     myDefaultUnitOffsets.clear();

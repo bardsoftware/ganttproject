@@ -23,6 +23,9 @@ import java.util.Calendar;
 import java.util.Date;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
