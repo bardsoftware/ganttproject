@@ -26,6 +26,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.grid.RegularFrameOffsetBuilder;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
