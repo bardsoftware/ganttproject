@@ -21,14 +21,18 @@ package biz.ganttproject.core.chart.grid;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.base.Function;
+
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
 
 
 public interface OffsetBuilder {
   public static abstract class Factory {
     protected TimeUnit myTopUnit;
     protected TimeUnit myBottomUnit;
+    protected TimeUnit myBaseUnit;
     protected Date myStartDate;
     protected Date myEndDate;
     protected int myEndOffset;
@@ -37,7 +41,8 @@ public interface OffsetBuilder {
     protected GPCalendar myCalendar;
     protected int myRightMarginTimeUnits;
     protected Date myViewportStartDate;
-
+    protected Function<TimeUnit, Float> myOffsetStepFn;
+    
     protected Factory() {
     }
 
@@ -91,6 +96,23 @@ public interface OffsetBuilder {
       return this;
     }
 
+    public Factory withOffsetStepFunction(Function<TimeUnit, Float> offsetStepFn) {
+      myOffsetStepFn = offsetStepFn;
+      return this;
+    }
+    
+    protected void preBuild() {
+      myBaseUnit = TimeUnitStack.Util.findCommonUnit(myBottomUnit, myTopUnit);
+      if (myOffsetStepFn == null) {
+        myOffsetStepFn = new Function<TimeUnit, Float>() {
+          @Override
+          public Float apply(TimeUnit value) {
+            return Float.valueOf(value.getAtomCount(myBaseUnit));
+          }
+        };
+      }
+    }
+    
     public abstract OffsetBuilder build();
   }
 

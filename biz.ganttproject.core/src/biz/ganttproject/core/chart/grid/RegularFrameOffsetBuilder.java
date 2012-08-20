@@ -3,20 +3,16 @@
  * Please see LICENSE file for details
  * (C) Dmitry Barashev, GanttProject team, 2004-2010
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.grid;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+
+import com.google.common.base.Function;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
-import biz.ganttproject.core.chart.grid.Offset;
-import biz.ganttproject.core.chart.grid.OffsetBuilder;
-import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
 
@@ -25,7 +21,7 @@ import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
  * Builds grid offsets for timelines where top cells are always constructed from
  * the integer number of bottom cells (e.g. week from days)
  */
-class RegularFrameOffsetBuilder implements OffsetBuilder {
+public class RegularFrameOffsetBuilder implements OffsetBuilder {
   protected static class OffsetStep {
     public float parrots;
     public GPCalendar.DayType dayType;
@@ -43,29 +39,26 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
   private final float myWeekendDecreaseFactor;
   private final Date myEndDate;
   private final TimeUnit baseUnit;
-  private int myRightMarginBottomUnitCount;
+  private final int myRightMarginBottomUnitCount;
   private final Date myViewportStartDate;
+  private final Function<TimeUnit, Float> myOffsetStepFn;
 
-  RegularFrameOffsetBuilder(GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-      Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate) {
-    this(calendar, topUnit, bottomUnit, startDate, viewportStartDate, defaultUnitWidth, chartWidth,
-        weekendDecreaseFactor, null, 0);
-  }
-
-  RegularFrameOffsetBuilder(GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
-      Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate,
-      int rightMarginTimeUnits) {
-    myCalendar = calendar;
-    myStartDate = startDate;
-    myViewportStartDate = viewportStartDate;
-    myTopUnit = topUnit;
-    myBottomUnit = bottomUnit;
-    myDefaultUnitWidth = defaultUnitWidth;
-    myChartWidth = chartWidth;
-    myWeekendDecreaseFactor = weekendDecreaseFactor;
-    myEndDate = endDate;
-    baseUnit = findCommonUnit(bottomUnit, topUnit);
-    myRightMarginBottomUnitCount = rightMarginTimeUnits;
+//  protected RegularFrameOffsetBuilder(GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+//      Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate,
+//      int rightMarginTimeUnits) {
+  protected RegularFrameOffsetBuilder(OffsetBuilder.Factory factory) {
+    myCalendar = factory.myCalendar;
+    myStartDate = factory.myStartDate;
+    myViewportStartDate = factory.myViewportStartDate;
+    myTopUnit = factory.myTopUnit;
+    myBottomUnit = factory.myBottomUnit;
+    myDefaultUnitWidth = factory.myAtomicUnitWidth;
+    myChartWidth = factory.myEndOffset;
+    myWeekendDecreaseFactor = factory.myWeekendDecreaseFactor;
+    myEndDate = factory.myEndDate;
+    baseUnit = factory.myBaseUnit;
+    myRightMarginBottomUnitCount = factory.myRightMarginTimeUnits;
+    myOffsetStepFn = factory.myOffsetStepFn;
   }
 
   private TimeUnit getBottomUnit() {
@@ -76,7 +69,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     return myTopUnit;
   }
 
-  static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
+  public static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
     return (timeUnit instanceof TimeUnitFunctionOfDate) ? ((TimeUnitFunctionOfDate) timeUnit).createTimeUnit(date)
         : timeUnit;
   }
@@ -86,7 +79,7 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
   }
 
   protected float getOffsetStep(TimeUnit timeUnit) {
-    return timeUnit.getAtomCount(baseUnit);
+    return myOffsetStepFn.apply(timeUnit);
   }
 
   private int getChartWidth() {
@@ -97,9 +90,9 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     return myCalendar;
   }
 
-  void setRightMarginBottomUnitCount(int value) {
-    myRightMarginBottomUnitCount = value;
-  }
+//  public void setRightMarginBottomUnitCount(int value) {
+//    myRightMarginBottomUnitCount = value;
+//  }
 
   @Override
   public void constructOffsets(List<Offset> topUnitOffsets, OffsetList bottomUnitOffsets) {
@@ -186,41 +179,12 @@ class RegularFrameOffsetBuilder implements OffsetBuilder {
     step.parrots += offsetStep;
   }
 
-  /**
-   * @return a common TimeUnit for the given units or null if none if found
-   *         (should not happen since all should be derived from atom)
-   */
-  // TODO Method might be nice for other things... If so, refactor to a more
-  // common location
-  private TimeUnit findCommonUnit(TimeUnit unit1, TimeUnit unit2) {
-
-    // Create (cache) list with TimeUnits which can be derived from unit1
-    ArrayList<TimeUnit> units1 = new ArrayList<TimeUnit>();
-    TimeUnit current = unit1;
-    do {
-      units1.add(current);
-    } while ((current = current.getDirectAtomUnit()) != null);
-
-    // Now compare lists to find a common unit
-    current = unit2;
-    while (current != null) {
-      Iterator<TimeUnit> u1Iterator = units1.iterator();
-      while (u1Iterator.hasNext()) {
-        TimeUnit nextU1 = u1Iterator.next();
-        if (current.equals(nextU1)) {
-          return current;
-        }
-      }
-      current = current.getDirectAtomUnit();
-    }
-    return null;
-  }
 
   public static class FactoryImpl extends OffsetBuilder.Factory {
     @Override
     public OffsetBuilder build() {
-      return new RegularFrameOffsetBuilder(myCalendar, myTopUnit, myBottomUnit, myStartDate, myViewportStartDate,
-          myAtomicUnitWidth, myEndOffset, myWeekendDecreaseFactor, myEndDate, myRightMarginTimeUnits);
+      preBuild();
+      return new RegularFrameOffsetBuilder(this);
     }
   }
 }

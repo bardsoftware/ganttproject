@@ -33,13 +33,13 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
+import biz.ganttproject.core.chart.grid.RegularFrameOffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -51,6 +51,7 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
 import biz.ganttproject.core.time.TimeUnitStack;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
@@ -133,41 +134,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     }
   }
 
-  class OffsetBuilderImpl extends RegularFrameOffsetBuilder {
-    private final boolean isCompressedWeekend;
-
-    public OffsetBuilderImpl(ChartModelBase model, int width, Date endDate) {
-      super(
-          model.getTaskManager().getCalendar(),
-          model.getBottomUnit(),
-          model.getTimeUnitStack().getDefaultTimeUnit(),
-          model.getOffsetAnchorDate(),
-          model.getStartDate(),
-          model.getBottomUnitWidth(),
-          width,
-          model.getTopUnit().isConstructedFrom(model.getBottomUnit()) ? RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR
-              : 1f, endDate, 0);
-      isCompressedWeekend = model.getTopUnit().isConstructedFrom(model.getBottomUnit());
-    }
-
-    @Override
-    protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
-      float offsetStep = getOffsetStep(timeUnit);
-      DayType dayType = ChartModelBase.this.getTaskManager().getCalendar().getDayTypeDate(startDate);
-      step.dayType = dayType;
-      if (dayType != DayType.WORKING && isCompressedWeekend) {
-        offsetStep = offsetStep / RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR;
-      }
-      step.parrots += offsetStep;
-    }
-
-    @Override
-    protected float getOffsetStep(TimeUnit timeUnit) {
-      int offsetUnitCount = timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
-      return 1f / offsetUnitCount;
-    }
-  }
-
   public static final Object STATIC_MUTEX = new Object();
 
   private static final Predicate<? super Task> MILESTONE_PREDICATE = new Predicate<Task>() {
@@ -245,14 +211,20 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     }
 
     @Override
-    public OffsetBuilderImpl createAtomUnitBuilder() {
-      OffsetBuilderImpl offsetBuilder = new OffsetBuilderImpl(ChartModelBase.this, getBounds() == null ? 0
-          : (int) getBounds().getWidth(), null);
-      int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(getBottomUnit(), getEndDate()).getAtomCount(
-          getDefaultUnit());
-      offsetBuilder.setRightMarginBottomUnitCount(myScrollingSession == null ? 0
-          : defaultUnitCountPerLastBottomUnit * 2);
-      return offsetBuilder;
+    public OffsetBuilder createAtomUnitBuilder() {
+      int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
+          getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
+      return createOffsetBuilderFactory()
+        .withRightMargin(myScrollingSession == null ? 0 : defaultUnitCountPerLastBottomUnit * 2)
+        .withTopUnit(getBottomUnit())
+        .withBottomUnit(getTimeUnitStack().getDefaultTimeUnit())
+        .withOffsetStepFunction(new Function<TimeUnit, Float>() {
+          @Override
+          public Float apply(TimeUnit timeUnit) {
+            int offsetUnitCount = timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
+            return 1f / offsetUnitCount;
+          }
+        }).build();
     }
   });
 
@@ -281,12 +253,16 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public OffsetBuilder.Factory createOffsetBuilderFactory() {
-    OffsetBuilder.Factory factory = new RegularFrameOffsetBuilder.FactoryImpl().withAtomicUnitWidth(
-        getBottomUnitWidth()).withBottomUnit(getBottomUnit()).withCalendar(myTaskManager.getCalendar()).withRightMargin(
-        myScrollingSession == null ? 0 : 1).withStartDate(getOffsetAnchorDate()).withViewportStartDate(getStartDate()).withTopUnit(
-        myTopUnit).withWeekendDecreaseFactor(
-        getTopUnit().isConstructedFrom(getBottomUnit()) ? RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR
-            : 1f);
+    OffsetBuilder.Factory factory = new RegularFrameOffsetBuilder.FactoryImpl()
+      .withAtomicUnitWidth(getBottomUnitWidth())
+      .withBottomUnit(getBottomUnit())
+      .withCalendar(myTaskManager.getCalendar())
+      .withRightMargin(myScrollingSession == null ? 0 : 1)
+      .withStartDate(getOffsetAnchorDate())
+      .withViewportStartDate(getStartDate())
+      .withTopUnit(myTopUnit)
+      .withWeekendDecreaseFactor(
+          getTopUnit().isConstructedFrom(getBottomUnit()) ? RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
     if (getBounds() != null) {
       factory.withEndOffset((int) getBounds().getWidth());
     }
