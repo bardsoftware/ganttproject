@@ -39,7 +39,7 @@ import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
-import biz.ganttproject.core.chart.grid.RegularFrameOffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -212,7 +212,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
     @Override
     public OffsetBuilder createAtomUnitBuilder() {
-      int defaultUnitCountPerLastBottomUnit = RegularFrameOffsetBuilder.getConcreteUnit(
+      int defaultUnitCountPerLastBottomUnit = OffsetBuilderImpl.getConcreteUnit(
           getBottomUnit(), getEndDate()).getAtomCount(getDefaultUnit());
       return createOffsetBuilderFactory()
         .withRightMargin(myScrollingSession == null ? 0 : defaultUnitCountPerLastBottomUnit * 2)
@@ -253,7 +253,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public OffsetBuilder.Factory createOffsetBuilderFactory() {
-    OffsetBuilder.Factory factory = new RegularFrameOffsetBuilder.FactoryImpl()
+    OffsetBuilder.Factory factory = new OffsetBuilderImpl.FactoryImpl()
       .withAtomicUnitWidth(getBottomUnitWidth())
       .withBottomUnit(getBottomUnit())
       .withCalendar(myTaskManager.getCalendar())
@@ -262,7 +262,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       .withViewportStartDate(getStartDate())
       .withTopUnit(myTopUnit)
       .withWeekendDecreaseFactor(
-          getTopUnit().isConstructedFrom(getBottomUnit()) ? RegularFrameOffsetBuilder.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
+          getTopUnit().isConstructedFrom(getBottomUnit()) ? OffsetBuilderImpl.WEEKEND_UNIT_WIDTH_DECREASE_FACTOR : 1f);
     if (getBounds() != null) {
       factory.withEndOffset((int) getBounds().getWidth());
     }

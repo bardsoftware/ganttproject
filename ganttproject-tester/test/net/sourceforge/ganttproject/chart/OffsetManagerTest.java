@@ -25,7 +25,7 @@ import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.grid.OffsetManager;
-import biz.ganttproject.core.chart.grid.RegularFrameOffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
@@ -42,13 +42,13 @@ public class OffsetManagerTest extends TestCase {
         private OffsetBuilder myAtomicOffsetBuilder;
 
         public TestOffsetBuilderFactory(Date viewportStart) {
-            myTopAndBottomOffsetBuilder = new RegularFrameOffsetBuilder.FactoryImpl()
+            myTopAndBottomOffsetBuilder = new OffsetBuilderImpl.FactoryImpl()
                 .withStartDate(viewportStart)
                 .withViewportStartDate(viewportStart)
                 .withCalendar(GPCalendar.PLAIN).withTopUnit(GPTimeUnitStack.YEAR).withBottomUnit(GPTimeUnitStack.MONTH)
                 .withAtomicUnitWidth(5).withEndOffset(700).withWeekendDecreaseFactor(1.0f)
                 .build();
-            myAtomicOffsetBuilder = new RegularFrameOffsetBuilder.FactoryImpl()
+            myAtomicOffsetBuilder = new OffsetBuilderImpl.FactoryImpl()
                 .withStartDate(viewportStart)
                 .withViewportStartDate(viewportStart)
                 .withCalendar(GPCalendar.PLAIN).withTopUnit(GPTimeUnitStack.DAY).withBottomUnit(GPTimeUnitStack.DAY)
