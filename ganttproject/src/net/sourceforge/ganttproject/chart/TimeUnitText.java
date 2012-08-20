@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
 
 public class TimeUnitText {
   private static final Label[] EMPTY_LABELS = new Label[] { new Label(null, "", 0), new Label(null, "", 0), new Label(null, "", 0) };

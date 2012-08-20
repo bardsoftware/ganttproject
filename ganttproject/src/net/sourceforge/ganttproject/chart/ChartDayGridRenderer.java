@@ -23,9 +23,9 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -42,10 +42,10 @@ public class ChartDayGridRenderer extends ChartRendererBase {
   private final BooleanOption myRedlineOption;
   private final BooleanOption myProjectDatesOption;
   private final GPOptionGroup myOptions;
-  private final GraphicPrimitiveContainer myTimelineContainer;
+  private final Canvas myTimelineContainer;
 
   public ChartDayGridRenderer(ChartModel model, final UIConfiguration projectConfig,
-      GraphicPrimitiveContainer timelineContainer) {
+      Canvas timelineContainer) {
     super(model);
     myRedlineOption = projectConfig.getRedlineOption();
     myProjectDatesOption = projectConfig.getProjectBoundariesOption();
@@ -110,7 +110,7 @@ public class ChartDayGridRenderer extends ChartRendererBase {
   }
 
   private void renderNonWorkingDay(int curX, Offset curOffset) {
-    GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer().createRectangle(curX, getLineBottomPosition(),
+    Canvas.Rectangle r = getPrimitiveContainer().createRectangle(curX, getLineBottomPosition(),
         curOffset.getOffsetPixels() - curX, getHeight());
     applyRectangleStyle(r, curOffset.getDayType());
     getPrimitiveContainer().bind(r, curOffset.getDayType());

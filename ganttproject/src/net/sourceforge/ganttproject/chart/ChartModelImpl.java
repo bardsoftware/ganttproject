@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -123,10 +123,10 @@ public class ChartModelImpl extends ChartModelBase {
 
   private ChartItem findTaskProgressItem(int x, int y) {
     ChartItem result = null;
-    GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(0).getPrimitive(
+    Canvas.Shape primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(0).getPrimitive(
         x, 4, y/* - getChartUIConfiguration().getHeaderHeight() */, 0);
-    if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
-      GraphicPrimitiveContainer.Rectangle rect = (GraphicPrimitiveContainer.Rectangle) primitive;
+    if (primitive instanceof Canvas.Rectangle) {
+      Canvas.Rectangle rect = (Canvas.Rectangle) primitive;
       if ("task.progress.end".equals(primitive.getStyle()) && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
         result = new TaskProgressChartItem((Task) primitive.getModelObject());
       }
@@ -134,9 +134,9 @@ public class ChartModelImpl extends ChartModelBase {
     return result;
   }
 
-  public GraphicPrimitiveContainer.GraphicPrimitive getGraphicPrimitive(Object modelObject) {
+  public Canvas.Shape getGraphicPrimitive(Object modelObject) {
     for (ChartRendererBase renderer : getRenderers()) {
-      GraphicPrimitiveContainer.GraphicPrimitive result = renderer.getPrimitiveContainer().getPrimitive(modelObject);
+      Canvas.Shape result = renderer.getPrimitiveContainer().getPrimitive(modelObject);
       if (result != null) {
         return result;
       }
@@ -146,12 +146,12 @@ public class ChartModelImpl extends ChartModelBase {
 
   private ChartItem findTaskBoundaryItem(int x, int y) {
     ChartItem result = null;
-    GraphicPrimitiveContainer.GraphicPrimitive primitive = myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
+    Canvas.Shape primitive = myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
     if (primitive == null) {
       primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y);
     }
-    if (primitive instanceof GraphicPrimitiveContainer.Rectangle) {
-      GraphicPrimitiveContainer.Rectangle rect = (Rectangle) primitive;
+    if (primitive instanceof Canvas.Rectangle) {
+      Canvas.Rectangle rect = (Rectangle) primitive;
       TaskActivity activity = (TaskActivity) primitive.getModelObject();
       if (activity != null) {
         if (activity.isFirst() && rect.myLeftX - 2 <= x && rect.myLeftX + 2 >= x) {

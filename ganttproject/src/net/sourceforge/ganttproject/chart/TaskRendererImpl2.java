@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -48,7 +48,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private final TaskLabelsRendererImpl myLabelsRenderer;
 
-  private final GraphicPrimitiveContainer myLabelsLayer;
+  private final Canvas myLabelsLayer;
 
   public TaskRendererImpl2(ChartModelImpl model) {
     super(model);
@@ -123,7 +123,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       renderLabels(rectangles);
       renderBaseline(t, rowNum, defaultUnitOffsets);
       rowNum++;
-      GraphicPrimitiveContainer.Line nextLine = getPrimitiveContainer().createLine(0, rowNum * getRowHeight(),
+      Canvas.Line nextLine = getPrimitiveContainer().createLine(0, rowNum * getRowHeight(),
           (int) getChartModel().getBounds().getWidth(), rowNum * getRowHeight());
       nextLine.setForegroundColor(Color.GRAY);
     }
@@ -215,7 +215,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     if (rectangles.isEmpty()) {
       return;
     }
-    final GraphicPrimitiveContainer container = getPrimitiveContainer().getLayer(0);
+    final Canvas container = getPrimitiveContainer().getLayer(0);
     final TimeUnit timeUnit = getChartModel().getTimeUnitStack().getDefaultTimeUnit();
     final Task task = ((TaskActivity) rectangles.get(0).getModelObject()).getTask();
     float length = task.getDuration().getLength(timeUnit);
@@ -285,7 +285,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return myLabelsRenderer.getFontHeight();
   }
 
-  GraphicPrimitiveContainer getLabelLayer() {
+  Canvas getLabelLayer() {
     return myLabelsLayer;
   }
 }

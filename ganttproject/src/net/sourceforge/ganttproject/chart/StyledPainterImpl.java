@@ -28,12 +28,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
@@ -44,7 +44,7 @@ import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * Implements styled painters for the available primitives (see
- * {@link GraphicPrimitiveContainer})
+ * {@link Canvas})
  *
  * @author bard
  */
@@ -128,7 +128,7 @@ public class StyledPainterImpl implements Painter {
   }
 
   @Override
-  public void paint(GraphicPrimitiveContainer.Rectangle next) {
+  public void paint(Canvas.Rectangle next) {
     assert myGraphics != null;
     RectanglePainter painter = myStyle2painter.get(next.getStyle());
     if (painter != null) {
@@ -155,7 +155,7 @@ public class StyledPainterImpl implements Painter {
    * many more other things...)
    */
   private interface RectanglePainter {
-    public void paint(GraphicPrimitiveContainer.Rectangle next);
+    public void paint(Canvas.Rectangle next);
   }
 
   private final RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
@@ -169,7 +169,7 @@ public class StyledPainterImpl implements Painter {
 
   private class TaskRectanglePainter implements RectanglePainter {
     @Override
-    public void paint(GraphicPrimitiveContainer.Rectangle next) {
+    public void paint(Canvas.Rectangle next) {
       Object modelObject = next.getModelObject();
       if (modelObject instanceof TaskActivity == false) {
         throw new RuntimeException("Model object is expected to be TaskActivity ");
@@ -242,7 +242,7 @@ public class StyledPainterImpl implements Painter {
     Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
 
     @Override
-    public void paint(GraphicPrimitiveContainer.Rectangle next) {
+    public void paint(Canvas.Rectangle next) {
       if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
         myAlphaValue = myConfig.getWeekendAlphaValue();
         myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
@@ -509,7 +509,7 @@ public class StyledPainterImpl implements Painter {
     private int[] myYPoints = new int[4];
 
     @Override
-    public void paint(GraphicPrimitiveContainer.Rectangle next) {
+    public void paint(Canvas.Rectangle next) {
       Graphics g = myGraphics;
       final Color c;
       if (next.hasStyle("earlier")) {

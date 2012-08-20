@@ -20,11 +20,11 @@ package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
+import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Text;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 
 /**
  * Painter for tests

@@ -35,7 +35,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -306,7 +306,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     for (int layer = 0;; layer++) {
       boolean layerPainted = false;
       for (ChartRendererBase renderer : getRenderers()) {
-        List<GraphicPrimitiveContainer> layers = renderer.getPrimitiveContainer().getLayers();
+        List<Canvas> layers = renderer.getPrimitiveContainer().getLayers();
         if (layer < layers.size()) {
           layers.get(layer).paint(myPainter);
           layerPainted = true;
@@ -576,8 +576,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public ChartItem getChartItemWithCoordinates(int x, int y) {
-    GraphicPrimitiveContainer.GraphicPrimitive text = myTimelineLabelRenderer.getLabelLayer().getPrimitive(x, y);
-    if (text instanceof GraphicPrimitiveContainer.Text) {
+    Canvas.Shape text = myTimelineLabelRenderer.getLabelLayer().getPrimitive(x, y);
+    if (text instanceof Canvas.Text) {
       return new TimelineLabelChartItem((Task)text.getModelObject());
     }
     return null;

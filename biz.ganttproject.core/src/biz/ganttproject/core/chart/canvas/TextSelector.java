@@ -20,5 +20,5 @@ package biz.ganttproject.core.chart.canvas;
 
 
 public interface TextSelector {
-  GraphicPrimitiveContainer.Label[] getLabels(TextMetrics textLengthCalculator);
+  Canvas.Label[] getLabels(TextMetrics textLengthCalculator);
 }

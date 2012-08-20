@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 
-import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.Canvas;
 
 public class BackgroundRendererImpl extends ChartRendererBase {
 
@@ -32,14 +32,14 @@ public class BackgroundRendererImpl extends ChartRendererBase {
     super(model);
   }
 
-  public GraphicPrimitiveContainer paint() {
+  public Canvas paint() {
     return getPrimitiveContainer();
   }
 
   @Override
   public void render() {
     getPrimitiveContainer().clear();
-    GraphicPrimitiveContainer.Rectangle r = getPrimitiveContainer().createRectangle(0, 0, getWidth(), getHeight());
+    Canvas.Rectangle r = getPrimitiveContainer().createRectangle(0, 0, getWidth(), getHeight());
     r.setBackgroundColor(Color.WHITE);
   }
 }

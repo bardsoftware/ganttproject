@@ -35,16 +35,16 @@ import java.util.WeakHashMap;
  *
  * @author bard
  */
-public class GraphicPrimitiveContainer {
+public class Canvas {
   private ArrayList<Rectangle> myRectangles = new ArrayList<Rectangle>();
 
   private ArrayList<Line> myLines = new ArrayList<Line>();
 
   private ArrayList<Text> myTexts = new ArrayList<Text>();
 
-  private Map<Object, GraphicPrimitive> myModelObject2primitive = new WeakHashMap<Object, GraphicPrimitive>();
+  private Map<Object, Shape> myModelObject2primitive = new WeakHashMap<Object, Shape>();
 
-  private List<GraphicPrimitiveContainer> myLayers = new ArrayList<GraphicPrimitiveContainer>();
+  private List<Canvas> myLayers = new ArrayList<Canvas>();
 
   private int myDeltaX;
 
@@ -64,7 +64,7 @@ public class GraphicPrimitiveContainer {
     CENTER, TOP, BOTTOM
   };
 
-  public static class GraphicPrimitive {
+  public static class Shape {
     private Color myBackgroundColor;
 
     private Color myForegroundColor;
@@ -133,7 +133,7 @@ public class GraphicPrimitiveContainer {
     }
   }
 
-  public static class Rectangle extends GraphicPrimitive {
+  public static class Rectangle extends Shape {
     public final int myLeftX;
 
     public final int myTopY;
@@ -179,7 +179,7 @@ public class GraphicPrimitiveContainer {
     }
   }
 
-  public static class Line extends GraphicPrimitive {
+  public static class Line extends Shape {
     public static enum Arrow { NONE, START, FINISH }
 
     private final int myStartX;
@@ -248,7 +248,7 @@ public class GraphicPrimitiveContainer {
     }
   }
 
-  public static class Text extends GraphicPrimitive {
+  public static class Text extends Shape {
     private final int myLeftX;
 
     private final int myBottomY;
@@ -439,11 +439,11 @@ public class GraphicPrimitiveContainer {
     }
   }
 
-  public GraphicPrimitiveContainer() {
+  public Canvas() {
     this(0, 0);
   }
 
-  public GraphicPrimitiveContainer(int deltax, int deltay) {
+  public Canvas(int deltax, int deltay) {
     myDeltaX = deltax;
     myDeltaY = deltay;
   }
@@ -522,25 +522,25 @@ public class GraphicPrimitiveContainer {
     myTexts.clear();
     myTextGroups.clear();
     myModelObject2primitive.clear();
-    for (GraphicPrimitiveContainer layer : getLayers()) {
+    for (Canvas layer : getLayers()) {
       layer.clear();
     }
   }
 
-  public void bind(GraphicPrimitive primitive, Object modelObject) {
+  public void bind(Shape primitive, Object modelObject) {
     myModelObject2primitive.put(modelObject, primitive);
     primitive.setModelObject(modelObject);
   }
 
-  public GraphicPrimitive getPrimitive(Object modelObject) {
+  public Shape getPrimitive(Object modelObject) {
     return myModelObject2primitive.get(modelObject);
   }
 
-  public GraphicPrimitive getPrimitive(int x, int y) {
+  public Shape getPrimitive(int x, int y) {
     return getPrimitive(x, 0, y, 0);
   }
 
-  public GraphicPrimitive getPrimitive(int x, int xThreshold, int y, int yThreshold) {
+  public Shape getPrimitive(int x, int xThreshold, int y, int yThreshold) {
     for (int i = 0; i < myRectangles.size(); i++) {
       Rectangle next = myRectangles.get(i);
       // System.err.println(" next rectangle="+next);
@@ -552,19 +552,19 @@ public class GraphicPrimitiveContainer {
     return myTextIndex.get(x + myDeltaX, y + myDeltaY);
   }
 
-  public List<GraphicPrimitiveContainer> getLayers() {
+  public List<Canvas> getLayers() {
     return Collections.unmodifiableList(myLayers);
   }
 
-  public GraphicPrimitiveContainer getLayer(int layer) {
+  public Canvas getLayer(int layer) {
     if (layer < 0 || layer >= myLayers.size()) {
       throw new IllegalArgumentException();
     }
     return myLayers.get(layer);
   }
 
-  public GraphicPrimitiveContainer newLayer() {
-    GraphicPrimitiveContainer result = new GraphicPrimitiveContainer();
+  public Canvas newLayer() {
+    Canvas result = new Canvas();
     myLayers.add(result);
     return result;
   }
