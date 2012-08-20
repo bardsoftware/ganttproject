@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.chart;
 
 import java.util.List;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+
 import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskChartModelFacade {

@@ -22,13 +22,15 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -77,7 +79,7 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
       final TimeUnitText timeUnitText = texts[i];
       textGroup.addText(curX + 2, i, new TextSelector() {
         @Override
-        public GraphicPrimitiveContainer.Label[] getLabels(TextLengthCalculator textLengthCalculator) {
+        public GraphicPrimitiveContainer.Label[] getLabels(TextMetrics textLengthCalculator) {
           return timeUnitText.getLabels(maxWidth, textLengthCalculator);
         }
       });

@@ -23,12 +23,13 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 
 /**

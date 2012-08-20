@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import net.sourceforge.ganttproject.util.ColorConvertion;
 
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;

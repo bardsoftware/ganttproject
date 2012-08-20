@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.util;
+package biz.ganttproject.core.chart.canvas;
+
+import java.awt.Font;
 
 /**
  * Contains methods to calculate the text length
  */
-public interface TextLengthCalculator {
+public interface TextMetrics {
 
   /** @return the length of the text */
   int getTextLength(String text);
@@ -34,4 +36,6 @@ public interface TextLengthCalculator {
    *         state is returned
    */
   Object getState();
+
+  int getTextHeight(Font f, String string);
 }

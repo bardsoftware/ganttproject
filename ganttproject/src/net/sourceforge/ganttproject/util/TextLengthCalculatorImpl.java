@@ -24,12 +24,14 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+
 /**
  * Contains methods to calculate the text length
  * 
  * @author bard
  */
-public class TextLengthCalculatorImpl implements TextLengthCalculator {
+public class TextLengthCalculatorImpl implements TextMetrics {
   private Graphics2D myGraphics;
 
   private State myState;

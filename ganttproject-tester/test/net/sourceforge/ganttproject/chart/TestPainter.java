@@ -18,12 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Label;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Line;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Rectangle;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.Text;
-import net.sourceforge.ganttproject.chart.GraphicPrimitiveContainer.TextGroup;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
+import biz.ganttproject.core.chart.canvas.Painter;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Label;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Line;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Rectangle;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.Text;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer.TextGroup;
 
 /**
  * Painter for tests
@@ -32,9 +33,9 @@ import net.sourceforge.ganttproject.util.TextLengthCalculator;
  */
 class TestPainter implements Painter {
 
-  private final TextLengthCalculator myCalculator;
+  private final TextMetrics myCalculator;
 
-  TestPainter(TextLengthCalculator calculator) {
+  TestPainter(TextMetrics calculator) {
     myCalculator = calculator;
   }
 

@@ -31,12 +31,13 @@ import javax.swing.ImageIcon;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.util.TextLengthCalculator;
 import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
@@ -143,7 +144,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
     }
   }
 
-  private static void paintString(Graphics g, TextLengthCalculator lengthCalculator, String s, PaintState paintState,
+  private static void paintString(Graphics g, TextMetrics lengthCalculator, String s, PaintState paintState,
       int xpos, int widthLimit) {
     if (lengthCalculator.getTextLength(s) > widthLimit) {
       s = s.substring(0, (widthLimit / lengthCalculator.getTextLength("m")) - 5);

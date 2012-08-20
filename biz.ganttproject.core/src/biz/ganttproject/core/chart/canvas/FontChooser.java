@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.canvas;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -24,15 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
-
 public class FontChooser {
 
   private Properties myProperties;
   private Map<String, Font> myFonts = new HashMap<String, Font>();
-  private TextLengthCalculatorImpl myCalculator;
+  private TextMetrics myCalculator;
 
-  public FontChooser(Properties properties, TextLengthCalculatorImpl calculator) {
+  public FontChooser(Properties properties, TextMetrics calculator) {
     myProperties = properties;
     myCalculator = calculator;
   }

@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.canvas.GraphicPrimitiveContainer;
 
 /**
  * @author bard

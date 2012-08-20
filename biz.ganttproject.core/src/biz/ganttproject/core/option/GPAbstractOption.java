@@ -26,7 +26,7 @@ import java.util.List;
 import biz.ganttproject.core.option.GPAbstractOption.I18N;
 
 public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
-  protected abstract static class I18N {
+  public abstract static class I18N {
     private static I18N ourInstance;
 
     protected static void setI18N(I18N i18n) {
