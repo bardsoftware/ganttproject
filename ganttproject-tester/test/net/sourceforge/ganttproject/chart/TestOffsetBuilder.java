@@ -26,7 +26,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.grid.RegularFrameOffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
@@ -42,7 +42,7 @@ public class TestOffsetBuilder extends TestCase {
         GPCalendar calendar = GPCalendar.PLAIN;
         Date start = TestSetupHelper.newMonday().getTime();
 
-        OffsetBuilder builder = new RegularFrameOffsetBuilder.FactoryImpl()
+        OffsetBuilder builder = new OffsetBuilderImpl.FactoryImpl()
             .withStartDate(start).withViewportStartDate(start)
             .withCalendar(calendar).withTopUnit(GPTimeUnitStack.WEEK).withBottomUnit(GPTimeUnitStack.DAY)
             .withAtomicUnitWidth(20).withEndOffset(210).withWeekendDecreaseFactor(1.0f)

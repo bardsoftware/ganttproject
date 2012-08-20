@@ -21,7 +21,7 @@ import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
  * Builds grid offsets for timelines where top cells are always constructed from
  * the integer number of bottom cells (e.g. week from days)
  */
-public class RegularFrameOffsetBuilder implements OffsetBuilder {
+public class OffsetBuilderImpl implements OffsetBuilder {
   protected static class OffsetStep {
     public float parrots;
     public GPCalendar.DayType dayType;
@@ -46,7 +46,7 @@ public class RegularFrameOffsetBuilder implements OffsetBuilder {
 //  protected RegularFrameOffsetBuilder(GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
 //      Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate,
 //      int rightMarginTimeUnits) {
-  protected RegularFrameOffsetBuilder(OffsetBuilder.Factory factory) {
+  protected OffsetBuilderImpl(OffsetBuilder.Factory factory) {
     myCalendar = factory.myCalendar;
     myStartDate = factory.myStartDate;
     myViewportStartDate = factory.myViewportStartDate;
@@ -184,7 +184,7 @@ public class RegularFrameOffsetBuilder implements OffsetBuilder {
     @Override
     public OffsetBuilder build() {
       preBuild();
-      return new RegularFrameOffsetBuilder(this);
+      return new OffsetBuilderImpl(this);
     }
   }
 }
