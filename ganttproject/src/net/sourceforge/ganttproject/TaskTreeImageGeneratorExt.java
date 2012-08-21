@@ -32,13 +32,13 @@ import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
   TaskTreeImageGeneratorExt(GanttTree2 treeView, UIConfiguration uiConfiguration) {

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.render;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -32,30 +32,28 @@ import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
-
 /**
  * Paints text labels.
  * @author Dmitry Barashev
  */
-class TextPainter {
+public class TextPainter {
   private Graphics2D myGraphics;
 
   private final Properties myProperties;
 
   private final TextLengthCalculatorImpl myTextLengthCalculator;
 
-  TextPainter(Properties props) {
+  public TextPainter(Properties props) {
     myProperties = props;
     myTextLengthCalculator = new TextLengthCalculatorImpl(null);
   }
 
-  void setGraphics(Graphics2D graphics) {
+  public void setGraphics(Graphics2D graphics) {
     myGraphics = graphics;
     myTextLengthCalculator.setGraphics(myGraphics);
   }
 
-  void paint(Text next) {
+  public void paint(Text next) {
     Color foreColor = next.getForegroundColor();
     if (foreColor == null) {
       foreColor = Color.BLACK;
@@ -122,7 +120,7 @@ class TextPainter {
     myGraphics.drawString(label.text, xleft, ybottom);
   }
 
-  void paint(TextGroup textGroup) {
+  public void paint(TextGroup textGroup) {
     TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl((Graphics2D) myGraphics.create());
     FontChooser fontChooser = new FontChooser(myProperties, calculator);
     textGroup.setFonts(fontChooser);

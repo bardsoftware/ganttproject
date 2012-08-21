@@ -16,16 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.render;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.util.ColorConvertion;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.option.ColorOption;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -119,7 +118,7 @@ class Style {
       if (value == null) {
         return null;
       }
-      return new Border(ColorConvertion.determineColor(value));
+      return new Border(ColorOption.Util.determineColor(value));
     }
 
   }
@@ -149,7 +148,7 @@ class Style {
       if (value == null) {
         return null;
       }
-      return new BackgroundColor(ColorConvertion.determineColor(value));
+      return new BackgroundColor(ColorOption.Util.determineColor(value));
     }
 
   }
