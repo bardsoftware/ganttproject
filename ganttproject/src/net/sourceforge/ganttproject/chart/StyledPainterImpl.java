@@ -34,6 +34,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
+import biz.ganttproject.core.chart.render.TextPainter;
 
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;

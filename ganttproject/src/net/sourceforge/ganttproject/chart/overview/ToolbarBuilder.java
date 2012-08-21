@@ -39,9 +39,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
+import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
+
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.util.TextLengthCalculatorImpl;
 
 public class ToolbarBuilder {
   private final JToolBar myToolbar;
