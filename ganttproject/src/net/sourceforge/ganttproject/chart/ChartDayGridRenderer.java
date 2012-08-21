@@ -27,72 +27,76 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-
-import net.sourceforge.ganttproject.gui.UIConfiguration;
 
 /**
  * Renders vertical columns on the charts, such as weekend days, today line and
  * project boundaries.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
-public class ChartDayGridRenderer extends ChartRendererBase {
+public class ChartDayGridRenderer extends AbstractSceneBuilder {
   private final BooleanOption myRedlineOption;
   private final BooleanOption myProjectDatesOption;
-  private final GPOptionGroup myOptions;
   private final Canvas myTimelineContainer;
+  private final InputApi myInputApi;
 
-  public ChartDayGridRenderer(ChartModel model, final UIConfiguration projectConfig,
-      Canvas timelineContainer) {
-    super(model);
-    myRedlineOption = projectConfig.getRedlineOption();
-    myProjectDatesOption = projectConfig.getProjectBoundariesOption();
-    myOptions = new ChartOptionGroup("ganttChartGridDetails", new GPOption[] { myRedlineOption, myProjectDatesOption,
-        projectConfig.getWeekendAlphaRenderingOption() }, model.getOptionEventDispatcher());
+  public static interface InputApi {
+    BooleanOption getRedlineOption();
+    BooleanOption getProjectDatesOption();
+    int getTopLineHeight();
+    Color getWeekendColor();
+    Color getHolidayColor();
+
+    Date getProjectStart();
+    Date getProjectEnd();
+
+    OffsetList getAtomUnitOffsets();
+  }
+
+  public ChartDayGridRenderer(InputApi inputApi, Canvas timelineContainer) {
+    myInputApi = inputApi;
+    myRedlineOption = inputApi.getRedlineOption();
+    myProjectDatesOption = inputApi.getProjectDatesOption();
     myTimelineContainer = timelineContainer;
   }
 
-  GPOptionGroup getOptions() {
-    return myOptions;
-  }
-
   @Override
-  public void render() {
+  public void build() {
     if (myRedlineOption.isChecked()) {
       renderLine(new Date(), Color.RED, 2, OffsetLookup.BY_END_DATE);
     }
     if (isProjectBoundariesOptionOn()) {
-      renderLine(getChartModel().getTaskManager().getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
-      renderLine(getChartModel().getTaskManager().getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
+      renderLine(myInputApi.getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
+      renderLine(myInputApi.getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
     }
     renderNonWorkingDayColumns();
   }
 
   private void renderLine(Date date, Color color, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
-    final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+    final int topUnitHeight = myInputApi.getTopLineHeight();
     OffsetLookup lookup = new OffsetLookup();
-    int todayOffsetIdx = lookup.lookupOffsetBy(date, getChartModel().getDefaultUnitOffsets(), dateComparator);
+    int todayOffsetIdx = lookup.lookupOffsetBy(date, myInputApi.getAtomUnitOffsets(), dateComparator);
     if (todayOffsetIdx < 0) {
       todayOffsetIdx = -todayOffsetIdx - 1;
     }
-    Offset yesterdayOffset = todayOffsetIdx == 0 ? null : getChartModel().getDefaultUnitOffsets().get(
+    Offset yesterdayOffset = todayOffsetIdx == 0 ? null : myInputApi.getAtomUnitOffsets().get(
         todayOffsetIdx - 1);
     if (yesterdayOffset == null) {
       return;
     }
     int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
-    Line line = getPrimitiveContainer().createLine(yesterdayEndPixel + marginPx, topUnitHeight * 2,
+    Line line = getCanvas().createLine(yesterdayEndPixel + marginPx, topUnitHeight * 2,
         yesterdayEndPixel + marginPx, getHeight() + topUnitHeight * 2);
     line.setForegroundColor(color);
 
   }
 
   private void renderNonWorkingDayColumns() {
-    List<Offset> defaultOffsets = getChartModel().getDefaultUnitOffsets();
+    List<Offset> defaultOffsets = myInputApi.getAtomUnitOffsets();
     int curX = defaultOffsets.get(0).getOffsetPixels();
     if (curX > 0) {
       curX = 0;
@@ -112,17 +116,17 @@ public class ChartDayGridRenderer extends ChartRendererBase {
   }
 
   private void renderNonWorkingDay(int curX, Offset curOffset) {
-    Canvas.Rectangle r = getPrimitiveContainer().createRectangle(curX, getLineBottomPosition(),
+    Canvas.Rectangle r = getCanvas().createRectangle(curX, getLineBottomPosition(),
         curOffset.getOffsetPixels() - curX, getHeight());
     applyRectangleStyle(r, curOffset.getDayType());
-    getPrimitiveContainer().bind(r, curOffset.getDayType());
+    getCanvas().bind(r, curOffset.getDayType());
   }
 
   private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
     if (dayType == GPCalendar.DayType.WEEKEND) {
-      r.setBackgroundColor(getConfig().getHolidayTimeBackgroundColor());
+      r.setBackgroundColor(myInputApi.getWeekendColor());
     } else if (dayType == GPCalendar.DayType.HOLIDAY) {
-      r.setBackgroundColor(getConfig().getPublicHolidayTimeBackgroundColor());
+      r.setBackgroundColor(myInputApi.getHolidayColor());
     }
     r.setStyle("calendar.holiday");
   }
@@ -132,7 +136,7 @@ public class ChartDayGridRenderer extends ChartRendererBase {
   }
 
   private int getLineTopPosition() {
-    return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+    return myInputApi.getTopLineHeight();
   }
 
   private int getLineBottomPosition() {

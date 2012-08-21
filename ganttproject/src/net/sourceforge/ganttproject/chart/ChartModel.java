@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 
@@ -73,13 +75,13 @@ public interface ChartModel {
 
   ChartUIConfiguration getChartUIConfiguration();
 
-  void addRenderer(ChartRendererBase renderer);
+  void addRenderer(SceneBuilder renderer);
 
-  List<Offset> getTopUnitOffsets();
+  OffsetList getTopUnitOffsets();
 
-  List<Offset> getBottomUnitOffsets();
+  OffsetList getBottomUnitOffsets();
 
-  List<Offset> getDefaultUnitOffsets();
+  OffsetList getDefaultUnitOffsets();
 
   Offset getOffsetAt(int x);
 
