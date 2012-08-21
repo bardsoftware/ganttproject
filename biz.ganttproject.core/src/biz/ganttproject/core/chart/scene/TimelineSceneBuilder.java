@@ -36,11 +36,11 @@ import biz.ganttproject.core.time.TimeUnit;
 /**
  * Renders chart timeline.
  */
-public class ChartHeaderImpl extends AbstractSceneBuilder {
+public class TimelineSceneBuilder extends AbstractSceneBuilder {
 
   private Canvas myTimelineContainer;
   private final InputApi myInputApi;
-  private final BottomUnitLineRendererImpl myBottomUnitLineRenderer;
+  private final BottomUnitSceneBuilder myBottomUnitLineRenderer;
 
   public static interface InputApi {
     int getViewportWidth();
@@ -56,14 +56,14 @@ public class ChartHeaderImpl extends AbstractSceneBuilder {
     TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position);
   }
   
-  public ChartHeaderImpl(InputApi inputApi) {
+  public TimelineSceneBuilder(InputApi inputApi) {
     myInputApi = inputApi;
     getCanvas().newLayer();
     getCanvas().newLayer();
     getCanvas().newLayer();
     myTimelineContainer = getCanvas().newLayer();
-    myBottomUnitLineRenderer = new BottomUnitLineRendererImpl(
-        myTimelineContainer, new BottomUnitLineRendererImpl.InputApi() {
+    myBottomUnitLineRenderer = new BottomUnitSceneBuilder(
+        myTimelineContainer, new BottomUnitSceneBuilder.InputApi() {
           @Override
           public int getTopLineHeight() {
             return myInputApi.getTopLineHeight();
