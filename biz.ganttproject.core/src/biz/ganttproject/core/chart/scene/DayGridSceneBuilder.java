@@ -1,22 +1,21 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 Dmitry Barashev, GanttProject Team
+Copyright (C) 2004-2012 Dmitry Barashev, GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.chart;
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.chart.scene;
 
 import java.awt.Color;
 import java.util.Date;
@@ -29,19 +28,18 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
-import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 import biz.ganttproject.core.option.BooleanOption;
 
 /**
- * Renders vertical columns on the charts, such as weekend days, today line and
+ * Builds a scene consisting of vertical columns on the charts, such as weekend days, today line and
  * project boundaries.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class ChartDayGridRenderer extends AbstractSceneBuilder {
+public class DayGridSceneBuilder extends AbstractSceneBuilder {
   private final BooleanOption myRedlineOption;
   private final BooleanOption myProjectDatesOption;
-  private final Canvas myTimelineContainer;
+  private final Canvas myTimelineCanvas;
   private final InputApi myInputApi;
 
   public static interface InputApi {
@@ -57,11 +55,11 @@ public class ChartDayGridRenderer extends AbstractSceneBuilder {
     OffsetList getAtomUnitOffsets();
   }
 
-  public ChartDayGridRenderer(InputApi inputApi, Canvas timelineContainer) {
+  public DayGridSceneBuilder(InputApi inputApi, Canvas timelineCanvas) {
     myInputApi = inputApi;
     myRedlineOption = inputApi.getRedlineOption();
     myProjectDatesOption = inputApi.getProjectDatesOption();
-    myTimelineContainer = timelineContainer;
+    myTimelineCanvas = timelineCanvas;
   }
 
   @Override
@@ -106,7 +104,7 @@ public class ChartDayGridRenderer extends AbstractSceneBuilder {
         // Create a non-working day bar in the main area
         renderNonWorkingDay(curX, offset);
         // And expand it to the timeline area.
-        Rectangle r = myTimelineContainer.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
+        Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
             - curX, getLineBottomPosition() - getLineTopPosition() + 1);
         // System.err.println(offset.getDayType()+": " + r);
         applyRectangleStyle(r, offset.getDayType());
