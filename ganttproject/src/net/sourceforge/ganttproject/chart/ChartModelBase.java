@@ -43,7 +43,7 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
-import biz.ganttproject.core.chart.scene.ChartHeaderImpl;
+import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.chart.text.TimeFormatter;
@@ -165,7 +165,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   protected TimeUnit myBottomUnit;
 
-  private final ChartHeaderImpl myChartHeader;
+  private final TimelineSceneBuilder myChartHeader;
   private final BackgroundRendererImpl myBackgroundRenderer;
 
   private final StyledPainterImpl myPainter;
@@ -203,7 +203,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
-    myChartHeader = new ChartHeaderImpl(new ChartHeaderImpl.InputApi() {
+    myChartHeader = new TimelineSceneBuilder(new TimelineSceneBuilder.InputApi() {
       @Override
       public Date getViewportStartDate() {
         return getStartDate();

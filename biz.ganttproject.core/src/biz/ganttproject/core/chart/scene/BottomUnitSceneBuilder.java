@@ -37,7 +37,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 /**
  * @author dbarashev (Dmitry Barashev)
  */
-public class BottomUnitLineRendererImpl extends AbstractSceneBuilder {
+public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
 
   public static interface InputApi {
     int getTopLineHeight();
@@ -47,7 +47,7 @@ public class BottomUnitLineRendererImpl extends AbstractSceneBuilder {
 
   private final InputApi myInputApi;
 
-  public BottomUnitLineRendererImpl(Canvas timelineCanvas, InputApi inputApi) {
+  public BottomUnitSceneBuilder(Canvas timelineCanvas, InputApi inputApi) {
     super(timelineCanvas);
     myInputApi = inputApi;
   }
